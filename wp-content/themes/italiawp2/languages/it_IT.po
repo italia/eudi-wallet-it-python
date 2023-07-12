@@ -1,0 +1,910 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2023-01-19 11:24+0100\n"
+"PO-Revision-Date: 2023-01-19 11:25+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_n_noop\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: 403.php:9
+msgid "Forbidden"
+msgstr "Accesso negato"
+
+#: 403.php:23
+msgid "You don't have permission to access this page"
+msgstr "Non disponi delle autorizzazioni per accedere a questa pagina"
+
+#: 403.php:23 404.php:23 template-parts/error.php:13
+msgid "come back"
+msgstr "torna indietro"
+
+#: 403.php:23 404.php:23 template-parts/error.php:13
+msgid "or use the menu to continue browsing"
+msgstr "o utilizza il menu per continuare la navigazione"
+
+#: 403.php:29 404.php:29 template-parts/error.php:19
+msgid "Back to Home"
+msgstr "Torna alla Home"
+
+#: 404.php:9
+msgid "Not found"
+msgstr "Pagina non trovata"
+
+#: 404.php:23
+msgid "The page you are looking for was not found"
+msgstr "La pagina che cerchi non è stata trovata"
+
+#: _header_originale.php:29 template-parts/section-cookies.php:17
+msgid "This site uses technical, analytics and third-party cookies"
+msgstr "Questo sito utilizza cookie tecnici, analytics e di terze parti"
+
+#: _header_originale.php:30 template-parts/section-cookies.php:18
+msgid "By continuing to browse, you accept the use of cookies"
+msgstr "Proseguendo nella navigazione accetti l’utilizzo dei cookie"
+
+#: _header_originale.php:32 template-parts/section-cookies.php:20
+msgid "I accept"
+msgstr "Accetto"
+
+#: _header_originale.php:34 footer.php:233
+#: template-parts/section-cookies.php:22
+msgid "Cookie policy"
+msgstr "Cookie policy"
+
+#: _header_originale.php:42 header.php:39
+msgid "Go to content"
+msgstr "Vai ai contenuti"
+
+#: _header_originale.php:45 header.php:42
+msgid "Go to the navigation menu"
+msgstr "Vai al menu di navigazione"
+
+#: _header_originale.php:47 header.php:44
+msgid "Go to the footer"
+msgstr "Vai al footer"
+
+#: comments.php:10
+msgid "Comments"
+msgstr "Commenti"
+
+#: comments.php:37
+msgid "No comment"
+msgstr "Nessun commento"
+
+#: comments.php:72
+msgid "Site"
+msgstr "Sito"
+
+#: comments.php:78
+msgid ""
+"Saving a cookie with my data (name, email, website) for the next comment"
+msgstr ""
+"Salvataggio di un cookie con i miei dati (nome, email, sito web) per il "
+"prossimo commento"
+
+#: comments.php:101
+msgid "Leave a comment"
+msgstr "Lascia un commento"
+
+#: footer.php:51
+msgid "Address"
+msgstr "Indirizzo"
+
+#: footer.php:58 footer.php:59
+msgid "Phone"
+msgstr "Telefono"
+
+#: footer.php:66 footer.php:67
+msgid "Fax"
+msgstr "Fax"
+
+#: footer.php:76
+msgid "Information"
+msgstr "Informazioni"
+
+#: footer.php:80
+msgid "Tax code / VAT number"
+msgstr "C.F. / P.IVA"
+
+#: footer.php:86
+msgid "Unique Code"
+msgstr "Cod. Univoco"
+
+#: footer.php:93
+msgid "IBAN"
+msgstr "IBAN"
+
+#: footer.php:101
+msgid "Email contacts"
+msgstr "Posta Elettronica"
+
+#: footer.php:105
+msgid "PEC"
+msgstr "PEC"
+
+#: footer.php:106
+msgid "Certified mail"
+msgstr "Posta Elettronica Certificata"
+
+#: footer.php:113 footer.php:114 footer.php:122 footer.php:123
+msgid "Email"
+msgstr "Email"
+
+#: footer.php:132 footer.php:144 footer.php:156 footer.php:168 footer.php:180
+#: footer.php:192 footer.php:204 footer.php:216 menu.php:98 menu.php:107
+#: menu.php:119 menu.php:131 menu.php:143 menu.php:155 menu.php:167
+#: menu.php:179 menu.php:259 menu.php:271 menu.php:283 menu.php:295
+#: menu.php:307 menu.php:319 menu.php:331
+msgid "Follow us on"
+msgstr "Seguici su"
+
+#: footer.php:139 footer.php:151 footer.php:163 footer.php:175 footer.php:187
+#: footer.php:199 footer.php:211 menu.php:8 menu.php:102 menu.php:114
+#: menu.php:126 menu.php:138 menu.php:150 menu.php:162 menu.php:174
+#: menu.php:254 menu.php:266 menu.php:278 menu.php:290 menu.php:302
+#: menu.php:314 menu.php:326
+msgid "Link to external site"
+msgstr "Collegamento a sito esterno"
+
+#: footer.php:227
+msgid "Useful Links Section"
+msgstr "Sezione Link Utili"
+
+#: footer.php:230
+msgid "Privacy policy"
+msgstr "Privacy policy"
+
+#: footer.php:230
+msgid "Privacy"
+msgstr "Privacy"
+
+#: footer.php:236
+msgid "Legal notices"
+msgstr "Note legali"
+
+#: footer.php:239
+msgid "Contacts"
+msgstr "Contatti"
+
+#: footer.php:242
+msgid "Accessibility"
+msgstr "Accessibilità"
+
+#: footer.php:244
+msgid "Made with"
+msgstr "Realizzato con"
+
+#: footer.php:248
+msgid "Graphic theme"
+msgstr "Tema grafico"
+
+#: footer.php:249
+msgid "Based on the"
+msgstr "Basato sul"
+
+#: footer.php:249
+msgid "AgID Prototype for PA sites"
+msgstr "Prototipo per siti PA di AgID"
+
+#: footer.php:261
+msgid "Go up"
+msgstr "Torna su"
+
+#: functions.php:126
+msgid "Black"
+msgstr "Nero"
+
+#: functions.php:131
+msgid "White"
+msgstr "Bianco"
+
+#: functions.php:136
+msgid "Primary Color"
+msgstr "Colore Primario"
+
+#: functions.php:141
+msgid "Light Primary Color"
+msgstr "Colore Primario Chiaro"
+
+#: functions.php:146
+msgid "Dark Primary Color"
+msgstr "Colore Primario Scuro"
+
+#: functions.php:151
+msgid "Complementary Color"
+msgstr "Colore Complementare"
+
+#: functions.php:476
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:334
+msgid "Install Required Plugins"
+msgstr "Installa plugin richiesti"
+
+#: functions.php:477
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:335
+msgid "Install Plugins"
+msgstr "Installa plugin"
+
+#: functions.php:479
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:337
+#, php-format
+msgid "Installing Plugin: %s"
+msgstr "Installazione del plugin: %s"
+
+#: functions.php:481
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:339
+#, php-format
+msgid "Updating Plugin: %s"
+msgstr "Aggiornamento del plugin: %s"
+
+#: functions.php:482
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:340
+msgid "Something went wrong with the plugin API."
+msgstr "Qualcosa è andato storto con l’API del plugin."
+
+#: functions.php:485
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:343
+#, php-format
+msgid "This theme requires the following plugin: %1$s."
+msgstr "Questo tema richiede il seguente plugin: %1$s."
+
+#: functions.php:491
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:349
+#, php-format
+msgid "This theme recommends the following plugin: %1$s."
+msgstr "Questo tema consiglia il seguente plugin: %1$s."
+
+#: functions.php:497
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:355
+#, php-format
+msgid ""
+"The following plugin needs to be updated to its latest version to ensure "
+"maximum compatibility with this theme: %1$s."
+msgstr ""
+"Il seguente plugin deve essere aggiornato all’ultima versione per garantire "
+"la massima compatibilità con questo tema: %1$s."
+
+#: functions.php:503
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:361
+#, php-format
+msgid "There is an update available for: %1$s."
+msgstr "È disponibile un aggiornamento per: %1$s."
+
+#: functions.php:509
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:367
+#, php-format
+msgid "The following required plugin is currently inactive: %1$s."
+msgstr "Il seguente plugin richiesto è attualmente inattivo: %1$s."
+
+#: functions.php:515
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:373
+#, php-format
+msgid "The following recommended plugin is currently inactive: %1$s."
+msgstr "Il seguente plugin consigliato è attualmente inattivo: %1$s."
+
+#: functions.php:520
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:378
+msgid "Begin installing plugin"
+msgstr "Inizia installazione del plugin"
+
+#: functions.php:525
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:383
+msgid "Begin updating plugin"
+msgstr "Inizia aggiornamento del plugin"
+
+#: functions.php:530
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:388
+msgid "Begin activating plugin"
+msgstr "Inizia attivazione del plugin"
+
+#: functions.php:534
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:392
+msgid "Return to Required Plugins Installer"
+msgstr "Torna ai plugin richiesti"
+
+#: functions.php:535
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:393
+msgid "Return to the Dashboard"
+msgstr "Ritorna alla Dashboard"
+
+#: functions.php:536
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:394
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3252
+msgid "Plugin activated successfully."
+msgstr "Plugin attivato correttamente."
+
+#: functions.php:537
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:395
+msgid "The following plugin was activated successfully:"
+msgstr "Il seguente plugin è stato attivato correttamente:"
+
+#: functions.php:539
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:397
+#, php-format
+msgid "No action taken. Plugin %1$s was already active."
+msgstr "Nessuna azione intrapresa. Il plugin %1$s era già attivo."
+
+#: functions.php:541
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:399
+#, php-format
+msgid ""
+"Plugin not activated. A higher version of %s is needed for this theme. "
+"Please update the plugin."
+msgstr ""
+"Plugin non attivato. Per questo tema è necessaria una versione superiore di "
+"%s. Si prega di aggiornare il plugin."
+
+#: functions.php:543
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:401
+#, php-format
+msgid "All plugins installed and activated successfully. %1$s"
+msgstr "Tutti i plugin installati e attivati correttamente. %1$s"
+
+#: functions.php:544
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:402
+msgid "Dismiss this notice"
+msgstr "Rimuovi questa notifica"
+
+#: functions.php:545
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:403
+msgid ""
+"There are one or more required or recommended plugins to install, update or "
+"activate."
+msgstr ""
+"Esistono uno o più plugin richiesti o consigliati da installare, aggiornare "
+"o attivare."
+
+#: functions.php:546
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:404
+msgid "Please contact the administrator of this site for help."
+msgstr "Si prega di contattare l’amministratore di questo sito per assistenza."
+
+#: inc/gallery.php:21
+msgid "Photo gallery"
+msgstr "Galleria fotografica"
+
+#: inc/gallery.php:21 template-parts/section-gallery-carousel.php:14
+msgid "scroll"
+msgstr "scorri"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2075
+#, php-format
+msgid "TGMPA v%s"
+msgstr "TGMPA v%s"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2366
+msgid "Required"
+msgstr "Richiesto"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2369
+msgid "Recommended"
+msgstr "Consigliato"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2385
+msgid "WordPress Repository"
+msgstr "Repository WordPress"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2388
+msgid "External Source"
+msgstr "Fonte esterna"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2391
+msgid "Pre-Packaged"
+msgstr "Preconfezionata"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2408
+msgid "Not Installed"
+msgstr "Non installato"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2412
+msgid "Installed But Not Activated"
+msgstr "Installato ma non attivato"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2414
+msgid "Active"
+msgstr "Attivo"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2420
+msgid "Required Update not Available"
+msgstr "Aggiornamento richiesto non disponibile"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2423
+msgid "Requires Update"
+msgstr "Richiede l’aggiornamento"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2426
+msgid "Update recommended"
+msgstr "Aggiornamento raccomandato"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2583
+msgid "Installed version:"
+msgstr "Versione installata:"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2591
+msgid "Minimum required version:"
+msgstr "Versione minima richiesta:"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2603
+msgid "Available version:"
+msgstr "Versione disponibile:"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2640
+msgid "Plugin"
+msgstr "Plugin"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2641
+msgid "Source"
+msgstr "Fonte"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2642
+msgid "Type"
+msgstr "Tipo"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2646
+msgid "Version"
+msgstr "Versione"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2647
+msgid "Status"
+msgstr "Stato"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2696
+#, php-format
+msgid "Install %2$s"
+msgstr "Installa %2$s"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2701
+#, php-format
+msgid "Update %2$s"
+msgstr "Aggiorna %2$s"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2707
+#, php-format
+msgid "Activate %2$s"
+msgstr "Attiva %2$s"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2810
+msgid "Install"
+msgstr "Installa"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2816
+msgid "Update"
+msgstr "Aggiorna"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2819
+msgid "Activate"
+msgstr "Attiva"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2850
+msgid "No plugins were selected to be installed. No action taken."
+msgstr ""
+"Nessun plugin selezionato per l’installazione. Nessuna azione intrapresa."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2852
+msgid "No plugins were selected to be updated. No action taken."
+msgstr ""
+"Nessun plugin selezionato per l’aggiornamento. Nessuna azione intrapresa."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2893
+msgid "No plugins are available to be installed at this time."
+msgstr "Nessun plugin disponibile per l’installazione in questo momento."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:2895
+msgid "No plugins are available to be updated at this time."
+msgstr "Nessun plugin disponibile per l’aggiornamento in questo momento."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3251
+msgid "Plugin activation failed."
+msgstr "Attivazione del plugin non riuscita."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3591
+#, php-format
+msgid "Updating Plugin %1$s (%2$d/%3$d)"
+msgstr "Aggiornamento del plugin %1$s (%2$d/%3$d)"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3594
+#, php-format
+msgid "An error occurred while installing %1$s: <strong>%2$s</strong>."
+msgstr ""
+"Si è verificato un errore durante l’installazione %1$s: <strong>%2$s</"
+"strong>."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3596
+#, php-format
+msgid "The installation of %1$s failed."
+msgstr "L’installazione di %1$s non è riuscita."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3600
+msgid ""
+"The installation and activation process is starting. This process may take a "
+"while on some hosts, so please be patient."
+msgstr ""
+"Il processo di installazione e attivazione sta iniziando. Questo processo "
+"potrebbe richiedere del tempo su alcuni host, quindi ti preghiamo di "
+"pazientare."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3602
+#, php-format
+msgid "%1$s installed and activated successfully."
+msgstr "%1$s installati e attivati correttamente."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3603
+msgid "All installations and activations have been completed."
+msgstr "Tutte le installazioni e le attivazioni sono state completate."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3605
+#, php-format
+msgid "Installing and Activating Plugin %1$s (%2$d/%3$d)"
+msgstr "Installazione e attivazione del plugin %1$s (%2$d/%3$d)"
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3608
+msgid ""
+"The installation process is starting. This process may take a while on some "
+"hosts, so please be patient."
+msgstr ""
+"Il processo di installazione sta iniziando. Questo processo potrebbe "
+"richiedere del tempo su alcuni host, quindi ti preghiamo di pazientare."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3611
+msgid "All installations have been completed."
+msgstr "Tutte le installazioni sono state completate."
+
+#: inc/tgm-plugin-activation/class-tgm-plugin-activation.php:3613
+#, php-format
+msgid "Installing Plugin %1$s (%2$d/%3$d)"
+msgstr "Installazione del plugin %1$s (%2$d/%3$d)"
+
+#: menu.php:8
+msgid "new window"
+msgstr "nuova finestra"
+
+#: menu.php:46
+msgid "Login"
+msgstr "Accedi"
+
+#: menu.php:60
+msgid "Toggle navigation"
+msgstr "Attiva / disattiva la navigazione"
+
+#: menu.php:76
+msgid "Main menu"
+msgstr "Menu principale"
+
+#: menu.php:362
+msgid "close"
+msgstr "chiusi"
+
+#: searchform.php:3 searchform.php:4
+msgid "Search"
+msgstr "Cerca"
+
+#: searchform_sidebar.php:2
+msgid "Search for Topics"
+msgstr "Cerca Argomenti"
+
+#: static/js/bootstrap-italia.bundle.min.js:7
+msgid "up"
+msgstr ""
+
+#: static/js/bootstrap-italia.bundle.min.js:7
+msgid "down"
+msgstr ""
+
+#: tag.php:16 template-parts/section-last-news.php:305
+msgid "Other topics"
+msgstr "Altri argomenti"
+
+#: template-parts/archive-circolari-loop.php:20
+#: template-parts/section-last-circolari.php:102
+msgid "Circulars"
+msgstr "Circolari"
+
+#: template-parts/archive-circolari-loop.php:22
+#: template-parts/archive-gallerie-loop.php:22
+#: template-parts/archive-loop.php:22 template-parts/archive-loop.php:87
+#: template-parts/main-loop.php:22 template-parts/search-loop.php:18
+msgid "Page"
+msgstr "Pagina"
+
+#: template-parts/archive-circolari-loop.php:22
+#: template-parts/archive-gallerie-loop.php:22
+#: template-parts/archive-loop.php:22 template-parts/main-loop.php:22
+#: template-parts/search-loop.php:18
+msgid "of"
+msgstr "di"
+
+#: template-parts/archive-circolari-loop.php:55
+#: template-parts/circolare-loop.php:50
+#: template-parts/section-last-circolari.php:49
+msgid "No."
+msgstr "N°"
+
+#: template-parts/archive-circolari-loop.php:55
+#: template-parts/circolare-loop.php:50
+#: template-parts/section-last-circolari.php:49
+msgid " of "
+msgstr " del "
+
+#: template-parts/archive-circolari-loop.php:75
+#: template-parts/circolare-loop.php:32
+#: template-parts/section-last-circolari.php:70
+msgid "Groups"
+msgstr "Gruppi"
+
+#: template-parts/archive-circolari-loop.php:87
+#: template-parts/archive-gallerie-loop.php:78
+#: template-parts/archive-loop.php:131 template-parts/main-loop.php:119
+#: template-parts/search-loop.php:62 template-parts/search-loop.php:68
+#: template-parts/section-gallery-carousel.php:93
+#: template-parts/section-last-circolari.php:82
+#: template-parts/section-last-circolari.php:102
+#: template-parts/section-last-news.php:137
+#: template-parts/section-last-news.php:263
+#: template-parts/section-last-news.php:323
+#: template-parts/section-last-one-news.php:86
+msgid "Go to the page"
+msgstr "Vai alla pagina"
+
+#: template-parts/archive-circolari-loop.php:88
+#: template-parts/archive-loop.php:132 template-parts/main-loop.php:120
+#: template-parts/search-loop.php:68 template-parts/search-loop.php:70
+#: template-parts/section-last-circolari.php:83
+#: template-parts/section-last-news.php:138
+#: template-parts/section-last-news.php:264
+msgid "Read more"
+msgstr "Leggi di più"
+
+#: template-parts/archive-gallerie-loop.php:79
+msgid "Browse gallery"
+msgstr "Sfoglia galleria"
+
+#: template-parts/archive-loop.php:108 template-parts/main-loop.php:96
+#: template-parts/section-last-news.php:114
+#: template-parts/section-last-news.php:240
+#: template-parts/section-last-one-news.php:61
+#: template-parts/single-loop.php:42
+msgid "Categories"
+msgstr "Categorie"
+
+#: template-parts/archive-loop.php:119 template-parts/main-loop.php:107
+#: template-parts/page-loop-nosidebar.php:33 template-parts/page-loop.php:34
+#: template-parts/section-last-news.php:125
+#: template-parts/section-last-news.php:251
+#: template-parts/section-last-one-news.php:74
+#: template-parts/single-loop.php:55
+msgid "Topics"
+msgstr "Argomenti"
+
+#: template-parts/attachment-loop.php:54 template-parts/circolare-loop.php:98
+#: template-parts/custom-post-type-loop.php:58 template-parts/page-loop.php:88
+#: template-parts/single-loop.php:115
+msgid "Last update"
+msgstr "Ultimo aggiornamento"
+
+#: template-parts/attachments-sidebar.php:20 template-parts/attachments.php:23
+msgid "Attachments"
+msgstr "Allegati"
+
+#: template-parts/children-list.php:19
+msgid "Back"
+msgstr "Indietro"
+
+#: template-parts/children-list.php:25
+msgid "Linked pages"
+msgstr "Pagine collegate"
+
+#: template-parts/circolare-loop.php:49
+msgid "Circular"
+msgstr "Circolare"
+
+#: template-parts/circolare-loop.php:56 template-parts/single-loop.php:72
+msgid "Date"
+msgstr "Data"
+
+#: template-parts/circolare-loop.php:62
+msgid "Author"
+msgstr "Autore"
+
+#: template-parts/error.php:12
+msgid "Error"
+msgstr "Errore"
+
+#: template-parts/error.php:13
+msgid "There is no content"
+msgstr "Nessun contenuto presente"
+
+#: template-parts/main-loop.php:20
+msgid "Last news"
+msgstr "Ultime notizie"
+
+#: template-parts/navigation.php:12 template-parts/pagination.php:13
+msgid "Browsing the news"
+msgstr "Navigazione tra le notizie"
+
+#: template-parts/navigation.php:20 template-parts/navigation.php:27
+#: template-parts/pagination.php:19
+msgid "Previous page"
+msgstr "Pagina precedente"
+
+#: template-parts/navigation.php:38 template-parts/navigation.php:45
+#: template-parts/pagination.php:48
+msgid "Next page"
+msgstr "Pagina successiva"
+
+#: template-parts/search-loop.php:16
+msgid "Results for"
+msgstr "Risultati per"
+
+#: template-parts/search-loop.php:34
+msgid "results found"
+msgstr "risultati trovati"
+
+#: template-parts/section-gallery-carousel.php:14
+msgid "Photo galleries"
+msgstr "Gallerie fotografiche"
+
+#: template-parts/section-gallery-carousel.php:93
+msgid "Galleries"
+msgstr "Gallerie"
+
+#: template-parts/section-gallery-carousel.php:94
+msgid "All galleries"
+msgstr "Tutte le gallerie"
+
+#: template-parts/section-last-circolari.php:15
+msgid "Latest circulars"
+msgstr "Ultime circolari"
+
+#: template-parts/section-last-circolari.php:103
+#: template-parts/section-last-news.php:324
+msgid "See all"
+msgstr "Vedi tutte"
+
+#: template-parts/section-last-news.php:284
+msgid "Other categories"
+msgstr "Altre categorie"
+
+#: template-parts/section-last-news.php:323
+msgid "News"
+msgstr "Notizie"
+
+#: template-parts/section-last-one-news.php:86
+#: template-parts/section-last-one-news.php:87
+msgid "All the news"
+msgstr "Tutte le novità"
+
+#: template-parts/section-map.php:15 template-parts/section-map.php:34
+msgid "Interactive Map"
+msgstr "Mappa Interattiva"
+
+#: template-parts/section-map.php:16
+msgid "Click on to activate"
+msgstr "Clicca su per attivare"
+
+#: template-parts/section-services.php:16
+msgid "Services"
+msgstr "Servizi"
+
+#~ msgid "Plugins required by the theme \"ItaliaWP\""
+#~ msgstr "Plugin richiesti dal tema “ItaliaWP”"
+
+#~ msgid "Plugins required"
+#~ msgstr "Plugin richiesti"
+
+#, php-format
+#~ msgid "\"ItaliaWP\" theme requires plugins %1$s."
+#~ msgstr "“ItaliaWP” richiede i plugin: %1$s."
+
+#, php-format
+#~ msgid "\"ItaliaWP\" recommends plugins: %1$s."
+#~ msgstr "“ItaliaWP” raccomanda i plugin: %1$s."
+
+#, php-format
+#~ msgid ""
+#~ "The following plugins must be updated to the latest version to have "
+#~ "maximum compatibility with this theme: %1$s."
+#~ msgstr ""
+#~ "I seguenti plugin devono essere aggiornati all\\’ultima versione per "
+#~ "avere massima compatibilità con questo tema: %1$s."
+
+#, php-format
+#~ msgid "There are updates available for: %1$s."
+#~ msgstr "Ci sono aggiornamenti disponibili per: %1$s."
+
+#, php-format
+#~ msgid "Required plugins are not active: %1$s."
+#~ msgstr "I plugin richiesti non sono attivi: %1$s."
+
+#, php-format
+#~ msgid "Recommended plugins are not active: %1$s."
+#~ msgstr "I plugin raccomandati non sono attivi: %1$s."
+
+#~ msgid "Update Plugins"
+#~ msgstr "Aggiorna plugin"
+
+#~ msgid "Activate plugins"
+#~ msgstr "Attiva i plugin"
+
+#~ msgid "show"
+#~ msgstr "mostra"
+
+#~ msgid "hide"
+#~ msgstr "nascondi"
+
+#~ msgid "toggle"
+#~ msgstr "Mostra / Nascondi"
+
+#~ msgid "Name"
+#~ msgstr "Nome"
+
+#~ msgid "I give my consent"
+#~ msgstr "Do il mio consenso"
+
+#~ msgid "Comment"
+#~ msgstr "Commento"
+
+#~ msgid "Error 404"
+#~ msgstr "Errore 404"
+
+#~ msgid "Add to Menu"
+#~ msgstr "Aggiungi al menu"
+
+#~ msgid "January"
+#~ msgstr "Gennaio"
+
+#~ msgid "February"
+#~ msgstr "Febbraio"
+
+#~ msgid "March"
+#~ msgstr "Marzo"
+
+#~ msgid "April"
+#~ msgstr "Aprile"
+
+#~ msgid "May"
+#~ msgstr "Maggio"
+
+#~ msgid "June"
+#~ msgstr "Giugno"
+
+#~ msgid "July"
+#~ msgstr "Luglio"
+
+#~ msgid "August"
+#~ msgstr "Agosto"
+
+#~ msgid "September"
+#~ msgstr "Settembre"
+
+#~ msgid "October"
+#~ msgstr "Ottobre"
+
+#~ msgid "November"
+#~ msgstr "Novembre"
+
+#~ msgid "December"
+#~ msgstr "Dicembre"
+
+#~ msgid "Start the search"
+#~ msgstr "Avvia la ricerca"
+
+#, fuzzy
+#~| msgid "Install Plugins"
+#~ msgid "Installa il plugin"
+#~ msgstr "Installa plugin"
+
+#, php-format
+#~ msgid "Plugin Installation: %s"
+#~ msgstr "Installazione del Plugin: %s"
+
+#, php-format
+#~ msgid "Plugin Update: %s"
+#~ msgstr "Aggiornamento del Plugin: %s"

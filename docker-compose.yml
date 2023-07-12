@@ -35,7 +35,7 @@ services:
   wordpress:
     depends_on:
       - database
-    image: wordpress:6.2.2-apache
+    image: wordpress:5.4.0-apache
     restart: unless-stopped
     ports:
       - 8080:80
