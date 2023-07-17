@@ -1,0 +1,15 @@
+/* TEAM */
+Name: Jonathan Christopher
+Site: https://mondaybynoon.com
+Title: Developer
+Twitter: @jchristopher
+Location: New York, USA
+
+/* THANKS */
+JR Tashjian http://jrtashjian.com
+
+/* META */
+Updated: 10/10/2017
+Standards: HTML5, CSS3
+Components: WordPress, jQuery, Underscore.js, Backbone.js
+Software: Sublime Text
