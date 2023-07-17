@@ -11,6 +11,8 @@ EUDI Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
 to the [Italian specification](https://italia.github.io/eudi-wallet-it-docs/en/).
 
+> Please note: the scope of this project is giving tools and helpers to build a EUDI Wallet compliant to the national specs. All the components listed below are tailored to this scope.
+
 The toolchain contains the following components:
 
 | Name | Description |
