@@ -95,9 +95,7 @@ The Docker Compose file repository sets up a WordPress instance that includes a 
 
 ## Installing the ItaliaWP2 Theme
 
-1. Navigate to the `wp-content/themes` directory of the repository using the command `cd wp-content/themes`.
-2. Clone the ItaliaWP2 theme repository using the command `git clone https://github.com/italia/design-wordpress-theme-italiaWP2.git`.
-3. Log in to the WordPress dashboard at `http://localhost:8080/wp-admin` (replace `8080` with the port specified in the `docker-compose.yml` file) using your administrator credentials.
-4. In the sidebar, go to "Appearance" > "Themes" and activate the ItaliaWP2 theme that you just installed.
+1. Log in to the WordPress dashboard at `http://localhost:8080/wp-admin` (replace `8080` with the port specified in the `docker-compose.yml` file) using your administrator credentials.
+2. In the sidebar, go to "Appearance" > "Themes" and activate the ItaliaWP2 theme that you just installed.
 
 After following these steps, your WordPress instance should be up and running with the ItaliaWP2 theme installed and activated.
