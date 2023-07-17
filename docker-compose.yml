@@ -46,7 +46,7 @@ services:
       WORDPRESS_DB_USER: '${MYSQL_USER}'
       WORDPRESS_DB_PASSWORD: '${MYSQL_PASSWORD}'
     volumes:
-      - ./wp-content/:/var/www/html/wp-content
+      - ./wordpress/:/var/www/html/
     networks:
       - wordpress-network
 
