@@ -107,3 +107,5 @@ After following these steps, your WordPress instance should be up and running wi
 3. Log in at [http://localhost:8080/wp-admin](http://localhost:8080/wp-admin).
 4. Under [plugins](http://localhost:8080/wp-admin/plugins.php), activate the plugin OneLogin SAML SSO.
 5. Configure the plugin OneLogin SAML SSO in the [settings tab](http://localhost:8080/wp-admin/options-general.php?page=onelogin_saml_configuration).
+
+## Setup Wordpress SAML plugin 
