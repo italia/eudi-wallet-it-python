@@ -99,3 +99,11 @@ The Docker Compose file repository sets up a WordPress instance that includes a 
 2. In the sidebar, go to "Appearance" > "Themes" and activate the ItaliaWP2 theme that you just installed.
 
 After following these steps, your WordPress instance should be up and running with the ItaliaWP2 theme installed and activated.
+
+## Installing the OneLogin SAML SSO plugin
+
+1. Download the [plugin archive](https://downloads.wordpress.org/plugin/onelogin-saml-sso.zip).
+2. Extract the archive under [<root_dir>/wordpress/wp-content/plugins/](wordpress/wp-content/plugins/)
+3. Log in at [http://localhost:8080/wp-admin](http://localhost:8080/wp-admin).
+4. Under [plugins](http://localhost:8080/wp-admin/plugins.php), activate the plugin OneLogin SAML SSO.
+5. Configure the plugin OneLogin SAML SSO in the [settings tab](http://localhost:8080/wp-admin/options-general.php?page=onelogin_saml_configuration).

@@ -163,3 +163,4 @@ cython_debug/
 
 wordpress/*
 !wordpress/wp-content/
+wordpress/wp-content/plugins/onelogin-saml-sso/
