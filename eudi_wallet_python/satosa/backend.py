@@ -35,7 +35,8 @@ class OpenIDVP4SAMLBackend(BackendModule):
         url_map.append((f"^{self.redirect_url.lstrip('/')}$", self.redirect_endpoint))
         url_map.append((f"^{self.request_url.lstrip('/')}$", self.request_enpoint))
         return url_map
-    
+
+
     def qrCode_endpoint(self, context, *args):
         return Response(
             text_type(
