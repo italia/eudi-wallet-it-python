@@ -1,4 +1,5 @@
 from enum import Enum
+
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.ec import new_ec_key, ECKey
 from cryptojwt.jwk.rsa import new_rsa_key, RSAKey
@@ -13,12 +14,12 @@ class JWK():
         if key:
             self.key = key 
         elif keyType == KeyType.EC:
-            self.key = new_ec_key()
+            self.key = new_ec_key("P-256")
         else:
             self.key = new_rsa_key()
     
-        self.thumbprint = key.thumbprint(hash_function=hash_func)
-        self.jwk = key.to_dict()
+        self.thumbprint = self.key.thumbprint(hash_function=hash_func)
+        self.jwk = self.key.to_dict()
         self.jwk["kid"] = self.thumbprint.decode()
 
     def as_dict(self):
