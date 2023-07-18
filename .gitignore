@@ -161,8 +161,8 @@ cython_debug/
 
 *.db
 
-wordpress/*
-!wordpress/wp-content/
-wordpress/wp-content/plugins/onelogin-saml-sso/
+./example/wordpress/*
+!./example/wordpress/wp-content/
+./example/wordpress/wp-content/plugins/onelogin-saml-sso/
 
 .DS_Store

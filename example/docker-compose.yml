@@ -49,6 +49,7 @@ services:
       - ./wordpress/:/var/www/html/
     networks:
       - wordpress-network
+      - testSPIDnetword
 
 volumes:
   db-data:
@@ -56,3 +57,5 @@ volumes:
 networks:
   wordpress-network:
     driver: bridge
+  testSPIDnetword:
+    external: true
