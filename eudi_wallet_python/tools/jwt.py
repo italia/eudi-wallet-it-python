@@ -26,7 +26,9 @@ class JWE():
             JWE_CLASS = JWE_RSA
         elif isinstance(_key, cryptojwt.jwk.ec.ECKey):
             JWE_CLASS = JWE_EC
-
+            
+        _payload: str | int | bytes = ""
+            
         if isinstance(plain_dict, dict):
             _payload = json.dumps(plain_dict).encode()
         elif not plain_dict:

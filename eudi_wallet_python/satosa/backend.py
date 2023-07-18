@@ -3,10 +3,10 @@ import logging
 import base64
 import satosa.util as util
 
+from six import text_type
 from satosa.context import Context
 from satosa.exception import SATOSAAuthenticationError
 from satosa.response import Response
-from six import text_type
 from satosa.backends.base import BackendModule
 
 logger = logging.getLogger(__name__)

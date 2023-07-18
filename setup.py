@@ -10,8 +10,9 @@ def readme():
 _pkg_name = 'eudi_wallet_python'
 
 with open(f'{_pkg_name}/__init__.py', 'r') as fd:
-    VERSION = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-                        fd.read(), re.MULTILINE).group(1)
+    VERSION = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)
+    assert VERSION is not None
+    VERSION.group(1)
 
 setup(
     name=_pkg_name,
@@ -41,6 +42,6 @@ setup(
         ]
     },
     install_requires=[
-        "cryptojwt>=1.8.2",
+        "cryptojwt>=1.8.2"    
     ],
 )

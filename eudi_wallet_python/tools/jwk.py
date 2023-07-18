@@ -9,7 +9,7 @@ class KeyType(Enum):
     RSA = 2
 
 class JWK():
-    def __init__(self, key: str = None, keyType: KeyType = KeyType.EC, hash_func: str = None) -> None:
+    def __init__(self, key = None, keyType: KeyType = KeyType.EC, hash_func: str = 'SHA-256') -> None:
         if key:
             self.key = key 
         elif keyType == KeyType.EC:
@@ -17,7 +17,7 @@ class JWK():
         else:
             self.key = new_rsa_key()
     
-        self.thumbprint = key.thumbprint(hash_function=hash_func or 'SHA-256')
+        self.thumbprint = key.thumbprint(hash_function=hash_func)
         self.jwk = key.to_dict()
         self.jwk["kid"] = self.thumbprint.decode()
 
