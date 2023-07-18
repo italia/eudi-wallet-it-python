@@ -52,24 +52,16 @@ class JWE():
         self.jwe = _keyobj.encrypt(_key.public_key())
 
 
-def unpad_jwt_element(jwt: str, position: int) -> dict:
-    b = jwt.split(".")[position]
+def unpad_jwt_header(jwt: str) -> dict:
+    b = jwt.split(".")[0]
     padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
     data = json.loads(base64.urlsafe_b64decode(padded))
     return data
 
 
-def unpad_jwt_head(jwt: str) -> dict:
-    return unpad_jwt_element(jwt, position=0)
-
-
-def unpad_jwt_payload(jwt: str) -> dict:
-    return unpad_jwt_element(jwt, position=1)
-
-
 def decrypt_jwe(jwe: str, jwk_dict: dict) -> dict:
     try:
-        jwe_header = unpad_jwt_head(jwe)
+        jwe_header = unpad_jwt_header(jwe)
     except (binascii.Error, Exception) as e:
         raise VerificationError("The JWT is not valid")
 
