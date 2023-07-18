@@ -86,6 +86,6 @@ Please consider the following branches:
 
 - Giuseppe De Marco
 - Pasquale De Rose
-- Alessio Amurri
-- Nicola ...
-- ...
+- Alessio Murru
+- Salvatore Laiso
+- Nicola Saitto
