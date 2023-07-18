@@ -1,13 +1,10 @@
 import json
 
 import cryptojwt
-from cryptojwt.exception import UnsupportedAlgorithm, VerificationError
-from cryptojwt.jwe.jwe import factory
 from cryptojwt.jwe.jwe_ec import JWE_EC
 from cryptojwt.jwe.jwe_rsa import JWE_RSA
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS
-from cryptojwt.jws.utils import left_hash
 from typing import Union
 
 from .jwk import JWK

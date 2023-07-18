@@ -1,8 +1,8 @@
 from enum import Enum
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
-from cryptojwt.jwk.ec import new_ec_key, ECKey
-from cryptojwt.jwk.rsa import new_rsa_key, RSAKey
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
 from cryptography.hazmat.primitives import serialization
 
 class KeyType(Enum):

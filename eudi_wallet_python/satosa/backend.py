@@ -1,15 +1,14 @@
 import json
 import logging
 import base64
-import satosa.util as util
 
 from six import text_type
-from satosa.context import Context
 from satosa.exception import SATOSAAuthenticationError
 from satosa.response import Response
 from satosa.backends.base import BackendModule
 
 logger = logging.getLogger(__name__)
+
 
 class OpenIDVP4SAMLBackend(BackendModule):
     """
@@ -68,7 +67,7 @@ class OpenIDVP4SAMLBackend(BackendModule):
         :return: response with metadata
         """
         logger.debug("Sending metadata response")
-        conf = self.sp.config
+        self.sp.config
 
         """metadata = entity_descriptor(conf)
         
@@ -123,7 +122,6 @@ class OpenIDVP4SAMLBackend(BackendModule):
         :param entity_id: Target IDP entity id
         :return: response to the user agent
         """
-        pass
 
     def handle_error(
         self,
@@ -154,4 +152,3 @@ class OpenIDVP4SAMLBackend(BackendModule):
         :param binding: The saml binding type
         :return: response
         """
-        pass
