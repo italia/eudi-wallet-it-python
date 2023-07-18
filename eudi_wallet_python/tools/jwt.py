@@ -8,8 +8,10 @@ from cryptojwt.jwe.jwe_ec import JWE_EC
 from cryptojwt.jwe.jwe_rsa import JWE_RSA
 from cryptojwt.jwk.rsa import RSAKey
 from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jws.utils import left_hash
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwe.jwe import factory
+from cryptojwt.jws.jws import JWS as JWSec
 from typing import Union
 
 from .jwk import JWK
@@ -79,3 +81,47 @@ def decrypt_jwe(jwe: str, jwk_dict: dict) -> dict:
     except json.decoder.JSONDecodeError:
         msg_dict = msg
     return msg_dict
+
+class JWS():
+    def __init__(self, jwk: JWK, plain_dict: Union[dict, str, int, None], alg: str = "RS256", protected: dict = {}, **kwargs):
+        _key = key_from_jwk_dict(jwk.as_dict())
+        
+        _payload: str | int | bytes = ""
+            
+        if isinstance(plain_dict, dict):
+            _payload = json.dumps(plain_dict).encode()
+        elif not plain_dict:
+            _payload = ""
+        elif isinstance(plain_dict, (str, int)):
+            _payload = plain_dict
+        else:
+            _payload = ""
+        
+        _signer = JWSec(_payload, alg=alg, **kwargs)
+
+        self.signature = _signer.sign_compact([_key], protected=protected, **kwargs)
+        
+def verify_jws(jws: JWS, pub_jwk: dict, **kwargs) -> str:
+    _key = key_from_jwk_dict(pub_jwk)
+
+    _head = unpad_jwt_header(jws.signature)
+    if _head.get("kid") != pub_jwk["kid"]:  # pragma: no cover
+        raise Exception(
+            f"kid error: {_head.get('kid')} != {pub_jwk['kid']}"
+        )
+
+    _alg = _head["alg"]
+
+    verifier = JWSec(alg=_head["alg"], **kwargs)
+    msg = verifier.verify_compact(jws, [_key])
+    return msg
+
+
+def verify_at_hash(id_token, access_token) -> bool:
+    id_token_at_hash = id_token['at_hash']
+    at_hash = left_hash(access_token, "HS256")
+    if at_hash != id_token_at_hash:
+        raise Exception(
+            f"at_hash error: {at_hash} != {id_token_at_hash}"
+        )
+    return True
