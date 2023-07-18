@@ -17,8 +17,8 @@ class JWK():
         else:
             self.key = new_rsa_key()
     
-        self.thumbprint = key.thumbprint(hash_function=hash_func)
-        self.jwk = key.to_dict()
+        self.thumbprint = self.key.thumbprint(hash_function=hash_func)
+        self.jwk = self.key.to_dict()
         self.jwk["kid"] = self.thumbprint.decode()
 
     def as_dict(self):
