@@ -160,5 +160,5 @@ cython_debug/
 #.idea/
 
 *.db
-./example/wordpress-saml
+
 .DS_Store
