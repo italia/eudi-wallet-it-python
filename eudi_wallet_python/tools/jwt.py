@@ -22,20 +22,13 @@ DEFAULT_JWS_ALG = "RS256"
 DEFAULT_JWE_ALG = "RSA-OAEP"
 DEFAULT_JWE_ENC = "A256CBC-HS512"
 
+
 def unpad_jwt_header(jwt: str) -> dict:
     b = jwt.split(".")[0]
     padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
     data = json.loads(base64.urlsafe_b64decode(padded))
     return data
 
-def verify_at_hash(id_token, access_token) -> bool:
-    id_token_at_hash = id_token['at_hash']
-    at_hash = left_hash(access_token, "HS256")
-    if at_hash != id_token_at_hash:
-        raise Exception(
-            f"at_hash error: {at_hash} != {id_token_at_hash}"
-        )
-    return True
 
 class JWEHelper():
     def __init__(self, jwk: JWK):
@@ -91,7 +84,8 @@ class JWEHelper():
             msg_dict = msg
         return msg_dict
 
-class JWSHelper():
+
+class JWSHelper:
     def __init__(self, jwk: JWK):
         self.jwk = jwk
         
