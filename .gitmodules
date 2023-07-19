@@ -1,0 +1,3 @@
+[submodule "example/wordpress-saml"]
+	path = example/wordpress-saml
+	url = https://github.com/onelogin/wordpress-saml.git
