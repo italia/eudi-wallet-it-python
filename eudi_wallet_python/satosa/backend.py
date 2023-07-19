@@ -1,9 +1,6 @@
-import json
 import logging
 import base64
-import urllib
 
-from six import text_type
 from urllib.parse import urlencode, quote_plus
 from satosa.exception import SATOSAAuthenticationError
 from satosa.response import Response
@@ -74,58 +71,6 @@ class OpenIDVP4SAMLBackend(BackendModule):
             status=200,
             content="text/json; charset=utf8"
         )
-
-    def _metadata_endpoint(self, context):
-        """
-        Endpoint for retrieving the backend metadata
-        :type context: satosa.context.Context
-        :rtype: satosa.response.Response
-
-        :param context: The current context
-        :return: response with metadata
-        """
-        logger.debug("Sending metadata response")
-        self.sp.config
-
-        """metadata = entity_descriptor(conf)
-        
-        # metadata signature
-        secc = security_context(conf)
-        #
-        sign_dig_algs = self.get_kwargs_sign_dig_algs()
-        eid, xmldoc = sign_entity_descriptor(
-            metadata, None, secc, **sign_dig_algs)
-
-        valid_instance(eid)"""
-        return Response(
-            text_type("").encode("utf-8"), content="text/xml; charset=utf8"
-        )
-
-    def get_kwargs_sign_dig_algs(self):
-        kwargs = {}
-        # backend support for selectable sign/digest algs
-        alg_dict = dict(signing_algorithm="sign_alg",
-                        digest_algorithm="digest_alg")
-        for alg in alg_dict:
-            selected_alg = self.config["sp_config"]["service"]["sp"].get(alg)
-            if not selected_alg:
-                continue
-            kwargs[alg_dict[alg]] = selected_alg
-        return kwargs
-
-    def check_blacklist(self, context, entity_id):
-        # If IDP blacklisting is enabled and the selected IDP is blacklisted,
-        # stop here
-        if self.idp_blacklist_file:
-            with open(self.idp_blacklist_file) as blacklist_file:
-                blacklist_array = json.load(blacklist_file)["blacklist"]
-                if entity_id in blacklist_array:
-                    logger.debug(
-                        "IdP with EntityID {} is blacklisted".format(entity_id)
-                    )
-                    raise SATOSAAuthenticationError(
-                        context.state, "Selected IdP is blacklisted for this backend"
-                    )
 
     def authn_request(self, context, entity_id):
         """
