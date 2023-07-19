@@ -8,6 +8,14 @@ config:
   request_enpoint: '/<name>/request_uri'
   entity_configuration_enpoint: '/<name>/entity_configuration'
 
+  qr_code_settings:
+    base_size:
+      w: 100
+      h: 100
+    color: '#2B4375'
+    logo_path: 
+    use_zlib: true
+
   #This is the configuration for the relaying party metadata
   wallet_relay_party:
     application_type: web

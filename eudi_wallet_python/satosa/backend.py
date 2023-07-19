@@ -25,6 +25,8 @@ class OpenID4VPBackend(BackendModule):
         self.client_id = self.config['wallet_relay_party']['client_id']
         self.complete_redirect_url = self.config['wallet_relay_party']['redirect_uris'][0]
         self.complete_request_url = self.config['wallet_relay_party']['request_uris'][0]
+        
+        self.qr_settings = self.config['qr_code_settings']
 
     def register_endpoints(self):
         """

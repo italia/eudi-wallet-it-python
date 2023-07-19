@@ -3,7 +3,7 @@ import qrcode
 from PIL import Image
 
 class QRCode():
-    def __init__(self, data: str, base_size: dict = {"w": 100, "h": 100}, color: str = '#2B4375', logo_path: str = None, use_zlib: bool = True) -> None:
+    def __init__(self, data: str, base_size: dict, color: str, logo_path: str, use_zlib: bool) -> None:
         compressed_request_data = None
         
         if use_zlib:
