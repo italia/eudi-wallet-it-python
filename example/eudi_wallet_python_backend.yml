@@ -6,6 +6,7 @@ config:
   qrCode_enpoint: '/<name>/show_qrcode'
   redirect_endpoint: '/<name>/redirect_uri'
   request_enpoint: '/<name>/request_uri'
+  entity_configuration_enpoint: '/<name>/entity_configuration'
 
   #This is the configuration for the relaying party metadata
   wallet_relay_party:
