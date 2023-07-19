@@ -1,8 +1,10 @@
 import json
 import logging
 import base64
+import urllib
 
 from six import text_type
+from urllib.parse import urlencode, quote_plus
 from satosa.exception import SATOSAAuthenticationError
 from satosa.response import Response
 from satosa.backends.base import BackendModule
@@ -22,6 +24,10 @@ class OpenIDVP4SAMLBackend(BackendModule):
         self.qrCode_url = self.config['qrCode_enpoint']
         self.redirect_url = self.config['redirect_endpoint']
         self.request_url = self.config['request_enpoint']
+        
+        self.client_id = self.config['wallet_relay_party']['client_id']
+        self.complete_redirect_url = self.config['wallet_relay_party']['redirect_uris'][0]
+        self.complete_request_url = self.config['wallet_relay_party']['request_uris'][0]
 
     def register_endpoints(self):
         """
@@ -42,9 +48,12 @@ class OpenIDVP4SAMLBackend(BackendModule):
         return Response()
 
     def qrCode_endpoint(self, context, *args):
+        payload = {'client_id': self.client_id, 'request_uri': self.complete_request_url}
+        query = urlencode(payload, quote_via=quote_plus)
+        
         return Response(
             text_type(
-                base64.b64encode(bytes('eudiw://authorize?client_id=https://verifier.example.org&request_uri=https://verifier.example.org/request_uri', 'UTF-8'))
+                base64.b64encode(bytes(f'eudiw://authorize?{query}', 'UTF-8'))
             ).encode("utf-8"), content="text/xml; charset=utf8"
         )
     
