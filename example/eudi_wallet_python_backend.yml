@@ -1,4 +1,4 @@
-module: backends.openidvp4.OpenIDVP4Backend
+module: backends.openid4vp.OpenID4VPBackend
 name: OpenIDVP4
 
 config:

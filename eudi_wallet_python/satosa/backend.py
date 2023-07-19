@@ -9,9 +9,9 @@ from satosa.backends.base import BackendModule
 logger = logging.getLogger(__name__)
 
 
-class OpenIDVP4Backend(BackendModule):
+class OpenID4VPBackend(BackendModule):
     """
-    A backend module (acting as a OpenIDVP4 SP).
+    A backend module (acting as a OpenID4VP SP).
     """
 
     def __init__(self, *args, **kwargs):
