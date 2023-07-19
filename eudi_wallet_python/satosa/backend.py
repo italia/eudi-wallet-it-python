@@ -18,8 +18,10 @@ class OpenID4VPBackend(BackendModule):
     A backend module (acting as a OpenID4VP SP).
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, auth_callback_func, internal_attributes, config, base_url, name):
+        super().__init__(auth_callback_func, internal_attributes, base_url, name)
+
+        self.config = config
 
         self.entity_configuration_url = self.config['entity_configuration_enpoint']
         self.qrCode_url = self.config['qrCode_enpoint']
