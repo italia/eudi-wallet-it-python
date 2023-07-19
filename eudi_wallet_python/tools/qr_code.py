@@ -22,7 +22,7 @@ class QRCode():
         ).convert('RGB')
 
         #Add logo if present
-        if logo_path is not None:
+        if logo_path:
             logo = Image.open(logo_path)
             wpercent = (base_size["w"]/float(logo.size[0]))
             hsize = int((float(logo.size[1])*float(wpercent)))

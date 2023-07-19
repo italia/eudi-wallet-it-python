@@ -59,7 +59,7 @@ class OpenIDVP4SAMLBackend(BackendModule):
             ).encode("utf-8"), content="text/json; charset=utf8"
         )
     
-    def request_enpoint(self, context, *args):
+    def request_endpoint(self, context, *args):
         return Response(
             text_type(
                 """
