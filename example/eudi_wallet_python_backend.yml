@@ -1,4 +1,4 @@
-module: backends.openidvp4saml2.OpenIDVP4SAMLBackend
+module: backends.openidvp4.OpenIDVP4Backend
 name: OpenIDVP4
 
 config:
