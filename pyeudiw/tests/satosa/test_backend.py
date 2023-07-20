@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from eudi_wallet_python.satosa.backend import OpenID4VPBackend
+from pyeudiw.satosa.backend import OpenID4VPBackend
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -45,7 +45,7 @@ CONFIG = {
 
 RESPONSE_CODE = "CODE"
 
-INTERNAL_ATTRIBUTES = {
+INTERNAL_ATTRIBUTES: dict = {
     'attributes': {}
 }
 

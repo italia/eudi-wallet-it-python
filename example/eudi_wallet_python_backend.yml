@@ -1,4 +1,4 @@
-module: backends.openid4vp.OpenID4VPBackend
+module: pyeudiw.satosa.backends.openid4vp.OpenID4VPBackend
 name: OpenIDVP4
 
 config:

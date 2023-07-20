@@ -7,7 +7,7 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-_pkg_name = 'eudi_wallet_python'
+_pkg_name = 'pyeudiw'
 
 with open(f'{_pkg_name}/__init__.py', 'r') as fd:
     VERSION = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE)

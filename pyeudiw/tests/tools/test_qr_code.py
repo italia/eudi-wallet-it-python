@@ -1,4 +1,4 @@
-from eudi_wallet_python.tools.qr_code import QRCode
+from pyeudiw.tools.qr_code import QRCode
 
 
 def test_qr_code_init():

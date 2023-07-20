@@ -1,6 +1,6 @@
 import pytest
 
-from eudi_wallet_python.tools.jwk import JWK, KeyType
+from pyeudiw.tools.jwk import JWK, KeyType
 
 
 @pytest.mark.parametrize("key, key_type, hash_func",
