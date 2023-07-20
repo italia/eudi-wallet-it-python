@@ -160,5 +160,8 @@ cython_debug/
 #.idea/
 
 *.db
-
 .DS_Store
+
+*/wordpress-plugin
+*/wordpress-theme
+*/__MACOSX

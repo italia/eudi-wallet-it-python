@@ -46,7 +46,8 @@ services:
       WORDPRESS_DB_USER: '${MYSQL_USER}'
       WORDPRESS_DB_PASSWORD: '${MYSQL_PASSWORD}'
     volumes:
-      - ./wordpress-saml/onelogin-saml-sso/:/var/www/html/wp-content/plugins/onelogin-saml-sso/
+      - ./wordpress-plugin/onelogin-saml-sso/:/var/www/html/wp-content/plugins/onelogin-saml-sso/
+      - ./wordpress-theme/italiawp2/:/var/www/html/wp-content/themes/italiawp2/
     networks:
       - wordpress-network
       - testSPIDnetword
