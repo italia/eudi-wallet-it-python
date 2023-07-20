@@ -41,6 +41,7 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
-        "qrcode>=7.4.2,<7.5"
+        "qrcode>=7.4.2,<7.5",
+        "Pillow>=10.0.0,<10.1",
     ],
 )
