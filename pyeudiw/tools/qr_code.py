@@ -6,7 +6,7 @@ from PIL import Image
 class QRCode:
     def __init__(self, data: str, size: int, color: str, logo_path: str, use_zlib: bool) -> None:
         compressed_request_data = None
-        
+
         if use_zlib:
             compressed_request_data = zlib.compress(data.encode(), 9)
 
@@ -23,16 +23,17 @@ class QRCode:
             back_color="white"
         ).convert('RGB')
 
-        #Add logo if present
+        # Add logo if present
         if logo_path:
             logo = Image.open(logo_path)
             wpercent = (size / float(logo.size[0]))
             hsize = int((float(logo.size[1]) * float(wpercent)))
             logo = logo.resize((size["w"], hsize), Image.ANTIALIAS)
-            
-            pos = ((self.qr_code_img.size[0] - logo.size[0]) // 2, (self.qr_code_img.size[1] - logo.size[1]) // 2)
-            
+
+            pos = ((self.qr_code_img.size[0] - logo.size[0]) //
+                   2, (self.qr_code_img.size[1] - logo.size[1]) // 2)
+
             self.qr_code_img.paste(logo, pos)
-            
+
     def save(self, path):
         self.qr_code_img.save(path)

@@ -41,4 +41,3 @@ def test_export_public_pem():
     jwk_public_pem = jwk.export_public_pem()
     assert jwk_public_pem
     assert "BEGIN PUBLIC KEY" in jwk_public_pem
-

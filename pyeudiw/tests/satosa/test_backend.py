@@ -53,7 +53,8 @@ INTERNAL_ATTRIBUTES: dict = {
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
-        self.backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
+        self.backend = OpenID4VPBackend(
+            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
     def test_backend_init(self):
         assert self.backend.name == "name"
@@ -64,7 +65,11 @@ class TestOpenID4VPBackend:
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 4
         print(url_map)
-        assert url_map[0][0] == '^' + CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
-        assert url_map[1][0] == '^' + CONFIG['qrCode_endpoint'].lstrip('/') + '$'
-        assert url_map[2][0] == '^' + CONFIG['redirect_endpoint'].lstrip('/') + '$'
-        assert url_map[3][0] == '^' + CONFIG['request_endpoint'].lstrip('/') + '$'
+        assert url_map[0][0] == '^' + \
+            CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
+        assert url_map[1][0] == '^' + \
+            CONFIG['qrCode_endpoint'].lstrip('/') + '$'
+        assert url_map[2][0] == '^' + \
+            CONFIG['redirect_endpoint'].lstrip('/') + '$'
+        assert url_map[3][0] == '^' + \
+            CONFIG['request_endpoint'].lstrip('/') + '$'

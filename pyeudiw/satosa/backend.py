@@ -1,8 +1,8 @@
+import json
 import logging
 import base64
 
 from urllib.parse import urlencode, quote_plus
-from satosa.exception import SATOSAAuthenticationError
 from satosa.response import Response
 from satosa.backends.base import BackendModule
 
@@ -22,11 +22,11 @@ class OpenID4VPBackend(BackendModule):
         self.redirect_url = config['redirect_endpoint']
         self.request_url = config['request_endpoint']
         self.error_page = config['error_page']
-        
+
         self.client_id = config['wallet_relay_party']['client_id']
         self.complete_redirect_url = config['wallet_relay_party']['redirect_uris'][0]
         self.complete_request_url = config['wallet_relay_party']['request_uris'][0]
-        
+
         self.qr_settings = config['qr_code_settings']
 
     def register_endpoints(self):
@@ -38,27 +38,33 @@ class OpenID4VPBackend(BackendModule):
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
         url_map = []
-        url_map.append((f"^{self.entity_configuration_url.lstrip('/')}$", self.entity_configuration))
-        url_map.append((f"^{self.qrCode_url.lstrip('/')}$", self.qrCode_endpoint))
-        url_map.append((f"^{self.redirect_url.lstrip('/')}$", self.redirect_endpoint))
-        url_map.append((f"^{self.request_url.lstrip('/')}$", self.request_endpoint))
+        url_map.append(
+            (f"^{self.entity_configuration_url.lstrip('/')}$", self.entity_configuration))
+        url_map.append(
+            (f"^{self.qrCode_url.lstrip('/')}$", self.qrCode_endpoint))
+        url_map.append(
+            (f"^{self.redirect_url.lstrip('/')}$", self.redirect_endpoint))
+        url_map.append(
+            (f"^{self.request_url.lstrip('/')}$", self.request_endpoint))
         return url_map
-    
+
     def entity_configuration(self, context, *args):
         return Response(
             status="200 OK"
         )
 
     def qrCode_endpoint(self, context, *args):
-        payload = {'client_id': self.client_id, 'request_uri': self.complete_request_url}
+        payload = {'client_id': self.client_id,
+                   'request_uri': self.complete_request_url}
         query = urlencode(payload, quote_via=quote_plus)
-        response = base64.b64encode(bytes(f'eudiw://authorize?{query}', 'UTF-8'))
-        
+        response = base64.b64encode(
+            bytes(f'eudiw://authorize?{query}', 'UTF-8'))
+
         return Response(
             response,
             status="200 OK"
         )
-    
+
     def redirect_endpoint(self, context, *args):
         response = '{"request": "ewogICJ0eXAiOiAiZHBvcCtqd3QiLAogICJhbGciOiAiRVMyNTYiLAogICJqd2siOiB7CiAgICAia3R5IjogIkVDIiwKICAgICJ4IjogImw4dEZyaHgtMzR0VjNoUklDUkRZOXpDa0RscEJoRjQyVVFVZldWQVdCRnMiLAogICAgInkiOiAiOVZFNGpmX09rX282NHpiVFRsY3VOSmFqSG10NnY5VERWclUwQ2R2R1JEQSIsCiAgICAiY3J2IjogIlAtMjU2IgogIH0KfQ.ewogICJqdGkiOiAiZjQ3Yzk2YTEtZjkyOC00NzY4LWFhMzAtZWYzMmRjNzhhYTY5IiwKICAiaHRtIjogIkdFVCIsCiAgImh0dSI6ICJodHRwczovL3ZlcmlmaWVyLmV4YW1wbGUub3JnL3JlcXVlc3RfdXJpIiwKICAiaWF0IjogMTU2MjI2MjYxNiwKICAiYXRoIjogImZVSHlPMnIyWjNEWjUzRXNOcldCYjB4V1hvYU55NTlJaUtDQXFrc21RRW8iCn0"}'
         return Response(
@@ -66,7 +72,7 @@ class OpenID4VPBackend(BackendModule):
             status="200 OK",
             content="text/json; charset=utf8"
         )
-    
+
     def request_endpoint(self, context, *args):
         response = '{"response": "ewogICJhbGciOiAiRVMyNTYiLAogICJ0eXAiOiAiSldUIiwKICAia2lkIjogImUwYmJmMmYxLThjM2EtNGVhYi1hOGFjLTJlOGYzNGRiOGE0NyIKfQ.ewogICJpc3MiOiAiaHR0cHM6Ly93YWxsZXQtcHJvdmlkZXIuZXhhbXBsZS5vcmcvaW5zdGFuY2UvdmJlWEprc000NXhwaHRBTm5DaUc2bUN5dVU0amZHTnpvcEd1S3ZvZ2c5YyIsCiAgImp0aSI6ICIzOTc4MzQ0Zi04NTk2LTRjM2EtYTk3OC04ZmNhYmEzOTAzYzUiLAogICJhdWQiOiAiaHR0cHM6Ly92ZXJpZmllci5leGFtcGxlLm9yZy9jYWxsYmFjayIsCiAgImlhdCI6IDE1NDE0OTM3MjQsCiAgImV4cCI6IDE1NzMwMjk3MjMsCiAgIm5vbmNlIjogIm4tMFM2X1d6QTJNaiIsCiAgInZwIjogIjxTRC1KV1Q-fjxEaXNjbG9zdXJlIDE-fjxEaXNjbG9zdXJlIDI-fi4uLn48RGlzY2xvc3VyZSBOPiIKfQ"}'
         return Response(
@@ -101,11 +107,10 @@ class OpenID4VPBackend(BackendModule):
         Todo: Jinja2 template loader and rendering :)
         """
         logger.error(f"Failed to parse authn request: {message} {err}")
-        result = self.error_page.render(
+        result = json.dumps(
             {"message": message, "troubleshoot": troubleshoot}
         )
-        return Response(result, content="text/html; charset=utf8", status="403 Forbidden")
-
+        return Response(result, content="text/json; charset=utf8", status="403 Forbidden")
 
     def authn_response(self, context, binding):
         """
@@ -118,4 +123,3 @@ class OpenID4VPBackend(BackendModule):
         :param binding: The saml binding type
         :return: response
         """
-        pass

@@ -12,5 +12,3 @@ def test_qr_code_init():
 
     assert qr_code.qr_code_img.size == (size * 33, size * 33)
     assert qr_code.qr_code_img.getpixel((0, 0)) == (255, 255, 255)
-
-
