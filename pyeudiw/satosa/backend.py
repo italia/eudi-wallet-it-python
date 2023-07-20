@@ -6,6 +6,9 @@ from urllib.parse import urlencode, quote_plus
 from satosa.response import Response
 from satosa.backends.base import BackendModule
 
+from pyeudiw.tools.jwk import JWK
+from pyeudiw.tools.jwt import JWSHelper
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,17 +69,76 @@ class OpenID4VPBackend(BackendModule):
         )
 
     def redirect_endpoint(self, context, *args):
-        response = '{"request": "ewogICJ0eXAiOiAiZHBvcCtqd3QiLAogICJhbGciOiAiRVMyNTYiLAogICJqd2siOiB7CiAgICAia3R5IjogIkVDIiwKICAgICJ4IjogImw4dEZyaHgtMzR0VjNoUklDUkRZOXpDa0RscEJoRjQyVVFVZldWQVdCRnMiLAogICAgInkiOiAiOVZFNGpmX09rX282NHpiVFRsY3VOSmFqSG10NnY5VERWclUwQ2R2R1JEQSIsCiAgICAiY3J2IjogIlAtMjU2IgogIH0KfQ.ewogICJqdGkiOiAiZjQ3Yzk2YTEtZjkyOC00NzY4LWFhMzAtZWYzMmRjNzhhYTY5IiwKICAiaHRtIjogIkdFVCIsCiAgImh0dSI6ICJodHRwczovL3ZlcmlmaWVyLmV4YW1wbGUub3JnL3JlcXVlc3RfdXJpIiwKICAiaWF0IjogMTU2MjI2MjYxNiwKICAiYXRoIjogImZVSHlPMnIyWjNEWjUzRXNOcldCYjB4V1hvYU55NTlJaUtDQXFrc21RRW8iCn0"}'
+        jwk = JWK({
+            "typ": "dpop+jwt",
+            "alg": "ES256",
+            "jwk": {
+                "kty": "EC",
+                "x": "l8tFrhx-34tV3hRICRDY9zCkDlpBhF42UQUfWVAWBFs",
+                "y": "9VE4jf_Ok_o64zbTTlcuNJajHmt6v9TDVrU0CdvGRDA",
+                "crv": "P-256"
+            }
+        })
+
+        helper = JWSHelper(jwk)
+        jwt = helper.sign({
+            "jti": "f47c96a1-f928-4768-aa30-ef32dc78aa69",
+            "htm": "GET",
+            "htu": "https://verifier.example.org/request_uri",
+            "iat": 1562262616,
+            "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
+        },
+            "RS256",
+        )
+
+        response = {"request": jwt}
+
         return Response(
-            response,
+            json.dumps(response),
             status="200 OK",
             content="text/json; charset=utf8"
         )
 
     def request_endpoint(self, context, *args):
-        response = '{"response": "ewogICJhbGciOiAiRVMyNTYiLAogICJ0eXAiOiAiSldUIiwKICAia2lkIjogImUwYmJmMmYxLThjM2EtNGVhYi1hOGFjLTJlOGYzNGRiOGE0NyIKfQ.ewogICJpc3MiOiAiaHR0cHM6Ly93YWxsZXQtcHJvdmlkZXIuZXhhbXBsZS5vcmcvaW5zdGFuY2UvdmJlWEprc000NXhwaHRBTm5DaUc2bUN5dVU0amZHTnpvcEd1S3ZvZ2c5YyIsCiAgImp0aSI6ICIzOTc4MzQ0Zi04NTk2LTRjM2EtYTk3OC04ZmNhYmEzOTAzYzUiLAogICJhdWQiOiAiaHR0cHM6Ly92ZXJpZmllci5leGFtcGxlLm9yZy9jYWxsYmFjayIsCiAgImlhdCI6IDE1NDE0OTM3MjQsCiAgImV4cCI6IDE1NzMwMjk3MjMsCiAgIm5vbmNlIjogIm4tMFM2X1d6QTJNaiIsCiAgInZwIjogIjxTRC1KV1Q-fjxEaXNjbG9zdXJlIDE-fjxEaXNjbG9zdXJlIDI-fi4uLn48RGlzY2xvc3VyZSBOPiIKfQ"}'
+        jwk = JWK({
+            "typ": "dpop+jwt",
+            "alg": "ES256",
+            "jwk": {
+                "kty": "EC",
+                "x": "l8tFrhx-34tV3hRICRDY9zCkDlpBhF42UQUfWVAWBFs",
+                "y": "9VE4jf_Ok_o64zbTTlcuNJajHmt6v9TDVrU0CdvGRDA",
+                "crv": "P-256"
+            }
+        })
+
+        helper = JWSHelper(jwk)
+        jwt = helper.sign({
+            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
+            "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "eu.europa.ec.eudiw.pid.it.1:unique_id",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    },
+                    {
+                        "id": "eu.europa.ec.eudiw.pid.it.1:given_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[1]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        },
+            "RS256",
+        )
+
+        response = {"response": jwt}
+
         return Response(
-            response,
+            json.dumps(response),
             status="200 OK",
             content="text/json; charset=utf8"
         )
