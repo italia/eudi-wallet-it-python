@@ -54,7 +54,7 @@ class OpenID4VPBackend(BackendModule):
 
     def entity_configuration(self, context, *args):
         jwk = JWK()
-        
+
         data = {
             "exp": 1649590602,
             "iat": 1649417862,
@@ -67,13 +67,13 @@ class OpenID4VPBackend(BackendModule):
                 "wallet_relying_party": self.config['wallet_relying_party']
             }
         }
-        
+
         jwshelper = JWSHelper(jwk)
-        
+
         return Response(
             jwshelper.sign(
-                plain_dict = data,
-                protected = {
+                plain_dict=data,
+                protected={
                     "alg": "RS256",
                     "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
                     "typ": "entity-statement+jwt"

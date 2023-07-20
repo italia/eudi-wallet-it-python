@@ -89,10 +89,12 @@ class TestOpenID4VPBackend:
         assert pre_request_endpoint.status == "200 OK"
         assert pre_request_endpoint.message
 
-        decoded = base64.b64decode(pre_request_endpoint.message).decode("utf-8")
+        decoded = base64.b64decode(
+            pre_request_endpoint.message).decode("utf-8")
         assert decoded.startswith("eudiw://authorize?")
 
-        unquoted = urllib.parse.unquote(decoded, encoding='utf-8', errors='replace')
+        unquoted = urllib.parse.unquote(
+            decoded, encoding='utf-8', errors='replace')
         parsed = urllib.parse.urlparse(unquoted)
 
         assert parsed.scheme == "eudiw"

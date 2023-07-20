@@ -40,9 +40,13 @@ def test_qr_code_init_with_logo():
     with tempfile.NamedTemporaryFile(suffix='.png', delete=True) as temp_file:
         temp_file.write(create_in_memory_image(temp_file.name).read())
 
-        temp_file.file.seek(0)  # change the position to the beginning of the file
-        qr_code = QRCode(data, size, color, temp_file.name, use_zlib).qr_code_img
+        # change the position to the beginning of the file
+        temp_file.file.seek(0)
+        qr_code = QRCode(data, size, color, temp_file.name,
+                         use_zlib).qr_code_img
 
         assert qr_code.getpixel((0, 0)) == (255, 255, 255)
-        assert qr_code.getpixel((qr_code.size[0] - 1, qr_code.size[1] - 1)) == (255, 255, 255)
-        assert qr_code.getpixel((qr_code.size[0] // 2, qr_code.size[1] // 2)) == (255, 255, 0)
+        assert qr_code.getpixel(
+            (qr_code.size[0] - 1, qr_code.size[1] - 1)) == (255, 255, 255)
+        assert qr_code.getpixel(
+            (qr_code.size[0] // 2, qr_code.size[1] // 2)) == (255, 255, 0)
