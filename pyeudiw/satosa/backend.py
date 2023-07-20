@@ -18,14 +18,14 @@ class OpenID4VPBackend(BackendModule):
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
         self.entity_configuration_url = config['entity_configuration_endpoint']
-        self.qrCode_url = config['qrCode_endpoint']
+        self.pre_request_url = config['pre_request_endpoint']
         self.redirect_url = config['redirect_endpoint']
         self.request_url = config['request_endpoint']
-        self.error_page = config['error_page']
+        self.error_page = config['error_url']
 
-        self.client_id = config['wallet_relay_party']['client_id']
-        self.complete_redirect_url = config['wallet_relay_party']['redirect_uris'][0]
-        self.complete_request_url = config['wallet_relay_party']['request_uris'][0]
+        self.client_id = config['wallet_relying_party']['client_id']
+        self.complete_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
+        self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
 
         self.qr_settings = config['qr_code_settings']
 
@@ -41,7 +41,7 @@ class OpenID4VPBackend(BackendModule):
         url_map.append(
             (f"^{self.entity_configuration_url.lstrip('/')}$", self.entity_configuration))
         url_map.append(
-            (f"^{self.qrCode_url.lstrip('/')}$", self.qrCode_endpoint))
+            (f"^{self.pre_request_url.lstrip('/')}$", self.pre_request_endpoint))
         url_map.append(
             (f"^{self.redirect_url.lstrip('/')}$", self.redirect_endpoint))
         url_map.append(
@@ -53,7 +53,7 @@ class OpenID4VPBackend(BackendModule):
             status="200 OK"
         )
 
-    def qrCode_endpoint(self, context, *args):
+    def pre_request_endpoint(self, context, *args):
         payload = {'client_id': self.client_id,
                    'request_uri': self.complete_request_url}
         query = urlencode(payload, quote_via=quote_plus)

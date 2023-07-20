@@ -1,12 +1,14 @@
-module: pyeudiw.satosa.backends.openid4vp.OpenID4VPBackend
+module: pyeudiw.satosa.backend.OpenID4VPBackend
 name: OpenIDVP4
 
 config:
   #Those are the endpoints listed on eudi wallet backend
-  qrCode_endpoint: '/<name>/show_qrcode'
+  pre_request_endpoint: '/<name>/show_qrcode'
   redirect_endpoint: '/<name>/redirect_uri'
   request_endpoint: '/<name>/request_uri'
   entity_configuration_endpoint: '/<name>/entity_configuration'
+
+  error_url: "https://localhost:9999/error_page.html"
 
   qr_code_settings:
     size: 100
@@ -15,7 +17,7 @@ config:
     use_zlib: true
 
   #This is the configuration for the relaying party metadata
-  wallet_relay_party:
+  wallet_relying_party:
     application_type: web
 
     #The following section contains all the algorithms supported for the encryption of response

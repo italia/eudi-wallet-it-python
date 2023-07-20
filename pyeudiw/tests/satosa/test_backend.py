@@ -23,7 +23,7 @@ CONFIG = {
     'authz_page': AUTHZ_PAGE,
     'client_config': {'client_id': CLIENT_ID},
 
-    'qrCode_endpoint': '/<name>/show_qrcode',
+    'pre_request_endpoint': '/<name>/show_qrcode',
     'redirect_endpoint': '/<name>/redirect_uri',
     'request_endpoint': '/<name>/request_uri',
     'entity_configuration_endpoint': '/<name>/entity_configuration',
@@ -68,7 +68,7 @@ class TestOpenID4VPBackend:
         assert url_map[0][0] == '^' + \
             CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
         assert url_map[1][0] == '^' + \
-            CONFIG['qrCode_endpoint'].lstrip('/') + '$'
+            CONFIG['pre_request_endpoint'].lstrip('/') + '$'
         assert url_map[2][0] == '^' + \
             CONFIG['redirect_endpoint'].lstrip('/') + '$'
         assert url_map[3][0] == '^' + \
