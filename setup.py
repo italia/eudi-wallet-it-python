@@ -40,6 +40,7 @@ setup(
         ]
     },
     install_requires=[
-        "cryptojwt>=1.8.2"    
+        "cryptojwt>=1.8.2,<1.9",
+        "qrcode>=7.4.2,<7.5"
     ],
 )
