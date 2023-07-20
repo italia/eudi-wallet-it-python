@@ -113,7 +113,6 @@ class OpenID4VPBackend(BackendModule):
         :type context: satosa.context.Context
         :type binding: str
         :rtype: satosa.response.Response
-
         :param context: The current context
         :param binding: The saml binding type
         :return: response
