@@ -1,11 +1,9 @@
-import os
 import tempfile
 from io import BytesIO
-from unittest.mock import patch
 
 from PIL import Image
 
-from eudi_wallet_python.tools.qr_code import QRCode
+from pyeudiw.tools.qr_code import QRCode
 
 
 def test_qr_code_init():

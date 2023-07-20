@@ -24,7 +24,7 @@ class OpenID4VPBackend(BackendModule):
         self.pre_request_url = config['pre_request_endpoint']
         self.redirect_url = config['redirect_endpoint']
         self.request_url = config['request_endpoint']
-        self.error_page = config['error_url']
+        self.error_url = config['error_url']
 
         self.client_id = config['wallet_relying_party']['client_id']
         self.complete_redirect_url = config['wallet_relying_party']['redirect_uris'][0]

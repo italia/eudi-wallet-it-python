@@ -27,9 +27,9 @@ CONFIG = {
     'redirect_endpoint': '/<name>/redirect_uri',
     'request_endpoint': '/<name>/request_uri',
     'entity_configuration_endpoint': '/<name>/entity_configuration',
-    'error_page': '/<name>/error',
+    'error_url': '/<name>/error',
 
-    'wallet_relay_party': {
+    'wallet_relying_party': {
         'client_id': 'client_id',
         'redirect_uris': ['https://example.com/redirect_uri'],
         'request_uris': ['https://example.com/request_uri'],
