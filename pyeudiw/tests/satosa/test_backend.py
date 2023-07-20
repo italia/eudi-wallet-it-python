@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from eudi_wallet_python.satosa.backend import OpenID4VPBackend
+from pyeudiw.satosa.backend import OpenID4VPBackend
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -23,7 +23,7 @@ CONFIG = {
     'authz_page': AUTHZ_PAGE,
     'client_config': {'client_id': CLIENT_ID},
 
-    'qrCode_endpoint': '/<name>/show_qrcode',
+    'pre_request_endpoint': '/<name>/show_qrcode',
     'redirect_endpoint': '/<name>/redirect_uri',
     'request_endpoint': '/<name>/request_uri',
     'entity_configuration_endpoint': '/<name>/entity_configuration',
@@ -45,7 +45,7 @@ CONFIG = {
 
 RESPONSE_CODE = "CODE"
 
-INTERNAL_ATTRIBUTES = {
+INTERNAL_ATTRIBUTES: dict = {
     'attributes': {}
 }
 
@@ -53,7 +53,8 @@ INTERNAL_ATTRIBUTES = {
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
-        self.backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
+        self.backend = OpenID4VPBackend(
+            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
     def test_backend_init(self):
         assert self.backend.name == "name"
@@ -64,7 +65,11 @@ class TestOpenID4VPBackend:
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 4
         print(url_map)
-        assert url_map[0][0] == '^' + CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
-        assert url_map[1][0] == '^' + CONFIG['qrCode_endpoint'].lstrip('/') + '$'
-        assert url_map[2][0] == '^' + CONFIG['redirect_endpoint'].lstrip('/') + '$'
-        assert url_map[3][0] == '^' + CONFIG['request_endpoint'].lstrip('/') + '$'
+        assert url_map[0][0] == '^' + \
+            CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
+        assert url_map[1][0] == '^' + \
+            CONFIG['pre_request_endpoint'].lstrip('/') + '$'
+        assert url_map[2][0] == '^' + \
+            CONFIG['redirect_endpoint'].lstrip('/') + '$'
+        assert url_map[3][0] == '^' + \
+            CONFIG['request_endpoint'].lstrip('/') + '$'

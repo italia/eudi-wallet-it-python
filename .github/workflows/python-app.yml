@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: eudi_wallet_python
+name: pyeudiw
 
 on:
   push:
@@ -39,15 +39,16 @@ jobs:
         if [ -f requirements-customizations.txt ]; then pip install -r requirements-customizations.txt; fi
         python -m pip install -U setuptools
         python -m pip install -e .
+        python -m pip install satosa
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 eudi_wallet_python --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 pyeudiw --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 eudi_wallet_python --count --exit-zero --statistics  --max-line-length 160
+        flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
     - name: Tests
       run: |
         pytest --cov
     - name: Bandit Security Scan
       run: |
-        bandit -r -x eudi_wallet_python/tests* eudi_wallet_python/*
+        bandit -r -x pyeudiw/tests* pyeudiw/*

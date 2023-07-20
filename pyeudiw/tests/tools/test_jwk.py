@@ -1,6 +1,6 @@
 import pytest
 
-from eudi_wallet_python.tools.jwk import JWK, KeyType
+from pyeudiw.tools.jwk import JWK, KeyType
 
 
 @pytest.mark.parametrize("key, key_type, hash_func",
@@ -41,4 +41,3 @@ def test_export_public_pem():
     jwk_public_pem = jwk.export_public_pem()
     assert jwk_public_pem
     assert "BEGIN PUBLIC KEY" in jwk_public_pem
-

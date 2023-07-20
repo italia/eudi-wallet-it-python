@@ -1,7 +1,7 @@
 import pytest
 
-from eudi_wallet_python.tools.jwk import JWK, KeyType
-from eudi_wallet_python.tools.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.tools.jwk import JWK, KeyType
+from pyeudiw.tools.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
 
 JWKs_EC = [
     (JWK(keyType=KeyType.EC), {"key": "value"}),
