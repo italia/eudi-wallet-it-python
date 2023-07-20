@@ -3,15 +3,13 @@ name: OpenIDVP4
 
 config:
   #Those are the endpoints listed on eudi wallet backend
-  qrCode_enpoint: '/<name>/show_qrcode'
+  qrCode_endpoint: '/<name>/show_qrcode'
   redirect_endpoint: '/<name>/redirect_uri'
-  request_enpoint: '/<name>/request_uri'
-  entity_configuration_enpoint: '/<name>/entity_configuration'
+  request_endpoint: '/<name>/request_uri'
+  entity_configuration_endpoint: '/<name>/entity_configuration'
 
   qr_code_settings:
-    base_size:
-      w: 100
-      h: 100
+    size: 100
     color: '#2B4375'
     logo_path: 
     use_zlib: true
