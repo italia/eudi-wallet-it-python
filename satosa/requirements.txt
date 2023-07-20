@@ -1,5 +1,0 @@
-satosa >= 8.2.0
-pymongo
-satosa_oidcop >= 2.0.0
-uwsgi
-jinja2
