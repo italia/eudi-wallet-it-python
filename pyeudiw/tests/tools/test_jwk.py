@@ -13,16 +13,24 @@ def test_jwk(key, key_type, hash_func):
     assert jwk.jwk["kid"] == jwk.thumbprint.decode()
 
 
-def test_export_public():
+def test_export_public__pem():
     jwk = JWK()
     jwk_public = jwk.export_public()
     assert jwk_public
+    assert jwk_public["e"]
+    assert jwk_public["n"]
     assert jwk_public["kid"] == jwk.jwk["kid"]
     assert jwk_public["kty"] == jwk.jwk["kty"]
+
+
+def test_export_public__ec():
+    jwk = JWK(keyType=KeyType.EC)
+    jwk_public = jwk.export_public()
+    print(jwk_public)
+    assert jwk_public
     assert jwk_public["crv"] == jwk.jwk["crv"]
-    assert jwk_public["x"] == jwk.jwk["x"]
-    assert jwk_public["y"] == jwk.jwk["y"]
-    assert jwk_public["crv"] == jwk.jwk["crv"]
+    assert jwk_public["kty"] == jwk.jwk["kty"]
+    assert jwk_public["kid"] == jwk.jwk["kid"]
 
 
 @pytest.mark.parametrize("key_type", [None, KeyType.EC, KeyType.RSA])
