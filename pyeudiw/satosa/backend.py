@@ -31,6 +31,7 @@ class OpenID4VPBackend(BackendModule):
         self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
 
         self.qr_settings = config['qr_code_settings']
+        self.config = config
 
     def register_endpoints(self):
         """
@@ -52,7 +53,32 @@ class OpenID4VPBackend(BackendModule):
         return url_map
 
     def entity_configuration(self, context, *args):
+        jwk = JWK()
+        
+        data = {
+            "exp": 1649590602,
+            "iat": 1649417862,
+            "iss": "https://rp.example.it",
+            "sub": "https://rp.example.it",
+            "jwks": {
+                "keys": [jwk.export_public()]
+            },
+            "metadata": {
+                "wallet_relying_party": self.config['wallet_relying_party']
+            }
+        }
+        
+        jwshelper = JWSHelper(jwk)
+        
         return Response(
+            jwshelper.sign(
+                plain_dict = data,
+                protected = {
+                    "alg": "RS256",
+                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
+                    "typ": "entity-statement+jwt"
+                }
+            ),
             status="200 OK"
         )
 
@@ -65,20 +91,12 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             response,
-            status="200 OK"
+            status="200 OK",
+            content="text/json; charset=utf8"
         )
 
     def redirect_endpoint(self, context, *args):
-        jwk = JWK({
-            "typ": "dpop+jwt",
-            "alg": "ES256",
-            "jwk": {
-                "kty": "EC",
-                "x": "l8tFrhx-34tV3hRICRDY9zCkDlpBhF42UQUfWVAWBFs",
-                "y": "9VE4jf_Ok_o64zbTTlcuNJajHmt6v9TDVrU0CdvGRDA",
-                "crv": "P-256"
-            }
-        })
+        jwk = JWK()
 
         helper = JWSHelper(jwk)
         jwt = helper.sign({
@@ -100,16 +118,7 @@ class OpenID4VPBackend(BackendModule):
         )
 
     def request_endpoint(self, context, *args):
-        jwk = JWK({
-            "typ": "dpop+jwt",
-            "alg": "ES256",
-            "jwk": {
-                "kty": "EC",
-                "x": "l8tFrhx-34tV3hRICRDY9zCkDlpBhF42UQUfWVAWBFs",
-                "y": "9VE4jf_Ok_o64zbTTlcuNJajHmt6v9TDVrU0CdvGRDA",
-                "crv": "P-256"
-            }
-        })
+        jwk = JWK()
 
         helper = JWSHelper(jwk)
         jwt = helper.sign({

@@ -12,7 +12,7 @@ class KeyType(Enum):
 
 
 class JWK():
-    def __init__(self, key=None, keyType: KeyType = KeyType.EC, hash_func: str = 'SHA-256') -> None:
+    def __init__(self, key=None, keyType: KeyType = KeyType.RSA, hash_func: str = 'SHA-256') -> None:
         if key:
             self.key = key
         elif keyType == KeyType.EC:
