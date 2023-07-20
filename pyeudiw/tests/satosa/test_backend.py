@@ -1,3 +1,6 @@
+import base64
+import json
+import urllib.parse
 from unittest.mock import Mock
 
 import pytest
@@ -73,3 +76,56 @@ class TestOpenID4VPBackend:
             CONFIG['redirect_endpoint'].lstrip('/') + '$'
         assert url_map[3][0] == '^' + \
             CONFIG['request_endpoint'].lstrip('/') + '$'
+
+    def test_entity_configuration(self):
+        entity_config = self.backend.entity_configuration(None)
+        assert entity_config
+        assert entity_config.status == "200 OK"
+        assert entity_config.message
+
+    def test_pre_request_endpoint(self):
+        pre_request_endpoint = self.backend.pre_request_endpoint(None)
+        assert pre_request_endpoint
+        assert pre_request_endpoint.status == "200 OK"
+        assert pre_request_endpoint.message
+
+        decoded = base64.b64decode(pre_request_endpoint.message).decode("utf-8")
+        assert decoded.startswith("eudiw://authorize?")
+
+        unquoted = urllib.parse.unquote(decoded, encoding='utf-8', errors='replace')
+        parsed = urllib.parse.urlparse(unquoted)
+
+        assert parsed.scheme == "eudiw"
+        assert parsed.netloc == "authorize"
+        assert parsed.path == ""
+        assert parsed.query
+
+        qs = urllib.parse.parse_qs(parsed.query)
+        assert qs["client_id"][0] == CONFIG["wallet_relying_party"]["client_id"]
+        assert qs["request_uri"][0] == CONFIG["wallet_relying_party"]["request_uris"][0]
+
+    def test_redirect_endpoint(self):
+        redirect_endpoint = self.backend.redirect_endpoint(None)
+        assert redirect_endpoint
+        assert redirect_endpoint.status == "200 OK"
+        assert redirect_endpoint.message
+
+        msg = json.loads(redirect_endpoint.message)
+        assert msg["request"]
+
+    def test_request_endpoint(self):
+        request_endpoint = self.backend.request_endpoint(None)
+        assert request_endpoint
+        assert request_endpoint.status == "200 OK"
+        assert request_endpoint.message
+
+        msg = json.loads(request_endpoint.message)
+        assert msg["response"]
+
+    def test_handle_error(self):
+        error_message = "Error message!"
+        error_resp = self.backend.handle_error(error_message)
+        assert error_resp.status == "403 Forbidden"
+        assert error_resp.message
+        err = json.loads(error_resp.message)
+        assert err["message"] == error_message
