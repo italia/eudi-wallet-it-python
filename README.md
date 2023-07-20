@@ -1,111 +1,91 @@
-# eidas-it-wallet-satosa-rp
-Satosa OpenID4VP based on the Italian Wallet Solution
+# eudi-wallet-it-python
 
-## Satosa Installation
-### Python Environment
-From terminal run the following commands:
+![CI build](https://github.com/italia/eudi-wallet-it-python/workflows/eudi_wallet_python/badge.svg)
+![Python version](https://img.shields.io/badge/license-Apache%202-blue.svg)
+![py-versions](https://img.shields.io/badge/python-3.10-blue.svg)
+[![GitHub issues](https://img.shields.io/github/issues/italia/eudi-wallet-it-python.svg)](https://github.com/italia/eudi-wallet-it-python/issues)
+[![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
+[![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
 
-<b>Ubuntu</b>
-````
-sudo apt install -y libffi-dev libssl-dev python3-pip xmlsec1 procps libpcre3 libpcre3-dev
-````
+EUDI Wallet Python toolchain is a suite of Python libraries designed to
+make it easy the implementation of an EUDI Wallet Relying Party according 
+to the [Italian specification](https://italia.github.io/eudi-wallet-it-docs/en/).
 
-<b>Centos/RHEL</b>
-````
-sudo yum install -y libffi-devel openssl-devel python3-pip xmlsec1 procps pcre pcre-devel
-sudo yum groupinstall "Development Tools"
-sudo yum install -y python3-wheel python3-devel
-````
+> Please note: the scope of this project is giving tools and helpers to build a EUDI Wallet compliant to the national specs. All the components listed below are tailored to this scope.
 
-<b>MacOS</b>
-````
-xcode-select --install
-brew install libffi openssl@3 python3 procps pcre
-brew edit libxmlsec1
-````
+The toolchain contains the following components:
 
-At this point an editor will appear and in it change the version of the package with 1.2.37 an then:
+| Name | Description |
+| :--- | --- |
+| __tools.jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | refs to docs |
+| __tools.jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | refs to docs |
+| __tools.ui.qrcode__ | Creation of QRCodes | refs to docs |
+| __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) | refs to docs |
+| __oauth2.par__ | Tools for issuing and parsing Pushed Authorization Requests, according to [OAuth 2.0 Pushed Authorization Requests](https://datatracker.ietf.org/doc/html/rfc9126) | refs to docs |
+| __openid4vp.request__ | Tools for issuing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) requests objects | refs to docs |
+| __openid4vp.redirect__ | Tools for parsing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) responses | refs to docs |
+| __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms | refs to docs |
+| __dif.presentation_exchange__ | [DiF Presentation Exchange 2.0](https://identity.foundation/presentation-exchange/) | refs to docs |
+| __satosa.openid4vp.backend__ | SATOSA Openid4VP Relying Party backend | refs to docs |
 
+
+## Setup
+
+Install enviroment and dependencies
 ````
-brew install /opt/homebrew/Library/Taps/homebrew/homebrew-core/Formula/libxmlsec1.rb
-````
-
-### Satosa
-Inside the satosa directory run the following commands for initialize the environment:
-
-````
-pip install --upgrade pip
-pip install virtualenv
-
-cd satosa
-virtualenv -ppython3 satosa.env
-source satosa.env/bin/activate
+apt install python3-dev python3-pip git
+python3 -m pip install --upgrade pip
+sudo pip install virtualenv
 ````
 
-Then in both the directories satosa/ and satosa/sp/djangosaml2_sp run:
+Activate the environment. It's optional and up to you if you want to install 
+in a separate env or system wide
 ````
-pip install -r requirements.txt
-````
-
-In the directory idp_proxy run to start the service:
-````
-export SATOSA_APP=$VIRTUAL_ENV/lib/$(python -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/satosa
-
-# only https with satosa, because its Cookie only if "secure" would be sent
-uwsgi --wsgi-file $SATOSA_APP/wsgi.py  --https 0.0.0.0:10000,./pki/cert.pem,./pki/privkey.pem --callable app -b 32768
-
-# additional static serve for the demo Discovery Service with Spid button
-uwsgi --https 0.0.0.0:9999,./pki/cert.pem,./pki/privkey.pem --check-static-docroot --check-static ./static/ --static-index disco.html
+virtualenv -p python3 env
+source env/bin/activate
 ````
 
-In the directory sp/djangosaml2_sp run:
-````
-python manage.py migrate
-./manage.py runserver 0.0.0.0:8000
-````
+Install using pip
 
-### Troubleshooting
-- "uwsgi: unrecognized option `--https'" when the satosa.env is active run:
-````
-CFLAGS="-I$(brew --prefix openssl)/include" LDFLAGS="-L$(brew --prefix openssl)/lib" UWSGI_PROFILE_OVERRIDE=ssl=true pip install uwsgi -I --no-cache-dir 
-````
+`pip install eudi-wallet-python`
 
-If you reach the cache limit using the page of login use the flag "-b 32768" to the command to start the service for the statics contents 
+Install using github
 
-# Docker Compose for WordPress with ItaliaWP2
+`pip install git+https://github.com/italia/eudi-wallet-it-python`
 
-The Docker Compose file repository sets up a WordPress instance that includes a MariaDB database, phpMyAdmin for managing the database through a web interface, and the ItaliaWP2 theme pre-installed and activated.
 
-**Note: This is just for demo purposes and MUST NOT be used in production contexts.**
+## Example project
 
-## Prerequisites
+The example project is a docker-compose that runs a demo composed by the following component:
 
-- Docker and Docker Compose installed on your system
-- Git installed on your system
+- Wordpress with SAML2 support and Bootstrap Italia template preregistered to the IAM Proxy.
+- Satosa-Saml2Spid IAM Proxy with a preconfigured OpenID4VP backend
 
-## Installation
+## Satosa configuration
 
-1. Clone this repository to your local machine using the command `git clone <repository-url>`.
-2. Navigate to the root directory of the repository using the command `cd <repository-name>`.
-3. Copy the `.env.example` file to a new file named `.env` using the command `cp .env.example .env`.
-4. Open the `.env` file in a text editor and update the values of the environment variables with your desired values. Make sure to set the values for `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD`.
-5. Run the command `docker-compose up -d` to start the containers.
-6. Open a web browser and navigate to `http://localhost:8080` to access the WordPress installation page.
-7. Follow the on-screen instructions to complete the WordPress installation.
+See [README-SATOSA.md](README-SATOSA.md).
 
-## Installing the ItaliaWP2 Theme
+## Contribute
 
-1. Log in to the WordPress dashboard at `http://localhost:8080/wp-admin` (replace `8080` with the port specified in the `docker-compose.yml` file) using your administrator credentials.
-2. In the sidebar, go to "Appearance" > "Themes" and activate the ItaliaWP2 theme that you just installed.
+Your contribution is welcome, no question is useless and no answer is obvious, we need you.
 
-After following these steps, your WordPress instance should be up and running with the ItaliaWP2 theme installed and activated.
+#### Contribute as end user
 
-## Installing the OneLogin SAML SSO plugin
+Please open an issue if you've found a bug or if you want to ask some features.
 
-1. Download the [plugin archive](https://downloads.wordpress.org/plugin/onelogin-saml-sso.zip).
-2. Extract the archive under [<root_dir>/wordpress/wp-content/plugins/](wordpress/wp-content/plugins/)
-3. Log in at [http://localhost:8080/wp-admin](http://localhost:8080/wp-admin).
-4. Under [plugins](http://localhost:8080/wp-admin/plugins.php), activate the plugin OneLogin SAML SSO.
-5. Configure the plugin OneLogin SAML SSO in the [settings tab](http://localhost:8080/wp-admin/options-general.php?page=onelogin_saml_configuration).
+#### Contribute as developer
 
-## Setup Wordpress SAML plugin 
+Please open your Pull Requests on the __dev__ branch. 
+Please consider the following branches:
+
+ - __main__: where we merge the code before tag a new stable release.
+ - __dev__: where we push our code during development.
+ - __other-custom-name__: where a new feature/contribution/bugfix will be handled, revisioned and then merged to dev branch.
+
+## Authors
+
+- Giuseppe De Marco
+- Pasquale De Rose
+- Alessio Amurri
+- Nicola ...
+- ...
