@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRC="eudi_wallet_python"
+SRC="pyeudiw"
 
 autopep8 -r --in-place $SRC
 autoflake -r --in-place  --remove-unused-variables --expand-star-imports --remove-all-unused-imports $SRC
