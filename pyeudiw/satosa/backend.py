@@ -10,7 +10,7 @@ from satosa.backends.base import BackendModule
 from pyeudiw.tools.jwk import JWK
 from pyeudiw.tools.jwt import JWSHelper
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("openid4vp_backend")
 
 
 class OpenID4VPBackend(BackendModule):
@@ -38,13 +38,21 @@ class OpenID4VPBackend(BackendModule):
         """
 
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-        self.client_id = config['wallet_relying_party']['client_id']
         
-        self.absolute_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
-        self.absolute_request_url = config['wallet_relying_party']['request_uris'][0]
+        self.client_id = config['metadata']['client_id']
+
+        self.absolute_redirect_url = config['metadata']['redirect_uris'][0]
+        self.absolute_request_url = config['metadata']['request_uris'][0]
 
         self.qrcode_settings = config['qrcode_settings']
         self.config = config
+        
+        self.default_exp = int(self.config['jwt_settings']['default_exp'])
+        
+        # dumps public jwks in the metadata
+        self.config['metadata']['jwks'] = config["metadata_jwks"]
+        
+        self.federation_jwk = JWK(self.config['federation']['federation_jwks'][0])
         
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
@@ -64,6 +72,7 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             logger.info(f"[OpenID4VP] Loaded endpoint: '{k}'")
+
         return url_map
 
     def start_auth(self, context, internal_request):
@@ -78,48 +87,53 @@ class OpenID4VPBackend(BackendModule):
         :param internal_request: Information about the authorization request
         :return: response
         """
-        raise NotImplementedError()
+        return self.pre_request_endpoint()
 
     def entity_configuration_endpoint(self, context, *args):
-        jwk = JWK()
-
+        
+        _now = datetime.now()
         data = {
-            "exp": int((datetime.now() + timedelta(minutes=6)).timestamp()),
-            "iat": int(datetime.now().timestamp()),
-            "iss": "https://rp.example.it",
-            "sub": "https://rp.example.it",
+            "exp": int((_now + timedelta(minutes=self.default_exp)).timestamp()),
+            "iat": int(_now.timestamp()),
+            "iss": self.client_id,
+            "sub": self.client_id,
             "jwks": {
-                "keys": [jwk.export_public()]
+                "keys": [self.federation_jwk.public_key]
             },
             "metadata": {
-                "wallet_relying_party": self.config['wallet_relying_party']
-            }
+                self.config['federation']["metadata_type"]: self.config['metadata']
+            },
+            "authority_hints": self.config['federation']['federation_authorities']
         }
-
-        jwshelper = JWSHelper(jwk)
+        jwshelper = JWSHelper(self.federation_jwk)
 
         return Response(
             jwshelper.sign(
-                plain_dict=data,
                 protected={
-                    "alg": "RS256",
-                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
+                    "alg": self.config['federation']["default_sig_alg"],
+                    "kid": self.federation_jwk.public_key["kid"],
                     "typ": "entity-statement+jwt"
-                }
+                },
+                plain_dict=data
             ),
-            status=200
+            status="200 OK",
+            content="application/entity-statement+jwt"
         )
 
     def pre_request_endpoint(self, context, *args):
-        payload = {'client_id': self.client_id,
-                   'request_uri': self.complete_request_url}
-        query = urlencode(payload, quote_via=quote_plus)
+        payload = {
+            'client_id': self.client_id,
+            'request_uri': self.complete_request_url
+        }
+        url_params = urlencode(payload, quote_via=quote_plus)
+        
         response = base64.b64encode(
-            bytes(f'eudiw://authorize?{query}', 'UTF-8'))
+            f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'.encode()
+        )
 
         return Response(
             response,
-            status=200,
+            status="200 OK",
             content="text/json; charset=utf8"
         )
 
@@ -141,7 +155,7 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             json.dumps(response),
-            status=200,
+            status="200 OK",
             content="text/json; charset=utf8"
         )
 

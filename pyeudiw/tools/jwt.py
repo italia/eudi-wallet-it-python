@@ -86,7 +86,14 @@ class JWSHelper:
     def __init__(self, jwk: JWK):
         self.jwk = jwk
 
-    def sign(self, plain_dict: Union[dict, str, int, None], alg: str = "RS256", protected: dict = {}, **kwargs) -> str:
+    def sign(
+        self, 
+        plain_dict: Union[dict, str, int, None], 
+        alg: str = "RS256", 
+        protected: dict = {}, 
+        **kwargs
+    ) -> str:
+    
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _payload: str | int | bytes = ""
@@ -99,7 +106,6 @@ class JWSHelper:
             _payload = plain_dict
         else:
             _payload = ""
-
         _signer = JWSec(_payload, alg=alg, **kwargs)
 
         return _signer.sign_compact([_key], protected=protected, **kwargs)
