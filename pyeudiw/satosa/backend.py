@@ -181,7 +181,7 @@ class OpenID4VPBackend(BackendModule):
         result = json.dumps(
             {"message": message, "troubleshoot": troubleshoot}
         )
-        return Response(result, content="text/json; charset=utf8", status="403 Forbidden")
+        return Response(result, content="text/json; charset=utf8", status=403)
 
     def authn_response(self, context, binding):
         """
