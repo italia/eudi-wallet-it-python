@@ -33,9 +33,9 @@ The toolchain contains the following components:
 
 Install enviroment and dependencies
 ````
-apt install python3-dev python3-pip git
-python3 -m pip install --upgrade pip
-sudo pip install virtualenv
+sudo apt install python3-dev python3-pip git
+sudo python3 -m pip install --upgrade pip
+sudo python3 -m pip install virtualenv
 ````
 
 Activate the environment. It's optional and up to you if you want to install 
@@ -47,7 +47,7 @@ source env/bin/activate
 
 Install using pip
 
-`pip install eudi-wallet-python`
+`pip install pyeudiw`
 
 Install using github
 
@@ -62,6 +62,11 @@ The example project is a docker-compose that runs a demo composed by the followi
 - Satosa-Saml2Spid IAM Proxy with a preconfigured OpenID4VP backend
 
 ## Satosa configuration
+
+To install the OpenID4VP SATOSA backend you just need to do four things:
+
+1. install this package
+2. copy and customize [example/pyeudiw_backend.yml](example/pyeudiw_backend.yml)
 
 See [README-SATOSA.md](README-SATOSA.md).
 

@@ -1,5 +1,5 @@
 module: pyeudiw.satosa.backend.OpenID4VPBackend
-name: OpenIDVP4
+name: OpenID4VP
 
 config:
   #Those are the endpoints listed on eudi wallet backend
