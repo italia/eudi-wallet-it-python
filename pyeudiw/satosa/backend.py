@@ -80,7 +80,7 @@ class OpenID4VPBackend(BackendModule):
                 plain_dict=data,
                 protected={
                     "alg": self.default_sign_alg,
-                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
+                    "kid": jwk.jwk["kid"],
                     "typ": "entity-statement+jwt"
                 }
             ),
@@ -107,7 +107,7 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign({
             "jti": str(uuid.uuid4()),
             "htm": "GET",
-            "htu": "https://verifier.example.org/request_uri",
+            "htu": self.complete_request_url,
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
         },
