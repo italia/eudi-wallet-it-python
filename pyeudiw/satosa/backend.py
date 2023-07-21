@@ -79,7 +79,7 @@ class OpenID4VPBackend(BackendModule):
                     "typ": "entity-statement+jwt"
                 }
             ),
-            status="200 OK"
+            status=200
         )
 
     def pre_request_endpoint(self, context, *args):
@@ -91,7 +91,7 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             response,
-            status="200 OK",
+            status=200,
             content="text/json; charset=utf8"
         )
 
@@ -113,7 +113,7 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             json.dumps(response),
-            status="200 OK",
+            status=200,
             content="text/json; charset=utf8"
         )
 
@@ -148,7 +148,7 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             json.dumps(response),
-            status="200 OK",
+            status=200,
             content="text/json; charset=utf8"
         )
 

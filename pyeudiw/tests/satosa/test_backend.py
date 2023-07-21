@@ -80,13 +80,13 @@ class TestOpenID4VPBackend:
     def test_entity_configuration(self):
         entity_config = self.backend.entity_configuration(None)
         assert entity_config
-        assert entity_config.status == "200 OK"
+        assert entity_config.status == 200
         assert entity_config.message
 
     def test_pre_request_endpoint(self):
         pre_request_endpoint = self.backend.pre_request_endpoint(None)
         assert pre_request_endpoint
-        assert pre_request_endpoint.status == "200 OK"
+        assert pre_request_endpoint.status == 200
         assert pre_request_endpoint.message
 
         decoded = base64.b64decode(
@@ -109,7 +109,7 @@ class TestOpenID4VPBackend:
     def test_redirect_endpoint(self):
         redirect_endpoint = self.backend.redirect_endpoint(None)
         assert redirect_endpoint
-        assert redirect_endpoint.status == "200 OK"
+        assert redirect_endpoint.status == 200
         assert redirect_endpoint.message
 
         msg = json.loads(redirect_endpoint.message)
@@ -118,7 +118,7 @@ class TestOpenID4VPBackend:
     def test_request_endpoint(self):
         request_endpoint = self.backend.request_endpoint(None)
         assert request_endpoint
-        assert request_endpoint.status == "200 OK"
+        assert request_endpoint.status == 200
         assert request_endpoint.message
 
         msg = json.loads(request_endpoint.message)
@@ -127,7 +127,7 @@ class TestOpenID4VPBackend:
     def test_handle_error(self):
         error_message = "Error message!"
         error_resp = self.backend.handle_error(error_message)
-        assert error_resp.status == "403 Forbidden"
+        assert error_resp.status == 403
         assert error_resp.message
         err = json.loads(error_resp.message)
         assert err["message"] == error_message
