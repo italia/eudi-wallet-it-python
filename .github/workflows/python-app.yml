@@ -38,8 +38,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-customizations.txt ]; then pip install -r requirements-customizations.txt; fi
         python -m pip install -U setuptools
-        python -m pip install -e .
-        python -m pip install satosa
+        python -m pip install pyeudiw pyeudiw[satosa]
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -48,7 +47,7 @@ jobs:
         flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
     - name: Tests
       run: |
-        pytest --cov
+        pytest --cov=pyeudiw -v --cov-report term --cov-fail-under=80 pyeudiw/tests/
     - name: Bandit Security Scan
       run: |
         bandit -r -x pyeudiw/tests* pyeudiw/*
