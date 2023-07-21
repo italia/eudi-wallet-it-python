@@ -20,23 +20,39 @@ class OpenID4VPBackend(BackendModule):
     """
 
     def __init__(self, auth_callback_func, internal_attributes, config, base_url, name):
+        """
+        OpenID4VP backend module.
+        :param auth_callback_func: Callback should be called by the module after the authorization
+        in the backend is done.
+        :param internal_attributes: Mapping dictionary between SATOSA internal attribute names and
+        the names returned by underlying IdP's/OP's as well as what attributes the calling SP's and
+        RP's expects namevice.
+        :param config: Configuration parameters for the module.
+        :param base_url: base url of the service
+        :param name: name of the plugin
+        :type auth_callback_func:
+        (satosa.context.Context, satosa.internal.InternalData) -> satosa.response.Response
+        :type internal_attributes: dict[string, dict[str, str | list[str]]]
+        :type config: dict[str, dict[str, str] | list[str]]
+        :type base_url: str
+        :type name: str
+        """
+
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-
-        self.entity_configuration_url = config['entity_configuration_endpoint']
-        self.pre_request_url = config['pre_request_endpoint']
-        self.redirect_url = config['redirect_endpoint']
-        self.request_url = config['request_endpoint']
-        self.error_url = config['error_url']
-
-        self.default_sign_alg = config['default_sign_alg']
-
+  
         self.client_id = config['wallet_relying_party']['client_id']
-        self.complete_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
-        self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
+  
+        self.default_sign_alg = config['default_sign_alg']
+        
+        self.absolute_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
+        self.absolute_request_url = config['wallet_relying_party']['request_uris'][0]
 
         self.qr_settings = config['qr_code_settings']
         self.token_exp_delta = config['jwks']['token_exp_delta']
+    
         self.config = config
+        
+        logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
     def register_endpoints(self):
         """
@@ -47,17 +63,30 @@ class OpenID4VPBackend(BackendModule):
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
         url_map = []
-        url_map.append(
-            (f"^{self.entity_configuration_url.lstrip('/')}$", self.entity_configuration))
-        url_map.append(
-            (f"^{self.pre_request_url.lstrip('/')}$", self.pre_request_endpoint))
-        url_map.append(
-            (f"^{self.redirect_url.lstrip('/')}$", self.redirect_endpoint))
-        url_map.append(
-            (f"^{self.request_url.lstrip('/')}$", self.request_endpoint))
+        for k, v in self.config['endpoints'].items():
+            url_map.append(
+                (
+                    f"^{v.lstrip('/')}$", getattr(self, f"{k}_endpoint")
+                )
+            )
+            logger.info(f"[OpenID4VP] Loaded endpoint: '{k}'")
         return url_map
 
-    def entity_configuration(self, context, *args):
+    def start_auth(self, context, internal_request):
+        """
+        This is the start up function of the backend authorization.
+
+        :type context: satosa.context.Context
+        :type internal_request: satosa.internal.InternalData
+        :rtype satosa.response.Response
+
+        :param context: the request context
+        :param internal_request: Information about the authorization request
+        :return: response
+        """
+        raise NotImplementedError()
+
+    def entity_configuration_endpoint(self, context, *args):
         jwk = JWK()
 
         data = {
@@ -166,7 +195,10 @@ class OpenID4VPBackend(BackendModule):
         :param entity_id: Target IDP entity id
         :return: response to the user agent
         """
-
+        breakpoint()
+        pass
+        
+        
     def handle_error(
         self,
         message: str,

@@ -3,14 +3,16 @@ name: OpenID4VP
 
 config:
   #Those are the endpoints listed on eudi wallet backend
-  pre_request_endpoint: '/<name>/show_qrcode'
-  redirect_endpoint: '/<name>/redirect_uri'
-  request_endpoint: '/<name>/request_uri'
-  entity_configuration_endpoint: '/<name>/entity_configuration'
+  
+  endpoints:
+      pre_request: '/<name>/pre-request'
+      redirect: '/<name>/redirect_uri'
+      request: '/<name>/request_uri'
+      entity_configuration: '/<name>/entity_configuration'
 
   error_url: "https://localhost:9999/error_page.html"
 
-  qr_code_settings:
+  qrcode_settings:
     size: 100
     color: '#2B4375'
     logo_path: 
