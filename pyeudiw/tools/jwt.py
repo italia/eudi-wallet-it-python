@@ -83,10 +83,11 @@ class JWEHelper():
 
 
 class JWSHelper:
-    def __init__(self, jwk: JWK):
+    def __init__(self, jwk: JWK, alg: str = "RS256"):
         self.jwk = jwk
+        self.alg = alg
 
-    def sign(self, plain_dict: Union[dict, str, int, None], alg: str = "RS256", protected: dict = {}, **kwargs) -> str:
+    def sign(self, plain_dict: Union[dict, str, int, None], protected: dict = {}, **kwargs) -> str:
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _payload: str | int | bytes = ""
@@ -100,7 +101,7 @@ class JWSHelper:
         else:
             _payload = ""
 
-        _signer = JWSec(_payload, alg=alg, **kwargs)
+        _signer = JWSec(_payload, alg=self.alg, **kwargs)
 
         return _signer.sign_compact([_key], protected=protected, **kwargs)
 
@@ -112,8 +113,6 @@ class JWSHelper:
             raise Exception(
                 f"kid error: {_head.get('kid')} != {self.jwk.as_dict()['kid']}"
             )
-
-        _head["alg"]
 
         verifier = JWSec(alg=_head["alg"], **kwargs)
         msg = verifier.verify_compact(jws, [_key])

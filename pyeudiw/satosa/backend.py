@@ -73,7 +73,7 @@ class OpenID4VPBackend(BackendModule):
             }
         }
 
-        jwshelper = JWSHelper(jwk)
+        jwshelper = JWSHelper(jwk, alg=self.default_sign_alg)
 
         return Response(
             jwshelper.sign(
@@ -103,16 +103,14 @@ class OpenID4VPBackend(BackendModule):
     def redirect_endpoint(self, context, *args):
         jwk = JWK()
 
-        helper = JWSHelper(jwk)
+        helper = JWSHelper(jwk, alg=self.default_sign_alg)
         jwt = helper.sign({
             "jti": str(uuid.uuid4()),
             "htm": "GET",
             "htu": self.complete_request_url,
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
-        },
-            self.default_sign_alg,
-        )
+        })
 
         response = {"request": jwt}
 
@@ -125,7 +123,7 @@ class OpenID4VPBackend(BackendModule):
     def request_endpoint(self, context, *args):
         jwk = JWK()
 
-        helper = JWSHelper(jwk)
+        helper = JWSHelper(jwk, alg=self.default_sign_alg)
         jwt = helper.sign({
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
             "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
@@ -145,9 +143,7 @@ class OpenID4VPBackend(BackendModule):
                     }
                 ]
             }
-        },
-            self.default_sign_alg,
-        )
+        })
 
         response = {"response": jwt}
 
