@@ -6,7 +6,6 @@ from unittest.mock import Mock
 import pytest
 
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.tools.jwt import JWSHelper
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
