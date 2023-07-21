@@ -15,7 +15,12 @@ from .jwk import JWK
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
-DEFAULT_JWS_ALG = "RS256"
+DEFAUL_SIG_KTY_MAP = {
+    "RSA": "RS256",
+    "EC": "ES256"
+}
+
+DEFAULT_JWS_ALG = "ES256"
 DEFAULT_JWE_ALG = "RSA-OAEP"
 DEFAULT_JWE_ENC = "A256CBC-HS512"
 
@@ -85,11 +90,11 @@ class JWEHelper():
 class JWSHelper:
     def __init__(self, jwk: JWK):
         self.jwk = jwk
-
+        self.alg = DEFAUL_SIG_KTY_MAP[jwk.key.kty]
+        
     def sign(
         self, 
         plain_dict: Union[dict, str, int, None], 
-        alg: str = "RS256", 
         protected: dict = {}, 
         **kwargs
     ) -> str:
@@ -106,8 +111,8 @@ class JWSHelper:
             _payload = plain_dict
         else:
             _payload = ""
-        _signer = JWSec(_payload, alg=alg, **kwargs)
-
+        
+        _signer = JWSec(_payload, alg=self.alg, **kwargs)
         return _signer.sign_compact([_key], protected=protected, **kwargs)
 
     def verify(self, jws: str, **kwargs):

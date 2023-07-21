@@ -23,7 +23,7 @@ class JWK():
     
         kwargs = {}
         
-        if not KEY_TYPES_FUNC.get(key_type, None):
+        if key_type and not KEY_TYPES_FUNC.get(key_type, None):
             raise NotImplementedError(f"JWK key type {key_type} not found.")
         
         if key:
@@ -33,9 +33,8 @@ class JWK():
                 self.key = key
         else:
             # create new one
-            self.key = KEY_TYPES_FUNC[key_type](**kwargs)
-            if key_type == 'EC':
-                kwargs['crv'] = ec_crv        
+            kwargs['crv'] = ec_crv
+            self.key = KEY_TYPES_FUNC[key_type or 'EC'](**kwargs)
         
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
         self.jwk = self.key.to_dict()

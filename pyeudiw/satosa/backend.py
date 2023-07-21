@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import json
 import logging
 import base64
+import uuid
 
 from urllib.parse import urlencode, quote_plus
 from satosa.response import Response
@@ -36,7 +37,6 @@ class OpenID4VPBackend(BackendModule):
         :type base_url: str
         :type name: str
         """
-
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
         
         self.client_id = config['metadata']['client_id']
@@ -53,6 +53,7 @@ class OpenID4VPBackend(BackendModule):
         self.config['metadata']['jwks'] = config["metadata_jwks"]
         
         self.federation_jwk = JWK(self.config['federation']['federation_jwks'][0])
+        self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
         
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
@@ -116,14 +117,14 @@ class OpenID4VPBackend(BackendModule):
                 },
                 plain_dict=data
             ),
-            status="200 OK",
+            status="200",
             content="application/entity-statement+jwt"
         )
 
     def pre_request_endpoint(self, context, *args):
         payload = {
             'client_id': self.client_id,
-            'request_uri': self.complete_request_url
+            'request_uri': self.absolute_request_url
         }
         url_params = urlencode(payload, quote_via=quote_plus)
         
@@ -133,37 +134,35 @@ class OpenID4VPBackend(BackendModule):
 
         return Response(
             response,
-            status="200 OK",
+            status="200",
             content="text/json; charset=utf8"
         )
 
     def redirect_endpoint(self, context, *args):
-        jwk = JWK()
+        jwk = self.metadata_jwk
 
         helper = JWSHelper(jwk)
-        jwt = helper.sign({
-            "jti": "f47c96a1-f928-4768-aa30-ef32dc78aa69",
+        data = {
+            "jti": str(uuid.uuid4()),
             "htm": "GET",
-            "htu": "https://verifier.example.org/request_uri",
+            "htu": f"{self.client_id}/request_uri",
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
-        },
-            "RS256",
-        )
-
+        }
+        jwt = helper.sign(data)
         response = {"request": jwt}
 
         return Response(
             json.dumps(response),
-            status="200 OK",
-            content="text/json; charset=utf8"
+            status="200",
+            content="application/jose; charset=utf8"
         )
 
     def request_endpoint(self, context, *args):
-        jwk = JWK()
+        jwk = self.metadata_jwk
 
         helper = JWSHelper(jwk)
-        jwt = helper.sign({
+        data = {
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
             "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
             "presentation_submission": {
@@ -182,15 +181,14 @@ class OpenID4VPBackend(BackendModule):
                     }
                 ]
             }
-        },
-            "RS256",
-        )
+        }
+        jwt = helper.sign(data)
 
         response = {"response": jwt}
 
         return Response(
             json.dumps(response),
-            status=200,
+            status="200",
             content="text/json; charset=utf8"
         )
 
@@ -226,7 +224,7 @@ class OpenID4VPBackend(BackendModule):
         result = json.dumps(
             {"message": message, "troubleshoot": troubleshoot}
         )
-        return Response(result, content="text/json; charset=utf8", status=403)
+        return Response(result, content="text/json; charset=utf8", status="403")
 
     def authn_response(self, context, binding):
         """

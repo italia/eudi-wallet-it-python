@@ -8,3 +8,11 @@
 5. Customize  [example/satosa/disco.html](example/satosa/disco.html), then copy it in satosa static file folder. Example `example/static/disco.html`
 
 Then start the proxy.
+
+# Parameters
+
+TBD. A Markdown table with:
+
+ - parameter name
+ - description
+ - example value 
