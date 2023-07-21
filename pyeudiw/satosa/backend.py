@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import logging
 import base64
@@ -56,8 +57,8 @@ class OpenID4VPBackend(BackendModule):
         jwk = JWK()
 
         data = {
-            "exp": 1649590602,
-            "iat": 1649417862,
+            "exp": int((datetime.now() + timedelta(minutes=6)).timestamp()),
+            "iat": int(datetime.now().timestamp()),
             "iss": "https://rp.example.it",
             "sub": "https://rp.example.it",
             "jwks": {
@@ -103,7 +104,7 @@ class OpenID4VPBackend(BackendModule):
             "jti": "f47c96a1-f928-4768-aa30-ef32dc78aa69",
             "htm": "GET",
             "htu": "https://verifier.example.org/request_uri",
-            "iat": 1562262616,
+            "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
         },
             "RS256",
