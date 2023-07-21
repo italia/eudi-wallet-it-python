@@ -50,7 +50,6 @@ services:
       - ./wordpress-theme/italiawp2/:/var/www/html/wp-content/themes/italiawp2/
     networks:
       - wordpress-network
-      - testSPIDnetword
 
 volumes:
   db-data:
@@ -58,5 +57,3 @@ volumes:
 networks:
   wordpress-network:
     driver: bridge
-  testSPIDnetword:
-    external: true
