@@ -1,11 +1,15 @@
 import base64
 import json
-import urllib.parse
-from unittest.mock import Mock
-
+import pathlib
 import pytest
+import urllib.parse
 
 from pyeudiw.satosa.backend import OpenID4VPBackend
+
+from satosa.context import Context
+from satosa.internal import InternalData
+from satosa.state import State
+from unittest.mock import Mock
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -14,7 +18,15 @@ CLIENT_ID = "client_id"
 
 CONFIG = {
   "base_url": BASE_URL,
-  "error_url": "https://localhost:9999/error_page.html",
+
+
+  "ui": {
+    "static_storage_url": BASE_URL,
+    "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
+    "qrcode_template": "qrcode.html",
+    "error_template": "error.html",
+    "error_url": "https://localhost:9999/error_page.html"
+  },
   
   "endpoints": {
     "entity_configuration": "/OpenID4VP/.well-known/openid-federation",
@@ -254,6 +266,23 @@ class TestOpenID4VPBackend:
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
+    @pytest.fixture
+    def internal_attributes(self):
+        return {
+            "attributes": {
+                "givenname": {"openid": ["given_name"]},
+                "mail": {"openid": ["email"]},
+                "edupersontargetedid": {"openid": ["sub"]},
+                "surname": {"openid": ["family_name"]}
+            }
+        }
+
+    @pytest.fixture
+    def context(self):
+        context = Context()
+        context.state = State()
+        return context
+
     def test_backend_init(self):
         assert self.backend.name == "name"
 
@@ -275,12 +304,26 @@ class TestOpenID4VPBackend:
         assert entity_config.status == "200"
         assert entity_config.message
 
-    def test_pre_request_endpoint(self):
-        pre_request_endpoint = self.backend.pre_request_endpoint(None)
+    def test_pre_request_endpoint(self, context):
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
         assert pre_request_endpoint
         assert pre_request_endpoint.status == "200"
         assert pre_request_endpoint.message
-
+        
+        assert "svg xmlns:svg=&#34;http://www.w3.org/2000/" in pre_request_endpoint.message 
+    
+    # TODO
+    def _test_pre_request_endpoint_mobile(self, context):
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
+        
         decoded = base64.b64decode(
             pre_request_endpoint.message).decode("utf-8")
         assert decoded.startswith("eudiw://authorize?")

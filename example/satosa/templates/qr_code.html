@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+
+<h1>Inquadra il qr code con il tuo smartphone</h1>
+
+<img src='data:image/svg+xml, {{ qrcode_svg }}'>
+
+{% endblock body %}

@@ -1,15 +1,20 @@
-from datetime import datetime, timedelta
+import base64
 import json
 import logging
 import base64
 import uuid
 
+from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
 from satosa.response import Response
 from satosa.backends.base import BackendModule
+from satosa.response import Redirect
 
+from pyeudiw.satosa.html_template import Jinja2TemplateHandler
+from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.jwk import JWK
 from pyeudiw.tools.jwt import JWSHelper
+from pyeudiw.tools.mobile import is_smartphone
 
 logger = logging.getLogger("openid4vp_backend")
 
@@ -55,6 +60,9 @@ class OpenID4VPBackend(BackendModule):
         self.federation_jwk = JWK(self.config['federation']['federation_jwks'][0])
         self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
         
+        # HTML template loader
+        self.template = Jinja2TemplateHandler(config)
+        
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
     def register_endpoints(self):
@@ -88,7 +96,7 @@ class OpenID4VPBackend(BackendModule):
         :param internal_request: Information about the authorization request
         :return: response
         """
-        return self.pre_request_endpoint()
+        return self.pre_request_endpoint(context, internal_request)
 
     def entity_configuration_endpoint(self, context, *args):
         
@@ -121,22 +129,25 @@ class OpenID4VPBackend(BackendModule):
             content="application/entity-statement+jwt"
         )
 
-    def pre_request_endpoint(self, context, *args):
+    def pre_request_endpoint(self, context, internal_request, **kwargs):
         payload = {
             'client_id': self.client_id,
             'request_uri': self.absolute_request_url
         }
         url_params = urlencode(payload, quote_via=quote_plus)
         
-        response = base64.b64encode(
-            f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'.encode()
-        )
+        res_url = f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'
+        if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
+            return Redirect(res_url)
+        
+        # response = base64.b64encode(res_url.encode())
+        qrcode = QRCode(res_url, **self.config['qrcode_settings'])
+        stream = qrcode.for_html()
 
-        return Response(
-            response,
-            status="200",
-            content="text/json; charset=utf8"
+        result = self.template.qrcode_page.render(
+            {"title": "frame the qrcode", 'qrcode_base64': base64.b64encode(stream.encode()).decode()}
         )
+        return Response(result, content="text/html; charset=utf8", status="200")
 
     def redirect_endpoint(self, context, *args):
         jwk = self.metadata_jwk
@@ -192,23 +203,6 @@ class OpenID4VPBackend(BackendModule):
             content="text/json; charset=utf8"
         )
 
-    def authn_request(self, context, entity_id):
-        """
-        Do an authorization request on idp with given entity id.
-        This is the start of the authorization.
-
-        :type context: satosa.context.Context
-        :type entity_id: str
-        :rtype: satosa.response.Response
-
-        :param context: The current context
-        :param entity_id: Target IDP entity id
-        :return: response to the user agent
-        """
-        breakpoint()
-        pass
-        
-        
     def handle_error(
         self,
         message: str,
@@ -236,3 +230,4 @@ class OpenID4VPBackend(BackendModule):
         :param binding: The saml binding type
         :return: response
         """
+        pass
