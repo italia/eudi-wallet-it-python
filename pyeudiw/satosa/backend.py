@@ -61,8 +61,8 @@ class OpenID4VPBackend(BackendModule):
         data = {
             "exp": int((datetime.now() + timedelta(milliseconds=self.token_exp_delta)).timestamp()),
             "iat": int(datetime.now().timestamp()),
-            "iss": "https://rp.example.it",
-            "sub": "https://rp.example.it",
+            "iss": self.client_id,
+            "sub": self.client_id,
             "jwks": {
                 "keys": [jwk.export_public()]
             },
