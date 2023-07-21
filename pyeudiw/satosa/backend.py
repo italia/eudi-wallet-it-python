@@ -28,6 +28,8 @@ class OpenID4VPBackend(BackendModule):
         self.request_url = config['request_endpoint']
         self.error_url = config['error_url']
 
+        self.default_sign_alg = config['default_sign_alg']
+
         self.client_id = config['wallet_relying_party']['client_id']
         self.complete_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
         self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
@@ -77,7 +79,7 @@ class OpenID4VPBackend(BackendModule):
             jwshelper.sign(
                 plain_dict=data,
                 protected={
-                    "alg": "RS256",
+                    "alg": self.default_sign_alg,
                     "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
                     "typ": "entity-statement+jwt"
                 }
@@ -109,7 +111,7 @@ class OpenID4VPBackend(BackendModule):
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
         },
-            "RS256",
+            self.default_sign_alg,
         )
 
         response = {"request": jwt}
@@ -144,7 +146,7 @@ class OpenID4VPBackend(BackendModule):
                 ]
             }
         },
-            "RS256",
+            self.default_sign_alg,
         )
 
         response = {"response": jwt}

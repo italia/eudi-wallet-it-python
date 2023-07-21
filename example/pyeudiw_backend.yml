@@ -35,6 +35,8 @@ config:
       - RS256
       - ES256
 
+    default_sign_alg: RS256
+
     #Various informations of the client
     client_id: <base>/<name>
     client_name: Name of an example organization
