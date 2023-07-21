@@ -33,7 +33,7 @@ class OpenID4VPBackend(BackendModule):
         :type auth_callback_func:
         (satosa.context.Context, satosa.internal.InternalData) -> satosa.response.Response
         :type internal_attributes: dict[string, dict[str, str | list[str]]]
-        :type config: dict[str, dict[str, str] | list[str]]
+        :type config: dict[str, dict[str, str] | list[str] | str]
         :type base_url: str
         :type name: str
         """
@@ -118,7 +118,7 @@ class OpenID4VPBackend(BackendModule):
 
     def pre_request_endpoint(self, context, *args):
         payload = {'client_id': self.client_id,
-                   'request_uri': self.complete_request_url}
+                   'request_uri': self.absolute_redirect_url}
         query = urlencode(payload, quote_via=quote_plus)
         response = base64.b64encode(
             bytes(f'eudiw://authorize?{query}', 'UTF-8'))
@@ -136,7 +136,7 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign({
             "jti": str(uuid.uuid4()),
             "htm": "GET",
-            "htu": self.complete_request_url,
+            "htu": self.absolute_request_url,
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
         })

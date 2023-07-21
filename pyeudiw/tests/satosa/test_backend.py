@@ -26,11 +26,12 @@ CONFIG = {
     'authz_page': AUTHZ_PAGE,
     'client_config': {'client_id': CLIENT_ID},
 
-    'pre_request_endpoint': '/<name>/show_qrcode',
-    'redirect_endpoint': '/<name>/redirect_uri',
-    'request_endpoint': '/<name>/request_uri',
-    'entity_configuration_endpoint': '/<name>/entity_configuration',
-    'error_url': '/<name>/error',
+    'endpoints': {
+        'pre_request': '/<name>/show_qrcode',
+        'redirect': '/<name>/redirect_uri',
+        'request': '/<name>/request_uri',
+        'entity_configuration': '/<name>/entity_configuration',
+    },
 
     'wallet_relying_party': {
         'client_id': 'client_id',
@@ -67,24 +68,24 @@ class TestOpenID4VPBackend:
 
     def test_backend_init(self):
         assert self.backend.name == "name"
-        assert self.backend.entity_configuration_url == CONFIG['entity_configuration_endpoint']
         assert self.backend.qr_settings['size'] == CONFIG['qr_code_settings']['size']
 
     def test_register_endpoints(self):
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 4
         print(url_map)
+        print(url_map[0][0])
         assert url_map[0][0] == '^' + \
-            CONFIG['entity_configuration_endpoint'].lstrip('/') + '$'
+            CONFIG['endpoints']['pre_request'].lstrip('/') + '$'
         assert url_map[1][0] == '^' + \
-            CONFIG['pre_request_endpoint'].lstrip('/') + '$'
+            CONFIG['endpoints']['redirect'].lstrip('/') + '$'
         assert url_map[2][0] == '^' + \
-            CONFIG['redirect_endpoint'].lstrip('/') + '$'
+            CONFIG['endpoints']['request'].lstrip('/') + '$'
         assert url_map[3][0] == '^' + \
-            CONFIG['request_endpoint'].lstrip('/') + '$'
+            CONFIG['endpoints']['entity_configuration'].lstrip('/') + '$'
 
-    def test_entity_configuration(self):
-        entity_config = self.backend.entity_configuration(None)
+    def test_entity_configuration_endpoint(self):
+        entity_config = self.backend.entity_configuration_endpoint(None)
         assert entity_config
         assert entity_config.status == 200
         assert entity_config.message
@@ -110,7 +111,7 @@ class TestOpenID4VPBackend:
 
         qs = urllib.parse.parse_qs(parsed.query)
         assert qs["client_id"][0] == CONFIG["wallet_relying_party"]["client_id"]
-        assert qs["request_uri"][0] == CONFIG["wallet_relying_party"]["request_uris"][0]
+        assert qs["request_uri"][0] == CONFIG["wallet_relying_party"]["redirect_uris"][0]
 
     def test_redirect_endpoint(self):
         redirect_endpoint = self.backend.redirect_endpoint(None)
