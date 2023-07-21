@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 import json
 import logging
@@ -32,6 +33,7 @@ class OpenID4VPBackend(BackendModule):
         self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
 
         self.qr_settings = config['qr_code_settings']
+        self.token_exp_delta = config['jwks']['token_exp_delta']
         self.config = config
 
     def register_endpoints(self):
@@ -57,7 +59,7 @@ class OpenID4VPBackend(BackendModule):
         jwk = JWK()
 
         data = {
-            "exp": int((datetime.now() + timedelta(minutes=6)).timestamp()),
+            "exp": int((datetime.now() + timedelta(milliseconds=self.token_exp_delta)).timestamp()),
             "iat": int(datetime.now().timestamp()),
             "iss": "https://rp.example.it",
             "sub": "https://rp.example.it",
@@ -101,7 +103,7 @@ class OpenID4VPBackend(BackendModule):
 
         helper = JWSHelper(jwk)
         jwt = helper.sign({
-            "jti": "f47c96a1-f928-4768-aa30-ef32dc78aa69",
+            "jti": str(uuid.uuid4()),
             "htm": "GET",
             "htu": "https://verifier.example.org/request_uri",
             "iat": int(datetime.now().timestamp()),

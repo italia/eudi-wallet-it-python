@@ -69,6 +69,8 @@ config:
           use: sig
           x5c:
           - '...'
+      # time in ms
+      token_exp_delta: 600000
 
     #This section contains the details for presentation request
     presentation_definitions:

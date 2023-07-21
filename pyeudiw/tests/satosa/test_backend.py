@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import pytest
 
 from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.tools.jwt import JWSHelper
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -43,6 +44,10 @@ CONFIG = {
         'color': '#2B4375',
         'logo_path': '<logo-path>',
         'use_zlib': True,
+    },
+
+    'jwks': {
+        'token_exp_delta': 600000
     }
 }
 
