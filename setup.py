@@ -47,7 +47,8 @@ setup(
         "satosa": [
             "Pillow>=10.0.0,<10.1",
             "device_detector>=5.0,<6",
-            "satosa>=8.4,<8.6"
+            "satosa>=8.4,<8.6",
+            "jinja2>=3.0,<4"
         ],
     }
 )
