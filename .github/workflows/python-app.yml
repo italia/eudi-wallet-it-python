@@ -38,7 +38,8 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-customizations.txt ]; then pip install -r requirements-customizations.txt; fi
         python -m pip install -U setuptools
-        python -m pip install pyeudiw pyeudiw[satosa]
+        python -m pip install -e .
+        python -m pip install "Pillow>=10.0.0,<10.1" "device_detector>=5.0,<6" "satosa>=8.4,<8.6"
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
