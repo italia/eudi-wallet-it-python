@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 import json
 import logging
@@ -27,11 +28,14 @@ class OpenID4VPBackend(BackendModule):
         self.request_url = config['request_endpoint']
         self.error_url = config['error_url']
 
+        self.default_sign_alg = config['default_sign_alg']
+
         self.client_id = config['wallet_relying_party']['client_id']
         self.complete_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
         self.complete_request_url = config['wallet_relying_party']['request_uris'][0]
 
         self.qr_settings = config['qr_code_settings']
+        self.token_exp_delta = config['jwks']['token_exp_delta']
         self.config = config
 
     def register_endpoints(self):
@@ -57,10 +61,10 @@ class OpenID4VPBackend(BackendModule):
         jwk = JWK()
 
         data = {
-            "exp": int((datetime.now() + timedelta(minutes=6)).timestamp()),
+            "exp": int((datetime.now() + timedelta(milliseconds=self.token_exp_delta)).timestamp()),
             "iat": int(datetime.now().timestamp()),
-            "iss": "https://rp.example.it",
-            "sub": "https://rp.example.it",
+            "iss": self.client_id,
+            "sub": self.client_id,
             "jwks": {
                 "keys": [jwk.export_public()]
             },
@@ -69,14 +73,14 @@ class OpenID4VPBackend(BackendModule):
             }
         }
 
-        jwshelper = JWSHelper(jwk)
+        jwshelper = JWSHelper(jwk, alg=self.default_sign_alg)
 
         return Response(
             jwshelper.sign(
                 plain_dict=data,
                 protected={
-                    "alg": "RS256",
-                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
+                    "alg": self.default_sign_alg,
+                    "kid": jwk.jwk["kid"],
                     "typ": "entity-statement+jwt"
                 }
             ),
@@ -99,16 +103,14 @@ class OpenID4VPBackend(BackendModule):
     def redirect_endpoint(self, context, *args):
         jwk = JWK()
 
-        helper = JWSHelper(jwk)
+        helper = JWSHelper(jwk, alg=self.default_sign_alg)
         jwt = helper.sign({
-            "jti": "f47c96a1-f928-4768-aa30-ef32dc78aa69",
+            "jti": str(uuid.uuid4()),
             "htm": "GET",
-            "htu": "https://verifier.example.org/request_uri",
+            "htu": self.complete_request_url,
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
-        },
-            "RS256",
-        )
+        })
 
         response = {"request": jwt}
 
@@ -121,7 +123,7 @@ class OpenID4VPBackend(BackendModule):
     def request_endpoint(self, context, *args):
         jwk = JWK()
 
-        helper = JWSHelper(jwk)
+        helper = JWSHelper(jwk, alg=self.default_sign_alg)
         jwt = helper.sign({
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
             "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
@@ -141,9 +143,7 @@ class OpenID4VPBackend(BackendModule):
                     }
                 ]
             }
-        },
-            "RS256",
-        )
+        })
 
         response = {"response": jwt}
 

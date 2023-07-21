@@ -35,6 +35,8 @@ config:
       - RS256
       - ES256
 
+    default_sign_alg: RS256
+
     #Various informations of the client
     client_id: <base>/<name>
     client_name: Name of an example organization
@@ -69,6 +71,8 @@ config:
           use: sig
           x5c:
           - '...'
+      # time in ms
+      token_exp_delta: 600000
 
     #This section contains the details for presentation request
     presentation_definitions:

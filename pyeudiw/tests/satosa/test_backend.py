@@ -43,7 +43,13 @@ CONFIG = {
         'color': '#2B4375',
         'logo_path': '<logo-path>',
         'use_zlib': True,
-    }
+    },
+
+    'jwks': {
+        'token_exp_delta': 600000
+    },
+
+    'default_sign_alg': 'RS256'
 }
 
 RESPONSE_CODE = "CODE"
