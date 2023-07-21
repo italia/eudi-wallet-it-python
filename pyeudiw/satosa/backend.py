@@ -33,35 +33,23 @@ class OpenID4VPBackend(BackendModule):
         :type auth_callback_func:
         (satosa.context.Context, satosa.internal.InternalData) -> satosa.response.Response
         :type internal_attributes: dict[string, dict[str, str | list[str]]]
-        :type config: dict[str, dict[str, str] | list[str]]
+        :type config: dict[str, dict[str, str] | list[str] | str]
         :type base_url: str
         :type name: str
         """
 
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-<<<<<<< HEAD
-
-        self.entity_configuration_url = config['entity_configuration_endpoint']
-        self.pre_request_url = config['pre_request_endpoint']
-        self.redirect_url = config['redirect_endpoint']
-        self.request_url = config['request_endpoint']
-        self.error_url = config['error_url']
-
-        self.default_sign_alg = config['default_sign_alg']
-
-=======
->>>>>>> 0c636f3de281a69f190c97114d03950d45738d90
+  
         self.client_id = config['wallet_relying_party']['client_id']
+  
+        self.default_sign_alg = config['default_sign_alg']
         
         self.absolute_redirect_url = config['wallet_relying_party']['redirect_uris'][0]
         self.absolute_request_url = config['wallet_relying_party']['request_uris'][0]
 
-<<<<<<< HEAD
         self.qr_settings = config['qr_code_settings']
         self.token_exp_delta = config['jwks']['token_exp_delta']
-=======
-        self.qrcode_settings = config['qrcode_settings']
->>>>>>> 0c636f3de281a69f190c97114d03950d45738d90
+    
         self.config = config
         
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
@@ -130,7 +118,7 @@ class OpenID4VPBackend(BackendModule):
 
     def pre_request_endpoint(self, context, *args):
         payload = {'client_id': self.client_id,
-                   'request_uri': self.complete_request_url}
+                   'request_uri': self.absolute_redirect_url}
         query = urlencode(payload, quote_via=quote_plus)
         response = base64.b64encode(
             bytes(f'eudiw://authorize?{query}', 'UTF-8'))
@@ -148,7 +136,7 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign({
             "jti": str(uuid.uuid4()),
             "htm": "GET",
-            "htu": self.complete_request_url,
+            "htu": self.absolute_request_url,
             "iat": int(datetime.now().timestamp()),
             "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
         })
