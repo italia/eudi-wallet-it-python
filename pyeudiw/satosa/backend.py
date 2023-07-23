@@ -1,14 +1,13 @@
 import base64
 import json
 import logging
-import base64
 import uuid
 
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
-from satosa.response import Response
+
 from satosa.backends.base import BackendModule
-from satosa.response import Redirect
+from satosa.response import Redirect, Response
 
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
@@ -43,7 +42,7 @@ class OpenID4VPBackend(BackendModule):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-        
+
         self.client_id = config['metadata']['client_id']
 
         self.absolute_redirect_url = config['metadata']['redirect_uris'][0]
@@ -51,18 +50,19 @@ class OpenID4VPBackend(BackendModule):
 
         self.qrcode_settings = config['qrcode_settings']
         self.config = config
-        
+
         self.default_exp = int(self.config['jwt_settings']['default_exp'])
-        
+
         # dumps public jwks in the metadata
         self.config['metadata']['jwks'] = config["metadata_jwks"]
-        
-        self.federation_jwk = JWK(self.config['federation']['federation_jwks'][0])
+
+        self.federation_jwk = JWK(
+            self.config['federation']['federation_jwks'][0])
         self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
-        
+
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
-        
+
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
     def register_endpoints(self):
@@ -99,7 +99,7 @@ class OpenID4VPBackend(BackendModule):
         return self.pre_request_endpoint(context, internal_request)
 
     def entity_configuration_endpoint(self, context, *args):
-        
+
         _now = datetime.now()
         data = {
             "exp": int((_now + timedelta(minutes=self.default_exp)).timestamp()),
@@ -134,19 +134,20 @@ class OpenID4VPBackend(BackendModule):
             'client_id': self.client_id,
             'request_uri': self.absolute_request_url
         }
-        
+
         url_params = urlencode(payload, quote_via=quote_plus)
-        
+
         res_url = f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             return Redirect(res_url)
-        
+
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode_settings'])
         stream = qrcode.for_html()
 
         result = self.template.qrcode_page.render(
-            {"title": "frame the qrcode", 'qrcode_base64': base64.b64encode(stream.encode()).decode()}
+            {"title": "frame the qrcode", 'qrcode_base64': base64.b64encode(
+                stream.encode()).decode()}
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -172,14 +173,13 @@ class OpenID4VPBackend(BackendModule):
 
     def request_endpoint(self, context, *args):
         jwk = self.metadata_jwk
-        
+
         # validate, if any, the DPoP http request header
-        
+
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # the wallet uses the endpoint authentication ...
             breakpoint()
-            pass
-        
+
         helper = JWSHelper(jwk)
         data = {
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
@@ -238,4 +238,3 @@ class OpenID4VPBackend(BackendModule):
         :param binding: The saml binding type
         :return: response
         """
-        pass

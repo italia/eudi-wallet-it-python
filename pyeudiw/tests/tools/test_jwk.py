@@ -6,8 +6,8 @@ from pyeudiw.jwk import JWK
 @pytest.mark.parametrize(
     "key, key_type, hash_func",
     [
-        (None, None, None), 
-        (None, "EC", None), 
+        (None, None, None),
+        (None, "EC", None),
         (None, "RSA", None)
     ]
 )
@@ -43,6 +43,7 @@ def test_export_private_pem(key_type):
     assert jwk_private_pem
     if key_type:
         assert f"BEGIN {key_type} PRIVATE KEY" in jwk_private_pem
+
 
 def test_export_public_pem():
     jwk = JWK()

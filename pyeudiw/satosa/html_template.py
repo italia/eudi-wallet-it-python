@@ -2,7 +2,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
 class Jinja2TemplateHandler:
-    
+
     def __init__(self, config):
         config = config['ui']
 
@@ -21,14 +21,12 @@ class Jinja2TemplateHandler:
                 "static": _static_url,
             }
         )
-        
+
         self.qrcode_page = self.loader.get_template(
             config["qrcode_template"]
         )
-        
+
         # TODO - for rendering custom errors
         # self.error_page = self.loader.get_template(
-            # config["error_template"]
+        # config["error_template"]
         # )
-    
-    
