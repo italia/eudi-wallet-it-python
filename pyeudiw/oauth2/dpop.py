@@ -1,12 +1,16 @@
 import hashlib
+import logging
 import uuid
 
 from pydantic import BaseModel, HttpUrl
 from pyeudiw.jwk.schema import JwkSchema
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.tools.utils import iat_now
 from typing import Literal
+
+
+logger = logging.getLogger("pyeudiw.oauth2.dpop")
 
 
 class DPoPTokenHeaderSchema(BaseModel):
@@ -23,7 +27,8 @@ class DPoPTokenHeaderSchema(BaseModel):
         "PS384",
         "PS512",
     ]
-    jwk: JwkSchema
+    # TODO - dynamic schema loader if EC or RSA
+    # jwk: JwkSchema
 
 
 class DPoPTokenPayloadSchema(BaseModel):
@@ -51,9 +56,16 @@ class DPoPIssuer:
             "iat": iat_now(),
             "ath": hashlib.sha256(self.token.encode()).hexdigest()
         }
-        jwt = self.signer.sign(data)
+        jwt = self.signer.sign(
+            data, 
+            protected={
+                'typ': "dpop+jwt",
+                'jwk': self.private_jwk.public_key
+            }
+        )
         return jwt
         # TODO assertion
+
 
 class DPoPVerifier:
     dpop_header_prefix = 'DPoP '
@@ -76,6 +88,20 @@ class DPoPVerifier:
     def is_valid(self):
         jws_verifier = JWSHelper(self.public_jwk)
         dpop_valid = jws_verifier.verify(self.dpop_token)
+        
+        header = unpad_jwt_header(self.proof)
+        DPoPTokenHeaderSchema(**header)
+        
+        if header['jwk'] != self.public_jwk:
+            logger.error(
+                "DPoP proof validation error,  "
+                "header['jwk'] != self.public_jwk, " 
+                f"{header['jwk']} != {self.public_jwk}"
+            )
+            return False
+        
         payload = unpad_jwt_payload(self.proof)
+        DPoPTokenPayloadSchema(**payload)
+        
         proof_valid = hashlib.sha256(self.dpop_token.encode()).hexdigest() == payload['ath']
-        return dpop_valid and proof_valid 
+        return dpop_valid and proof_valid

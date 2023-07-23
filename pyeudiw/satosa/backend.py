@@ -171,8 +171,9 @@ class OpenID4VPBackend(BackendModule):
         # validate, if any, the DPoP http request header
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
-            # the wallet uses the endpoint authentication ...
-            breakpoint()
+            # the wallet instance MAY use the endpoint authentication to give its WIA
+            # dpop = DPoPVerifier()
+            pass
 
         helper = JWSHelper(jwk)
         data = {
