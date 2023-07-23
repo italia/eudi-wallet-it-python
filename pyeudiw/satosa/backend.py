@@ -8,10 +8,8 @@ from urllib.parse import urlencode, quote_plus
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
-from satosa.exception import (
-    SATOSABadRequestError,
-    SATOSANoBoundEndpointError
-)
+from satosa.exception import SATOSABadRequestError
+from satosa.exception import SATOSANoBoundEndpointError
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
