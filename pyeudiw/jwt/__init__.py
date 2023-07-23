@@ -12,6 +12,7 @@ from cryptojwt.jws.jws import JWS as JWSec
 from typing import Union
 
 from pyeudiw.jwk import JWK
+from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -23,13 +24,6 @@ DEFAUL_SIG_KTY_MAP = {
 DEFAULT_JWS_ALG = "ES256"
 DEFAULT_JWE_ALG = "RSA-OAEP"
 DEFAULT_JWE_ENC = "A256CBC-HS512"
-
-
-def unpad_jwt_header(jwt: str) -> dict:
-    b = jwt.split(".")[0]
-    padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
-    data = json.loads(base64.urlsafe_b64decode(padded))
-    return data
 
 
 class JWEHelper():
@@ -88,9 +82,11 @@ class JWEHelper():
 
 
 class JWSHelper:
-    def __init__(self, jwk: JWK):
+    def __init__(self, jwk: Union[JWK, dict]):
         self.jwk = jwk
-        self.alg = DEFAUL_SIG_KTY_MAP[jwk.key.kty]
+        if isinstance(jwk, dict):
+            self.jwk = JWK(jwk)
+        self.alg = DEFAUL_SIG_KTY_MAP[self.jwk.key.kty]
 
     def sign(
         self,

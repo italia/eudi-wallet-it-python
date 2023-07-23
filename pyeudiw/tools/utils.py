@@ -2,8 +2,6 @@ from datetime import timezone
 # from django.utils.timezone import make_aware
 from secrets import token_hex
 
-from . jwt import unpad_jwt_header
-
 
 import datetime
 import json
@@ -61,20 +59,6 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> 
             logger.error(
                 f"Failed to download jwks from {signed_jwks_uri}: {e}")
     return jwks_list
-
-
-def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
-    """
-        docs here
-    """
-    head = unpad_jwt_header(jwt)
-    kid = head["kid"]
-    if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
-        provider_jwks = provider_jwks['keys']
-    for jwk in provider_jwks:
-        if jwk["kid"] == kid:
-            return jwk
-    return {}
 
 
 def random_token(n=254):

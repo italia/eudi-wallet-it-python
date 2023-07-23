@@ -1,8 +1,11 @@
 import pytest
 
+from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.jwk import JWK
-from pyeudiw.tools.jwt import JWSHelper
+from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.tools.utils import iat_now
+
 
 
 WALLET_INSTANCE_ATTESTATION = {
@@ -54,10 +57,35 @@ def private_jwk():
 def jwshelper(private_jwk):
     return JWSHelper(private_jwk)
 
+@pytest.fixture
+def wia_jws(jwshelper):
+    wia = jwshelper.sign(
+        WALLET_INSTANCE_ATTESTATION,
+        protected={'trust_chain': [], 'x5c': []}
+    )
+    return wia
 
-def test_create(jwshelper):
-    jwshelper.sign(WALLET_INSTANCE_ATTESTATION)
-
-
-def test_validate():
-    pass
+def test_create_validate_dpop_http_headers(wia_jws, private_jwk):
+    # create
+    header = unpad_jwt_header(wia_jws)
+    payload = unpad_jwt_payload(wia_jws)
+    # TODO assertions
+    
+    new_dpop = DPoPIssuer(
+        htu='https://example.org/redirect', 
+        token=wia_jws, 
+        private_jwk=private_jwk
+    )
+    proof = new_dpop.proof
+    
+    # TODO assertions
+    
+    # verify
+    dpop = DPoPVerifier(
+        public_jwk = private_jwk.public_key,
+        http_header_authz = f"DPoP {wia_jws}",
+        http_header_dpop = proof
+    )
+    
+    assert dpop.is_valid
+    # TODO assertions

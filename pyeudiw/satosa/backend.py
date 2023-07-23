@@ -12,7 +12,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.jwk import JWK
-from pyeudiw.tools.jwt import JWSHelper
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.tools.mobile import is_smartphone
 
 logger = logging.getLogger("openid4vp_backend")
@@ -155,13 +155,7 @@ class OpenID4VPBackend(BackendModule):
         jwk = self.metadata_jwk
 
         helper = JWSHelper(jwk)
-        data = {
-            "jti": str(uuid.uuid4()),
-            "htm": "GET",
-            "htu": f"{self.client_id}/request_uri",
-            "iat": int(datetime.now().timestamp()),
-            "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
-        }
+        data = {} #TODO
         jwt = helper.sign(data)
         response = {"request": jwt}
 
