@@ -8,8 +8,10 @@ from urllib.parse import urlencode, quote_plus
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
-from satosa.exception import SATOSABadRequestError
-from satosa.exception import SATOSANoBoundEndpointError
+from pyeudiw.satosa.exceptions import (
+    BadRequestError,
+    NoBoundEndpointError
+)
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
@@ -203,10 +205,10 @@ class OpenID4VPBackend(BackendModule):
         self.metadata_jwk
 
         if context.request_method.lower() != 'post':
-            raise SATOSABadRequestError("HTTP Method not supported")
+            raise BadRequestError("HTTP Method not supported")
 
         if context.request_uri not in self.config["metadata"]['redirect_uris']:
-            raise SATOSANoBoundEndpointError("request_uri not valid")
+            raise NoBoundEndpointError("request_uri not valid")
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
 
