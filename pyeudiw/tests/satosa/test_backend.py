@@ -351,8 +351,10 @@ class TestOpenID4VPBackend:
         msg = json.loads(redirect_endpoint.message)
         assert msg["request"]
 
-    def test_request_endpoint(self):
-        request_endpoint = self.backend.request_endpoint(None)
+    def test_request_endpoint(self, context):
+        breakpoint()
+        request_endpoint = self.backend.request_endpoint(context)
+        
         assert request_endpoint
         assert request_endpoint.status == "200"
         assert request_endpoint.message

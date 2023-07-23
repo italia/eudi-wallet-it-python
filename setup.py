@@ -21,7 +21,6 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -42,6 +41,7 @@ setup(
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
         "qrcode>=7.4.2,<7.5",
+        "pydantic>=2.0,<2.2"
     ],
     extra_require={
         "satosa": [

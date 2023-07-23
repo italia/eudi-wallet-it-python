@@ -11,7 +11,7 @@ from cryptojwt.jwe.jwe import factory
 from cryptojwt.jws.jws import JWS as JWSec
 from typing import Union
 
-from .jwk import JWK
+from pyeudiw.jwk import JWK
 
 DEFAULT_HASH_FUNC = "SHA-256"
 

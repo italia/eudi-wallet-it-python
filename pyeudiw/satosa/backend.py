@@ -12,7 +12,7 @@ from satosa.response import Redirect
 
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
-from pyeudiw.tools.jwk import JWK
+from pyeudiw.jwk import JWK
 from pyeudiw.tools.jwt import JWSHelper
 from pyeudiw.tools.mobile import is_smartphone
 
@@ -134,6 +134,7 @@ class OpenID4VPBackend(BackendModule):
             'client_id': self.client_id,
             'request_uri': self.absolute_request_url
         }
+        
         url_params = urlencode(payload, quote_via=quote_plus)
         
         res_url = f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'
@@ -171,7 +172,14 @@ class OpenID4VPBackend(BackendModule):
 
     def request_endpoint(self, context, *args):
         jwk = self.metadata_jwk
-
+        
+        # validate, if any, the DPoP http request header
+        
+        if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
+            # the wallet uses the endpoint authentication ...
+            breakpoint()
+            pass
+        
         helper = JWSHelper(jwk)
         data = {
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",

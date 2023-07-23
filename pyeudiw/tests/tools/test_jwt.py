@@ -1,6 +1,6 @@
 import pytest
 
-from pyeudiw.tools.jwk import JWK
+from pyeudiw.jwk import JWK
 from pyeudiw.tools.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
 
 JWKs_EC = [

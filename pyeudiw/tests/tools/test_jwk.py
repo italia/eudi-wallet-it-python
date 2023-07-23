@@ -1,6 +1,6 @@
 import pytest
 
-from pyeudiw.tools.jwk import JWK
+from pyeudiw.jwk import JWK
 
 
 @pytest.mark.parametrize(
