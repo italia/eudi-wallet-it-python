@@ -1,20 +1,22 @@
 import base64
 import json
 import logging
-import base64
 import uuid
 
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
-from satosa.response import Response
-from satosa.backends.base import BackendModule
-from satosa.response import Redirect
 
+from satosa.backends.base import BackendModule
+from satosa.response import Redirect, Response
+
+from pyeudiw.oauth2.dpop import DPoPVerifier
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
-from pyeudiw.tools.jwk import JWK
-from pyeudiw.tools.jwt import JWSHelper
 from pyeudiw.tools.mobile import is_smartphone
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger("openid4vp_backend")
 
@@ -43,7 +45,7 @@ class OpenID4VPBackend(BackendModule):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-        
+
         self.client_id = config['metadata']['client_id']
 
         self.absolute_redirect_url = config['metadata']['redirect_uris'][0]
@@ -51,18 +53,19 @@ class OpenID4VPBackend(BackendModule):
 
         self.qrcode_settings = config['qrcode_settings']
         self.config = config
-        
+
         self.default_exp = int(self.config['jwt_settings']['default_exp'])
-        
+
         # dumps public jwks in the metadata
         self.config['metadata']['jwks'] = config["metadata_jwks"]
-        
-        self.federation_jwk = JWK(self.config['federation']['federation_jwks'][0])
+
+        self.federation_jwk = JWK(
+            self.config['federation']['federation_jwks'][0])
         self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
-        
+
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
-        
+
         logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
 
     def register_endpoints(self):
@@ -99,7 +102,7 @@ class OpenID4VPBackend(BackendModule):
         return self.pre_request_endpoint(context, internal_request)
 
     def entity_configuration_endpoint(self, context, *args):
-        
+
         _now = datetime.now()
         data = {
             "exp": int((_now + timedelta(minutes=self.default_exp)).timestamp()),
@@ -134,18 +137,20 @@ class OpenID4VPBackend(BackendModule):
             'client_id': self.client_id,
             'request_uri': self.absolute_request_url
         }
+
         url_params = urlencode(payload, quote_via=quote_plus)
-        
-        res_url = f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'
+
+        res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             return Redirect(res_url)
-        
+
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode_settings'])
         stream = qrcode.for_html()
 
         result = self.template.qrcode_page.render(
-            {"title": "frame the qrcode", 'qrcode_base64': base64.b64encode(stream.encode()).decode()}
+            {"title": "frame the qrcode", 'qrcode_base64': base64.b64encode(
+                stream.encode()).decode()}
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -153,13 +158,7 @@ class OpenID4VPBackend(BackendModule):
         jwk = self.metadata_jwk
 
         helper = JWSHelper(jwk)
-        data = {
-            "jti": str(uuid.uuid4()),
-            "htm": "GET",
-            "htu": f"{self.client_id}/request_uri",
-            "iat": int(datetime.now().timestamp()),
-            "ath": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
-        }
+        data = {}  # TODO
         jwt = helper.sign(data)
         response = {"request": jwt}
 
@@ -169,29 +168,65 @@ class OpenID4VPBackend(BackendModule):
             content="application/jose; charset=utf8"
         )
 
+    def _request_endpoint_dpop(self, context, *args):
+        """ This validates, if any, the DPoP http request header """
+
+        if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
+            # the wallet instance MAY use the endpoint authentication to give its WIA
+            
+            # TODO - validate the trust to the Wallet Provider
+            # using the TA public key validate trust_chain and or x5c
+            
+            # take WIA
+            wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
+            dpop = DPoPVerifier(
+                public_jwk = wia['cnf']['jwk'],
+                http_header_authz = context.http_headers['HTTP_AUTHORIZATION'],
+                http_header_dpop = context.http_headers['HTTP_DPOP']
+            )
+            
+            if not dpop.is_valid:
+                # 
+                logger.error("MESSAGE HERE")
+                raise Exception(
+                    "return an HTTP response application/json with the error and error_description "
+                    "according to the UX design"
+                )
+            
+            # TODO
+            # assert and configure the wallet capabilities?
+            # assert and configure the wallet  Attested Security Context?
+            
+        else:
+            # TODO - check that this logging system works ...
+            logger.warning(
+                "The Wallet Instance didn't provide its Wallet Instance Attestation "
+                "a default set of capabilities and a low security level are accorded."
+            
+            )
+
     def request_endpoint(self, context, *args):
         jwk = self.metadata_jwk
-
+        
+        # check DPOP for WIA if any
+        self._request_endpoint_dpop(context)
+        
+        # TODO
+        # take decision, do customization if the WIA is available
+        
         helper = JWSHelper(jwk)
         data = {
-            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
-            "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
-            "presentation_submission": {
-                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-                "descriptor_map": [
-                    {
-                        "id": "eu.europa.ec.eudiw.pid.it.1:unique_id",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
-                        "format": "vc+sd-jwt"
-                    },
-                    {
-                        "id": "eu.europa.ec.eudiw.pid.it.1:given_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[1]",
-                        "format": "vc+sd-jwt"
-                    }
-                ]
-            }
+          "scope": "eu.europa.ec.eudiw.pid.it.1 pid-sd-jwt:unique_id+given_name+family_name",
+          "client_id_scheme": "entity_id",
+          "client_id": self.client_id,
+          "response_mode": "direct_post.jwt",
+          "response_type": "vp_token",
+          "response_uri": self.config["metadata"]["redirect_uris"][0],
+          "nonce": str(uuid.uuid4()),
+          "state": str(uuid.uuid4()),
+          "iss": self.client_id,
+          "iat": iat_now(),
+          "exp": iat_now() + (self.default_exp * 60) # in seconds 
         }
         jwt = helper.sign(data)
 
@@ -200,7 +235,7 @@ class OpenID4VPBackend(BackendModule):
         return Response(
             json.dumps(response),
             status="200",
-            content="text/json; charset=utf8"
+            content="application/json; charset=utf8"
         )
 
     def handle_error(
@@ -230,4 +265,3 @@ class OpenID4VPBackend(BackendModule):
         :param binding: The saml binding type
         :return: response
         """
-        pass

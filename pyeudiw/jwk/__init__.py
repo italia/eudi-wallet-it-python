@@ -8,24 +8,25 @@ from cryptography.hazmat.primitives import serialization
 
 
 KEY_TYPES_FUNC = dict(
-    EC = new_ec_key,
-    RSA = new_rsa_key
+    EC=new_ec_key,
+    RSA=new_rsa_key
 )
+
 
 class JWK():
     def __init__(
-        self, 
-        key :Union[dict, None] = None, 
-        key_type :str = "EC", 
-        hash_func :str = 'SHA-256',
-        ec_crv :str = "P-256"
-) -> None:
-    
+        self,
+        key: Union[dict, None] = None,
+        key_type: str = "EC",
+        hash_func: str = 'SHA-256',
+        ec_crv: str = "P-256"
+    ) -> None:
+
         kwargs = {}
-        
+
         if key_type and not KEY_TYPES_FUNC.get(key_type, None):
             raise NotImplementedError(f"JWK key type {key_type} not found.")
-        
+
         if key:
             if isinstance(key, dict):
                 self.key = key_from_jwk_dict(key)
@@ -35,7 +36,7 @@ class JWK():
             # create new one
             kwargs['crv'] = ec_crv
             self.key = KEY_TYPES_FUNC[key_type or 'EC'](**kwargs)
-        
+
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
         self.jwk = self.key.to_dict()
         self.jwk["kid"] = self.thumbprint.decode()
@@ -63,10 +64,10 @@ class JWK():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         return cert.decode()
-    
+
     def as_dict(self):
         return self.jwk
-    
+
     def __repr__(self):
         # private part!
         return self.as_json()

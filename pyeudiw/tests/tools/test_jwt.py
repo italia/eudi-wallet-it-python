@@ -1,7 +1,8 @@
 import pytest
 
-from pyeudiw.tools.jwk import JWK
-from pyeudiw.tools.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWEHelper, JWSHelper, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.jwt.utils import unpad_jwt_header
 
 JWKs_EC = [
     (JWK(key_type="EC"), {"key": "value"}),
