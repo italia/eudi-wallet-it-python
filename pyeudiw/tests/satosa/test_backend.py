@@ -7,7 +7,8 @@ import urllib.parse
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.tests.oauth2.test_dpop import PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
+from pyeudiw.jwk import JWK
+from pyeudiw.tools.utils import iat_now
 
 from satosa.context import Context
 from satosa.internal import InternalData
@@ -266,6 +267,42 @@ INTERNAL_ATTRIBUTES: dict = {
     'attributes': {}
 }
 
+
+PRIVATE_JWK = JWK()
+PUBLIC_JWK = PRIVATE_JWK.public_key
+
+
+WALLET_INSTANCE_ATTESTATION = {
+    "iss": "https://wallet-provider.example.org",
+    "sub": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
+    "type": "WalletInstanceAttestation",
+    "policy_uri": "https://wallet-provider.example.org/privacy_policy",
+    "tos_uri": "https://wallet-provider.example.org/info_policy",
+    "logo_uri": "https://wallet-provider.example.org/logo.svg",
+    "asc": "https://wallet-provider.example.org/LoA/basic",
+    "cnf":
+    {
+        "jwk": PUBLIC_JWK
+    },
+    "authorization_endpoint": "eudiw:",
+    "response_types_supported": [
+        "vp_token"
+    ],
+    "vp_formats_supported": {
+        "jwt_vp_json": {
+            "alg_values_supported": ["ES256"]
+        },
+        "jwt_vc_json": {
+            "alg_values_supported": ["ES256"]
+        }
+    },
+    "request_object_signing_alg_values_supported": [
+        "ES256"
+    ],
+    "presentation_definition_uri_supported": False,
+    "iat": iat_now(),
+    "exp": iat_now() + 1024
+}
 
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
