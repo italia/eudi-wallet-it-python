@@ -1,7 +1,6 @@
 import base64
 import json
 import logging
-import uuid
 
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
@@ -155,7 +154,7 @@ class OpenID4VPBackend(BackendModule):
         jwk = self.metadata_jwk
 
         helper = JWSHelper(jwk)
-        data = {} #TODO
+        data = {}  # TODO
         jwt = helper.sign(data)
         response = {"request": jwt}
 
