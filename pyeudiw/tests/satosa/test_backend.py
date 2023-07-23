@@ -352,14 +352,14 @@ class TestOpenID4VPBackend:
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
         assert qs["request_uri"][0] == CONFIG["metadata"]["request_uris"][0]
 
-    def test_redirect_endpoint(self):
-        redirect_endpoint = self.backend.redirect_endpoint(None)
-        assert redirect_endpoint
-        assert redirect_endpoint.status == "200"
-        assert redirect_endpoint.message
+    def test_redirect_endpoint(self, context):
 
-        msg = json.loads(redirect_endpoint.message)
-        assert msg["request"]
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
+
+        redirect_endpoint = self.backend.redirect_endpoint(context)
+        assert redirect_endpoint
+        # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
         
@@ -393,10 +393,10 @@ class TestOpenID4VPBackend:
         # TODO assertion su JWS decodificato
         # ...
 
-    def test_handle_error(self):
+    def test_handle_error(self, context):
         error_message = "Error message!"
-        error_resp = self.backend.handle_error(error_message)
-        assert error_resp.status == "403"
+        error_resp = self.backend.handle_error(context, error_message)
+        assert error_resp.status == "500"
         assert error_resp.message
         err = json.loads(error_resp.message)
         assert err["message"] == error_message

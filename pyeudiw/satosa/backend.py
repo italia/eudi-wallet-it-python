@@ -6,7 +6,13 @@ import uuid
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
 
+import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
+from satosa.exception import (
+    SATOSABadRequestError, 
+    SATOSANoBoundEndpointError
+)
+from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
 from pyeudiw.oauth2.dpop import DPoPVerifier
@@ -66,7 +72,12 @@ class OpenID4VPBackend(BackendModule):
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
 
-        logger.debug(f"Loaded configuration:\n{json.dumps(config)}")
+        logger.debug(
+            lu.LOG_FMT.format(
+                id="OpenID4VP init", 
+                message=f"Loaded configuration:\n{json.dumps(config)}"
+            )
+        )
 
     def register_endpoints(self):
         """
@@ -83,7 +94,13 @@ class OpenID4VPBackend(BackendModule):
                     f"^{v.lstrip('/')}$", getattr(self, f"{k}_endpoint")
                 )
             )
-            logger.info(f"[OpenID4VP] Loaded endpoint: '{k}'")
+
+            logger.debug(
+                lu.LOG_FMT.format(
+                    id="OpenID4VP endpoint registration", 
+                    message=f"[OpenID4VP] Loaded endpoint: '{k}'"
+                )
+            )
 
         return url_map
 
@@ -154,19 +171,76 @@ class OpenID4VPBackend(BackendModule):
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
+    def _translate_response(self, response, issuer):
+        """
+        Translates wallet response to SATOSA internal response.
+        :type response: dict[str, str]
+        :type issuer: str
+        :type subject_type: str
+        :rtype: InternalData
+        :param response: Dictioary with attribute name as key.
+        :param issuer: The oidc op that gave the repsonse.
+        :param subject_type: public or pairwise according to oidc standard.
+        :return: A SATOSA internal response.
+        """
+        timestamp = response.get(
+            "auth_time", 
+            response.get('iat', int(datetime.utcnow().timestamp()))
+        )
+        
+        # it may depends by credential type and attested security context evaluated
+        # if WIA was previously submitted by the Wallet
+        
+        # auth_class_ref = response.get("acr", response.get("amr", UNSPECIFIED))
+        # auth_info = AuthenticationInformation(auth_class_ref, timestamp, issuer)
+        #internal_resp = InternalData(auth_info=auth_info)
+        internal_resp = InternalData()
+        internal_resp.attributes = self.converter.to_internal("openid4vp", response)
+        internal_resp.subject_id = "take the subject id from the digital credential" # response["sub"]
+        return internal_resp
+
     def redirect_endpoint(self, context, *args):
         jwk = self.metadata_jwk
-
-        helper = JWSHelper(jwk)
-        data = {}  # TODO
-        jwt = helper.sign(data)
-        response = {"request": jwt}
-
-        return Response(
-            json.dumps(response),
-            status="200",
-            content="application/jose; charset=utf8"
+        
+        if context.request_method.lower() != 'post':
+            raise SATOSABadRequestError("HTTP Method not supported")
+        
+        if  context.request_uri not in self.config["metadata"]['redirect_uris']:
+            raise SATOSANoBoundEndpointError("request_uri not valid")
+        
+        # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
+        
+        # get state and nonce, do lookup on the db -> if not -> exception
+        
+        # check with pydantic on the JWT schema
+        
+        # check if vp_token is string or array, if array iter all the elements
+        
+        # take the single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
+        
+        # establish the trust with the issuer of the credential by checking it to the revocation
+        
+        # check the revocation of the credential
+        
+        # for all the valid credentials, take the payload and the disclosure and discose the user attributes
+        
+        # returns the user attributes .. something like the ...
+        
+        all_user_claims = dict()
+        
+        logger.debug(
+            lu.LOG_FMT.format(
+                id=lu.get_session_id(context.state), 
+                message=f"Wallet disclosure: {all_user_claims}"
+            )
         )
+        
+        _info = {"issuer": {}}
+        internal_resp = self._translate_response(
+            all_user_claims, _info["issuer"]
+        )
+        return self.auth_callback_func(context, internal_resp)
+        
 
     def _request_endpoint_dpop(self, context, *args):
         """ This validates, if any, the DPoP http request header """
@@ -189,7 +263,8 @@ class OpenID4VPBackend(BackendModule):
                 # 
                 logger.error("MESSAGE HERE")
                 raise Exception(
-                    "return an HTTP response application/json with the error and error_description "
+                    "return an HTTP response application/json with "
+                    "the error and error_description "
                     "according to the UX design"
                 )
             
@@ -216,10 +291,10 @@ class OpenID4VPBackend(BackendModule):
         
         helper = JWSHelper(jwk)
         data = {
-          "scope": "eu.europa.ec.eudiw.pid.it.1 pid-sd-jwt:unique_id+given_name+family_name",
-          "client_id_scheme": "entity_id",
+          "scope": ' '.join(self.config['authorization']['scopes']),
+          "client_id_scheme": "entity_id", # that's federation.
           "client_id": self.client_id,
-          "response_mode": "direct_post.jwt",
+          "response_mode": "direct_post.jwt", # only HTTP POST is allowed.
           "response_type": "vp_token",
           "response_uri": self.config["metadata"]["redirect_uris"][0],
           "nonce": str(uuid.uuid4()),
@@ -240,28 +315,32 @@ class OpenID4VPBackend(BackendModule):
 
     def handle_error(
         self,
+        context :dict,
         message: str,
         troubleshoot: str = "",
         err="",
+        err_code="500",
         template_path="templates",
-        error_template="spid_login_error.html",
+        error_template="error.html",
     ):
-        """
-        Todo: Jinja2 template loader and rendering :)
-        """
-        logger.error(f"Failed to parse authn request: {message} {err}")
-        result = json.dumps(
-            {"message": message, "troubleshoot": troubleshoot}
+        
+        # TODO: evaluate with UX designers if Jinja2 template 
+        # loader and rendering is required, it seems not.
+        logger.error(
+            lu.LOG_FMT.format(
+                id=lu.get_session_id(context.state), 
+                message=f"{message}: {err}. {troubleshoot}"
+            )
         )
-        return Response(result, content="text/json; charset=utf8", status="403")
-
-    def authn_response(self, context, binding):
-        """
-        Endpoint for the idp response
-        :type context: satosa.context.Context
-        :type binding: str
-        :rtype: satosa.response.Response
-        :param context: The current context
-        :param binding: The saml binding type
-        :return: response
-        """
+        
+        result = json.dumps(
+            {
+                "message": message, 
+                "troubleshoot": troubleshoot
+            }
+        )
+        return Response(
+            result, 
+            content = "text/json; charset=utf8", 
+            status = err_code
+        )
