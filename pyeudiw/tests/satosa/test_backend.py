@@ -389,6 +389,9 @@ class TestOpenID4VPBackend:
 
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
+        
+        # TODO assertion su JWS decodificato
+        # ...
 
     def test_handle_error(self):
         error_message = "Error message!"

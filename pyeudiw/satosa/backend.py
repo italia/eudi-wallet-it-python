@@ -211,6 +211,9 @@ class OpenID4VPBackend(BackendModule):
         # check DPOP for WIA if any
         self._request_endpoint_dpop(context)
         
+        # TODO
+        # take decision, do customization if the WIA is available
+        
         helper = JWSHelper(jwk)
         data = {
           "scope": "eu.europa.ec.eudiw.pid.it.1 pid-sd-jwt:unique_id+given_name+family_name",
@@ -232,7 +235,7 @@ class OpenID4VPBackend(BackendModule):
         return Response(
             json.dumps(response),
             status="200",
-            content="text/json; charset=utf8"
+            content="application/json; charset=utf8"
         )
 
     def handle_error(
