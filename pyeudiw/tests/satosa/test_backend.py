@@ -15,7 +15,6 @@ from satosa.state import State
 from unittest.mock import Mock
 
 
-
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
 AUTH_ENDPOINT = "https://example.com/auth"
@@ -50,7 +49,7 @@ CONFIG = {
         "default_exp": 6
     },
     "authorization": {
-        "url_scheme": "eudiw", # eudiw://
+        "url_scheme": "eudiw",  # eudiw://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
     },
     "federation": {
@@ -362,25 +361,25 @@ class TestOpenID4VPBackend:
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
-        
+
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
             WALLET_INSTANCE_ATTESTATION,
             protected={'trust_chain': [], 'x5c': []}
         )
-        
+
         dpop_wia = wia
         dpop_proof = DPoPIssuer(
             htu=CONFIG['metadata']['request_uris'][0],
-            token = dpop_wia,
-            private_jwk = PRIVATE_JWK
+            token=dpop_wia,
+            private_jwk=PRIVATE_JWK
         ).proof
 
         context.http_headers = dict(
-            HTTP_AUTHORIZATION = f"DPoP {dpop_wia}",
-            HTTP_DPOP = dpop_proof
+            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}",
+            HTTP_DPOP=dpop_proof
         )
-        
+
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
@@ -389,7 +388,7 @@ class TestOpenID4VPBackend:
 
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
-        
+
         # TODO assertion su JWS decodificato
         # ...
 

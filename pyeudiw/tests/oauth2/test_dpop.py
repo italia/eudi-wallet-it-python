@@ -65,9 +65,9 @@ def wia_jws(jwshelper):
 
 def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     # create
-    headers = unpad_jwt_header(wia_jws)
+    unpad_jwt_header(wia_jws)
     payload = unpad_jwt_payload(wia_jws)
-    # TODO assertions for upadded headers and payload 
+    # TODO assertions for upadded headers and payload
 
     new_dpop = DPoPIssuer(
         htu='https://example.org/redirect',
@@ -87,4 +87,3 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
 
     assert dpop.is_valid
     # TODO assertions
-    

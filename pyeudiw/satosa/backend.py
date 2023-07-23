@@ -9,7 +9,7 @@ from urllib.parse import urlencode, quote_plus
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
 from satosa.exception import (
-    SATOSABadRequestError, 
+    SATOSABadRequestError,
     SATOSANoBoundEndpointError
 )
 from satosa.internal import InternalData
@@ -74,7 +74,7 @@ class OpenID4VPBackend(BackendModule):
 
         logger.debug(
             lu.LOG_FMT.format(
-                id="OpenID4VP init", 
+                id="OpenID4VP init",
                 message=f"Loaded configuration:\n{json.dumps(config)}"
             )
         )
@@ -97,7 +97,7 @@ class OpenID4VPBackend(BackendModule):
 
             logger.debug(
                 lu.LOG_FMT.format(
-                    id="OpenID4VP endpoint registration", 
+                    id="OpenID4VP endpoint registration",
                     message=f"[OpenID4VP] Loaded endpoint: '{k}'"
                 )
             )
@@ -184,124 +184,125 @@ class OpenID4VPBackend(BackendModule):
         :return: A SATOSA internal response.
         """
         timestamp = response.get(
-            "auth_time", 
+            "auth_time",
             response.get('iat', int(datetime.utcnow().timestamp()))
         )
-        
+
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
-        
+
         # auth_class_ref = response.get("acr", response.get("amr", UNSPECIFIED))
         # auth_info = AuthenticationInformation(auth_class_ref, timestamp, issuer)
-        #internal_resp = InternalData(auth_info=auth_info)
+        # internal_resp = InternalData(auth_info=auth_info)
         internal_resp = InternalData()
-        internal_resp.attributes = self.converter.to_internal("openid4vp", response)
-        internal_resp.subject_id = "take the subject id from the digital credential" # response["sub"]
+        internal_resp.attributes = self.converter.to_internal(
+            "openid4vp", response)
+        # response["sub"]
+        internal_resp.subject_id = "take the subject id from the digital credential"
         return internal_resp
 
     def redirect_endpoint(self, context, *args):
-        jwk = self.metadata_jwk
-        
+        self.metadata_jwk
+
         if context.request_method.lower() != 'post':
             raise SATOSABadRequestError("HTTP Method not supported")
-        
-        if  context.request_uri not in self.config["metadata"]['redirect_uris']:
+
+        if context.request_uri not in self.config["metadata"]['redirect_uris']:
             raise SATOSANoBoundEndpointError("request_uri not valid")
-        
+
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        
+
         # get state and nonce, do lookup on the db -> if not -> exception
-        
+
         # check with pydantic on the JWT schema
-        
+
         # check if vp_token is string or array, if array iter all the elements
-        
+
         # take the single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-        
+
         # establish the trust with the issuer of the credential by checking it to the revocation
-        
+
         # check the revocation of the credential
-        
+
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
-        
+
         # returns the user attributes .. something like the ...
-        
+
         all_user_claims = dict()
-        
+
         logger.debug(
             lu.LOG_FMT.format(
-                id=lu.get_session_id(context.state), 
+                id=lu.get_session_id(context.state),
                 message=f"Wallet disclosure: {all_user_claims}"
             )
         )
-        
+
         _info = {"issuer": {}}
         internal_resp = self._translate_response(
             all_user_claims, _info["issuer"]
         )
         return self.auth_callback_func(context, internal_resp)
-        
 
     def _request_endpoint_dpop(self, context, *args):
         """ This validates, if any, the DPoP http request header """
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # the wallet instance MAY use the endpoint authentication to give its WIA
-            
+
             # TODO - validate the trust to the Wallet Provider
             # using the TA public key validate trust_chain and or x5c
-            
+
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
             dpop = DPoPVerifier(
-                public_jwk = wia['cnf']['jwk'],
-                http_header_authz = context.http_headers['HTTP_AUTHORIZATION'],
-                http_header_dpop = context.http_headers['HTTP_DPOP']
+                public_jwk=wia['cnf']['jwk'],
+                http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
+                http_header_dpop=context.http_headers['HTTP_DPOP']
             )
-            
+
             if not dpop.is_valid:
-                # 
+                #
                 logger.error("MESSAGE HERE")
                 raise Exception(
                     "return an HTTP response application/json with "
                     "the error and error_description "
                     "according to the UX design"
                 )
-            
+
             # TODO
             # assert and configure the wallet capabilities?
             # assert and configure the wallet  Attested Security Context?
-            
+
         else:
             # TODO - check that this logging system works ...
             logger.warning(
                 "The Wallet Instance didn't provide its Wallet Instance Attestation "
                 "a default set of capabilities and a low security level are accorded."
-            
+
             )
 
     def request_endpoint(self, context, *args):
         jwk = self.metadata_jwk
-        
+
         # check DPOP for WIA if any
         self._request_endpoint_dpop(context)
-        
+
         # TODO
         # take decision, do customization if the WIA is available
-        
+
         helper = JWSHelper(jwk)
         data = {
-          "scope": ' '.join(self.config['authorization']['scopes']),
-          "client_id_scheme": "entity_id", # that's federation.
-          "client_id": self.client_id,
-          "response_mode": "direct_post.jwt", # only HTTP POST is allowed.
-          "response_type": "vp_token",
-          "response_uri": self.config["metadata"]["redirect_uris"][0],
-          "nonce": str(uuid.uuid4()),
-          "state": str(uuid.uuid4()),
-          "iss": self.client_id,
-          "iat": iat_now(),
-          "exp": iat_now() + (self.default_exp * 60) # in seconds 
+            "scope": ' '.join(self.config['authorization']['scopes']),
+            "client_id_scheme": "entity_id",  # that's federation.
+            "client_id": self.client_id,
+            "response_mode": "direct_post.jwt",  # only HTTP POST is allowed.
+            "response_type": "vp_token",
+            "response_uri": self.config["metadata"]["redirect_uris"][0],
+            "nonce": str(uuid.uuid4()),
+            "state": str(uuid.uuid4()),
+            "iss": self.client_id,
+            "iat": iat_now(),
+            "exp": iat_now() + (self.default_exp * 60)  # in seconds
         }
         jwt = helper.sign(data)
 
@@ -315,7 +316,7 @@ class OpenID4VPBackend(BackendModule):
 
     def handle_error(
         self,
-        context :dict,
+        context: dict,
         message: str,
         troubleshoot: str = "",
         err="",
@@ -323,24 +324,24 @@ class OpenID4VPBackend(BackendModule):
         template_path="templates",
         error_template="error.html",
     ):
-        
-        # TODO: evaluate with UX designers if Jinja2 template 
+
+        # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
         logger.error(
             lu.LOG_FMT.format(
-                id=lu.get_session_id(context.state), 
+                id=lu.get_session_id(context.state),
                 message=f"{message}: {err}. {troubleshoot}"
             )
         )
-        
+
         result = json.dumps(
             {
-                "message": message, 
+                "message": message,
                 "troubleshoot": troubleshoot
             }
         )
         return Response(
-            result, 
-            content = "text/json; charset=utf8", 
-            status = err_code
+            result,
+            content="text/json; charset=utf8",
+            status=err_code
         )
