@@ -7,6 +7,10 @@ from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.tools.utils import iat_now
 
 
+PRIVATE_JWK = JWK()
+PUBLIC_JWK = PRIVATE_JWK.public_key
+
+
 WALLET_INSTANCE_ATTESTATION = {
     "iss": "https://wallet-provider.example.org",
     "sub": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
@@ -17,14 +21,7 @@ WALLET_INSTANCE_ATTESTATION = {
     "asc": "https://wallet-provider.example.org/LoA/basic",
     "cnf":
     {
-        "jwk":
-        {
-            "crv": "P-256",
-            "kty": "EC",
-            "x": "4HNptI-xr2pjyRJKGMnz4WmdnQD_uJSq4R95Nj98b44",
-            "y": "LIZnSB39vFJhYgS3k7jXE4r3-CoGFQwZtPBIRqpNlrg",
-            "kid": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c"
-        }
+        "jwk": PUBLIC_JWK
     },
     "authorization_endpoint": "eudiw:",
     "response_types_supported": [
@@ -66,11 +63,11 @@ def wia_jws(jwshelper):
     return wia
 
 
-def test_create_validate_dpop_http_headers(wia_jws, private_jwk):
+def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     # create
-    unpad_jwt_header(wia_jws)
-    unpad_jwt_payload(wia_jws)
-    # TODO assertions
+    headers = unpad_jwt_header(wia_jws)
+    payload = unpad_jwt_payload(wia_jws)
+    # TODO assertions for upadded headers and payload 
 
     new_dpop = DPoPIssuer(
         htu='https://example.org/redirect',
@@ -83,10 +80,11 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk):
 
     # verify
     dpop = DPoPVerifier(
-        public_jwk=private_jwk.public_key,
+        public_jwk=payload['cnf']['jwk'],
         http_header_authz=f"DPoP {wia_jws}",
         http_header_dpop=proof
     )
 
     assert dpop.is_valid
     # TODO assertions
+    

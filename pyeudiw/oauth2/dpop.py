@@ -86,7 +86,7 @@ class DPoPVerifier:
     @property
     def is_valid(self):
         jws_verifier = JWSHelper(self.public_jwk)
-        dpop_valid = jws_verifier.verify(self.dpop_token)
+        dpop_valid = jws_verifier.verify(self.proof)
 
         header = unpad_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)

@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+import uuid
 
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
@@ -8,11 +9,14 @@ from urllib.parse import urlencode, quote_plus
 from satosa.backends.base import BackendModule
 from satosa.response import Redirect, Response
 
-from pyeudiw.satosa.html_template import Jinja2TemplateHandler
-from pyeudiw.tools.qr_code import QRCode
+from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.satosa.html_template import Jinja2TemplateHandler
+from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger("openid4vp_backend")
 
@@ -136,7 +140,7 @@ class OpenID4VPBackend(BackendModule):
 
         url_params = urlencode(payload, quote_via=quote_plus)
 
-        res_url = f'{self.config["authorization_url_scheme"]}://authorize?{url_params}'
+        res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             return Redirect(res_url)
 
@@ -164,36 +168,62 @@ class OpenID4VPBackend(BackendModule):
             content="application/jose; charset=utf8"
         )
 
-    def request_endpoint(self, context, *args):
-        jwk = self.metadata_jwk
-
-        # validate, if any, the DPoP http request header
+    def _request_endpoint_dpop(self, context, *args):
+        """ This validates, if any, the DPoP http request header """
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # the wallet instance MAY use the endpoint authentication to give its WIA
-            # dpop = DPoPVerifier()
-            pass
+            
+            # TODO - validate the trust to the Wallet Provider
+            # using the TA public key validate trust_chain and or x5c
+            
+            # take WIA
+            wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
+            dpop = DPoPVerifier(
+                public_jwk = wia['cnf']['jwk'],
+                http_header_authz = context.http_headers['HTTP_AUTHORIZATION'],
+                http_header_dpop = context.http_headers['HTTP_DPOP']
+            )
+            
+            if not dpop.is_valid:
+                # 
+                logger.error("MESSAGE HERE")
+                raise Exception(
+                    "return an HTTP response application/json with the error and error_description "
+                    "according to the UX design"
+                )
+            
+            # TODO
+            # assert and configure the wallet capabilities?
+            # assert and configure the wallet  Attested Security Context?
+            
+        else:
+            # TODO - check that this logging system works ...
+            logger.warning(
+                "The Wallet Instance didn't provide its Wallet Instance Attestation "
+                "a default set of capabilities and a low security level are accorded."
+            
+            )
 
+    def request_endpoint(self, context, *args):
+        jwk = self.metadata_jwk
+        
+        # check DPOP for WIA if any
+        self._request_endpoint_dpop(context)
+        
         helper = JWSHelper(jwk)
         data = {
-            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
-            "vp_token": "eyJhbGciOiJFUzI1NiIs...PT0iXX0",
-            "presentation_submission": {
-                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-                "descriptor_map": [
-                    {
-                        "id": "eu.europa.ec.eudiw.pid.it.1:unique_id",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
-                        "format": "vc+sd-jwt"
-                    },
-                    {
-                        "id": "eu.europa.ec.eudiw.pid.it.1:given_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[1]",
-                        "format": "vc+sd-jwt"
-                    }
-                ]
-            }
+          "scope": "eu.europa.ec.eudiw.pid.it.1 pid-sd-jwt:unique_id+given_name+family_name",
+          "client_id_scheme": "entity_id",
+          "client_id": self.client_id,
+          "response_mode": "direct_post.jwt",
+          "response_type": "vp_token",
+          "response_uri": self.config["metadata"]["redirect_uris"][0],
+          "nonce": str(uuid.uuid4()),
+          "state": str(uuid.uuid4()),
+          "iss": self.client_id,
+          "iat": iat_now(),
+          "exp": iat_now() + (self.default_exp * 60) # in seconds 
         }
         jwt = helper.sign(data)
 

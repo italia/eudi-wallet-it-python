@@ -4,12 +4,17 @@ import pathlib
 import pytest
 import urllib.parse
 
+from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.jwt import JWSHelper
+from pyeudiw.tests.oauth2.test_dpop import PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
 from unittest.mock import Mock
+
+
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -44,7 +49,10 @@ CONFIG = {
         "default_sig_alg": "ES256",
         "default_exp": 6
     },
-    "authorization_url_scheme": "eudiw",
+    "authorization": {
+        "url_scheme": "eudiw", # eudiw://
+        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
+    },
     "federation": {
         "metadata_type": "wallet_relying_party",
         "federation_authorities": [
@@ -354,7 +362,25 @@ class TestOpenID4VPBackend:
         assert msg["request"]
 
     def test_request_endpoint(self, context):
-        # breakpoint()
+        
+        jwshelper = JWSHelper(PRIVATE_JWK)
+        wia = jwshelper.sign(
+            WALLET_INSTANCE_ATTESTATION,
+            protected={'trust_chain': [], 'x5c': []}
+        )
+        
+        dpop_wia = wia
+        dpop_proof = DPoPIssuer(
+            htu=CONFIG['metadata']['request_uris'][0],
+            token = dpop_wia,
+            private_jwk = PRIVATE_JWK
+        ).proof
+
+        context.http_headers = dict(
+            HTTP_AUTHORIZATION = f"DPoP {dpop_wia}",
+            HTTP_DPOP = dpop_proof
+        )
+        
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
