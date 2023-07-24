@@ -7,11 +7,10 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-_pkg_name = 'eudi_wallet_python'
+_pkg_name = 'pyeudiw'
 
 with open(f'{_pkg_name}/__init__.py', 'r') as fd:
-    VERSION = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-                        fd.read(), re.MULTILINE).group(1)
+    VERSION = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
 
 setup(
     name=_pkg_name,
@@ -22,7 +21,6 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -41,6 +39,16 @@ setup(
         ]
     },
     install_requires=[
-        "cryptojwt>=1.8.2",
+        "cryptojwt>=1.8.2,<1.9",
+        "qrcode>=7.4.2,<7.5",
+        "pydantic>=2.0,<2.2"
     ],
+    extra_require={
+        "satosa": [
+            "Pillow>=10.0.0,<10.1",
+            "device_detector>=5.0,<6",
+            "satosa>=8.4,<8.6",
+            "jinja2>=3.0,<4"
+        ],
+    }
 )
