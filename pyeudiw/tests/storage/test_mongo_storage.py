@@ -1,14 +1,14 @@
 import uuid
 import pytest
 
-from pyeudiw.storage.mongo import MongoStorage
+from pyeudiw.storage.mongo_storage import MongoStorage
 
-class _TestMongoStorage:
+class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
             {"db_name": "eudiw", "db_collection": "test"}, 
-            "mongodb://mongoadmin:secret@localhost:27017/?authSource=admin", 
+            "mongodb://localhost:27017/", 
             {}
         )
 
