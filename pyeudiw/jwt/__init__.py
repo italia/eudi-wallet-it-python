@@ -1,4 +1,3 @@
-import base64
 import binascii
 import json
 
@@ -11,20 +10,19 @@ from cryptojwt.jwe.jwe import factory
 from cryptojwt.jws.jws import JWS as JWSec
 from typing import Union
 
-from .jwk import JWK
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
-DEFAULT_JWS_ALG = "RS256"
+DEFAUL_SIG_KTY_MAP = {
+    "RSA": "RS256",
+    "EC": "ES256"
+}
+
+DEFAULT_JWS_ALG = "ES256"
 DEFAULT_JWE_ALG = "RSA-OAEP"
 DEFAULT_JWE_ENC = "A256CBC-HS512"
-
-
-def unpad_jwt_header(jwt: str) -> dict:
-    b = jwt.split(".")[0]
-    padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
-    data = json.loads(base64.urlsafe_b64decode(padded))
-    return data
 
 
 class JWEHelper():
@@ -83,11 +81,19 @@ class JWEHelper():
 
 
 class JWSHelper:
-    def __init__(self, jwk: JWK, alg: str = "RS256"):
+    def __init__(self, jwk: Union[JWK, dict]):
         self.jwk = jwk
-        self.alg = alg
+        if isinstance(jwk, dict):
+            self.jwk = JWK(jwk)
+        self.alg = DEFAUL_SIG_KTY_MAP[self.jwk.key.kty]
 
-    def sign(self, plain_dict: Union[dict, str, int, None], protected: dict = {}, **kwargs) -> str:
+    def sign(
+        self,
+        plain_dict: Union[dict, str, int, None],
+        protected: dict = {},
+        **kwargs
+    ) -> str:
+
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _payload: str | int | bytes = ""
@@ -102,7 +108,6 @@ class JWSHelper:
             _payload = ""
 
         _signer = JWSec(_payload, alg=self.alg, **kwargs)
-
         return _signer.sign_compact([_key], protected=protected, **kwargs)
 
     def verify(self, jws: str, **kwargs):
@@ -113,6 +118,8 @@ class JWSHelper:
             raise Exception(
                 f"kid error: {_head.get('kid')} != {self.jwk.as_dict()['kid']}"
             )
+
+        _head["alg"]
 
         verifier = JWSec(alg=_head["alg"], **kwargs)
         msg = verifier.verify_compact(jws, [_key])

@@ -21,7 +21,6 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -42,7 +41,14 @@ setup(
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
         "qrcode>=7.4.2,<7.5",
-        "Pillow>=10.0.0,<10.1",
-        "pymongo>=4.4.1,<4.5"
+        "pydantic>=2.0,<2.2"
     ],
+    extra_require={
+        "satosa": [
+            "Pillow>=10.0.0,<10.1",
+            "device_detector>=5.0,<6",
+            "satosa>=8.4,<8.6",
+            "jinja2>=3.0,<4"
+        ],
+    }
 )

@@ -7,25 +7,25 @@
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
 
-EUDI Wallet Python toolchain is a suite of Python libraries designed to
+The EUDI Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
 to the [Italian specification](https://italia.github.io/eudi-wallet-it-docs/en/).
 
-> Please note: the scope of this project is giving tools and helpers to build a EUDI Wallet compliant to the national specs. All the components listed below are tailored to this scope.
+> Please note: the scope of this project is giving tools and helpers to build a EUDI Wallet compliant to the national specs. 
+All the components listed below are tailored to this scope.
 
 The toolchain contains the following components:
 
 | Name | Description |
 | :--- | --- |
-| __tools.jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | refs to docs |
-| __tools.jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | refs to docs |
-| __tools.ui.qrcode__ | Creation of QRCodes | refs to docs |
+| __jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | refs to docs |
+| __jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | refs to docs |
+| __tools.qrcode__ | Creation of QRCodes | refs to docs |
 | __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) | refs to docs |
 | __oauth2.par__ | Tools for issuing and parsing Pushed Authorization Requests, according to [OAuth 2.0 Pushed Authorization Requests](https://datatracker.ietf.org/doc/html/rfc9126) | refs to docs |
 | __openid4vp.request__ | Tools for issuing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) requests objects | refs to docs |
 | __openid4vp.redirect__ | Tools for parsing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) responses | refs to docs |
 | __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms | refs to docs |
-| __dif.presentation_exchange__ | [DiF Presentation Exchange 2.0](https://identity.foundation/presentation-exchange/) | refs to docs |
 | __satosa.openid4vp.backend__ | SATOSA Openid4VP Relying Party backend | refs to docs |
 
 
@@ -45,11 +45,11 @@ virtualenv -p python3 env
 source env/bin/activate
 ````
 
-Install using pip
+Install using pip:
 
 `pip install pyeudiw`
 
-Install using github
+Install using github:
 
 `pip install git+https://github.com/italia/eudi-wallet-it-python`
 

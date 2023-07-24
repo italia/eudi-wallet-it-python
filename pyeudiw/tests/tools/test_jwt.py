@@ -1,18 +1,19 @@
 import pytest
 
-from pyeudiw.tools.jwk import JWK, KeyType
-from pyeudiw.tools.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWEHelper, JWSHelper, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.jwt.utils import unpad_jwt_header
 
 JWKs_EC = [
-    (JWK(keyType=KeyType.EC), {"key": "value"}),
-    (JWK(keyType=KeyType.EC), "simple string"),
-    (JWK(keyType=KeyType.EC), None),
+    (JWK(key_type="EC"), {"key": "value"}),
+    (JWK(key_type="EC"), "simple string"),
+    (JWK(key_type="EC"), None),
 ]
 
 JWKs_RSA = [
-    (JWK(keyType=KeyType.RSA), {"key": "value"}),
-    (JWK(keyType=KeyType.RSA), "simple string"),
-    (JWK(keyType=KeyType.RSA), None),
+    (JWK(key_type="RSA"), {"key": "value"}),
+    (JWK(key_type="RSA"), "simple string"),
+    (JWK(key_type="RSA"), None),
 ]
 
 JWKs = JWKs_EC + JWKs_RSA
@@ -30,9 +31,9 @@ def test_unpad_jwt_header(jwk, payload):
     assert header["kid"] == jwk.jwk["kid"]
 
 
-@pytest.mark.parametrize("key_type", [KeyType.RSA, KeyType.EC])
+@pytest.mark.parametrize("key_type", ["RSA", "EC"])
 def test_jwe_helper_init(key_type):
-    jwk = JWK(keyType=key_type)
+    jwk = JWK(key_type=key_type)
     helper = JWEHelper(jwk)
     assert helper.jwk == jwk
 
@@ -65,9 +66,9 @@ def test_jwe_helper_decrypt_fail(jwk, payload):
         helper.decrypt(jwe)
 
 
-@pytest.mark.parametrize("key_type", [KeyType.RSA, KeyType.EC])
+@pytest.mark.parametrize("key_type", ["RSA", "EC"])
 def test_jws_helper_init(key_type):
-    jwk = JWK(keyType=key_type)
+    jwk = JWK(key_type=key_type)
     helper = JWSHelper(jwk)
     assert helper.jwk == jwk
 

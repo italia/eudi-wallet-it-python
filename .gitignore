@@ -160,8 +160,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-*.db
+env
 
-wordpress/*
-!wordpress/wp-content/
-wordpress/wp-content/plugins/onelogin-saml-sso/
+*/wordpress-plugin
+*/wordpress-theme
+*/__MACOSX
