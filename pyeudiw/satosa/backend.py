@@ -157,7 +157,9 @@ class OpenID4VPBackend(BackendModule):
 
         url_params = urlencode(payload, quote_via=quote_plus)
 
-        res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
+        res_url = f'{self.client_id}?{url_params}'
+        # or
+        # res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}' ?
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             return Redirect(res_url)
 

@@ -361,6 +361,8 @@ class TestOpenID4VPBackend:
 
         # TODO: assert that's a qrcode
         # assert "svg xmlns:svg=&#34;http://www.w3.org/2000/" in pre_request_endpoint.message
+        
+        # TODO test same-device
 
     # TODO
     def _test_pre_request_endpoint_mobile(self, context):
