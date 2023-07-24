@@ -40,6 +40,17 @@ jobs:
         python -m pip install -U setuptools
         python -m pip install -e .
         python -m pip install satosa
+    - name: Install MongoDB
+      run: |
+        sudo apt-get install -y gnupg wget
+        sudo wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+        sudo echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+        sudo apt-get update
+        sudo apt-get install -y mongodb-org
+    - name: Start MongoDB
+      run: |
+        sudo systemctl start mongod
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
