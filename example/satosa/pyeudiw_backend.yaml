@@ -23,8 +23,8 @@ config:
     use_zlib: false
 
   jwt_settings:
-    default_sig_alg: "ES256" # or RS256
-    default_exp: 6           # minutes
+    default_sig_alg: ES256 # or RS256
+    default_exp: 6         # minutes
   
   authorization:
     url_scheme: "eudiw" # eudiw://
