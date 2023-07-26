@@ -15,7 +15,7 @@ def make_timezone_aware(dt: datetime.datetime):
 
 
 def iat_now() -> int:
-    return int(datetime.datetime.now().timestamp(datetime.timezone.utc))
+    return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
 
 def exp_from_now(minutes: int = 33) -> int:
