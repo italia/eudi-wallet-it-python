@@ -42,7 +42,6 @@ setup(
         "cryptojwt>=1.8.2,<1.9",
         "qrcode>=7.4.2,<7.5",
         "pydantic>=2.0,<2.2",
-        "git+https://github.com/danielfett/sd-jwt.git"
     ],
     extra_require={
         "satosa": [
