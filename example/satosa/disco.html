@@ -134,9 +134,6 @@
             <p>Per accedere al servizio scegli uno dei seguenti metodi di autenticazione</p>
             <!-- <p><b>**Le informazioni contenute in questa pagina di esempio non sono definite a livello normativo e sono fornite solo a scopo di test.**</b></p> -->
           </div>
-          <div class="alert alert-warning">
-            Le informazioni contenute in questa pagina di esempio non sono definite a livello normativo e sono fornite solo a scopo di test.
-          </div>
           <div class="card-wrapper card-space">
             <div class="card card-bg no-after">
               <div class="card-body">
@@ -145,21 +142,21 @@
                     <!-- Wallet it button section -->
                     <div class="row">
                       <h3>IT Wallet</h3>
-                      <p>IT Wallet è la soluzione bellissima che ti consente di accedere al tuo portafoglio di indennità digitali fichissime. Questo pargrafo può ovviamente contenere ancora più testo per <b>enfatizzare il concetto</b> </p>
+                      <p>IT Wallet è il tuo portafoglio nazionale di identità digitale che ti consente di accedere ai servizi in modo <b>semplice e sicuro</b>, mantenendo il <b>controllo sui tuoi dati</b></p>
                     </div>
                     <br>
                     <div class="row">
                       <div class="col-lg-12 text-center button-container column-buttons">
                           <!-- IDEM IDP BUTTON SMALL "ENTRA CON WALLET ID" * begin * -->
                           <a href="#" class="btn btn-primary btn-lg btn-me w-100" eidas-idp-button="#eidas-idp-button-xlarge-post" aria-haspopup="false" aria-expanded="false"  style="font-size: 21px;">
-                            <svg class="icon icon-primary " ><use style="fill: white; stroke: white;" href="wallet-it/wallet_12.svg#wallet_12"></use></svg>
+                            <svg class="icon icon-primary buttonicon" ><use style="fill: white; stroke: white;" href="wallet-it/wallet_12.svg#wallet_12"></use></svg>
                             <span>Accedi con IT Wallet</span>
                           </a>
                           <!-- IDEM IDP BUTTON SMALL "ENTRA CON IDEM" * end * -->
                       </div>
                     </div>
                     <div class="row">
-                      <a href="#">Non hai IT Wallet? <svg class="icon icon-sm" ><use style="stroke: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-external-link"></use></svg></a>
+                      <a href="#">Non hai IT Wallet? <svg class="icon icon-sm linkicon" ><use style="stroke: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-external-link"></use></svg></a>
                     </div>
                   </div>
                   <!-- OTHER  -->
@@ -167,13 +164,13 @@
                     <div class="border-md-bottom">
                       <div class="row">
                         <h3>SPID o CIE</h3>
-                        <p>Puoi accedere al servizio anche con le identità digitali SPID o CIE</p>
+                        <p>Accedi in qualunque momento anche con le identità digitali CIE, se hai la Carta di identità elettronica, o SPID, se hai attivato le credenziali con un gestore accreditato.</p>
                       </div>
                       <div class="row">
                         <div class="col-lg-12 text-center button-container">
                           <!-- AGID - eIDAS IDP BUTTON SMALL "ENTRA CON CIE" * begin * -->
                           <a href="/Saml2/disco?entityID=https://idserver.servizicie.interno.gov.it/idp/profile/SAML2/POST/SSO&return=https://sso.isprambiente.it/Saml2/disco" class="btn btn-outline-primary btn-lg btn-me w-100" eidas-idp-button="#eidas-idp-button-xlarge-post" aria-haspopup="false" aria-expanded="false">
-                            <span><img class="icon" src="cie/cie_blue.svg" alt="Logo CIE" /></span>
+                            <span><img class="icon buttonicon" src="cie/cie_blue.svg" alt="Logo CIE" /></span>
                             <span>Entra con CIE</span>
                           </a>
                           <!-- AGID - eIDAS IDP BUTTON SMALL "ENTRA CON CIE" * end * -->
@@ -184,7 +181,7 @@
                           <!-- AGID - SPID IDP BUTTON SMALL "ENTRA CON SPID" * begin * -->
                           <a href="#" class="btn btn-outline-primary btn-lg btn-me w-100" spid-idp-button="#spid-idp-button-xlarge-post" aria-haspopup="true" aria-expanded="false">
                             <!-- <span><img class="icon icon-lg" src="spid/spid-ico-circle-bb.svg" onerror="this.src='img/spid-ico-circle-bb.png'; this.onerror=null;" alt=""></span> -->
-                            <span><img class="icon" src="spid/spid_icon.svg" onerror="this.src='img/spid-ico-circle-bb.png'; this.onerror=null;" alt=""></span>
+                            <span><img class="icon buttonicon" src="spid/spid_icon.svg" onerror="this.src='img/spid-ico-circle-bb.png'; this.onerror=null;" alt=""></span>
                             <span>Entra con SPID</span>
                           </a>
                           <div id="spid-idp-button-xlarge-post" class="spid-idp-button spid-idp-button-tip spid-idp-button-relative">
@@ -198,7 +195,7 @@
                         </div>
                       </div>
                       <div class="row">
-                        <a href="#">Scopri di più su identitadigitale.gov.it<svg class="icon icon-xs" ><use style="stroke: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-external-link"></use></svg></a>
+                        <a href="#">Scopri di più su identitadigitale.gov.it <svg class="icon icon-sm linkicon" ><use style="stroke: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-external-link"></use></svg></a>
                       </div>
                     </div>
                     <div>
@@ -210,9 +207,9 @@
                         <div class="col-lg-12 text-center button-container">
                           <!-- AGID - eIDAS IDP BUTTON SMALL "ENTRA CON EIDAS" * begin * -->
                           <a href="/Saml2/disco?entityID=https://sp-proxy.eid.gov.it/spproxy/idpit&return=https://sso.isprambiente.it/Saml2/disco" class="btn btn-outline-primary btn-lg btn-me w-100" eidas-idp-button="#eidas-idp-button-xlarge-post" aria-haspopup="false" aria-expanded="false">
-                            <!-- <span><img class="icon icon-lg" src="eidas/img/ficep-it-eidas-ybw.svg" onerror="this.src='eidas/img/ficep-it-eidas-ybw.png'; this.onerror=null;" alt="" /></span> -->
-                            <svg class="icon"><use style="fill: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-files" xlink:href="/bootstrap-italia/dist/svg/sprites.svg#it-files"></use></svg>
-                            <span>Login with eidas</span>
+                            <span><img class="icon buttonicon" src="eidas/img/ficep-it-eidas-lb.svg" onerror="this.src='eidas/img/ficep-it-eidas-lb.png'; this.onerror=null;" alt="" /></span>
+                            <!-- <svg class="icon buttonicon"><use style="fill: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-files" xlink:href="/bootstrap-italia/dist/svg/sprites.svg#it-files"></use></svg> -->
+                            <span>Login with eIDAS</span>
                           </a>
                           <!-- AGID - eIDAS IDP BUTTON SMALL "ENTRA CON eIDAS" * end * -->
                         </div>
@@ -222,7 +219,7 @@
                           <!-- IDEM IDP BUTTON SMALL "ENTRA CON IDEM" * begin * -->
                           <a href="https://wayf.idem.garr.it/WAYF?entityID=_YourEntityID_&return=_YourReturnURL_" class="btn btn-outline-primary btn-lg btn-me w-100" eidas-idp-button="#eidas-idp-button-xlarge-post" aria-haspopup="false" aria-expanded="false">
                             <!-- <span><img class="icon icon-lg" src="idem/img/IDEM.svg" alt="Logo IDEM" /></span> -->
-                            <svg class="icon"><use style="fill: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-files" xlink:href="/bootstrap-italia/dist/svg/sprites.svg#it-files"></use></svg>
+                            <svg class="icon buttonicon"><use style="fill: #0065cc;" href="./bootstrap-italia/svg/sprites.svg#it-files" xlink:href="/bootstrap-italia/dist/svg/sprites.svg#it-files"></use></svg>
                             <span>Entra con IDEM</span>
                           </a>
                           <!-- IDEM IDP BUTTON SMALL "ENTRA CON IDEM" * end * -->
@@ -233,6 +230,9 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="alert alert-info">
+            Le informazioni e la disposizione degli elementi visivi di questa pagina non sono definiti a livello normativo e potrebbero essere soggetti a modifiche.
           </div>
         </div>
       </div>
