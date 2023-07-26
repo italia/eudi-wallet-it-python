@@ -1,17 +1,16 @@
 user_claims:
-  !sd sub: john_doe_42
-  !sd given_name: John
-  !sd family_name: Doe
-  !sd email: johndoe@example.com
-  !sd phone_number: +1-202-555-0101
-  !sd address:
-    street_address: 123 Main St
-    locality: Anytown
-    region: Anystate
-    country: US
-  !sd birthdate: "1940-01-01"
+  # Make only first two elements SD - this array will have three elements in the resulting SD-JWT, first two hidden
+  nationalities: 
+    - !sd "US"
+    - !sd "CA"
+    - "DE"
 
 holder_disclosed_claims:
-  { "given_name": null, "family_name": null, "address": {} }
+  nationalities:
+    - False
+    - True
 
-key_binding: True
+expect_verified_user_claims:
+  nationalities:
+    - "CA"
+    - "DE"

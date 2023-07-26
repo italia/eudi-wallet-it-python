@@ -1,7 +1,7 @@
 import pytest
 
 from pyeudiw.jwk import JWK
-from pyeudiw.tools.sd_jwt import (issue_sd_jwt, verify_sd_jwt, _adapt_keys)
+from pyeudiw.sd_jwt import (issue_sd_jwt, verify_sd_jwt, _adapt_keys)
 
 from sd_jwt.utils.yaml_specification import load_yaml_specification
 
@@ -12,8 +12,10 @@ def test_issue_sd_jwt():
     issuer_jwk = JWK()
     holder_jwk = JWK()
     
+    user_claims_path = "./pyeudiw/tests/tools/specifications.yml"
+    
     issue_sd_jwt(
-        {"given_name": "Alfred"}, 
+        user_claims_path, 
         {"issuer": "http://test.com", "default_exp": 60, "specification_file": "./pyeudiw/tests/tools/specifications.yml", "no_randomness": True},
         issuer_jwk,
         holder_jwk
@@ -23,8 +25,10 @@ def test_verify_sd_jwt():
     issuer_jwk = JWK()
     holder_jwk = JWK()
     
+    user_claims_path = "./pyeudiw/tests/tools/specifications.yml"
+    
     issued_jwt = issue_sd_jwt(
-        {"given_name": "Alfred"}, 
+        user_claims_path, 
         {"issuer": "http://test.com", "default_exp": 60, "specification_file": "./pyeudiw/tests/tools/specifications.yml", "no_randomness": True},
         issuer_jwk,
         holder_jwk
@@ -41,18 +45,14 @@ def test_verify_sd_jwt():
         serialization_format="compact",
     )
     sdjwt_at_holder.create_presentation(
-        testcase["holder_disclosed_claims"],
-        ""
-        if testcase.get("key_binding", False)
-        else None,
-        "http://test.com"
-        if testcase.get("key_binding", False)
-        else None,
+        {},
+        None,
+        None,
         adapted_keys["holder_key"] if testcase.get("key_binding", False) else None,
     )
     
     print(sdjwt_at_holder.sd_jwt_presentation)
-    
+        
     verified_payload = verify_sd_jwt(
         sdjwt_at_holder.sd_jwt_presentation, 
         {
@@ -62,7 +62,4 @@ def test_verify_sd_jwt():
             "specification_file": "./pyeudiw/tests/tools/specifications.yml", 
             "no_randomness": True,
             "key_binding_nonce": ""
-        }, issuer_jwk, holder_jwk)
-    
-    print(verified_payload)
-    
+        }, issuer_jwk, holder_jwk)    
