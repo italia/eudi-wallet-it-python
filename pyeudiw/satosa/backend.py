@@ -23,6 +23,7 @@ from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.tools.sd_jwt import verify_sd_jwt
 
 logger = logging.getLogger("openid4vp_backend")
 
@@ -157,14 +158,12 @@ class OpenID4VPBackend(BackendModule):
 
         url_params = urlencode(payload, quote_via=quote_plus)
 
-        if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
-            # Same Device flow
-            res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
-            return Redirect(res_url)
-        
-        # Cross Device flow
         res_url = f'{self.client_id}?{url_params}'
-        
+        # or
+        # res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}' ?
+        if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
+            return Redirect(res_url)
+
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode_settings'])
         stream = qrcode.for_html()
@@ -293,6 +292,10 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO
         # take decision, do customization if the WIA is available
+        
+        # TODO
+        # take the response and extract from jwt the public key of holder
+        # verify the jwt
 
         helper = JWSHelper(jwk)
         data = {
