@@ -23,7 +23,7 @@ from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.schema import Response as ResponseValidator
+from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 
