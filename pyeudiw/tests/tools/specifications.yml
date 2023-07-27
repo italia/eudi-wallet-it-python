@@ -1,16 +1,14 @@
 user_claims:
-  # Make only first two elements SD - this array will have three elements in the resulting SD-JWT, first two hidden
-  nationalities: 
-    - !sd "US"
-    - !sd "CA"
-    - "DE"
+  !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  !sd given_name: "Mario"
+  !sd family_name: "Rossi"
+  !sd birthdate: "1980-01-10"
+  !sd place_of_birth:
+    country: "IT"
+    locality: "Rome"
+  !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
 
 holder_disclosed_claims:
-  nationalities:
-    - False
-    - True
+  { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
 
-expect_verified_user_claims:
-  nationalities:
-    - "CA"
-    - "DE"
+key_binding: True
