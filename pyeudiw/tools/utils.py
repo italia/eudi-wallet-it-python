@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def make_timezone_aware(dt: datetime.datetime):
-    # TODO
-    raise NotImplementedError(f"{__name__} make_timezone_aware")
+    return dt.astimezone()
 
 
 def iat_now() -> int:

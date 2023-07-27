@@ -5,12 +5,14 @@ import freezegun
 
 import pytest
 
-from pyeudiw.tools.utils import exp_from_now, iat_now, random_token
+from pyeudiw.tools.utils import exp_from_now, iat_now, random_token, make_timezone_aware
 
 
 def test_make_timezone_aware():
-    # TODO: test the function after it is implemented
-    pass
+    now = datetime.datetime.now()
+    assert now.tzinfo is None
+    aware = make_timezone_aware(now)
+    assert aware.tzinfo is not None
     
     
 def frozen_time(fake_now, function, *args):
