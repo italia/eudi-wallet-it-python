@@ -8,10 +8,10 @@ from sd_jwt.utils.yaml_specification import load_yaml_specification
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwk import JWK
 
-def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK):
+def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
-        "key_size": 256,
-        "kty": "EC",
+        "key_size": key_size,
+        "kty": kty,
         "issuer_key": issuer_key.as_dict(),
         "holder_key": holder_key.as_dict()
     }
