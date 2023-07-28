@@ -1,5 +1,5 @@
 import re
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 from pydantic.functional_validators import AfterValidator
 
@@ -8,12 +8,14 @@ JWT_REGEX = r"(^[\w-]*.[\w-]*.[\w-]*~([\w-]*.[\w-]*.[\w-]*){1})"
 def checkJWT(jwt: str) -> str:
     res = re.match(JWT_REGEX, jwt)
     
-    assert res, f"Vp_token is not a jwt {jwt}"
+    if res == None:
+        raise ValidationError(f"Vp_token is not a jwt {jwt}")
     
     return jwt
     
 def checkJWTList(jwt_list: list[str]) -> list[str]:
-    assert len(jwt_list) != 0, f"Vp_token is an empty list"
+    if len(jwt_list) == 0:
+        raise ValidationError(f"Vp_token is an empty list")
     
     for jwt in jwt_list:
         checkJWT(jwt)
