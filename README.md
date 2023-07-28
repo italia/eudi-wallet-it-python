@@ -17,12 +17,12 @@ The toolchain contains the following components:
 
 | Name | Description |
 | :--- | --- |
-| __jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | 
-| __jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
-| __tools.qrcode__ | Creation of QRCodes | 
+| __jwk__ | JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | 
+| __jwt__ | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
+| __tools.qrcode__ | QRCodes creation | 
 | __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
 | __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms |
-| __satosa.openid4vp.backend__ | SATOSA Openid4VP Relying Party backend |
+| __satosa.openid4vp.backend__ | SATOSA OpenID4VP Relying Party backend |
 
 
 ## Setup
@@ -57,6 +57,7 @@ The example project is a docker-compose that runs a demo composed by the followi
 - Wordpress with SAML2 support and Bootstrap Italia template preregistered to the IAM Proxy.
 - Satosa-Saml2Spid IAM Proxy with a preconfigured OpenID4VP backend
 
+
 ## Satosa configuration
 
 To install the OpenID4VP SATOSA backend you just need to do four things:
@@ -66,15 +67,16 @@ To install the OpenID4VP SATOSA backend you just need to do four things:
 
 See [README-SATOSA.md](README-SATOSA.md).
 
+
 ## Contribute
 
 Your contribution is welcome, no question is useless and no answer is obvious, we need you.
 
-#### Contribute as end user
+### Contribute as end user
 
 Please open an issue if you've found a bug or if you want to ask some features.
 
-#### Contribute as developer
+###Contribute as developer
 
 Please open your Pull Requests on the __dev__ branch. 
 Please consider the following branches:
@@ -82,6 +84,7 @@ Please consider the following branches:
  - __main__: where we merge the code before tag a new stable release.
  - __dev__: where we push our code during development.
  - __other-custom-name__: where a new feature/contribution/bugfix will be handled, revisioned and then merged to dev branch.
+
 
 ## Authors
 
