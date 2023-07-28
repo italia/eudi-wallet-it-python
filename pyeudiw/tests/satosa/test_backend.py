@@ -1,3 +1,4 @@
+import uuid
 import base64
 import json
 import pathlib
@@ -463,8 +464,8 @@ class TestOpenID4VPBackend:
         )
         sdjwt_at_holder.create_presentation(
             {},
-            None,
-            None,
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
             adapted_keys["holder_key"] if sd_specification.get("key_binding", False) else None,
         )
                 

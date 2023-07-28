@@ -24,7 +24,7 @@ from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
-from pyeudiw.sd_jwt import verify_sd_jwt
+from pyeudiw.sd_jwt import verify_sd_jwt, load_specification_from_yaml_string
 
 
 logger = logging.getLogger("openid4vp_backend")
@@ -76,7 +76,7 @@ class OpenID4VPBackend(BackendModule):
         self.template = Jinja2TemplateHandler(config)
         
         self.sd_jwt = self.config["sd_jwt"]
-        self.sd_specification = self.sd_jwt["sd_specification"]
+        self.sd_specification = load_specification_from_yaml_string(self.sd_jwt["sd_specification"])
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -215,9 +215,13 @@ class OpenID4VPBackend(BackendModule):
         payload = unpad_jwt_payload(vp_token)
         holder_jwk = JWK(payload["cnf"]["jwk"])
         issuer_jwk = JWK(self.config["federation"]["federation_jwks"][1])
+                
+        result, binding = verify_sd_jwt(vp_token, self.sd_specification, self.sd_jwt, issuer_jwk, holder_jwk)
+        nonce = binding.get("nonce", None)
+        claims = result["holder_disclosed_claims"]
         
         try:
-            return True, verify_sd_jwt(vp_token, self.sd_specification, issuer_jwk, holder_jwk)
+            return True, {"nonce": nonce, "claims": claims}
         except Exception as e:
             return False, str(e)
         
@@ -242,7 +246,6 @@ class OpenID4VPBackend(BackendModule):
         
         # get state and nonce, do lookup on the db -> if not -> exception
         
-        nonce = decrypted_data.get("nonce", None) #TODO Fix this field handling
         state = decrypted_data.get("state", None) #TODO Fix this field handling
         
         # check with pydantic on the JWT schema
@@ -255,20 +258,34 @@ class OpenID4VPBackend(BackendModule):
         
         vp_token = decrypted_data["vp_token"]
         
+        nonce = None
+        
         claims = []
         if type(vp_token) is str:
             valid, value = self._check_vp_token(vp_token)
             if not valid:
                 return Response(value, content="text/html; charset=utf8", status="500")
             else:
-                claims.append(value)
+                if value["nonce"] == None or value["nonce"] == "":
+                    return Response("vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
+                nonce = value["nonce"]
+                claims.append(value["claims"])
         else:
-            for token in vp_token:
+            for i, token in enumerate(vp_token):
                 valid, value = self._check_vp_token(token)
                 if not valid:
                     return Response(value, content="text/html; charset=utf8", status="500")
-                else:
-                    claims.append(value)
+                else:    
+                    if nonce == None:
+                        if value["nonce"] == None or value["nonce"] == "":
+                            return Response("{i} vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
+                        nonce = value["nonce"]
+                    elif nonce != value["nonce"]:
+                        return Response("Presentation has divergent nonces", content="text/html; charset=utf8", status="500")
+                    
+                    claims.append(value["claims"])
+                    
+                    
 
         # establish the trust with the issuer of the credential by checking it to the revocation
 
