@@ -3,7 +3,6 @@ import json
 import logging
 import uuid
 
-from typing import Tuple
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
 
@@ -25,7 +24,8 @@ from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
-from pyeudiw.sd_jwt import verify_sd_jwt, load_specification_from_yaml_string
+from pyeudiw.sd_jwt import load_specification_from_yaml_string
+from pyeudiw.openid4vp import check_vp_token
 
 
 logger = logging.getLogger("openid4vp_backend")
@@ -212,21 +212,6 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = "take the subject id from the digital credential"
         return internal_resp
 
-    def _check_vp_token(self, vp_token: str) -> Tuple[str | None, dict]:
-        payload = unpad_jwt_payload(vp_token)
-        holder_jwk = JWK(payload["cnf"]["jwk"])
-        issuer_jwk = JWK(self.config["federation"]["federation_jwks"][1])
-                
-        result, binding = verify_sd_jwt(vp_token, self.sd_specification, self.sd_jwt, issuer_jwk, holder_jwk)
-        nonce = binding.get("nonce", None)
-        claims = result["holder_disclosed_claims"]
-        
-        try:
-            return True, {"nonce": nonce, "claims": claims}
-        except Exception as e:
-            return False, str(e)
-        
-
     def redirect_endpoint(self, context, *args):
         self.metadata_jwk
 
@@ -263,7 +248,7 @@ class OpenID4VPBackend(BackendModule):
         
         claims = []
         if isinstance(vp_token, str):
-            valid, value = self._check_vp_token(vp_token)
+            valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
             if not valid:
                 return Response(value, content="text/html; charset=utf8", status="500")
             else:
@@ -273,7 +258,7 @@ class OpenID4VPBackend(BackendModule):
                 claims.append(value["claims"])
         else:
             for i, token in enumerate(vp_token):
-                valid, value = self._check_vp_token(token)
+                valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
                 if not valid:
                     return Response(value, content="text/html; charset=utf8", status="500")
                 else:    
