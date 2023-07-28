@@ -21,7 +21,7 @@ def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC
 def load_specification_from_yaml_string(yaml_specification: str):
     return _yaml_load_specification(yaml_specification)
 
-def issue_sd_jwt(user_claims_path: str, specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> str:    
+def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> str:    
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
