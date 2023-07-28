@@ -445,13 +445,13 @@ class TestOpenID4VPBackend:
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
 
-        # TODO assertion su JWS decodificato
-        # ...
         header = unpad_jwt_header(msg["response"])
         payload = unpad_jwt_payload(msg["response"])
-        print()
-        print("header", header)
-        print("payload", payload)
+        assert header["alg"]
+        assert header["kid"]
+        assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
+        assert payload["client_id"] == CONFIG["metadata"]["client_id"]
+        assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
     def test_handle_error(self, context):
         error_message = "Error message!"
