@@ -5,7 +5,7 @@ import uuid
 from pydantic import BaseModel, HttpUrl
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
-from pyeudiw.oauth2.exceptions import KidError
+from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.tools.utils import iat_now
 from typing import Literal
 

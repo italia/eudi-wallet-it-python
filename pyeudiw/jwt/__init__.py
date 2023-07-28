@@ -12,7 +12,7 @@ from typing import Union
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_header
-from pyeudiw.oauth2.exceptions import KidError
+from pyeudiw.jwk.exceptions import KidError
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
