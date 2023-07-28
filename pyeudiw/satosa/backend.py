@@ -224,7 +224,7 @@ class OpenID4VPBackend(BackendModule):
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         
         jwt = context.request["response"]
-        jwk = JWK(self.config["federation"]["federation_jwks"][0], "RSA")
+        jwk = JWK(self.config["federation"]["federation_jwks"][0], key_type="RSA")
         
         jweHelper = JWEHelper(jwk)
         
