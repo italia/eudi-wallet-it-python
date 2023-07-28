@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.jwt import JWSHelper, unpad_jwt_header
-from pyeudiw.jwk import JWK, JWEHelper
+from pyeudiw.jwt import JWSHelper, JWEHelper, unpad_jwt_header
+from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
 from pyeudiw.tools.utils import iat_now
 
