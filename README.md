@@ -1,6 +1,6 @@
 # eudi-wallet-it-python
 
-![CI build](https://github.com/italia/eudi-wallet-it-python/workflows/eudi_wallet_python/badge.svg)
+![CI build](https://github.com/italia/eudi-wallet-it-python/workflows/pyeudiw/badge.svg)
 ![Python version](https://img.shields.io/badge/license-Apache%202-blue.svg)
 ![py-versions](https://img.shields.io/badge/python-3.10-blue.svg)
 [![GitHub issues](https://img.shields.io/github/issues/italia/eudi-wallet-it-python.svg)](https://github.com/italia/eudi-wallet-it-python/issues)
