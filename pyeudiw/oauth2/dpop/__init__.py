@@ -6,9 +6,11 @@ from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.oauth2.dpop.schema import (DPoPTokenHeaderSchema, DPoPTokenPayloadSchema)
+from pyeudiw.oauth2.dpop.schema import (
+    DPoPTokenHeaderSchema, DPoPTokenPayloadSchema)
 
 logger = logging.getLogger("pyeudiw.oauth2.dpop")
+
 
 class DPoPIssuer:
     def __init__(self, htu: str, token: str, private_jwk: dict):

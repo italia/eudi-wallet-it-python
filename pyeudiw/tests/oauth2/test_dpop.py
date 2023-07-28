@@ -2,7 +2,7 @@ import hashlib
 
 import pytest
 
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier, DPoPTokenPayloadSchema
+from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
@@ -126,4 +126,3 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
             http_header_dpop="aaa" + proof[3:]
         )
         assert dpop.is_valid is False
-

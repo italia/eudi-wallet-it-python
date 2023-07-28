@@ -78,9 +78,10 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
-        
+
         self.sd_jwt = self.config["sd_jwt"]
-        self.sd_specification = load_specification_from_yaml_string(self.sd_jwt["sd_specification"])
+        self.sd_specification = load_specification_from_yaml_string(
+            self.sd_jwt["sd_specification"])
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -127,8 +128,8 @@ class OpenID4VPBackend(BackendModule):
         :return: response
         """
         return self.pre_request_endpoint(context, internal_request)
-    
-    def _log(self, context :Context, level :str, message :str):
+
+    def _log(self, context: Context, level: str, message: str):
         log_level = getattr(logger, level)
         log_level(
             lu.LOG_FMT.format(
@@ -136,7 +137,7 @@ class OpenID4VPBackend(BackendModule):
                 message=message
             )
         )
-    
+
     def entity_configuration_endpoint(self, context, *args):
 
         _now = datetime.now()
@@ -169,7 +170,7 @@ class OpenID4VPBackend(BackendModule):
         )
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
-        
+
         # PAR
         payload = {
             'client_id': self.client_id,
@@ -182,10 +183,10 @@ class OpenID4VPBackend(BackendModule):
             # Same Device flow
             res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
             return Redirect(res_url)
-        
+
         # Cross Device flow
         res_url = f'{self.client_id}?{url_params}'
-        
+
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode_settings'])
         stream = qrcode.for_html()
@@ -223,13 +224,14 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.attributes = self.converter.to_internal(
             "openid4vp", response)
         # response["sub"]
-        
+
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
-    
-    def _handle_vp(self, vp_token: str) -> dict:
-        valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
+
+    def _handle_vp(self, vp_token: str, context: Context) -> dict:
+        valid, value = check_vp_token(
+            vp_token, self.config, self.sd_specification, self.sd_jwt)
         if not valid:
             raise value
         elif not value.get("nonce", None):
@@ -237,12 +239,12 @@ class OpenID4VPBackend(BackendModule):
             self._log(context, level='error', message=_msg)
             return JsonResponse(
                 {
-                    "error" : "parameter_absent",
-                    "error_description" : _msg
-                }, 
+                    "error": "parameter_absent",
+                    "error_description": _msg
+                },
                 status="400"
             )
-        
+
         return value
 
     def redirect_endpoint(self, context, *args):
@@ -256,8 +258,9 @@ class OpenID4VPBackend(BackendModule):
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request["response"]
-        jwk = JWK(self.config["federation"]["federation_jwks"][0], key_type="RSA")
-        
+        jwk = JWK(self.config["federation"]
+                  ["federation_jwks"][0], key_type="RSA")
+
         jweHelper = JWEHelper(jwk)
         try:
             decrypted_data = jweHelper.decrypt(jwt)
@@ -265,14 +268,15 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"Response decryption error: {e}"
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
-        
+
         # TODO: get state, do lookup on the db -> if not -> exception
-        state = decrypted_data.get("state", None) # TODO Fix this field handling
+        # TODO Fix this field handling
+        state = decrypted_data.get("state", None)
         if not state:
             _msg = f"Response state missing"
             # state is OPTIONAL in openid4vp ...
             self._log(context, level='warning', message=_msg)
-        
+
         # check with pydantic on the JWT schema
         try:
             ResponseValidator(**decrypted_data)
@@ -280,21 +284,21 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"Response validation error: {e}"
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
-        
-        # check if vp_token is string or array, if array iter all the elements        
+
+        # check if vp_token is string or array, if array iter all the elements
         # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
         vp_token = (
-            [decrypted_data["vp_token"]] 
-            if isinstance(decrypted_data["vp_token"], str) 
+            [decrypted_data["vp_token"]]
+            if isinstance(decrypted_data["vp_token"], str)
             else decrypted_data["vp_token"]
         )
-        
+
         nonce = None
         claims = []
         for vp in vp_token:
 
             try:
-                result = self._handle_vp(vp)
+                result = self._handle_vp(vp, context)
             except Exception as e:
                 _msg = f"VP parsing error: {e}"
                 self._log(context, level='error', message=_msg)
@@ -302,7 +306,7 @@ class OpenID4VPBackend(BackendModule):
                     {
                         "error": "unsupported_response_type",
                         "error_description": _msg
-                    }, 
+                    },
                     status="400"
                 )
 
@@ -311,34 +315,35 @@ class OpenID4VPBackend(BackendModule):
                 nonce = result["nonce"]
             elif nonce != result["nonce"]:
                 _msg = "Presentation has divergent nonces"
-                self._log(context, level='error', message=_msg)                    
+                self._log(context, level='error', message=_msg)
                 return JsonResponse(
                     {
-                        "error" : "invalid_token",
-                        "error_description" : _msg
-                    }, 
+                        "error": "invalid_token",
+                        "error_description": _msg
+                    },
                     status="401"
                 )
             else:
                 claims.append(result["claims"])
-                
+
         # TODO: establish the trust with the issuer of the credential by checking it to the revocation
         # inspect VP's iss or trust_chain if available or x5c if available
-        
+
         # TODO: check the revocation of the credential
 
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
         # returns the user attributes ...
         all_user_claims = dict()
-        
+
         for claim in claims:
             all_user_claims.update(claim)
 
-        self._log(context, level='debug', message=f"Wallet disclosure: {all_user_claims}")
+        self._log(context, level='debug',
+                  message=f"Wallet disclosure: {all_user_claims}")
 
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
         _info = {"issuer": {}}
-        
+
         internal_resp = self._translate_response(
             all_user_claims, _info["issuer"]
         )
@@ -355,9 +360,9 @@ class OpenID4VPBackend(BackendModule):
 
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
-            
+
             # TODO: validate wia scheme using pydantic
-            
+
             try:
                 dpop = DPoPVerifier(
                     public_jwk=wia['cnf']['jwk'],
@@ -366,23 +371,23 @@ class OpenID4VPBackend(BackendModule):
                 )
             except Exception as e:
                 _msg = f"DPoP verification error: {e}"
-                self._log(context, level='error', message=_msg)            
+                self._log(context, level='error', message=_msg)
                 return JsonResponse(
                     {
                         "error": "invalid_param",
                         "error_description": _msg
-                    }, 
+                    },
                     status="400"
                 )
 
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
-                self._log(context, level='error', message=_msg)            
+                self._log(context, level='error', message=_msg)
                 return JsonResponse(
                     {
                         "error": "invalid_param",
                         "error_description": _msg
-                    }, 
+                    },
                     status="400"
                 )
 
@@ -395,7 +400,7 @@ class OpenID4VPBackend(BackendModule):
                 "The Wallet Instance didn't provide its Wallet Instance Attestation "
                 "a default set of capabilities and a low security level are accorded."
             )
-            self._log(context, level='warning', message=_msg)  
+            self._log(context, level='warning', message=_msg)
 
     def request_endpoint(self, context, *args):
         jwk = self.metadata_jwk
@@ -404,9 +409,9 @@ class OpenID4VPBackend(BackendModule):
         dpop_validation_error = self._request_endpoint_dpop(context)
         if dpop_validation_error:
             return dpop_validation_error
-        
+
         # TODO: do customization if the WIA is available
-        
+
         # TODO: take the response and extract from jwt the public key of holder
 
         # verify the jwt
@@ -445,7 +450,8 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
-        self._log(context, level='error', message=f"{message}: {err}. {troubleshoot}")
+        self._log(context, level='error',
+                  message=f"{message}: {err}. {troubleshoot}")
 
         return JsonResponse(
             {
