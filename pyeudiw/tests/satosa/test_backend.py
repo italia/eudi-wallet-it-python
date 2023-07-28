@@ -53,8 +53,8 @@ CONFIG = {
         "use_zlib": True
     },
     "sd_jwt": {
-        "issuer": "http://test.com", 
-        "default_exp": 60, 
+        "issuer": "http://test.com",
+        "default_exp": 60,
         "sd_specification": """
             user_claims:
                 !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -70,7 +70,7 @@ CONFIG = {
                 { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
 
             key_binding: True
-        """, 
+        """,
         "no_randomness": True
     },
     "jwt_settings": {
@@ -98,11 +98,11 @@ CONFIG = {
                 "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
             },
             {
-                'kty': 'EC', 
-                'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg', 
-                'crv': 'P-256', 
-                'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo', 
-                'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU', 
+                'kty': 'EC',
+                'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg',
+                'crv': 'P-256',
+                'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo',
+                'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU',
                 'd': 'oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0'
             }
         ],
@@ -340,6 +340,7 @@ WALLET_INSTANCE_ATTESTATION = {
     "exp": iat_now() + 1024
 }
 
+
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
@@ -442,22 +443,23 @@ class TestOpenID4VPBackend:
     def test_redirect_endpoint(self, context):
         issuer_jwk = JWK(CONFIG["federation"]["federation_jwks"][1])
         holder_jwk = JWK()
-                    
+
         settings = CONFIG["sd_jwt"]
-        
-        sd_specification = load_specification_from_yaml_string(settings["sd_specification"])
-        
+
+        sd_specification = load_specification_from_yaml_string(
+            settings["sd_specification"])
+
         issued_jwt = issue_sd_jwt(
-            sd_specification, 
+            sd_specification,
             settings,
             issuer_jwk,
             holder_jwk
         )
-    
+
         adapted_keys = _adapt_keys(
-            settings, 
+            settings,
             issuer_jwk, holder_jwk)
-        
+
         sdjwt_at_holder = SDJWTHolder(
             issued_jwt["issuance"],
             serialization_format="compact",
@@ -466,12 +468,13 @@ class TestOpenID4VPBackend:
             {},
             str(uuid.uuid4()),
             str(uuid.uuid4()),
-            adapted_keys["holder_key"] if sd_specification.get("key_binding", False) else None,
+            adapted_keys["holder_key"] if sd_specification.get(
+                "key_binding", False) else None,
         )
-                
+
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
-        
+
         response = {
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
             "vp_token": sdjwt_at_holder.sd_jwt_presentation,
@@ -487,13 +490,13 @@ class TestOpenID4VPBackend:
                 ]
             }
         }
-        
-        context.request = {"response": JWEHelper(JWK(CONFIG["federation"]["federation_jwks"][0], "RSA")).encrypt(response)}
+
+        context.request = {"response": JWEHelper(
+            JWK(CONFIG["federation"]["federation_jwks"][0], "RSA")).encrypt(response)}
 
         redirect_endpoint = self.backend.redirect_endpoint(context)
         assert redirect_endpoint
         # TODO any additional checks after the backend returned the user attributes to satosa core
-
 
     def test_request_endpoint(self, context):
 

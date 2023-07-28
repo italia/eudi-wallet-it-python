@@ -2,6 +2,7 @@ from pydantic import BaseModel, HttpUrl
 
 from typing import Literal
 
+
 class DPoPTokenHeaderSchema(BaseModel):
     # header
     typ: Literal["dpop+jwt"]
