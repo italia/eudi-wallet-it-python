@@ -1,5 +1,3 @@
-from datetime import timezone
-# from django.utils.timezone import make_aware
 from secrets import token_hex
 
 
@@ -10,18 +8,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def make_timezone_aware(dt: datetime.datetime):
-    # TODO
-    raise NotImplementedError(f"{__name__} make_timezone_aware")
+def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=tz)
+    else:
+        raise ValueError("datetime is already timezone aware")
 
 
 def iat_now() -> int:
-    return int(datetime.datetime.now().timestamp())
+    return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
 
 def exp_from_now(minutes: int = 33) -> int:
-    _now = timezone.localtime()
-    return int((_now + datetime.timedelta(minutes=minutes)).timestamp())
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return int((now + datetime.timedelta(minutes=minutes)).timestamp())
 
 
 def datetime_from_timestamp(value) -> datetime.datetime:

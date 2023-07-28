@@ -6,3 +6,4 @@ isort
 autoflake
 bandit
 autopep8
+freezegun
