@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing_extensions import Annotated
 from pydantic.functional_validators import AfterValidator
 
-JWT_REGEX = "(^[\\w-]*\\.[\\w-]*\\.[\\w-]*[~]*$)"
+JWT_REGEX = r"(^[\w-]*.[\w-]*.[\w-]*~([\w-]*.[\w-]*.[\w-]*){1})"
 
 def checkJWT(jwt: str) -> str:
     res = re.match(JWT_REGEX, jwt)
