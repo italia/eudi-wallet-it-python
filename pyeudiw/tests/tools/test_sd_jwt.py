@@ -1,22 +1,43 @@
 import pytest
 
 from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt import (issue_sd_jwt, verify_sd_jwt, _adapt_keys)
+from pyeudiw.sd_jwt import (issue_sd_jwt, verify_sd_jwt, _adapt_keys, load_specification_from_yaml_string)
 
 from sd_jwt.utils.yaml_specification import load_yaml_specification
 
 from sd_jwt.holder import SDJWTHolder
 
+settings = {
+    "issuer": "http://test.com", 
+    "default_exp": 60, 
+    "sd_specification": """
+        user_claims:
+            !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            !sd given_name: "Mario"
+            !sd family_name: "Rossi"
+            !sd birthdate: "1980-01-10"
+            !sd place_of_birth:
+                country: "IT"
+                locality: "Rome"
+            !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
+
+        holder_disclosed_claims:
+            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
+
+        key_binding: True
+    """, 
+    "no_randomness": True
+}
+
+sd_specification = load_specification_from_yaml_string(settings["sd_specification"])
 
 def test_issue_sd_jwt():
     issuer_jwk = JWK()
     holder_jwk = JWK()
     
-    user_claims_path = "./pyeudiw/tests/tools/specifications.yml"
-    
     issue_sd_jwt(
-        user_claims_path, 
-        {"issuer": "http://test.com", "default_exp": 60, "specification_file": "./pyeudiw/tests/tools/specifications.yml", "no_randomness": True},
+        sd_specification, 
+        settings,
         issuer_jwk,
         holder_jwk
     )
@@ -25,39 +46,34 @@ def test_verify_sd_jwt():
     issuer_jwk = JWK()
     holder_jwk = JWK()
         
-    user_claims_path = "./pyeudiw/tests/tools/specifications.yml"
-    
     issued_jwt = issue_sd_jwt(
-        user_claims_path, 
-        {"issuer": "http://test.com", "default_exp": 60, "specification_file": user_claims_path, "no_randomness": True},
+        sd_specification, 
+        settings,
         issuer_jwk,
         holder_jwk
     )
     
-    testcase = load_yaml_specification(user_claims_path)
-    
     adapted_keys = _adapt_keys(
-        {"issuer": "http://test.com", "default_exp": 60, "specification_file": user_claims_path, "no_randomness": True}, 
-        issuer_jwk, holder_jwk)
+        settings, 
+        issuer_jwk, 
+        holder_jwk
+    )
     
     sdjwt_at_holder = SDJWTHolder(
         issued_jwt["issuance"],
         serialization_format="compact",
     )
     sdjwt_at_holder.create_presentation(
-        testcase,
+        sd_specification,
         None,
         None,
-        adapted_keys["holder_key"] if testcase.get("key_binding", False) else None,
+        adapted_keys["holder_key"] if sd_specification.get("key_binding", False) else None,
     )
         
     verified_payload = verify_sd_jwt(
         sdjwt_at_holder.sd_jwt_presentation, 
-        {
-            "issuer": "http://test.com", 
-            "verifier": "http://test.com",
-            "default_exp": 60, 
-            "specification_file": user_claims_path, 
-            "no_randomness": True,
-            "key_binding_nonce": ""
-        }, issuer_jwk, holder_jwk)
+        sd_specification, 
+        settings,
+        issuer_jwk, 
+        holder_jwk
+    )

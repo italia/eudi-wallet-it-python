@@ -74,6 +74,9 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
+        
+        self.sd_jwt = self.config["sd_jwt"]
+        self.sd_specification = self.sd_jwt["sd_specification"]
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -212,10 +215,9 @@ class OpenID4VPBackend(BackendModule):
         payload = unpad_jwt_payload(vp_token)
         holder_jwk = JWK(payload["cnf"]["jwk"])
         issuer_jwk = JWK(self.config["federation"]["federation_jwks"][1])
-        settings = self.config["sd_jwt_settings"]
         
         try:
-            return True, verify_sd_jwt(vp_token, settings, issuer_jwk, holder_jwk)
+            return True, verify_sd_jwt(vp_token, self.sd_specification, issuer_jwk, holder_jwk)
         except Exception as e:
             return False, str(e)
         

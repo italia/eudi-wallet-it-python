@@ -8,7 +8,7 @@ from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.jwt import JWSHelper, JWEHelper
 from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys
+from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
 from pyeudiw.tools.utils import iat_now
 
 from sd_jwt.utils.yaml_specification import load_yaml_specification
@@ -49,10 +49,25 @@ CONFIG = {
         "logo_path": None,
         "use_zlib": True
     },
-    "sd_jwt_settings": {
+    "sd_jwt": {
         "issuer": "http://test.com", 
         "default_exp": 60, 
-        "specification_file": "./pyeudiw/tests/tools/specifications.yml", 
+        "sd_specification": """
+            user_claims:
+                !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                !sd given_name: "Mario"
+                !sd family_name: "Rossi"
+                !sd birthdate: "1980-01-10"
+                !sd place_of_birth:
+                    country: "IT"
+                    locality: "Rome"
+                !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
+
+                holder_disclosed_claims:
+                    { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
+
+                key_binding: True
+        """, 
         "no_randomness": True
     },
     "jwt_settings": {
@@ -411,19 +426,17 @@ class TestOpenID4VPBackend:
     def test_redirect_endpoint(self, context):
         issuer_jwk = JWK(CONFIG["federation"]["federation_jwks"][1])
         holder_jwk = JWK()
-            
-        user_claims_path = "./pyeudiw/tests/tools/specifications.yml"
+                    
+        settings = CONFIG["sd_jwt"]
         
-        settings = CONFIG["sd_jwt_settings"]
+        sd_specification = load_specification_from_yaml_string(settings["sd_specification"])
         
         issued_jwt = issue_sd_jwt(
-            user_claims_path, 
+            sd_specification, 
             settings,
             issuer_jwk,
             holder_jwk
         )
-        
-        testcase = load_yaml_specification(user_claims_path)
     
         adapted_keys = _adapt_keys(
             settings, 
@@ -437,7 +450,7 @@ class TestOpenID4VPBackend:
             {},
             None,
             None,
-            adapted_keys["holder_key"] if testcase.get("key_binding", False) else None,
+            adapted_keys["holder_key"] if sd_specification.get("key_binding", False) else None,
         )
                 
         context.request_method = "POST"
