@@ -1,0 +1,2 @@
+class KidError(Exception):
+    pass
