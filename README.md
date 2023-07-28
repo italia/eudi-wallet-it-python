@@ -11,22 +11,18 @@ The EUDI Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
 to the [Italian specification](https://italia.github.io/eudi-wallet-it-docs/en/).
 
-> Please note: the scope of this project is giving tools and helpers to build a EUDI Wallet compliant to the national specs. 
 All the components listed below are tailored to this scope.
 
 The toolchain contains the following components:
 
 | Name | Description |
 | :--- | --- |
-| __jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | refs to docs |
-| __jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | refs to docs |
-| __tools.qrcode__ | Creation of QRCodes | refs to docs |
-| __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) | refs to docs |
-| __oauth2.par__ | Tools for issuing and parsing Pushed Authorization Requests, according to [OAuth 2.0 Pushed Authorization Requests](https://datatracker.ietf.org/doc/html/rfc9126) | refs to docs |
-| __openid4vp.request__ | Tools for issuing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) requests objects | refs to docs |
-| __openid4vp.redirect__ | Tools for parsing [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) responses | refs to docs |
-| __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms | refs to docs |
-| __satosa.openid4vp.backend__ | SATOSA Openid4VP Relying Party backend | refs to docs |
+| __jwk__ | Creation of JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | 
+| __jwt__ | Creation of signed or encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
+| __tools.qrcode__ | Creation of QRCodes | 
+| __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
+| __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms |
+| __satosa.openid4vp.backend__ | SATOSA Openid4VP Relying Party backend |
 
 
 ## Setup
