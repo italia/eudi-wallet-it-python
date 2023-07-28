@@ -1,6 +1,8 @@
+import hashlib
+
 import pytest
 
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
+from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier, DPoPTokenPayloadSchema
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
@@ -65,9 +67,12 @@ def wia_jws(jwshelper):
 
 def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     # create
-    unpad_jwt_header(wia_jws)
-    payload = unpad_jwt_payload(wia_jws)
-    # TODO assertions for upadded headers and payload
+    header = unpad_jwt_header(wia_jws)
+    assert header
+    assert isinstance(header["trust_chain"], list)
+    assert isinstance(header["x5c"], list)
+    assert header["alg"]
+    assert header["kid"]
 
     new_dpop = DPoPIssuer(
         htu='https://example.org/redirect',
@@ -75,15 +80,50 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
         private_jwk=private_jwk
     )
     proof = new_dpop.proof
+    assert proof
 
-    # TODO assertions
+    header = unpad_jwt_header(proof)
+    assert header["typ"] == "dpop+jwt"
+    assert header["alg"]
+    assert "mac" not in str(header["alg"]).lower()
+    assert "d" not in header["jwk"]
+
+    payload = unpad_jwt_payload(proof)
+    assert payload["ath"] == hashlib.sha256(wia_jws.encode()).hexdigest()
+    assert payload["htm"] in ["GET", "POST", "get", "post"]
+    assert payload["htu"] == "https://example.org/redirect"
+    assert payload["jti"]
+    assert payload["iat"]
 
     # verify
     dpop = DPoPVerifier(
-        public_jwk=payload['cnf']['jwk'],
+        public_jwk=PUBLIC_JWK,
         http_header_authz=f"DPoP {wia_jws}",
         http_header_dpop=proof
     )
-
     assert dpop.is_valid
-    # TODO assertions
+
+    other_jwk = JWK(key_type="RSA").public_key
+    dpop = DPoPVerifier(
+        public_jwk=other_jwk,
+        http_header_authz=f"DPoP {wia_jws}",
+        http_header_dpop=proof
+    )
+    assert dpop.is_valid is False
+
+    with pytest.raises(ValueError):
+        dpop = DPoPVerifier(
+            public_jwk=PUBLIC_JWK,
+            http_header_authz=f"DPoP {wia_jws}",
+            http_header_dpop="aaa"
+        )
+        assert dpop.is_valid is False
+
+    with pytest.raises(ValueError):
+        dpop = DPoPVerifier(
+            public_jwk=PUBLIC_JWK,
+            http_header_authz=f"DPoP {wia_jws}",
+            http_header_dpop="aaa" + proof[3:]
+        )
+        assert dpop.is_valid is False
+

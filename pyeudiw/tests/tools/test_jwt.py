@@ -78,7 +78,6 @@ def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
     assert jws
-    print(jws)
 
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
