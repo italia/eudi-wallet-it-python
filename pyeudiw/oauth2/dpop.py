@@ -84,7 +84,11 @@ class DPoPVerifier:
         # If the jwt is invalid, this will raise an exception
         try:
             unpad_jwt_header(http_header_dpop)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
             raise ValueError("DPoP proof is not a valid JWT")
         except Exception as e:
             logger.error(
