@@ -262,7 +262,7 @@ class OpenID4VPBackend(BackendModule):
         nonce = None
         
         claims = []
-        if type(vp_token) is str:
+        if isinstance(vp_token, str):
             valid, value = self._check_vp_token(vp_token)
             if not valid:
                 return Response(value, content="text/html; charset=utf8", status="500")
