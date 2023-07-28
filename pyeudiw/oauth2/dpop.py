@@ -63,7 +63,6 @@ class DPoPIssuer:
             }
         )
         return jwt
-        # TODO assertion
 
 
 class DPoPVerifier:
@@ -81,12 +80,24 @@ class DPoPVerifier:
             if self.dpop_header_prefix in http_header_authz
             else http_header_authz
         )
+        # If the jwt is invalid, this will raise an exception
+        try:
+            unpad_jwt_header(http_header_dpop)
+        except UnicodeDecodeError:
+            raise ValueError("DPoP proof is not a valid JWT")
         self.proof = http_header_dpop
 
     @property
     def is_valid(self):
         jws_verifier = JWSHelper(self.public_jwk)
-        dpop_valid = jws_verifier.verify(self.proof)
+        try:
+            dpop_valid = jws_verifier.verify(self.proof)
+        except Exception as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
+            return False
 
         header = unpad_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)
