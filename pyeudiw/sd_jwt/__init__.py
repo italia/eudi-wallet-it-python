@@ -8,6 +8,7 @@ from sd_jwt.utils.yaml_specification import _yaml_load_specification
 
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwk import JWK
+from pyeudiw.jwt.utils import unpad_jwt_payload
 
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
@@ -43,7 +44,7 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
         
     return {"jws": textwrap_json(sdjwt_at_issuer.serialized_sd_jwt), "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
-def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK):
+def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
     
     adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
     
@@ -63,5 +64,7 @@ def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict,
         None,
         serialization_format=serialization_format,
     )
+        
+    key_binding = unpad_jwt_payload(sdjwt_at_verifier._unverified_input_key_binding_jwt)
     
-    return sdjwt_at_verifier.get_verified_payload()
+    return sdjwt_at_verifier.get_verified_payload(), key_binding

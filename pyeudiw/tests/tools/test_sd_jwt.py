@@ -1,5 +1,5 @@
 import pytest
-
+import uuid
 from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt import (issue_sd_jwt, verify_sd_jwt, _adapt_keys, load_specification_from_yaml_string)
 
@@ -65,8 +65,8 @@ def test_verify_sd_jwt():
     )
     sdjwt_at_holder.create_presentation(
         sd_specification,
-        None,
-        None,
+        str(uuid.uuid4()),
+        str(uuid.uuid4()),
         adapted_keys["holder_key"] if sd_specification.get("key_binding", False) else None,
     )
         
