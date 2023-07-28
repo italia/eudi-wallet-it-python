@@ -13,6 +13,12 @@ def test_make_timezone_aware():
     assert now.tzinfo is None
     aware = make_timezone_aware(now)
     assert aware.tzinfo is not None
+    assert aware.tzinfo == datetime.timezone.utc
+    print(aware)
+    with pytest.raises(ValueError):
+        make_timezone_aware(aware)
+    aware = make_timezone_aware(now, tz=datetime.datetime.now().astimezone().tzinfo)
+    assert aware.tzinfo is not None
     
     
 def frozen_time(fake_now, function, *args):
