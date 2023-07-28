@@ -3,6 +3,7 @@ import json
 import logging
 import uuid
 
+from typing import Tuple
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus
 
@@ -211,7 +212,7 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = "take the subject id from the digital credential"
         return internal_resp
 
-    def _check_vp_token(self, vp_token: str) -> dict:
+    def _check_vp_token(self, vp_token: str) -> Tuple[str | None, dict]:
         payload = unpad_jwt_payload(vp_token)
         holder_jwk = JWK(payload["cnf"]["jwk"])
         issuer_jwk = JWK(self.config["federation"]["federation_jwks"][1])
