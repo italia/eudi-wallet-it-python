@@ -2,43 +2,13 @@ import hashlib
 import logging
 import uuid
 
-from pydantic import BaseModel, HttpUrl
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.tools.utils import iat_now
-from typing import Literal
-
+from pyeudiw.oauth2.schema import (DPoPTokenHeaderSchema, DPoPTokenPayloadSchema)
 
 logger = logging.getLogger("pyeudiw.oauth2.dpop")
-
-
-class DPoPTokenHeaderSchema(BaseModel):
-    # header
-    typ: Literal["dpop+jwt"]
-    alg: Literal[
-        "RS256",
-        "RS384",
-        "RS512",
-        "ES256",
-        "ES384",
-        "ES512",
-        "PS256",
-        "PS384",
-        "PS512",
-    ]
-    # TODO - dynamic schema loader if EC or RSA
-    # jwk: JwkSchema
-
-
-class DPoPTokenPayloadSchema(BaseModel):
-    # body
-    jti: str
-    htm: Literal["GET", "POST", "get", "post"]
-    htu: HttpUrl
-    iat: int
-    ath: str
-
 
 class DPoPIssuer:
     def __init__(self, htu: str, token: str, private_jwk: dict):

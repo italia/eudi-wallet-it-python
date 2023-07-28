@@ -17,12 +17,16 @@ from satosa.response import Redirect, Response
 
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt import JWSHelper, JWEHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
+from pyeudiw.sd_jwt import load_specification_from_yaml_string
+from pyeudiw.openid4vp import check_vp_token
+
 
 logger = logging.getLogger("openid4vp_backend")
 
@@ -71,6 +75,9 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
+        
+        self.sd_jwt = self.config["sd_jwt"]
+        self.sd_specification = load_specification_from_yaml_string(self.sd_jwt["sd_specification"])
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -204,6 +211,15 @@ class OpenID4VPBackend(BackendModule):
         # response["sub"]
         internal_resp.subject_id = "take the subject id from the digital credential"
         return internal_resp
+    
+    def _handle_vp(self, vp_token: str) -> dict:
+        valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
+        if not valid:
+            raise value
+        elif value["nonce"] == None or value["nonce"] == "":
+            return Response("vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
+        
+        return value
 
     def redirect_endpoint(self, context, *args):
         self.metadata_jwk
@@ -215,14 +231,43 @@ class OpenID4VPBackend(BackendModule):
             raise NoBoundEndpointError("request_uri not valid")
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-
+        
+        jwt = context.request["response"]
+        jwk = JWK(self.config["federation"]["federation_jwks"][0], key_type="RSA")
+        
+        jweHelper = JWEHelper(jwk)
+        
+        decrypted_data = jweHelper.decrypt(jwt)
+        
         # get state and nonce, do lookup on the db -> if not -> exception
-
+        
+        state = decrypted_data.get("state", None) #TODO Fix this field handling
+        
         # check with pydantic on the JWT schema
-
+                
+        ResponseValidator(**decrypted_data)
+        
         # check if vp_token is string or array, if array iter all the elements
-
+        
         # take the single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
+        
+        vp_token = [decrypted_data["vp_token"]] if isinstance(decrypted_data["vp_token"], str) else decrypted_data["vp_token"]
+        nonce = None
+        claims = []
+        
+        for token in vp_token:
+            try:
+                result = self._handle_vp(token)
+                
+                if nonce == None:
+                    nonce = result["nonce"]
+                elif nonce != result["nonce"]:
+                    return Response("Presentation has divergent nonces", content="text/html; charset=utf8", status="500")
+                    
+                claims.append(result["claims"])
+                
+            except Exception as e:
+                return Response(e, content="text/html; charset=utf8", status="500")
 
         # establish the trust with the issuer of the credential by checking it to the revocation
 
@@ -233,6 +278,9 @@ class OpenID4VPBackend(BackendModule):
         # returns the user attributes .. something like the ...
 
         all_user_claims = dict()
+        
+        for claim in claims:
+            all_user_claims.update(claim)
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -293,6 +341,10 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO
         # take decision, do customization if the WIA is available
+        
+        # TODO
+        # take the response and extract from jwt the public key of holder
+        # verify the jwt
 
         helper = JWSHelper(jwk)
         data = {
