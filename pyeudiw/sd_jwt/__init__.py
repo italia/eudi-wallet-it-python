@@ -10,6 +10,7 @@ from pyeudiw.tools.utils import iat_now, gen_exp_time
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
+
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
         "key_size": key_size,
@@ -20,8 +21,10 @@ def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC
     
     return get_jwk(keys, settings["no_randomness"], None)
 
+
 def load_specification_from_yaml_string(yaml_specification: str):
     return _yaml_load_specification(StringIO(yaml_specification))
+
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> str:    
     claims = {
