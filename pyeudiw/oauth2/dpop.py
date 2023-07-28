@@ -5,6 +5,7 @@ import uuid
 from pydantic import BaseModel, HttpUrl
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.oauth2.exceptions import KidError
 from pyeudiw.tools.utils import iat_now
 from typing import Literal
 
@@ -98,6 +99,12 @@ class DPoPVerifier:
         jws_verifier = JWSHelper(self.public_jwk)
         try:
             dpop_valid = jws_verifier.verify(self.proof)
+        except KidError as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"kid does not match: {e}"
+            )
+            return False
         except Exception as e:
             logger.error(
                 "DPoP proof validation error, "

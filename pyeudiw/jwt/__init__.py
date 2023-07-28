@@ -12,6 +12,7 @@ from typing import Union
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.oauth2.exceptions import KidError
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -115,8 +116,8 @@ class JWSHelper:
 
         _head = unpad_jwt_header(jws)
         if _head.get("kid") != self.jwk.as_dict()["kid"]:  # pragma: no cover
-            raise Exception(
-                f"kid error: {_head.get('kid')} != {self.jwk.as_dict()['kid']}"
+            raise KidError(
+                f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
             )
 
         _head["alg"]
