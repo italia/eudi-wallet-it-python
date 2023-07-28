@@ -3,7 +3,7 @@ from sd_jwt.verifier import SDJWTVerifier
 
 from sd_jwt.utils.demo_utils import get_jwk
 from sd_jwt.utils.formatting import textwrap_json
-from sd_jwt.utils.yaml_specification import load_yaml_specification
+from sd_jwt.utils.yaml_specification import load_yaml_specification, _yaml_load_specification
 
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwk import JWK
@@ -18,6 +18,8 @@ def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC
     
     return get_jwk(keys, settings["no_randomness"], None)
 
+def load_specification_from_yaml_string(yaml_specification: str):
+    return _yaml_load_specification(yaml_specification)
 
 def issue_sd_jwt(user_claims_path: str, settings: dict, issuer_key: JWK, holder_key: JWK) -> str:
     user_claims = load_yaml_specification(user_claims_path)
