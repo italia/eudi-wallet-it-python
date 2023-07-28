@@ -6,3 +6,6 @@ isort
 autoflake
 bandit
 autopep8
+beautifulsoup4
+lxml
+freezegun

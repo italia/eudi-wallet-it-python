@@ -4,14 +4,16 @@ import pathlib
 import pytest
 import urllib.parse
 
+from bs4 import BeautifulSoup
+
+from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.jwt import JWSHelper, JWEHelper
-from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWSHelper, unpad_jwt_header
+from pyeudiw.jwk import JWK, JWEHelper
 from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
 from pyeudiw.tools.utils import iat_now
 
-from sd_jwt.utils.yaml_specification import load_yaml_specification
 from sd_jwt.holder import SDJWTHolder
 
 from satosa.context import Context
@@ -392,26 +394,39 @@ class TestOpenID4VPBackend:
         assert pre_request_endpoint.status == "200"
         assert pre_request_endpoint.message
 
-        # TODO: assert that's a qrcode
-        # assert "svg xmlns:svg=&#34;http://www.w3.org/2000/" in pre_request_endpoint.message
-        
-        # TODO test same-device
+        assert "src='data:image/svg+xml;base64," in pre_request_endpoint.message
 
-    # TODO
-    def _test_pre_request_endpoint_mobile(self, context):
+        soup = BeautifulSoup(pre_request_endpoint.message, 'html.parser')
+        # get the img tag with src attribute starting with data:image/svg+xml;base64,
+        img_tag = soup.find(
+            lambda tag: tag.name == 'img' and tag.get('src', '').startswith('data:image/svg+xml;base64,'))
+        assert img_tag
+        # get the src attribute
+        src = img_tag['src']
+        # remove the data:image/svg+xml;base64, part
+        data = src.replace('data:image/svg+xml;base64,', '')
+        # decode the base64 data
+        decoded = base64.b64decode(data).decode("utf-8")
+
+        svg = BeautifulSoup(decoded, features="xml")
+        assert svg
+        assert svg.find("svg")
+        assert svg.find_all("svg:rect")
+
+    def test_pre_request_endpoint_mobile(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
-            HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
         pre_request_endpoint = self.backend.pre_request_endpoint(
             context, internal_data)
+        assert pre_request_endpoint
+        assert "302" in pre_request_endpoint.status
 
-        decoded = base64.b64decode(
-            pre_request_endpoint.message).decode("utf-8")
-        assert decoded.startswith("eudiw://authorize?")
+        assert f"{CONFIG['authorization']['url_scheme']}://authorize" in pre_request_endpoint.message
 
         unquoted = urllib.parse.unquote(
-            decoded, encoding='utf-8', errors='replace')
+            pre_request_endpoint.message, encoding='utf-8', errors='replace')
         parsed = urllib.parse.urlparse(unquoted)
 
         assert parsed.scheme == "eudiw"
@@ -478,6 +493,7 @@ class TestOpenID4VPBackend:
         assert redirect_endpoint
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
+
     def test_request_endpoint(self, context):
 
         jwshelper = JWSHelper(PRIVATE_JWK)
@@ -507,8 +523,13 @@ class TestOpenID4VPBackend:
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
 
-        # TODO assertion su JWS decodificato
-        # ...
+        header = unpad_jwt_header(msg["response"])
+        payload = unpad_jwt_payload(msg["response"])
+        assert header["alg"]
+        assert header["kid"]
+        assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
+        assert payload["client_id"] == CONFIG["metadata"]["client_id"]
+        assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
     def test_handle_error(self, context):
         error_message = "Error message!"
