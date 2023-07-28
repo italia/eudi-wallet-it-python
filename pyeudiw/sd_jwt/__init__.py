@@ -6,7 +6,7 @@ from sd_jwt.utils.demo_utils import get_jwk
 from sd_jwt.utils.formatting import textwrap_json
 from sd_jwt.utils.yaml_specification import _yaml_load_specification
 
-from pyeudiw.tools.utils import iat_now
+from pyeudiw.tools.utils import iat_now, gen_exp_time
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
@@ -27,7 +27,7 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
-        "exp": iat_now() + (settings["default_exp"] * 60)  # in seconds
+        "exp": gen_exp_time(settings["default_exp"])  # in seconds
     }
 
     specification.update(claims)
