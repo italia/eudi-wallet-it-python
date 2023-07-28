@@ -44,22 +44,22 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
         
     return {"jws": textwrap_json(sdjwt_at_issuer.serialized_sd_jwt), "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
+def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict):
+    if issuer == settings["issuer"]:
+        return adapted_keys["issuer_public_key"]
+    else:
+        raise Exception(f"Unknown issuer: {issuer}")
+
 def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
     
     adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
-    
-    def cb_get_issuer_key(issuer: str):
-        if issuer == settings["issuer"]:
-            return adapted_keys["issuer_public_key"]
-        else:
-            raise Exception(f"Unknown issuer: {issuer}")
-        
+
     use_decoys = specification.get("add_decoy_claims", False)
     serialization_format = specification.get("serialization_format", "compact")
     
     sdjwt_at_verifier = SDJWTVerifier(
         sd_jwt_presentation,
-        cb_get_issuer_key,
+        (lambda x: _cb_get_issuer_key(x, settings, adapted_keys)),
         None,
         None,
         serialization_format=serialization_format,
