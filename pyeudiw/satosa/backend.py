@@ -211,6 +211,15 @@ class OpenID4VPBackend(BackendModule):
         # response["sub"]
         internal_resp.subject_id = "take the subject id from the digital credential"
         return internal_resp
+    
+    def _handle_vp(self, vp_token: str) -> dict:
+        valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
+        if not valid:
+            raise value
+        elif value["nonce"] == None or value["nonce"] == "":
+            return Response("vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
+        
+        return value
 
     def redirect_endpoint(self, context, *args):
         self.metadata_jwk
@@ -242,36 +251,23 @@ class OpenID4VPBackend(BackendModule):
         
         # take the single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
         
-        vp_token = decrypted_data["vp_token"]
-        
+        vp_token = [decrypted_data["vp_token"]] if isinstance(decrypted_data["vp_token"], str) else decrypted_data["vp_token"]
         nonce = None
-        
         claims = []
-        if isinstance(vp_token, str):
-            valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
-            if not valid:
-                return Response(value, content="text/html; charset=utf8", status="500")
-            else:
-                if value["nonce"] == None or value["nonce"] == "":
-                    return Response("vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
-                nonce = value["nonce"]
-                claims.append(value["claims"])
-        else:
-            for i, token in enumerate(vp_token):
-                valid, value = check_vp_token(vp_token, self.config, self.sd_specification, self.sd_jwt)
-                if not valid:
-                    return Response(value, content="text/html; charset=utf8", status="500")
-                else:    
-                    if nonce == None:
-                        if value["nonce"] == None or value["nonce"] == "":
-                            return Response("{i} vp_token's nonce not vaild", content="text/html; charset=utf8", status="500")
-                        nonce = value["nonce"]
-                    elif nonce != value["nonce"]:
-                        return Response("Presentation has divergent nonces", content="text/html; charset=utf8", status="500")
+        
+        for token in vp_token:
+            try:
+                result = self._handle_vp(token)
+                
+                if nonce == None:
+                    nonce = result["nonce"]
+                elif nonce != result["nonce"]:
+                    return Response("Presentation has divergent nonces", content="text/html; charset=utf8", status="500")
                     
-                    claims.append(value["claims"])
-                    
-                    
+                claims.append(result["claims"])
+                
+            except Exception as e:
+                return Response(e, content="text/html; charset=utf8", status="500")
 
         # establish the trust with the issuer of the credential by checking it to the revocation
 
