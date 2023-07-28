@@ -63,10 +63,10 @@ CONFIG = {
                     locality: "Rome"
                 !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
 
-                holder_disclosed_claims:
-                    { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
+            holder_disclosed_claims:
+                { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
 
-                key_binding: True
+            key_binding: True
         """, 
         "no_randomness": True
     },
