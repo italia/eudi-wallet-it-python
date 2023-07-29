@@ -57,15 +57,18 @@ The example project is a docker-compose that runs a demo composed by the followi
 - Wordpress with SAML2 support and Bootstrap Italia template preregistered to the IAM Proxy.
 - Satosa-Saml2Spid IAM Proxy with a preconfigured OpenID4VP backend
 
+Please read [this README](example/README.md) to get a fully working demo setup.
 
 ## Satosa configuration
 
-To install the OpenID4VP SATOSA backend you just need to do four things:
+To install the OpenID4VP SATOSA backend you just need to:
 
 1. install this package
 2. copy and customize [example/pyeudiw_backend.yml](example/pyeudiw_backend.yml)
+3. include the backend configuration in your satosa configuration
+4. start Satosa.
 
-See [README-SATOSA.md](README-SATOSA.md).
+Please read  [README-SATOSA.md](README-SATOSA.md) for details.
 
 
 ## Contribute
