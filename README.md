@@ -43,7 +43,7 @@ source env/bin/activate
 
 Install using pip:
 
-`pip install pyeudiw`
+`pip install pyeudiw` or `pip install pyeudiw[satosa]` for the satosa backend.
 
 Install using github:
 
