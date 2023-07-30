@@ -5,7 +5,7 @@ import datetime
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pyeudiw.utils")
 
 
 def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
@@ -26,11 +26,6 @@ def exp_from_now(minutes: int = 33) -> int:
 
 def datetime_from_timestamp(value) -> datetime.datetime:
     return make_timezone_aware(datetime.datetime.fromtimestamp(value))
-
-
-def get_http_url(url: str):
-    # TODO
-    raise NotImplementedError(f"{__name__} get_http_url")
 
 
 def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> dict:

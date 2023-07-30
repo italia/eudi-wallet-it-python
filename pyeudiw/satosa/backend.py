@@ -20,7 +20,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper, JWEHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.qr_code import QRCode
@@ -64,24 +64,28 @@ class OpenID4VPBackend(BackendModule):
         self.absolute_redirect_url = config['metadata']['redirect_uris'][0]
         self.absolute_request_url = config['metadata']['request_uris'][0]
 
-        self.qrcode_settings = config['qrcode_settings']
+        self.qrcode_settings = config['qrcode']
         self.config = config
 
-        self.default_exp = int(self.config['jwt_settings']['default_exp'])
+        self.default_exp = int(self.config['jwt']['default_exp'])
 
         # dumps public jwks in the metadata
         self.config['metadata']['jwks'] = config["metadata_jwks"]
 
         self.federation_jwk = JWK(
-            self.config['federation']['federation_jwks'][0])
+            self.config['federation']['federation_jwks'][0]
+        )
         self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
+
+        self.federations_jwks_by_kids = {
+            i['kid']:i for i in self.config['federation']['federation_jwks']
+        }
+        self.metadata_jwks_by_kids = {
+            i['kid']:i for i in self.config['metadata_jwks']
+        }
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
-
-        self.sd_jwt = self.config["sd_jwt"]
-        self.sd_specification = load_specification_from_yaml_string(
-            self.sd_jwt["sd_specification"])
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -89,6 +93,8 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Loaded configuration:\n{json.dumps(config)}"
             )
         )
+        
+        
 
     def register_endpoints(self):
         """
@@ -188,7 +194,7 @@ class OpenID4VPBackend(BackendModule):
         res_url = f'{self.client_id}?{url_params}'
 
         # response = base64.b64encode(res_url.encode())
-        qrcode = QRCode(res_url, **self.config['qrcode_settings'])
+        qrcode = QRCode(res_url, **self.config['qrcode'])
         stream = qrcode.for_html()
 
         result = self.template.qrcode_page.render(
@@ -258,8 +264,15 @@ class OpenID4VPBackend(BackendModule):
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request["response"]
-        jwk = JWK(self.config["federation"]
-                  ["federation_jwks"][0], key_type="RSA")
+        
+        # get the decryption jwks by its kid
+        jwt_header = unpad_jwt_header(jwt)
+        
+        jwk = JWK(
+            self.metadata_jwks_by_kids[
+                jwt_header.get('kid', self.metadata_jwk)
+            ]
+        )
 
         jweHelper = JWEHelper(jwk)
         try:

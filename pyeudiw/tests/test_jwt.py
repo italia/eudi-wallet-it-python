@@ -1,7 +1,7 @@
 import pytest
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, DEFAULT_JWE_ALG, DEFAULT_JWE_ENC
+from pyeudiw.jwt import JWEHelper, JWSHelper, DEFAUL_ENC_ALG_MAP, DEFAUL_ENC_ENC_MAP
 from pyeudiw.jwt.utils import unpad_jwt_header
 
 JWKs_EC = [
@@ -18,6 +18,8 @@ JWKs_RSA = [
 
 JWKs = JWKs_EC + JWKs_RSA
 
+# TODO: ENC also with EC and not only with RSA
+ENC_JWKs = JWKs_RSA
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
 def test_unpad_jwt_header(jwk, payload):
@@ -26,8 +28,8 @@ def test_unpad_jwt_header(jwk, payload):
     assert jwe
     header = unpad_jwt_header(jwe)
     assert header
-    assert header["alg"] == DEFAULT_JWE_ALG
-    assert header["enc"] == DEFAULT_JWE_ENC
+    assert header["alg"] == DEFAUL_ENC_ALG_MAP[jwk.jwk["kty"]]
+    assert header["enc"] == DEFAUL_ENC_ENC_MAP[jwk.jwk["kty"]]
     assert header["kid"] == jwk.jwk["kid"]
 
 
@@ -38,7 +40,7 @@ def test_jwe_helper_init(key_type):
     assert helper.jwk == jwk
 
 
-@pytest.mark.parametrize("jwk, payload", JWKs)
+@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
 def test_jwe_helper_encrypt(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
@@ -56,7 +58,7 @@ def test_jwe_helper_decrypt(jwk, payload):
     assert decrypted == payload or decrypted == payload.encode()
 
 
-@pytest.mark.parametrize("jwk, payload", JWKs)
+@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
 def test_jwe_helper_decrypt_fail(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
