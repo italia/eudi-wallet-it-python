@@ -28,6 +28,11 @@ def datetime_from_timestamp(value) -> datetime.datetime:
     return make_timezone_aware(datetime.datetime.fromtimestamp(value))
 
 
+def get_http_url(url: str):
+    # TODO - utils.get_http_url
+    raise NotImplementedError(f"{__name__} get_http_url")
+
+
 def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> dict:
     """
     get jwks or jwks_uri or signed_jwks_uri

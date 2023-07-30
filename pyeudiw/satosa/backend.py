@@ -27,7 +27,6 @@ from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
-from pyeudiw.sd_jwt import load_specification_from_yaml_string
 from pyeudiw.openid4vp import check_vp_token
 
 
@@ -78,10 +77,10 @@ class OpenID4VPBackend(BackendModule):
         self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
 
         self.federations_jwks_by_kids = {
-            i['kid']:i for i in self.config['federation']['federation_jwks']
+            i['kid']: i for i in self.config['federation']['federation_jwks']
         }
         self.metadata_jwks_by_kids = {
-            i['kid']:i for i in self.config['metadata_jwks']
+            i['kid']: i for i in self.config['metadata_jwks']
         }
 
         # HTML template loader
@@ -93,8 +92,6 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Loaded configuration:\n{json.dumps(config)}"
             )
         )
-        
-        
 
     def register_endpoints(self):
         """
@@ -215,15 +212,14 @@ class OpenID4VPBackend(BackendModule):
         :param subject_type: public or pairwise according to oidc standard.
         :return: A SATOSA internal response.
         """
-        timestamp = response.get(
-            "auth_time",
-            response.get('iat', iat_now())
-        )
-
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
 
         # auth_class_ref = response.get("acr", response.get("amr", UNSPECIFIED))
+        # timestamp = response.get(
+        # "auth_time",
+        # response.get('iat', iat_now())
+        # )
         # auth_info = AuthenticationInformation(auth_class_ref, timestamp, issuer)
         # internal_resp = InternalData(auth_info=auth_info)
         internal_resp = InternalData()
@@ -264,10 +260,10 @@ class OpenID4VPBackend(BackendModule):
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request["response"]
-        
+
         # get the decryption jwks by its kid
         jwt_header = unpad_jwt_header(jwt)
-        
+
         jwk = JWK(
             self.metadata_jwks_by_kids[
                 jwt_header.get('kid', self.metadata_jwk)

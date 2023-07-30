@@ -21,6 +21,7 @@ JWKs = JWKs_EC + JWKs_RSA
 # TODO: ENC also with EC and not only with RSA
 ENC_JWKs = JWKs_RSA
 
+
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
 def test_unpad_jwt_header(jwk, payload):
     jwe_helper = JWEHelper(jwk)

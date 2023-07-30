@@ -59,7 +59,7 @@ class JWEHelper():
             _payload = plain_dict
         else:
             _payload = ""
-        
+
         _keyobj = JWE_CLASS(
             _payload,
             alg=DEFAUL_ENC_ALG_MAP[_key.kty],
@@ -67,13 +67,13 @@ class JWEHelper():
             kid=_key.kid,
             **kwargs
         )
-        
-        if _key.kty== 'EC':
+
+        if _key.kty == 'EC':
             # TODO - TypeError: key must be bytes-like
-            return _keyobj.encrypt(cek = _key.public_key())
+            return _keyobj.encrypt(cek=_key.public_key())
         else:
-            return _keyobj.encrypt(key = _key.public_key())
-            
+            return _keyobj.encrypt(key=_key.public_key())
+
     def decrypt(self, jwe: str) -> dict:
         try:
             jwe_header = unpad_jwt_header(jwe)
@@ -83,7 +83,7 @@ class JWEHelper():
         _alg = jwe_header.get("alg")
         _enc = jwe_header.get("enc")
         jwe_header.get("kid")
-        
+
         _decryptor = factory(jwe, alg=_alg, enc=_enc)
 
         _dkey = key_from_jwk_dict(self.jwk.as_dict())

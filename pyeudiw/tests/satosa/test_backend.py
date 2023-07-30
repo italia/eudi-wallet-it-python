@@ -99,7 +99,7 @@ CONFIG = {
             "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7"
         },
         {
-        
+
             "kty": "RSA",
             "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
             "e": "AQAB",
@@ -502,7 +502,8 @@ class TestOpenID4VPBackend:
                 ]
             }
         }
-        encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
         context.request = {
             "response": encrypted_response
         }
