@@ -46,10 +46,11 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, dpop_proof: dict, attestation: dict):
+    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
         creation_date = datetime.timestamp(datetime.now())
 
         entity = {
+            "document_id": document_id,
             "creation_date": creation_date,
             "dpop_proof": dpop_proof,
             "attestation": attestation,
@@ -68,7 +69,7 @@ class MongoStorage(BaseStorage):
 
         self._connect()
         documentStatus = self.collection.update_one(
-            {"_id": document_id},
+            {"document_id": document_id},
             {
                 "$set": {
                     "nonce": nonce,
