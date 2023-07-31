@@ -56,7 +56,7 @@ class DBEngine():
             try:
                 storage.update_request_object(document_id, nonce, state, request_object)
             except Exception as e:
-                logger.critical("Cannot update document with id {document_id} on {db_name}")
+                logger.critical(f"Cannot update document with id {document_id} on {db_name}")
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
         for db_name, storage in self.storages:
