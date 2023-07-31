@@ -63,10 +63,7 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def update_request_object(self, document_id: str, request_object: dict):
-        nonce = request_object["nonce"]
-        state = request_object["state"]
-
+    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict):
         self._connect()
         documentStatus = self.collection.update_one(
             {"document_id": document_id},
