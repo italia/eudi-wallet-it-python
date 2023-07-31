@@ -59,7 +59,8 @@ jobs:
         flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
     - name: Tests
       run: |
-        pytest --cov=pyeudiw -v --cov-report term --cov-fail-under=80 pyeudiw/tests/
+        pytest --cov=pyeudiw --cov-fail-under=80 --no-summary
+        coverage report -m --skip-covered
     - name: Bandit Security Scan
       run: |
         bandit -r -x pyeudiw/tests* pyeudiw/*

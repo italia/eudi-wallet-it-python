@@ -1,4 +1,5 @@
 pytest
+coverage
 pdbpp
 pytest-cov
 flake8

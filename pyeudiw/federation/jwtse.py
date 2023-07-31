@@ -2,6 +2,7 @@ import base64
 import binascii
 import json
 import logging
+import os
 
 import cryptojwt
 from cryptojwt.exception import UnsupportedAlgorithm, VerificationError
@@ -13,14 +14,31 @@ from cryptojwt.jws.jws import JWS
 from cryptojwt.jws.utils import left_hash
 from typing import Union
 
-from .settings import (
-    DEFAULT_JWE_ALG,
-    DEFAULT_JWE_ENC,
-    ENCRYPTION_ALG_VALUES_SUPPORTED,
-    SIGNING_ALG_VALUES_SUPPORTED,
+
+# TODO - leave these globals here and use as fallback if the function parameter is not passed
+# TODO - port these values in the backend general configuration
+
+DEFAULT_JWS_ALG = os.getenv("DEFAULT_JWS_ALG", "RS256")
+DEFAULT_JWE_ALG = os.getenv("DEFAULT_JWE_ALG", "RSA-OAEP")
+DEFAULT_JWE_ENC = os.getenv("DEFAULT_JWE_ENC", "A256CBC-HS512")
+SIGNING_ALG_VALUES_SUPPORTED = os.getenv(
+    "SIGNING_ALG_VALUES_SUPPORTED",
+    ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"],
+)
+ENCRYPTION_ALG_VALUES_SUPPORTED = os.getenv(
+    "ENCRYPTION_ALG_VALUES_SUPPORTED",
+    [
+        "RSA-OAEP",
+        "RSA-OAEP-256",
+        "ECDH-ES",
+        "ECDH-ES+A128KW",
+        "ECDH-ES+A192KW",
+        "ECDH-ES+A256KW",
+    ],
 )
 
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("pyeudiw.federation")
 
 
 def unpad_jwt_element(jwt: str, position: int) -> dict:
