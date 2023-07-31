@@ -16,7 +16,7 @@ class QRCode:
         self.size = size
         self.color = color
 
-        qr = pyqrcode.create('http://uca.edu')
+        qr = pyqrcode.create(data)
         # Copy the svg data to a string and close the buffer to avoid memory leaks
         buffer = io.BytesIO()
         qr.svg(buffer, scale=size, background="white", module_color=color)
