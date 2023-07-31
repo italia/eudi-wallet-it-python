@@ -5,7 +5,7 @@ import datetime
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pyeudiw.utils")
 
 
 def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
@@ -29,7 +29,7 @@ def datetime_from_timestamp(value) -> datetime.datetime:
 
 
 def get_http_url(url: str):
-    # TODO
+    # TODO - utils.get_http_url
     raise NotImplementedError(f"{__name__} get_http_url")
 
 

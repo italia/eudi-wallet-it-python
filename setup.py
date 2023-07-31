@@ -52,5 +52,9 @@ setup(
             "pymongo>=4.4.1,<4.5",
             'sd-jwt @ git+https://github.com/danielfett/sd-jwt.git'
         ],
+        "federation": [
+            "asyncio"
+            "requests"
+        ]
     }
 )
