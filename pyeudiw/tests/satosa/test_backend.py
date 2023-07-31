@@ -48,8 +48,6 @@ CONFIG = {
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
-        "logo_path": None,
-        "use_zlib": True
     },
     "jwt": {
         "default_sig_alg": "ES256",
@@ -422,7 +420,7 @@ class TestOpenID4VPBackend:
         svg = BeautifulSoup(decoded, features="xml")
         assert svg
         assert svg.find("svg")
-        assert svg.find_all("svg:rect")
+        assert svg.find_all("path")
 
     def test_pre_request_endpoint_mobile(self, context):
         internal_data = InternalData()
