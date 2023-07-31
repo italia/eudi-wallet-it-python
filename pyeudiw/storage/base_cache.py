@@ -12,5 +12,5 @@ class BaseCache():
     def overwrite(self, object_name: str, value_gen_fn: Callable[[], str]) -> dict:
         raise NotImplementedError()
     
-    def set(self, object_name: str, data: dict) -> dict:
+    def set(self, data: dict) -> dict:
         raise NotImplementedError()

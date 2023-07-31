@@ -68,8 +68,7 @@ class MongoCache(BaseCache):
 
         return cache_object
     
-    def set(self, object_name: str, data: dict) -> dict:
+    def set(self, data: dict) -> dict:
         self._connect()
         
-        cache_object = self._gen_cache_object(object_name, data)
-        self.collection.insert_one(cache_object)
+        return self.collection.insert_one(data)
