@@ -47,7 +47,7 @@ class DBEngine():
             try:
                 storage.init_session(dpop_proof, attestation)
             except Exception as e:
-                logger.critical("Cannot write document with id {document_id} on {db_name}")
+                logger.critical(f"Cannot write document with id {document_id} on {db_name}")
             
         return document_id
 
