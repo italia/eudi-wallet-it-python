@@ -34,7 +34,7 @@ config:
   federation:
     metadata_type: "wallet_relying_party"
     federation_authorities:
-        - https://localhost:8000
+        - http://127.0.0.1:8000
     default_sig_alg: "RS256"
     
     # private jwk
