@@ -63,7 +63,7 @@ class DBEngine():
             try:
                 storage.update_response_object(nonce, state, response_object)
             except Exception as e:
-                logger.critical("Cannot update document with nonce {nonce} and state {state} on {db_name}")
+                logger.critical(f"Cannot update document with nonce {nonce} and state {state} on {db_name}")
                 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
