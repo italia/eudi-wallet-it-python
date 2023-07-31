@@ -165,3 +165,5 @@ env
 */wordpress-plugin
 */wordpress-theme
 */__MACOSX
+
+.DS_Store
