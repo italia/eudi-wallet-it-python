@@ -22,6 +22,7 @@ class TestMongoStorage:
 
     def test_entity_initialization(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id
@@ -36,6 +37,7 @@ class TestMongoStorage:
 
     def test_add_request_object(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id
@@ -62,6 +64,7 @@ class TestMongoStorage:
 
     def test_update_responnse_object(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id

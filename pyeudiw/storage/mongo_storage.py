@@ -26,7 +26,7 @@ class MongoStorage(BaseStorage):
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
 
-        document = self.collection.find_one({"_id": document_id})
+        document = self.collection.find_one({"document_id": document_id})
 
         if document is None:
             raise ValueError(f'Document with id {document_id} not found')
@@ -59,9 +59,9 @@ class MongoStorage(BaseStorage):
         }
 
         self._connect()
-        document_id = self.collection.insert_one(entity)
+        self.collection.insert_one(entity)
 
-        return document_id.inserted_id
+        return document_id
 
     def update_request_object(self, document_id: str, request_object: dict):
         nonce = request_object["nonce"]
