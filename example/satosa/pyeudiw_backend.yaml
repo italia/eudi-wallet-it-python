@@ -70,16 +70,17 @@ config:
 
 
   # Mongodb database configuration
-  mongo_db_settings:
-    cache:
-      url: mongodb://localhost:27017/
-      conf:
-        db_name: eudiw
-    storage:
-      url: mongodb://localhost:27017/
-      conf:
-        db_name: eudiw
-        db_collection: sessions
+  storage:
+      mongo_db:
+        cache:
+          url: mongodb://localhost:27017/
+          conf:
+            db_name: eudiw
+        storage:
+          url: mongodb://localhost:27017/
+          conf:
+            db_name: eudiw
+            db_collection: sessions
 
   #This is the configuration for the relaying party metadata
   metadata:

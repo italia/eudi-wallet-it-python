@@ -31,7 +31,6 @@ CLIENT_ID = "client_id"
 CONFIG = {
     "base_url": BASE_URL,
 
-
     "ui": {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
