@@ -49,7 +49,8 @@ setup(
             "device_detector>=5.0,<6",
             "satosa>=8.4,<8.6",
             "jinja2>=3.0,<4",
-            "pymongo>=4.4.1,<4.5"
+            "pymongo>=4.4.1,<4.5",
+            'sd-jwt @ git+https://github.com/danielfett/sd-jwt.git'
         ],
     }
 )

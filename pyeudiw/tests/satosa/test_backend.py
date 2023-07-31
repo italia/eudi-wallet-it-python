@@ -1,3 +1,4 @@
+import uuid
 import base64
 import json
 import pathlib
@@ -9,9 +10,12 @@ from bs4 import BeautifulSoup
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.jwt import JWSHelper, unpad_jwt_header
+from pyeudiw.jwt import JWSHelper, JWEHelper, unpad_jwt_header
 from pyeudiw.jwk import JWK
+from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
 from pyeudiw.tools.utils import iat_now
+
+from sd_jwt.holder import SDJWTHolder
 
 from satosa.context import Context
 from satosa.internal import InternalData
@@ -46,6 +50,27 @@ CONFIG = {
         "size": 100,
         "color": "#2B4375",
     },
+    "sd_jwt": {
+        "issuer": "http://test.com",
+        "default_exp": 60,
+        "sd_specification": """
+            user_claims:
+                !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                !sd given_name: "Mario"
+                !sd family_name: "Rossi"
+                !sd birthdate: "1980-01-10"
+                !sd place_of_birth:
+                    country: "IT"
+                    locality: "Rome"
+                !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
+
+            holder_disclosed_claims:
+                { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
+
+            key_binding: True
+        """,
+        "no_randomness": True
+    },
     "jwt_settings": {
         "default_sig_alg": "ES256",
         "default_exp": 6
@@ -69,6 +94,14 @@ CONFIG = {
                 "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
                 "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
                 "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
+            },
+            {
+                'kty': 'EC',
+                'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg',
+                'crv': 'P-256',
+                'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo',
+                'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU',
+                'd': 'oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0'
             }
         ],
         "trust_marks": [
@@ -305,6 +338,7 @@ WALLET_INSTANCE_ATTESTATION = {
     "exp": iat_now() + 1024
 }
 
+
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
@@ -405,14 +439,62 @@ class TestOpenID4VPBackend:
         assert qs["request_uri"][0] == CONFIG["metadata"]["request_uris"][0]
 
     def test_redirect_endpoint(self, context):
+        issuer_jwk = JWK(CONFIG["federation"]["federation_jwks"][1])
+        holder_jwk = JWK()
+
+        settings = CONFIG["sd_jwt"]
+
+        sd_specification = load_specification_from_yaml_string(
+            settings["sd_specification"])
+
+        issued_jwt = issue_sd_jwt(
+            sd_specification,
+            settings,
+            issuer_jwk,
+            holder_jwk
+        )
+
+        adapted_keys = _adapt_keys(
+            settings,
+            issuer_jwk, holder_jwk)
+
+        sdjwt_at_holder = SDJWTHolder(
+            issued_jwt["issuance"],
+            serialization_format="compact",
+        )
+        sdjwt_at_holder.create_presentation(
+            {},
+            str(uuid.uuid4()),
+            str(uuid.uuid4()),
+            adapted_keys["holder_key"] if sd_specification.get(
+                "key_binding", False) else None,
+        )
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
 
+        response = {
+            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
+            "vp_token": sdjwt_at_holder.sd_jwt_presentation,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+
+        context.request = {"response": JWEHelper(
+            JWK(CONFIG["federation"]["federation_jwks"][0], "RSA")).encrypt(response)}
+
         redirect_endpoint = self.backend.redirect_endpoint(context)
         assert redirect_endpoint
         # TODO any additional checks after the backend returned the user attributes to satosa core
-
 
     def test_request_endpoint(self, context):
 
