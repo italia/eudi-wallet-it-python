@@ -21,7 +21,7 @@ class DBEngine():
             if cache_instance:
                 self.caches.append((db_name, cache_instance))
     
-    def _handle_instance(instance: dict) -> dict[BaseStorage | None, BaseCache | None]:
+    def _handle_instance(self, instance: dict) -> dict[BaseStorage | None, BaseCache | None]:
         cache_conf = instance.get("cache", None)
         storage_conf = instance.get("storage", None)
         
@@ -30,40 +30,57 @@ class DBEngine():
             module = importlib.import_module(storage_conf["module"])
             instance_class = getattr(module, storage_conf["class"])
             
-            storage_instance = instance_class(storage_conf["config"])
+            storage_instance = instance_class(**storage_conf["init_params"])
             
         cache_instance = None
         if cache_conf:
             module = importlib.import_module(cache_conf["module"])
             instance_class = getattr(module, cache_conf["class"])
             
-            cache_instance = instance_class(cache_conf["config"])
+            cache_instance = instance_class(**cache_conf["init_params"])
             
         return storage_instance, cache_instance
     
-    def init_session(self, dpop_proof: dict, attestation: dict):
+    def init_session(self, dpop_proof: dict, attestation: dict) -> str:
         document_id = str(uuid.uuid4())
         for db_name, storage in self.storages:
             try:
-                storage.init_session(dpop_proof, attestation)
+                storage.init_session(document_id, dpop_proof, attestation)
             except Exception as e:
-                logger.critical("Cannot write document with id {document_id} on {db_name}")
+                logger.critical(f"Error {str(e)}")
+                logger.critical(f"Cannot write document with id {document_id} on {db_name}")
             
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict):
+    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, int]:
+        replica_count = 0
         for db_name, storage in self.storages:
             try:
-                storage.update_request_object(document_id, nonce, state, request_object)
+                storage.update_request_object(document_id, nonce, state, request_object)        
+                replica_count += 1
             except Exception as e:
-                logger.critical("Cannot update document with id {document_id} on {db_name}")
+                logger.critical(f"Error {str(e)}")
+                logger.critical(f"Cannot update document with id {document_id} on {db_name}")
+                
+        if replica_count == 0:
+            raise Exception(f"Cannot update document {document_id} on any instance")
+        
+        return nonce, state, replica_count
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict):
+    def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
+        replica_count = 0
         for db_name, storage in self.storages:
             try:
                 storage.update_response_object(nonce, state, response_object)
+                replica_count += 1
             except Exception as e:
-                logger.critical("Cannot update document with nonce {nonce} and state {state} on {db_name}")
+                logger.critical(f"Error {str(e)}")
+                logger.critical(f"Cannot update document with nonce {nonce} and state {state} on {db_name}")
+                
+        if replica_count == 0:
+            raise Exception(f"Cannot update document with state {state} and nonce {nonce} on any instance")
+        
+        return replica_count
                 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
