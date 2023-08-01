@@ -45,6 +45,40 @@ class ResponseSchema(BaseModel):
     presentation_submission: PresentationSubmissionSchema
 
 
+class VPToken(BaseModel):
+    """
+    Schema to validate a VP Token. The token, in the form of a JWS header and payload,
+    has the properties listed below.
+        Header:
+            - alg: The algorithm used to sign the JWT.
+            - typ: "JWT".
+            - kid: The key identifier.
+        Payload:
+            - vp: The digital credential in its original state.
+                  `<SD-JWT>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>`
+            - jti: JWS Unique identifier.
+            - iat: Unix timestamp of the issuance datetime.
+            - exp: Unix timestamp beyond which the presentation of the digital credential will no longer be considered
+                   valid.
+            - aud: Audience of the VP, corresponding to the redirect_uri within the Authorization request issued by the
+                   Relying Party.
+            - nonce: Nonce provided by the Verifier within the Authorization Request.
+    """
+    header: create_model('Header',
+                         typ=(Literal["JWT"], ...),
+                         alg=(Literal["ES256", "ES384", "ES512", "RS256", "RS384", "RS512"], ...),
+                         kid=(str, ...),
+                         )
+    payload: create_model('Payload',
+                          vp=(str, ...),
+                          jti=(str, ...),
+                          iat=(int, ...),
+                          exp=(int, ...),
+                          aud=(HttpUrl, ...),
+                          nonce=(str, ...),
+                          )
+
+
 class WalletInstanceRequest(BaseModel):
     """
     Schema to validate a Wallet Instance Request. The request, in the form of a JWT header and payload,
