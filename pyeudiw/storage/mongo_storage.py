@@ -33,7 +33,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_nonce_state(self, nonce: str, state: str) -> dict:
+    def _retrieve_document_by_nonce_state(self, nonce: str | None, state: str) -> dict:
         self._connect()
 
         query = {"state": state, "nonce": nonce}
