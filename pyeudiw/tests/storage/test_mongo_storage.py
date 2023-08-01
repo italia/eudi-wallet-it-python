@@ -47,7 +47,7 @@ class TestMongoStorage:
 
         request_object = {"nonce": nonce, "state": state}
 
-        self.storage.update_request_object(document_id, request_object)
+        self.storage.update_request_object(document_id, nonce, state, request_object)
 
         document = self.storage._retrieve_document_by_id(document_id)
 
@@ -74,7 +74,7 @@ class TestMongoStorage:
 
         request_object = {"nonce": nonce, "state": state}
 
-        self.storage.update_request_object(document_id, request_object)
+        self.storage.update_request_object(document_id, nonce, state, request_object)
         documentStatus = self.storage.update_response_object(
             nonce, state, {"response": "test"})
 
