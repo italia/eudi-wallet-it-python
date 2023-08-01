@@ -52,7 +52,7 @@ class DBEngine():
             
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, int]:
+    def update_request_object(self, document_id: str, nonce: str, state: str | None, request_object: dict) -> tuple[str, str, int]:
         replica_count = 0
         for db_name, storage in self.storages:
             try:
