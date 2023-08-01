@@ -284,3 +284,55 @@
  .buttonicon{
     margin-right: 0.5em;
  }
+
+ .qr-code-title{
+    font-size: 30px;
+ }
+
+ .it-wallet-logo{
+    height: 2em;
+    width: 100px !important;
+    width: fit-content;
+ }
+
+ .title-wallet{
+    color:#0065cc;
+ }
+
+ .flex-container{
+    display: flex;
+    align-items: center;
+ }
+
+ .border-md-bottom-title{
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid #dee2e6;
+
+ }
+
+ .main-title{
+    text-align:center;
+    background-color: aqua;
+ }
+ 
+ .text-helper{
+    margin-top:2em;
+    margin-bottom:1em;
+ }
+
+
+
+ /* SPINNER */
+
+ .fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(232, 232, 232, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
