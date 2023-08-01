@@ -5,10 +5,10 @@ from typing import Callable
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 
 class MongoCache(BaseCache):
-    def __init__(self, storage_conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
 
-        self.storage_conf = storage_conf
+        self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
 

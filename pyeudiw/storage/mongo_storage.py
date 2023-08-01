@@ -5,10 +5,10 @@ from .base_storage import BaseStorage
 
 
 class MongoStorage(BaseStorage):
-    def __init__(self, storage_conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
 
-        self.storage_conf = storage_conf
+        self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
 
@@ -46,7 +46,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
+    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict) -> str:
         creation_date = datetime.timestamp(datetime.now())
 
         entity = {
@@ -63,8 +63,9 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict):
-        self._connect()
+    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:        
+        self._retrieve_document_by_id(document_id)
+                
         documentStatus = self.collection.update_one(
             {"document_id": document_id},
             {
@@ -75,7 +76,6 @@ class MongoStorage(BaseStorage):
                 }
             }
         )
-
         return nonce, state, documentStatus
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
