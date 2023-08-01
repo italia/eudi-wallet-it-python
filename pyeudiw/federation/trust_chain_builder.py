@@ -14,7 +14,7 @@ from .exceptions import (
 
 from .statements import (
     get_entity_configurations,
-    EntityConfiguration,
+    EntityStatement,
 )
 from pyeudiw.utils.utils import datetime_from_timestamp
 
@@ -37,10 +37,10 @@ class TrustChainBuilder:
     def __init__(
         self,
         subject: str,
-        trust_anchor: Union[str, EntityConfiguration],
+        trust_anchor: Union[str, EntityStatement],
         httpc_params: dict = {},
         max_authority_hints: int = 10,
-        subject_configuration: EntityConfiguration = None,
+        subject_configuration: EntityStatement = None,
         required_trust_marks: list = [],
         # TODO - prefetch cache?
         # pre_fetched_entity_configurations = {},
@@ -204,12 +204,12 @@ class TrustChainBuilder:
         return self.is_valid
 
     def get_trust_anchor_configuration(self) -> None:
-        if not isinstance(self.trust_anchor, EntityConfiguration):
+        if not isinstance(self.trust_anchor, EntityStatement):
             logger.info(f"Starting Metadata Discovery for {self.subject}")
             ta_jwt = get_entity_configurations(
                 self.trust_anchor, httpc_params=self.httpc_params
             )[0]
-            self.trust_anchor_configuration = EntityConfiguration(ta_jwt)
+            self.trust_anchor_configuration = EntityStatement(ta_jwt)
 
         try:
             self.trust_anchor_configuration.validate_by_itself()
@@ -236,14 +236,14 @@ class TrustChainBuilder:
                 jwt = get_entity_configurations(
                     self.subject, httpc_params=self.httpc_params
                 )
-                self.subject_configuration = EntityConfiguration(
+                self.subject_configuration = EntityStatement(
                     jwt[0], trust_anchor_entity_conf=self.trust_anchor_configuration
                 )
                 self.subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.subject} failed: {e}"
                 logger.error(_msg)
-                raise InvalidEntityConfiguration(_msg)
+                raise InvalidEntityStatement(_msg)
 
             # Trust Mark filter
             if self.required_trust_marks:
@@ -290,3 +290,5 @@ class TrustChainBuilder:
             self.is_valid = False
             logger.error(f"{e}")
             raise e
+    
+    
