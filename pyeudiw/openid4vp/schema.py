@@ -45,6 +45,14 @@ class ResponseSchema(BaseModel):
     presentation_submission: PresentationSubmissionSchema
 
 
+header_model_name = "Header"
+payload_model_name = "Payload"
+cnf_model_name = "Cnf"
+formats_supported_schema = "VpFormatsSupported"
+vp_model_name = "JwtVpJson"
+vc_model_name = "JwtVcJson"
+
+
 class VPToken(BaseModel):
     """
     Schema to validate a VP Token. The token, in the form of a JWS header and payload,
@@ -64,12 +72,14 @@ class VPToken(BaseModel):
                    Relying Party.
             - nonce: Nonce provided by the Verifier within the Authorization Request.
     """
-    header: create_model('Header',
+    header: create_model(header_model_name,
                          typ=(Literal["JWT"], ...),
-                         alg=(Literal["ES256", "ES384", "ES512", "RS256", "RS384", "RS512"], ...),
+                         alg=(Literal["ES256", "ES384", "ES512",
+                              "RS256", "RS384", "RS512"], ...),
                          kid=(str, ...),
                          )
-    payload: create_model('Payload',
+
+    payload: create_model(payload_model_name,
                           vp=(str, ...),
                           jti=(str, ...),
                           iat=(int, ...),
@@ -118,28 +128,29 @@ class WalletInstanceRequest(BaseModel):
             # TODO: check why iat and exp are not in the table but found in the example
             # https://github.com/italia/eudi-wallet-it-docs/blob/versione-corrente/docs/en/wallet-instance-attestation.rst#format-of-the-wallet-instance-attestation-request
     """
-    header: create_model('Header',
+    header: create_model(header_model_name,
                          alg=(Literal[
-                                  "RS256",
-                                  "RS384",
-                                  "RS512",
-                                  "ES256",
-                                  "ES384",
-                                  "ES512",
-                                  "PS256",
-                                  "PS384",
-                                  "PS512",
-                              ], ...),
+                             "RS256",
+                             "RS384",
+                             "RS512",
+                             "ES256",
+                             "ES384",
+                             "ES512",
+                             "PS256",
+                             "PS384",
+                             "PS512",
+                         ], ...),
                          typ=(Literal["var+jwt"], ...),
                          kid=(str, ...))
 
-    payload: create_model('Payload',
+    payload: create_model(payload_model_name,
                           iss=(str, ...),
                           aud=(HttpUrl, ...),
                           jti=(str, ...),
-                          type=(Literal["WalletInstanceAttestationRequest"], ...),
+                          type=(
+                              Literal["WalletInstanceAttestationRequest"], ...),
                           nonce=(str, ...),
-                          cnf=(create_model('Cnf',
+                          cnf=(create_model(cnf_model_name,
                                             jwk=(JwkSchema, ...),
                                             ), ...),
                           )
@@ -197,24 +208,24 @@ class WalletInstanceAttestation(BaseModel):
                 presentation_definition by
                 reference, with true indicating support.
     """
-    header: create_model('Header',
+    header: create_model(header_model_name,
                          alg=(Literal[
-                                  "RS256",
-                                  "RS384",
-                                  "RS512",
-                                  "ES256",
-                                  "ES384",
-                                  "ES512",
-                                  "PS256",
-                                  "PS384",
-                                  "PS512",
-                              ], ...),
+                             "RS256",
+                             "RS384",
+                             "RS512",
+                             "ES256",
+                             "ES384",
+                             "ES512",
+                             "PS256",
+                             "PS384",
+                             "PS512",
+                         ], ...),
                          typ=(Literal["wallet-attestation+jwt"], ...),
                          kid=(str, ...),
                          x5c=(list[str], ...),
                          trust_chain=(list[str], ...))
 
-    payload: create_model('Payload',
+    payload: create_model(payload_model_name,
                           iss=(HttpUrl, ...),
                           sub=(str, ...),
                           iat=(int, ...),
@@ -224,21 +235,22 @@ class WalletInstanceAttestation(BaseModel):
                           tos_uri=(HttpUrl, ...),
                           logo_uri=(HttpUrl, ...),
                           attested_security_context=(HttpUrl, ...),
-                          cnf=(create_model('Cnf',
+                          cnf=(create_model(cnf_model_name,
                                             jwk=(JwkSchema, ...),
                                             ), ...),
                           authorization_endpoint=(str, ...),
                           response_types_supported=(list[str], ...),
-                          vp_formats_supported=(create_model('VpFormatsSupported',
-                                                             jwt_vp_json=(create_model('JwtVpJson',
+                          vp_formats_supported=(create_model(formats_supported_schema,
+                                                             jwt_vp_json=(create_model(vp_model_name,
                                                                                        alg_values_supported=(
                                                                                            list[str], ...),
                                                                                        ), ...),
-                                                             jwt_vc_json=(create_model('JwtVcJson',
+                                                             jwt_vc_json=(create_model(vp_model_name,
                                                                                        alg_values_supported=(
                                                                                            list[str], ...),
                                                                                        ), ...),
                                                              ), ...),
-                          request_object_signing_alg_values_supported=(list[str], ...),
+                          request_object_signing_alg_values_supported=(
+                              list[str], ...),
                           presentation_definition_uri_supported=(bool, ...),
                           )
