@@ -48,6 +48,8 @@ services:
     volumes:
       - ./wordpress-plugin/onelogin-saml-sso/:/var/www/html/wp-content/plugins/onelogin-saml-sso/
       - ./wordpress-theme/italiawp2/:/var/www/html/wp-content/themes/italiawp2/
+      - ./onelogin_custom_settings/:/var/www/html/wp-content/plugins/onelogin-saml-sso/php
+      - ./italiaWP2_custom_settings/header.php:/var/www/html/wp-content/themes/italiawp2/header.php
     networks:
       - wordpress-network
 
