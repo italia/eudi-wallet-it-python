@@ -1,4 +1,6 @@
 import re
+from typing import Optional
+
 from pydantic import BaseModel, ValidationError, create_model, HttpUrl
 from typing_extensions import Annotated, Literal
 from pydantic.functional_validators import AfterValidator
@@ -39,7 +41,7 @@ class PresentationSubmissionSchema(BaseModel):
 
 
 class ResponseSchema(BaseModel):
-    state: str
+    state: Optional[str]
     vp_token: Annotated[str, AfterValidator(
         checkJWT)] | Annotated[list[str], AfterValidator(checkJWTList)]
     presentation_submission: PresentationSubmissionSchema
