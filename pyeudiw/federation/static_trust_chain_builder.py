@@ -1,4 +1,4 @@
-from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
 from cryptojwt.jws.jws import JWS
 from dataclasses import dataclass
 from pyeudiw.tools.utils import iat_now, exp_from_now
@@ -58,13 +58,13 @@ def _sign_ec(ec: dict, jwk: dict) -> str:
     return signer.sign_compact([jwk])
     
 def gen_static_trustchain(leaf: LeafInfo, intermediate: IntermediateInfo, trusted: TrustedAnchorInfo):
-    leaf_jwk = new_ec_key("P-256")
+    leaf_jwk = new_rsa_key()
     leaf_ec = _gen_ec(leaf, leaf_jwk)
     
-    intermediate_jwk = new_ec_key("P-256")
+    intermediate_jwk = new_rsa_key()
     intermediate_ec = _gen_ec(intermediate, leaf_jwk)
     
-    trusted_jwk = new_ec_key("P-256")
+    trusted_jwk = new_rsa_key()
     trusted_ec = _gen_ec(trusted, intermediate_jwk)
     
     return [
