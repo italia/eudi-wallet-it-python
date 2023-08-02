@@ -1,8 +1,9 @@
 from typing import Optional
 
 from pydantic import BaseModel, create_model, HttpUrl
+from pydantic_core.core_schema import FieldValidationInfo
 from typing_extensions import Annotated, Literal
-from pydantic.functional_validators import AfterValidator
+from pydantic.functional_validators import AfterValidator, field_validator
 
 from pyeudiw.jwk.schema import JwkSchema
 from pyeudiw.sd_jwt.schema import check_sd_jwt, check_sd_jwt_list
@@ -34,6 +35,14 @@ formats_supported_schema = "VpFormatsSupported"
 vp_model_name = "JwtVpJson"
 vc_model_name = "JwtVcJson"
 
+_default_supported_algorithms = []
+
+def check_alg(alg: str, info: FieldValidationInfo):
+    supported_algorithms = info.context and info.context.get("supported_algorithms") or _default_supported_algorithms
+    if alg not in supported_algorithms:
+        raise ValueError(f"Unsupported algorithm: {alg}.\n  "
+                         f"Supported algorithms: {supported_algorithms}.\n")
+
 
 class VPToken(BaseModel):
     """
@@ -56,8 +65,7 @@ class VPToken(BaseModel):
     """
     header: create_model(header_model_name,
                          typ=(Literal["JWT"], ...),
-                         alg=(Literal["ES256", "ES384", "ES512",
-                              "RS256", "RS384", "RS512"], ...),
+                         alg=(str, ...),
                          kid=(str, ...),
                          )
 
@@ -69,6 +77,12 @@ class VPToken(BaseModel):
                           aud=(HttpUrl, ...),
                           nonce=(str, ...),
                           )
+
+    @field_validator("header")
+    @classmethod
+    def check_alg(cls, header, info: FieldValidationInfo):
+        check_alg(header.alg, info)
+        return header
 
 
 class WalletInstanceRequest(BaseModel):
@@ -111,17 +125,7 @@ class WalletInstanceRequest(BaseModel):
             # https://github.com/italia/eudi-wallet-it-docs/blob/versione-corrente/docs/en/wallet-instance-attestation.rst#format-of-the-wallet-instance-attestation-request
     """
     header: create_model(header_model_name,
-                         alg=(Literal[
-                             "RS256",
-                             "RS384",
-                             "RS512",
-                             "ES256",
-                             "ES384",
-                             "ES512",
-                             "PS256",
-                             "PS384",
-                             "PS512",
-                         ], ...),
+                         alg=(str, ...),
                          typ=(Literal["var+jwt"], ...),
                          kid=(str, ...))
 
@@ -136,6 +140,12 @@ class WalletInstanceRequest(BaseModel):
                                             jwk=(JwkSchema, ...),
                                             ), ...),
                           )
+
+    @field_validator("header")
+    @classmethod
+    def check_alg(cls, header, info: FieldValidationInfo):
+        check_alg(header.alg, info)
+        return header
 
 
 class WalletInstanceAttestation(BaseModel):
@@ -191,17 +201,7 @@ class WalletInstanceAttestation(BaseModel):
                 reference, with true indicating support.
     """
     header: create_model(header_model_name,
-                         alg=(Literal[
-                             "RS256",
-                             "RS384",
-                             "RS512",
-                             "ES256",
-                             "ES384",
-                             "ES512",
-                             "PS256",
-                             "PS384",
-                             "PS512",
-                         ], ...),
+                         alg=(str, ...),
                          typ=(Literal["wallet-attestation+jwt"], ...),
                          kid=(str, ...),
                          x5c=(list[str], ...),
@@ -236,3 +236,9 @@ class WalletInstanceAttestation(BaseModel):
                               list[str], ...),
                           presentation_definition_uri_supported=(bool, ...),
                           )
+
+    @field_validator("header")
+    @classmethod
+    def check_alg(cls, header, info: FieldValidationInfo):
+        check_alg(header.alg, info)
+        return header
