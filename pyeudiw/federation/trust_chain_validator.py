@@ -3,8 +3,11 @@ import logging
 #    get_entity_configurations,
 #    EntityStatement,
 #)
+import urllib.request
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.federation.schema import is_es
+
 
 logger = logging.getLogger("pyeudiw.federation")
 
@@ -36,7 +39,22 @@ class StaticTrustChainValidator:
                 validation_kid = key
         
         if validation_kid == None:
-            raise Exception(f"Kid not in chain")                
+            raise Exception(f"Kid not in chain")
+        
+    def _validate_single(self, fed_jwks, header, payload):
+        try:
+            self._validate_keys(fed_jwks, header)
+        except Exception as e:
+            logger.warning(f"Warning: {e}")
+            return False
+        
+        try:
+            self._validate_exp(payload["exp"])
+        except Exception as e:
+            logger.warning(f"Warning: {e}")
+            return False
+        
+        return True
     
     @property
     def is_valid(self):
@@ -57,9 +75,7 @@ class StaticTrustChainValidator:
         
         # if valid: exps.append(this-exp)
         self._validate_exp(es_exp)
-        
-        #current_kid = es_payload["jwks"]["keys"][0]["kid"]
-        
+                
         fed_jwks = es_payload["jwks"]["keys"]
                 
         # for st in rev_tc[1:]:
@@ -70,16 +86,7 @@ class StaticTrustChainValidator:
             st_header = unpad_jwt_header(st)
             st_payload = unpad_jwt_payload(st)
             
-            try:
-                self._validate_keys(fed_jwks, st_header)
-            except Exception as e:
-                logger.warning(f"Warning: {e}")
-                return False
-            
-            try:
-                self._validate_exp(st_payload["exp"])
-            except Exception as e:
-                logger.warning(f"Warning: {e}")
+            if self._validate_single(fed_jwks, st_header, st_payload) == False:
                 return False
             
             fed_jwks = st_payload["jwks"]["keys"]
@@ -87,16 +94,22 @@ class StaticTrustChainValidator:
         return True
     
     def update(self):
-        for st in self.static_trust_chain:
-            pass
-            # if EC -> download again from well-known/openid-federation
-            # if ES:
-            #   if source_endpoint is available -> take it directly from it
-            # else:
-            #   get the EC of the issuer and then take the statement from the fetch
+        self.updated_trust_chain = []
+                
+        for st in self.static_trust_chain:            
+            payload = unpad_jwt_payload(st)
+            download_url = None
             
-            # if ok -> self.updated_trust_chain.append(new_es)
-        
+            if is_es(payload):
+                download_url = payload["source_endpoint"] if payload.get("source_endpoint", None) else payload["iss"] + "fetch"
+            else:
+                iss = payload["iss"]
+                download_url = iss + ".well-known/openid-federation"
+            
+            contents = urllib.request.urlopen(download_url).read()
+            
+            self.updated_trust_chain.append(contents)
+            
         return self.is_valid
             
         
