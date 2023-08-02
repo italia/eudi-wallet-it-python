@@ -6,6 +6,8 @@ from pyeudiw.federation.static_trust_chain_builder import (
     gen_static_trustchain
 )
 
+# TODO: change this file in a test case 
+
 leaf = LeafInfo(
     10, 
     "https://rp.example.org", 
@@ -69,5 +71,3 @@ trust = TrustedAnchorInfo(
 )
 
 trust_chain = gen_static_trustchain(leaf, intermediate, trust)
-
-print(json.dumps(trust_chain))
