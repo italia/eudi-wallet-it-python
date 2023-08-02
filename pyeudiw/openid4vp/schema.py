@@ -37,8 +37,10 @@ vc_model_name = "JwtVcJson"
 
 _default_supported_algorithms = []
 
+
 def check_alg(alg: str, info: FieldValidationInfo):
-    supported_algorithms = info.context and info.context.get("supported_algorithms") or _default_supported_algorithms
+    supported_algorithms = info.context and info.context.get(
+        "supported_algorithms") or _default_supported_algorithms
     if alg not in supported_algorithms:
         raise ValueError(f"Unsupported algorithm: {alg}.\n  "
                          f"Supported algorithms: {supported_algorithms}.\n")

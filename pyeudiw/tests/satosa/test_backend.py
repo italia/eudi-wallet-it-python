@@ -497,7 +497,6 @@ class TestOpenID4VPBackend:
             data,
             protected={"typ": "JWT"}
         )
-        print(vp_token)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
