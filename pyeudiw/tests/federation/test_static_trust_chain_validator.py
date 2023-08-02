@@ -1,11 +1,280 @@
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 
 
-def test_is_vaild():
-    static_chain = [
-        "eyJhbGciOiJFUzI1NiIsImtpZCI6Ik1YRndZMlpvUVhaaU1qWk9hRGR5UlhBeGNVRllhMFJVVHpsVVZGQmZPV05xVGsxcFFrcEtOV0Y2YnciLCJ0eXAiOiJhcHBsaWNhdGlvbi9lbnRpdHktc3RhdGVtZW50K2p3dCJ9.eyJleHAiOjE3MDMxNDYyNjUsImlhdCI6MTY0OTQxNzg2MiwiaXNzIjoiaHR0cHM6Ly9ycC5leGFtcGxlLm9yZyIsInN1YiI6Imh0dHBzOi8vcnAuZXhhbXBsZS5vcmciLCJqd2tzIjp7ImtleXMiOlt7Imt0eSI6IkVDIiwia2lkIjoiTVhGd1kyWm9RWFppTWpaT2FEZHlSWEF4Y1VGWWEwUlVUemxVVkZCZk9XTnFUazFwUWtwS05XRjZidyIsImNydiI6IlAtMjU2IiwieCI6ImhOR040UmQ2a2dnTjJLUEpRbVFha2RBWWVmNUpXOUJTWVFKenZla0Q3UXciLCJ5IjoiaEFyVGFLYlRGT2tmSFJnSHlYYzFkd0FScGhvSXZfQXdtWG1NcDBXV3FxMCJ9XX0sIm1ldGFkYXRhIjp7Im9wZW5pZF9yZWx5aW5nX3BhcnR5Ijp7ImFwcGxpY2F0aW9uX3R5cGUiOiJ3ZWIiLCJjbGllbnRfaWQiOiJodHRwczovL3JwLmV4YW1wbGUub3JnLyIsImNsaWVudF9yZWdpc3RyYXRpb25fdHlwZXMiOlsiYXV0b21hdGljIl0sImp3a3MiOnsia2V5cyI6W3sia3R5IjoiRUMiLCJraWQiOiJNWEZ3WTJab1FYWmlNalpPYURkeVJYQXhjVUZZYTBSVVR6bFVWRkJmT1dOcVRrMXBRa3BLTldGNmJ3IiwiY3J2IjoiUC0yNTYiLCJ4IjoiaE5HTjRSZDZrZ2dOMktQSlFtUWFrZEFZZWY1Slc5QlNZUUp6dmVrRDdRdyIsInkiOiJoQXJUYUtiVEZPa2ZIUmdIeVhjMWR3QVJwaG9Jdl9Bd21YbU1wMFdXcXEwIn1dfSwiY2xpZW50X25hbWUiOiJOYW1lIG9mIGFuIGV4YW1wbGUgb3JnYW5pemF0aW9uIiwiY29udGFjdHMiOlsib3BzQHJwLmV4YW1wbGUuaXQiXSwiZ3JhbnRfdHlwZXMiOlsicmVmcmVzaF90b2tlbiIsImF1dGhvcml6YXRpb25fY29kZSJdLCJyZWRpcmVjdF91cmlzIjpbImh0dHBzOi8vcnAuZXhhbXBsZS5vcmcvb2lkYy9ycC9jYWxsYmFjay8iXSwicmVzcG9uc2VfdHlwZXMiOlsiY29kZSJdLCJzY29wZXMiOiJldS5ldXJvcGEuZWMuZXVkaXcucGlkLjEgZXUuZXVyb3BhLmVjLmV1ZGl3LnBpZC5pdC4xIGVtYWlsIiwic3ViamVjdF90eXBlIjoicGFpcndpc2UifSwiZmVkZXJhdGlvbl9lbnRpdHkiOnsiZmVkZXJhdGlvbl9yZXNvbHZlX2VuZHBvaW50IjoiaHR0cHM6Ly9ycC5leGFtcGxlLm9yZy9yZXNvbHZlLyIsIm9yZ2FuaXphdGlvbl9uYW1lIjoiRXhhbXBsZSBSUCIsImhvbWVwYWdlX3VyaSI6Imh0dHBzOi8vcnAuZXhhbXBsZS5pdCIsInBvbGljeV91cmkiOiJodHRwczovL3JwLmV4YW1wbGUuaXQvcG9saWN5IiwibG9nb191cmkiOiJodHRwczovL3JwLmV4YW1wbGUuaXQvc3RhdGljL2xvZ28uc3ZnIiwiY29udGFjdHMiOlsidGVjaEBleGFtcGxlLml0Il19fSwidHJ1c3RfbWFya3MiOlt7ImlkIjoiaHR0cHM6Ly9yZWdpc3RyeS5laWRhcy50cnVzdC1hbmNob3IuZXhhbXBsZS5ldS9vcGVuaWRfcmVseWluZ19wYXJ0eS9wdWJsaWMvIiwidHJ1c3RfbWFyayI6ImV5SmggXHUyMDI2In1dLCJhdXRob3JpdHlfaGludHMiOlsiaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZWlkYXMuZXhhbXBsZS5vcmciXX0.mcF04Oi1EFD06no-75JHF5PVSyEePnAdOcn1L3BOj-LnYxcvyU8rvo8mYraN2AYuzUeqjfPoepXruRFxpDRJAg",
-        "eyJhbGciOiJFUzI1NiIsImtpZCI6Ik1TMTFOVm8yYTNCaGNUQnJOMVUwT1dKeFpHVnZjMHRpV2twU2EzRlJSMUZLTUhkRmRWbEVPRVJ3YXciLCJ0eXAiOiJhcHBsaWNhdGlvbi9lbnRpdHktc3RhdGVtZW50K2p3dCJ9.eyJleHAiOjE3MDMxNDYyNjUsImlhdCI6MTY0OTQ1MDc0NiwiaXNzIjoiaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZWlkYXMuZXhhbXBsZS5vcmciLCJzdWIiOiJodHRwczovL3JwLmV4YW1wbGUub3JnIiwiandrcyI6eyJrZXlzIjpbeyJrdHkiOiJFQyIsImtpZCI6Ik1YRndZMlpvUVhaaU1qWk9hRGR5UlhBeGNVRllhMFJVVHpsVVZGQmZPV05xVGsxcFFrcEtOV0Y2YnciLCJjcnYiOiJQLTI1NiIsIngiOiJoTkdONFJkNmtnZ04yS1BKUW1RYWtkQVllZjVKVzlCU1lRSnp2ZWtEN1F3IiwieSI6ImhBclRhS2JURk9rZkhSZ0h5WGMxZHdBUnBob0l2X0F3bVhtTXAwV1dxcTAifV19LCJtZXRhZGF0YV9wb2xpY3kiOnsib3BlbmlkX3JlbHlpbmdfcGFydHkiOnsic2NvcGVzIjp7InN1YnNldF9vZiI6WyJldS5ldXJvcGEuZWMuZXVkaXcucGlkLjEsICBldS5ldXJvcGEuZWMuZXVkaXcucGlkLml0LjEiXX0sInJlcXVlc3RfYXV0aGVudGljYXRpb25fbWV0aG9kc19zdXBwb3J0ZWQiOnsib25lX29mIjpbInJlcXVlc3Rfb2JqZWN0Il19LCJyZXF1ZXN0X2F1dGhlbnRpY2F0aW9uX3NpZ25pbmdfYWxnX3ZhbHVlc19zdXBwb3J0ZWQiOnsic3Vic2V0X29mIjpbIlJTMjU2IiwiUlM1MTIiLCJFUzI1NiIsIkVTNTEyIiwiUFMyNTYiLCJQUzUxMiJdfX19LCJ0cnVzdF9tYXJrcyI6W3siaWQiOiJodHRwczovL3RydXN0LWFuY2hvci5leGFtcGxlLmV1L29wZW5pZF9yZWx5aW5nX3BhcnR5L3B1YmxpYy8iLCJ0cnVzdF9tYXJrIjoiZXlKaGIgXHUyMDI2In1dfQ.WwVUWBOhT9aKeEGoW0Sq_NvNdpFp_Arzli9RWzmYEZI9X7BuCyTIXe07YhJw-oYnuYNRu5tvIsMHZdSL0QYRlg",
-        "eyJhbGciOiJFUzI1NiIsImtpZCI6Ilh6TjZhV280VVdWVlZuWjVZVGxSYTNrNGVqWnpZbmhxTW1NdFVISlRaV3RWUVhkaVJVcEViMjFGVFEiLCJ0eXAiOiJhcHBsaWNhdGlvbi9lbnRpdHktc3RhdGVtZW50K2p3dCJ9.eyJleHAiOjE3MDMxNDYyNjUsImlhdCI6MTY0OTQ1MDc0NiwiaXNzIjoiaHR0cHM6Ly90cnVzdC1hbmNob3IuZXhhbXBsZS5ldSIsInN1YiI6Imh0dHBzOi8vaW50ZXJtZWRpYXRlLmVpZGFzLmV4YW1wbGUub3JnIiwiandrcyI6eyJrZXlzIjpbeyJrdHkiOiJFQyIsImtpZCI6Ik1TMTFOVm8yYTNCaGNUQnJOMVUwT1dKeFpHVnZjMHRpV2twU2EzRlJSMUZLTUhkRmRWbEVPRVJ3YXciLCJjcnYiOiJQLTI1NiIsIngiOiJlem50R3FacHZGbWVNUWRQSzVWeU5YMUNMY3pBbzRPY2pORzhiN0FwOC1JIiwieSI6Ijg0WWdpeGRZLUY3dmpkZmNoVmljSm1IRlQ5SVFCT2F5cmVJYmJ5dlRPcTgifV19LCJ0cnVzdF9tYXJrcyI6W3siaWQiOiJodHRwczovL3RydXN0LWFuY2hvci5leGFtcGxlLmV1L2ZlZGVyYXRpb25fZW50aXR5L3RoYXQtcHJvZmlsZSIsInRydXN0X21hcmsiOiJleUpoYiBcdTIwMjYifV19.rwE72ZF7hqladZgYPRAwLs2mwrouVaRMBCBC_ypv-2wkjg5dpKd4LQojdh6DbkrF1Ql-DE4dT10cFS-vWVWzYQ"
-    ]
+# pip install cryptojwt
+from cryptojwt.jwk.rsa import new_rsa_key
+from cryptojwt.jws.jws import JWS
 
-    assert StaticTrustChainValidator(static_chain, []).is_valid
+from pyeudiw.tools.utils import iat_now, exp_from_now
+
+# Create private keys
+leaf_jwk = new_rsa_key()
+intermediate_jwk = new_rsa_key()
+ta_jwk = new_rsa_key()
+
+NOW = iat_now()
+EXP = exp_from_now(5)
+
+# Define Entity Configurations
+leaf_ec = {
+    "exp": EXP,
+    "iat": NOW,
+    "iss": "https://rp.example.it",
+    "sub": "https://rp.example.it",
+    'jwks': {"keys":[]},
+    "metadata": {
+        "wallet_relying_party": {
+            "application_type": "web",
+            "client_id": "https://rp.example.it",
+            "client_name": "Name of an example organization",
+            'jwks': {"keys":[]},
+            "contacts": [
+                "ops@verifier.example.org"
+            ],
+
+            "request_uris": [
+                "https://verifier.example.org/request_uri"
+            ],
+            "redirect_uris": [
+                "https://verifier.example.org/callback"
+            ],
+
+            "default_acr_values": [
+                "https://www.spid.gov.it/SpidL2",
+                "https://www.spid.gov.it/SpidL3"
+            ],
+
+              "vp_formats": {
+                 "jwt_vp_json": {
+                    "alg": [
+                       "EdDSA",
+                       "ES256K"
+                    ]
+                 }
+              },
+              "presentation_definitions": [
+                  {
+                    "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                    "input_descriptors": [
+                        {
+                            "id": "sd-jwt",
+                            "format": {
+                                "jwt": {
+                                    "alg": [
+                                        "EdDSA",
+                                        "ES256"
+                                    ]
+                                },
+                                "constraints": {
+                                    "limit_disclosure": "required",
+                                    "fields": [
+                                        {
+                                            "path": [
+                                                "$.sd-jwt.type"
+                                            ],
+                                            "filter": {
+                                                "type": "string",
+                                                "const": "PersonIdentificationData"
+                                            }
+                                        },
+                                        {
+                                            "path": [
+                                                "$.sd-jwt.cnf"
+                                            ],
+                                            "filter": {
+                                                "type": "object",
+                                            }
+                                        },
+                                        {
+                                            "path": [
+                                                "$.sd-jwt.family_name"
+                                            ],
+                                            "intent_to_retain": "true"
+                                        },
+                                        {
+                                            "path": [
+                                                "$.sd-jwt.given_name"
+                                            ],
+                                            "intent_to_retain": "true"
+                                        },
+                                        {
+                                            "path": [
+                                                "$.sd-jwt.unique_id"
+                                            ],
+                                            "intent_to_retain": "true"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                  },
+            ],
+
+            "default_max_age": 1111,
+
+            # JARM related
+            "authorization_signed_response_alg": [
+                "RS256",
+                "ES256"
+            ],
+            "authorization_encrypted_response_alg": [
+                "RSA-OAEP",
+                "RSA-OAEP-256"
+            ],
+            "authorization_encrypted_response_enc": [
+                "A128CBC-HS256",
+                "A192CBC-HS384",
+                "A256CBC-HS512",
+                "A128GCM",
+                "A192GCM",
+                "A256GCM"
+            ],
+
+            # SIOPv2 related
+            "subject_type": "pairwise",
+            "require_auth_time": True,
+            "id_token_signed_response_alg": [
+                "RS256",
+                "ES256"
+            ],
+            "id_token_encrypted_response_alg": [
+                "RSA-OAEP",
+                "RSA-OAEP-256"
+            ],
+            "id_token_encrypted_response_enc": [
+                "A128CBC-HS256",
+                "A192CBC-HS384",
+                "A256CBC-HS512",
+                "A128GCM",
+                "A192GCM",
+                "A256GCM"
+            ],
+        },
+        "federation_entity": {
+            "organization_name": "OpenID Wallet Verifier example",
+            "homepage_uri": "https://verifier.example.org/home",
+            "policy_uri": "https://verifier.example.org/policy",
+            "logo_uri": "https://verifier.example.org/static/logo.svg",
+            "contacts": [
+               "tech@verifier.example.org"
+             ]
+        }
+    },
+    "authority_hints": [
+        "https://registry.eudi-wallet.example.it"
+    ]
+}
+
+
+intermediate_ec = {
+ "exp": EXP,
+ "iat": NOW,
+ 'iss': 'https://intermediate.eidas.example.org',
+ 'sub': 'https://intermediate.eidas.example.org',
+ 'jwks': {"keys":[]},
+ 'metadata': {'federation_entity': {'contacts': ['soggetto@intermediate.eidas.example.it'],
+   'federation_fetch_endpoint': 'https://intermediate.eidas.example.org/fetch/',
+   'federation_resolve_endpoint': 'https://intermediate.eidas.example.org/resolve/',
+   'federation_list_endpoint': 'https://intermediate.eidas.example.org/list/',
+   'homepage_uri': 'https://soggetto.intermediate.eidas.example.it',
+   'name': 'Example Intermediate intermediate.eidas.example'}},
+ 'trust_marks': [{'id': 'https://registry.gov.org/intermediate/private/full/',
+   'trust_mark': 'eyJh …'}],
+ 'authority_hints': ['https://registry.eidas.trust-anchor.example.eu']}
+
+
+ta_ec = {
+ "exp": EXP,
+ "iat": NOW,
+ 'iss': 'https://registry.eidas.trust-anchor.example.eu/',
+ 'sub': 'https://registry.eidas.trust-anchor.example.eu/',
+ 'jwks': {"keys":[]},
+ 'metadata': {'federation_entity': {'organization_name': 'example TA',
+   'contacts': ['tech@eidas.trust-anchor.example.eu'],
+   'homepage_uri': 'https://registry.eidas.trust-anchor.example.eu/',
+   'logo_uri': 'https://registry.eidas.trust-anchor.example.eu/static/svg/logo.svg',
+   'federation_fetch_endpoint': 'https://registry.eidas.trust-anchor.example.eu/fetch/',
+   'federation_resolve_endpoint': 'https://registry.eidas.trust-anchor.example.eu/resolve/',
+   'federation_list_endpoint': 'https://registry.eidas.trust-anchor.example.eu/list/',
+   'federation_trust_mark_status_endpoint': 'https://registry.eidas.trust-anchor.example.eu/trust_mark_status/'}},
+ 'trust_marks_issuers': {'https://registry.eidas.trust-anchor.example.eu/openid_relying_party/public/': ['https://registry.spid.eidas.trust-anchor.example.eu/',
+   'https://public.intermediary.spid.org/'],
+  'https://registry.eidas.trust-anchor.example.eu/openid_relying_party/private/': ['https://registry.spid.eidas.trust-anchor.example.eu/',
+   'https://private.other.intermediary.org/']},
+ 'constraints': {'max_path_length': 1}}
+
+# place example keys
+leaf_ec["jwks"]['keys'] = [leaf_jwk.serialize()]
+leaf_ec['metadata']['wallet_relying_party']["jwks"]['keys'] = [leaf_jwk.serialize()]
+
+intermediate_ec["jwks"]['keys'] = [intermediate_jwk.serialize()]
+ta_ec["jwks"]['keys'] = [ta_jwk.serialize()]
+
+# pubblica: dict = privata.serialize()
+# privata_dict: dict = privata.to_dict()
+
+# Define Entity Statements
+intermediate_es = {
+    "exp": EXP,
+    "iat": NOW,
+    "iss": "https://intermediate.eidas.example.org",
+    "sub": "https://rp.example.org",
+    'jwks': {"keys":[]},
+	"metadata_policy": {
+   		 "openid_relying_party": {
+       		 "scopes": {
+           		 "subset_of": [
+                     	"eu.europa.ec.eudiw.pid.1,  eu.europa.ec.eudiw.pid.it.1"
+                  	]
+       		 },
+  	    	"request_authentication_methods_supported": {
+  		      "one_of": ["request_object"]
+    		 },
+  	    	"request_authentication_signing_alg_values_supported": {
+  		      "subset_of": ["RS256", "RS512", "ES256", "ES512", "PS256", "PS512"]
+          	}
+          	}
+   	 }
+}
+
+# the leaf publishes the leaf public key
+intermediate_es["jwks"]['keys'] = [leaf_jwk.serialize()]
+
+
+ta_es = {
+    "exp": EXP,
+    "iat": NOW,
+	"iss": "https://trust-anchor.example.eu",
+	"sub": "https://intermediate.eidas.example.org",
+    'jwks': {"keys":[]},
+	"trust_marks": [
+    	{
+        	"id": "https://trust-anchor.example.eu/federation_entity/that-profile",
+        	"trust_mark": "eyJhb …"
+    	}
+	]
+}
+
+# the ta publishes the intermediate public key
+ta_es["jwks"]['keys'] = [intermediate_jwk.serialize()]
+
+
+leaf_signer = JWS(leaf_ec, alg="RS256", typ="application/entity-statement+jwt")
+leaf_ec_signed = leaf_signer.sign_compact([leaf_jwk])
+
+intermediate_signer = JWS(intermediate_es, alg="RS256", typ="application/entity-statement+jwt")
+intermediate_es_signed = intermediate_signer.sign_compact([intermediate_jwk])
+
+ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+ta_es_signed = ta_signer.sign_compact([ta_jwk])
+
+trust_chain = [
+	leaf_ec_signed,
+	intermediate_es_signed,
+	ta_es_signed
+]
+
+
+def test_is_valid():
+    assert StaticTrustChainValidator(trust_chain, [ta_jwk.serialize()]).is_valid

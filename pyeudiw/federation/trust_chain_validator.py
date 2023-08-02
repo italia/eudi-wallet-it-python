@@ -11,19 +11,14 @@ from pyeudiw.federation.statements import (
     get_entity_configurations,
     get_entity_statements
 )
-from pyeudiw.federation.exceptions import HttpError
+from pyeudiw.federation.exceptions import (
+    HttpError, 
+    MissingTrustAnchorPublicKey,
+    TimeValidationError,
+    KeyValidationError
+)
 
 logger = logging.getLogger("pyeudiw.federation")
-
-
-class TimeValidationError(Exception):
-    def __init__(self, message, errors):
-        super().__init__(message)
-
-
-class KeyValidationError(Exception):
-    def __init__(self, message, errors):
-        super().__init__(message)
 
 
 def find_jwk(kid: str, jwks: list) -> dict:
@@ -45,13 +40,19 @@ class StaticTrustChainValidator:
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
+        
+        if not trust_anchor_jwks:
+            raise MissingTrustAnchorPublicKey(
+                f"{self.__class__.__name__} cannot "
+                "created without the TA public jwks"
+            )
+        
         self.trust_anchor_jwks = trust_anchor_jwks
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def _validate_exp(self, exp):
-        if exp < iat_now():
-            raise TimeValidationError("TA expired")
+    def is_expired(self, exp):
+        return exp < iat_now()
 
     def _validate_keys(self, fed_jwks, st_header):
         current_kid = st_header["kid"]
@@ -96,14 +97,16 @@ class StaticTrustChainValidator:
 
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
+        
         if not jwsh.verify(last_element):
             return False
 
         # then go ahead with other checks
         es_exp = es_payload["exp"]
 
-        # if valid: exps.append(this-exp)
-        self._validate_exp(es_exp)
+        iat_now() - es_exp
+        if self.is_expired(es_exp):
+            raise TimeValidationError()
 
         fed_jwks = es_payload["jwks"]["keys"]
 

@@ -26,6 +26,9 @@ class TrustAnchorNeeded(Exception):
     pass
 
 
+class MissingTrustAnchorPublicKey(Exception):
+    pass
+
 class MetadataDiscoveryException(Exception):
     pass
 
@@ -51,4 +54,12 @@ class InvalidEntityConfiguration(Exception):
 
 
 class InvalidEntityStatement(Exception):
+    pass
+
+
+class TimeValidationError(Exception):
+    pass
+
+
+class KeyValidationError(Exception):
     pass
