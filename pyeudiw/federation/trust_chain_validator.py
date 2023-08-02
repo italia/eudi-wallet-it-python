@@ -8,8 +8,15 @@ from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.federation.schema import is_es
 
-
 logger = logging.getLogger("pyeudiw.federation")
+
+class TimeValidationError(Exception):
+    def __init__(self, message, errors):
+        super().__init__(message)
+        
+class KeyValidationError(Exception):
+    def __init__(self, message, errors):
+        super().__init__(message)
 
 class StaticTrustChainValidator:
     def __init__(
@@ -27,7 +34,7 @@ class StaticTrustChainValidator:
     
     def _validate_exp(self, exp):
         if exp < iat_now():
-            raise Exception(f"TA expiried")
+            raise TimeValidationError(f"TA expiried")
         
     def _validate_keys(self, fed_jwks, st_header):
         current_kid = st_header["kid"]
@@ -39,16 +46,11 @@ class StaticTrustChainValidator:
                 validation_kid = key
         
         if validation_kid == None:
-            raise Exception(f"Kid not in chain")
+            raise KeyValidationError(f"Kid {current_kid} not in chain")
         
     def _validate_single(self, fed_jwks, header, payload):
         try:
             self._validate_keys(fed_jwks, header)
-        except Exception as e:
-            logger.warning(f"Warning: {e}")
-            return False
-        
-        try:
             self._validate_exp(payload["exp"])
         except Exception as e:
             logger.warning(f"Warning: {e}")
