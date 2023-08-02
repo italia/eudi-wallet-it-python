@@ -2,7 +2,7 @@ import re
 
 from pydantic import ValidationError
 
-SD_JWT_REGEXP = r"^(([-A-Za-z0-9+\=])*\.([-A-Za-z0-9+\=])*\.([-A-Za-z0-9+\=])*)$"
+SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
 
 
 def check_sd_jwt(sd_jwt: str) -> str:
