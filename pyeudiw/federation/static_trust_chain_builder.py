@@ -54,7 +54,7 @@ def _gen_ec(node: LeafInfo | IntermediateInfo | TrustedAnchorInfo, keys: list) -
     return ec
                 
 def _sign_ec(ec: dict, jwk: dict) -> str:
-    signer = JWS(ec, alg="ES256", typ="application/entity-statement+jwt")
+    signer = JWS(ec, alg="RS256", typ="application/entity-statement+jwt")
     return signer.sign_compact([jwk])
     
 def gen_static_trustchain(leaf: LeafInfo, intermediate: IntermediateInfo, trusted: TrustedAnchorInfo):
