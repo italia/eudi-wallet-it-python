@@ -48,3 +48,7 @@ class TrustchainMissingMetadata(Exception):
 
 class InvalidEntityConfiguration(Exception):
     pass
+
+
+class InvalidEntityStatement(Exception):
+    pass

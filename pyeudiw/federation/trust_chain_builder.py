@@ -7,7 +7,7 @@ from typing import Union
 from pyeudiw.federation.policy import apply_policy
 
 from .exceptions import (
-    InvalidEntityConfiguration,
+    InvalidEntityStatement,
     InvalidRequiredTrustMark,
     MetadataDiscoveryException
 )
@@ -290,5 +290,3 @@ class TrustChainBuilder:
             self.is_valid = False
             logger.error(f"{e}")
             raise e
-    
-    

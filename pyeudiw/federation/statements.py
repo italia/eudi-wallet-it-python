@@ -95,7 +95,7 @@ class TrustMark:
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
         # verify signature
-        
+
         jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
@@ -107,7 +107,7 @@ class TrustMark:
                 self.iss, self.httpc_params
             )
         try:
-            ec = EntityConfiguration(self.issuer_entity_configuration[0])
+            ec = EntityStatement(self.issuer_entity_configuration[0])
             ec.validate_by_itself()
         except UnknownKid:
             logger.warning(
@@ -191,7 +191,7 @@ class EntityStatement:
                 f"{self.header.get('kid')} not found in {self.jwks}")  # pragma: no cover
         # verify signature
         jwsh = JWSHelper(self.jwks[self.kids.index(self.header["kid"])])
-        payload = jwsh.verify(self.jwt)
+        jwsh.verify(self.jwt)
         self.is_valid = True
         return True
 
@@ -388,10 +388,10 @@ class EntityStatement:
             ec.validate_descendant_statement(jwt)
             _jwks = get_federation_jwks(payload, self.httpc_params)
             _kids = [i.get("kid") for i in _jwks]
-            
+
             jwsh = JWSHelper(_jwks[_kids.index(self.header["kid"])])
             payload = jwsh.verify(self.jwt)
-            
+
             is_valid = True
         except Exception as e:
             logger.warning(

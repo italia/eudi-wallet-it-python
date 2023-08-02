@@ -1,6 +1,7 @@
-from typing import List, Literal, Optional
+from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
+
 
 class ESSchema(BaseModel, extra='forbid'):
     exp: int
@@ -9,10 +10,12 @@ class ESSchema(BaseModel, extra='forbid'):
     sub: str
     jwks: dict
     source_endpoint: Optional[str] = None
-    
+
+
 def is_es(payload: dict) -> bool:
     try:
         ESSchema(**payload)
-        return True
-    except Exception as e:
+        if payload["iss"] != payload["sub"]:
+            return True
+    except Exception:
         return False
