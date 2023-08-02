@@ -43,4 +43,27 @@ After following these steps, your WordPress instance should be up and running wi
 2. Under [plugins](http://localhost:8080/wp-admin/plugins.php), activate the plugin OneLogin SAML SSO.
 3. Configure the plugin OneLogin SAML SSO in the [settings tab](http://localhost:8080/wp-admin/options-general.php?page=onelogin_saml_configuration).
 
-To configure a generic SAML connection, you will need to enter appropriate values in OneLogin SAML SSO plugin settings. These include Identity Provider URL, Assertion Consumer Service URL, Single Logout Service URL, and other parameters specific to your SAML configuration.
+To configure the test environment with the IAM Proxy instance, a configuration phase is required on the OneLogin plugin settings page using the proxy service configuration metadata obtainable from https://demo-it-wallet.westeurope.cloudapp.azure.com/Saml2IDP/metadata.
+Specifically, the following fields should be modified:
+
+- **IdP Entity Id**: enter the entityID of the IAMProxy found in the metadata
+- **Single Sign On Service Url**: enter the Location of the SingleSignOnService you wish to connect to found in the metadata file
+- **X.509 Certificate**: insert the IAMProxy X.509 Certificate found in the metadata
+- **Create user if not exists**: `true`
+- **Update user data**: `true`
+- **Attribute Mapping -  Username**: fiscalNumber
+- **Attribute Mapping -  E-mail**: `urn:oid:1.2.840.113549.1.9.1.1`
+- **Attribute Mapping -  First Name**: Name
+- **Attribute Mapping -  Last Name**: familyName
+- **Service Provider Entity Id**: enter the SP metadata url as entityID (e.g. http://\<wordpress-domain\>/wp-login.php?saml_metadata
+- **Encrypt nameID**: `true`
+- **Sign AuthnRequest**: `true`
+- **Reject Unsigned Assertions**: `true`
+- **NameIDFormat**: `urn:oasis:names:tc:SAML:2.0:attrname-format:uri`
+- **requestedAuthnContext**: `urn:oasis:names:tc:SAML:2.0:ac:classes:X509`
+- **Service Provider X.509 Certificate**: insert the X.509 certificate of your SP
+- **Service Provider Private Key**: insert the private key of your SP
+- **Signature Algorithm**: rsa-sha256
+- **Digest Algorithm**: sha256
+
+Once all fields are set, save the settings and download the SP metadata for its configuration on IAM Proxy.
