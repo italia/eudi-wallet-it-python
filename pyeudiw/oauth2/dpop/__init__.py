@@ -2,41 +2,14 @@ import hashlib
 import logging
 import uuid
 
-from pydantic import BaseModel, HttpUrl
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.tools.utils import iat_now
-from typing import Literal
-
+from pyeudiw.oauth2.dpop.schema import (
+    DPoPTokenHeaderSchema, DPoPTokenPayloadSchema)
 
 logger = logging.getLogger("pyeudiw.oauth2.dpop")
-
-
-class DPoPTokenHeaderSchema(BaseModel):
-    # header
-    typ: Literal["dpop+jwt"]
-    alg: Literal[
-        "RS256",
-        "RS384",
-        "RS512",
-        "ES256",
-        "ES384",
-        "ES512",
-        "PS256",
-        "PS384",
-        "PS512",
-    ]
-    # TODO - dynamic schema loader if EC or RSA
-    # jwk: JwkSchema
-
-
-class DPoPTokenPayloadSchema(BaseModel):
-    # body
-    jti: str
-    htm: Literal["GET", "POST", "get", "post"]
-    htu: HttpUrl
-    iat: int
-    ath: str
 
 
 class DPoPIssuer:
@@ -63,7 +36,6 @@ class DPoPIssuer:
             }
         )
         return jwt
-        # TODO assertion
 
 
 class DPoPVerifier:
@@ -81,12 +53,40 @@ class DPoPVerifier:
             if self.dpop_header_prefix in http_header_authz
             else http_header_authz
         )
+        # If the jwt is invalid, this will raise an exception
+        try:
+            unpad_jwt_header(http_header_dpop)
+        except UnicodeDecodeError as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
+            raise ValueError("DPoP proof is not a valid JWT")
+        except Exception as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
+            raise ValueError("DPoP proof is not a valid JWT")
         self.proof = http_header_dpop
 
     @property
     def is_valid(self):
         jws_verifier = JWSHelper(self.public_jwk)
-        dpop_valid = jws_verifier.verify(self.proof)
+        try:
+            dpop_valid = jws_verifier.verify(self.proof)
+        except KidError as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"kid does not match: {e}"
+            )
+            return False
+        except Exception as e:
+            logger.error(
+                "DPoP proof validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
+            return False
 
         header = unpad_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)

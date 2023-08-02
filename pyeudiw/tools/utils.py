@@ -1,5 +1,3 @@
-from datetime import timezone
-# from django.utils.timezone import make_aware
 from secrets import token_hex
 
 
@@ -7,21 +5,23 @@ import datetime
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pyeudiw.utils")
 
 
-def make_timezone_aware(dt: datetime.datetime):
-    # TODO
-    raise NotImplementedError(f"{__name__} make_timezone_aware")
+def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=tz)
+    else:
+        raise ValueError("datetime is already timezone aware")
 
 
 def iat_now() -> int:
-    return int(datetime.datetime.now().timestamp())
+    return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
 
 def exp_from_now(minutes: int = 33) -> int:
-    _now = timezone.localtime()
-    return int((_now + datetime.timedelta(minutes=minutes)).timestamp())
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return int((now + datetime.timedelta(minutes=minutes)).timestamp())
 
 
 def datetime_from_timestamp(value) -> datetime.datetime:
@@ -29,7 +29,7 @@ def datetime_from_timestamp(value) -> datetime.datetime:
 
 
 def get_http_url(url: str):
-    # TODO
+    # TODO - utils.get_http_url
     raise NotImplementedError(f"{__name__} get_http_url")
 
 
@@ -63,3 +63,7 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> 
 
 def random_token(n=254):
     return token_hex(n)
+
+
+def gen_exp_time(default_exp: int):
+    return iat_now() + (default_exp * 60)

@@ -40,7 +40,7 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
-        "qrcode>=7.4.2,<7.5",
+        "pyqrcode>=1.2,<1.3",
         "pydantic>=2.0,<2.2"
     ],
     extra_require={
@@ -48,7 +48,13 @@ setup(
             "Pillow>=10.0.0,<10.1",
             "device_detector>=5.0,<6",
             "satosa>=8.4,<8.6",
-            "jinja2>=3.0,<4"
+            "jinja2>=3.0,<4",
+            "pymongo>=4.4.1,<4.5",
+            'sd-jwt @ git+https://github.com/danielfett/sd-jwt.git'
         ],
+        "federation": [
+            "asyncio"
+            "requests"
+        ]
     }
 )

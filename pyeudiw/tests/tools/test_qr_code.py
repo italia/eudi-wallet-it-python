@@ -1,54 +1,75 @@
+import base64
 import tempfile
-from io import BytesIO
-
-from PIL import Image
+import re
 
 from pyeudiw.tools.qr_code import QRCode
 
 
-def test_qr_code_init():
-    data = "test"
-    size = 100
-    color = "black"
-    logo_path = ""
-    use_zlib = True
-
-    QRCode(data, size, color, logo_path, use_zlib)
-
-    # TODO - qrcode is SVG with no size!
-    # assert qr_code.qr_code_img.size == (size * 33, size * 33)
-    # assert qr_code.qr_code_img.getpixel((0, 0)) == (255, 255, 255)
-
-
-# TODO - fix with SVG factory since it doesn't have a size like PNG
-def _test_qr_code_init_with_logo():
-    data = "test"
-    size = 100
+def test_to_base64():
+    data = "content"
+    size = 5
     color = "black"
 
-    use_zlib = True
+    qr = QRCode(data, size, color)
+    b64 = qr.to_base64()
+    assert isinstance(b64, str)
+    assert len(b64) > 0
+    assert base64.b64decode(b64.encode()).decode('utf-8') == qr.to_svg()
 
-    def create_in_memory_image(path):
-        in_memory_file = BytesIO()
-        image = Image.new('RGB',
-                          size=(10, 10),
-                          color=(255, 255, 0))
-        image.save(in_memory_file,
-                   'png')
-        in_memory_file.name = path
-        in_memory_file.seek(0)
-        return in_memory_file
 
-    with tempfile.NamedTemporaryFile(suffix='.png', delete=True) as temp_file:
-        temp_file.write(create_in_memory_image(temp_file.name).read())
+def test_to_html():
+    data = "content"
+    size = 5
+    color = "black"
 
-        # change the position to the beginning of the file
-        temp_file.file.seek(0)
-        qr_code = QRCode(data, size, color, temp_file.name,
-                         use_zlib).qr_code_img
+    qr = QRCode(data, size, color)
+    html = qr.to_html()
+    assert isinstance(html, str)
+    assert len(html) > 0
+    assert html.startswith("<img")
+    assert html.endswith(">")
+    assert "data:image/svg+xml;base64," in html
+    b64 = html.split("data:image/svg+xml;base64,")[1].split('"')[0]
+    assert base64.b64decode(b64.encode()).decode('utf-8') == qr.to_svg()
 
-        assert qr_code.getpixel((0, 0)) == (255, 255, 255)
-        assert qr_code.getpixel(
-            (qr_code.size[0] - 1, qr_code.size[1] - 1)) == (255, 255, 255)
-        assert qr_code.getpixel(
-            (qr_code.size[0] // 2, qr_code.size[1] // 2)) == (255, 255, 0)
+
+def test_to_svg():
+    data = "content"
+    size = 5
+    color = "black"
+
+    qr = QRCode(data, size, color)
+    svg = qr.to_svg()
+
+    assert isinstance(svg, str)
+    assert len(svg) > 0
+    assert svg.strip().startswith("<?xml")
+    assert "<svg" in svg
+    assert svg.strip().endswith("</svg>")
+
+
+# Set to `False` to keep files for manual inspection
+DELETE_FILES = True
+
+
+def _test_to_html_file():
+    data = "content"
+    size = 5
+    color = "black"
+
+    qr = QRCode(data, size, color)
+    html = qr.to_html()
+    with tempfile.NamedTemporaryFile("w", suffix=".html", dir=".", delete=DELETE_FILES) as tmp:
+        tmp.writelines(html)
+
+
+def _test_to_svg_file():
+    data = "content"
+    size = 5
+    color = "black"
+
+    qr = QRCode(data, size, color)
+    svg = qr.to_svg()
+    with tempfile.NamedTemporaryFile("w", suffix=".svg", dir=".", delete=DELETE_FILES) as tmp:
+        tmp.writelines(svg)
+

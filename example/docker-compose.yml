@@ -18,19 +18,20 @@ services:
     networks:
       - wordpress-network
 
-  phpmyadmin:
-    depends_on:
-      - database
-    image: arm64v8/phpmyadmin:5.2.1-apache
-    restart: unless-stopped
-    ports:
-      - 8081:80
-    env_file: .env
-    environment:
-      PMA_HOST: database
-      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
-    networks:
-      - wordpress-network
+  #Decomment this sectiom if you need phpmyadmin
+  #phpmyadmin:
+  #  depends_on:
+  #    - database
+  #  image: phpmyadmin:5.2.1-apache
+  #  restart: unless-stopped
+  #  ports:
+  #    - 8081:80
+  #  env_file: .env
+  #  environment:
+  #    PMA_HOST: database
+  #    MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+  #  networks:
+  #    - wordpress-network
 
   wordpress:
     depends_on:
