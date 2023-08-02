@@ -13,7 +13,7 @@ from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.jwt import JWSHelper, JWEHelper, unpad_jwt_header
 from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
-from pyeudiw.tools.utils import iat_now
+from pyeudiw.tools.utils import iat_now, exp_from_now
 
 from sd_jwt.holder import SDJWTHolder
 
@@ -481,12 +481,27 @@ class TestOpenID4VPBackend:
                 "key_binding", False) else None,
         )
 
+        data = {
+            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
+            "jti": str(uuid.uuid4()),
+            "aud": "https://verifier.example.org/callback",
+            "iat": iat_now(),
+            "exp": exp_from_now(minutes=15),
+            "nonce": str(uuid.uuid4()),
+            "vp": sdjwt_at_holder.sd_jwt_presentation,
+        }
+
+        vp_token = JWSHelper(PRIVATE_JWK).sign(
+            data,
+            protected={"typ": "JWT"}
+        )
+
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
 
         response = {
             "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
-            "vp_token": sdjwt_at_holder.sd_jwt_presentation,
+            "vp_token": vp_token,
             "presentation_submission": {
                 "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
                 "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
