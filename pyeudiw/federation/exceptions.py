@@ -29,6 +29,7 @@ class TrustAnchorNeeded(Exception):
 class MissingTrustAnchorPublicKey(Exception):
     pass
 
+
 class MetadataDiscoveryException(Exception):
     pass
 

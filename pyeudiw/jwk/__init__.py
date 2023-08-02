@@ -24,7 +24,7 @@ class JWK():
 
         kwargs = {}
         self.kid = ""
-        
+
         if key_type and not KEY_TYPES_FUNC.get(key_type, None):
             raise NotImplementedError(f"JWK key type {key_type} not found.")
 

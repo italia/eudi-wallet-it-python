@@ -12,7 +12,7 @@ from pyeudiw.federation.statements import (
     get_entity_statements
 )
 from pyeudiw.federation.exceptions import (
-    HttpError, 
+    HttpError,
     MissingTrustAnchorPublicKey,
     TimeValidationError,
     KeyValidationError
@@ -40,13 +40,13 @@ class StaticTrustChainValidator:
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
-        
+
         if not trust_anchor_jwks:
             raise MissingTrustAnchorPublicKey(
                 f"{self.__class__.__name__} cannot "
                 "created without the TA public jwks"
             )
-        
+
         self.trust_anchor_jwks = trust_anchor_jwks
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -97,7 +97,7 @@ class StaticTrustChainValidator:
 
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
-        
+
         if not jwsh.verify(last_element):
             return False
 
