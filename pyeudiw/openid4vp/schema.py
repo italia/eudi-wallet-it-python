@@ -1,31 +1,11 @@
-import re
 from typing import Optional
 
-from pydantic import BaseModel, ValidationError, create_model, HttpUrl
+from pydantic import BaseModel, create_model, HttpUrl
 from typing_extensions import Annotated, Literal
 from pydantic.functional_validators import AfterValidator
 
 from pyeudiw.jwk.schema import JwkSchema
-
-JWT_REGEX = r"(^[\w-]*.[\w-]*.[\w-]*~([\w-]*.[\w-]*.[\w-]*){1})"
-
-
-def checkJWT(jwt: str) -> str:
-    res = re.match(JWT_REGEX, jwt)
-    if not res:
-        raise ValidationError(f"Vp_token is not a jwt {jwt}")
-
-    return jwt
-
-
-def checkJWTList(jwt_list: list[str]) -> list[str]:
-    if len(jwt_list) == 0:
-        raise ValidationError("vp_token is empty")
-
-    for jwt in jwt_list:
-        checkJWT(jwt)
-
-    return jwt_list
+from pyeudiw.sd_jwt.schema import check_sd_jwt, check_sd_jwt_list
 
 
 class DescriptorSchema(BaseModel):
@@ -43,7 +23,7 @@ class PresentationSubmissionSchema(BaseModel):
 class ResponseSchema(BaseModel):
     state: Optional[str]
     vp_token: Annotated[str, AfterValidator(
-        checkJWT)] | Annotated[list[str], AfterValidator(checkJWTList)]
+        check_sd_jwt)] | Annotated[list[str], AfterValidator(check_sd_jwt_list)]
     presentation_submission: PresentationSubmissionSchema
 
 
