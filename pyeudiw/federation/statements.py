@@ -1,11 +1,11 @@
 from copy import deepcopy
-from .exceptions import (
+from pyeudiw.federation.exceptions import (
     UnknownKid,
     MissingJwksClaim,
     MissingTrustMark,
     TrustAnchorNeeded,
 )
-from .http_client import http_get
+from pyeudiw.federation.http_client import http_get
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwt import JWSHelper
 
