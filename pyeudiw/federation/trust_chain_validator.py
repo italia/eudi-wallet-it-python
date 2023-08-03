@@ -142,7 +142,7 @@ class StaticTrustChainValidator:
             logger.warning(
                 f"Cannot fast refresh Entity Statement {iss}"
             )
-        return jwt[0]
+        return jwt[0] if jwt else None
 
     def update(self, httpc_params: dict = {}):
 
