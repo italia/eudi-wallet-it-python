@@ -70,7 +70,8 @@ class WalletRelyingParty(BaseModel):
 
     @classmethod
     def _check_algorithms(cls, algorithms: list[str], name: str, info: FieldValidationInfo):
-        supported_algorithms = WalletRelyingParty._get_algorithms_supported(name, info)
+        supported_algorithms = WalletRelyingParty._get_algorithms_supported(
+            name, info)
         for alg in algorithms:
             if alg not in supported_algorithms:
                 raise ValueError(f"Unsupported algorithm: {alg} for {name}.\n  "
