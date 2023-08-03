@@ -126,6 +126,23 @@ class StaticTrustChainValidator:
                 fed_jwks = st_payload["jwks"]["keys"]
 
         return True
+    
+    def _retrieve_ec(self, iss: str, httpc_params: dict = {}):
+        jwt = get_entity_configurations(iss, httpc_params)
+        if not jwt:
+            raise HttpError(
+                f"Cannot get the Entity Configuration from {iss}")
+
+        # is something weird these will raise their Exceptions
+        return jwt[0]
+    
+    def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}):
+        jwt = get_entity_statements([download_url], httpc_params)
+        if not jwt:
+            logger.warning(
+                f"Cannot fast refresh Entity Statement {iss}"
+            )
+        return jwt[0]
 
     def update(self, httpc_params: dict = {}):
 
@@ -135,30 +152,15 @@ class StaticTrustChainValidator:
 
             if not is_es(payload):
                 # It's an entity configuration
-                jwt = get_entity_configurations(iss, httpc_params)
-                if not jwt:
-                    raise HttpError(
-                        f"Cannot get the Entity Configuration from {iss}")
-
-                # is something weird these will raise their Exceptions
-                self.updated_trust_chain.append(jwt[0])
+                self.updated_trust_chain.append(self._retrieve_ec(iss, httpc_params))
                 continue
 
             # if it has the source_endpoint let's try a fast renewal
             download_url: str = payload.get("source_endpoint", "")
             if download_url:
-                jwt = get_entity_statements([download_url], self.httpc_params)
-                if not jwt:
-                    logger.warning(
-                        f"Cannot fast refresh Entity Statement {iss}"
-                    )
+                jwt = self._retrieve_es(download_url, iss, httpc_params)
             else:
-                ec = get_entity_configurations(iss, httpc_params)
-                if not jwt:
-                    raise HttpError(
-                        f"Cannot get the Entity Configuration from {iss} "
-                        "since the fast refresh is not available"
-                    )
+                ec = self._retrieve_ec(iss, httpc_params)
                 ec_data = unpad_jwt_payload(ec)
                 try:
                     # get superior fetch url
@@ -170,12 +172,9 @@ class StaticTrustChainValidator:
                         "Missing federation_fetch_endpoint in  "
                         f"federation_entity metadata for {ec_data['sub']}"
                     )
-                jwt = get_entity_statements([fetch_api_url], self.httpc_params)
-                if not jwt:
-                    raise HttpError(
-                        f"Cannot get the Entity Statement from {fetch_api_url}"
-                    )
-
-            self.updated_trust_chain.append(jwt[0])
+    
+                jwt = self._retrieve_es(fetch_api_url, iss, httpc_params)
+                
+            self.updated_trust_chain.append(jwt)
 
         return self.is_valid
