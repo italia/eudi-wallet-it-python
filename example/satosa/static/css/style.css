@@ -389,3 +389,7 @@
 #closeButton svg {
     fill: black;
 }
+
+.qr-code-text{
+    font-size: 15px;
+}
