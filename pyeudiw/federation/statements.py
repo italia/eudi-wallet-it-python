@@ -446,6 +446,8 @@ class EntityStatement:
                 _url = f"{fetch_api_url}?sub={self.sub}"
                 logger.info(f"Getting entity statements from {_url}")
                 jwts = get_entity_statements([_url], self.httpc_params)
+                # TODO - this could be different from ZERO
+                # to be tested and fixed when the tests will be available
                 jwt = jwts[0]
                 if jwt:
                     self.validate_by_superior_statement(jwt, ec)
