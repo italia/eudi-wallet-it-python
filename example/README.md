@@ -43,27 +43,28 @@ After following these steps, your WordPress instance should be up and running wi
 2. Under [plugins](http://localhost:8080/wp-admin/plugins.php), activate the plugin OneLogin SAML SSO.
 3. Configure the plugin OneLogin SAML SSO in the [settings tab](http://localhost:8080/wp-admin/options-general.php?page=onelogin_saml_configuration).
 
-To configure the test environment with the IAM Proxy instance, a configuration phase is required on the OneLogin plugin settings page using the proxy service configuration metadata obtainable from https://demo-it-wallet.westeurope.cloudapp.azure.com/Saml2IDP/metadata.
-Specifically, the following fields should be modified:
+To configure your test environment with the IAM Proxy instance, you'll need to undertake a configuration phase on the OneLogin plugin settings page. The required proxy service configuration metadata is obtainable from https://demo-it-wallet.westeurope.cloudapp.azure.com/Saml2IDP/metadata. 
 
-- **IdP Entity Id**: enter the entityID of the IAMProxy found in the metadata
-- **Single Sign On Service Url**: enter the Location of the SingleSignOnService you wish to connect to found in the metadata file
-- **X.509 Certificate**: insert the IAMProxy X.509 Certificate found in the metadata
-- **Create user if not exists**: `true`
-- **Update user data**: `true`
-- **Attribute Mapping -  Username**: fiscalNumber
-- **Attribute Mapping -  E-mail**: `urn:oid:1.2.840.113549.1.9.1.1`
-- **Attribute Mapping -  First Name**: Name
-- **Attribute Mapping -  Last Name**: familyName
-- **Service Provider Entity Id**: enter the SP metadata url as entityID (e.g. http://\<wordpress-domain\>/wp-login.php?saml_metadata
-- **Encrypt nameID**: `true`
-- **Sign AuthnRequest**: `true`
-- **Reject Unsigned Assertions**: `true`
-- **NameIDFormat**: `urn:oasis:names:tc:SAML:2.0:attrname-format:uri`
-- **requestedAuthnContext**: `urn:oasis:names:tc:SAML:2.0:ac:classes:X509`
-- **Service Provider X.509 Certificate**: insert the X.509 certificate of your SP
-- **Service Provider Private Key**: insert the private key of your SP
-- **Signature Algorithm**: rsa-sha256
-- **Digest Algorithm**: sha256
+Specifically, you should modify the following fields:
 
-Once all fields are set, save the settings and download the SP metadata for its configuration on IAM Proxy.
+- **IdP Entity Id**: Enter the entityID of the IAMProxy, which can be located within the metadata.
+- **Single Sign-On Service Url**: Input the Location of the SingleSignOnService you desire to connect with, as specified in the metadata file.
+- **X.509 Certificate**: Include the X.509 Certificate associated with the IAMProxy, found within the metadata.
+- **Create user if not exists**: Set this to `true`.
+- **Update user data**: Set this to `true`.
+- **Attribute Mapping - Username**: Set this to `fiscalNumber`.
+- **Attribute Mapping - E-mail**: Set this to `urn:oid:1.2.840.113549.1.9.1.1`.
+- **Attribute Mapping - First Name**: Set this to `Name`.
+- **Attribute Mapping - Last Name**: Set this to `familyName`.
+- **Service Provider Entity Id**: Enter the URL of your SP metadata as the entityID. For example: http://\<wordpress-domain\>/wp-login.php?saml_metadata
+- **Encrypt nameID**: Set this to `true`.
+- **Sign AuthnRequest**: Set this to `true`.
+- **Reject Unsigned Assertions**: Set this to `true`.
+- **NameIDFormat**: Set this to `urn:oasis:names:tc:SAML:2.0:attrname-format:uri`.
+- **requestedAuthnContext**: Set this to `urn:oasis:names:tc:SAML:2.0:ac:classes:X509`.
+- **Service Provider X.509 Certificate**: Insert your SP's X.509 certificate here.
+- **Service Provider Private Key**: Input the private key of your SP.
+- **Signature Algorithm**: Set this to `rsa-sha256`.
+- **Digest Algorithm**: Set this to `sha256`.
+
+After you've filled all the fields, save your settings and download the SP metadata for configuration on the IAM Proxy.
