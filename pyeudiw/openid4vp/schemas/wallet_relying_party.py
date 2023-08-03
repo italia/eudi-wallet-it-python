@@ -26,4 +26,3 @@ class WalletRelyingParty(BaseModel):
     id_token_signed_response_alg: List[str]
     id_token_encrypted_response_alg: List[str]
     id_token_encrypted_response_enc: List[str]
-
