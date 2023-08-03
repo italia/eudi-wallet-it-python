@@ -132,7 +132,7 @@ $settings = array (
         'relaxDestinationValidation' => true,
         'lowercaseUrlencoding' => get_option('
             onelogin_saml_advanced_idp_lowercase_url_encoding', false),
-        'signatureAlgorithm' => get_option('onelogin_saml_advanced_signaturealgorithm', 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'),
-        'digestAlgorithm' => get_option('onelogin_saml_advanced_digestalgorithm', 'http://www.w3.org/2000/09/xmldsig#sha1'),
+        'signatureAlgorithm' => get_option('onelogin_saml_advanced_signaturealgorithm', 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'),
+        'digestAlgorithm' => get_option('onelogin_saml_advanced_digestalgorithm', 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'),
     )
 );
