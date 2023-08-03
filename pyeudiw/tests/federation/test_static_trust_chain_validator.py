@@ -1,7 +1,6 @@
 import copy
-
 import uuid
-
+from pytest import MonkeyPatch
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 
 
@@ -10,6 +9,8 @@ from cryptojwt.jwk.rsa import new_rsa_key
 from cryptojwt.jws.jws import JWS
 
 from pyeudiw.tools.utils import iat_now, exp_from_now
+
+from pyeudiw.federation.schema import is_es
 
 # Create private keys
 leaf_jwk = new_rsa_key()
@@ -286,6 +287,7 @@ def test_is_valid():
     assert StaticTrustChainValidator(
         trust_chain, [ta_jwk.serialize()]).is_valid
 
+
 invalid_intermediate = copy.deepcopy(intermediate_es)
 invalid_leaf_jwk = copy.deepcopy(leaf_jwk.serialize())
 invalid_leaf_jwk["kid"] = str(uuid.uuid4())
@@ -305,3 +307,76 @@ invalid_trust_chain = [
 def test_is_valid_equals_false():
     assert StaticTrustChainValidator(
         invalid_trust_chain, [ta_jwk.serialize()]).is_valid == False
+    
+from unittest.mock import Mock
+    
+def test_retrieve_ec():
+    import pyeudiw.federation.trust_chain_validator as tcv_test    
+    tcv_test.get_entity_configurations = Mock(return_value=[leaf_ec_signed])
+        
+    assert tcv_test.StaticTrustChainValidator(
+        invalid_trust_chain, [ta_jwk.serialize()])._retrieve_ec("https://trust-anchor.example.eu") == leaf_ec_signed
+    
+def test_retrieve_ec_fails():
+    import pyeudiw.federation.trust_chain_validator as tcv_test
+    tcv_test.get_entity_configurations = Mock(return_value=[])
+    
+    try:
+        StaticTrustChainValidator(
+            invalid_trust_chain, [ta_jwk.serialize()])._retrieve_ec("https://trust-anchor.example.eu")
+    except tcv_test.HttpError as e:
+        return
+    
+def test_retrieve_es():
+    import pyeudiw.federation.trust_chain_validator as tcv_test    
+    tcv_test.get_entity_statements = Mock(return_value=ta_es)
+        
+    assert tcv_test.StaticTrustChainValidator(
+        invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.eu", "https://trust-anchor.example.eu") == ta_es
+    
+def test_retrieve_es_output_is_none():
+    import pyeudiw.federation.trust_chain_validator as tcv_test    
+    tcv_test.get_entity_statements = Mock(return_value=None)
+    
+    assert tcv_test.StaticTrustChainValidator(
+            invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.eu", "https://trust-anchor.example.eu") == None
+    
+def test_update_st_ec_case():
+    import unittest.mock as mock
+    import pyeudiw.federation.trust_chain_validator as tcv_test
+    
+    def mock_method(*args, **kwargs):
+        if args[0] == "https://rp.example.it":
+            return [leaf_ec_signed]
+        
+        raise Exception("Wrong issuer")
+    
+    with mock.patch.object(tcv_test, "get_entity_configurations", mock_method):
+        assert tcv_test.StaticTrustChainValidator(
+            invalid_trust_chain, [ta_jwk.serialize()])._update_st(leaf_ec_signed) == leaf_ec_signed
+        
+def test_update_st_es_case_source_endpoint():
+    import unittest.mock as mock
+    import pyeudiw.federation.trust_chain_validator as tcv_test
+    
+    ta_es = {
+        "exp": EXP,
+        "iat": NOW,
+        "iss": "https://trust-anchor.example.eu",
+        "sub": "https://intermediate.eidas.example.org",
+        'jwks': {"keys": []},
+        "source_endpoint": "https://rp.example.it"
+    }    
+    
+    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_es_signed = ta_signer.sign_compact([ta_jwk])
+    
+    def mock_method(*args, **kwargs):        
+        if args[0] == "https://rp.example.it":
+            return leaf_ec_signed
+        
+        raise Exception("Wrong issuer")
+    
+    with mock.patch.object(tcv_test, "get_entity_statements", mock_method):
+        assert tcv_test.StaticTrustChainValidator(
+            invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
