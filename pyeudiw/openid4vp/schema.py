@@ -35,12 +35,27 @@ formats_supported_schema = "VpFormatsSupported"
 vp_model_name = "JwtVpJson"
 vc_model_name = "JwtVcJson"
 
-_default_supported_algorithms = []
+
+_default_supported_algorithms = [
+    "RS256",
+    "RS384",
+    "RS512",
+    "ES256",
+    "ES384",
+    "ES512",
+    "PS256",
+    "PS384",
+    "PS512",
+]
 
 
 def check_alg(alg: str, info: FieldValidationInfo):
-    supported_algorithms = info.context and info.context.get(
-        "supported_algorithms") or _default_supported_algorithms
+    if not info.context:
+        supported_algorithms = _default_supported_algorithms
+    else:
+        supported_algorithms = info.context.get(
+            "supported_algorithms", _default_supported_algorithms)
+
     if alg not in supported_algorithms:
         raise ValueError(f"Unsupported algorithm: {alg}.\n  "
                          f"Supported algorithms: {supported_algorithms}.\n")
@@ -206,8 +221,8 @@ class WalletInstanceAttestation(BaseModel):
                          alg=(str, ...),
                          typ=(Literal["wallet-attestation+jwt"], ...),
                          kid=(str, ...),
-                         x5c=(list[str], ...),
-                         trust_chain=(list[str], ...))
+                         x5c=(list[str], None),
+                         trust_chain=(list[str], None))
 
     payload: create_model(payload_model_name,
                           iss=(HttpUrl, ...),

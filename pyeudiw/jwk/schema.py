@@ -19,10 +19,10 @@ class JwkSchema(BaseModel):
             "PS384",
             "PS512",
         ]
-    ]
-    use: Optional[Literal["sig", "enc"]]
-    n: Optional[str]  # Base64urlUInt-encoded
-    e: Optional[str]  # Base64urlUInt-encoded
+    ] = None
+    use: Optional[Literal["sig", "enc"]] = None
+    n: Optional[str] = None  # Base64urlUInt-encoded
+    e: Optional[str] = None  # Base64urlUInt-encoded
 
     def check_value_for_rsa(value, name, values):
         if "EC" == values.get("kty") and value:
