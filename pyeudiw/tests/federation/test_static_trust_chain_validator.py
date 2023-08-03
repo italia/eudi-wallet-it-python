@@ -1,3 +1,7 @@
+import copy
+
+import uuid
+
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 
 
@@ -281,3 +285,23 @@ trust_chain = [
 def test_is_valid():
     assert StaticTrustChainValidator(
         trust_chain, [ta_jwk.serialize()]).is_valid
+
+invalid_intermediate = copy.deepcopy(intermediate_es)
+invalid_leaf_jwk = copy.deepcopy(leaf_jwk.serialize())
+invalid_leaf_jwk["kid"] = str(uuid.uuid4())
+
+invalid_intermediate["jwks"]['keys']  = [invalid_leaf_jwk]
+
+intermediate_signer = JWS(invalid_intermediate, alg="RS256",
+                          typ="application/entity-statement+jwt")
+invalid_intermediate_es_signed = intermediate_signer.sign_compact([intermediate_jwk])
+
+invalid_trust_chain = [
+    leaf_ec_signed,
+    invalid_intermediate_es_signed,
+    ta_es_signed
+]
+
+def test_is_valid_equals_false():
+    assert StaticTrustChainValidator(
+        invalid_trust_chain, [ta_jwk.serialize()]).is_valid == False
