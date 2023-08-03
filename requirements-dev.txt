@@ -9,3 +9,4 @@ autopep8
 beautifulsoup4
 lxml
 freezegun
+html-linter
