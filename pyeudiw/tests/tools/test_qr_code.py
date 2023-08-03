@@ -1,6 +1,5 @@
 import base64
 import tempfile
-import re
 
 from pyeudiw.tools.qr_code import QRCode
 
@@ -72,4 +71,3 @@ def _test_to_svg_file():
     svg = qr.to_svg()
     with tempfile.NamedTemporaryFile("w", suffix=".svg", dir=".", delete=DELETE_FILES) as tmp:
         tmp.writelines(svg)
-
