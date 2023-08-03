@@ -115,6 +115,10 @@ class StaticTrustChainValidator:
             jwk = find_jwk(
                 st_header.get("kid", None), fed_jwks
             )
+            
+            if jwk == None:
+                return False
+            
             jwsh = JWSHelper(jwk)
             if not jwsh.verify(st):
                 return False
