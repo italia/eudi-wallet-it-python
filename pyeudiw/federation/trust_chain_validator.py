@@ -129,7 +129,7 @@ class StaticTrustChainValidator:
     
     def _retrieve_ec(self, iss: str, httpc_params: dict = {}):
         jwt = get_entity_configurations(iss, httpc_params)
-        if not jwt:
+        if len(jwt) == 0:
             raise HttpError(
                 f"Cannot get the Entity Configuration from {iss}")
 
@@ -137,44 +137,46 @@ class StaticTrustChainValidator:
         return jwt[0]
     
     def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}):
-        jwt = get_entity_statements([download_url], httpc_params)
+        jwt = get_entity_statements(download_url, httpc_params)
         if not jwt:
             logger.warning(
                 f"Cannot fast refresh Entity Statement {iss}"
             )
-        return jwt[0] if jwt else None
+        return jwt
+    
+    def _update_st(self, st, httpc_params: dict = {}):
+        payload = unpad_jwt_payload(st)
+        iss = payload['iss']
+
+        if not is_es(payload):
+            # It's an entity configuration
+            return self._retrieve_ec(iss, httpc_params)
+
+        # if it has the source_endpoint let's try a fast renewal
+        download_url: str = payload.get("source_endpoint", "")
+        if download_url:
+            jwt = self._retrieve_es(download_url, iss, httpc_params)
+        else:
+            ec = self._retrieve_ec(iss, httpc_params)
+            ec_data = unpad_jwt_payload(ec)
+            try:
+                # get superior fetch url
+                fetch_api_url = ec_data.payload["metadata"]["federation_entity"][
+                    "federation_fetch_endpoint"
+                ]
+            except KeyError:
+                logger.warning(
+                    "Missing federation_fetch_endpoint in  "
+                    f"federation_entity metadata for {ec_data['sub']}"
+                )
+
+            jwt = self._retrieve_es(fetch_api_url, iss, httpc_params)
+            
+        return jwt
 
     def update(self, httpc_params: dict = {}):
-
         for st in self.static_trust_chain:
-            payload = unpad_jwt_payload(st)
-            iss = payload['iss']
-
-            if not is_es(payload):
-                # It's an entity configuration
-                self.updated_trust_chain.append(self._retrieve_ec(iss, httpc_params))
-                continue
-
-            # if it has the source_endpoint let's try a fast renewal
-            download_url: str = payload.get("source_endpoint", "")
-            if download_url:
-                jwt = self._retrieve_es(download_url, iss, httpc_params)
-            else:
-                ec = self._retrieve_ec(iss, httpc_params)
-                ec_data = unpad_jwt_payload(ec)
-                try:
-                    # get superior fetch url
-                    fetch_api_url = ec_data.payload["metadata"]["federation_entity"][
-                        "federation_fetch_endpoint"
-                    ]
-                except KeyError:
-                    logger.warning(
-                        "Missing federation_fetch_endpoint in  "
-                        f"federation_entity metadata for {ec_data['sub']}"
-                    )
-    
-                jwt = self._retrieve_es(fetch_api_url, iss, httpc_params)
-                
+            jwt = self._update_st(st, httpc_params)
             self.updated_trust_chain.append(jwt)
 
         return self.is_valid
