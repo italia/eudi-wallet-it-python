@@ -1,8 +1,4 @@
 import logging
-# from pyeudiw.federation.statements import (
-#    get_entity_configurations,
-#    EntityStatement,
-# )
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
