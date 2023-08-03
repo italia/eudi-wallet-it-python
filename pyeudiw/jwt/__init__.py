@@ -12,6 +12,7 @@ from typing import Union
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.jwk.exceptions import KidError
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -20,9 +21,20 @@ DEFAUL_SIG_KTY_MAP = {
     "EC": "ES256"
 }
 
-DEFAULT_JWS_ALG = "ES256"
-DEFAULT_JWE_ALG = "RSA-OAEP"
-DEFAULT_JWE_ENC = "A256CBC-HS512"
+DEFAUL_SIG_ALG_MAP = {
+    "RSA": "RS256",
+    "EC": "ES256"
+}
+
+DEFAUL_ENC_ALG_MAP = {
+    "RSA": "RSA-OAEP",
+    "EC": "ECDH-ES+A256KW"
+}
+
+DEFAUL_ENC_ENC_MAP = {
+    "RSA": "A256CBC-HS512",
+    "EC": "A256GCM"
+}
 
 
 class JWEHelper():
@@ -50,13 +62,17 @@ class JWEHelper():
 
         _keyobj = JWE_CLASS(
             _payload,
-            alg=DEFAULT_JWE_ALG,
-            enc=DEFAULT_JWE_ENC,
+            alg=DEFAUL_ENC_ALG_MAP[_key.kty],
+            enc=DEFAUL_ENC_ENC_MAP[_key.kty],
             kid=_key.kid,
             **kwargs
         )
 
-        return _keyobj.encrypt(_key.public_key())
+        if _key.kty == 'EC':
+            # TODO - TypeError: key must be bytes-like
+            return _keyobj.encrypt(cek=_key.public_key())
+        else:
+            return _keyobj.encrypt(key=_key.public_key())
 
     def decrypt(self, jwe: str) -> dict:
         try:
@@ -64,8 +80,8 @@ class JWEHelper():
         except (binascii.Error, Exception) as e:
             raise VerificationError("The JWT is not valid")
 
-        _alg = jwe_header.get("alg", DEFAULT_JWE_ALG)
-        _enc = jwe_header.get("enc", DEFAULT_JWE_ENC)
+        _alg = jwe_header.get("alg")
+        _enc = jwe_header.get("enc")
         jwe_header.get("kid")
 
         _decryptor = factory(jwe, alg=_alg, enc=_enc)
@@ -115,8 +131,8 @@ class JWSHelper:
 
         _head = unpad_jwt_header(jws)
         if _head.get("kid") != self.jwk.as_dict()["kid"]:  # pragma: no cover
-            raise Exception(
-                f"kid error: {_head.get('kid')} != {self.jwk.as_dict()['kid']}"
+            raise KidError(
+                f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
             )
 
         _head["alg"]

@@ -30,6 +30,7 @@ class JWK():
         if key:
             if isinstance(key, dict):
                 self.key = key_from_jwk_dict(key)
+                key_type = key.get('kty', key_type)
             else:
                 self.key = key
         else:
