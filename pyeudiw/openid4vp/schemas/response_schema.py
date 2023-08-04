@@ -1,7 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
-from pydantic.functional_validators import field_validator
+from pydantic import BaseModel, field_validator
 
 from pyeudiw.jwt.utils import is_jwt_format
 
