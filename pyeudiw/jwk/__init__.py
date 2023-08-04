@@ -1,11 +1,10 @@
 import json
-
 from typing import Union
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-from cryptojwt.jwk.ec import new_ec_key
-from cryptojwt.jwk.rsa import new_rsa_key
-from cryptography.hazmat.primitives import serialization
 
+from cryptography.hazmat.primitives import serialization
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jwk.rsa import new_rsa_key
 
 KEY_TYPES_FUNC = dict(
     EC=new_ec_key,

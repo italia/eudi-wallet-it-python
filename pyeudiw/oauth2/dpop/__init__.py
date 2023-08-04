@@ -2,12 +2,12 @@ import hashlib
 import logging
 import uuid
 
-from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwk.exceptions import KidError
+from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.oauth2.dpop.schema import (DPoPTokenHeaderSchema,
+                                        DPoPTokenPayloadSchema)
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.oauth2.dpop.schema import (
-    DPoPTokenHeaderSchema, DPoPTokenPayloadSchema)
 
 logger = logging.getLogger("pyeudiw.oauth2.dpop")
 

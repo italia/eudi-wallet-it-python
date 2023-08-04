@@ -1,14 +1,15 @@
-import pymongo
 from datetime import datetime
+
+import pymongo
 
 from .base_storage import BaseStorage
 
 
 class MongoStorage(BaseStorage):
-    def __init__(self, storage_conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
 
-        self.storage_conf = storage_conf
+        self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
 
@@ -26,14 +27,14 @@ class MongoStorage(BaseStorage):
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
 
-        document = self.collection.find_one({"_id": document_id})
+        document = self.collection.find_one({"document_id": document_id})
 
         if document is None:
             raise ValueError(f'Document with id {document_id} not found')
 
         return document
 
-    def _retrieve_document_by_nonce_state(self, nonce: str, state: str) -> dict:
+    def _retrieve_document_by_nonce_state(self, nonce: str | None, state: str) -> dict:
         self._connect()
 
         query = {"state": state, "nonce": nonce}
@@ -46,10 +47,11 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, dpop_proof: dict, attestation: dict):
+    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict) -> str:
         creation_date = datetime.timestamp(datetime.now())
 
         entity = {
+            "document_id": document_id,
             "creation_date": creation_date,
             "dpop_proof": dpop_proof,
             "attestation": attestation,
@@ -58,17 +60,15 @@ class MongoStorage(BaseStorage):
         }
 
         self._connect()
-        document_id = self.collection.insert_one(entity)
+        self.collection.insert_one(entity)
 
-        return document_id.inserted_id
+        return document_id
 
-    def update_request_object(self, document_id: str, request_object: dict):
-        nonce = request_object["nonce"]
-        state = request_object["state"]
+    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:
+        self._retrieve_document_by_id(document_id)
 
-        self._connect()
         documentStatus = self.collection.update_one(
-            {"_id": document_id},
+            {"document_id": document_id},
             {
                 "$set": {
                     "nonce": nonce,
@@ -77,7 +77,6 @@ class MongoStorage(BaseStorage):
                 }
             }
         )
-
         return nonce, state, documentStatus
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):

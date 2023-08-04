@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 
 from pyeudiw.storage.mongo_storage import MongoStorage
@@ -22,6 +23,7 @@ class TestMongoStorage:
 
     def test_entity_initialization(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id
@@ -36,6 +38,7 @@ class TestMongoStorage:
 
     def test_add_request_object(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id
@@ -45,7 +48,8 @@ class TestMongoStorage:
 
         request_object = {"nonce": nonce, "state": state}
 
-        self.storage.update_request_object(document_id, request_object)
+        self.storage.update_request_object(
+            document_id, nonce, state, request_object)
 
         document = self.storage._retrieve_document_by_id(document_id)
 
@@ -62,6 +66,7 @@ class TestMongoStorage:
 
     def test_update_responnse_object(self):
         document_id = self.storage.init_session(
+            str(uuid.uuid4()),
             {"dpop": "test"}, {"attestation": "test"})
 
         assert document_id
@@ -71,7 +76,8 @@ class TestMongoStorage:
 
         request_object = {"nonce": nonce, "state": state}
 
-        self.storage.update_request_object(document_id, request_object)
+        self.storage.update_request_object(
+            document_id, nonce, state, request_object)
         documentStatus = self.storage.update_response_object(
             nonce, state, {"response": "test"})
 

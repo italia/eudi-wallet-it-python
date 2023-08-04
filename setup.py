@@ -40,8 +40,8 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
-        "qrcode>=7.4.2,<7.5",
-        "pydantic>=2.0,<2.2",
+        "pyqrcode>=1.2,<1.3",
+        "pydantic>=2.0,<2.2"
     ],
     extra_require={
         "satosa": [

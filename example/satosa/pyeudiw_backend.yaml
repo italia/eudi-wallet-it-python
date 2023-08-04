@@ -96,12 +96,17 @@ config:
   storage:
       mongo_db:
         cache:
-          url: mongodb://localhost:27017/
-          conf:
-            db_name: eudiw
+          module: pyeudiw.storage.mongo_cache
+          class: MongoCache
+          config:
+            url: mongodb://localhost:27017/
+            conf:
+              db_name: eudiw
         storage:
-          url: mongodb://localhost:27017/
-          conf:
+          module: pyeudiw.storage.mongo_storage
+          class: MongoStorage
+          config:
+            url: mongodb://localhost:27017/
             db_name: eudiw
             db_collection: sessions
 
