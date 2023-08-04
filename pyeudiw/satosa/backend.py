@@ -16,7 +16,7 @@ from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp import check_vp_token
-from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
+from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
 from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
