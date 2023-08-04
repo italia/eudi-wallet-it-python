@@ -159,9 +159,11 @@ class StaticTrustChainValidator:
         else:
             ec = self._retrieve_ec(iss, httpc_params)
             ec_data = unpad_jwt_payload(ec)
+            fetch_api_url = None
+            
             try:
                 # get superior fetch url
-                fetch_api_url = ec_data.payload["metadata"]["federation_entity"][
+                fetch_api_url = ec_data["metadata"]["federation_entity"][
                     "federation_fetch_endpoint"
                 ]
             except KeyError:
