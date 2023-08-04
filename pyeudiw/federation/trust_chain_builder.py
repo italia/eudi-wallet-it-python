@@ -16,7 +16,7 @@ from .statements import (
     get_entity_configurations,
     EntityStatement,
 )
-from pyeudiw.utils.utils import datetime_from_timestamp
+from pyeudiw.tools.utils import datetime_from_timestamp
 
 
 logger = logging.getLogger("pyeudiw.federation")

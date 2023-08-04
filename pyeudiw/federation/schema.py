@@ -19,3 +19,10 @@ def is_es(payload: dict) -> bool:
             return True
     except Exception:
         return False
+
+def is_ec(payload: dict) -> bool:
+    try:
+        ESSchema(**payload)
+        return False
+    except Exception:
+        return True
