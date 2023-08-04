@@ -163,6 +163,7 @@ leaf_ec = {
             "homepage_uri": "https://verifier.example.org/home",
             "policy_uri": "https://verifier.example.org/policy",
             "logo_uri": "https://verifier.example.org/static/logo.svg",
+            "federation_fetch_endpoint": "https://verifier.example.org/fetch",
             "contacts": [
                 "tech@verifier.example.org"
             ]
@@ -371,3 +372,30 @@ def test_update_st_es_case_source_endpoint():
     with mock.patch.object(tcv_test, "get_entity_statements", mock_method):
         assert tcv_test.StaticTrustChainValidator(
             invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
+        
+def test_update_st_es_case_source_endpoint():    
+    ta_es = {
+        "exp": EXP,
+        "iat": NOW,
+        "iss": "https://trust-anchor.example.eu",
+        "sub": "https://intermediate.eidas.example.org",
+        'jwks': {"keys": []},
+    }    
+    
+    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_es_signed = ta_signer.sign_compact([ta_jwk])
+        
+    def mock_method_ec(*args, **kwargs):        
+        if args[0] == "https://trust-anchor.example.eu":
+            return [leaf_ec_signed]
+        raise Exception("Wrong issuer")
+    
+    def mock_method_es(*args, **kwargs):        
+        if args[0] == "https://verifier.example.org/fetch":
+            return leaf_ec_signed
+        raise Exception("Wrong issuer")
+    
+    with mock.patch.object(tcv_test, "get_entity_statements", mock_method_es):
+        with mock.patch.object(tcv_test, "get_entity_configurations", mock_method_ec):
+            assert tcv_test.StaticTrustChainValidator(
+                invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
