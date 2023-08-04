@@ -4,6 +4,7 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
 from pyeudiw.jwk.schema import JwkSchema
+from pyeudiw.openid4vp.schemas.cnf_schema import CNFSchema
 from pyeudiw.tools.schema_utils import check_algorithm
 
 _default_supported_algorithms = [
@@ -47,7 +48,7 @@ class WalletInstanceAttestationPayload(BaseModel):
     tos_uri: HttpUrl
     logo_uri: HttpUrl
     attested_security_context: HttpUrl
-    cnf: Dict[Literal["jwk"], JwkSchema]
+    cnf: CNFSchema
     authorization_endpoint: str
     response_types_supported: List[str]
     vp_formats_supported: VPFormatSchema
