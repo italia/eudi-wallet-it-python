@@ -17,7 +17,7 @@ class DPoPTokenHeaderSchema(BaseModel):
         "PS384",
         "PS512",
     ]
-    # TODO - dynamic schema loader if EC or RSA
+    # TODO - dynamic schemas loader if EC or RSA
     # jwk: JwkSchema
 
 
