@@ -215,7 +215,7 @@ class TrustChainBuilder:
             self.trust_anchor_configuration.validate_by_itself()
         except Exception as e:  # pragma: no cover
             _msg = (
-                f"Trust Anchor Entity Configuration failed for 
+                f"Trust Anchor Entity Configuration failed for "
                 f"{self.trust_anchor}: '{e}'"
             )
             logger.error(_msg)
