@@ -1,6 +1,6 @@
-from pydantic import BaseModel, HttpUrl
-
 from typing import Literal
+
+from pydantic import BaseModel, HttpUrl
 
 
 class DPoPTokenHeaderSchema(BaseModel):
@@ -17,7 +17,7 @@ class DPoPTokenHeaderSchema(BaseModel):
         "PS384",
         "PS512",
     ]
-    # TODO - dynamic schema loader if EC or RSA
+    # TODO - dynamic schemas loader if EC or RSA
     # jwk: JwkSchema
 
 

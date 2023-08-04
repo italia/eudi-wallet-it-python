@@ -1,23 +1,33 @@
 import re
+from typing import Dict, Literal
 
-from pydantic import ValidationError
+from pydantic import BaseModel, HttpUrl
 
-SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
+from pyeudiw.jwk.schema import JwkSchema
+
+SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)(~([-A-Za-z0-9\=_\.])*)*$"
 
 
-def check_sd_jwt(sd_jwt: str) -> str:
+def is_sd_jwt_format(sd_jwt: str) -> bool:
     res = re.match(SD_JWT_REGEXP, sd_jwt)
-    if not res:
-        raise ValidationError(f"Vp_token is not a sd-jwt {sd_jwt}")
-
-    return sd_jwt
+    return bool(res)
 
 
-def check_sd_jwt_list(sd_jwt_list: list[str]) -> list[str]:
+def is_sd_jwt_list_format(sd_jwt_list: list[str]) -> bool:
     if len(sd_jwt_list) == 0:
-        raise ValidationError("vp_token is empty")
+        return False
 
     for sd_jwt in sd_jwt_list:
-        check_sd_jwt(sd_jwt)
+        if not is_sd_jwt_format(sd_jwt):
+            return False
 
-    return sd_jwt_list
+    return True
+
+
+class SDJWTSchema(BaseModel):
+    iss: HttpUrl
+    iat: int
+    exp: int
+    sub: str
+    _sd_alg: str
+    cnf: Dict[Literal["jwk"], JwkSchema]

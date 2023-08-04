@@ -1,27 +1,25 @@
-import uuid
 import base64
 import json
 import pathlib
-import pytest
 import urllib.parse
+import uuid
+from unittest.mock import Mock
 
+import pytest
 from bs4 import BeautifulSoup
-
-from pyeudiw.jwt.utils import unpad_jwt_payload
-from pyeudiw.oauth2.dpop import DPoPIssuer
-from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.jwt import JWSHelper, JWEHelper, unpad_jwt_header
-from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt import issue_sd_jwt, _adapt_keys, load_specification_from_yaml_string
-from pyeudiw.tools.utils import iat_now, exp_from_now
-
-from sd_jwt.holder import SDJWTHolder
-
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
-from unittest.mock import Mock
+from sd_jwt.holder import SDJWTHolder
 
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header
+from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.oauth2.dpop import DPoPIssuer
+from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
+                            load_specification_from_yaml_string)
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"

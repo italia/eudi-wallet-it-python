@@ -1,5 +1,6 @@
-import pymongo
 from datetime import datetime
+
+import pymongo
 
 from .base_storage import BaseStorage
 
