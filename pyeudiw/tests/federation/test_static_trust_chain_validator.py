@@ -1,7 +1,9 @@
 import copy
 import uuid
-from pytest import MonkeyPatch
+import unittest.mock as mock
+from unittest.mock import Mock
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+import pyeudiw.federation.trust_chain_validator as tcv_test
 
 
 # pip install cryptojwt
@@ -308,17 +310,14 @@ def test_is_valid_equals_false():
     assert StaticTrustChainValidator(
         invalid_trust_chain, [ta_jwk.serialize()]).is_valid == False
     
-from unittest.mock import Mock
     
 def test_retrieve_ec():
-    import pyeudiw.federation.trust_chain_validator as tcv_test    
     tcv_test.get_entity_configurations = Mock(return_value=[leaf_ec_signed])
         
     assert tcv_test.StaticTrustChainValidator(
         invalid_trust_chain, [ta_jwk.serialize()])._retrieve_ec("https://trust-anchor.example.eu") == leaf_ec_signed
     
 def test_retrieve_ec_fails():
-    import pyeudiw.federation.trust_chain_validator as tcv_test
     tcv_test.get_entity_configurations = Mock(return_value=[])
     
     try:
@@ -328,23 +327,18 @@ def test_retrieve_ec_fails():
         return
     
 def test_retrieve_es():
-    import pyeudiw.federation.trust_chain_validator as tcv_test    
     tcv_test.get_entity_statements = Mock(return_value=ta_es)
         
     assert tcv_test.StaticTrustChainValidator(
         invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.eu", "https://trust-anchor.example.eu") == ta_es
     
 def test_retrieve_es_output_is_none():
-    import pyeudiw.federation.trust_chain_validator as tcv_test    
     tcv_test.get_entity_statements = Mock(return_value=None)
     
     assert tcv_test.StaticTrustChainValidator(
             invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.eu", "https://trust-anchor.example.eu") == None
     
-def test_update_st_ec_case():
-    import unittest.mock as mock
-    import pyeudiw.federation.trust_chain_validator as tcv_test
-    
+def test_update_st_ec_case():    
     def mock_method(*args, **kwargs):
         if args[0] == "https://rp.example.it":
             return [leaf_ec_signed]
@@ -355,10 +349,7 @@ def test_update_st_ec_case():
         assert tcv_test.StaticTrustChainValidator(
             invalid_trust_chain, [ta_jwk.serialize()])._update_st(leaf_ec_signed) == leaf_ec_signed
         
-def test_update_st_es_case_source_endpoint():
-    import unittest.mock as mock
-    import pyeudiw.federation.trust_chain_validator as tcv_test
-    
+def test_update_st_es_case_source_endpoint():    
     ta_es = {
         "exp": EXP,
         "iat": NOW,
