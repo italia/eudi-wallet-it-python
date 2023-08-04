@@ -25,7 +25,7 @@ from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.openid4vp.schemas import ResponseSchema as ResponseValidator
+from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
 from pyeudiw.openid4vp import check_vp_token
 
 

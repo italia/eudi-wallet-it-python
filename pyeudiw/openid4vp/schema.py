@@ -6,7 +6,7 @@ from typing_extensions import Annotated, Literal
 from pydantic.functional_validators import AfterValidator, field_validator
 
 from pyeudiw.jwk.schema import JwkSchema
-from pyeudiw.sd_jwt.schema import check_sd_jwt, check_sd_jwt_list
+from pyeudiw.jwt.utils import is_jwt_format
 
 
 class DescriptorSchema(BaseModel):
@@ -23,6 +23,13 @@ class PresentationSubmissionSchema(BaseModel):
 
 class ResponseSchema(BaseModel):
     state: Optional[str]
-    vp_token: Annotated[str, AfterValidator(
-        check_sd_jwt)] | Annotated[list[str], AfterValidator(check_sd_jwt_list)]
+    vp_token: str
     presentation_submission: PresentationSubmissionSchema
+
+    @field_validator("vp_token")
+    @classmethod
+    def _check_vp_token(cls, vp_token):
+        if is_jwt_format(vp_token):
+            return vp_token
+        else:
+            raise ValueError("vp_token is not in a JWT format.")

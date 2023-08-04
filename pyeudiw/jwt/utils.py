@@ -1,5 +1,8 @@
 import base64
 import json
+import re
+
+JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
 
 
 def unpad_jwt_element(jwt: str, position: int) -> dict:
@@ -29,3 +32,9 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
         if jwk["kid"] == kid:
             return jwk
     return {}
+
+
+def is_jwt_format(jwt: str) -> bool:
+    res = re.match(JWT_REGEXP, jwt)
+    return bool(res)
+
