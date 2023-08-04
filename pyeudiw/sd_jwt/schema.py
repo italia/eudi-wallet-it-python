@@ -1,8 +1,11 @@
 import re
+from typing import Dict, Literal
 
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel, HttpUrl
 
-SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
+from pyeudiw.jwk.schema import JwkSchema
+
+SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)(~([-A-Za-z0-9\=_\.])*)*$"
 
 
 def check_sd_jwt(sd_jwt: str) -> str:
@@ -21,3 +24,12 @@ def check_sd_jwt_list(sd_jwt_list: list[str]) -> list[str]:
         check_sd_jwt(sd_jwt)
 
     return sd_jwt_list
+
+
+class SDJWTSchema(BaseModel):
+    iss: HttpUrl
+    iat: int
+    exp: int
+    sub: str
+    _sd_alg: str
+    cnf: Dict[Literal["jwk"], JwkSchema]
