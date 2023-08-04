@@ -115,10 +115,10 @@ class StaticTrustChainValidator:
             jwk = find_jwk(
                 st_header.get("kid", None), fed_jwks
             )
-            
-            if jwk == None:
+
+            if not jwk:
                 return False
-            
+
             jwsh = JWSHelper(jwk)
             if not jwsh.verify(st):
                 return False
@@ -126,7 +126,7 @@ class StaticTrustChainValidator:
                 fed_jwks = st_payload["jwks"]["keys"]
 
         return True
-    
+
     def _retrieve_ec(self, iss: str, httpc_params: dict = {}):
         jwt = get_entity_configurations(iss, httpc_params)
         if len(jwt) == 0:
@@ -135,7 +135,7 @@ class StaticTrustChainValidator:
 
         # is something weird these will raise their Exceptions
         return jwt[0]
-    
+
     def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}):
         jwt = get_entity_statements(download_url, httpc_params)
         if not jwt:
@@ -143,7 +143,7 @@ class StaticTrustChainValidator:
                 f"Cannot fast refresh Entity Statement {iss}"
             )
         return jwt
-    
+
     def _update_st(self, st, httpc_params: dict = {}):
         payload = unpad_jwt_payload(st)
         iss = payload['iss']
@@ -160,7 +160,7 @@ class StaticTrustChainValidator:
             ec = self._retrieve_ec(iss, httpc_params)
             ec_data = unpad_jwt_payload(ec)
             fetch_api_url = None
-            
+
             try:
                 # get superior fetch url
                 fetch_api_url = ec_data["metadata"]["federation_entity"][
@@ -173,7 +173,7 @@ class StaticTrustChainValidator:
                 )
 
             jwt = self._retrieve_es(fetch_api_url, iss, httpc_params)
-            
+
         return jwt
 
     def update(self, httpc_params: dict = {}):

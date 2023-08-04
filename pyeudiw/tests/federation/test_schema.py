@@ -1,4 +1,3 @@
-import pytest
 
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.federation.schema import is_es, is_ec
@@ -13,7 +12,7 @@ ta_es = {
     "sub": "https://intermediate.eidas.example.org",
     'jwks': {"keys": []},
     "source_endpoint": "https://rp.example.it"
-} 
+}
 
 ta_ec = {
     "exp": EXP,
@@ -38,12 +37,15 @@ ta_ec = {
 
 def test_is_es():
     assert is_es(ta_es) == True
-    
+
+
 def test_is_es_false():
     assert is_es(ta_ec) == False
-    
+
+
 def test_is_ec():
     assert is_ec(ta_ec) == True
-    
+
+
 def test_is_ec_false():
     assert is_ec(ta_es) == False
