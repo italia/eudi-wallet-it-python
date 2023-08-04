@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, field_validator, HttpUrl
 from pydantic_core.core_schema import FieldValidationInfo
 
+from pyeudiw.sd_jwt.schema import is_sd_jwt_format
 from pyeudiw.tools.schema_utils import check_algorithm
 
 
@@ -26,4 +27,11 @@ class VPTokenPayload(BaseModel):
     nonce: str
     vp: str
 
-    # TODO: vp validation (SDJWT)
+    @field_validator("vp")
+    @classmethod
+    def _check_vp(cls, vp):
+        if is_sd_jwt_format(vp):
+            return vp
+        else:
+            raise ValueError("vp is not in a SDJWT format.")
+
