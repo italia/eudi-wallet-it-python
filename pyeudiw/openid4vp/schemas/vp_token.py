@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, field_validator, HttpUrl
+from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
 from pyeudiw.sd_jwt.schema import is_sd_jwt_format
@@ -34,4 +34,3 @@ class VPTokenPayload(BaseModel):
             return vp
         else:
             raise ValueError("vp is not in a SDJWT format.")
-

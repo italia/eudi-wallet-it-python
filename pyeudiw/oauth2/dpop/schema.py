@@ -1,6 +1,6 @@
-from pydantic import BaseModel, HttpUrl
-
 from typing import Literal
+
+from pydantic import BaseModel, HttpUrl
 
 
 class DPoPTokenHeaderSchema(BaseModel):

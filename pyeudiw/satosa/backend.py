@@ -1,33 +1,28 @@
 import json
 import logging
 import uuid
-
 from datetime import datetime, timedelta
 from typing import Union
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import quote_plus, urlencode
 
-from satosa.context import Context
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
-from pyeudiw.satosa.exceptions import (
-    BadRequestError,
-    NoBoundEndpointError
-)
+from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
-from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWSHelper, JWEHelper
+from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.oauth2.dpop import DPoPVerifier
+from pyeudiw.openid4vp import check_vp_token
+from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
+from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
-from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.mobile import is_smartphone
+from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
-from pyeudiw.openid4vp import check_vp_token
-
 
 logger = logging.getLogger("openid4vp_backend")
 

@@ -1,4 +1,4 @@
-from typing import Literal, Optional, List, Dict
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo

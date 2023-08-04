@@ -37,4 +37,3 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
 def is_jwt_format(jwt: str) -> bool:
     res = re.match(JWT_REGEXP, jwt)
     return bool(res)
-

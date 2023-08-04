@@ -1,6 +1,7 @@
-import pymongo
 from datetime import datetime
 from typing import Callable
+
+import pymongo
 
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 

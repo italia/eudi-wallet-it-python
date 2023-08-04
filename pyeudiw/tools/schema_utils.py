@@ -1,6 +1,5 @@
 from pydantic_core.core_schema import FieldValidationInfo
 
-
 _default_supported_algorithms = [
     "RS256",
     "RS384",

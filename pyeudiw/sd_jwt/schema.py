@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Literal
 
-from pydantic import ValidationError, BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl
 
 from pyeudiw.jwk.schema import JwkSchema
 

@@ -1,10 +1,10 @@
 import uuid
-from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt import (
-    issue_sd_jwt, verify_sd_jwt, _adapt_keys, load_specification_from_yaml_string)
-
 
 from sd_jwt.holder import SDJWTHolder
+
+from pyeudiw.jwk import JWK
+from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
+                            load_specification_from_yaml_string, verify_sd_jwt)
 
 settings = {
     "issuer": "http://test.com",

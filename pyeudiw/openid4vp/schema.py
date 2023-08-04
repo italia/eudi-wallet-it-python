@@ -1,11 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel, create_model, HttpUrl
-from pydantic_core.core_schema import FieldValidationInfo
-from typing_extensions import Annotated, Literal
-from pydantic.functional_validators import AfterValidator, field_validator
+from pydantic import BaseModel
+from pydantic.functional_validators import field_validator
 
-from pyeudiw.jwk.schema import JwkSchema
 from pyeudiw.jwt.utils import is_jwt_format
 
 

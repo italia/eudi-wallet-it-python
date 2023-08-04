@@ -1,6 +1,6 @@
 from typing import Dict, Literal
 
-from pydantic import BaseModel, field_validator, HttpUrl
+from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
 from pyeudiw.jwk.schema import JwkSchema

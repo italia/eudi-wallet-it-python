@@ -1,14 +1,14 @@
 from io import StringIO
-from sd_jwt.issuer import SDJWTIssuer
-from sd_jwt.verifier import SDJWTVerifier
 
+from sd_jwt.issuer import SDJWTIssuer
 from sd_jwt.utils.demo_utils import get_jwk
 from sd_jwt.utils.formatting import textwrap_json
 from sd_jwt.utils.yaml_specification import _yaml_load_specification
+from sd_jwt.verifier import SDJWTVerifier
 
-from pyeudiw.tools.utils import iat_now, gen_exp_time
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.tools.utils import gen_exp_time, iat_now
 
 
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):

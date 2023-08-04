@@ -3,9 +3,9 @@ from typing import List, Literal
 from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
-from pyeudiw.jwk.schema import JwksSchema
 from pyeudiw.federation.schemas.federation_entity import FederationEntity
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
+from pyeudiw.jwk.schema import JwksSchema
 from pyeudiw.tools.schema_utils import check_algorithm
 
 
