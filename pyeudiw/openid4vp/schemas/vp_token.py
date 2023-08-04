@@ -8,9 +8,9 @@ from pyeudiw.tools.schema_utils import check_algorithm
 
 
 class VPTokenHeader(BaseModel):
-    alg = str
-    kid = str
-    typ = Literal["JWT"]
+    alg: str
+    kid: str
+    typ: Literal["JWT"]
 
     @field_validator("alg")
     @classmethod
