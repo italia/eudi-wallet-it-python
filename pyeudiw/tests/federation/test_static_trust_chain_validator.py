@@ -397,7 +397,6 @@ def test_update_st_es_case_source_endpoint():
     def mock_method_es(*args, **kwargs):        
         if args[0] == "https://verifier.example.org/fetch":
             return leaf_ec_signed
-        breakpoint()
         raise Exception("Wrong issuer")
     
     with mock.patch.object(tcv_test, "get_entity_statements", mock_method_es):
