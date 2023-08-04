@@ -5,14 +5,10 @@ from unittest.mock import Mock
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 import pyeudiw.federation.trust_chain_validator as tcv_test
 
-
 # pip install cryptojwt
-from cryptojwt.jwk.rsa import new_rsa_key
 from cryptojwt.jws.jws import JWS
-
+from cryptojwt.jwk.rsa import new_rsa_key
 from pyeudiw.tools.utils import iat_now, exp_from_now
-
-from pyeudiw.federation.schema import is_es
 
 # Create private keys
 leaf_jwk = new_rsa_key()
@@ -163,7 +159,6 @@ leaf_ec = {
             "homepage_uri": "https://verifier.example.org/home",
             "policy_uri": "https://verifier.example.org/policy",
             "logo_uri": "https://verifier.example.org/static/logo.svg",
-            "federation_fetch_endpoint": "https://verifier.example.org/fetch",
             "contacts": [
                 "tech@verifier.example.org"
             ]
@@ -181,12 +176,17 @@ intermediate_ec = {
     'iss': 'https://intermediate.eidas.example.org',
     'sub': 'https://intermediate.eidas.example.org',
     'jwks': {"keys": []},
-    'metadata': {'federation_entity': {'contacts': ['soggetto@intermediate.eidas.example.it'],
-                                       'federation_fetch_endpoint': 'https://intermediate.eidas.example.org/fetch/',
-                                       'federation_resolve_endpoint': 'https://intermediate.eidas.example.org/resolve/',
-                                       'federation_list_endpoint': 'https://intermediate.eidas.example.org/list/',
-                                       'homepage_uri': 'https://soggetto.intermediate.eidas.example.it',
-                                       'name': 'Example Intermediate intermediate.eidas.example'}},
+    'metadata': {
+        'federation_entity': {
+            'contacts': ['soggetto@intermediate.eidas.example.it'],
+            'federation_fetch_endpoint': 'https://intermediate.eidas.example.org/fetch/',
+            'federation_resolve_endpoint': 'https://intermediate.eidas.example.org/resolve/',
+            'federation_list_endpoint': 'https://intermediate.eidas.example.org/list/',
+            'homepage_uri': 'https://soggetto.intermediate.eidas.example.it',
+            "federation_fetch_endpoint": "https://verifier.example.org/fetch",
+            'name': 'Example Intermediate intermediate.eidas.example'
+        }
+    },
     'trust_marks': [{'id': 'https://registry.gov.org/intermediate/private/full/',
                      'trust_mark': 'eyJh …'}],
     'authority_hints': ['https://registry.eidas.trust-anchor.example.eu']}
@@ -373,7 +373,11 @@ def test_update_st_es_case_source_endpoint():
         assert tcv_test.StaticTrustChainValidator(
             invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
         
-def test_update_st_es_case_source_endpoint():    
+def test_update_st_es_case_source_endpoint():
+    intermediate_signer = JWS(intermediate_ec, alg="RS256",
+                          typ="application/entity-statement+jwt")
+    intermediate_ec_signed = intermediate_signer.sign_compact([intermediate_jwk])
+    
     ta_es = {
         "exp": EXP,
         "iat": NOW,
@@ -387,12 +391,13 @@ def test_update_st_es_case_source_endpoint():
         
     def mock_method_ec(*args, **kwargs):        
         if args[0] == "https://trust-anchor.example.eu":
-            return [leaf_ec_signed]
+            return [intermediate_ec_signed]
         raise Exception("Wrong issuer")
     
     def mock_method_es(*args, **kwargs):        
         if args[0] == "https://verifier.example.org/fetch":
             return leaf_ec_signed
+        breakpoint()
         raise Exception("Wrong issuer")
     
     with mock.patch.object(tcv_test, "get_entity_statements", mock_method_es):
