@@ -1,9 +1,8 @@
-from typing import Dict, Literal
+from typing import Literal
 
 from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
-from pyeudiw.jwk.schema import JwkSchema
 from pyeudiw.openid4vp.schemas.cnf_schema import CNFSchema
 from pyeudiw.tools.schema_utils import check_algorithm
 
