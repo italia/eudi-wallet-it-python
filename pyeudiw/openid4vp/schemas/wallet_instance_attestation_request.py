@@ -10,7 +10,7 @@ from pyeudiw.tools.schema_utils import check_algorithm
 
 class WalletInstanceAttestationRequestHeader(BaseModel):
     alg: str
-    typ: str
+    typ: Literal["var+jwt"]
     kid: str
 
     @field_validator("alg")
