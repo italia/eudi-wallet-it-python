@@ -207,6 +207,7 @@ class OpenID4VPBackend(BackendModule):
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
 
+        # TODO - Internal Response
         # auth_class_ref = response.get("acr", response.get("amr", UNSPECIFIED))
         # timestamp = response.get(
         # "auth_time",
