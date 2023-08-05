@@ -80,7 +80,7 @@ class StaticTrustChainValidator:
                 self.updated_trust_chain or self.static_trust_chain
             )
         ]
-
+        
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
 
@@ -180,5 +180,5 @@ class StaticTrustChainValidator:
         for st in self.static_trust_chain:
             jwt = self._update_st(st, httpc_params)
             self.updated_trust_chain.append(jwt)
-
+        
         return self.is_valid

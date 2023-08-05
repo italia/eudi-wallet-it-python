@@ -158,7 +158,7 @@ leaf_ec = {
         }
     },
     "authority_hints": [
-        "https://registry.eudi-wallet.example.it"
+        "https://intermediate.eidas.example.org"
     ]
 }
 
@@ -267,8 +267,15 @@ intermediate_signer = JWS(intermediate_es, alg="RS256",
                           typ="application/entity-statement+jwt")
 intermediate_es_signed = intermediate_signer.sign_compact([intermediate_jwk])
 
+intermediate_signer_ec = JWS(intermediate_ec, alg="RS256",
+                          typ="application/entity-statement+jwt")
+intermediate_ec_signed = intermediate_signer_ec.sign_compact([intermediate_jwk])
+
 ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
 ta_es_signed = ta_signer.sign_compact([ta_jwk])
+
+ta_signer_ec = JWS(ta_ec, alg="RS256", typ="application/entity-statement+jwt")
+ta_ec_signed = ta_signer_ec.sign_compact([ta_jwk])
 
 trust_chain = [
     leaf_ec_signed,

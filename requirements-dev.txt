@@ -1,4 +1,5 @@
 pytest
+pytest-mock
 coverage
 pdbpp
 pytest-cov

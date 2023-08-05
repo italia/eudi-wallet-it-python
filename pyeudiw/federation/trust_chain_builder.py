@@ -37,7 +37,8 @@ class TrustChainBuilder:
     def __init__(
         self,
         subject: str,
-        trust_anchor: Union[str, EntityStatement],
+        trust_anchor: str,
+        trust_anchor_configuration: Union[EntityStatement, None] = None,
         httpc_params: dict = {},
         max_authority_hints: int = 10,
         subject_configuration: EntityStatement = None,
@@ -54,7 +55,7 @@ class TrustChainBuilder:
         self.httpc_params = httpc_params
 
         self.trust_anchor = trust_anchor
-        self.trust_anchor_configuration = None
+        self.trust_anchor_configuration = trust_anchor_configuration
 
         self.required_trust_marks = required_trust_marks
         self.is_valid = False
@@ -69,6 +70,7 @@ class TrustChainBuilder:
 
         self.verified_trust_marks = []
         self.exp = 0
+        self._set_max_path_len()
 
     def apply_metadata_policy(self) -> dict:
         """
@@ -155,7 +157,7 @@ class TrustChainBuilder:
         logger.info(
             f"Starting a Walk into Metadata Discovery for {self.subject}")
         self.tree_of_trust[0] = [self.subject_configuration]
-
+        
         ecs_history = []
         while (len(self.tree_of_trust) - 2) < self.max_path_len:
             last_path_n = list(self.tree_of_trust.keys())[-1]
@@ -220,7 +222,11 @@ class TrustChainBuilder:
             )
             logger.error(_msg)
             raise Exception(_msg)
-
+        
+        self._set_max_path_len()
+        
+    
+    def _set_max_path_len(self):
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
             "max_path_length"
         ):
@@ -233,11 +239,11 @@ class TrustChainBuilder:
     def get_subject_configuration(self) -> None:
         if not self.subject_configuration:
             try:
-                jwt = get_entity_configurations(
+                jwts = get_entity_configurations(
                     self.subject, httpc_params=self.httpc_params
                 )
                 self.subject_configuration = EntityStatement(
-                    jwt[0], trust_anchor_entity_conf=self.trust_anchor_configuration
+                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration
                 )
                 self.subject_configuration.validate_by_itself()
             except Exception as e:
@@ -283,7 +289,7 @@ class TrustChainBuilder:
 
     def start(self):
         try:
-            self.get_trust_anchor_configuration()
+            # self.get_trust_anchor_configuration()
             self.get_subject_configuration()
             self.discovery()
         except Exception as e:

@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import requests
 
 
 async def fetch(session, url, httpc_params: dict = {}):
@@ -19,7 +20,12 @@ async def fetch_all(session, urls, httpc_params):
     return results
 
 
-async def http_get(urls, httpc_params: dict = {}):
+async def http_get(urls, httpc_params: dict = {}, sync=True):
+    
+    if sync:
+        res = [requests.get(url).content for url in urls]
+        return res
+        
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)
         return text

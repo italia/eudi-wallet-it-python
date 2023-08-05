@@ -317,7 +317,7 @@ class EntityStatement:
                 f"{', '.join(authority_hints[max_authority_hints:])}"
             )
             authority_hints = authority_hints[:max_authority_hints]
-
+        
         for sup in superiors_hints:
             if sup.sub in authority_hints:
                 logger.info(
@@ -326,13 +326,27 @@ class EntityStatement:
                 )
                 authority_hints.pop(authority_hints.index(sup.sub))
                 self.verified_superiors[sup.sub] = sup
+                
 
         logger.debug(f"Getting Entity Configurations for {authority_hints}")
-
-        jwts = get_entity_configurations(authority_hints, self.httpc_params)
+        
+        jwts = []
+        
+        if self.trust_anchor_entity_conf:
+            ta_id = self.trust_anchor_entity_conf.payload.get("sub", {})
+            if ta_id in authority_hints:
+                jwts = [self.trust_anchor_configuration]
+        
+        if not jwts:
+            jwts = get_entity_configurations(authority_hints, self.httpc_params)
+        
         for jwt in jwts:
             try:
-                ec = self.__class__(jwt, httpc_params=self.httpc_params)
+                ec = self.__class__(
+                    jwt, 
+                    httpc_params=self.httpc_params,
+                    trust_anchor_entity_conf = self.trust_anchor_entity_conf
+                )
             except Exception as e:
                 logger.warning(f"Get Entity Configuration for {jwt}: {e}")
                 continue

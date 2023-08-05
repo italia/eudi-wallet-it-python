@@ -5,8 +5,8 @@ from unittest.mock import Mock
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 import pyeudiw.federation.trust_chain_validator as tcv_test
 
-from . base import EXP, JWS, NOW, intermediate_ec, intermediate_es, intermediate_jwk, leaf_ec_signed, leaf_jwk, ta_es, ta_es_signed, ta_jwk, trust_chain
 
+from . base import *
 
 def test_is_valid():
     assert StaticTrustChainValidator(
@@ -106,10 +106,6 @@ def test_update_st_es_case_source_endpoint():
 
 
 def test_update_st_es_case_source_endpoint():
-    intermediate_signer = JWS(intermediate_ec, alg="RS256",
-                              typ="application/entity-statement+jwt")
-    intermediate_ec_signed = intermediate_signer.sign_compact(
-        [intermediate_jwk])
 
     ta_es = {
         "exp": EXP,
@@ -128,11 +124,13 @@ def test_update_st_es_case_source_endpoint():
         raise Exception("Wrong issuer")
 
     def mock_method_es(*args, **kwargs):
-        if args[0] == "https://verifier.example.org/fetch":
+        if args[0] == "https://intermediate.eidas.example.org/fetch/":
             return leaf_ec_signed
         raise Exception("Wrong issuer")
 
     with mock.patch.object(tcv_test, "get_entity_statements", mock_method_es):
         with mock.patch.object(tcv_test, "get_entity_configurations", mock_method_ec):
+            
             assert tcv_test.StaticTrustChainValidator(
-                invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
+                invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed
+            ) == leaf_ec_signed
