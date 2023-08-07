@@ -21,8 +21,8 @@ The toolchain contains the following components:
 | __jwt__ | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
 | __tools.qrcode__ | QRCodes creation | 
 | __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
-| __openid4vp.federation__ | OpenID Connect Federation Wallet Relying Party Entities and Trust Mechanisms |
-| __satosa.openid4vp.backend__ | SATOSA OpenID4VP Relying Party backend |
+| __openid4vp.federation__ | Trust evaluation mechanisms, according to [OpenID Connect Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html) |
+| __satosa.openid4vp.backend__ | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
 
 
 ## Setup

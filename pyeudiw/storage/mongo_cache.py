@@ -1,8 +1,10 @@
-import pymongo
 from datetime import datetime
 from typing import Callable
 
+import pymongo
+
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
+
 
 class MongoCache(BaseCache):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:

@@ -2,12 +2,11 @@ import hashlib
 
 import pytest
 
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.tools.utils import iat_now
-
 
 PRIVATE_JWK = JWK()
 PUBLIC_JWK = PRIVATE_JWK.public_key

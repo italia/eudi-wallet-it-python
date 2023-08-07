@@ -1,18 +1,18 @@
 import binascii
 import json
+from typing import Union
 
 import cryptojwt
 from cryptojwt.exception import VerificationError
+from cryptojwt.jwe.jwe import factory
 from cryptojwt.jwe.jwe_ec import JWE_EC
 from cryptojwt.jwe.jwe_rsa import JWE_RSA
 from cryptojwt.jwk.jwk import key_from_jwk_dict
-from cryptojwt.jwe.jwe import factory
 from cryptojwt.jws.jws import JWS as JWSec
-from typing import Union
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt.utils import unpad_jwt_header
 from pyeudiw.jwk.exceptions import KidError
+from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
 

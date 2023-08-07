@@ -1,9 +1,7 @@
-from secrets import token_hex
-
-
 import datetime
 import json
 import logging
+from secrets import token_hex
 
 logger = logging.getLogger("pyeudiw.utils")
 

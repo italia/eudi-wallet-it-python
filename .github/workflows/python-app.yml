@@ -48,7 +48,7 @@ jobs:
         if [ -f requirements-customizations.txt ]; then pip install -r requirements-customizations.txt; fi
         python -m pip install -U setuptools
         python -m pip install -e .
-        python -m pip install "Pillow>=10.0.0,<10.1" "device_detector>=5.0,<6" "satosa>=8.4,<8.6" "jinja2>=3.0,<4" "pymongo>=4.4.1,<4.5"
+        python -m pip install "Pillow>=10.0.0,<10.1" "device_detector>=5.0,<6" "satosa>=8.4,<8.6" "jinja2>=3.0,<4" "pymongo>=4.4.1,<4.5" aiohttp
         python -m pip install git+https://github.com/danielfett/sd-jwt.git
 
     - name: Lint with flake8
@@ -59,7 +59,8 @@ jobs:
         flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
     - name: Tests
       run: |
-        pytest --cov=pyeudiw -v --cov-report term --cov-fail-under=80 pyeudiw/tests/
+        pytest --cov=pyeudiw --cov-fail-under=80
+        coverage report -m --skip-covered
     - name: Bandit Security Scan
       run: |
         bandit -r -x pyeudiw/tests* pyeudiw/*
