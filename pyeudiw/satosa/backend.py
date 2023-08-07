@@ -355,7 +355,16 @@ class OpenID4VPBackend(BackendModule):
             all_user_claims, _info["issuer"]
         )
         
-        self.db_engine.update_response_object(nonce, state, internal_resp)
+        try:
+            self.db_engine.update_response_object(nonce, state, internal_resp)
+        except Exception as e:
+            return JsonResponse(
+                    {
+                        "error": "internal_server_error",
+                        "error_description": str(e)
+                    },
+                    status="500"
+                )
         
         return self.auth_callback_func(context, internal_resp)
 
@@ -424,10 +433,19 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO: take the response and extract from jwt the public key of holder
         
-        entity_id = self.db_engine.init_session(
-            context.http_headers['HTTP_DPOP'], 
-            context.http_headers['HTTP_AUTHORIZATION']
-        )
+        try:
+            entity_id = self.db_engine.init_session(
+                dpop_proof=context.http_headers['HTTP_DPOP'], 
+                attestation=context.http_headers['HTTP_AUTHORIZATION']
+            )
+        except Exception as e:
+            return JsonResponse(
+                    {
+                        "error": "internal_server_error",
+                        "error_description": str(e)
+                    },
+                    status="500"
+                )
         
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -450,7 +468,16 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign(data)
         response = {"response": jwt}
         
-        self.db_engine.update_request_object(entity_id, nonce, state, data)
+        try:
+            self.db_engine.update_request_object(entity_id, nonce, state, data)
+        except Exception as e:
+            return JsonResponse(
+                    {
+                        "error": "internal_server_error",
+                        "error_description": str(e)
+                    },
+                    status="500"
+                )
 
         return JsonResponse(
             response,
