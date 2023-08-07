@@ -1,5 +1,4 @@
 import uuid
-
 import pytest
 
 from pyeudiw.storage.db_engine import DBEngine
@@ -32,12 +31,10 @@ conf = {
     }
 }
 
-
 class TestMongoDBEngine:
     @pytest.fixture(autouse=True)
     def create_engine_instance(self):
         self.engine = DBEngine(conf)
-
     @pytest.fixture(autouse=True)
     def test_init_session(self):
         dpop_proof = {"dpop": "dpop"}

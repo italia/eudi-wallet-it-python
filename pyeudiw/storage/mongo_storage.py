@@ -1,8 +1,6 @@
-from datetime import datetime
-
 import pymongo
-
-from .base_storage import BaseStorage
+from datetime import datetime
+from pyeudiw.storage.base_storage import BaseStorage
 
 
 class MongoStorage(BaseStorage):
