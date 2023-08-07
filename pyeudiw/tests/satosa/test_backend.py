@@ -107,6 +107,33 @@ CONFIG = {
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
         }
     ],
+    "storage": {
+        "mongo_db": {
+            "cache": {
+                "module": "pyeudiw.storage.mongo_cache",
+                "class": "MongoCache",
+                "init_params": {
+                    "url": "mongodb://localhost:27017/",
+                    "conf": {
+                        "db_name": "eudiw"
+                    },
+                    "connection_params": {}
+                }
+            },
+            "storage": {
+                "module": "pyeudiw.storage.mongo_storage",
+                "class": "MongoStorage",
+                "init_params": {
+                    "url": "mongodb://localhost:27017/",
+                    "conf": {
+                        "db_name": "eudiw",
+                        "db_collection": "sessions"
+                    },
+                    "connection_params": {}
+                }
+            }
+        }
+    },
     "metadata": {
         "application_type": "web",
         "authorization_encrypted_response_alg": [
