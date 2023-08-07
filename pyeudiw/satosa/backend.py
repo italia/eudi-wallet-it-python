@@ -28,6 +28,7 @@ from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp.schema import ResponseSchema as ResponseValidator
 from pyeudiw.openid4vp import check_vp_token
+from pyeudiw.storage.db_engine import DBEngine
 
 
 logger = logging.getLogger("openid4vp_backend")
@@ -85,6 +86,8 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
+        
+        self.db_engine = DBEngine(self.config["storage"])
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -354,6 +357,9 @@ class OpenID4VPBackend(BackendModule):
         internal_resp = self._translate_response(
             all_user_claims, _info["issuer"]
         )
+        
+        self.db_engine.update_response_object(nonce, state, internal_resp)
+        
         return self.auth_callback_func(context, internal_resp)
 
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
@@ -420,6 +426,14 @@ class OpenID4VPBackend(BackendModule):
         # TODO: do customization if the WIA is available
 
         # TODO: take the response and extract from jwt the public key of holder
+        
+        entity_id = self.db_engine.init_session(
+            context.http_headers['HTTP_DPOP'], 
+            context.http_headers['HTTP_AUTHORIZATION']
+        )
+        
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
 
         # verify the jwt
         helper = JWSHelper(jwk)
@@ -430,14 +444,16 @@ class OpenID4VPBackend(BackendModule):
             "response_mode": "direct_post.jwt",  # only HTTP POST is allowed.
             "response_type": "vp_token",
             "response_uri": self.config["metadata"]["redirect_uris"][0],
-            "nonce": str(uuid.uuid4()),
-            "state": str(uuid.uuid4()),
+            "nonce": nonce,
+            "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
             "exp": iat_now() + (self.default_exp * 60)  # in seconds
         }
         jwt = helper.sign(data)
         response = {"response": jwt}
+        
+        self.db_engine.update_request_object(entity_id, nonce, state, data)
 
         return JsonResponse(
             response,
