@@ -425,8 +425,8 @@ class OpenID4VPBackend(BackendModule):
         # TODO: take the response and extract from jwt the public key of holder
         
         entity_id = self.db_engine.init_session(
-            context.http_headers['HTTP_DPOP'], 
-            context.http_headers['HTTP_AUTHORIZATION']
+            dpop_proof=context.http_headers['HTTP_DPOP'], 
+            attestation=context.http_headers['HTTP_AUTHORIZATION']
         )
         
         nonce = str(uuid.uuid4())
