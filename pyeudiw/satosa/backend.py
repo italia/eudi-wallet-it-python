@@ -23,7 +23,10 @@ from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp import check_vp_token
+from pyeudiw.openid4vp.exceptions import KIDNotFound
 from pyeudiw.storage.db_engine import DBEngine
+
+from pydantic import ValidationError
 
 
 logger = logging.getLogger("openid4vp_backend")
@@ -234,13 +237,17 @@ class OpenID4VPBackend(BackendModule):
         try:
             valid, value = check_vp_token(
                 vp_token, None, self.metadata_jwks_by_kids)
-        except Exception as e:
+        except KIDNotFound as e:
+            raise e
+        except ValidationError as e:
             raise e
 
         if not valid:
             raise InvalidVPToken("Invalid vp_token")
         elif not value.get("nonce", None):
-            raise NoNonceInVPToken("vp_token's nonce not present")
+            _msg = "vp_token's nonce not present"
+            self._log(context, level='error', message=_msg)
+            raise NoNonceInVPToken(_msg)
 
         return value
 
