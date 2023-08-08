@@ -182,3 +182,7 @@ class StaticTrustChainValidator:
             self.updated_trust_chain.append(jwt)
         
         return self.is_valid
+    
+    @property
+    def get_chain(self):
+        return self.updated_trust_chain or self.static_trust_chain
