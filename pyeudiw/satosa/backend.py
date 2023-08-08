@@ -353,6 +353,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
         except Exception as e:
+            self._log(context, level='error', message=str(e))
             return JsonResponse(
                     {
                         "error": "internal_server_error",
@@ -434,6 +435,7 @@ class OpenID4VPBackend(BackendModule):
                 attestation=context.http_headers['HTTP_AUTHORIZATION']
             )
         except Exception as e:
+            self._log(context, level='error', message=str(e))
             return JsonResponse(
                     {
                         "error": "internal_server_error",
@@ -466,6 +468,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_request_object(entity_id, nonce, state, data)
         except Exception as e:
+            self._log(context, level='error', message=str(e))
             return JsonResponse(
                     {
                         "error": "internal_server_error",
