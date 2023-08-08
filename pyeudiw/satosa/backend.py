@@ -234,20 +234,13 @@ class OpenID4VPBackend(BackendModule):
     def _handle_vp(self, vp_token: str, context: Context) -> dict:
         valid, value = None, None
         
-        try:
-            valid, value = check_vp_token(
-                vp_token, None, self.metadata_jwks_by_kids)
-        except KIDNotFound as e:
-            raise e
-        except ValidationError as e:
-            raise e
+        valid, value = check_vp_token(
+            vp_token, None, self.metadata_jwks_by_kids)
 
         if not valid:
             raise InvalidVPToken("Invalid vp_token")
         elif not value.get("nonce", None):
-            _msg = "vp_token's nonce not present"
-            self._log(context, level='error', message=_msg)
-            raise NoNonceInVPToken(_msg)
+            raise NoNonceInVPToken("vp_token's nonce not present")
 
         return value
 
@@ -309,30 +302,22 @@ class OpenID4VPBackend(BackendModule):
         for vp in vp_token:
             try:
                 result = self._handle_vp(vp, context)
+            except InvalidVPToken as e:
+                self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+            except NoNonceInVPToken as e:
+                self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
+            except ValidationError as e:
+                self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
+            except KIDNotFound as e:
+                self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
             except Exception as e:
-                _msg = f"VP parsing error: {e}"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "unsupported_response_type",
-                        "error_description": _msg
-                    },
-                    status="400"
-                )
+                self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
                 nonce = result["nonce"]
             elif nonce != result["nonce"]:
-                _msg = "Presentation has divergent nonces"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_token",
-                        "error_description": _msg
-                    },
-                    status="401"
-                )
+                self.handle_error(context=self, message=f"Presentation has divergent nonces: {e}", err_code="401")
             else:
                 claims.append(result["claims"])
 
@@ -361,14 +346,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
         except Exception as e:
-            self._log(context, level='error', message=str(e))
-            return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
+            self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
         
         return self.auth_callback_func(context, internal_resp)
 
