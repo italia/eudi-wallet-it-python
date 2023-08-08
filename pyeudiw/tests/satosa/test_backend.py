@@ -466,7 +466,7 @@ class TestOpenID4VPBackend:
 
         assert parsed.scheme == "eudiw"
         assert parsed.netloc == "authorize"
-        assert parsed.path.startswith("/urn:uuid:")
+        assert parsed.path == ""
         assert parsed.query
 
         qs = urllib.parse.parse_qs(parsed.query)
@@ -572,13 +572,13 @@ class TestOpenID4VPBackend:
         )
 
         state = self.backend.state_endpoint(context)
-        assert state.status == "202"
+        assert state.status == "403"
         assert state.message
         msg = json.loads(state.message)
-        assert msg["response"] == "Not completed"
+        assert msg["response"] == "Forbidden"
 
         context.request_method = "POST"
-        context.request_uri = CONFIG['metadata']['request_uris'][0] + f"/{context.state['SESSION_ID']}"
+        context.qs_params = {"session_id": context.state['SESSION_ID']}
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
@@ -596,10 +596,10 @@ class TestOpenID4VPBackend:
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
         state = self.backend.state_endpoint(context)
-        assert state.status == "200"
+        assert state.status == "302"
         assert state.message
         msg = json.loads(state.message)
-        assert msg["response"] == "Request received"
+        assert msg["response"] == "Authentication successful"
 
 
     def test_handle_error(self, context):

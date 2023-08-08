@@ -182,14 +182,15 @@ class OpenID4VPBackend(BackendModule):
 
         url_params = urlencode(payload, quote_via=quote_plus)
 
+
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             # Same Device flow
             res_url = \
-                f'{self.config["authorization"]["url_scheme"]}://authorize/{context.state["SESSION_ID"]}/?{url_params}'
+                f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
             return Redirect(res_url)
 
         # Cross Device flow
-        res_url = f'{self.client_id}/{context.state["SESSION_ID"]}?{url_params}'
+        res_url = f'{self.client_id}?{url_params}'
 
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode'])
@@ -451,8 +452,17 @@ class OpenID4VPBackend(BackendModule):
                 )
         
         nonce = str(uuid.uuid4())
-        uri = urlparse(context.request_uri)
-        state = uri.path.split("/")[-1]
+
+        try:
+            state = context.qs_params["session_id"]
+        except KeyError as e:
+            return JsonResponse(
+                    {
+                        "error": "invalid_request",
+                        "error_description": "No session id provided"
+                    },
+                    status="400"
+                )
 
 
         # verify the jwt
@@ -519,14 +529,14 @@ class OpenID4VPBackend(BackendModule):
         request_received = self.db_engine.exists_by_state(session_id)
         if request_received:
             return JsonResponse({
-                    "response": "Request received"
+                    "response": "Authentication successful"
                 },
-                status="200"
+                status="302"
             )
         else:
             return JsonResponse(
                 {
-                    "response": "Not completed"
+                    "response": "Forbidden"
                 },
-                status="202"
+                status="403"
             )
