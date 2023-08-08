@@ -1,9 +1,10 @@
 import json
 import logging
+import urllib
 import uuid
 from datetime import datetime, timedelta
 from typing import Union
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode, urlparse
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
@@ -183,11 +184,12 @@ class OpenID4VPBackend(BackendModule):
 
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             # Same Device flow
-            res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
+            res_url = \
+                f'{self.config["authorization"]["url_scheme"]}://authorize/{context.state["SESSION_ID"]}/?{url_params}'
             return Redirect(res_url)
 
         # Cross Device flow
-        res_url = f'{self.client_id}?{url_params}'
+        res_url = f'{self.client_id}/{context.state["SESSION_ID"]}?{url_params}'
 
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(res_url, **self.config['qrcode'])
@@ -449,17 +451,8 @@ class OpenID4VPBackend(BackendModule):
                 )
         
         nonce = str(uuid.uuid4())
-
-        try:
-            state = context.qs_params["session_id"]
-        except KeyError as e:
-            return JsonResponse(
-                    {
-                        "error": "invalid_request",
-                        "error_description": "No session id provided"
-                    },
-                    status="400"
-                )
+        uri = urlparse(context.request_uri)
+        state = uri.path.split("/")[-1]
 
 
         # verify the jwt

@@ -466,7 +466,7 @@ class TestOpenID4VPBackend:
 
         assert parsed.scheme == "eudiw"
         assert parsed.netloc == "authorize"
-        assert parsed.path == ""
+        assert parsed.path.startswith("/urn:uuid:")
         assert parsed.query
 
         qs = urllib.parse.parse_qs(parsed.query)
@@ -577,6 +577,8 @@ class TestOpenID4VPBackend:
         msg = json.loads(state.message)
         assert msg["response"] == "Not completed"
 
+        context.request_method = "POST"
+        context.request_uri = CONFIG['metadata']['request_uris'][0] + f"/{context.state['SESSION_ID']}"
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
