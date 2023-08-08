@@ -4,11 +4,17 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.sd_jwt import verify_sd_jwt
 from pyeudiw.openid4vp.exceptions import KIDNotFound
-
+from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 
 def check_vp_token(vp_token: str, sd_specification: dict, jwks: list[dict], config: dict = {"no_randomness": True}) -> Tuple[str | None, dict]:
     payload = unpad_jwt_payload(vp_token)
-    kid = unpad_jwt_header(vp_token)["kid"]
+    VPTokenPayload(**payload)
+    
+    headers = unpad_jwt_header(vp_token)  
+    VPTokenHeader(**headers)
+    
+    kid = headers["kid"]
+    
     vp = unpad_jwt_payload(payload["vp"])
     
     issuer_jwk = jwks.get(kid, None)
