@@ -516,7 +516,7 @@ class TestOpenID4VPBackend:
             "vp": sdjwt_at_holder.sd_jwt_presentation,
         }
 
-        vp_token = JWSHelper(PRIVATE_JWK).sign(
+        vp_token = JWSHelper(issuer_jwk).sign(
             data,
             protected={"typ": "JWT"}
         )
