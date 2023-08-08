@@ -19,10 +19,10 @@ class JwkSchema(BaseModel):
             "PS384",
             "PS512",
         ]
-    ]
-    use: Optional[Literal["sig", "enc"]]
-    n: Optional[str]  # Base64urlUInt-encoded
-    e: Optional[str]  # Base64urlUInt-encoded
+    ] = None
+    use: Optional[Literal["sig", "enc"]] = None
+    n: Optional[str] = None  # Base64urlUInt-encoded
+    e: Optional[str] = None  # Base64urlUInt-encoded
 
     def check_value_for_rsa(value, name, values):
         if "EC" == values.get("kty") and value:
@@ -34,11 +34,11 @@ class JwkSchema(BaseModel):
 
     @field_validator("n")
     def validate_n(cls, n_value, values):
-        cls.check_value_for_rsa(n_value, "n", values)
+        cls.check_value_for_rsa(n_value, "n", values.data)
 
     @field_validator("e")
     def validate_e(cls, e_value, values):
-        cls.check_value_for_rsa(e_value, "e", values)
+        cls.check_value_for_rsa(e_value, "e", values.data)
 
 
 class JwkSchemaEC(JwkSchema):
@@ -48,15 +48,15 @@ class JwkSchemaEC(JwkSchema):
 
     @field_validator("x")
     def validate_x(cls, x_value, values):
-        cls.check_value_for_ec(x_value, "x", values)
+        cls.check_value_for_ec(x_value, "x", values.data)
 
     @field_validator("y")
     def validate_y(cls, y_value, values):
-        cls.check_value_for_ec(y_value, "y", values)
+        cls.check_value_for_ec(y_value, "y", values.data)
 
     @field_validator("crv")
     def validate_crv(cls, crv_value, values):
-        cls.check_value_for_ec(crv_value, "crv", values)
+        cls.check_value_for_ec(crv_value, "crv", values.data)
 
 
 class JwksSchemaEC(BaseModel):

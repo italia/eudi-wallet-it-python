@@ -1,7 +1,8 @@
 import pytest
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, DEFAUL_ENC_ALG_MAP, DEFAUL_ENC_ENC_MAP
+from pyeudiw.jwt import (DEFAUL_ENC_ALG_MAP, DEFAUL_ENC_ENC_MAP, JWEHelper,
+                         JWSHelper)
 from pyeudiw.jwt.utils import unpad_jwt_header
 
 JWKs_EC = [

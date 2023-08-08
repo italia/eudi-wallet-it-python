@@ -1,0 +1,7 @@
+[run]
+branch = true
+omit = */tests/*,*/wsgi.py, fabfile.py, /usr/local/*, ./setup.py
+source = .
+
+[report]
+show_missing = true

@@ -5,6 +5,11 @@ class RetrieveStatus(Enum):
     RETRIEVED = 0
     ADDED = 1
 
+class RetrieveStatus(Enum):
+    RETRIEVED = 0
+    ADDED = 1
+
+
 class BaseCache():
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
         raise NotImplementedError()

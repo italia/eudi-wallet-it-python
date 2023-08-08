@@ -1,24 +1,24 @@
 from io import StringIO
-from sd_jwt.issuer import SDJWTIssuer
-from sd_jwt.verifier import SDJWTVerifier
 
+from sd_jwt.issuer import SDJWTIssuer
 from sd_jwt.utils.demo_utils import get_jwk
 from sd_jwt.utils.formatting import textwrap_json
 from sd_jwt.utils.yaml_specification import _yaml_load_specification
+from sd_jwt.verifier import SDJWTVerifier
 
-from pyeudiw.tools.utils import iat_now, gen_exp_time
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.tools.utils import gen_exp_time, iat_now
 
 
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
         "key_size": key_size,
         "kty": kty,
-        "issuer_key": issuer_key.as_dict(),
-        "holder_key": holder_key.as_dict()
+        "issuer_key": issuer_key.as_dict() if issuer_key else {},
+        "holder_key": holder_key.as_dict() if holder_key else {}
     }
-
+    
     return get_jwk(keys, settings["no_randomness"], None)
 
 
@@ -56,12 +56,10 @@ def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict):
 
 
 def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
-
+    settings.update({"issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]})
     adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
 
-    specification.get("add_decoy_claims", False)
-    serialization_format = specification.get("serialization_format", "compact")
-
+    serialization_format = "compact"
     sdjwt_at_verifier = SDJWTVerifier(
         sd_jwt_presentation,
         (lambda x: _cb_get_issuer_key(x, settings, adapted_keys)),
@@ -70,7 +68,4 @@ def verify_sd_jwt(sd_jwt_presentation: str, specification: dict, settings: dict,
         serialization_format=serialization_format,
     )
 
-    key_binding = unpad_jwt_payload(
-        sdjwt_at_verifier._unverified_input_key_binding_jwt)
-
-    return sdjwt_at_verifier.get_verified_payload(), key_binding
+    return sdjwt_at_verifier.get_verified_payload()

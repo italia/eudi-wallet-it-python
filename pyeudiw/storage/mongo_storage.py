@@ -1,7 +1,6 @@
 import pymongo
 from datetime import datetime
-
-from .base_storage import BaseStorage
+from pyeudiw.storage.base_storage import BaseStorage
 
 
 class MongoStorage(BaseStorage):
@@ -63,9 +62,9 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:        
+    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:
         self._retrieve_document_by_id(document_id)
-                
+
         documentStatus = self.collection.update_one(
             {"document_id": document_id},
             {
