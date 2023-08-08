@@ -421,14 +421,7 @@ class OpenID4VPBackend(BackendModule):
                 attestation=context.http_headers['HTTP_AUTHORIZATION']
             )
         except Exception as e:
-            self._log(context, level='error', message=str(e))
-            return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
+            self.handle_error(context=context, message=f"Cannot init session: {e}", err_code="500")
         
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -454,14 +447,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_request_object(entity_id, nonce, state, data)
         except Exception as e:
-            self._log(context, level='error', message=str(e))
-            return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
+            self.handle_error(context=context, message=f"Cannot update request object: {e}", err_code="500")
 
         return JsonResponse(
             response,
