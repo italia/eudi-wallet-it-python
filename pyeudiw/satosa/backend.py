@@ -15,7 +15,6 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
-from pyeudiw.openid4vp import check_vp_token
 from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
 from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError, NoNonceInVPToken, InvalidVPToken
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
@@ -231,7 +230,7 @@ class OpenID4VPBackend(BackendModule):
 
     def _handle_vp(self, vp_token: str, context: Context, issuer_jwk: JWK) -> dict:
         valid, value = check_vp_token(
-            vp_token, self.config, None, issuer_jwk)
+            vp_token, None, issuer_jwk)
 
         if not valid:
             raise InvalidVPToken("Invalid vp_token")
