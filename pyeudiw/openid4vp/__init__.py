@@ -1,14 +1,22 @@
 from typing import Tuple
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.sd_jwt import verify_sd_jwt
+from pyeudiw.openid4vp.exceptions import KIDNotFound
 
 
-def check_vp_token(vp_token: str, sd_specification: dict, issuer_jwk: JWK, config: dict = {"no_randomness": True}) -> Tuple[str | None, dict]:
+def check_vp_token(vp_token: str, sd_specification: dict, jwks: list[dict], config: dict = {"no_randomness": True}) -> Tuple[str | None, dict]:
     payload = unpad_jwt_payload(vp_token)
-
+    kid = unpad_jwt_header(vp_token)["kid"]
     vp = unpad_jwt_payload(payload["vp"])
+    
+    issuer_jwk = jwks.get(kid, None)
+    
+    if not issuer_jwk:
+        raise KIDNotFound(f"kid {kid} not present")
+    
+    issuer_jwk = JWK(issuer_jwk)
     holder_jwk = JWK(vp["cnf"]["jwk"])
     
     result = verify_sd_jwt(

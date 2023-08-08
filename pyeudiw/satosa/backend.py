@@ -228,9 +228,14 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
 
-    def _handle_vp(self, vp_token: str, context: Context, issuer_jwk: JWK) -> dict:
-        valid, value = check_vp_token(
-            vp_token, None, issuer_jwk)
+    def _handle_vp(self, vp_token: str, context: Context) -> dict:
+        valid, value = None, None
+        
+        try:
+            valid, value = check_vp_token(
+                vp_token, None, self.metadata_jwks_by_kids)
+        except Exception as e:
+            raise e
 
         if not valid:
             raise InvalidVPToken("Invalid vp_token")
@@ -291,16 +296,12 @@ class OpenID4VPBackend(BackendModule):
             if isinstance(decrypted_data["vp_token"], str)
             else decrypted_data["vp_token"]
         )
-        
-        # TODO: The issuer JWK must be selected from a dictinoary where the keys are the issuers and
-        # the values are the jwk connected to that issuer
-        issuer_jwk = JWK(self.config["metadata_jwks"][0])
 
         nonce = None
         claims = []
         for vp in vp_token:
             try:
-                result = self._handle_vp(vp, context, issuer_jwk)
+                result = self._handle_vp(vp, context)
             except Exception as e:
                 _msg = f"VP parsing error: {e}"
                 self._log(context, level='error', message=_msg)
