@@ -175,7 +175,8 @@ class OpenID4VPBackend(BackendModule):
         # PAR
         payload = {
             'client_id': self.client_id,
-            'request_uri': self.absolute_request_url
+            'request_uri': self.absolute_request_url,
+            'session_id': context.state["SESSION_ID"]
         }
 
         url_params = urlencode(payload, quote_via=quote_plus)
@@ -448,7 +449,18 @@ class OpenID4VPBackend(BackendModule):
                 )
         
         nonce = str(uuid.uuid4())
-        state = context.state["SESSION_ID"]
+
+        try:
+            state = context.qs_params["session_id"]
+        except KeyError as e:
+            return JsonResponse(
+                    {
+                        "error": "invalid_request",
+                        "error_description": "No session id provided"
+                    },
+                    status="400"
+                )
+
 
         # verify the jwt
         helper = JWSHelper(jwk)
