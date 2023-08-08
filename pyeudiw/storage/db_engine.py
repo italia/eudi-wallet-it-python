@@ -137,3 +137,10 @@ class DBEngine():
                     "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}")
 
             return cache_object
+
+    def exists_by_state(self, state: str) -> bool:
+        for db_name, storage in self.storages:
+            found = storage.exists_by_state(state)
+            if found:
+                return True
+        return False

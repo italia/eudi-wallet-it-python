@@ -7,3 +7,6 @@ class BaseStorage(object):
 
     def update_response_object(self, nonce: str, state: str | None, response_object: dict):
         NotImplementedError()
+
+    def exists_by_state(self, state) -> bool:
+        NotImplementedError()

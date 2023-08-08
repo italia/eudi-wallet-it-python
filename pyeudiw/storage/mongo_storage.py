@@ -32,7 +32,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_nonce_state(self, nonce: str | None, state: str) -> dict:
+    def _retrieve_document_by_nonce_state(self, nonce: str, state: str | None) -> dict:
         self._connect()
 
         query = {"state": state, "nonce": nonce}
@@ -42,6 +42,19 @@ class MongoStorage(BaseStorage):
         if document is None:
             raise ValueError(
                 f'Document with nonce {nonce} and state {state} not found')
+
+        return document
+
+    def _retrieve_document_by_state(self, state: str) -> dict:
+        self._connect()
+
+        query = {"state": state}
+
+        document = self.collection.find_one(query)
+
+        if document is None:
+            raise ValueError(
+                f'Document with state {state} not found')
 
         return document
 
@@ -91,3 +104,10 @@ class MongoStorage(BaseStorage):
              })
 
         return nonce, state, documentStatus
+
+    def exists_by_state(self, state) -> bool:
+        try:
+            document = self._retrieve_document_by_state(state)
+        except ValueError:
+            return False
+        return True

@@ -15,7 +15,6 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
-from pyeudiw.openid4vp import check_vp_token
 from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
 from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
@@ -422,6 +421,7 @@ class OpenID4VPBackend(BackendModule):
             self._log(context, level='warning', message=_msg)
 
     def request_endpoint(self, context, *args):
+
         jwk = self.metadata_jwk
 
         # check DPOP for WIA if any
@@ -432,7 +432,7 @@ class OpenID4VPBackend(BackendModule):
         # TODO: do customization if the WIA is available
 
         # TODO: take the response and extract from jwt the public key of holder
-        
+
         try:
             entity_id = self.db_engine.init_session(
                 dpop_proof=context.http_headers['HTTP_DPOP'], 
@@ -448,7 +448,7 @@ class OpenID4VPBackend(BackendModule):
                 )
         
         nonce = str(uuid.uuid4())
-        state = str(uuid.uuid4())
+        state = context.state["SESSION_ID"]
 
         # verify the jwt
         helper = JWSHelper(jwk)
@@ -507,3 +507,21 @@ class OpenID4VPBackend(BackendModule):
             },
             status=err_code
         )
+
+    def state_endpoint(self, context):
+        session_id = context.state["SESSION_ID"]
+
+        request_received = self.db_engine.exists_by_state(session_id)
+        if request_received:
+            return JsonResponse({
+                    "response": "Request received"
+                },
+                status="200"
+            )
+        else:
+            return JsonResponse(
+                {
+                    "response": "Not completed"
+                },
+                status="202"
+            )

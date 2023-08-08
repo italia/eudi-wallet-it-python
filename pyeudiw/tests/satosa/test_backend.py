@@ -6,6 +6,7 @@ import uuid
 from unittest.mock import Mock
 
 import pytest
+import satosa
 from bs4 import BeautifulSoup
 from satosa.context import Context
 from satosa.internal import InternalData
@@ -547,6 +548,7 @@ class TestOpenID4VPBackend:
 
         redirect_endpoint = self.backend.redirect_endpoint(context)
         assert redirect_endpoint
+
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
@@ -569,12 +571,17 @@ class TestOpenID4VPBackend:
             HTTP_DPOP=dpop_proof
         )
 
+        state = self.backend.state_endpoint(context)
+        assert state.status == "202"
+        assert state.message
+        msg = json.loads(state.message)
+        assert msg["response"] == "Not completed"
+
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
         assert request_endpoint.status == "200"
         assert request_endpoint.message
-
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
 
@@ -585,6 +592,13 @@ class TestOpenID4VPBackend:
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
+
+        state = self.backend.state_endpoint(context)
+        assert state.status == "200"
+        assert state.message
+        msg = json.loads(state.message)
+        assert msg["response"] == "Request received"
+
 
     def test_handle_error(self, context):
         error_message = "Error message!"
