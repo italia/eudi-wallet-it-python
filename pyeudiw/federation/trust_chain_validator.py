@@ -176,7 +176,7 @@ class StaticTrustChainValidator:
         return jwt
 
     def update(self, httpc_params: dict = {}) -> bool:
-        self.exp = None
+        self.exp = 0
         for st in self.static_trust_chain:
             jwt = self._update_st(st, httpc_params)
             
