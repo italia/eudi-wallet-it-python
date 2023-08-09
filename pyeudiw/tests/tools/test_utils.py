@@ -1,11 +1,12 @@
 
 import datetime
 import sys
-import freezegun
 
+import freezegun
 import pytest
 
-from pyeudiw.tools.utils import exp_from_now, iat_now, random_token, make_timezone_aware
+from pyeudiw.tools.utils import (exp_from_now, iat_now, make_timezone_aware,
+                                 random_token)
 
 
 def test_make_timezone_aware():

@@ -1,15 +1,16 @@
-import pymongo
 from datetime import datetime
 from typing import Callable
 
-from .base_cache import BaseCache
+import pymongo
+
+from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 
 
 class MongoCache(BaseCache):
-    def __init__(self, storage_conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
 
-        self.storage_conf = storage_conf
+        self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
 
@@ -23,7 +24,15 @@ class MongoCache(BaseCache):
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.collection = getattr(self.db, "cache_storage")
 
-    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> dict:
+    def _gen_cache_object(self, object_name: str, data: str):
+        creation_date = datetime.timestamp(datetime.now())
+        return {
+            "object_name": object_name,
+            "data": data,
+            "creation_date": creation_date
+        }
+
+    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
         self._connect()
 
         query = {"object_name": object_name}
@@ -31,16 +40,11 @@ class MongoCache(BaseCache):
         cache_object = self.collection.find_one(query)
 
         if cache_object is None:
-            creation_date = datetime.timestamp(datetime.now())
-            cache_object = {
-                "object_name": object_name,
-                "data": on_not_found(),
-                "creation_date": creation_date
-            }
-
+            cache_object = self._gen_cache_object(object_name, on_not_found())
             self.collection.insert_one(cache_object)
+            return cache_object, RetrieveStatus.ADDED
 
-        return cache_object
+        return cache_object, RetrieveStatus.RETRIEVED
 
     def overwrite(self, object_name: str, value_gen_fn: Callable[[], str]) -> dict:
         self._connect()
@@ -64,3 +68,8 @@ class MongoCache(BaseCache):
         })
 
         return cache_object
+
+    def set(self, data: dict) -> dict:
+        self._connect()
+
+        return self.collection.insert_one(data)

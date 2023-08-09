@@ -1,11 +1,10 @@
 import json
-
 from typing import Union
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-from cryptojwt.jwk.ec import new_ec_key
-from cryptojwt.jwk.rsa import new_rsa_key
-from cryptography.hazmat.primitives import serialization
 
+from cryptography.hazmat.primitives import serialization
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jwk.rsa import new_rsa_key
 
 KEY_TYPES_FUNC = dict(
     EC=new_ec_key,
@@ -23,6 +22,7 @@ class JWK():
     ) -> None:
 
         kwargs = {}
+        self.kid = ""
 
         if key_type and not KEY_TYPES_FUNC.get(key_type, None):
             raise NotImplementedError(f"JWK key type {key_type} not found.")
@@ -30,6 +30,8 @@ class JWK():
         if key:
             if isinstance(key, dict):
                 self.key = key_from_jwk_dict(key)
+                key_type = key.get('kty', key_type)
+                self.kid = key.get('kid', "")
             else:
                 self.key = key
         else:
@@ -39,7 +41,7 @@ class JWK():
 
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
         self.jwk = self.key.to_dict()
-        self.jwk["kid"] = self.thumbprint.decode()
+        self.jwk["kid"] = self.kid or self.thumbprint.decode()
         self.public_key = self.key.serialize()
         self.public_key['kid'] = self.jwk["kid"]
 

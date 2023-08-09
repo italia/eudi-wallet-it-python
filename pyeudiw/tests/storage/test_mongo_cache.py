@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 
 from pyeudiw.storage.mongo_cache import MongoCache
@@ -17,7 +18,7 @@ class TestMongoCache:
         object_name = str(uuid.uuid4())
         data = str(uuid.uuid4())
 
-        obj = self.cache.try_retrieve(object_name, lambda: data)
+        obj, _ = self.cache.try_retrieve(object_name, lambda: data)
 
         assert obj
         assert obj["object_name"] == object_name
@@ -34,7 +35,7 @@ class TestMongoCache:
         object_name = str(uuid.uuid4())
         data = str(uuid.uuid4())
 
-        obj = self.cache.try_retrieve(object_name, lambda: data)
+        obj, _ = self.cache.try_retrieve(object_name, lambda: data)
 
         data_updated = str(uuid.uuid4())
 
