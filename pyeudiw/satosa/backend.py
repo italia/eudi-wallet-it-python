@@ -182,7 +182,9 @@ class OpenID4VPBackend(BackendModule):
                 session_id=session_id
             )
         except Exception as e:
-            self.handle_error(context, message=str(e), err_code="500")
+            _msg = (f"Error while initializing session with state {state} and {session_id}.\n"
+                    f"{e.__class__.__name__}: {e}")
+            self.handle_error(context, message=_msg, err_code="500")
 
         # PAR
         payload = {

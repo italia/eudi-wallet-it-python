@@ -47,9 +47,10 @@ class DBEngine():
             try:
                 storage.init_session(document_id, session_id=session_id, state=state)
             except Exception as e:
-                logger.critical(f"Error {str(e)}")
                 logger.critical(
-                    f"Cannot write document with id {document_id} on {db_name}")
+                    f"Error while initializing session with document_id {document_id}."
+                    f"Cannot write document with id {document_id} on {db_name}.\n"
+                    f"{e.__class__.__name__}: {e}")
 
         return document_id
 
