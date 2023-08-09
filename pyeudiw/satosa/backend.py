@@ -314,7 +314,7 @@ class OpenID4VPBackend(BackendModule):
             try:
                 result = self._handle_vp(vp)
             except InvalidVPToken as e:
-                return self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+                return self.handle_error(context=context, message=f"Cannot validate VP: {vp}", err_code="400")
             except NoNonceInVPToken as e:
                 return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
             except ValidationError as e:
@@ -376,11 +376,8 @@ class OpenID4VPBackend(BackendModule):
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
             
             dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
-                        
             self._validate_trust(dpop_jws)
-            
             # TODO: validate wia scheme using pydantic
-
             try:
                 dpop = DPoPVerifier(
                     public_jwk=wia['cnf']['jwk'],

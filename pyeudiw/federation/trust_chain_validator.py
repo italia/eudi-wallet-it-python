@@ -36,7 +36,7 @@ class StaticTrustChainValidator:
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
-        self.exp = None
+        self.exp = 0
 
         if not trust_anchor_jwks:
             raise MissingTrustAnchorPublicKey(
@@ -99,7 +99,6 @@ class StaticTrustChainValidator:
         # then go ahead with other checks
         es_exp = es_payload["exp"]
 
-        iat_now() - es_exp
         if self._check_expired(es_exp):
             raise TimeValidationError()
 
@@ -128,7 +127,7 @@ class StaticTrustChainValidator:
 
     def _retrieve_ec(self, iss: str, httpc_params: dict = {}) -> str:
         jwt = get_entity_configurations(iss, httpc_params)
-        if len(jwt) == 0:
+        if not jwt:
             raise HttpError(
                 f"Cannot get the Entity Configuration from {iss}")
 
@@ -182,7 +181,7 @@ class StaticTrustChainValidator:
             
             exp = unpad_jwt_payload(jwt)["exp"]
             
-            if self.exp == None or self.exp > exp:
+            if not self.exp or self.exp > exp:
                 self.exp = exp
             
             self.updated_trust_chain.append(jwt)
@@ -200,8 +199,6 @@ class StaticTrustChainValidator:
         return self._check_expired(self.exp)
 
     def get_entityID(self) -> str:
-        chain = self.get_chain
-        trusted_achor = chain[0]
-        
-        payload = unpad_jwt_payload(trusted_achor)
+        chain = self.get_chain()
+        payload = unpad_jwt_payload(chain[0])
         return payload["iss"]

@@ -5,8 +5,8 @@ from pyeudiw.trust.exceptions import NoTrustChainProvided
 
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine,  **kwargs):
-        self.exp = None
-        self.trust_chain = None
+        self.exp = 0
+        self.trust_chain = []
         self.storage = storage
         self.entity_id = None
         
