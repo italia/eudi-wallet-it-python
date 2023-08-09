@@ -16,14 +16,17 @@ from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
-from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError
+from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError, NoNonceInVPToken, InvalidVPToken
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp import check_vp_token
+from pyeudiw.openid4vp.exceptions import KIDNotFound
 from pyeudiw.storage.db_engine import DBEngine
+
+from pydantic import ValidationError
 
 
 logger = logging.getLogger("openid4vp_backend")
@@ -194,7 +197,6 @@ class OpenID4VPBackend(BackendModule):
 
         url_params = urlencode(payload, quote_via=quote_plus)
 
-
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             # Same Device flow
             res_url = \
@@ -245,20 +247,15 @@ class OpenID4VPBackend(BackendModule):
         return internal_resp
 
     def _handle_vp(self, vp_token: str, context: Context) -> dict:
+        valid, value = None, None
+
         valid, value = check_vp_token(
-            vp_token, self.config, self.sd_specification, self.sd_jwt)
+            vp_token, None, self.metadata_jwks_by_kids)
+
         if not valid:
-            raise value
+            raise InvalidVPToken("Invalid vp_token")
         elif not value.get("nonce", None):
-            _msg = "vp_token's nonce not present"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "error": "parameter_absent",
-                    "error_description": _msg
-                },
-                status="400"
-            )
+            raise NoNonceInVPToken("vp_token's nonce not present")
 
         return value
 
@@ -318,33 +315,24 @@ class OpenID4VPBackend(BackendModule):
         nonce = None
         claims = []
         for vp in vp_token:
-
             try:
                 result = self._handle_vp(vp, context)
+            except InvalidVPToken as e:
+                self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+            except NoNonceInVPToken as e:
+                self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
+            except ValidationError as e:
+                self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
+            except KIDNotFound as e:
+                self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
             except Exception as e:
-                _msg = f"VP parsing error: {e}"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "unsupported_response_type",
-                        "error_description": _msg
-                    },
-                    status="400"
-                )
+                self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
                 nonce = result["nonce"]
             elif nonce != result["nonce"]:
-                _msg = "Presentation has divergent nonces"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_token",
-                        "error_description": _msg
-                    },
-                    status="401"
-                )
+                self.handle_error(context=self, message=f"Presentation has divergent nonces: {e}", err_code="401")
             else:
                 claims.append(result["claims"])
 
@@ -373,13 +361,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
         except Exception as e:
-            return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
+            self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
         
         return self.auth_callback_func(context, internal_resp)
 
@@ -416,7 +398,14 @@ class OpenID4VPBackend(BackendModule):
 
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
-                return self.handle_error(context, message=_msg, err_code="400")
+                self._log(context, level='error', message=_msg)
+                return JsonResponse(
+                    {
+                        "error": "invalid_param",
+                        "error_description": _msg
+                    },
+                    status="400"
+                )
 
             # TODO: assert and configure the wallet capabilities
             # TODO: assert and configure the wallet  Attested Security Context
