@@ -77,9 +77,7 @@ class StaticTrustChainValidator:
     def is_valid(self) -> bool:
         # start from the last entity statement
         rev_tc = [
-            i for i in reversed(
-                self.updated_trust_chain or self.static_trust_chain
-            )
+            i for i in reversed(self.get_chain())
         ]
         
         # inspect the entity statement kid header to know which
@@ -191,11 +189,9 @@ class StaticTrustChainValidator:
         
         return self.is_valid
     
-    @property
     def get_chain(self) -> list[str]:
         return self.updated_trust_chain or self.static_trust_chain
     
-    @property
     def get_exp(self) -> int:
         return self.exp
     
@@ -203,7 +199,6 @@ class StaticTrustChainValidator:
     def is_expiried(self) -> int:
         return self._check_expired(self.exp)
 
-    @property
     def get_entityID(self) -> str:
         chain = self.get_chain
         trusted_achor = chain[0]
