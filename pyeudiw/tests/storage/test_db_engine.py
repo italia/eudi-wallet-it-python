@@ -23,7 +23,8 @@ conf = {
                 "url": "mongodb://localhost:27017/",
                 "conf": {
                     "db_name": "eudiw",
-                    "db_collection": "sessions"
+                    "db_sessions_collection": "sessions", 
+                    "db_chains_collection": "chains"
                 },
                 "connection_params": {}
             }
