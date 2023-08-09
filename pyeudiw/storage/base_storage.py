@@ -11,14 +11,14 @@ class BaseStorage(object):
     def update_response_object(self, nonce: str, state: str | None, response_object: dict):
         raise NotImplementedError()
 
-    def find_chain(self, entityID: str):
+    def find_chain(self, entity_id: str):
         raise NotImplementedError()
         
-    def has_chain(self, entityID: str):
+    def has_chain(self, entity_id: str):
         raise NotImplementedError()
 
-    def add_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+    def add_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         raise NotImplementedError()
         
-    def update_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         raise NotImplementedError()

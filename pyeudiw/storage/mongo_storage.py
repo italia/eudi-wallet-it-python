@@ -95,21 +95,21 @@ class MongoStorage(BaseStorage):
 
         return nonce, state, documentStatus
     
-    def find_chain(self, entityID: str):
+    def find_chain(self, entity_id: str):
         self._connect()
-        return self.chains.find_one({"entityID": entityID})
+        return self.chains.find_one({"entity_id": entity_id})
 
-    def has_chain(self, entityID: str):
-        if self.find_chain({"entityID": entityID}):
+    def has_chain(self, entity_id: str):
+        if self.find_chain({"entity_id": entity_id}):
             return True
         return False
 
-    def add_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
-        if self.has_chain(entityID):
-            raise ChainAlreadyExist(f"Chain with entity id {entityID} already exist")
+    def add_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        if self.has_chain(entity_id):
+            raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exist")
         
         entity = {
-            "entityID": entityID,
+            "entity_id": entity_id,
             "federation": {
                 "chain": trust_chain,
                 "exp": exp
@@ -119,14 +119,14 @@ class MongoStorage(BaseStorage):
         
         self.chains.insert_one(entity)
         
-        return entityID
+        return entity_id
     
-    def update_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
-        if not self.has_chain(entityID):
-            raise ChainNotExist(f"Chain with entity id {entityID} not exist")
+    def update_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        if not self.has_chain(entity_id):
+            raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
         
         documentStatus = self.chains.update_one(
-            {"entityID": entityID},
+            {"entity_id": entity_id},
             {"$set":
                 {
                     "federation": {
