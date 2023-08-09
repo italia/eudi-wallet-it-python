@@ -104,7 +104,7 @@ class MongoStorage(BaseStorage):
             return True
         return False
 
-    def add_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         if self.has_trust_attestation(entity_id):
             raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exist")
         
