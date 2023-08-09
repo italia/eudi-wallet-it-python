@@ -41,24 +41,25 @@ class DBEngine():
 
         return storage_instance, cache_instance
 
-    def init_session(self, dpop_proof: dict, attestation: dict) -> str:
+    def init_session(self, session_id: str, state: str) -> str:
         document_id = str(uuid.uuid4())
         for db_name, storage in self.storages:
             try:
-                storage.init_session(document_id, dpop_proof, attestation)
+                storage.init_session(document_id, session_id=session_id, state=state)
             except Exception as e:
-                logger.critical(f"Error {str(e)}")
                 logger.critical(
-                    f"Cannot write document with id {document_id} on {db_name}")
+                    f"Error while initializing session with document_id {document_id}."
+                    f"Cannot write document with id {document_id} on {db_name}.\n"
+                    f"{e.__class__.__name__}: {e}")
 
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str | None, request_object: dict) -> tuple[str, str, int]:
+    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
         replica_count = 0
         for db_name, storage in self.storages:
             try:
-                storage.update_request_object(
-                    document_id, nonce, state, request_object)
+                storage.add_dpop_proof_and_attestation(
+                    document_id, dpop_proof=dpop_proof, attestation=attestation)
                 replica_count += 1
             except Exception as e:
                 logger.critical(f"Error {str(e)}")
@@ -69,7 +70,42 @@ class DBEngine():
             raise Exception(
                 f"Cannot update document {document_id} on any instance")
 
-        return nonce, state, replica_count
+        return replica_count
+
+    def set_finalized(self, document_id: str):
+        replica_count = 0
+        for db_name, storage in self.storages:
+            try:
+                storage.set_finalized(document_id)
+                replica_count += 1
+            except Exception as e:
+                logger.critical(f"Error {str(e)}")
+                logger.critical(
+                    f"Cannot update document with id {document_id} on {db_name}")
+
+        if replica_count == 0:
+            raise Exception(
+                f"Cannot update document {document_id} on any instance")
+
+        return replica_count
+
+    def update_request_object(self, document_id: str, request_object: dict) -> int:
+        replica_count = 0
+        for db_name, storage in self.storages:
+            try:
+                storage.update_request_object(
+                    document_id, request_object)
+                replica_count += 1
+            except Exception as e:
+                logger.critical(f"Error {str(e)}")
+                logger.critical(
+                    f"Cannot update document with id {document_id} on {db_name}")
+
+        if replica_count == 0:
+            raise Exception(
+                f"Cannot update document {document_id} on any instance")
+
+        return replica_count
 
     def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
         replica_count = 0
@@ -137,3 +173,25 @@ class DBEngine():
                     "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}")
 
             return cache_object
+
+    def exists_by_state_and_session_id(self, state: str, session_id: str | None = None) -> bool:
+        for db_name, storage in self.storages:
+            found = storage.exists_by_state_and_session_id(state=state, session_id=session_id)
+            if found:
+                return True
+        return False
+
+    def get_by_state(self, state: str):
+        return self.get_by_state_and_session_id(state=state)
+
+    def get_by_state_and_session_id(self, state: str, session_id: str | None = None):
+        for db_name, storage in self.storages:
+            try:
+                document = storage.get_by_state_and_session_id(state, session_id)
+                return document
+            except ValueError:
+                logger.debug(
+                    f"Document object with state {state} and session_id {session_id} not found in db {db_name}")
+
+        logger.error(f"Document object with state {state} and session_id {session_id} not found!")
+        raise ValueError(f"Document object with state {state} and session_id {session_id} not found!")

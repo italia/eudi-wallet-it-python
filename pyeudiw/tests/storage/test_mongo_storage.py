@@ -22,11 +22,18 @@ class TestMongoStorage:
         assert self.storage.collection is not None
 
     def test_entity_initialization(self):
+        state = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            {"dpop": "test"}, {"attestation": "test"})
+            session_id=session_id, state=state)
 
         assert document_id
+
+        dpop_proof = {"dpop": "test"}
+        attestation = {"attestation": "test"}
+        self.storage.add_dpop_proof_and_attestation(document_id, dpop_proof=dpop_proof, attestation=attestation)
 
         document = self.storage._retrieve_document_by_id(document_id)
 
@@ -37,37 +44,36 @@ class TestMongoStorage:
         assert document["attestation"] == {"attestation": "test"}
 
     def test_add_request_object(self):
+        state = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            {"dpop": "test"}, {"attestation": "test"})
+            session_id=session_id, state=state)
 
         assert document_id
 
         nonce = str(uuid.uuid4())
-        state = str(uuid.uuid4())
-
         request_object = {"nonce": nonce, "state": state}
 
-        self.storage.update_request_object(
-            document_id, nonce, state, request_object)
+        self.storage.update_request_object(document_id, request_object)
 
         document = self.storage._retrieve_document_by_id(document_id)
 
         assert document
-        assert document["dpop_proof"]
-        assert document["dpop_proof"] == {"dpop": "test"}
-        assert document["attestation"]
-        assert document["attestation"] == {"attestation": "test"}
-        assert document["state"]
-        assert document["state"] == state
-        assert document["state"]
-        assert document["nonce"] == nonce
         assert document["request_object"] == request_object
+        assert document["request_object"]["state"]
+        assert document["request_object"]["state"] == state
+        assert document["request_object"]["state"]
+        assert document["request_object"]["nonce"] == nonce
 
-    def test_update_responnse_object(self):
+    def test_update_response_object(self):
+        state = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            {"dpop": "test"}, {"attestation": "test"})
+            session_id=session_id, state=state)
 
         assert document_id
 
@@ -77,10 +83,11 @@ class TestMongoStorage:
         request_object = {"nonce": nonce, "state": state}
 
         self.storage.update_request_object(
-            document_id, nonce, state, request_object)
+            document_id, request_object)
         documentStatus = self.storage.update_response_object(
             nonce, state, {"response": "test"})
-
+        self.storage.add_dpop_proof_and_attestation(
+            document_id, dpop_proof={"dpop": "test"}, attestation={"attestation": "test"})
         assert documentStatus
 
         document = self.storage._retrieve_document_by_id(document_id)
