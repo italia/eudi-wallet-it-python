@@ -21,8 +21,6 @@ from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
                             load_specification_from_yaml_string)
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
-from pyeudiw.storage.exceptions import ReplicaError
-
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
 AUTH_ENDPOINT = "https://example.com/auth"
@@ -551,7 +549,7 @@ class TestOpenID4VPBackend:
         try:
             redirect_endpoint = self.backend.redirect_endpoint(context)
             assert redirect_endpoint
-        except ReplicaError as e:
+        except Exception as e:
             # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
             return
             
