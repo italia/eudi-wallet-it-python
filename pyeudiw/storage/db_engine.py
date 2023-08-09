@@ -1,9 +1,11 @@
 import uuid
 import logging
 import importlib
-from typing import Callable
+from datetime import datetime
+from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
+from pyeudiw.storage.exceptions import ReplicaError
 
 logger = logging.getLogger("openid4vp.storage.db")
 
@@ -66,7 +68,7 @@ class DBEngine():
                     f"Cannot update document with id {document_id} on {db_name}")
 
         if replica_count == 0:
-            raise Exception(
+            raise ReplicaError(
                 f"Cannot update document {document_id} on any instance")
 
         return nonce, state, replica_count
@@ -83,10 +85,58 @@ class DBEngine():
                     f"Cannot update document with nonce {nonce} and state {state} on {db_name}")
 
         if replica_count == 0:
-            raise Exception(
+            raise ReplicaError(
                 f"Cannot update document with state {state} and nonce {nonce} on any instance")
 
         return replica_count
+    
+    def find_chain(self, entityID: str) -> Union[dict, None]:
+        for db_name, storage in self.storages:
+            try:
+                chain = storage.find_chain(entityID)
+
+                if chain:
+                    return chain
+                
+            except Exception as e:
+                logger.critical(f"Error {str(e)}")
+                logger.critical(
+                    f"Cannot find chain {entityID} on {db_name}")
+                
+        raise ReplicaError(f"Cannot find chain {entityID} on any instance")
+    
+    def has_chain(self, entityID: str):
+        if self.find_chain(entityID) is not None:
+            return True
+        return False
+    
+    def add_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+        replica_count = 0
+        for db_name, storage in self.storages:
+            try:
+                storage.add_chain(entityID, trust_chain, exp)
+                replica_count += 1
+            except Exception as e:
+                logger.critical(
+                    "Cannot add chain with entityID {entityID} on database {db_name}")
+        
+        if replica_count == 0:
+            raise ReplicaError(
+                f"Cannot add chain {entityID} on any instance")
+            
+    def update_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+        replica_count = 0
+        for db_name, storage in self.storages:
+            try:
+                storage.update_chain(entityID, trust_chain, exp)
+                replica_count += 1
+            except Exception as e:
+                logger.critical(
+                    "Cannot add chain with entityID {entityID} on database {db_name}")
+        
+        if replica_count == 0:
+            raise ReplicaError(
+                f"Cannot update chain {entityID} on any instance")
 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
