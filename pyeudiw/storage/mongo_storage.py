@@ -121,7 +121,7 @@ class MongoStorage(BaseStorage):
         
         return entity_id
     
-    def update_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         if not self.has_trust_attestation(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
         

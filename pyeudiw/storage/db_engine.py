@@ -124,11 +124,11 @@ class DBEngine():
             raise ReplicaError(
                 f"Cannot add chain {entity_id} on any instance")
             
-    def update_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         replica_count = 0
         for db_name, storage in self.storages:
             try:
-                storage.update_chain(entity_id, trust_chain, exp)
+                storage.update_trust_attestation(entity_id, trust_chain, exp)
                 replica_count += 1
             except Exception as e:
                 logger.critical(
