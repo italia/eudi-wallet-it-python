@@ -376,8 +376,10 @@ class OpenID4VPBackend(BackendModule):
 
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
+            
+            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
                         
-            self._validate_trust(context.http_headers['HTTP_AUTHORIZATION'].split()[1])
+            self._validate_trust(dpop_jws)
             
             # TODO: validate wia scheme using pydantic
 
