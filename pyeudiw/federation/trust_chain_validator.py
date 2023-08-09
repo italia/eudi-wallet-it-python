@@ -196,7 +196,7 @@ class StaticTrustChainValidator:
         return self.exp
     
     @property
-    def is_expiried(self) -> int:
+    def is_expired(self) -> int:
         return self._check_expired(self.exp)
 
     def get_entityID(self) -> str:
