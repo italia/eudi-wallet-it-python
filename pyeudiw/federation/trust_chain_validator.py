@@ -36,6 +36,7 @@ class StaticTrustChainValidator:
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
+        self.exp = None
 
         if not trust_anchor_jwks:
             raise MissingTrustAnchorPublicKey(
@@ -47,10 +48,10 @@ class StaticTrustChainValidator:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def is_expired(self, exp):
+    def _check_expired(self, exp: int) -> bool:
         return exp < iat_now()
 
-    def _validate_keys(self, fed_jwks, st_header):
+    def _validate_keys(self, fed_jwks: list[str], st_header: dict) -> None:
         current_kid = st_header["kid"]
 
         validation_kid = None
@@ -62,7 +63,7 @@ class StaticTrustChainValidator:
         if not validation_kid:
             raise KeyValidationError(f"Kid {current_kid} not found")
 
-    def _validate_single(self, fed_jwks, header, payload):
+    def _validate_single(self, fed_jwks: list[str], header: dict, payload: dict) -> bool:
         try:
             self._validate_keys(fed_jwks, header)
             self._validate_exp(payload["exp"])
@@ -73,7 +74,7 @@ class StaticTrustChainValidator:
         return True
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         # start from the last entity statement
         rev_tc = [
             i for i in reversed(
@@ -101,7 +102,7 @@ class StaticTrustChainValidator:
         es_exp = es_payload["exp"]
 
         iat_now() - es_exp
-        if self.is_expired(es_exp):
+        if self._check_expired(es_exp):
             raise TimeValidationError()
 
         fed_jwks = es_payload["jwks"]["keys"]
@@ -127,7 +128,7 @@ class StaticTrustChainValidator:
 
         return True
 
-    def _retrieve_ec(self, iss: str, httpc_params: dict = {}):
+    def _retrieve_ec(self, iss: str, httpc_params: dict = {}) -> str:
         jwt = get_entity_configurations(iss, httpc_params)
         if len(jwt) == 0:
             raise HttpError(
@@ -136,7 +137,7 @@ class StaticTrustChainValidator:
         # is something weird these will raise their Exceptions
         return jwt[0]
 
-    def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}):
+    def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}) -> str:
         jwt = get_entity_statements(download_url, httpc_params)
         if not jwt:
             logger.warning(
@@ -144,7 +145,7 @@ class StaticTrustChainValidator:
             )
         return jwt
 
-    def _update_st(self, st, httpc_params: dict = {}):
+    def _update_st(self, st: str, httpc_params: dict = {}) -> str:
         payload = unpad_jwt_payload(st)
         iss = payload['iss']
 
@@ -176,13 +177,28 @@ class StaticTrustChainValidator:
 
         return jwt
 
-    def update(self, httpc_params: dict = {}):
+    def update(self, httpc_params: dict = {}) -> bool:
+        self.exp = None
         for st in self.static_trust_chain:
             jwt = self._update_st(st, httpc_params)
+            
+            exp = unpad_jwt_payload(jwt)["exp"]
+            
+            if self.exp == None or self.exp > exp:
+                self.exp = exp
+            
             self.updated_trust_chain.append(jwt)
         
         return self.is_valid
     
     @property
-    def get_chain(self):
+    def get_chain(self) -> list[str]:
         return self.updated_trust_chain or self.static_trust_chain
+    
+    @property
+    def get_exp(self) -> int:
+        return self.exp
+    
+    @property
+    def is_expiried(self) -> int:
+        return self._check_expired(self.exp)
