@@ -450,10 +450,9 @@ class OpenID4VPBackend(BackendModule):
         try:
             state = context.qs_params["id"]
         except Exception as e:
-            logger.error(
-                "Error while retrieving id from qs_params: "
-                f"{e.__class__.__name__}: {e}"
-            )
+            _msg = "Error while retrieving id from qs_params: "\
+                    f"{e.__class__.__name__}: {e}"
+            self._log(context, level='error', message=_msg)
             return JsonResponse(
                 {
                     "response": "Forbidden",
@@ -495,10 +494,9 @@ class OpenID4VPBackend(BackendModule):
             self.db_engine.update_request_object(document_id, data)
             self.db_engine.set_finalized(document_id)
         except ValueError as e:
-            logger.error(
-                "Error while retrieving request object from database: "
-                f"{e.__class__.__name__}: {e}"
-            )
+            _msg = "Error while retrieving request object from database: "\
+                   f"{e.__class__.__name__}: {e}"
+            self._log(context, level='error', message=_msg)
             return JsonResponse(
                 {
                     "response": "Forbidden",
