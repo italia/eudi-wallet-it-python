@@ -99,13 +99,13 @@ class MongoStorage(BaseStorage):
         self._connect()
         return self.chains.find_one({"entity_id": entity_id})
 
-    def has_chain(self, entity_id: str):
+    def has_trust_attestation(self, entity_id: str):
         if self.get_trust_attestation({"entity_id": entity_id}):
             return True
         return False
 
     def add_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        if self.has_chain(entity_id):
+        if self.has_trust_attestation(entity_id):
             raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exist")
         
         entity = {
@@ -122,7 +122,7 @@ class MongoStorage(BaseStorage):
         return entity_id
     
     def update_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        if not self.has_chain(entity_id):
+        if not self.has_trust_attestation(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
         
         documentStatus = self.chains.update_one(

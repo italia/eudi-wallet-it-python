@@ -105,7 +105,7 @@ class DBEngine():
                 
         raise ReplicaError(f"Cannot find chain {entity_id} on any instance")
     
-    def has_chain(self, entity_id: str):
+    def has_trust_attestation(self, entity_id: str):
         if self.get_trust_attestation(entity_id) is not None:
             return True
         return False

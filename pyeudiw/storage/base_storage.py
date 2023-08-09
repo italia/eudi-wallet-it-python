@@ -14,7 +14,7 @@ class BaseStorage(object):
     def get_trust_attestation(self, entity_id: str):
         raise NotImplementedError()
         
-    def has_chain(self, entity_id: str):
+    def has_trust_attestation(self, entity_id: str):
         raise NotImplementedError()
 
     def add_chain(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
