@@ -21,12 +21,15 @@ class MongoStorage(BaseStorage):
     def _connect(self):
         if not self.client or not self.client.server_info():
             self.client = pymongo.MongoClient(
-                self.url, **self.connection_params)
+                self.url, **self.connection_params
+            )
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.sessions = getattr(
-                self.db, self.storage_conf["db_sessions_collection"])
+                self.db, self.storage_conf["db_sessions_collection"]
+            )
             self.attestations = getattr(
-                self.db, self.storage_conf["db_attestations_collection"])
+                self.db, self.storage_conf["db_attestations_collection"]
+            )
 
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
@@ -137,9 +140,7 @@ class MongoStorage(BaseStorage):
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
         document = self._retrieve_document_by_nonce_state(nonce, state)
-
         document_id = document["_id"]
-
         documentStatus = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
@@ -189,8 +190,7 @@ class MongoStorage(BaseStorage):
                         "chain": trust_chain,
                         "exp": exp
                     }
-                },
+                }
              }
         )
-
         return documentStatus

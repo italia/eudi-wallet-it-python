@@ -24,8 +24,9 @@ intermediate_signer = JWS(
     invalid_intermediate, alg="RS256",
     typ="application/entity-statement+jwt"
 )
-invalid_intermediate_es_signed = intermediate_signer.sign_compact([
-                                                                  intermediate_jwk])
+invalid_intermediate_es_signed = intermediate_signer.sign_compact(
+    [intermediate_jwk]
+)
 
 invalid_trust_chain = [
     leaf_ec_signed,
@@ -134,5 +135,5 @@ def test_update_st_es_case_no_source_endpoint():
         with mock.patch.object(tcv_test, "get_entity_configurations", mock_method_ec):
 
             assert tcv_test.StaticTrustChainValidator(
-                invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed
-                                                                      ) == leaf_ec_signed
+                invalid_trust_chain, [ta_jwk.serialize()]
+            )._update_st(ta_es_signed) == leaf_ec_signed

@@ -52,8 +52,8 @@ class DBEngine():
                     document_id, session_id=session_id, state=state)
             except Exception as e:
                 logger.critical(
-                    f"Error while initializing session with document_id {document_id}."
-                    f"Cannot write document with id {document_id} on {db_name}.\n"
+                    f"Error while initializing session with document_id {document_id}. "
+                    f"Cannot write document with id {document_id} on {db_name}: "
                     f"{e.__class__.__name__}: {e}")
 
         return document_id

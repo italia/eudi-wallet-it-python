@@ -22,5 +22,7 @@ def check_algorithm(alg: str, info: FieldValidationInfo):
     if not isinstance(supported_algorithms, list):
         supported_algorithms = []
     if alg not in supported_algorithms:
-        raise ValueError(f"Unsupported algorithm: {alg}.\n  "
-                         f"Supported algorithms: {supported_algorithms}.\n")
+        raise ValueError(
+            f"Unsupported algorithm: {alg}. "
+            f"Supported algorithms: {supported_algorithms}."
+        )
