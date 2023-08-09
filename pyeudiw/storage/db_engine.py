@@ -90,10 +90,10 @@ class DBEngine():
 
         return replica_count
     
-    def find_chain(self, entity_id: str) -> Union[dict, None]:
+    def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         for db_name, storage in self.storages:
             try:
-                chain = storage.find_chain(entity_id)
+                chain = storage.get_trust_attestation(entity_id)
 
                 if chain:
                     return chain
@@ -106,7 +106,7 @@ class DBEngine():
         raise ReplicaError(f"Cannot find chain {entity_id} on any instance")
     
     def has_chain(self, entity_id: str):
-        if self.find_chain(entity_id) is not None:
+        if self.get_trust_attestation(entity_id) is not None:
             return True
         return False
     

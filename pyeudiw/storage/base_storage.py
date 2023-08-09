@@ -11,7 +11,7 @@ class BaseStorage(object):
     def update_response_object(self, nonce: str, state: str | None, response_object: dict):
         raise NotImplementedError()
 
-    def find_chain(self, entity_id: str):
+    def get_trust_attestation(self, entity_id: str):
         raise NotImplementedError()
         
     def has_chain(self, entity_id: str):

@@ -95,12 +95,12 @@ class MongoStorage(BaseStorage):
 
         return nonce, state, documentStatus
     
-    def find_chain(self, entity_id: str):
+    def get_trust_attestation(self, entity_id: str):
         self._connect()
         return self.chains.find_one({"entity_id": entity_id})
 
     def has_chain(self, entity_id: str):
-        if self.find_chain({"entity_id": entity_id}):
+        if self.get_trust_attestation({"entity_id": entity_id}):
             return True
         return False
 
