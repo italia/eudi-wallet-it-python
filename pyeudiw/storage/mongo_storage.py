@@ -22,7 +22,7 @@ class MongoStorage(BaseStorage):
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.sessions = getattr(
                 self.db, self.storage_conf["db_sessions_collection"])
-            self.chains = getattr(
+            self.attestations = getattr(
                 self.db, self.storage_conf["db_attestations_collection"])
 
     def _retrieve_document_by_id(self, document_id: str) -> dict:
@@ -97,7 +97,7 @@ class MongoStorage(BaseStorage):
     
     def get_trust_attestation(self, entity_id: str):
         self._connect()
-        return self.chains.find_one({"entity_id": entity_id})
+        return self.attestations.find_one({"entity_id": entity_id})
 
     def has_trust_attestation(self, entity_id: str):
         if self.get_trust_attestation({"entity_id": entity_id}):
@@ -117,7 +117,7 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
         
-        self.chains.insert_one(entity)
+        self.attestations.insert_one(entity)
         
         return entity_id
     
@@ -125,7 +125,7 @@ class MongoStorage(BaseStorage):
         if not self.has_trust_attestation(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
         
-        documentStatus = self.chains.update_one(
+        documentStatus = self.attestations.update_one(
             {"entity_id": entity_id},
             {"$set":
                 {
