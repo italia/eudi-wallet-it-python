@@ -1,3 +1,5 @@
+from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+
 class BaseStorage(object):
     def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
         NotImplementedError()
@@ -6,4 +8,10 @@ class BaseStorage(object):
         NotImplementedError()
 
     def update_response_object(self, nonce: str, state: str | None, response_object: dict):
+        NotImplementedError()
+
+    def add_chain(self, trust_chain: StaticTrustChainValidator):
+        NotImplementedError()
+        
+    def update_chain(self, trust_chain: StaticTrustChainValidator):
         NotImplementedError()

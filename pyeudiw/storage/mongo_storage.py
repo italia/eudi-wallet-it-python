@@ -1,7 +1,9 @@
 import pymongo
 from datetime import datetime
 from pyeudiw.storage.base_storage import BaseStorage
-
+from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+from pyeudiw.federation.exceptions import InvalidChainError
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
@@ -19,13 +21,15 @@ class MongoStorage(BaseStorage):
             self.client = pymongo.MongoClient(
                 self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
-            self.collection = getattr(
-                self.db, self.storage_conf["db_collection"])
+            self.sessions = getattr(
+                self.db, self.storage_conf["db_sessions_collection"])
+            self.chains = getattr(
+                self.db, self.storage_conf["db_chains_collection"])
 
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
 
-        document = self.collection.find_one({"document_id": document_id})
+        document = self.sessions.find_one({"document_id": document_id})
 
         if document is None:
             raise ValueError(f'Document with id {document_id} not found')
@@ -37,7 +41,7 @@ class MongoStorage(BaseStorage):
 
         query = {"state": state, "nonce": nonce}
 
-        document = self.collection.find_one(query)
+        document = self.sessions.find_one(query)
 
         if document is None:
             raise ValueError(
@@ -58,14 +62,14 @@ class MongoStorage(BaseStorage):
         }
 
         self._connect()
-        self.collection.insert_one(entity)
+        self.sessions.insert_one(entity)
 
         return document_id
 
     def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:
         self._retrieve_document_by_id(document_id)
 
-        documentStatus = self.collection.update_one(
+        documentStatus = self.sessions.update_one(
             {"document_id": document_id},
             {
                 "$set": {
@@ -82,7 +86,7 @@ class MongoStorage(BaseStorage):
 
         document_id = document["_id"]
 
-        documentStatus = self.collection.update_one(
+        documentStatus = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
@@ -91,3 +95,47 @@ class MongoStorage(BaseStorage):
              })
 
         return nonce, state, documentStatus
+
+    def add_chain(self, trust_chain: StaticTrustChainValidator) -> str:
+        entityID = trust_chain.get_entityID
+        
+        if not trust_chain.is_valid:
+            raise InvalidChainError(f"Chain with entityID {entityID} is invalid")
+        
+        chain = trust_chain.get_chain
+        
+        entity = {
+            "entityID": entityID,
+            "federation": {
+                "chain": chain,
+                "exp": trust_chain.get_exp
+            },
+            "x509": {}
+        }
+        
+        self._connect()
+        self.chains.insert_one(entity)
+        
+        return entityID
+    
+    def update_chain(self, trust_chain: StaticTrustChainValidator) -> str:
+        entityID = trust_chain.get_entityID
+        
+        if not trust_chain.is_valid:
+            raise InvalidChainError(f"Chain with entityID {entityID} is invalid")
+        
+        chain = trust_chain.get_chain
+        
+        documentStatus = self.chains.update_one(
+            {"entityID": entityID},
+            {"$set":
+                {
+                    "federation": {
+                        "chain": chain,
+                        "exp": trust_chain.get_exp
+                    }
+                },
+             }
+        )
+        
+        return documentStatus
