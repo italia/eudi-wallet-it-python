@@ -41,7 +41,7 @@ class DBEngine():
 
         return storage_instance, cache_instance
 
-    def init_session(self, *, session_id: str, state: str) -> str:
+    def init_session(self, session_id: str, state: str) -> str:
         document_id = str(uuid.uuid4())
         for db_name, storage in self.storages:
             try:
@@ -184,10 +184,10 @@ class DBEngine():
     def get_by_state(self, state: str):
         return self.get_by_state_and_session_id(state=state)
 
-    def get_by_state_and_session_id(self, *, state: str, session_id: str | None = None):
+    def get_by_state_and_session_id(self, state: str, session_id: str | None = None):
         for db_name, storage in self.storages:
             try:
-                document = storage.get_by_state_and_session_id(state=state, session_id=session_id)
+                document = storage.get_by_state_and_session_id(state, session_id)
                 return document
             except ValueError:
                 logger.debug(

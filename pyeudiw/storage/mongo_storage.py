@@ -48,7 +48,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state_and_session_id(self, *, state: str, session_id: str | None = None):
+    def _retrieve_document_by_state_and_session_id(self, state: str, session_id: str | None = None):
         self._connect()
 
         query = {"state": state}
@@ -63,7 +63,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, document_id: str, *, session_id: str, state: str) -> str:
+    def init_session(self, document_id: str, session_id: str, state: str) -> str:
         creation_date = datetime.timestamp(datetime.now())
 
         entity = {
@@ -81,7 +81,7 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def add_dpop_proof_and_attestation(self, document_id: str, *, dpop_proof: dict, attestation: dict):
+    def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict):
         self._connect()
         update_result: UpdateResult = self.collection.update_one(
             {"document_id": document_id},
@@ -149,12 +149,12 @@ class MongoStorage(BaseStorage):
 
         return nonce, state, documentStatus
 
-    def exists_by_state_and_session_id(self, *, state: str, session_id: str | None = None) -> bool:
+    def exists_by_state_and_session_id(self, state: str, session_id: str | None = None) -> bool:
         try:
             document = self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)
         except ValueError:
             return False
         return True
 
-    def get_by_state_and_session_id(self, *, state: str, session_id: str | None = None):
+    def get_by_state_and_session_id(self, state: str, session_id: str | None = None):
         return self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)
