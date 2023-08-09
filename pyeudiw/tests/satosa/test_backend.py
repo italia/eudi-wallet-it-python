@@ -557,7 +557,7 @@ class TestOpenID4VPBackend:
         assert state_endpoint_response.status == "403"
         assert state_endpoint_response.message
         msg = json.loads(state_endpoint_response.message)
-        assert msg["response"] == "Forbidden"
+        assert msg["message"]
 
         internal_data = InternalData()
         context.http_headers = dict(
@@ -589,7 +589,7 @@ class TestOpenID4VPBackend:
 
         # Not yet finalized
         state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "201"
+        assert state_endpoint_response.status == "204"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id

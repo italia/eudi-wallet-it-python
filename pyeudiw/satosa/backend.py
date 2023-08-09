@@ -539,5 +539,5 @@ class OpenID4VPBackend(BackendModule):
                 {
                     "response": "Request object issued"
                 },
-                status="201"
+                status="204"
             )
