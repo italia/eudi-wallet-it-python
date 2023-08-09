@@ -243,8 +243,6 @@ class OpenID4VPBackend(BackendModule):
     def _handle_vp(self, vp_token: str) -> dict:
         self._validate_trust(vp_token)
         
-        valid, value = None, None
-        
         valid, value = check_vp_token(
             vp_token, None, self.metadata_jwks_by_kids)
 
