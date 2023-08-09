@@ -53,7 +53,3 @@ class TrustEvaluationHelper:
     
     def x509(self):
         pass
-    
-    @property
-    def entity_id(self):
-        return self.entity_id
