@@ -21,7 +21,7 @@ from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
-from pyeudiw.tools.utils import iat_now
+from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp import check_vp_token
 from pyeudiw.openid4vp.exceptions import KIDNotFound
 from pyeudiw.storage.db_engine import DBEngine
@@ -396,7 +396,7 @@ class OpenID4VPBackend(BackendModule):
             # using the TA public key validate trust_chain and or x5c
 
             # take WIA
-            
+
             http_authz = context.http_headers['HTTP_AUTHORIZATION']
             wia = unpad_jwt_payload(http_authz)
             dpop_jws = http_authz.split()[1]
@@ -474,7 +474,7 @@ class OpenID4VPBackend(BackendModule):
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
-            "exp": exp_from_now(minutes = 5)
+            "exp": exp_from_now(minutes=5)
         }
 
         try:
@@ -507,10 +507,10 @@ class OpenID4VPBackend(BackendModule):
         context: dict,
         message: str,
         troubleshoot: str = "",
-        err = "",
-        err_code = "500",
-        template_path = "templates",
-        error_template = "error.html",
+        err="",
+        err_code="500",
+        template_path="templates",
+        error_template="error.html",
     ):
 
         # TODO: evaluate with UX designers if Jinja2 template

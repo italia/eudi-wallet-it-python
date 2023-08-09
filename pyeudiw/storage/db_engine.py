@@ -226,7 +226,7 @@ class DBEngine():
 
             return cache_object
 
-    def exists_by_state_and_session_id(self, state: str, session_id :str = "") -> bool:
+    def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:
         for db_name, storage in self.storages:
             found = storage.exists_by_state_and_session_id(
                 state=state, session_id=session_id)
@@ -237,7 +237,7 @@ class DBEngine():
     def get_by_state(self, state: str):
         return self.get_by_state_and_session_id(state=state)
 
-    def get_by_state_and_session_id(self, state: str, session_id :str = ""):
+    def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         for db_name, storage in self.storages:
             try:
                 document = storage._retrieve_document_by_state_and_session_id(
@@ -246,7 +246,7 @@ class DBEngine():
             except ValueError:
                 logger.debug(
                     f"Document object with state {state} and session_id {session_id} not found in db {db_name}")
-        
+
         _msg = f"Document object with state {state} and session_id {session_id} not found"
         logger.error(_msg)
         raise ValueError(_msg)

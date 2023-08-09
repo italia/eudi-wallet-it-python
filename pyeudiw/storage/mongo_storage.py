@@ -54,7 +54,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state_and_session_id(self, state: str, session_id :str = ""):
+    def _retrieve_document_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
 
         query = {"state": state}

@@ -1,16 +1,14 @@
 from datetime import datetime
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
-from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.trust.exceptions import NoTrustChainProvided
 
 
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine,  **kwargs):
-        self.exp :int = 0
-        self.trust_chain :list = []
+        self.exp: int = 0
+        self.trust_chain: list = []
         self.storage = storage
-        self.entity_id :str  = ""
+        self.entity_id: str = ""
 
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -60,9 +58,9 @@ class TrustEvaluationHelper:
         # )
         # if _tc.is_valid:
             # self.trust_chain = _tc.serialize()
-            # return self.trust_chain 
-        
+            # return self.trust_chain
+
         return []
-        
+
     def x509(self):
         raise NotImplementedError("X.509 is not supported in this release")
