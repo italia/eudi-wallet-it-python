@@ -202,3 +202,11 @@ class StaticTrustChainValidator:
     @property
     def is_expiried(self) -> int:
         return self._check_expired(self.exp)
+
+    @property
+    def get_entityID(self) -> str:
+        chain = self.get_chain
+        trusted_achor = chain[0]
+        
+        payload = unpad_jwt_payload(trusted_achor)
+        return payload["iss"]
