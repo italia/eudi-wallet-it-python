@@ -318,21 +318,23 @@ class OpenID4VPBackend(BackendModule):
             try:
                 result = self._handle_vp(vp, context)
             except InvalidVPToken as e:
-                self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+                return self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
             except NoNonceInVPToken as e:
-                self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
+                return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
             except ValidationError as e:
-                self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
             except KIDNotFound as e:
-                self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
             except Exception as e:
-                self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
                 nonce = result["nonce"]
             elif nonce != result["nonce"]:
-                self.handle_error(context=self, message=f"Presentation has divergent nonces: {e}", err_code="401")
+                return self.handle_error(context=self,
+                                         message=f"Presentation has divergent nonces:\n{nonce}!={result['nonce']}",
+                                         err_code="401")
             else:
                 claims.append(result["claims"])
 
@@ -361,7 +363,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
         except Exception as e:
-            self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
+            return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
         
         return self.auth_callback_func(context, internal_resp)
 
