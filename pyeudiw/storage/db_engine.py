@@ -174,7 +174,7 @@ class DBEngine():
 
             return cache_object
 
-    def exists_by_state_and_session_id(self, *, state: str, session_id: str | None = None) -> bool:
+    def exists_by_state_and_session_id(self, state: str, session_id: str | None = None) -> bool:
         for db_name, storage in self.storages:
             found = storage.exists_by_state_and_session_id(state=state, session_id=session_id)
             if found:
