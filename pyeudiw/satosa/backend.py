@@ -182,13 +182,7 @@ class OpenID4VPBackend(BackendModule):
                 session_id=session_id
             )
         except Exception as e:
-            self._log(context, level='error', message=str(e))
-            return JsonResponse(
-                    {
-                        "error": "Internal server error",
-                    },
-                    status="500"
-                )
+            self.handle_error(context, message=str(e), err_code="500")
 
         # PAR
         payload = {
@@ -420,14 +414,7 @@ class OpenID4VPBackend(BackendModule):
 
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_param",
-                        "error_description": _msg
-                    },
-                    status="400"
-                )
+                self.handle_error(context, message=_msg, err_code="400")
 
             # TODO: assert and configure the wallet capabilities
             # TODO: assert and configure the wallet  Attested Security Context
@@ -452,26 +439,14 @@ class OpenID4VPBackend(BackendModule):
         except Exception as e:
             _msg = "Error while retrieving id from qs_params: "\
                     f"{e.__class__.__name__}: {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden",
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
 
         try:
             dpop_proof = context.http_headers['HTTP_DPOP']
             attestation = context.http_headers['HTTP_AUTHORIZATION']
         except KeyError as e:
             _msg = f"Error while accessing http headers: {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden",
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
 
         data = {
             "scope": ' '.join(self.config['authorization']['scopes']),
@@ -496,22 +471,10 @@ class OpenID4VPBackend(BackendModule):
         except ValueError as e:
             _msg = "Error while retrieving request object from database: "\
                    f"{e.__class__.__name__}: {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden",
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
         except Exception as e:
             _msg = f"Error while updating request object: {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Internal server error",
-                },
-                status="500"
-            )
+            self.handle_error(context, message=_msg, err_code="500")
 
         helper = JWSHelper(self.metadata_jwk)
         jwt = helper.sign(data)
@@ -552,34 +515,16 @@ class OpenID4VPBackend(BackendModule):
             state = context.qs_params["id"]
         except TypeError as e:
             _msg = f"No query params found! {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden"
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
         except KeyError as e:
             _msg = f"No id found in qs_params! {e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden"
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
 
         try:
             session = self.db_engine.get_by_state_and_session_id(state=state, session_id=session_id)
         except ValueError as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}.\n{e}"
-            self._log(context, level='error', message=_msg)
-            return JsonResponse(
-                {
-                    "response": "Forbidden"
-                },
-                status="403"
-            )
+            self.handle_error(context, message=_msg, err_code="403")
 
         if session["finalized"]:
             return JsonResponse({
