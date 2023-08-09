@@ -9,7 +9,7 @@ class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
-            {"db_name": "eudiw", "db_sessions_collection": "sessions", "db_chains_collection": "chains"},
+            {"db_name": "eudiw", "db_sessions_collection": "sessions", "db_attestations_collection": "chains"},
             "mongodb://localhost:27017/",
             {}
         )

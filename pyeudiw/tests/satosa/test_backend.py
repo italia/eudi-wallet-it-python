@@ -128,7 +128,7 @@ CONFIG = {
                     "conf": {
                         "db_name": "eudiw",
                         "db_sessions_collection": "sessions", 
-                        "db_chains_collection": "chains"
+                        "db_attestations_collection": "chains"
                     },
                     "connection_params": {}
                 }

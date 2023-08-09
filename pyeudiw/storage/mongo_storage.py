@@ -23,7 +23,7 @@ class MongoStorage(BaseStorage):
             self.sessions = getattr(
                 self.db, self.storage_conf["db_sessions_collection"])
             self.chains = getattr(
-                self.db, self.storage_conf["db_chains_collection"])
+                self.db, self.storage_conf["db_attestations_collection"])
 
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
