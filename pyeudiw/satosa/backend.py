@@ -1,10 +1,9 @@
 import json
 import logging
-import urllib
 import uuid
 from datetime import datetime, timedelta
 from typing import Union
-from urllib.parse import quote_plus, urlencode, urlparse
+from urllib.parse import quote_plus, urlencode, urlparse, parse_qs
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
@@ -173,11 +172,28 @@ class OpenID4VPBackend(BackendModule):
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
+        session_id = str(context.state["SESSION_ID"])
+        state = str(uuid.uuid4())
+
+        # Init session
+        try:
+            self.db_engine.init_session(
+                state=state,
+                session_id=session_id
+            )
+        except Exception as e:
+            self._log(context, level='error', message=str(e))
+            return JsonResponse(
+                    {
+                        "error": "Internal server error",
+                    },
+                    status="500"
+                )
+
         # PAR
         payload = {
             'client_id': self.client_id,
-            'request_uri': self.absolute_request_url,
-            'session_id': context.state["SESSION_ID"]
+            'request_uri': self.absolute_request_url + f'?id={state}',
         }
 
         url_params = urlencode(payload, quote_via=quote_plus)
@@ -426,47 +442,38 @@ class OpenID4VPBackend(BackendModule):
 
     def request_endpoint(self, context, *args):
 
-        jwk = self.metadata_jwk
-
         # check DPOP for WIA if any
         dpop_validation_error = self._request_endpoint_dpop(context)
         if dpop_validation_error:
             return dpop_validation_error
 
-        # TODO: do customization if the WIA is available
-
-        # TODO: take the response and extract from jwt the public key of holder
-
         try:
-            entity_id = self.db_engine.init_session(
-                dpop_proof=context.http_headers['HTTP_DPOP'], 
-                attestation=context.http_headers['HTTP_AUTHORIZATION']
-            )
+            state = context.qs_params["id"]
         except Exception as e:
+            logger.error(
+                "Error while retrieving id from qs_params: "
+                f"{e.__class__.__name__}: {e}"
+            )
             return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
-        
-        nonce = str(uuid.uuid4())
+                {
+                    "response": "Forbidden",
+                },
+                status="403"
+            )
 
         try:
-            state = context.qs_params["session_id"]
+            dpop_proof = context.http_headers['HTTP_DPOP']
+            attestation = context.http_headers['HTTP_AUTHORIZATION']
         except KeyError as e:
+            _msg = f"Error while accessing http headers: {e}"
+            self._log(context, level='error', message=_msg)
             return JsonResponse(
-                    {
-                        "error": "invalid_request",
-                        "error_description": "No session id provided"
-                    },
-                    status="400"
-                )
+                {
+                    "response": "Forbidden",
+                },
+                status="403"
+            )
 
-
-        # verify the jwt
-        helper = JWSHelper(jwk)
         data = {
             "scope": ' '.join(self.config['authorization']['scopes']),
             "client_id_scheme": "entity_id",  # that's federation.
@@ -474,25 +481,43 @@ class OpenID4VPBackend(BackendModule):
             "response_mode": "direct_post.jwt",  # only HTTP POST is allowed.
             "response_type": "vp_token",
             "response_uri": self.config["metadata"]["redirect_uris"][0],
-            "nonce": nonce,
+            "nonce": str(uuid.uuid4()),
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
             "exp": iat_now() + (self.default_exp * 60)  # in seconds
         }
+
+        try:
+            document = self.db_engine.get_by_state(state)
+            document_id = document["document_id"]
+            self.db_engine.add_dpop_proof_and_attestation(document_id, dpop_proof, attestation)
+            self.db_engine.update_request_object(document_id, data)
+            self.db_engine.set_finalized(document_id)
+        except ValueError as e:
+            logger.error(
+                "Error while retrieving request object from database: "
+                f"{e.__class__.__name__}: {e}"
+            )
+            return JsonResponse(
+                {
+                    "response": "Forbidden",
+                },
+                status="403"
+            )
+        except Exception as e:
+            _msg = f"Error while updating request object: {e}"
+            self._log(context, level='error', message=_msg)
+            return JsonResponse(
+                {
+                    "response": "Internal server error",
+                },
+                status="500"
+            )
+
+        helper = JWSHelper(self.metadata_jwk)
         jwt = helper.sign(data)
         response = {"response": jwt}
-        
-        try:
-            self.db_engine.update_request_object(entity_id, nonce, state, data)
-        except Exception as e:
-            return JsonResponse(
-                    {
-                        "error": "internal_server_error",
-                        "error_description": str(e)
-                    },
-                    status="500"
-                )
 
         return JsonResponse(
             response,
@@ -525,9 +550,40 @@ class OpenID4VPBackend(BackendModule):
 
     def state_endpoint(self, context):
         session_id = context.state["SESSION_ID"]
+        try:
+            state = context.qs_params["id"]
+        except TypeError as e:
+            _msg = f"No query params found! {e}"
+            self._log(context, level='error', message=_msg)
+            return JsonResponse(
+                {
+                    "response": "Forbidden"
+                },
+                status="403"
+            )
+        except KeyError as e:
+            _msg = f"No id found in qs_params! {e}"
+            self._log(context, level='error', message=_msg)
+            return JsonResponse(
+                {
+                    "response": "Forbidden"
+                },
+                status="403"
+            )
 
-        request_received = self.db_engine.exists_by_state(session_id)
-        if request_received:
+        try:
+            session = self.db_engine.get_by_state_and_session_id(state=state, session_id=session_id)
+        except ValueError as e:
+            _msg = f"Error while retrieving session by state {state} and session_id {session_id}.\n{e}"
+            self._log(context, level='error', message=_msg)
+            return JsonResponse(
+                {
+                    "response": "Forbidden"
+                },
+                status="403"
+            )
+
+        if session["finalized"]:
             return JsonResponse({
                     "response": "Authentication successful"
                 },
@@ -536,7 +592,7 @@ class OpenID4VPBackend(BackendModule):
         else:
             return JsonResponse(
                 {
-                    "response": "Forbidden"
+                    "response": "Request object issued"
                 },
-                status="403"
+                status="201"
             )

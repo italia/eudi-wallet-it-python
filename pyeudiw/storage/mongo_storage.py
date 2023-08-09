@@ -1,5 +1,8 @@
 import pymongo
 from datetime import datetime
+
+from pymongo.results import UpdateResult
+
 from pyeudiw.storage.base_storage import BaseStorage
 
 
@@ -45,10 +48,12 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state(self, state: str) -> dict:
+    def _retrieve_document_by_state_and_session_id(self, *, state: str, session_id: str | None = None):
         self._connect()
 
         query = {"state": state}
+        if session_id:
+            query["session_id"] = session_id
 
         document = self.collection.find_one(query)
 
@@ -58,14 +63,15 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict) -> str:
+    def init_session(self, document_id: str, *, session_id: str, state: str) -> str:
         creation_date = datetime.timestamp(datetime.now())
 
         entity = {
             "document_id": document_id,
             "creation_date": creation_date,
-            "dpop_proof": dpop_proof,
-            "attestation": attestation,
+            "state": state,
+            "session_id": session_id,
+            "finalized": False,
             "request_object": None,
             "response": None
         }
@@ -75,20 +81,58 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def update_request_object(self, document_id: str, nonce: str, state: str, request_object: dict) -> tuple[str, str, dict]:
-        self._retrieve_document_by_id(document_id)
-
-        documentStatus = self.collection.update_one(
+    def add_dpop_proof_and_attestation(self, document_id: str, *, dpop_proof: dict, attestation: dict):
+        self._connect()
+        update_result: UpdateResult = self.collection.update_one(
             {"document_id": document_id},
             {
                 "$set": {
-                    "nonce": nonce,
-                    "state": state,
-                    "request_object": request_object
+                    "dpop_proof": dpop_proof,
+                    "attestation": attestation,
+                }
+            })
+        if update_result.matched_count != 1 or update_result.modified_count != 1:
+            raise ValueError(
+                f"Cannot update document {document_id}')"
+            )
+
+        return update_result
+
+    def update_request_object(self, document_id: str, request_object: dict):
+        self._retrieve_document_by_id(document_id)
+
+        update_result: UpdateResult = self.collection.update_one(
+            {"document_id": document_id},
+            {
+                "$set": {
+                    "request_object": request_object,
+                    "nonce": request_object["nonce"],
+                    "state": request_object["state"],
                 }
             }
         )
-        return nonce, state, documentStatus
+        if update_result.matched_count != 1 or update_result.modified_count != 1:
+            raise ValueError(
+                f"Cannot update document {document_id}')"
+            )
+        return update_result
+
+    def set_finalized(self, document_id: str):
+        self._retrieve_document_by_id(document_id)
+
+        update_result: UpdateResult = self.collection.update_one(
+            {"document_id": document_id},
+            {
+                "$set": {
+                    "finalized": True
+                },
+            }
+        )
+        if update_result.matched_count != 1 or update_result.modified_count != 1:
+            raise ValueError(
+                f"Cannot update document {document_id}')"
+            )
+        return update_result
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
         document = self._retrieve_document_by_nonce_state(nonce, state)
@@ -101,13 +145,16 @@ class MongoStorage(BaseStorage):
                 {
                     "response_object": response_object
                 },
-             })
+            })
 
         return nonce, state, documentStatus
 
-    def exists_by_state(self, state) -> bool:
+    def exists_by_state_and_session_id(self, *, state: str, session_id: str | None = None) -> bool:
         try:
-            document = self._retrieve_document_by_state(state)
+            document = self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)
         except ValueError:
             return False
         return True
+
+    def get_by_state_and_session_id(self, *, state: str, session_id: str | None = None):
+        return self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)

@@ -471,7 +471,7 @@ class TestOpenID4VPBackend:
 
         qs = urllib.parse.parse_qs(parsed.query)
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
-        assert qs["request_uri"][0] == CONFIG["metadata"]["request_uris"][0]
+        assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
 
     def test_redirect_endpoint(self, context):
         issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
@@ -552,6 +552,20 @@ class TestOpenID4VPBackend:
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
+        # No session created
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.message
+        msg = json.loads(state_endpoint_response.message)
+        assert msg["response"] == "Forbidden"
+
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(
+            context, internal_data)
+        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
@@ -571,14 +585,23 @@ class TestOpenID4VPBackend:
             HTTP_DPOP=dpop_proof
         )
 
-        state = self.backend.state_endpoint(context)
-        assert state.status == "403"
-        assert state.message
-        msg = json.loads(state.message)
-        assert msg["response"] == "Forbidden"
+        context.qs_params = {"id": state}
+
+        # Not yet finalized
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "201"
+        assert state_endpoint_response.message
+
+        # Passing wrong state, hence no match state-session_id
+        context.qs_params = {"id": "WRONG"}
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.message
 
         context.request_method = "POST"
-        context.qs_params = {"session_id": context.state['SESSION_ID']}
+        context.qs_params = {"id": state}
+        request_uri = CONFIG['metadata']['request_uris'][0]
+        context.request_uri = request_uri
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
@@ -595,10 +618,10 @@ class TestOpenID4VPBackend:
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
-        state = self.backend.state_endpoint(context)
-        assert state.status == "302"
-        assert state.message
-        msg = json.loads(state.message)
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "302"
+        assert state_endpoint_response.message
+        msg = json.loads(state_endpoint_response.message)
         assert msg["response"] == "Authentication successful"
 
 
