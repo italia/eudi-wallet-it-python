@@ -2,8 +2,7 @@ import pymongo
 from datetime import datetime
 from pyeudiw.storage.base_storage import BaseStorage
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
-from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
-from pyeudiw.federation.exceptions import InvalidChainError
+from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
@@ -95,44 +94,44 @@ class MongoStorage(BaseStorage):
              })
 
         return nonce, state, documentStatus
+    
+    def find_chain(self, entityID: str):
+        self._connect()
+        return self.chains.find_one({"entityID": entityID})
 
-    def add_chain(self, trust_chain: StaticTrustChainValidator) -> str:
-        entityID = trust_chain.get_entityID
-        
-        if not trust_chain.is_valid:
-            raise InvalidChainError(f"Chain with entityID {entityID} is invalid")
-        
-        chain = trust_chain.get_chain
+    def has_chain(self, entityID: str):
+        if self.find_chain({"entityID": entityID}):
+            return True
+        return False
+
+    def add_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+        if self.has_chain(entityID):
+            raise ChainAlreadyExist(f"Chain with entity id {entityID} already exist")
         
         entity = {
             "entityID": entityID,
             "federation": {
-                "chain": chain,
-                "exp": trust_chain.get_exp
+                "chain": trust_chain,
+                "exp": exp
             },
             "x509": {}
         }
         
-        self._connect()
         self.chains.insert_one(entity)
         
         return entityID
     
-    def update_chain(self, trust_chain: StaticTrustChainValidator) -> str:
-        entityID = trust_chain.get_entityID
-        
-        if not trust_chain.is_valid:
-            raise InvalidChainError(f"Chain with entityID {entityID} is invalid")
-        
-        chain = trust_chain.get_chain
+    def update_chain(self, entityID: str, trust_chain: list[str], exp: datetime) -> str:
+        if not self.has_chain(entityID):
+            raise ChainNotExist(f"Chain with entity id {entityID} not exist")
         
         documentStatus = self.chains.update_one(
             {"entityID": entityID},
             {"$set":
                 {
                     "federation": {
-                        "chain": chain,
-                        "exp": trust_chain.get_exp
+                        "chain": trust_chain,
+                        "exp": exp
                     }
                 },
              }
