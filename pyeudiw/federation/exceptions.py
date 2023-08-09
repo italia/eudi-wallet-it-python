@@ -64,3 +64,6 @@ class TimeValidationError(Exception):
 
 class KeyValidationError(Exception):
     pass
+
+class InvalidChainError(Exception):
+    pass

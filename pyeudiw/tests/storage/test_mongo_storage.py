@@ -9,7 +9,7 @@ class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
-            {"db_name": "eudiw", "db_collection": "test"},
+            {"db_name": "eudiw", "db_sessions_collection": "sessions", "db_attestations_collection": "attestations"},
             "mongodb://localhost:27017/",
             {}
         )
@@ -19,7 +19,8 @@ class TestMongoStorage:
 
         assert self.storage.db is not None
         assert self.storage.client
-        assert self.storage.collection is not None
+        assert self.storage.sessions is not None
+        assert self.storage.attestations is not None
 
     def test_entity_initialization(self):
         state = str(uuid.uuid4())

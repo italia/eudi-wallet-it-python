@@ -20,3 +20,6 @@ class InvalidVPToken(Exception):
     """
     Raised when a given VP is invalid
     """
+    
+class NotTrustedFederationError(Exception):
+    pass

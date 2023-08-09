@@ -4,7 +4,8 @@ from datetime import datetime
 from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import BaseStorage
-
+from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
@@ -22,13 +23,15 @@ class MongoStorage(BaseStorage):
             self.client = pymongo.MongoClient(
                 self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
-            self.collection = getattr(
-                self.db, self.storage_conf["db_collection"])
+            self.sessions = getattr(
+                self.db, self.storage_conf["db_sessions_collection"])
+            self.attestations = getattr(
+                self.db, self.storage_conf["db_attestations_collection"])
 
     def _retrieve_document_by_id(self, document_id: str) -> dict:
         self._connect()
 
-        document = self.collection.find_one({"document_id": document_id})
+        document = self.sessions.find_one({"document_id": document_id})
 
         if document is None:
             raise ValueError(f'Document with id {document_id} not found')
@@ -40,7 +43,7 @@ class MongoStorage(BaseStorage):
 
         query = {"state": state, "nonce": nonce}
 
-        document = self.collection.find_one(query)
+        document = self.sessions.find_one(query)
 
         if document is None:
             raise ValueError(
@@ -77,7 +80,7 @@ class MongoStorage(BaseStorage):
         }
 
         self._connect()
-        self.collection.insert_one(entity)
+        self.sessions.insert_one(entity)
 
         return document_id
 
@@ -100,8 +103,7 @@ class MongoStorage(BaseStorage):
 
     def update_request_object(self, document_id: str, request_object: dict):
         self._retrieve_document_by_id(document_id)
-
-        update_result: UpdateResult = self.collection.update_one(
+        documentStatus = self.sessions.update_one(
             {"document_id": document_id},
             {
                 "$set": {
@@ -139,7 +141,7 @@ class MongoStorage(BaseStorage):
 
         document_id = document["_id"]
 
-        documentStatus = self.collection.update_one(
+        documentStatus = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
@@ -148,13 +150,47 @@ class MongoStorage(BaseStorage):
             })
 
         return nonce, state, documentStatus
+    
+    def get_trust_attestation(self, entity_id: str):
+        self._connect()
+        return self.attestations.find_one({"entity_id": entity_id})
 
-    def exists_by_state_and_session_id(self, state: str, session_id: str | None = None) -> bool:
-        try:
-            document = self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)
-        except ValueError:
-            return False
-        return True
+    def has_trust_attestation(self, entity_id: str):
+        if self.get_trust_attestation({"entity_id": entity_id}):
+            return True
+        return False
 
-    def get_by_state_and_session_id(self, state: str, session_id: str | None = None):
-        return self._retrieve_document_by_state_and_session_id(state=state, session_id=session_id)
+    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        if self.has_trust_attestation(entity_id):
+            raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exist")
+        
+        entity = {
+            "entity_id": entity_id,
+            "federation": {
+                "chain": trust_chain,
+                "exp": exp
+            },
+            "x509": {}
+        }
+        
+        self.attestations.insert_one(entity)
+        
+        return entity_id
+    
+    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        if not self.has_trust_attestation(entity_id):
+            raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
+        
+        documentStatus = self.attestations.update_one(
+            {"entity_id": entity_id},
+            {"$set":
+                {
+                    "federation": {
+                        "chain": trust_chain,
+                        "exp": exp
+                    }
+                },
+             }
+        )
+        
+        return documentStatus

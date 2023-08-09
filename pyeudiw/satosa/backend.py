@@ -16,7 +16,7 @@ from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
-from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError, NoNonceInVPToken, InvalidVPToken
+from pyeudiw.satosa.exceptions import BadRequestError, NoBoundEndpointError, NoNonceInVPToken, InvalidVPToken, NotTrustedFederationError
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.mobile import is_smartphone
@@ -25,6 +25,7 @@ from pyeudiw.tools.utils import iat_now
 from pyeudiw.openid4vp import check_vp_token
 from pyeudiw.openid4vp.exceptions import KIDNotFound
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.trust import TrustEvaluationHelper
 
 from pydantic import ValidationError
 
@@ -245,10 +246,17 @@ class OpenID4VPBackend(BackendModule):
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
+    
+    def _validate_trust(self, jws: str) -> None:
+        headers = unpad_jwt_header(jws)
+        trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
+        is_trusted = trust_eval.inspect_evaluation_method()
+        
+        if not is_trusted():
+            raise NotTrustedFederationError(f"{trust_eval.entity_id} is not trusted")
 
-    def _handle_vp(self, vp_token: str, context: Context) -> dict:
-        valid, value = None, None
-
+    def _handle_vp(self, vp_token: str) -> dict:
+        self._validate_trust(vp_token)
         valid, value = check_vp_token(
             vp_token, None, self.metadata_jwks_by_kids)
 
@@ -315,18 +323,22 @@ class OpenID4VPBackend(BackendModule):
         nonce = None
         claims = []
         for vp in vp_token:
+            result = None
+            
             try:
-                result = self._handle_vp(vp, context)
+                result = self._handle_vp(vp)
             except InvalidVPToken as e:
-                return self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+                return self.handle_error(context=context, message=f"Cannot validate VP: {vp}", err_code="400")
             except NoNonceInVPToken as e:
                 return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
             except ValidationError as e:
                 return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
             except KIDNotFound as e:
                 return self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
+            except NotTrustedFederationError as e:
+                return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
-                return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
+                return  self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
@@ -378,9 +390,10 @@ class OpenID4VPBackend(BackendModule):
 
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
-
+            
+            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
+            self._validate_trust(dpop_jws)
             # TODO: validate wia scheme using pydantic
-
             try:
                 dpop = DPoPVerifier(
                     public_jwk=wia['cnf']['jwk'],
