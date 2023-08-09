@@ -6,7 +6,8 @@ from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 import pyeudiw.federation.trust_chain_validator as tcv_test
 
 
-from . base import *
+from . base import EXP, JWS, NOW, intermediate_ec_signed, intermediate_es, intermediate_jwk, leaf_ec_signed, leaf_jwk, ta_es, ta_es_signed, ta_jwk, trust_chain
+
 
 def test_is_valid():
     assert StaticTrustChainValidator(
@@ -34,8 +35,9 @@ invalid_trust_chain = [
 
 
 def test_is_valid_equals_false():
-    assert StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()]).is_valid == False
+    assert not StaticTrustChainValidator(
+        invalid_trust_chain, [ta_jwk.serialize()]
+    ).is_valid
 
 
 def test_retrieve_ec():
@@ -105,7 +107,7 @@ def test_update_st_es_case_source_endpoint():
             invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed) == leaf_ec_signed
 
 
-def test_update_st_es_case_source_endpoint():
+def test_update_st_es_case_no_source_endpoint():
 
     ta_es = {
         "exp": EXP,
@@ -130,7 +132,7 @@ def test_update_st_es_case_source_endpoint():
 
     with mock.patch.object(tcv_test, "get_entity_statements", mock_method_es):
         with mock.patch.object(tcv_test, "get_entity_configurations", mock_method_ec):
-            
+
             assert tcv_test.StaticTrustChainValidator(
                 invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed
-            ) == leaf_ec_signed
+                                                                      ) == leaf_ec_signed

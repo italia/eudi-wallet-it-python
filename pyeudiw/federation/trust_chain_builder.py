@@ -157,7 +157,7 @@ class TrustChainBuilder:
         logger.info(
             f"Starting a Walk into Metadata Discovery for {self.subject}")
         self.tree_of_trust[0] = [self.subject_configuration]
-        
+
         ecs_history = []
         while (len(self.tree_of_trust) - 2) < self.max_path_len:
             last_path_n = list(self.tree_of_trust.keys())[-1]
@@ -222,10 +222,9 @@ class TrustChainBuilder:
             )
             logger.error(_msg)
             raise Exception(_msg)
-        
+
         self._set_max_path_len()
-        
-    
+
     def _set_max_path_len(self):
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
             "max_path_length"

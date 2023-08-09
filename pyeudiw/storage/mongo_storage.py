@@ -4,8 +4,8 @@ from datetime import datetime
 from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
+
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
@@ -51,14 +51,13 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state_and_session_id(self, state: str, session_id: str | None = None):
+    def _retrieve_document_by_state_and_session_id(self, state: str, session_id :str = ""):
         self._connect()
 
         query = {"state": state}
         if session_id:
             query["session_id"] = session_id
-
-        document = self.collection.find_one(query)
+        document = self.sessions.find_one(query)
 
         if document is None:
             raise ValueError(
@@ -86,7 +85,7 @@ class MongoStorage(BaseStorage):
 
     def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict):
         self._connect()
-        update_result: UpdateResult = self.collection.update_one(
+        update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
             {
                 "$set": {
@@ -113,11 +112,11 @@ class MongoStorage(BaseStorage):
                 }
             }
         )
-        if update_result.matched_count != 1 or update_result.modified_count != 1:
+        if documentStatus.matched_count != 1 or documentStatus.modified_count != 1:
             raise ValueError(
                 f"Cannot update document {document_id}')"
             )
-        return update_result
+        return documentStatus
 
     def set_finalized(self, document_id: str):
         self._retrieve_document_by_id(document_id)
@@ -147,10 +146,10 @@ class MongoStorage(BaseStorage):
                 {
                     "response_object": response_object
                 },
-            })
+             })
 
         return nonce, state, documentStatus
-    
+
     def get_trust_attestation(self, entity_id: str):
         self._connect()
         return self.attestations.find_one({"entity_id": entity_id})
@@ -162,8 +161,9 @@ class MongoStorage(BaseStorage):
 
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         if self.has_trust_attestation(entity_id):
-            raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exist")
-        
+            raise ChainAlreadyExist(
+                f"Chain with entity id {entity_id} already exist")
+
         entity = {
             "entity_id": entity_id,
             "federation": {
@@ -172,15 +172,15 @@ class MongoStorage(BaseStorage):
             },
             "x509": {}
         }
-        
+
         self.attestations.insert_one(entity)
-        
+
         return entity_id
-    
+
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         if not self.has_trust_attestation(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
-        
+
         documentStatus = self.attestations.update_one(
             {"entity_id": entity_id},
             {"$set":
@@ -192,5 +192,5 @@ class MongoStorage(BaseStorage):
                 },
              }
         )
-        
+
         return documentStatus

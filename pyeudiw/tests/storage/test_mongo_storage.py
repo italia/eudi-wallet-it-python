@@ -9,7 +9,8 @@ class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
-            {"db_name": "eudiw", "db_sessions_collection": "sessions", "db_attestations_collection": "attestations"},
+            {"db_name": "eudiw", "db_sessions_collection": "sessions",
+                "db_attestations_collection": "attestations"},
             "mongodb://localhost:27017/",
             {}
         )
@@ -34,7 +35,8 @@ class TestMongoStorage:
 
         dpop_proof = {"dpop": "test"}
         attestation = {"attestation": "test"}
-        self.storage.add_dpop_proof_and_attestation(document_id, dpop_proof=dpop_proof, attestation=attestation)
+        self.storage.add_dpop_proof_and_attestation(
+            document_id, dpop_proof=dpop_proof, attestation=attestation)
 
         document = self.storage._retrieve_document_by_id(document_id)
 

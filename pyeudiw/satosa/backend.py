@@ -3,7 +3,7 @@ import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import Union
-from urllib.parse import quote_plus, urlencode, urlparse, parse_qs
+from urllib.parse import quote_plus, urlencode
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
@@ -85,7 +85,7 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
-        
+
         self.db_engine = DBEngine(self.config["storage"])
 
         logger.debug(
@@ -246,14 +246,14 @@ class OpenID4VPBackend(BackendModule):
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
-    
+
     def _validate_trust(self, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
         is_trusted = trust_eval.inspect_evaluation_method()
-        
         if not is_trusted():
-            raise NotTrustedFederationError(f"{trust_eval.entity_id} is not trusted")
+            raise NotTrustedFederationError(
+                f"{trust_eval.entity_id} is not trusted")
 
     def _handle_vp(self, vp_token: str) -> dict:
         self._validate_trust(vp_token)
@@ -324,12 +324,12 @@ class OpenID4VPBackend(BackendModule):
         claims = []
         for vp in vp_token:
             result = None
-            
+
             try:
                 result = self._handle_vp(vp)
-            except InvalidVPToken as e:
+            except InvalidVPToken:
                 return self.handle_error(context=context, message=f"Cannot validate VP: {vp}", err_code="400")
-            except NoNonceInVPToken as e:
+            except NoNonceInVPToken:
                 return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
             except ValidationError as e:
                 return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
@@ -338,7 +338,7 @@ class OpenID4VPBackend(BackendModule):
             except NotTrustedFederationError as e:
                 return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
-                return  self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
@@ -371,12 +371,12 @@ class OpenID4VPBackend(BackendModule):
         internal_resp = self._translate_response(
             all_user_claims, _info["issuer"]
         )
-        
+
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
         except Exception as e:
             return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
-        
+
         return self.auth_callback_func(context, internal_resp)
 
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
@@ -390,7 +390,7 @@ class OpenID4VPBackend(BackendModule):
 
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
-            
+
             dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
             self._validate_trust(dpop_jws)
             # TODO: validate wia scheme using pydantic
@@ -444,7 +444,7 @@ class OpenID4VPBackend(BackendModule):
             state = context.qs_params["id"]
         except Exception as e:
             _msg = "Error while retrieving id from qs_params: "\
-                    f"{e.__class__.__name__}: {e}"
+                f"{e.__class__.__name__}: {e}"
             return self.handle_error(context, message=_msg, err_code="403")
 
         try:
@@ -471,7 +471,8 @@ class OpenID4VPBackend(BackendModule):
         try:
             document = self.db_engine.get_by_state(state)
             document_id = document["document_id"]
-            self.db_engine.add_dpop_proof_and_attestation(document_id, dpop_proof, attestation)
+            self.db_engine.add_dpop_proof_and_attestation(
+                document_id, dpop_proof, attestation)
             self.db_engine.update_request_object(document_id, data)
             self.db_engine.set_finalized(document_id)
         except ValueError as e:
@@ -527,15 +528,16 @@ class OpenID4VPBackend(BackendModule):
             return self.handle_error(context, message=_msg, err_code="403")
 
         try:
-            session = self.db_engine.get_by_state_and_session_id(state=state, session_id=session_id)
+            session = self.db_engine.get_by_state_and_session_id(
+                state=state, session_id=session_id)
         except ValueError as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}.\n{e}"
             return self.handle_error(context, message=_msg, err_code="403")
 
         if session["finalized"]:
             return JsonResponse({
-                    "response": "Authentication successful"
-                },
+                "response": "Authentication successful"
+            },
                 status="302"
             )
         else:

@@ -9,6 +9,7 @@ from pyeudiw.storage.exceptions import ReplicaError
 
 logger = logging.getLogger("openid4vp.storage.db")
 
+
 class DBEngine():
     def __init__(self, config: dict):
         self.caches = []
@@ -47,7 +48,8 @@ class DBEngine():
         document_id = str(uuid.uuid4())
         for db_name, storage in self.storages:
             try:
-                storage.init_session(document_id, session_id=session_id, state=state)
+                storage.init_session(
+                    document_id, session_id=session_id, state=state)
             except Exception as e:
                 logger.critical(
                     f"Error while initializing session with document_id {document_id}."
@@ -125,7 +127,7 @@ class DBEngine():
                 f"Cannot update document with state {state} and nonce {nonce} on any instance")
 
         return replica_count
-    
+
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         for db_name, storage in self.storages:
             try:
@@ -133,43 +135,43 @@ class DBEngine():
 
                 if chain:
                     return chain
-                
+
             except Exception as e:
                 logger.critical(f"Error {str(e)}")
                 logger.critical(
                     f"Cannot find chain {entity_id} on {db_name}")
-                
+
         raise Exception(f"Cannot find chain {entity_id} on any instance")
-    
+
     def has_trust_attestation(self, entity_id: str):
         if self.get_trust_attestation(entity_id) is not None:
             return True
         return False
-    
+
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         replica_count = 0
         for db_name, storage in self.storages:
             try:
                 storage.add_trust_attestation(entity_id, trust_chain, exp)
                 replica_count += 1
-            except Exception as e:
+            except Exception:
                 logger.critical(
                     "Cannot add chain with entity_id {entity_id} on database {db_name}")
-        
+
         if replica_count == 0:
             raise ReplicaError(
                 f"Cannot add chain {entity_id} on any instance")
-            
+
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         replica_count = 0
         for db_name, storage in self.storages:
             try:
                 storage.update_trust_attestation(entity_id, trust_chain, exp)
                 replica_count += 1
-            except Exception as e:
+            except Exception:
                 logger.critical(
                     "Cannot add chain with entity_id {entity_id} on database {db_name}")
-        
+
         if replica_count == 0:
             raise ReplicaError(
                 f"Cannot update chain {entity_id} on any instance")
@@ -224,9 +226,10 @@ class DBEngine():
 
             return cache_object
 
-    def exists_by_state_and_session_id(self, state: str, session_id: str | None = None) -> bool:
+    def exists_by_state_and_session_id(self, state: str, session_id :str = "") -> bool:
         for db_name, storage in self.storages:
-            found = storage.exists_by_state_and_session_id(state=state, session_id=session_id)
+            found = storage.exists_by_state_and_session_id(
+                state=state, session_id=session_id)
             if found:
                 return True
         return False
@@ -234,14 +237,16 @@ class DBEngine():
     def get_by_state(self, state: str):
         return self.get_by_state_and_session_id(state=state)
 
-    def get_by_state_and_session_id(self, state: str, session_id: str | None = None):
+    def get_by_state_and_session_id(self, state: str, session_id :str = ""):
         for db_name, storage in self.storages:
             try:
-                document = storage.get_by_state_and_session_id(state, session_id)
+                document = storage._retrieve_document_by_state_and_session_id(
+                    state, session_id)
                 return document
             except ValueError:
                 logger.debug(
                     f"Document object with state {state} and session_id {session_id} not found in db {db_name}")
-
-        logger.error(f"Document object with state {state} and session_id {session_id} not found!")
-        raise ValueError(f"Document object with state {state} and session_id {session_id} not found!")
+        
+        _msg = f"Document object with state {state} and session_id {session_id} not found"
+        logger.error(_msg)
+        raise ValueError(_msg)

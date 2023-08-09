@@ -79,7 +79,7 @@ class StaticTrustChainValidator:
         rev_tc = [
             i for i in reversed(self.get_chain())
         ]
-        
+
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
 
@@ -178,22 +178,22 @@ class StaticTrustChainValidator:
         self.exp = 0
         for st in self.static_trust_chain:
             jwt = self._update_st(st, httpc_params)
-            
+
             exp = unpad_jwt_payload(jwt)["exp"]
-            
+
             if not self.exp or self.exp > exp:
                 self.exp = exp
-            
+
             self.updated_trust_chain.append(jwt)
-        
+
         return self.is_valid
-    
+
     def get_chain(self) -> list[str]:
         return self.updated_trust_chain or self.static_trust_chain
-    
+
     def get_exp(self) -> int:
         return self.exp
-    
+
     @property
     def is_expired(self) -> int:
         return self._check_expired(self.exp)

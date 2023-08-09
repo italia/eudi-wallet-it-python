@@ -6,7 +6,6 @@ import uuid
 from unittest.mock import Mock
 
 import pytest
-import satosa
 from bs4 import BeautifulSoup
 from satosa.context import Context
 from satosa.internal import InternalData
@@ -126,7 +125,7 @@ CONFIG = {
                     "url": "mongodb://localhost:27017/",
                     "conf": {
                         "db_name": "eudiw",
-                        "db_sessions_collection": "sessions", 
+                        "db_sessions_collection": "sessions",
                         "db_attestations_collection": "chains"
                     },
                     "connection_params": {}
@@ -472,7 +471,8 @@ class TestOpenID4VPBackend:
 
         qs = urllib.parse.parse_qs(parsed.query)
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
-        assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
+        assert qs["request_uri"][0].startswith(
+            CONFIG["metadata"]["request_uris"][0])
 
     def test_redirect_endpoint(self, context):
         issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
@@ -549,7 +549,7 @@ class TestOpenID4VPBackend:
         try:
             redirect_endpoint = self.backend.redirect_endpoint(context)
             assert redirect_endpoint
-        except Exception as e:
+        except Exception:
             # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
             return
         # TODO any additional checks after the backend returned the user attributes to satosa core
@@ -568,7 +568,8 @@ class TestOpenID4VPBackend:
         )
         pre_request_endpoint = self.backend.pre_request_endpoint(
             context, internal_data)
-        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
+        state = urllib.parse.unquote(
+            pre_request_endpoint.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
@@ -626,7 +627,6 @@ class TestOpenID4VPBackend:
         assert state_endpoint_response.message
         msg = json.loads(state_endpoint_response.message)
         assert msg["response"] == "Authentication successful"
-
 
     def test_handle_error(self, context):
         error_message = "Error message!"
