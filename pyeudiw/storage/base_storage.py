@@ -1,5 +1,5 @@
 class BaseStorage(object):
-    def init_session(self, document_id: str, *, session_id: str, state: str):
+    def init_session(self, document_id: str, session_id: str, state: str):
         NotImplementedError()
 
     def add_dpop_proof_and_attestation(self, document_id: str, *, dpop_proof: dict, attestation: dict) -> str:
