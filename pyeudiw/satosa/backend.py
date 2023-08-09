@@ -311,20 +311,22 @@ class OpenID4VPBackend(BackendModule):
         nonce = None
         claims = []
         for vp in vp_token:
+            result = None
+            
             try:
                 result = self._handle_vp(vp)
             except InvalidVPToken as e:
-                self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
+                return self.handle_error(context=context, message=f"Cannot validate SD_JWT", err_code="400")
             except NoNonceInVPToken as e:
-                self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
+                return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
             except ValidationError as e:
-                self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
             except KIDNotFound as e:
-                self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
             except NotTrustedFederationError as e:
-                self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
+                return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
-                self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
+                return  self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
 
             # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
             if not nonce:
@@ -374,8 +376,8 @@ class OpenID4VPBackend(BackendModule):
 
             # take WIA
             wia = unpad_jwt_payload(context.http_headers['HTTP_AUTHORIZATION'])
-            
-            self._validate_trust(wia)
+                        
+            self._validate_trust(context.http_headers['HTTP_AUTHORIZATION'].split()[1])
             
             # TODO: validate wia scheme using pydantic
 
