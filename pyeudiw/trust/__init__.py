@@ -4,7 +4,7 @@ from pyeudiw.storage.db_engine import DBEngine
 
 
 class TrustEvaluationHelper:
-    def __init__(self, storage: DBEngine,  **kwargs):
+    def __init__(self, storage: DBEngine, **kwargs):
         self.exp: int = 0
         self.trust_chain: list = []
         self.storage = storage
@@ -18,8 +18,8 @@ class TrustEvaluationHelper:
         # method based on internal trust evaluetion property
         return self.federation
 
-    def _handle_chain(self, trust_chain: list[str]):
-        tc = StaticTrustChainValidator(trust_chain)
+    def _handle_chain(self, trust_chain: list[str], jwks: list[dict]):
+        tc = StaticTrustChainValidator(trust_chain, jwks)
         self.entity_id = tc.get_entityID()
 
         _is_valid = tc.is_valid
@@ -46,9 +46,9 @@ class TrustEvaluationHelper:
 
         return _is_valid
 
-    def federation(self) -> list:
+    def federation(self) -> bool:
         if self.trust_chain:
-            return self._handle_chain(self.trust_chain)
+            return self._handle_chain(self.trust_chain, self.jwks)
 
         # TODO - at least a TA entity id is required for a discovery process
         # _tc = TrustChainBuilder(

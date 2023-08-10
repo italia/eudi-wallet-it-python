@@ -87,7 +87,20 @@ class OpenID4VPBackend(BackendModule):
         self.template = Jinja2TemplateHandler(config)
 
         self.db_engine = DBEngine(self.config["storage"])
-
+        
+        entity_id = self.config['metadata']['client_id']
+        
+        trust_chain = self.db_engine.get_trust_attestation(entity_id)
+        
+        if not trust_chain:
+            # TODO: implement discovery
+            raise NotImplementedError()
+        
+        self.chain_helper = TrustEvaluationHelper(self.db_engine, trust_chain=trust_chain, jwks=self.config['federation']['federation_jwks'])
+        validate = self.chain_helper.inspect_evaluation_method()
+        
+        validate()
+        
         logger.debug(
             lu.LOG_FMT.format(
                 id="OpenID4VP init",
