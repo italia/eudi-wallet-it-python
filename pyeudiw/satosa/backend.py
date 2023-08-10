@@ -213,7 +213,7 @@ class OpenID4VPBackend(BackendModule):
         qrcode = QRCode(res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
-            {"title": "Frame the qrcode", 'qrcode_base64': qrcode.to_base64()}
+            {"title": "Frame the qrcode", 'qrcode_base64': qrcode.to_base64(), "state": state}
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
