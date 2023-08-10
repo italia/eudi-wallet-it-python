@@ -74,8 +74,10 @@ class WalletRelyingParty(BaseModel):
             name, info)
         for alg in algorithms:
             if alg not in supported_algorithms:
-                raise ValueError(f"Unsupported algorithm: {alg} for {name}.\n  "
-                                 f"Supported algorithms: {supported_algorithms}.\n")
+                raise ValueError(
+                    f"Unsupported algorithm: {alg} for {name}. "
+                    f"Supported algorithms: {supported_algorithms}."
+                )
         return algorithms
 
     @field_validator(

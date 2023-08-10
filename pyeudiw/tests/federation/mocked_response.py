@@ -1,10 +1,6 @@
-from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload
-from pyeudiw.federation.exceptions import HttpError
 
-from . base import *
+from . base import intermediate_ec_signed, intermediate_es_signed, leaf_ec_signed, ta_ec_signed, ta_es_signed
 
-import copy
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,7 +22,7 @@ class EntityResponse:
 class EntityResponseNoIntermediate(EntityResponse):
     @property
     def content(self):
-        
+
         resp_seq = {
             0: ta_ec_signed,
             1: leaf_ec_signed,
@@ -35,7 +31,7 @@ class EntityResponseNoIntermediate(EntityResponse):
             4: ta_ec_signed,
             5: ta_es_signed
         }
-        
+
         self.result = resp_seq.get(self.req_counter, None)
         self.req_counter += 1
         if self.result:
@@ -56,14 +52,14 @@ class EntityResponseNoIntermediate(EntityResponse):
             # self.result = self.fetch_rp_from_ta()
         # elif self.req_counter == 3:
             # metadata = copy.deepcopy(
-                # rp_conf['metadata']['openid_relying_party'])
+            # rp_conf['metadata']['openid_relying_party'])
             # _jwks = metadata.pop('jwks')
             # fed_jwks = rp_conf['jwks_fed'][0]
             # self.result = create_jws(_jwks, fed_jwks)
             # return self.result.encode()
         # elif self.req_counter > 3:
             # raise NotImplementedError(
-                # "The mocked resposes seems to be not aligned with the correct flow"
+            # "The mocked resposes seems to be not aligned with the correct flow"
             # )
 
         # return self.result_as_jws()
@@ -78,33 +74,33 @@ class EntityResponseNoIntermediate(EntityResponse):
             # self.result = self.rp_ec()
         # elif self.req_counter == 2:
             # sa = FederationEntityConfiguration.objects.get(
-                # sub=intermediary_conf["sub"])
+            # sub=intermediary_conf["sub"])
             # self.result = DummyContent(sa.entity_configuration_as_jws)
         # elif self.req_counter == 3:
             # url = reverse("oidcfed_fetch")
             # self.result = self.client.get(
-                # url,
-                # data={
-                    # "sub": rp_onboarding_data["sub"],
-                    # "iss": intermediary_conf["sub"],
-                # },
+            # url,
+            # data={
+            # "sub": rp_onboarding_data["sub"],
+            # "iss": intermediary_conf["sub"],
+            # },
             # )
         # elif self.req_counter == 4:
             # url = reverse("oidcfed_fetch")
             # self.result = self.client.get(
-                # url, data={"sub": intermediary_conf["sub"]})
+            # url, data={"sub": intermediary_conf["sub"]})
         # elif self.req_counter == 5:
             # url = reverse("entity_configuration")
             # self.result = self.client.get(
-                # url, data={"sub": ta_conf_data["sub"]})
+            # url, data={"sub": ta_conf_data["sub"]})
         # elif self.req_counter > 5:
             # raise NotImplementedError(
-                # "The mocked resposes seems to be not aligned with the correct flow"
+            # "The mocked resposes seems to be not aligned with the correct flow"
             # )
 
         # if self.result.status_code != 200:
             # raise HttpError(
-                # f"Something went wrong with Http Request: {self.result.__dict__}")
+            # f"Something went wrong with Http Request: {self.result.__dict__}")
 
         # logger.info("-------------------------------------------------")
         # logger.info("")
@@ -120,7 +116,7 @@ class EntityResponseNoIntermediate(EntityResponse):
             # self.result = self.rp_ec()
         # elif self.req_counter == 2:
             # sa = FederationEntityConfiguration.objects.get(
-                # sub=intermediary_conf["sub"])
+            # sub=intermediary_conf["sub"])
             # self.result = DummyContent(sa.entity_configuration_as_jws)
         # elif self.req_counter == 3:
             # self.result = DummyContent("crap")
@@ -128,27 +124,27 @@ class EntityResponseNoIntermediate(EntityResponse):
         # elif self.req_counter == 4:
             # url = reverse("oidcfed_fetch")
             # self.result = self.client.get(
-                # url,
-                # data={
-                    # "sub": rp_onboarding_data["sub"],
-                    # "iss": intermediary_conf["sub"],
-                # },
+            # url,
+            # data={
+            # "sub": rp_onboarding_data["sub"],
+            # "iss": intermediary_conf["sub"],
+            # },
             # )
         # elif self.req_counter == 5:
             # url = reverse("oidcfed_fetch")
             # self.result = self.client.get(
-                # url, data={"sub": intermediary_conf["sub"]})
+            # url, data={"sub": intermediary_conf["sub"]})
         # elif self.req_counter == 6:
             # url = reverse("entity_configuration")
             # self.result = self.client.get(
-                # url, data={"sub": ta_conf_data["sub"]})
+            # url, data={"sub": ta_conf_data["sub"]})
         # elif self.req_counter > 6:
             # raise NotImplementedError(
-                # "The mocked resposes seems to be not aligned with the correct flow"
+            # "The mocked resposes seems to be not aligned with the correct flow"
             # )
         # if self.result.status_code != 200:
             # raise HttpError(
-                # f"Something went wrong with Http Request: {self.result.__dict__}")
+            # f"Something went wrong with Http Request: {self.result.__dict__}")
 
         # try:
             # return self.result_as_jws()

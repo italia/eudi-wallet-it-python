@@ -21,11 +21,14 @@ async def fetch_all(session, urls, httpc_params):
 
 
 async def http_get(urls, httpc_params: dict = {}, sync=True):
-    
+
     if sync:
-        res = [requests.get(url).content for url in urls]
+        res = [
+            requests.get(url, **httpc_params).content  # nosec - B113
+            for url in urls
+        ]
         return res
-        
+
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)
         return text

@@ -36,16 +36,16 @@ ta_ec = {
 
 
 def test_is_es():
-    assert is_es(ta_es) == True
+    assert is_es(ta_es)
 
 
 def test_is_es_false():
-    assert is_es(ta_ec) == False
+    assert not is_es(ta_ec)
 
 
 def test_is_ec():
-    assert is_ec(ta_ec) == True
+    assert is_ec(ta_ec)
 
 
 def test_is_ec_false():
-    assert is_ec(ta_es) == False
+    assert not is_ec(ta_es)

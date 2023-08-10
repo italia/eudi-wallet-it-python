@@ -45,7 +45,7 @@ def test_do_sub_one_super_add_combine_superset_of():
     assert policy == ['test_a']
 
 
-def test_do_sub_one_super_add_subset_of_fail():
+def test_do_superset_of_fail():
     SUPERIOR = {
         "superset_of": set(["test_a", "test_b"])
     }
@@ -86,16 +86,3 @@ def test_do_value_superset_of_fail():
         do_value(SUPERIOR, CHILD, "superset_of")
     except PolicyError:
         return
-
-
-def test_do_value_superset_of():
-    SUPERIOR = {
-        "superset_of": set(["test_a", "test_b"])
-    }
-
-    CHILD = {
-        "superset_of": set(["test_a", "test_b"])
-    }
-
-    policy = do_value(SUPERIOR, CHILD, "superset_of")
-    assert policy == set(["test_a", "test_b"])

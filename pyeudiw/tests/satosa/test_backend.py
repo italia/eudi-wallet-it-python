@@ -125,7 +125,7 @@ CONFIG = {
                     "url": "mongodb://localhost:27017/",
                     "conf": {
                         "db_name": "eudiw",
-                        "db_sessions_collection": "sessions", 
+                        "db_sessions_collection": "sessions",
                         "db_attestations_collection": "chains"
                     },
                     "connection_params": {}
@@ -471,7 +471,8 @@ class TestOpenID4VPBackend:
 
         qs = urllib.parse.parse_qs(parsed.query)
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
-        assert qs["request_uri"][0] == CONFIG["metadata"]["request_uris"][0]
+        assert qs["request_uri"][0].startswith(
+            CONFIG["metadata"]["request_uris"][0])
 
     def test_redirect_endpoint(self, context):
         issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
@@ -545,17 +546,30 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-
         try:
             redirect_endpoint = self.backend.redirect_endpoint(context)
             assert redirect_endpoint
-        except Exception as e:
+        except Exception:
             # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
             return
-            
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
+        # No session created
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.message
+        msg = json.loads(state_endpoint_response.message)
+        assert msg["message"]
+
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(
+            context, internal_data)
+        state = urllib.parse.unquote(
+            pre_request_endpoint.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
@@ -575,12 +589,28 @@ class TestOpenID4VPBackend:
             HTTP_DPOP=dpop_proof
         )
 
+        context.qs_params = {"id": state}
+
+        # Not yet finalized
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "204"
+        assert state_endpoint_response.message
+
+        # Passing wrong state, hence no match state-session_id
+        context.qs_params = {"id": "WRONG"}
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.message
+
+        context.request_method = "POST"
+        context.qs_params = {"id": state}
+        request_uri = CONFIG['metadata']['request_uris'][0]
+        context.request_uri = request_uri
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
         assert request_endpoint.status == "200"
         assert request_endpoint.message
-
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
 
@@ -591,6 +621,12 @@ class TestOpenID4VPBackend:
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
+
+        state_endpoint_response = self.backend.state_endpoint(context)
+        assert state_endpoint_response.status == "302"
+        assert state_endpoint_response.message
+        msg = json.loads(state_endpoint_response.message)
+        assert msg["response"] == "Authentication successful"
 
     def test_handle_error(self, context):
         error_message = "Error message!"
