@@ -226,7 +226,7 @@ class OpenID4VPBackend(BackendModule):
         qrcode = QRCode(res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
-            {"title": "Frame the qrcode", 'qrcode_base64': qrcode.to_base64()}
+            {"title": "Frame the qrcode", 'qrcode_base64': qrcode.to_base64(), "state": state}
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -261,6 +261,14 @@ class OpenID4VPBackend(BackendModule):
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
+    
+    def _validate_trust(self, jws: str) -> None:
+        headers = unpad_jwt_header(jws)
+        trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
+        is_trusted = trust_eval.inspect_evaluation_method()
+        
+        if not is_trusted():
+            raise NotTrustedFederationError(f"{trust_eval.entity_id} is not trusted")
 
     def _validate_trust(self, jws: str) -> None:
         headers = unpad_jwt_header(jws)
@@ -508,7 +516,10 @@ class OpenID4VPBackend(BackendModule):
             return self.handle_error(context, message=_msg, err_code="500")
 
         helper = JWSHelper(self.metadata_jwk)
-        jwt = helper.sign(data, {"trust_chain": self.chain_helper.trust_chain})
+
+        # TODO: add the trust chain in the JWS headers here
+        jwt = helper.sign(data)
+
         response = {"response": jwt}
         return JsonResponse(
             response,
