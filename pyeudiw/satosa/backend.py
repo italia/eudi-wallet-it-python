@@ -495,7 +495,10 @@ class OpenID4VPBackend(BackendModule):
             return self.handle_error(context, message=_msg, err_code="500")
 
         helper = JWSHelper(self.metadata_jwk)
+
+        # TODO: add the trust chain in the JWS headers here
         jwt = helper.sign(data)
+
         response = {"response": jwt}
         return JsonResponse(
             response,
