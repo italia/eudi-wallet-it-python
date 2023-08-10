@@ -248,6 +248,14 @@ class OpenID4VPBackend(BackendModule):
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
+    
+    def _validate_trust(self, jws: str) -> None:
+        headers = unpad_jwt_header(jws)
+        trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
+        is_trusted = trust_eval.inspect_evaluation_method()
+        
+        if not is_trusted():
+            raise NotTrustedFederationError(f"{trust_eval.entity_id} is not trusted")
 
     def _validate_trust(self, jws: str) -> None:
         headers = unpad_jwt_header(jws)
