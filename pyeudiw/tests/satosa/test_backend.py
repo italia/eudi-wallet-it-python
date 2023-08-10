@@ -443,6 +443,11 @@ class TestOpenID4VPBackend:
         # decode the base64 data
         decoded = base64.b64decode(data).decode("utf-8")
 
+        # get the div with id "state"
+        state_div = soup.find("div", {"id": "state"})
+        assert state_div
+        assert state_div["value"]
+
         svg = BeautifulSoup(decoded, features="xml")
         assert svg
         assert svg.find("svg")
