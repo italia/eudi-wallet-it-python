@@ -268,8 +268,9 @@ intermediate_signer = JWS(intermediate_es, alg="RS256",
 intermediate_es_signed = intermediate_signer.sign_compact([intermediate_jwk])
 
 intermediate_signer_ec = JWS(intermediate_ec, alg="RS256",
-                          typ="application/entity-statement+jwt")
-intermediate_ec_signed = intermediate_signer_ec.sign_compact([intermediate_jwk])
+                             typ="application/entity-statement+jwt")
+intermediate_ec_signed = intermediate_signer_ec.sign_compact([
+                                                             intermediate_jwk])
 
 ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
 ta_es_signed = ta_signer.sign_compact([ta_jwk])

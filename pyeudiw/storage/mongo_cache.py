@@ -23,7 +23,7 @@ class MongoCache(BaseCache):
                 self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.collection = getattr(self.db, "cache_storage")
-            
+
     def _gen_cache_object(self, object_name: str, data: str):
         creation_date = datetime.timestamp(datetime.now())
         return {
@@ -31,7 +31,6 @@ class MongoCache(BaseCache):
             "data": data,
             "creation_date": creation_date
         }
-
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
         self._connect()
@@ -69,8 +68,8 @@ class MongoCache(BaseCache):
         })
 
         return cache_object
-    
+
     def set(self, data: dict) -> dict:
         self._connect()
-        
+
         return self.collection.insert_one(data)

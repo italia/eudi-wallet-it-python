@@ -18,7 +18,7 @@ def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC
         "issuer_key": issuer_key.as_dict() if issuer_key else {},
         "holder_key": holder_key.as_dict() if holder_key else {}
     }
-    
+
     return get_jwk(keys, settings["no_randomness"], None)
 
 
