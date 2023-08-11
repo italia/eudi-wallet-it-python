@@ -9,7 +9,7 @@ from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 
 
 class MongoStorage(BaseStorage):
-    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = {}) -> None:
         super().__init__()
         self.storage_conf = conf
         self.url = url
@@ -157,8 +157,8 @@ class MongoStorage(BaseStorage):
         return nonce, state, documentStatus
 
     def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
-        db_collection = getattr(self, collection)
         self._connect()
+        db_collection = getattr(self, collection)
         return db_collection.find_one({"entity_id": entity_id})
 
     def get_trust_attestation(self, entity_id: str):
@@ -168,9 +168,7 @@ class MongoStorage(BaseStorage):
         return self._get_trust_attestation("trust_anchors", entity_id)
 
     def _has_trust_attestation(self, collection: str, entity_id: str):
-        if self._get_trust_attestation(collection, entity_id):
-            return True
-        return False
+        return self._get_trust_attestation(collection, entity_id)
 
     def has_trust_attestation(self, entity_id: str):
         return self._has_trust_attestation("trust_attestations", entity_id)

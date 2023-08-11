@@ -193,6 +193,15 @@ class OpenID4VPBackend(BackendModule):
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
+        self._log(
+            context, 
+            level='debug', 
+            message=(
+                "[INCOMING REQUEST] pre_request_endpoint with Context: "
+                f"{context.__dict__} and internal_request: {internal_request}"
+            )
+        )
+        
         session_id = str(context.state["SESSION_ID"])
         state = str(uuid.uuid4())
         # Init session
@@ -287,7 +296,14 @@ class OpenID4VPBackend(BackendModule):
         return value
 
     def redirect_endpoint(self, context, *args):
-        self.metadata_jwk
+        self._log(
+            context, 
+            level='debug', 
+            message=(
+                "[INCOMING REQUEST] redirect_endpoint with Context: "
+                f"{context.__dict__} and args: {args}"
+            )
+        )
 
         if context.request_method.lower() != 'post':
             raise BadRequestError("HTTP Method not supported")
@@ -463,6 +479,15 @@ class OpenID4VPBackend(BackendModule):
 
     def request_endpoint(self, context, *args):
 
+        self._log(
+            context, 
+            level='debug', 
+            message=(
+                "[INCOMING REQUEST] request_endpoint with Context: "
+                f"{context.__dict__} and args: {args}"
+            )
+        )
+
         # check DPOP for WIA if any
         dpop_validation_error = self._request_endpoint_dpop(context)
         if dpop_validation_error:
@@ -553,6 +578,16 @@ class OpenID4VPBackend(BackendModule):
         )
 
     def state_endpoint(self, context):
+
+        self._log(
+            context, 
+            level='debug', 
+            message=(
+                "[INCOMING REQUEST] state_endpoint with Context: "
+                f"{context.__dict__} and args: {args}"
+            )
+        )
+
         session_id = context.state["SESSION_ID"]
         try:
             state = context.qs_params["id"]

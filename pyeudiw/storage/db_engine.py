@@ -14,7 +14,6 @@ class DBEngine():
     def __init__(self, config: dict):
         self.caches = []
         self.storages = []
-
         for db_name, db_conf in config.items():
             storage_instance, cache_instance = self._handle_instance(db_conf)
 

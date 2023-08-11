@@ -85,7 +85,8 @@ try:
         headers=headers_mobile
     )
 except requests.exceptions.InvalidSchema as e:
-    request_uri = urllib.parse.unquote_plus(e.args[0].split("request_uri=")[1][:-1])
+    request_uri = urllib.parse.unquote_plus(e.args[0].split("request_uri=")[1][:-1]
+)
 
 # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
 db_engine_inst = DBEngine(CONFIG_DB)
@@ -126,7 +127,7 @@ http_headers = {
     "DPOP":dpop_proof
 }
 
-#  
+breakpoint()
 sign_request_obj = requests.get(request_uri, verify=False, headers=http_headers)
 
 print(sign_request_obj)
