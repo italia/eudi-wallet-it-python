@@ -25,11 +25,10 @@ class MongoCache(BaseCache):
             self.collection = getattr(self.db, "cache_storage")
 
     def _gen_cache_object(self, object_name: str, data: str):
-        creation_date = datetime.timestamp(datetime.now())
         return {
             "object_name": object_name,
             "data": data,
-            "creation_date": creation_date
+            "creation_date": datetime.now().isoformat()
         }
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
@@ -48,14 +47,14 @@ class MongoCache(BaseCache):
 
     def overwrite(self, object_name: str, value_gen_fn: Callable[[], str]) -> dict:
         self._connect()
-
+        
+        update_time = datetime.now().isoformat()
+        
         new_data = value_gen_fn()
-        updated_date = datetime.timestamp(datetime.now())
-
         cache_object = {
             "object_name": object_name,
             "data": new_data,
-            "creation_date": updated_date
+            "creation_date": update_time
         }
 
         query = {"object_name": object_name}
@@ -63,7 +62,7 @@ class MongoCache(BaseCache):
         self.collection.update_one(query, {
             "$set": {
                 "data": new_data,
-                "creation_date": updated_date
+                "creation_date": update_time
             }
         })
 

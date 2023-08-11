@@ -72,11 +72,9 @@ class MongoStorage(BaseStorage):
         return document
 
     def init_session(self, document_id: str, session_id: str, state: str) -> str:
-        creation_date = datetime.timestamp(datetime.now())
-
         entity = {
             "document_id": document_id,
-            "creation_date": creation_date,
+            "creation_date": datetime.now().isoformat(),
             "state": state,
             "session_id": session_id,
             "finalized": False,
