@@ -199,14 +199,13 @@ class OpenID4VPBackend(BackendModule):
 
         session_id = str(context.state["SESSION_ID"])
         state = str(uuid.uuid4())
-
         # Init session
         try:
             self.db_engine.init_session(
                 state=state,
                 session_id=session_id
             )
-        except Exception as e:
+        except (Exception, StorageWriteError) as e:
             _msg = (
                 f"Error while initializing session with state {state} and {session_id}. "
                 f"{e.__class__.__name__}: {e}"
@@ -503,11 +502,13 @@ class OpenID4VPBackend(BackendModule):
             "exp": exp_from_now(minutes=5)
         }
 
+        # take the session created in the pre-request authz endpoint
         try:
             document = self.db_engine.get_by_state(state)
             document_id = document["document_id"]
             self.db_engine.add_dpop_proof_and_attestation(
-                document_id, dpop_proof, attestation)
+                document_id, dpop_proof, attestation
+            )
             self.db_engine.update_request_object(document_id, data)
             self.db_engine.set_finalized(document_id)
         except ValueError as e:

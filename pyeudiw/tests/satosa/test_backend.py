@@ -129,8 +129,8 @@ CONFIG = {
                     "conf": {
                         "db_name": "eudiw",
                         "db_sessions_collection": "sessions",
-                        "db_attestations_collection": "attestations",
-                        "db_trustanchors_collection": "anchors",
+                        "db_trust_attestations_collection": "trust_attestations",
+                        "db_trust_anchors_collection": "trust_anchors"
                     },
                     "connection_params": {}
                 }
@@ -604,7 +604,6 @@ class TestOpenID4VPBackend:
 
         context.qs_params = {"id": state}
 
-        # Not yet finalized
         state_endpoint_response = self.backend.state_endpoint(context)
         assert state_endpoint_response.status == "204"
         assert state_endpoint_response.message

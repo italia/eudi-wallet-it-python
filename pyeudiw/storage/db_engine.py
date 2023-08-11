@@ -48,12 +48,15 @@ class DBEngine():
         for db_name, storage in self.storages:
             try:
                 storage.init_session(
-                    document_id, session_id=session_id, state=state)
-            except Exception as e:
+                    document_id, session_id=session_id, state=state
+                )
+            except StorageWriteError as e:
                 logger.critical(
                     f"Error while initializing session with document_id {document_id}. "
                     f"Cannot write document with id {document_id} on {db_name}: "
-                    f"{e.__class__.__name__}: {e}")
+                    f"{e.__class__.__name__}: {e}"
+                )
+                raise e
 
         return document_id
 
@@ -98,24 +101,11 @@ class DBEngine():
                     return res
 
             except Exception as e:
-                logger.critical(f"Error {str(e)}")
                 logger.critical(
-                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}"
+                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}: {str(e)}"
                 )
 
         raise Exception(f"Cannot find any result by method {method}")
-
-    def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
-        return self.get("get_trust_attestation", entity_id)
-
-    def has_trust_attestation(self, entity_id: str):
-        return self.get_trust_attestation(entity_id)
-
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("add_trust_attestation", trust_chain, exp)
-
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("update_trust_attestation", entity_id, trust_chain, exp)
 
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)

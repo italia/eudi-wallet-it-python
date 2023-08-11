@@ -11,7 +11,6 @@ from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
-
         self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
@@ -28,11 +27,11 @@ class MongoStorage(BaseStorage):
             self.sessions = getattr(
                 self.db, self.storage_conf["db_sessions_collection"]
             )
-            self.attestations = getattr(
-                self.db, self.storage_conf["db_attestations_collection"]
+            self.trust_attestations = getattr(
+                self.db, self.storage_conf["db_trust_attestations_collection"]
             )
-            self.trustanchors = getattr(
-                self.db, self.storage_conf["db_trustanchors_collection"]
+            self.trust_anchors = getattr(
+                self.db, self.storage_conf["db_trust_anchors_collection"]
             )
 
     def get_by_id(self, document_id: str) -> dict:
@@ -85,7 +84,11 @@ class MongoStorage(BaseStorage):
             "response": None
         }
 
-        self._connect()
+        try:
+            self._connect()
+        except Exception as e:
+            raise e
+
         self.sessions.insert_one(entity)
 
         return document_id
@@ -161,10 +164,10 @@ class MongoStorage(BaseStorage):
         return db_collection.find_one({"entity_id": entity_id})
 
     def get_trust_attestation(self, entity_id: str):
-        return self._get_trust_attestation("attestations", entity_id)
+        return self._get_trust_attestation("trust_attestations", entity_id)
 
     def get_trust_anchor(self, entity_id: str):
-        return self._get_trust_attestation("anchors", entity_id)
+        return self._get_trust_attestation("trust_anchors", entity_id)
 
     def _has_trust_attestation(self, collection: str, entity_id: str):
         if self._get_trust_attestation(collection, entity_id):
@@ -172,10 +175,10 @@ class MongoStorage(BaseStorage):
         return False
 
     def has_trust_attestation(self, entity_id: str):
-        return self._has_trust_attestation("attestations", entity_id)
+        return self._has_trust_attestation("trust_attestations", entity_id)
 
     def has_trust_anchors(self, entity_id: str):
-        return self._has_trust_attestation("anchors", entity_id)
+        return self._has_trust_attestation("trust_anchors", entity_id)
 
     def _add_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if self._has_trust_attestation(collection, entity_id):
@@ -197,7 +200,8 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
 
-        self._add_trust_attestation("attestations", entity_id, entity, exp)
+        self._add_trust_attestation(
+            "trust_attestations", entity_id, entity, exp)
 
     def add_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
         entity = {
@@ -209,13 +213,13 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
 
-        self._add_trust_attestation("anchors", entity_id, entity, exp)
+        self._add_trust_attestation("trust_anchors", entity_id, entity, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if not self._has_trust_attestation(collection, entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
-        documentStatus = self.attestations.update_one(
+        documentStatus = self.trust_attestations.update_one(
             {"entity_id": entity_id},
             {"$set": entity}
         )
@@ -229,7 +233,7 @@ class MongoStorage(BaseStorage):
             }
         }
 
-        return self._update_trust_attestation("attestations", entity_id, entity, exp)
+        return self._update_trust_attestation("trust_attestations", entity_id, entity, exp)
 
     def update_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
         entity = {
@@ -239,4 +243,4 @@ class MongoStorage(BaseStorage):
             }
         }
 
-        return self._update_trust_attestation("anchor", entity_id, entity, exp)
+        return self._update_trust_attestation("trust_anchors", entity_id, entity, exp)
