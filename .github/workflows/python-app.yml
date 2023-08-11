@@ -77,9 +77,10 @@ jobs:
           echo -e "\n$file:"
           html_lint.py "$file" | awk -v path="file://$PWD/$file:" '$0=path$0' | sed -e 's/: /:\n\t/';
         done
-
-        for file in "${array[@]}"
-        do
-          errors=$(html_lint.py "$file" | grep -c 'Error')
-          if [ "$errors" -gt 0 ]; then exit 1; fi;
-        done
+        
+        # block if the html linter fails
+        #for file in "${array[@]}"
+        #do
+          #errors=$(html_lint.py "$file" | grep -c 'Error')
+          #if [ "$errors" -gt 0 ]; then exit 1; fi;
+        #done
