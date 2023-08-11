@@ -32,8 +32,7 @@ class DBEngine():
         if storage_conf:
             module = importlib.import_module(storage_conf["module"])
             instance_class = getattr(module, storage_conf["class"])
-
-            storage_instance = instance_class(**storage_conf["init_params"])
+            storage_instance = instance_class(**storage_conf.get("init_params", {}))
 
         cache_instance = None
         if cache_conf:

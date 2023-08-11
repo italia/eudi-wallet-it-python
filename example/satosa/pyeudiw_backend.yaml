@@ -100,17 +100,22 @@ config:
       cache:
         module: pyeudiw.storage.mongo_cache
         class: MongoCache
-        config:
-          url: mongodb://localhost:27017/
+        init_params:
+          url: mongodb://localhost:27017
           conf:
             db_name: eudiw
+          # connection_params:
       storage:
         module: pyeudiw.storage.mongo_storage
         class: MongoStorage
-        config:
-          url: mongodb://localhost:27017/
-          db_name: eudiw
-          db_collection: sessions
+        init_params:
+          url: mongodb://localhost:27017
+          conf:
+            db_name: eudiw
+            db_sessions_collection: sessions
+            db_trust_attestations_collection: trust_attestations
+            db_trust_anchors_collection: trust_anchors
+          # - connection_params:
 
   #This is the configuration for the relaying party metadata
   metadata:

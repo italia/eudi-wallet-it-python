@@ -3,41 +3,23 @@ import os
 import urllib
 import datetime
 
-from saml2 import BINDING_HTTP_REDIRECT, BINDING_HTTP_POST
-from saml2.config import SPConfig
-from saml2.client import Saml2Client
-from saml2.xmldsig import SIG_RSA_SHA256, DIGEST_SHA256
-from saml2.saml import (NAMEID_FORMAT_PERSISTENT,
-                        NAMEID_FORMAT_TRANSIENT,
-                        NAMEID_FORMAT_UNSPECIFIED)
-from saml2.sigver import get_xmlsec_binary
-from saml2.metadata import entity_descriptor
-
-from trust_chain_provider import *
+from trust_chain_provider import (
+    EXP,
+    trust_chain_issuer,
+    trust_chain_wallet,
+    ta_ec
+)
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.oauth2.dpop import DPoPIssuer
+from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.storage.db_engine import DBEngine
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+from . saml2_sp import saml2_request
 
-BASE = 'http://pyeudiw_demo.example.org'
-BASE_URL = '{}/saml2'.format(BASE)
 
 CONFIG_DB = {
   "mongo_db": {
-    "cache": {
-      "module": "pyeudiw.storage.mongo_cache",
-      "class": "MongoCache",
-      "init_params": {
-        "url": "mongodb://localhost:27017/",
-        "conf": {
-          "db_name": "eudiw"
-        },
-        "connection_params": {}
-      }
-    },
     "storage": {
       "module": "pyeudiw.storage.mongo_storage",
       "class": "MongoStorage",
@@ -45,10 +27,9 @@ CONFIG_DB = {
         "url": "mongodb://localhost:27017/",
         "conf": {
           "db_name": "eudiw",
-          "db_collection": "sessions",
           "db_sessions_collection": "sessions",
-          "db_attestations_collection": "attestations",
-          "db_anchors_collection": "anchors"
+          "db_trust_attestations_collection": "trust_attestations",
+          "db_trust_anchors_collection": "trust_anchors"
         },
         "connection_params": {}
       }
@@ -56,83 +37,6 @@ CONFIG_DB = {
   }
 }
 
-SAML_CONFIG = {
-
-    'debug' : True,
-    'xmlsec_binary': get_xmlsec_binary(['/opt/local/bin',
-                                        '/usr/bin/xmlsec1']),
-    'entityid': '%s/metadata/' % BASE_URL,
-    'verify_ssl_cert': False,
-
-    'attribute_map_dir': f"{BASE_DIR}{os.path.sep}attribute-maps",
-    'service': {
-        'sp': {
-            'name': '%s/metadata/' % BASE_URL,
-
-            'name_id_format': [NAMEID_FORMAT_PERSISTENT,
-                               NAMEID_FORMAT_TRANSIENT],
-
-            'endpoints': {
-                'assertion_consumer_service': [
-                    ('%s/acs/' % BASE_URL, BINDING_HTTP_POST),
-                    ],
-                }, # end endpoints
-
-            'signing_algorithm':  SIG_RSA_SHA256,
-            'digest_algorithm':  DIGEST_SHA256,
-
-            "force_authn": True,
-            'name_id_format_allow_create': False,
-
-
-            'want_response_signed': True,
-            'authn_requests_signed': True,
-            'logout_requests_signed': True,
-            'want_assertions_signed': True,
-
-            'only_use_keys_in_metadata': True,
-
-            'allow_unsolicited': True,
-
-            'allow_unknown_attributes': True,
-
-            }, # end sp
-
-    },
-
-    # many metadata, many idp...
-    'metadata': {
-        # "remote": [
-        #     {
-        #         "url": "https://localhost:10000/Saml2IDP/metadata",
-        #         "disable_ssl_certificate_validation": True,
-        #         "check_validity": False,
-        #     }
-        # ],
-        'local': [
-            f"{BASE_DIR}{os.path.sep}metadata"
-        ],
-    },
-
-    # Signing
-    'key_file': BASE_DIR + '/private.key',
-    'cert_file': BASE_DIR + '/public.cert',
-
-    # own metadata settings
-    'contact_person': [
-      {'given_name': 'Giuseppe',
-       'sur_name': 'De Marco',
-       'company': 'Universita della Calabria',
-       'email_address': 'giuseppe.demarco@unical.it',
-       'contact_type': 'technical'},
-      ],
-    # you can set multilanguage information here
-    'organization': {
-      'name': [('Unical', 'it'), ('Unical', 'en')],
-      'display_name': [('Unical', 'it'), ('Unical', 'en')],
-      'url': [('http://www.ey.it', 'it'), ('http://www.ey.it', 'en')],
-      },
-}
 
 WALLET_INSTANCE_ATTESTATION = {
     "iss": "https://wallet-provider.example.org",
@@ -166,27 +70,10 @@ WALLET_INSTANCE_ATTESTATION = {
     "exp": iat_now() + 1024
 }
 
-
-sp_conf = SPConfig()
-sp_conf.load(SAML_CONFIG)
-
-sp_client = Saml2Client(sp_conf)
-
-sp_metadata = entity_descriptor(sp_conf)
-
-# print(sp_metadata)
-
-session_id, result = sp_client.prepare_for_authenticate(
-    entityid='https://localhost:10000/Saml2IDP/metadata',
-    relay_state='/',
-    binding=BINDING_HTTP_REDIRECT
-)
-
-
-
-req_url = f"{result['headers'][0][1]}&idp_hinting=wallet"
-
-headers_mobile = {'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'}
+req_url = f"{saml2_request['headers'][0][1]}&idp_hinting=wallet"
+headers_mobile = {
+    'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'
+}
 
 request_uri = ''
 try:
@@ -198,35 +85,31 @@ try:
 except requests.exceptions.InvalidSchema as e:
     request_uri = urllib.parse.unquote_plus(e.args[0].split("request_uri=")[1][:-1])
 
-#
+# Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
 db_engine_inst = DBEngine(CONFIG_DB)
 
-entity_id = ta_es['iss']
-#TODO
-entity_configuration_ta = ta_es
+db_engine_inst.add_anchor(
+    ta_ec['iss'], 
+    ta_ec, 
+    datetime.datetime.now().isoformat()
+)
 
-breakpoint()
-db_engine_inst.add_anchor(entity_id, entity_configuration_ta, datetime.datetime.now(datetime.timezone.utc))
-
-PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
+WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
 # PRIVATE_JWK = leaf_wallet_jwk.serialize(private=True)
-jwshelper = JWSHelper(PRIVATE_JWK)
-wia = jwshelper.sign(
+jwshelper = JWSHelper(WALLET_PRIVATE_JWK)
+dpop_wia = jwshelper.sign(
     WALLET_INSTANCE_ATTESTATION,
     protected={
-        # 'trust_chain': trust_chain_wallet,
         'trust_chain': trust_chain_wallet,
-        'x5c': []
+        'typ': "va+jwt"
     }
 )
 
-dpop_wia = wia
 dpop_proof = DPoPIssuer(
         htu=request_uri,
         token=dpop_wia,
-        private_jwk=PRIVATE_JWK
+        private_jwk=WALLET_PRIVATE_JWK
 ).proof
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 
 dpop_test = DPoPVerifier(
     public_jwk=leaf_wallet_jwk.serialize(),
