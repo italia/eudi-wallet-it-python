@@ -166,5 +166,5 @@ trust_chain_wallet = [
     ta_es_signed
 ]
 
-test_cred = tcv_test.StaticTrustChainValidator(trust_chain_cred, [ta_jwk.serialize()])
+test_cred = tcv_test.StaticTrustChainValidator(trust_chain_issuer, [ta_jwk.serialize()])
 test_wallet = tcv_test.StaticTrustChainValidator(trust_chain_wallet, [ta_jwk.serialize()])

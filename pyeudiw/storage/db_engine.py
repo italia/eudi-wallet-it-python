@@ -7,7 +7,7 @@ from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
 from pyeudiw.storage.exceptions import StorageWriteError
 
-logger = logging.getLogger("storage_db")
+logger = logging.getLogger(__name__)
 
 
 class DBEngine():

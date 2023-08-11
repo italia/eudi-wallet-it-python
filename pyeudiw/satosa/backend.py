@@ -32,7 +32,7 @@ from pyeudiw.trust import TrustEvaluationHelper
 from pydantic import ValidationError
 
 
-logger = logging.getLogger("openid4vp_backend")
+logger = logging.getLogger(__name__)
 
 
 class OpenID4VPBackend(BackendModule):
@@ -120,12 +120,7 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
 
-            logger.debug(
-                lu.LOG_FMT.format(
-                    id="OpenID4VP endpoint registration",
-                    message=f"[OpenID4VP] Loaded endpoint: '{k}'"
-                )
-            )
+            logger.debug(f"Exposing backend entity endpoint = {self.client_id}{v}")
 
         return url_map
 
@@ -156,7 +151,7 @@ class OpenID4VPBackend(BackendModule):
 
         _now = datetime.now()
         data = {
-            "exp": int((_now + timedelta(minutes=self.default_exp)).timestamp()),
+            "exp": exp_from_now(minutes=self.default_exp),
             "iat": iat_now(),
             "iss": self.client_id,
             "sub": self.client_id,

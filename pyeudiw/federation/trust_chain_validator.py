@@ -14,7 +14,7 @@ from pyeudiw.federation.exceptions import (
     KeyValidationError
 )
 
-logger = logging.getLogger("pyeudiw_federation")
+logger = logging.getLogger(__name__)
 
 
 def find_jwk(kid: str, jwks: list) -> dict:
