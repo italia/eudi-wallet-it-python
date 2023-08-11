@@ -584,7 +584,7 @@ class OpenID4VPBackend(BackendModule):
             level='debug', 
             message=(
                 "[INCOMING REQUEST] state_endpoint with Context: "
-                f"{context.__dict__} and args: {args}"
+                f"{context.__dict__}"
             )
         )
 

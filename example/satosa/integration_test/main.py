@@ -88,10 +88,10 @@ except requests.exceptions.InvalidSchema as e:
     request_uri = urllib.parse.unquote_plus(e.args[0].split("request_uri=")[1][:-1]
 )
 
+# STORAGE ####
 # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
 db_engine_inst = DBEngine(CONFIG_DB)
-
-db_engine_inst.add_anchor(
+db_engine_inst.add_trust_anchor(
     ta_ec['iss'], 
     ta_ec, 
     datetime.datetime.now().isoformat()
