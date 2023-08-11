@@ -555,13 +555,13 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        
+
         # create a document with that state and that nonce
-        
+
         try:
             redirect_endpoint = self.backend.redirect_endpoint(context)
             assert redirect_endpoint
-        except Exception as e:
+        except Exception:
             # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
             # raise e
             pass

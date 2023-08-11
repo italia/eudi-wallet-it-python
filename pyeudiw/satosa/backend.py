@@ -78,7 +78,7 @@ class OpenID4VPBackend(BackendModule):
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
-        
+
         self.federation_public_jwks = [
             JWK(i).public_key for i in self.config['federation']['federation_jwks']
         ]
@@ -87,7 +87,7 @@ class OpenID4VPBackend(BackendModule):
         self.template = Jinja2TemplateHandler(config)
 
         self.db_engine = DBEngine(self.config["storage"])
-        
+
         logger.debug(
             lu.LOG_FMT.format(
                 id="OpenID4VP init",
@@ -98,7 +98,7 @@ class OpenID4VPBackend(BackendModule):
     @property
     def federation_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
-        
+
     @property
     def metadata_jwk(self):
         return tuple(self.metadata_jwks_by_kids.values())[0]
@@ -181,17 +181,17 @@ class OpenID4VPBackend(BackendModule):
             status="200",
             content="application/entity-statement+jwt"
         )
-    
+
     @property
     def trust_chains_by_anchor(self):
         # trust_chain = self.db_engine.get_trust_attestation(entity_id)
-        
+
         # if not trust_chain:
-            # raise NotImplementedError()
-        
+        # raise NotImplementedError()
+
         # self.chain_helper = TrustEvaluationHelper(self.db_engine, trust_chain=trust_chain, jwks=self.config['federation']['federation_jwks'])
         # validate = self.chain_helper.evaluation_method()
-        
+
         # validate()
         pass
 
@@ -267,12 +267,12 @@ class OpenID4VPBackend(BackendModule):
         # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
-    
+
     def _validate_trust(self, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
         is_trusted = trust_eval.evaluation_method()
-        
+
         if is_trusted:
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
@@ -404,9 +404,9 @@ class OpenID4VPBackend(BackendModule):
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log(
-                context, 
-                level = "error", 
-                message = f" Session update on storage failed: {str(e)}"
+                context,
+                level="error",
+                message=f" Session update on storage failed: {str(e)}"
             )
             # return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
 

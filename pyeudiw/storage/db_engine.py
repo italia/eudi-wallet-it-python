@@ -56,8 +56,8 @@ class DBEngine():
                     f"{e.__class__.__name__}: {e}")
 
         return document_id
-    
-    def write(self, method :str, *args, **kwargs):
+
+    def write(self, method: str, *args, **kwargs):
         replica_count = 0
         _err_msg = f"Cannot apply write method '{method}' with {args} {kwargs}"
         for db_name, storage in self.storages:
@@ -65,7 +65,8 @@ class DBEngine():
                 getattr(storage, method)(*args, **kwargs)
                 replica_count += 1
             except Exception as e:
-                logger.critical(f"Error {_err_msg} on {db_name} {storage}: {str(e)}")
+                logger.critical(
+                    f"Error {_err_msg} on {db_name} {storage}: {str(e)}")
 
         if not replica_count:
             raise StorageWriteError(_err_msg)
@@ -74,10 +75,10 @@ class DBEngine():
 
     def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
         return self.write(
-            "add_dpop_proof_and_attestation", 
-            document_id, 
-            dpop_proof = dpop_proof, 
-            attestation = attestation
+            "add_dpop_proof_and_attestation",
+            document_id,
+            dpop_proof=dpop_proof,
+            attestation=attestation
         )
 
     def set_finalized(self, document_id: str):
@@ -89,39 +90,39 @@ class DBEngine():
     def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
         return self.write("update_response_object", nonce, state, response_object)
 
-    def get(self, method :str, *args, **kwargs):
+    def get(self, method: str, *args, **kwargs):
         for db_name, storage in self.storages:
             try:
                 res = getattr(storage, method)(*args, **kwargs)
                 if res:
                     return res
-                
+
             except Exception as e:
                 logger.critical(f"Error {str(e)}")
                 logger.critical(
                     f"Cannot find result by method {method} on {db_name} with {args} {kwargs}"
                 )
-                
+
         raise Exception(f"Cannot find any result by method {method}")
 
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)
-    
+
     def has_trust_attestation(self, entity_id: str):
         return self.get_trust_attestation(entity_id)
-    
+
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("add_trust_attestation", trust_chain, exp)
-            
+
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("update_trust_attestation", entity_id, trust_chain, exp)
-        
+
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)
 
     def has_trust_attestation(self, entity_id: str):
         return self.get_trust_attestation(entity_id)
-    
+
     def has_anchor(self, entity_id: str):
         return self.get_anchor(entity_id)
 
@@ -133,7 +134,7 @@ class DBEngine():
 
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("update_trust_attestation", entity_id, trust_chain, exp)
-                    
+
     def update_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("update_anchor", entity_id, trust_chain, exp)
 

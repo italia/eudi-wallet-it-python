@@ -11,7 +11,7 @@ from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
-        
+
         self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
@@ -154,7 +154,7 @@ class MongoStorage(BaseStorage):
              })
 
         return nonce, state, documentStatus
-    
+
     def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
         db_collection = getattr(self, collection)
         self._connect()
@@ -162,7 +162,7 @@ class MongoStorage(BaseStorage):
 
     def get_trust_attestation(self, entity_id: str):
         return self._get_trust_attestation("attestations", entity_id)
-    
+
     def get_trust_anchor(self, entity_id: str):
         return self._get_trust_attestation("anchors", entity_id)
 
@@ -170,10 +170,10 @@ class MongoStorage(BaseStorage):
         if self._get_trust_attestation(collection, entity_id):
             return True
         return False
-    
+
     def has_trust_attestation(self, entity_id: str):
         return self._has_trust_attestation("attestations", entity_id)
-    
+
     def has_trust_anchors(self, entity_id: str):
         return self._has_trust_attestation("anchors", entity_id)
 
@@ -181,12 +181,12 @@ class MongoStorage(BaseStorage):
         if self._has_trust_attestation(collection, entity_id):
             raise ChainAlreadyExist(
                 f"Chain with entity id {entity_id} already exist")
-        
+
         db_collection = getattr(self, collection)
         db_collection.insert_one(entity)
 
         return entity_id
-    
+
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime):
         entity = {
             "entity_id": entity_id,
@@ -196,9 +196,9 @@ class MongoStorage(BaseStorage):
             },
             "x509": {}
         }
-        
+
         self._add_trust_attestation("attestations", entity_id, entity, exp)
-        
+
     def add_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
         entity = {
             "entity_id": entity_id,
@@ -208,7 +208,7 @@ class MongoStorage(BaseStorage):
             },
             "x509": {}
         }
-        
+
         self._add_trust_attestation("anchors", entity_id, entity, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
@@ -220,7 +220,7 @@ class MongoStorage(BaseStorage):
             {"$set": entity}
         )
         return documentStatus
-    
+
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         entity = {
             "federation": {
@@ -228,9 +228,9 @@ class MongoStorage(BaseStorage):
                 "exp": exp
             }
         }
-        
+
         return self._update_trust_attestation("attestations", entity_id, entity, exp)
-    
+
     def update_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
         entity = {
             "federation": {
@@ -238,5 +238,5 @@ class MongoStorage(BaseStorage):
                 "exp": exp
             }
         }
-        
+
         return self._update_trust_attestation("anchor", entity_id, entity, exp)

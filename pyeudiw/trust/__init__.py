@@ -12,7 +12,7 @@ class TrustEvaluationHelper:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
-    
+
     @property
     def evaluation_method(self):
         # TODO: implement automatic detection of trust evaluation

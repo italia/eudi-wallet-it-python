@@ -180,7 +180,7 @@ class StaticTrustChainValidator:
             jwt = self._update_st(st, httpc_params)
 
             exp = unpad_jwt_payload(jwt)["exp"]
-            
+
             if not self.exp or self.exp > exp:
                 self.exp = exp
 
