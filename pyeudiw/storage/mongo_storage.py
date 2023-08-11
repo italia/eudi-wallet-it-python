@@ -1,3 +1,4 @@
+import json
 import pymongo
 from datetime import datetime
 
@@ -30,8 +31,11 @@ class MongoStorage(BaseStorage):
             self.attestations = getattr(
                 self.db, self.storage_conf["db_attestations_collection"]
             )
+            self.trustanchors = getattr(
+                self.db, self.storage_conf["db_trustanchors_collection"]
+            )
 
-    def _retrieve_document_by_id(self, document_id: str) -> dict:
+    def get_by_id(self, document_id: str) -> dict:
         self._connect()
 
         document = self.sessions.find_one({"document_id": document_id})
@@ -41,7 +45,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_nonce_state(self, nonce: str, state: str | None) -> dict:
+    def get_by_nonce_state(self, nonce: str, state: str | None) -> dict:
         self._connect()
 
         query = {"state": state, "nonce": nonce}
@@ -54,7 +58,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state_and_session_id(self, state: str, session_id: str = ""):
+    def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
 
         query = {"state": state}
@@ -104,7 +108,7 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_request_object(self, document_id: str, request_object: dict):
-        self._retrieve_document_by_id(document_id)
+        self.get_by_id(document_id)
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
             {
@@ -122,9 +126,9 @@ class MongoStorage(BaseStorage):
         return documentStatus
 
     def set_finalized(self, document_id: str):
-        self._retrieve_document_by_id(document_id)
+        self.get_by_id(document_id)
 
-        update_result: UpdateResult = self.collection.update_one(
+        update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
             {
                 "$set": {
@@ -139,7 +143,7 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
-        document = self._retrieve_document_by_nonce_state(nonce, state)
+        document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
         documentStatus = self.sessions.update_one(
             {"_id": document_id},
@@ -151,20 +155,39 @@ class MongoStorage(BaseStorage):
 
         return nonce, state, documentStatus
 
-    def get_trust_attestation(self, entity_id: str):
+    def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
+        db_collection = getattr(self, collection)
         self._connect()
-        return self.attestations.find_one({"entity_id": entity_id})
+        return db_collection.find_one({"entity_id": entity_id})
 
-    def has_trust_attestation(self, entity_id: str):
-        if self.get_trust_attestation({"entity_id": entity_id}):
+    def get_trust_attestation(self, entity_id: str):
+        return self._get_trust_attestation("attestations", entity_id)
+
+    def get_trust_anchor(self, entity_id: str):
+        return self._get_trust_attestation("anchors", entity_id)
+
+    def _has_trust_attestation(self, collection: str, entity_id: str):
+        if self._get_trust_attestation(collection, entity_id):
             return True
         return False
 
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        if self.has_trust_attestation(entity_id):
+    def has_trust_attestation(self, entity_id: str):
+        return self._has_trust_attestation("attestations", entity_id)
+
+    def has_trust_anchors(self, entity_id: str):
+        return self._has_trust_attestation("anchors", entity_id)
+
+    def _add_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
+        if self._has_trust_attestation(collection, entity_id):
             raise ChainAlreadyExist(
                 f"Chain with entity id {entity_id} already exist")
 
+        db_collection = getattr(self, collection)
+        db_collection.insert_one(entity)
+
+        return entity_id
+
+    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime):
         entity = {
             "entity_id": entity_id,
             "federation": {
@@ -174,23 +197,46 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
 
-        self.attestations.insert_one(entity)
+        self._add_trust_attestation("attestations", entity_id, entity, exp)
 
-        return entity_id
+    def add_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
+        entity = {
+            "entity_id": entity_id,
+            "federation": {
+                "entity_configuration": json.dumps(entity_configuration),
+                "exp": exp
+            },
+            "x509": {}
+        }
 
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        if not self.has_trust_attestation(entity_id):
+        self._add_trust_attestation("anchors", entity_id, entity, exp)
+
+    def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
+        if not self._has_trust_attestation(collection, entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
         documentStatus = self.attestations.update_one(
             {"entity_id": entity_id},
-            {"$set":
-                {
-                    "federation": {
-                        "chain": trust_chain,
-                        "exp": exp
-                    }
-                }
-             }
+            {"$set": entity}
         )
         return documentStatus
+
+    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        entity = {
+            "federation": {
+                "chain": trust_chain,
+                "exp": exp
+            }
+        }
+
+        return self._update_trust_attestation("attestations", entity_id, entity, exp)
+
+    def update_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+        entity = {
+            "federation": {
+                "entity_configuration": json.dumps(entity_configuration),
+                "exp": exp
+            }
+        }
+
+        return self._update_trust_attestation("anchor", entity_id, entity, exp)

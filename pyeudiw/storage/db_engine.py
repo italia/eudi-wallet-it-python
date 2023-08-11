@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import ReplicaError
+from pyeudiw.storage.exceptions import StorageWriteError
 
-logger = logging.getLogger("openid4vp.storage.db")
+logger = logging.getLogger("storage_db")
 
 
 class DBEngine():
@@ -39,7 +39,6 @@ class DBEngine():
         if cache_conf:
             module = importlib.import_module(cache_conf["module"])
             instance_class = getattr(module, cache_conf["class"])
-
             cache_instance = instance_class(**cache_conf["init_params"])
 
         return storage_instance, cache_instance
@@ -58,123 +57,86 @@ class DBEngine():
 
         return document_id
 
-    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
+    def write(self, method: str, *args, **kwargs):
         replica_count = 0
+        _err_msg = f"Cannot apply write method '{method}' with {args} {kwargs}"
         for db_name, storage in self.storages:
             try:
-                storage.add_dpop_proof_and_attestation(
-                    document_id, dpop_proof=dpop_proof, attestation=attestation)
+                getattr(storage, method)(*args, **kwargs)
                 replica_count += 1
             except Exception as e:
-                logger.critical(f"Error {str(e)}")
                 logger.critical(
-                    f"Cannot update document with id {document_id} on {db_name}")
+                    f"Error {_err_msg} on {db_name} {storage}: {str(e)}")
 
-        if replica_count == 0:
-            raise ReplicaError(
-                f"Cannot update document {document_id} on any instance")
+        if not replica_count:
+            raise StorageWriteError(_err_msg)
 
         return replica_count
+
+    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
+        return self.write(
+            "add_dpop_proof_and_attestation",
+            document_id,
+            dpop_proof=dpop_proof,
+            attestation=attestation
+        )
 
     def set_finalized(self, document_id: str):
-        replica_count = 0
-        for db_name, storage in self.storages:
-            try:
-                storage.set_finalized(document_id)
-                replica_count += 1
-            except Exception as e:
-                logger.critical(f"Error {str(e)}")
-                logger.critical(
-                    f"Cannot update document with id {document_id} on {db_name}")
-
-        if replica_count == 0:
-            raise Exception(
-                f"Cannot update document {document_id} on any instance")
-
-        return replica_count
+        return self.write("set_finalized", document_id)
 
     def update_request_object(self, document_id: str, request_object: dict) -> int:
-        replica_count = 0
-        for db_name, storage in self.storages:
-            try:
-                storage.update_request_object(
-                    document_id, request_object)
-                replica_count += 1
-            except Exception as e:
-                logger.critical(f"Error {str(e)}")
-                logger.critical(
-                    f"Cannot update document with id {document_id} on {db_name}")
-
-        if replica_count == 0:
-            raise Exception(
-                f"Cannot update document {document_id} on any instance")
-
-        return replica_count
+        return self.write("update_request_object", document_id, request_object)
 
     def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
-        replica_count = 0
+        return self.write("update_response_object", nonce, state, response_object)
+
+    def get(self, method: str, *args, **kwargs):
         for db_name, storage in self.storages:
             try:
-                storage.update_response_object(nonce, state, response_object)
-                replica_count += 1
+                res = getattr(storage, method)(*args, **kwargs)
+                if res:
+                    return res
+
             except Exception as e:
                 logger.critical(f"Error {str(e)}")
                 logger.critical(
-                    f"Cannot update document with nonce {nonce} and state {state} on {db_name}")
+                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}"
+                )
 
-        if replica_count == 0:
-            raise ReplicaError(
-                f"Cannot update document with state {state} and nonce {nonce} on any instance")
-
-        return replica_count
+        raise Exception(f"Cannot find any result by method {method}")
 
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
-        for db_name, storage in self.storages:
-            try:
-                chain = storage.get_trust_attestation(entity_id)
-
-                if chain:
-                    return chain
-
-            except Exception as e:
-                logger.critical(f"Error {str(e)}")
-                logger.critical(
-                    f"Cannot find chain {entity_id} on {db_name}")
-
-        raise Exception(f"Cannot find chain {entity_id} on any instance")
+        return self.get("get_trust_attestation", entity_id)
 
     def has_trust_attestation(self, entity_id: str):
-        if self.get_trust_attestation(entity_id) is not None:
-            return True
-        return False
+        return self.get_trust_attestation(entity_id)
 
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        replica_count = 0
-        for db_name, storage in self.storages:
-            try:
-                storage.add_trust_attestation(entity_id, trust_chain, exp)
-                replica_count += 1
-            except Exception:
-                logger.critical(
-                    "Cannot add chain with entity_id {entity_id} on database {db_name}")
-
-        if replica_count == 0:
-            raise ReplicaError(
-                f"Cannot add chain {entity_id} on any instance")
+        return self.write("add_trust_attestation", trust_chain, exp)
 
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        replica_count = 0
-        for db_name, storage in self.storages:
-            try:
-                storage.update_trust_attestation(entity_id, trust_chain, exp)
-                replica_count += 1
-            except Exception:
-                logger.critical(
-                    "Cannot add chain with entity_id {entity_id} on database {db_name}")
+        return self.write("update_trust_attestation", entity_id, trust_chain, exp)
 
-        if replica_count == 0:
-            raise ReplicaError(
-                f"Cannot update chain {entity_id} on any instance")
+    def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
+        return self.get("get_trust_attestation", entity_id)
+
+    def has_trust_attestation(self, entity_id: str):
+        return self.get_trust_attestation(entity_id)
+
+    def has_anchor(self, entity_id: str):
+        return self.get_anchor(entity_id)
+
+    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("add_trust_attestation", entity_id, trust_chain)
+
+    def add_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("add_anchor", entity_id, trust_chain, exp)
+
+    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("update_trust_attestation", entity_id, trust_chain, exp)
+
+    def update_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("update_anchor", entity_id, trust_chain, exp)
 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
@@ -189,10 +151,8 @@ class DBEngine():
             "Cannot write cache object on any instance")
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> dict:
-        istances_len = len(self.caches)
-
         # if no cache instance exist return the object
-        if istances_len == 0:
+        if len(self.caches):
             return on_not_found()
 
         # if almost one cache instance exist try to retrieve
@@ -222,8 +182,8 @@ class DBEngine():
                 cache_object = cache.overwrite(object_name, value_gen_fn)
             except Exception:
                 logger.critical(
-                    "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}")
-
+                    "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
+                )
             return cache_object
 
     def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:
@@ -238,15 +198,4 @@ class DBEngine():
         return self.get_by_state_and_session_id(state=state)
 
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
-        for db_name, storage in self.storages:
-            try:
-                document = storage._retrieve_document_by_state_and_session_id(
-                    state, session_id)
-                return document
-            except ValueError:
-                logger.debug(
-                    f"Document object with state {state} and session_id {session_id} not found in db {db_name}")
-
-        _msg = f"Document object with state {state} and session_id {session_id} not found"
-        logger.error(_msg)
-        raise ValueError(_msg)
+        return self.get("get_by_state_and_session_id", state, session_id)

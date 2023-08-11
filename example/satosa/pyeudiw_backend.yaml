@@ -56,7 +56,9 @@ config:
     
   federation:
     metadata_type: "wallet_relying_party"
-    federation_authorities:
+    authority_hints:
+        - http://127.0.0.1:8000
+    trust_anchors:
         - http://127.0.0.1:8000
     default_sig_alg: "RS256"
     

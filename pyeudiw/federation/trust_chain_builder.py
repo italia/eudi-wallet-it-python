@@ -19,7 +19,7 @@ from .statements import (
 from pyeudiw.tools.utils import datetime_from_timestamp
 
 
-logger = logging.getLogger("pyeudiw.federation")
+logger = logging.getLogger("pyeudiw_federation")
 
 
 class TrustChainBuilder:

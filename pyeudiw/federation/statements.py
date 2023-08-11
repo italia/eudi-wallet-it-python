@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover
 
 
 OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
-logger = logging.getLogger("pyeudiw.federation")
+logger = logging.getLogger("pyeudiw_federation")
 
 
 def jwks_from_jwks_uri(jwks_uri: str, httpc_params: dict = {}) -> list:

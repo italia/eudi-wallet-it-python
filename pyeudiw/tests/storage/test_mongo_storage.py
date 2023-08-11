@@ -9,8 +9,12 @@ class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
-            {"db_name": "eudiw", "db_sessions_collection": "sessions",
-                "db_attestations_collection": "attestations"},
+            {
+                "db_name": "eudiw",
+                "db_sessions_collection": "sessions",
+                "db_attestations_collection": "attestations",
+                "db_trustanchors_collection": "anchors"
+            },
             "mongodb://localhost:27017/",
             {}
         )
@@ -38,7 +42,7 @@ class TestMongoStorage:
         self.storage.add_dpop_proof_and_attestation(
             document_id, dpop_proof=dpop_proof, attestation=attestation)
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["dpop_proof"]
@@ -61,7 +65,7 @@ class TestMongoStorage:
 
         self.storage.update_request_object(document_id, request_object)
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["request_object"] == request_object
@@ -93,7 +97,7 @@ class TestMongoStorage:
             document_id, dpop_proof={"dpop": "test"}, attestation={"attestation": "test"})
         assert documentStatus
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["dpop_proof"]

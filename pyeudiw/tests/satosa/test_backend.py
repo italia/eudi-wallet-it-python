@@ -57,7 +57,10 @@ CONFIG = {
     },
     "federation": {
         "metadata_type": "wallet_relying_party",
-        "federation_authorities": [
+        "authority_hints": [
+            "https://localhost:8000"
+        ],
+        "trust_anchors": [
             "https://localhost:8000"
         ],
         "default_sig_alg": "RS256",
@@ -126,7 +129,8 @@ CONFIG = {
                     "conf": {
                         "db_name": "eudiw",
                         "db_sessions_collection": "sessions",
-                        "db_attestations_collection": "chains"
+                        "db_attestations_collection": "attestations",
+                        "db_trustanchors_collection": "anchors",
                     },
                     "connection_params": {}
                 }
@@ -443,6 +447,11 @@ class TestOpenID4VPBackend:
         # decode the base64 data
         decoded = base64.b64decode(data).decode("utf-8")
 
+        # get the div with id "state"
+        state_div = soup.find("div", {"id": "state"})
+        assert state_div
+        assert state_div["value"]
+
         svg = BeautifulSoup(decoded, features="xml")
         assert svg
         assert svg.find("svg")
@@ -546,12 +555,16 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
+
+        # create a document with that state and that nonce
+
         try:
             redirect_endpoint = self.backend.redirect_endpoint(context)
             assert redirect_endpoint
         except Exception:
             # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
-            return
+            # raise e
+            pass
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):

@@ -3,7 +3,7 @@ import json
 import logging
 from secrets import token_hex
 
-logger = logging.getLogger("pyeudiw.utils")
+logger = logging.getLogger("pyeudiw_utils")
 
 
 def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
