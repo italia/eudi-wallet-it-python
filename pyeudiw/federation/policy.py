@@ -4,7 +4,7 @@ __version__ = ""
 
 import logging
 
-logger = logging.getLogger("pyeudiw.federation.policy")
+logger = logging.getLogger("pyeudiw_federation_policy")
 
 
 class PolicyError(Exception):

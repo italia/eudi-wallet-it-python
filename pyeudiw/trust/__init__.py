@@ -12,8 +12,9 @@ class TrustEvaluationHelper:
 
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-    def inspect_evaluation_method(self):
+    
+    @property
+    def evaluation_method(self):
         # TODO: implement automatic detection of trust evaluation
         # method based on internal trust evaluetion property
         return self.federation

@@ -6,5 +6,5 @@ class ChainNotExist(BaseException):
     pass
 
 
-class ReplicaError(BaseException):
+class StorageWriteError(BaseException):
     pass

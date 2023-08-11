@@ -11,7 +11,7 @@ from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
         super().__init__()
-
+        
         self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
@@ -31,11 +31,11 @@ class MongoStorage(BaseStorage):
             self.attestations = getattr(
                 self.db, self.storage_conf["db_attestations_collection"]
             )
-            self.anchors = getattr(
-                self.db, self.storage_conf["db_anchors_collection"]
+            self.trustanchors = getattr(
+                self.db, self.storage_conf["db_trustanchors_collection"]
             )
 
-    def _retrieve_document_by_id(self, document_id: str) -> dict:
+    def get_by_id(self, document_id: str) -> dict:
         self._connect()
 
         document = self.sessions.find_one({"document_id": document_id})
@@ -45,7 +45,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_nonce_state(self, nonce: str, state: str | None) -> dict:
+    def get_by_nonce_state(self, nonce: str, state: str | None) -> dict:
         self._connect()
 
         query = {"state": state, "nonce": nonce}
@@ -58,7 +58,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def _retrieve_document_by_state_and_session_id(self, state: str, session_id: str = ""):
+    def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
 
         query = {"state": state}
@@ -108,7 +108,7 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_request_object(self, document_id: str, request_object: dict):
-        self._retrieve_document_by_id(document_id)
+        self.get_by_id(document_id)
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
             {
@@ -126,9 +126,9 @@ class MongoStorage(BaseStorage):
         return documentStatus
 
     def set_finalized(self, document_id: str):
-        self._retrieve_document_by_id(document_id)
+        self.get_by_id(document_id)
 
-        update_result: UpdateResult = self.collection.update_one(
+        update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
             {
                 "$set": {
@@ -143,7 +143,7 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_response_object(self, nonce: str, state: str, response_object: dict):
-        document = self._retrieve_document_by_nonce_state(nonce, state)
+        document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
         documentStatus = self.sessions.update_one(
             {"_id": document_id},

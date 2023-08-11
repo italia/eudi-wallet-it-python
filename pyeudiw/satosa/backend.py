@@ -25,6 +25,7 @@ from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp import check_vp_token
 from pyeudiw.openid4vp.exceptions import KIDNotFound
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.trust import TrustEvaluationHelper
 
 from pydantic import ValidationError
@@ -71,35 +72,21 @@ class OpenID4VPBackend(BackendModule):
         # dumps public jwks in the metadata
         self.config['metadata']['jwks'] = config["metadata_jwks"]
 
-        self.federation_jwk = JWK(
-            self.config['federation']['federation_jwks'][0]
-        )
-        self.metadata_jwk = JWK(self.config["metadata_jwks"][0])
-
         self.federations_jwks_by_kids = {
             i['kid']: i for i in self.config['federation']['federation_jwks']
         }
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
+        
+        self.federation_public_jwks = [
+            JWK(i).public_key for i in self.config['federation']['federation_jwks']
+        ]
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(config)
 
         self.db_engine = DBEngine(self.config["storage"])
-        
-        entity_id = self.config['metadata']['client_id']
-        
-        trust_chain = self.db_engine.get_trust_attestation(entity_id)
-        
-        if not trust_chain:
-            # TODO: implement discovery
-            raise NotImplementedError()
-        
-        self.chain_helper = TrustEvaluationHelper(self.db_engine, trust_chain=trust_chain, jwks=self.config['federation']['federation_jwks'])
-        validate = self.chain_helper.inspect_evaluation_method()
-        
-        validate()
         
         logger.debug(
             lu.LOG_FMT.format(
@@ -107,6 +94,14 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Loaded configuration: {json.dumps(config)}"
             )
         )
+
+    @property
+    def federation_jwk(self):
+        return tuple(self.federations_jwks_by_kids.values())[0]
+        
+    @property
+    def metadata_jwk(self):
+        return tuple(self.metadata_jwks_by_kids.values())[0]
 
     def register_endpoints(self):
         """
@@ -165,12 +160,12 @@ class OpenID4VPBackend(BackendModule):
             "iss": self.client_id,
             "sub": self.client_id,
             "jwks": {
-                "keys": [self.federation_jwk.public_key]
+                "keys": self.federation_public_jwks
             },
             "metadata": {
                 self.config['federation']["metadata_type"]: self.config['metadata']
             },
-            "authority_hints": self.config['federation']['federation_authorities']
+            "authority_hints": self.config['federation']['authority_hints']
         }
         jwshelper = JWSHelper(self.federation_jwk)
 
@@ -178,7 +173,7 @@ class OpenID4VPBackend(BackendModule):
             jwshelper.sign(
                 protected={
                     "alg": self.config['federation']["default_sig_alg"],
-                    "kid": self.federation_jwk.public_key["kid"],
+                    "kid": self.federation_jwk["kid"],
                     "typ": "entity-statement+jwt"
                 },
                 plain_dict=data
@@ -186,6 +181,19 @@ class OpenID4VPBackend(BackendModule):
             status="200",
             content="application/entity-statement+jwt"
         )
+    
+    @property
+    def trust_chains_by_anchor(self):
+        # trust_chain = self.db_engine.get_trust_attestation(entity_id)
+        
+        # if not trust_chain:
+            # raise NotImplementedError()
+        
+        # self.chain_helper = TrustEvaluationHelper(self.db_engine, trust_chain=trust_chain, jwks=self.config['federation']['federation_jwks'])
+        # validate = self.chain_helper.evaluation_method()
+        
+        # validate()
+        pass
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
@@ -210,13 +218,11 @@ class OpenID4VPBackend(BackendModule):
             'client_id': self.client_id,
             'request_uri': f"{self.absolute_request_url}?id={state}",
         }
-
         url_params = urlencode(payload, quote_via=quote_plus)
 
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             # Same Device flow
-            res_url = \
-                f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
+            res_url = f'{self.config["authorization"]["url_scheme"]}://authorize?{url_params}'
             return Redirect(res_url)
 
         # Cross Device flow
@@ -226,7 +232,7 @@ class OpenID4VPBackend(BackendModule):
         qrcode = QRCode(res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
-            {"title": "Frame the qrcode", 'qrcode_base64': qrcode.to_base64(), "state": state}
+            {'qrcode_base64': qrcode.to_base64(), "state": state}
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -265,16 +271,9 @@ class OpenID4VPBackend(BackendModule):
     def _validate_trust(self, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
-        is_trusted = trust_eval.inspect_evaluation_method()
+        is_trusted = trust_eval.evaluation_method()
         
-        if not is_trusted():
-            raise NotTrustedFederationError(f"{trust_eval.entity_id} is not trusted")
-
-    def _validate_trust(self, jws: str) -> None:
-        headers = unpad_jwt_header(jws)
-        trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
-        is_trusted = trust_eval.inspect_evaluation_method()
-        if not is_trusted():
+        if is_trusted:
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
@@ -402,8 +401,14 @@ class OpenID4VPBackend(BackendModule):
 
         try:
             self.db_engine.update_response_object(nonce, state, internal_resp)
-        except Exception as e:
-            return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
+        except StorageWriteError as e:
+            # TODO - do we have to block in the case the update cannot be done?
+            self._log(
+                context, 
+                level = "error", 
+                message = f" Session update on storage failed: {str(e)}"
+            )
+            # return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
 
         return self.auth_callback_func(context, internal_resp)
 
@@ -564,7 +569,7 @@ class OpenID4VPBackend(BackendModule):
         try:
             session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id)
-        except ValueError as e:
+        except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
             return self.handle_error(context, message=_msg, err_code="403")
 
