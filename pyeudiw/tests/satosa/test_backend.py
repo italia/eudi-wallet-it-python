@@ -19,7 +19,7 @@ from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.sd_jwt import (
-    _adapt_keys, 
+    _adapt_keys,
     issue_sd_jwt,
     load_specification_from_yaml_string
 )
@@ -595,7 +595,7 @@ class TestOpenID4VPBackend:
         wia = jwshelper.sign(
             WALLET_INSTANCE_ATTESTATION,
             protected={
-                'trust_chain': trust_chain_wallet, 
+                'trust_chain': trust_chain_wallet,
                 'x5c': []
             }
         )
@@ -632,8 +632,8 @@ class TestOpenID4VPBackend:
         # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
         db_engine_inst = DBEngine(CONFIG['storage'])
         db_engine_inst.add_trust_anchor(
-            ta_ec['iss'], 
-            ta_ec, 
+            ta_ec['iss'],
+            ta_ec,
             datetime.datetime.now().isoformat()
         )
         request_endpoint = self.backend.request_endpoint(context)

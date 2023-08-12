@@ -7,18 +7,18 @@ import pyeudiw.federation.trust_chain_validator as tcv
 
 
 from . base import (
-    EXP, 
-    JWS, 
-    NOW, 
-    intermediate_ec_signed, 
+    EXP,
+    JWS,
+    NOW,
+    intermediate_ec_signed,
     intermediate_es_wallet,
-    intermediate_es_wallet_signed, 
-    intermediate_jwk, 
-    leaf_wallet_signed, 
-    leaf_wallet_jwk, 
-    ta_es, 
-    ta_es_signed, 
-    ta_jwk, 
+    intermediate_es_wallet_signed,
+    intermediate_jwk,
+    leaf_wallet_signed,
+    leaf_wallet_jwk,
+    ta_es,
+    ta_es_signed,
+    ta_jwk,
     trust_chain_wallet
 )
 
@@ -120,7 +120,7 @@ def test_update_st_es_case_source_endpoint():
         )
         assert _t._update_st(ta_es_signed) == leaf_wallet_signed
         assert not _t.is_valid
-        
+
 
 def test_update_st_es_case_no_source_endpoint():
     ta_es = {

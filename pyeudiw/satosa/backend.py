@@ -2,7 +2,7 @@ import json
 import logging
 import uuid
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Union
 from urllib.parse import quote_plus, urlencode
 
@@ -120,7 +120,8 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
 
-            logger.debug(f"Exposing backend entity endpoint = {self.client_id}{v}")
+            logger.debug(
+                f"Exposing backend entity endpoint = {self.client_id}{v}")
 
         return url_map
 
@@ -149,7 +150,7 @@ class OpenID4VPBackend(BackendModule):
 
     def entity_configuration_endpoint(self, context, *args):
 
-        _now = datetime.now()
+        datetime.now()
         data = {
             "exp": exp_from_now(minutes=self.default_exp),
             "iat": iat_now(),
@@ -194,14 +195,14 @@ class OpenID4VPBackend(BackendModule):
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
         self._log(
-            context, 
-            level='debug', 
+            context,
+            level='debug',
             message=(
                 "[INCOMING REQUEST] pre_request_endpoint with Context: "
                 f"{context.__dict__} and internal_request: {internal_request}"
             )
         )
-        
+
         session_id = str(context.state["SESSION_ID"])
         state = str(uuid.uuid4())
         # Init session
@@ -272,26 +273,26 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
 
-    def _validate_trust(self, context :Context, jws: str) -> None:
+    def _validate_trust(self, context: Context, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
-        
+
         self._log(
-            context, 
-            level='debug', 
+            context,
+            level='debug',
             message=(
                 "[TRUST EVALUATION] evaluating trust with "
                 f"{trust_eval.entity_id}"
             )
         )
-        
+
         is_trusted = trust_eval.evaluation_method()
         if not is_trusted:
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
 
-    def _handle_vp(self, context :Context, vp_token: str) -> dict:
+    def _handle_vp(self, context: Context, vp_token: str) -> dict:
         self._validate_trust(context, vp_token)
         valid, value = check_vp_token(
             vp_token, None, self.metadata_jwks_by_kids
@@ -306,8 +307,8 @@ class OpenID4VPBackend(BackendModule):
 
     def redirect_endpoint(self, context, *args):
         self._log(
-            context, 
-            level='debug', 
+            context,
+            level='debug',
             message=(
                 "[INCOMING REQUEST] redirect_endpoint with Context: "
                 f"{context.__dict__} and args: {args}"
@@ -437,15 +438,15 @@ class OpenID4VPBackend(BackendModule):
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # The wallet instance uses the endpoint authentication to give its WIA
-            
+
             # take WIA
             dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
             _head = unpad_jwt_header(dpop_jws)
             wia = unpad_jwt_payload(dpop_jws)
-            
+
             self._log(
-                context, 
-                level='debug', 
+                context,
+                level='debug',
                 message=(
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
@@ -469,7 +470,7 @@ class OpenID4VPBackend(BackendModule):
                     },
                     status="400"
                 )
-            
+
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
                 self._log(context, level='error', message=_msg)
@@ -494,8 +495,8 @@ class OpenID4VPBackend(BackendModule):
     def request_endpoint(self, context, *args):
 
         self._log(
-            context, 
-            level='debug', 
+            context,
+            level='debug',
             message=(
                 "[INCOMING REQUEST] request_endpoint with Context: "
                 f"{context.__dict__} and args: {args}"
@@ -506,8 +507,8 @@ class OpenID4VPBackend(BackendModule):
         dpop_validation_error = self._request_endpoint_dpop(context)
         if dpop_validation_error:
             self._log(
-                context, 
-                level='error', 
+                context,
+                level='error',
                 message=(
                     "[DPoP VALIDATION ERROR] "
                     f"{context.headers}"
@@ -523,7 +524,7 @@ class OpenID4VPBackend(BackendModule):
                 f"{e.__class__.__name__}: {e}"
             )
             return self.handle_error(context, message=_msg, err_code="403")
-        
+
         data = {
             "scope": ' '.join(self.config['authorization']['scopes']),
             "client_id_scheme": "entity_id",  # that's federation.
@@ -601,8 +602,8 @@ class OpenID4VPBackend(BackendModule):
     def state_endpoint(self, context):
 
         self._log(
-            context, 
-            level='debug', 
+            context,
+            level='debug',
             message=(
                 "[INCOMING REQUEST] state_endpoint with Context: "
                 f"{context.__dict__}"

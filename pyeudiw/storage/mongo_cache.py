@@ -47,9 +47,9 @@ class MongoCache(BaseCache):
 
     def overwrite(self, object_name: str, value_gen_fn: Callable[[], str]) -> dict:
         self._connect()
-        
+
         update_time = datetime.now().isoformat()
-        
+
         new_data = value_gen_fn()
         cache_object = {
             "object_name": object_name,

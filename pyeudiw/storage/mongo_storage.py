@@ -1,4 +1,3 @@
-import json
 import pymongo
 from datetime import datetime
 
@@ -6,8 +5,7 @@ from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import BaseStorage
 from pyeudiw.storage.exceptions import (
-    ChainAlreadyExist, 
-    ChainNotExist, 
+    ChainNotExist,
     StorageEntryUpdateFailed
 )
 from typing import Union
@@ -182,20 +180,20 @@ class MongoStorage(BaseStorage):
         return self._has_trust_attestation("trust_anchors", entity_id)
 
     def _add_entry(
-        self, 
-        collection: str, 
-        entity_id: str, 
-        attestation: Union[str, dict], 
+        self,
+        collection: str,
+        entity_id: str,
+        attestation: Union[str, dict],
         exp: datetime
     ) -> str:
-        
+
         meth_suffix = collection[:-1]
         if getattr(self, f"has_{meth_suffix}")(entity_id):
             # update it
             getattr(self, f"update_{meth_suffix}")(entity_id, attestation, exp)
             return entity_id
             # raise ChainAlreadyExist(
-                # f"Chain with entity id {entity_id} already exist"
+            # f"Chain with entity id {entity_id} already exist"
             # )
 
         db_collection = getattr(self, collection)
@@ -223,7 +221,7 @@ class MongoStorage(BaseStorage):
                 "entity_configuration": entity_configuration,
                 "exp": exp
             },
-            "x509": {} # TODO x509
+            "x509": {}  # TODO x509
         }
         if self.has_trust_anchor(entity_id):
             self.update_trust_anchor(entity_id, entity_configuration, exp)
@@ -269,5 +267,5 @@ class MongoStorage(BaseStorage):
             raise StorageEntryUpdateFailed(
                 "Trust Anchor matched count is ZERO"
             )
-        
+
         return documentStatus

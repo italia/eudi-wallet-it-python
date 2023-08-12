@@ -3,6 +3,8 @@ from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
+from pyeudiw.storage.exceptions import EntryNotFound
+from pyeudiw.trust.exceptions import UnknownTrustAnchor
 
 
 class TrustEvaluationHelper:
@@ -22,25 +24,26 @@ class TrustEvaluationHelper:
         return self.federation
 
     def _handle_chain(self):
-        
-        trust_anchor_eid = unpad_jwt_payload(self.trust_chain[-1]).get('iss', None)
-        
+
+        trust_anchor_eid = unpad_jwt_payload(
+            self.trust_chain[-1]).get('iss', None)
+
         try:
             trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
         except EntryNotFound:
             return False
-        
+
         if not trust_anchor:
             raise UnknownTrustAnchor(
                 f"Unknown Trust Anchor '{trust_anchor_eid}'"
             )
-        
+
         jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
         tc = StaticTrustChainValidator(self.trust_chain, jwks)
-        
+
         self.entity_id = tc.get_entityID()
         self.exp = tc.get_exp()
-        
+
         _is_valid = tc.is_valid
         if not _is_valid:
             db_chain = self.storage.get_trust_attestation(

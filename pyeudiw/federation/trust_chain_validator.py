@@ -85,14 +85,14 @@ class StaticTrustChainValidator:
         last_element = rev_tc[0]
         es_header = unpad_jwt_header(last_element)
         es_payload = unpad_jwt_payload(last_element)
-        
+
         ta_jwk = find_jwk(
             es_header.get("kid", None), self.trust_anchor_jwks
         )
-        
+
         if not ta_jwk:
             return False
-        
+
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
 

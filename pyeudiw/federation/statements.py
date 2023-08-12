@@ -339,7 +339,7 @@ class EntityStatement:
         if not jwts:
             jwts = get_entity_configurations(
                 authority_hints, self.httpc_params)
-        
+
         for jwt in jwts:
             try:
                 ec = self.__class__(
@@ -357,7 +357,7 @@ class EntityStatement:
                 target = self.failed_superiors
 
             target[ec.payload["sub"]] = ec
-        
+
         for ahints in authority_hints:
             if not self.verified_superiors.get(ahints, None):
                 logger.warning(
