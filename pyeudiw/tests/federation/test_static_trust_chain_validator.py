@@ -5,6 +5,8 @@ from unittest.mock import Mock
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 import pyeudiw.federation.trust_chain_validator as tcv
 
+from pyeudiw.tests.settings import httpc_params
+
 
 from . base import (
     EXP,
@@ -25,7 +27,7 @@ from . base import (
 
 def test_is_valid():
     assert StaticTrustChainValidator(
-        trust_chain_wallet, [ta_jwk.serialize()]).is_valid
+        trust_chain_wallet, [ta_jwk.serialize()], httpc_params = httpc_params).is_valid
 
 
 invalid_intermediate = copy.deepcopy(intermediate_es_wallet)
@@ -51,7 +53,7 @@ invalid_trust_chain = [
 
 def test_is_valid_equals_false():
     assert not StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()]
+        invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params
     ).is_valid
 
 
@@ -59,7 +61,7 @@ def test_retrieve_ec():
     tcv.get_entity_configurations = Mock(return_value=[leaf_wallet_signed])
 
     assert tcv.StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()])._retrieve_ec("https://trust-anchor.example.org") == leaf_wallet_signed
+        invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params)._retrieve_ec("https://trust-anchor.example.org") == leaf_wallet_signed
 
 
 def test_retrieve_ec_fails():
@@ -67,7 +69,7 @@ def test_retrieve_ec_fails():
 
     try:
         StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()])._retrieve_ec("https://trust-anchor.example.org")
+            invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params)._retrieve_ec("https://trust-anchor.example.org")
     except tcv.HttpError as e:
         return
 
@@ -76,14 +78,14 @@ def test_retrieve_es():
     tcv.get_entity_statements = Mock(return_value=ta_es)
 
     assert tcv.StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.org", "https://trust-anchor.example.org") == ta_es
+        invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params)._retrieve_es("https://trust-anchor.example.org", "https://trust-anchor.example.org") == ta_es
 
 
 def test_retrieve_es_output_is_none():
     tcv.get_entity_statements = Mock(return_value=None)
 
     assert tcv.StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()])._retrieve_es("https://trust-anchor.example.org", "https://trust-anchor.example.org") == None
+        invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params)._retrieve_es("https://trust-anchor.example.org", "https://trust-anchor.example.org") == None
 
 
 def test_update_st_ec_case():
@@ -95,7 +97,7 @@ def test_update_st_ec_case():
 
     with mock.patch.object(tcv, "get_entity_configurations", mock_method):
         assert tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()])._update_st(leaf_wallet_signed) == leaf_wallet_signed
+            invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params)._update_st(leaf_wallet_signed) == leaf_wallet_signed
 
 
 def test_update_st_es_case_source_endpoint():
@@ -116,7 +118,7 @@ def test_update_st_es_case_source_endpoint():
 
     with mock.patch.object(tcv, "get_entity_statements", mock_method):
         _t = tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()]
+            invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params
         )
         assert _t._update_st(ta_es_signed) == leaf_wallet_signed
         assert not _t.is_valid
@@ -143,6 +145,6 @@ def test_update_st_es_case_no_source_endpoint():
     with mock.patch.object(tcv, "get_entity_statements", mock_method_es):
         with mock.patch.object(tcv, "get_entity_configurations", mock_method_ec):
             _t = tcv.StaticTrustChainValidator(
-                invalid_trust_chain, [ta_jwk.serialize()]
+                invalid_trust_chain, [ta_jwk.serialize()], httpc_params = httpc_params
             )
             assert _t._update_st(ta_es_signed) == leaf_wallet_signed

@@ -38,8 +38,8 @@ class TrustChainBuilder:
         self,
         subject: str,
         trust_anchor: str,
+        httpc_params: dict,
         trust_anchor_configuration: Union[EntityStatement, None] = None,
-        httpc_params: dict = {},
         max_authority_hints: int = 10,
         subject_configuration: EntityStatement = None,
         required_trust_marks: list = [],
@@ -241,7 +241,8 @@ class TrustChainBuilder:
                     self.subject, httpc_params=self.httpc_params
                 )
                 self.subject_configuration = EntityStatement(
-                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration
+                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration,
+                    httpc_params=self.httpc_params
                 )
                 self.subject_configuration.validate_by_itself()
             except Exception as e:

@@ -14,6 +14,10 @@ def exp_from_now(minutes: int = 33) -> int:
     now = datetime.datetime.now(datetime.timezone.utc)
     return int((now + datetime.timedelta(minutes=minutes)).timestamp())
 
+httpc_params = {
+    "connection": {"ssl": True},
+    "session": {"timeout": 6},
+}
 
 NOW = iat_now()
 EXP = exp_from_now(50)
@@ -206,9 +210,9 @@ trust_chain_wallet = [
 ]
 
 test_cred = tcv_test.StaticTrustChainValidator(
-    trust_chain_issuer, [ta_jwk.serialize()])
+    trust_chain_issuer, [ta_jwk.serialize()], httpc_params = httpc_params)
 assert test_cred.is_valid
 
 test_wallet = tcv_test.StaticTrustChainValidator(
-    trust_chain_wallet, [ta_jwk.serialize()])
+    trust_chain_wallet, [ta_jwk.serialize()], httpc_params = httpc_params)
 assert test_wallet.is_valid
