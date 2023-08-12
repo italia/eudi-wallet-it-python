@@ -108,6 +108,9 @@ class DBEngine():
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)
 
+    def get_trust_anchor(self, entity_id: str) -> Union[dict, None]:
+        return self.get("get_trust_anchor", entity_id)
+
     def has_trust_attestation(self, entity_id: str):
         return self.get_trust_attestation(entity_id)
 

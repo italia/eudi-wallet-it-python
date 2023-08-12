@@ -3,7 +3,7 @@ import os
 import urllib
 import datetime
 
-from trust_chain_provider import (
+from pyeudiw.tests.federation.base import (
     EXP,
     leaf_wallet_jwk,
     trust_chain_issuer,
@@ -119,7 +119,6 @@ dpop_test = DPoPVerifier(
     http_header_authz=f"DPoP {dpop_wia}",
     http_header_dpop=dpop_proof
 )
-
 print(f"dpop is valid: {dpop_test.is_valid}")
 
 http_headers = {
@@ -127,7 +126,7 @@ http_headers = {
     "DPOP":dpop_proof
 }
 
-breakpoint()
 sign_request_obj = requests.get(request_uri, verify=False, headers=http_headers)
+print(sign_request_obj.json())
 
-print(sign_request_obj)
+

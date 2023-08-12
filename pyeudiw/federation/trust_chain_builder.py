@@ -91,7 +91,6 @@ class TrustChainBuilder:
             f"{self.trust_path[-1]}"
         )
         last_path = self.tree_of_trust[len(self.trust_path) - 1]
-
         path_found = False
         for ec in last_path:
             for sup_ec in ec.verified_by_superiors.values():

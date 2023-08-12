@@ -272,18 +272,27 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
 
-    def _validate_trust(self, jws: str) -> None:
+    def _validate_trust(self, context :Context, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(self.db_engine, **headers)
+        
+        self._log(
+            context, 
+            level='debug', 
+            message=(
+                "[TRUST EVALUATION] evaluating trust with "
+                f"{trust_eval.entity_id}"
+            )
+        )
+        
         is_trusted = trust_eval.evaluation_method()
-
-        if is_trusted:
+        if not is_trusted:
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
 
-    def _handle_vp(self, vp_token: str) -> dict:
-        self._validate_trust(vp_token)
+    def _handle_vp(self, context :Context, vp_token: str) -> dict:
+        self._validate_trust(context, vp_token)
         valid, value = check_vp_token(
             vp_token, None, self.metadata_jwks_by_kids
         )
@@ -360,7 +369,7 @@ class OpenID4VPBackend(BackendModule):
             result = None
 
             try:
-                result = self._handle_vp(vp)
+                result = self._handle_vp(context, vp)
             except InvalidVPToken:
                 return self.handle_error(context=context, message=f"Cannot validate VP: {vp}", err_code="400")
             except NoNonceInVPToken:
@@ -427,17 +436,23 @@ class OpenID4VPBackend(BackendModule):
         """ This validates, if any, the DPoP http request header """
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
-            # the wallet instance MAY use the endpoint authentication to give its WIA
-
-            # TODO - validate the trust to the Wallet Provider
-            # using the TA public key validate trust_chain and or x5c
-
+            # The wallet instance uses the endpoint authentication to give its WIA
+            
             # take WIA
-
-            http_authz = context.http_headers['HTTP_AUTHORIZATION']
-            wia = unpad_jwt_payload(http_authz)
-            dpop_jws = http_authz.split()[1]
-            self._validate_trust(dpop_jws)
+            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
+            
+            _head = unpad_jwt_header(dpop_jws)
+            wia = unpad_jwt_payload(dpop_jws)
+            
+            self._log(
+                context, 
+                level='debug', 
+                message=(
+                    f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
+                )
+            )
+            
+            self._validate_trust(context, dpop_jws)
             # TODO: validate wia scheme using pydantic
             try:
                 dpop = DPoPVerifier(
@@ -455,7 +470,7 @@ class OpenID4VPBackend(BackendModule):
                     },
                     status="400"
                 )
-
+            
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
                 self._log(context, level='error', message=_msg)

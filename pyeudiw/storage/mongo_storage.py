@@ -5,7 +5,12 @@ from datetime import datetime
 from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
+from pyeudiw.storage.exceptions import (
+    ChainAlreadyExist, 
+    ChainNotExist, 
+    StorageEntryUpdateFailed
+)
+from typing import Union
 
 
 class MongoStorage(BaseStorage):
@@ -173,17 +178,28 @@ class MongoStorage(BaseStorage):
     def has_trust_attestation(self, entity_id: str):
         return self._has_trust_attestation("trust_attestations", entity_id)
 
-    def has_trust_anchors(self, entity_id: str):
+    def has_trust_anchor(self, entity_id: str):
         return self._has_trust_attestation("trust_anchors", entity_id)
 
-    def _add_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
-        if self._has_trust_attestation(collection, entity_id):
-            raise ChainAlreadyExist(
-                f"Chain with entity id {entity_id} already exist")
+    def _add_entry(
+        self, 
+        collection: str, 
+        entity_id: str, 
+        attestation: Union[str, dict], 
+        exp: datetime
+    ) -> str:
+        
+        meth_suffix = collection[:-1]
+        if getattr(self, f"has_{meth_suffix}")(entity_id):
+            # update it
+            getattr(self, f"update_{meth_suffix}")(entity_id, attestation, exp)
+            return entity_id
+            # raise ChainAlreadyExist(
+                # f"Chain with entity id {entity_id} already exist"
+            # )
 
         db_collection = getattr(self, collection)
-        db_collection.insert_one(entity)
-
+        db_collection.insert_one(attestation)
         return entity_id
 
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime):
@@ -196,20 +212,23 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
 
-        self._add_trust_attestation(
-            "trust_attestations", entity_id, entity, exp)
+        self._add_entry(
+            "trust_attestations", entity_id, entity, exp
+        )
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
-        entity = {
+    def add_trust_anchor(self, entity_id: str, entity_configuration: Union[dict, str], exp: datetime):
+        entry = {
             "entity_id": entity_id,
             "federation": {
-                "entity_configuration": json.dumps(entity_configuration),
+                "entity_configuration": entity_configuration,
                 "exp": exp
             },
-            "x509": {}
+            "x509": {} # TODO x509
         }
-
-        self._add_trust_attestation("trust_anchors", entity_id, entity, exp)
+        if self.has_trust_anchor(entity_id):
+            self.update_trust_anchor(entity_id, entity_configuration, exp)
+        else:
+            self._add_entry("trust_anchors", entity_id, entry, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if not self._has_trust_attestation(collection, entity_id):
@@ -234,9 +253,21 @@ class MongoStorage(BaseStorage):
     def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
         entity = {
             "federation": {
-                "entity_configuration": json.dumps(entity_configuration),
+                "entity_configuration": entity_configuration,
                 "exp": exp
             }
         }
 
-        return self._update_trust_attestation("trust_anchors", entity_id, entity, exp)
+        if not self.has_trust_anchor(entity_id):
+            raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
+
+        documentStatus = self.trust_anchors.update_one(
+            {"entity_id": entity_id},
+            {"$set": entity}
+        )
+        if not documentStatus.matched_count:
+            raise StorageEntryUpdateFailed(
+                "Trust Anchor matched count is ZERO"
+            )
+        
+        return documentStatus

@@ -1,6 +1,8 @@
 from datetime import datetime
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.jwt.utils import unpad_jwt_payload
+
 
 
 class TrustEvaluationHelper:
@@ -19,16 +21,22 @@ class TrustEvaluationHelper:
         # method based on internal trust evaluetion property
         return self.federation
 
-    def _handle_chain(self, trust_chain: list[str], jwks: list[dict]):
-        tc = StaticTrustChainValidator(trust_chain, jwks)
+    def _handle_chain(self):
+        
+        trust_anchor_eid = unpad_jwt_payload(self.trust_chain[-1])['iss']
+        trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
+        
+        jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
+        tc = StaticTrustChainValidator(self.trust_chain, jwks)
+        
         self.entity_id = tc.get_entityID()
-
-        _is_valid = tc.is_valid
         self.exp = tc.get_exp()
-
+        
+        _is_valid = tc.is_valid
         if not _is_valid:
-            db_chain = self.storage.find_chain(self.entity_id)[
-                "federation"]["chain"]
+            db_chain = self.storage.get_trust_attestation(
+                self.entity_id
+            )["federation"]["chain"]
 
             if db_chain is not None and \
                     StaticTrustChainValidator(db_chain).is_valid:
@@ -49,7 +57,7 @@ class TrustEvaluationHelper:
 
     def federation(self) -> bool:
         if self.trust_chain:
-            return self._handle_chain(self.trust_chain, self.jwks)
+            return self._handle_chain()
 
         # TODO - at least a TA entity id is required for a discovery process
         # _tc = TrustChainBuilder(

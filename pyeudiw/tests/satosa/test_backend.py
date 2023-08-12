@@ -20,6 +20,7 @@ from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
                             load_specification_from_yaml_string)
 from pyeudiw.tools.utils import exp_from_now, iat_now
+from pyeudiw.tests.federation.base import trust_chain_wallet
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -584,10 +585,15 @@ class TestOpenID4VPBackend:
         state = urllib.parse.unquote(
             pre_request_endpoint.message).split("=")[-1]
 
+        
+
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
             WALLET_INSTANCE_ATTESTATION,
-            protected={'trust_chain': [], 'x5c': []}
+            protected={
+                'trust_chain': trust_chain_wallet, 
+                'x5c': []
+            }
         )
 
         dpop_wia = wia

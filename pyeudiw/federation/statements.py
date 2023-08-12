@@ -150,7 +150,7 @@ class EntityStatement:
         self.sub = self.payload["sub"]
         self.iss = self.payload["iss"]
         self.jwks = get_federation_jwks(self.payload, httpc_params)
-        if not self.jwks[0]:
+        if not self.jwks or not self.jwks[0]:
             _msg = f"Missing jwks in the statement for {self.sub}"
             logger.error(_msg)
             raise MissingJwksClaim(_msg)
@@ -339,7 +339,7 @@ class EntityStatement:
         if not jwts:
             jwts = get_entity_configurations(
                 authority_hints, self.httpc_params)
-
+        
         for jwt in jwts:
             try:
                 ec = self.__class__(
@@ -357,7 +357,7 @@ class EntityStatement:
                 target = self.failed_superiors
 
             target[ec.payload["sub"]] = ec
-
+        
         for ahints in authority_hints:
             if not self.verified_superiors.get(ahints, None):
                 logger.warning(
