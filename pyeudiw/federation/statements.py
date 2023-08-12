@@ -35,7 +35,7 @@ def get_federation_jwks(jwt_payload: dict, httpc_params: dict):
     )
 
 
-def get_http_url(urls: list, httpc_params :dict, http_async: bool = True) -> list:
+def get_http_url(urls: list, httpc_params: dict, http_async: bool = True) -> list:
     if http_async:
         responses = asyncio.run(
             http_get(urls, httpc_params))  # pragma: no cover
@@ -72,7 +72,7 @@ def get_entity_configurations(subjects: list, httpc_params: dict):
 
 
 class TrustMark:
-    def __init__(self, jwt: str, httpc_params :dict):
+    def __init__(self, jwt: str, httpc_params: dict):
         self.jwt = jwt
         self.header = unpad_jwt_header(jwt)
         self.payload = unpad_jwt_payload(jwt)
@@ -181,7 +181,7 @@ class EntityStatement:
 
         self.verified_trust_marks = []
         self.is_valid = False
-    
+
     def validate_by_itself(self) -> bool:
         """
         validates the entity configuration by it self

@@ -31,7 +31,7 @@ class StaticTrustChainValidator:
         self,
         static_trust_chain: list,
         trust_anchor_jwks: list,
-        httpc_params :dict,
+        httpc_params: dict,
         **kwargs,
     ) -> None:
 
@@ -39,7 +39,7 @@ class StaticTrustChainValidator:
         self.updated_trust_chain = []
         self.exp = 0
         self.httpc_params = httpc_params
-        
+
         if not trust_anchor_jwks:
             raise MissingTrustAnchorPublicKey(
                 f"{self.__class__.__name__} cannot "

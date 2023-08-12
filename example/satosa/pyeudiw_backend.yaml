@@ -53,7 +53,14 @@ config:
     url_scheme: "eudiw" # eudiw://
     scopes: 
     - pid-sd-jwt:unique_id+given_name+family_name
-    
+
+  network:
+    httpc_params:
+      connection:
+        ssl: true
+      session:
+        timeout: 6
+
   federation:
     metadata_type: "wallet_relying_party"
     authority_hints:

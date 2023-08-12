@@ -25,7 +25,6 @@ CONFIG = {
         "error_template": "error.html",
         "error_url": "https://localhost:9999/error_page.html"
     },
-
     "endpoints": {
         "entity_configuration": "/OpenID4VP/.well-known/openid-federation",
         "pre_request": "/OpenID4VP/pre-request",

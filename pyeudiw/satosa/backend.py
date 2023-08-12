@@ -18,10 +18,10 @@ from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
 from pyeudiw.satosa.exceptions import (
-    BadRequestError, 
-    NoBoundEndpointError, 
-    NoNonceInVPToken, 
-    InvalidVPToken, 
+    BadRequestError,
+    NoBoundEndpointError,
+    NoNonceInVPToken,
+    InvalidVPToken,
     NotTrustedFederationError
 )
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
@@ -95,7 +95,7 @@ class OpenID4VPBackend(BackendModule):
         self.template = Jinja2TemplateHandler(config)
 
         self.db_engine = DBEngine(self.config["storage"])
-        
+
         self.update_trust_anchors()
 
         logger.debug(
@@ -104,7 +104,7 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Loaded configuration: {json.dumps(config)}"
             )
         )
-        
+
     def update_trust_anchors(self):
         # TODO: get the list of the trust anchors and TRY yo update all their definitions (EC)
         tas = self.config['federation']['trust_anchors']
@@ -114,13 +114,12 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Trying to update: {tas}"
             )
         )
-        
         for ta in tas:
             try:
                 update_trust_anchors_ecs(
-                    db = self.db_engine,
-                    trust_anchors = [ta], 
-                    httpc_params = self.config['network']['httpc_params']
+                    db=self.db_engine,
+                    trust_anchors=[ta],
+                    httpc_params=self.config['network']['httpc_params']
                 )
             except Exception as e:
                 logger.warning(
@@ -298,8 +297,8 @@ class OpenID4VPBackend(BackendModule):
     def _validate_trust(self, context: Context, jws: str) -> None:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(
-            self.db_engine, 
-            httpc_params = self.config['network']['httpc_params'],
+            self.db_engine,
+            httpc_params=self.config['network']['httpc_params'],
             **headers
         )
 

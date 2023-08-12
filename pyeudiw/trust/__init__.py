@@ -14,7 +14,7 @@ class TrustEvaluationHelper:
         self.storage = storage
         self.entity_id: str = ""
         self.httpc_params = httpc_params,
-        
+
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -40,7 +40,8 @@ class TrustEvaluationHelper:
             )
 
         jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
-        tc = StaticTrustChainValidator(self.trust_chain, jwks, self.httpc_params)
+        tc = StaticTrustChainValidator(
+            self.trust_chain, jwks, self.httpc_params)
 
         self.entity_id = tc.get_entityID()
         self.exp = tc.get_exp()

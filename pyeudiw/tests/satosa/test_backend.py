@@ -1,7 +1,6 @@
 import base64
 import datetime
 import json
-import pathlib
 import urllib.parse
 import uuid
 from unittest.mock import Mock
@@ -28,16 +27,16 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec
 
-from pyeudiw.tests.settings import *
+from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
 
 # STORAGE ####
 # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
 db_engine_inst = DBEngine(CONFIG['storage'])
 db_engine_inst.add_trust_anchor(
-    entity_id = ta_ec['iss'],
-    trust_chain = ta_ec,
-    exp = datetime.datetime.now().isoformat()
+    entity_id=ta_ec['iss'],
+    trust_chain=ta_ec,
+    exp=datetime.datetime.now().isoformat()
 )
 
 
@@ -284,7 +283,7 @@ class TestOpenID4VPBackend:
         context.qs_params = {"id": state}
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
-        
+
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
