@@ -1,4 +1,5 @@
 import base64
+import datetime
 import json
 import pathlib
 import urllib.parse
@@ -17,10 +18,15 @@ from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
-                            load_specification_from_yaml_string)
+from pyeudiw.sd_jwt import (
+    _adapt_keys, 
+    issue_sd_jwt,
+    load_specification_from_yaml_string
+)
+from pyeudiw.storage.db_engine import DBEngine
+
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.federation.base import trust_chain_wallet
+from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -128,7 +134,7 @@ CONFIG = {
                 "init_params": {
                     "url": "mongodb://localhost:27017/",
                     "conf": {
-                        "db_name": "eudiw",
+                        "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors"
@@ -585,8 +591,6 @@ class TestOpenID4VPBackend:
         state = urllib.parse.unquote(
             pre_request_endpoint.message).split("=")[-1]
 
-        
-
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
             WALLET_INSTANCE_ATTESTATION,
@@ -620,10 +624,18 @@ class TestOpenID4VPBackend:
         assert state_endpoint_response.status == "403"
         assert state_endpoint_response.message
 
-        context.request_method = "POST"
+        context.request_method = "GET"
         context.qs_params = {"id": state}
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
+        # STORAGE ####
+        # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
+        db_engine_inst = DBEngine(CONFIG['storage'])
+        db_engine_inst.add_trust_anchor(
+            ta_ec['iss'], 
+            ta_ec, 
+            datetime.datetime.now().isoformat()
+        )
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint

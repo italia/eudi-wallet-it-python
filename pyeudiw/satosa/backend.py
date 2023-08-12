@@ -440,7 +440,6 @@ class OpenID4VPBackend(BackendModule):
             
             # take WIA
             dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
-            
             _head = unpad_jwt_header(dpop_jws)
             wia = unpad_jwt_payload(dpop_jws)
             
@@ -451,8 +450,8 @@ class OpenID4VPBackend(BackendModule):
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
-            
             self._validate_trust(context, dpop_jws)
+
             # TODO: validate wia scheme using pydantic
             try:
                 dpop = DPoPVerifier(
@@ -506,6 +505,14 @@ class OpenID4VPBackend(BackendModule):
         # check DPOP for WIA if any
         dpop_validation_error = self._request_endpoint_dpop(context)
         if dpop_validation_error:
+            self._log(
+                context, 
+                level='error', 
+                message=(
+                    "[DPoP VALIDATION ERROR] "
+                    f"{context.headers}"
+                )
+            )
             return dpop_validation_error
 
         try:
@@ -516,14 +523,7 @@ class OpenID4VPBackend(BackendModule):
                 f"{e.__class__.__name__}: {e}"
             )
             return self.handle_error(context, message=_msg, err_code="403")
-
-        try:
-            dpop_proof = context.http_headers['HTTP_DPOP']
-            attestation = context.http_headers['HTTP_AUTHORIZATION']
-        except KeyError as e:
-            _msg = f"Error while accessing http headers: {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
-
+        
         data = {
             "scope": ' '.join(self.config['authorization']['scopes']),
             "client_id_scheme": "entity_id",  # that's federation.
@@ -537,6 +537,13 @@ class OpenID4VPBackend(BackendModule):
             "iat": iat_now(),
             "exp": exp_from_now(minutes=5)
         }
+
+        try:
+            dpop_proof = context.http_headers['HTTP_DPOP']
+            attestation = context.http_headers['HTTP_AUTHORIZATION']
+        except KeyError as e:
+            _msg = f"Error while accessing http headers: {e}"
+            return self.handle_error(context, message=_msg, err_code="403")
 
         # take the session created in the pre-request authz endpoint
         try:
@@ -558,7 +565,6 @@ class OpenID4VPBackend(BackendModule):
             return self.handle_error(context, message=_msg, err_code="500")
 
         helper = JWSHelper(self.metadata_jwk)
-
         # TODO: add the trust chain in the JWS headers here
         jwt = helper.sign(data)
 

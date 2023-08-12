@@ -23,8 +23,17 @@ class TrustEvaluationHelper:
 
     def _handle_chain(self):
         
-        trust_anchor_eid = unpad_jwt_payload(self.trust_chain[-1])['iss']
-        trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
+        trust_anchor_eid = unpad_jwt_payload(self.trust_chain[-1]).get('iss', None)
+        
+        try:
+            trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
+        except EntryNotFound:
+            return False
+        
+        if not trust_anchor:
+            raise UnknownTrustAnchor(
+                f"Unknown Trust Anchor '{trust_anchor_eid}'"
+            )
         
         jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
         tc = StaticTrustChainValidator(self.trust_chain, jwks)

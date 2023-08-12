@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -98,12 +98,12 @@ class DBEngine():
                 if res:
                     return res
 
-            except Exception as e:
+            except EntryNotFound as e:
                 logger.critical(
                     f"Cannot find result by method {method} on {db_name} with {args} {kwargs}: {str(e)}"
                 )
 
-        raise Exception(f"Cannot find any result by method {method}")
+        raise EntryNotFound(f"Cannot find any result by method {method}")
 
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)

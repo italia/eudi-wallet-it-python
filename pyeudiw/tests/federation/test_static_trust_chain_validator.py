@@ -88,67 +88,61 @@ def test_retrieve_es_output_is_none():
 
 def test_update_st_ec_case():
     def mock_method(*args, **kwargs):
-        if args[0] == "https://wallet-provider.example.org":
-            return [leaf_wallet_signed]
+        # if args[0] == "https://wallet-provider.example.org":
+        return [leaf_wallet_signed]
 
-        raise Exception("Wrong issuer")
+        # raise Exception("Wrong issuer")
 
     with mock.patch.object(tcv, "get_entity_configurations", mock_method):
         assert tcv.StaticTrustChainValidator(
             invalid_trust_chain, [ta_jwk.serialize()])._update_st(leaf_wallet_signed) == leaf_wallet_signed
 
 
-# def test_update_st_es_case_source_endpoint():
-    # ta_es = {
-        # "exp": EXP,
-        # "iat": NOW,
-        # "iss": "https://trust-anchor.example.org",
-        # "sub": "https://intermediate.eidas.example.org",
-        # 'jwks': {"keys": []},
-        # "source_endpoint": "https://trust-anchor.example.org/fetch"
-    # }
+def test_update_st_es_case_source_endpoint():
+    ta_es = {
+        "exp": EXP,
+        "iat": NOW,
+        "iss": "https://trust-anchor.example.org",
+        "sub": "https://intermediate.eidas.example.org",
+        'jwks': {"keys": []},
+        "source_endpoint": "https://trust-anchor.example.org/fetch"
+    }
 
-    # ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
-    # ta_es_signed = ta_signer.sign_compact([ta_jwk])
+    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_es_signed = ta_signer.sign_compact([ta_jwk])
 
-    # def mock_method(*args, **kwargs):
-        # if args[0] == "https://wallet-provider.example.org":
-            # return leaf_wallet_signed
+    def mock_method(*args, **kwargs):
+        return leaf_wallet_signed
 
-        # raise Exception("Wrong issuer")
+    with mock.patch.object(tcv, "get_entity_statements", mock_method):
+        _t = tcv.StaticTrustChainValidator(
+            invalid_trust_chain, [ta_jwk.serialize()]
+        )
+        assert _t._update_st(ta_es_signed) == leaf_wallet_signed
+        assert not _t.is_valid
+        
 
-    # with mock.patch.object(tcv, "get_entity_statements", mock_method):
-        # assert tcv.StaticTrustChainValidator(
-            # invalid_trust_chain, [ta_jwk.serialize()])._update_st(ta_es_signed
-        # ) == leaf_wallet_signed
+def test_update_st_es_case_no_source_endpoint():
+    ta_es = {
+        "exp": EXP,
+        "iat": NOW,
+        "iss": "https://trust-anchor.example.org",
+        "sub": "https://intermediate.eidas.example.org",
+        'jwks': {"keys": []},
+    }
 
+    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_es_signed = ta_signer.sign_compact([ta_jwk])
 
-# def test_update_st_es_case_no_source_endpoint():
+    def mock_method_ec(*args, **kwargs):
+        return [intermediate_es_wallet_signed]
 
-    # ta_es = {
-        # "exp": EXP,
-        # "iat": NOW,
-        # "iss": "https://trust-anchor.example.org",
-        # "sub": "https://intermediate.eidas.example.org",
-        # 'jwks': {"keys": []},
-    # }
+    def mock_method_es(*args, **kwargs):
+        return leaf_wallet_signed
 
-    # ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
-    # ta_es_signed = ta_signer.sign_compact([ta_jwk])
-
-    # def mock_method_ec(*args, **kwargs):
-        # if args[0] == "https://trust-anchor.example.org":
-            # return [intermediate_es_wallet_signed]
-        # raise Exception("Wrong issuer")
-
-    # def mock_method_es(*args, **kwargs):
-        # if args[0] == "https://intermediate.eidas.example.org/fetch":
-            # return leaf_wallet_signed
-        # raise Exception("Wrong issuer")
-
-    # with mock.patch.object(tcv, "get_entity_statements", mock_method_es):
-        # with mock.patch.object(tcv, "get_entity_configurations", mock_method_ec):
-
-            # assert tcv.StaticTrustChainValidator(
-                # invalid_trust_chain, [ta_jwk.serialize()]
-            # )._update_st(ta_es_signed) == leaf_wallet_signed
+    with mock.patch.object(tcv, "get_entity_statements", mock_method_es):
+        with mock.patch.object(tcv, "get_entity_configurations", mock_method_ec):
+            _t = tcv.StaticTrustChainValidator(
+                invalid_trust_chain, [ta_jwk.serialize()]
+            )
+            assert _t._update_st(ta_es_signed) == leaf_wallet_signed

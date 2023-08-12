@@ -12,3 +12,7 @@ class StorageWriteError(BaseException):
 
 class StorageEntryUpdateFailed(BaseException):
     pass
+
+
+class EntryNotFound(BaseException):
+    pass
