@@ -207,3 +207,5 @@ class StaticTrustChainValidator:
         chain = self.get_chain()
         payload = unpad_jwt_payload(chain[0])
         return payload["iss"]
+    
+    # TODO - apply metadata policy and get the final metadata

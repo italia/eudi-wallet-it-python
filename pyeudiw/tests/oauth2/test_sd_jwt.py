@@ -75,7 +75,6 @@ def test_verify_sd_jwt():
 
     verified_payload = verify_sd_jwt(
         sdjwt_at_holder.sd_jwt_presentation,
-        sd_specification,
         settings,
         issuer_jwk,
         holder_jwk

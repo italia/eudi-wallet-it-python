@@ -16,12 +16,9 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
-from pyeudiw.openid4vp.schemas.response_schema import ResponseSchema as ResponseValidator
 from pyeudiw.satosa.exceptions import (
     BadRequestError,
     NoBoundEndpointError,
-    NoNonceInVPToken,
-    InvalidVPToken,
     NotTrustedFederationError
 )
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
@@ -29,8 +26,16 @@ from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
-from pyeudiw.openid4vp import check_vp_token
-from pyeudiw.openid4vp.exceptions import KIDNotFound
+from pyeudiw.openid4vp.schemas.response import ResponseSchema
+from pyeudiw.openid4vp.vp_token import VpToken
+from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.exceptions import (
+    KIDNotFound,
+    InvalidVPToken,
+    VPNotFound, 
+    VPInvalidNonce,
+    NoNonceInVPToken
+)
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.trust import TrustEvaluationHelper
@@ -294,7 +299,7 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = str(uuid.uuid4())
         return internal_resp
 
-    def _validate_trust(self, context: Context, jws: str) -> None:
+    def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(
             self.db_engine,
@@ -316,21 +321,8 @@ class OpenID4VPBackend(BackendModule):
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
-
-    def _handle_vp(self, context: Context, vp_token: str) -> dict:
-        # establish the trust with the issuer of the credential by checking it to the revocation
-        # inspect VP's iss or trust_chain if available or x5c if available
-        self._validate_trust(context, vp_token)
-        valid, value = check_vp_token(
-            vp_token, None, self.metadata_jwks_by_kids
-        )
-
-        if not valid:
-            raise InvalidVPToken("Invalid vp_token")
-        elif not value.get("nonce", None):
-            raise NoNonceInVPToken("vp_token's nonce not present")
-
-        return value
+        
+        return trust_eval
 
     def redirect_endpoint(self, context, *args):
         self._log(
@@ -341,66 +333,72 @@ class OpenID4VPBackend(BackendModule):
                 f"{context.__dict__} and args: {args}"
             )
         )
-
         if context.request_method.lower() != 'post':
             raise BadRequestError("HTTP Method not supported")
 
-        if context.request_uri not in self.config["metadata"]['redirect_uris']:
+        _server_url = self.base_url[:-1] if self.base_url[-1] == '/' else self.base_url
+        _endpoint = f'{_server_url}{context.request_uri}'
+        if _endpoint not in self.config["metadata"]['redirect_uris']:
             raise NoBoundEndpointError("request_uri not valid")
-
+        
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request["response"]
-
-        # get the decryption jwks by its kid
-        jwt_header = unpad_jwt_header(jwt)
-
-        jwk = JWK(
-            self.metadata_jwks_by_kids[
-                jwt_header.get('kid', self.metadata_jwk)
-            ]
-        )
-
-        jweHelper = JWEHelper(jwk)
-        try:
-            decrypted_data = jweHelper.decrypt(jwt)
-        except Exception as e:
-            _msg = f"Response decryption error: {e}"
-            self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
-
-        # check with pydantic on the JWT schemas
-        try:
-            ResponseValidator(**decrypted_data)
-        except Exception as e:
-            _msg = f"Response validation error: {e}"
-            self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
-
+        jwt = context.request["response"]      
+        vpt = VpToken(jwt, self.metadata_jwks_by_kids)
+        
         # get state, do lookup on the db -> if not -> exception
-        state = decrypted_data.get("state", None)
+        try:
+            state = vpt.payload.get("state", None)
+        except Exception as e:
+            _msg = f"Response error: {e}"
+            self._log(context, level='error', message=_msg)
+            raise BadRequestError(_msg)
+
         if not state:
             # state is OPTIONAL in openid4vp ...
             self._log(context, level='warning', message=f"Response state missing")
-            
-        # TODO: do lookup on the DB using the nonce instead
-        nonce = decrypted_data.get("nonce", None)
-        self.storage.get_by_nonce_state(nonce = nonce, state = state)
         
-        # check if vp_token is string or array, if array iter all the elements
-        # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-        _vpt = decrypted_data["vp_token"]
-        vp_token = [_vpt] if isinstance(_vpt, str) else _vpt
-
-        claims = []
-        for vp in vp_token:
+        # TODO: exception handling here
+        ResponseSchema(**vpt.payload)
+        
+        stored_session = self.db_engine.get_by_state(state = state)
+        # TODO: update response in the stored_session
+        # TODO: finalized MUST be False until the authentication doesn't complete
+        
+        # TODO: handle vp token ops exceptions
+        vpt.load_nonce(stored_session['nonce'])
+        vps :list = vpt.get_presentation_vps()
+        vpt.validate()
+        
+        # evaluate the trust to each credential issuer found in the vps
+        # look for trust chain or x509 or do discovery!
+        issuers = tuple(vpt.credentials_by_issuer.keys())
+        
+        for vp in vps:
             result = None
-
             try:
-                result = self._handle_vp(context, vp)
+                # establish the trust with the issuer of the credential by checking it to the revocation
+                # inspect VP's iss or trust_chain if available or x5c if available
+                # TODO: X.509 as alternative to Federation
+
+                # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
+                # establish the trust to each credential issuer
+                tchelper = self._validate_trust(context, vp.payload['vp'])
+                
+                # ok, the issuer is trusted ... let's save its trust attestation!
+                # TODO: generalyze also for x509
+                
+                # check -> storage already updated by tchelper
+                # if tchelper.trust_chain: 
+                    # self.db_engine.add_trust_attestation(
+                        # entity_id = tchelper.entity_id,
+                        # attestation = tchelper.trust_chain
+                    # )
+                vp.credential_jwks = tchelper.get_trusted_jwks(
+                    metadata_type = 'openid_credential_issuer'
+                )
+                
             except InvalidVPToken:
-                return self.handle_error(context=context, message=f"Cannot validate VP: {vp}", err_code="400")
-            except NoNonceInVPToken:
-                return self.handle_error(context=context, message=f"Nonce is missing in vp", err_code="400")
+                return self.handle_error(context=context, message=f"Cannot validate VP: {vp.jwt}", err_code="400")
             except ValidationError as e:
                 return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
             except KIDNotFound as e:
@@ -409,38 +407,37 @@ class OpenID4VPBackend(BackendModule):
                 return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
                 return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
-
-            # TODO: this is not clear ... since the nonce must be taken from the originatin authz request, taken from the storage (mongodb)
-            if not nonce:
-                nonce = result["nonce"]
-            elif nonce != result["nonce"]:
-                return self.handle_error(
-                    context=self,
-                    message=f"Presentation has divergent nonces: {nonce} != {result['nonce']}",
-                    err_code="401"
-                )
-            else:
-                claims.append(result["claims"])
-
-        # TODO: check the revocation of the credential
+            
+            # the trust is established to the credential issuer, then we can get the disclosed user attributes
+            # get trusted credential public keys (jwks)
+            # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
+            
+            vp.verify_sdjwt(
+                issuer_jwks_by_kid = {i['kid']:i for i in vp.credential_jwks},
+            )
+            
+            vp.result
+            vp.disclosed_user_attributes
+            
+            # TODO: check the revocation of the credential
 
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
         # returns the user attributes ...
-        all_user_claims = dict()
+        all_user_attributes = dict()
 
-        for claim in claims:
-            all_user_claims.update(claim)
+        for claim in user_attributes:
+            all_user_attributes.update(claim)
 
         self._log(
             context, level='debug',
-            message=f"Wallet disclosure: {all_user_claims}"
+            message=f"Wallet disclosure: {all_user_attributes}"
         )
 
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
         _info = {"issuer": {}}
 
         internal_resp = self._translate_response(
-            all_user_claims, _info["issuer"]
+            all_user_attributes, _info["issuer"]
         )
 
         try:
@@ -450,7 +447,7 @@ class OpenID4VPBackend(BackendModule):
             self._log(
                 context,
                 level="error",
-                message=f" Session update on storage failed: {str(e)}"
+                message=f" Session update on storage failed: {e}"
             )
             # return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
 

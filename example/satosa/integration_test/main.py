@@ -164,17 +164,19 @@ ISSUER_CONF = {
     "default_exp": 1024
 }
 settings = ISSUER_CONF
-settings['issuer'] = "https://issuer.example.com"
+settings['issuer'] = "https://credential_issuer.example.com"
 settings['default_exp'] = 33
 
 sd_specification = load_specification_from_yaml_string(
-    settings["sd_specification"])
+    settings["sd_specification"]
+)
 
 issued_jwt = issue_sd_jwt(
     sd_specification,
     settings,
     leaf_cred_jwk,
-    WALLET_PRIVATE_JWK
+    WALLET_PRIVATE_JWK,
+    trust_chain = trust_chain_issuer
 )
 
 adapted_keys = _adapt_keys(
@@ -253,5 +255,5 @@ encrypted_response = JWEHelper(
 sign_request_obj = requests.post(
     redirect_uri, 
     verify=False, 
-    data={'respose': encrypted_response}
+    data={'response': encrypted_response}
 )

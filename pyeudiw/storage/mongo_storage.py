@@ -202,11 +202,11 @@ class MongoStorage(BaseStorage):
         db_collection.insert_one(attestation)
         return entity_id
 
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime):
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime):
         entity = {
             "entity_id": entity_id,
             "federation": {
-                "chain": trust_chain,
+                "chain": attestation,
                 "exp": exp
             },
             "x509": {}
