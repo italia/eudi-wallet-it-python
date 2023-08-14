@@ -16,7 +16,9 @@ from saml2.metadata import entity_descriptor
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = 'http://pyeudiw_demo.example.org'
 BASE_URL = '{}/saml2'.format(BASE)
-IDP_ENTITYID = 'https://localhost:10000/Saml2IDP/metadata'
+
+IDP_BASEURL = "https://localhost:10000"
+IDP_ENTITYID = f'{IDP_BASEURL}/Saml2IDP/metadata'
 
 SAML_CONFIG = {
 

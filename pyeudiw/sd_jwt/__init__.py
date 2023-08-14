@@ -1,3 +1,5 @@
+import cryptojwt
+
 from io import StringIO
 from typing import Dict
 
@@ -47,14 +49,24 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
             self.serialized_sd_jwt = dumps(jws_content)
 
 
+def _serialize_key(key):
+    
+    if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
+        key = key.serialize()
+    elif isinstance(key, JWK):
+        key = key.as_dict()
+    else:
+        key = {}
+    return key
+    
+
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
         "key_size": key_size,
         "kty": kty,
-        "issuer_key": issuer_key.as_dict() if issuer_key else {},
-        "holder_key": holder_key.as_dict() if holder_key else {}
+        "issuer_key":  _serialize_key(issuer_key),
+        "holder_key":  _serialize_key(holder_key)
     }
-
     return get_jwk(keys, settings["no_randomness"], None)
 
 

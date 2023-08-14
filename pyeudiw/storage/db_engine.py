@@ -189,5 +189,8 @@ class DBEngine():
     def get_by_state(self, state: str):
         return self.get_by_state_and_session_id(state=state)
 
+    def get_by_nonce_state(self, state :str, nonce :str):
+        return self.get_by_nonce_state(state=state, nonce=nonce)
+
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         return self.get("get_by_state_and_session_id", state, session_id)

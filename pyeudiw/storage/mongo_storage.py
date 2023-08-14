@@ -51,7 +51,9 @@ class MongoStorage(BaseStorage):
         self._connect()
 
         query = {"state": state, "nonce": nonce}
-
+        if not state:
+            query.pop('state')
+        
         document = self.sessions.find_one(query)
 
         if document is None:

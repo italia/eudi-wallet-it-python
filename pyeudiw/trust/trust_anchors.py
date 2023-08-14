@@ -7,7 +7,8 @@ from pyeudiw.storage.db_engine import DBEngine
 
 def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: dict):
     ta_ecs = get_entity_configurations(
-        trust_anchors, httpc_params=httpc_params)
+        trust_anchors, httpc_params=httpc_params
+    )
 
     for jwt in ta_ecs:
         ec = EntityStatement(jwt, httpc_params=httpc_params)

@@ -318,6 +318,8 @@ class OpenID4VPBackend(BackendModule):
             )
 
     def _handle_vp(self, context: Context, vp_token: str) -> dict:
+        # establish the trust with the issuer of the credential by checking it to the revocation
+        # inspect VP's iss or trust_chain if available or x5c if available
         self._validate_trust(context, vp_token)
         valid, value = check_vp_token(
             vp_token, None, self.metadata_jwks_by_kids
@@ -366,13 +368,6 @@ class OpenID4VPBackend(BackendModule):
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
 
-        # TODO: get state, do lookup on the db -> if not -> exception
-        state = decrypted_data.get("state", None)
-        if not state:
-            _msg = f"Response state missing"
-            # state is OPTIONAL in openid4vp ...
-            self._log(context, level='warning', message=_msg)
-
         # check with pydantic on the JWT schemas
         try:
             ResponseValidator(**decrypted_data)
@@ -381,15 +376,21 @@ class OpenID4VPBackend(BackendModule):
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
 
+        # get state, do lookup on the db -> if not -> exception
+        state = decrypted_data.get("state", None)
+        if not state:
+            # state is OPTIONAL in openid4vp ...
+            self._log(context, level='warning', message=f"Response state missing")
+            
+        # TODO: do lookup on the DB using the nonce instead
+        nonce = decrypted_data.get("nonce", None)
+        self.storage.get_by_nonce_state(nonce = nonce, state = state)
+        
         # check if vp_token is string or array, if array iter all the elements
         # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-        vp_token = (
-            [decrypted_data["vp_token"]]
-            if isinstance(decrypted_data["vp_token"], str)
-            else decrypted_data["vp_token"]
-        )
+        _vpt = decrypted_data["vp_token"]
+        vp_token = [_vpt] if isinstance(_vpt, str) else _vpt
 
-        nonce = None
         claims = []
         for vp in vp_token:
             result = None
@@ -420,9 +421,6 @@ class OpenID4VPBackend(BackendModule):
                 )
             else:
                 claims.append(result["claims"])
-
-        # TODO: establish the trust with the issuer of the credential by checking it to the revocation
-        # inspect VP's iss or trust_chain if available or x5c if available
 
         # TODO: check the revocation of the credential
 
