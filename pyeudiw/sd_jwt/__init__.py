@@ -20,11 +20,11 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
     def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = False, serialization_format: str = "compact", additional_headers: dict = {}):
         self.additional_headers = additional_headers
         super().__init__(
-            user_claims, 
-            issuer_key, 
+            user_claims,
+            issuer_key,
             holder_key,
-            sign_alg, 
-            add_decoy_claims, 
+            sign_alg,
+            add_decoy_claims,
             serialization_format
         )
 
@@ -37,7 +37,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
         for k, v in self.additional_headers.items():
             _protected_headers[k] = v
-        
+
         # _protected_headers['kid'] = self._issuer_key['kid']
         self.sd_jwt.add_signature(
             self._issuer_key,
@@ -57,7 +57,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
 
 def _serialize_key(key):
-    
+
     if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
         key = key.serialize()
     elif isinstance(key, JWK):
@@ -65,7 +65,7 @@ def _serialize_key(key):
     else:
         key = {}
     return key
-    
+
 
 def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
     keys = {
@@ -87,13 +87,13 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
         "iat": iat_now(),
         "exp": gen_exp_time(settings["default_exp"])  # in seconds
     }
-    
+
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", False)
     adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
-    
+
     TrustChainSDJWTIssuer.unsafe_randomness = settings["no_randomness"]
     sdjwt_at_issuer = TrustChainSDJWTIssuer(
         user_claims=specification,

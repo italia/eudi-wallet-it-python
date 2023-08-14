@@ -60,7 +60,7 @@ class TrustEvaluationHelper:
             _is_valid = tc.update()
             self.exp = tc.get_exp()
             self.trust_chain = tc.get_chain()
-            
+
             if db_chain is None:
                 self.storage.add_chain(
                     self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
@@ -74,7 +74,7 @@ class TrustEvaluationHelper:
         if self.trust_chain:
             self.is_valid = self._handle_chain()
             return self.is_valid
-            
+
         # TODO - at least a TA entity id is required for a discovery process
         # _tc = TrustChainBuilder(
             # subject= self.entity_id,
@@ -90,13 +90,13 @@ class TrustEvaluationHelper:
     def x509(self):
         raise NotImplementedError("X.509 is not supported in this release")
 
-    def get_final_metadata(self, metadata_type :str) -> dict:
+    def get_final_metadata(self, metadata_type: str) -> dict:
         # TODO - apply metadata policy and get the final metadata
         # for now the final_metadata is the EC metadata -> TODO final_metadata
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
         return self.final_metadata
 
-    def get_trusted_jwks(self, metadata_type :str) -> list:
+    def get_trusted_jwks(self, metadata_type: str) -> list:
         return self.get_final_metadata(
-            metadata_type = metadata_type
+            metadata_type=metadata_type
         ).get('jwks', {}).get('keys', [])

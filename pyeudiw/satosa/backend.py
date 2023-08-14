@@ -13,7 +13,7 @@ from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.exceptions import (
@@ -28,13 +28,9 @@ from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.openid4vp.vp_token import VpToken
-from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.exceptions import (
     KIDNotFound,
-    InvalidVPToken,
-    VPNotFound, 
-    VPInvalidNonce,
-    NoNonceInVPToken
+    InvalidVPToken
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
@@ -321,7 +317,7 @@ class OpenID4VPBackend(BackendModule):
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
-        
+
         return trust_eval
 
     def redirect_endpoint(self, context, *args):
@@ -336,15 +332,16 @@ class OpenID4VPBackend(BackendModule):
         if context.request_method.lower() != 'post':
             raise BadRequestError("HTTP Method not supported")
 
-        _server_url = self.base_url[:-1] if self.base_url[-1] == '/' else self.base_url
+        _server_url = self.base_url[:-
+                                    1] if self.base_url[-1] == '/' else self.base_url
         _endpoint = f'{_server_url}{context.request_uri}'
         if _endpoint not in self.config["metadata"]['redirect_uris']:
             raise NoBoundEndpointError("request_uri not valid")
-        
+
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request["response"]      
+        jwt = context.request["response"]
         vpt = VpToken(jwt, self.metadata_jwks_by_kids)
-        
+
         # get state, do lookup on the db -> if not -> exception
         try:
             state = vpt.payload.get("state", None)
@@ -355,26 +352,26 @@ class OpenID4VPBackend(BackendModule):
 
         if not state:
             # state is OPTIONAL in openid4vp ...
-            self._log(context, level='warning', message=f"Response state missing")
-        
+            self._log(context, level='warning',
+                      message=f"Response state missing")
+
         # TODO: exception handling here
         ResponseSchema(**vpt.payload)
-        
-        stored_session = self.db_engine.get_by_state(state = state)
+
+        stored_session = self.db_engine.get_by_state(state=state)
         # TODO: update response in the stored_session
         # TODO: finalized MUST be False until the authentication doesn't complete
-        
+
         # TODO: handle vp token ops exceptions
         vpt.load_nonce(stored_session['nonce'])
-        vps :list = vpt.get_presentation_vps()
+        vps: list = vpt.get_presentation_vps()
         vpt.validate()
-        
+
         # evaluate the trust to each credential issuer found in the vps
         # look for trust chain or x509 or do discovery!
-        issuers = tuple(vpt.credentials_by_issuer.keys())
-        
+        tuple(vpt.credentials_by_issuer.keys())
+
         for vp in vps:
-            result = None
             try:
                 # establish the trust with the issuer of the credential by checking it to the revocation
                 # inspect VP's iss or trust_chain if available or x5c if available
@@ -383,20 +380,20 @@ class OpenID4VPBackend(BackendModule):
                 # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
                 # establish the trust to each credential issuer
                 tchelper = self._validate_trust(context, vp.payload['vp'])
-                
+
                 # ok, the issuer is trusted ... let's save its trust attestation!
                 # TODO: generalyze also for x509
-                
+
                 # check -> storage already updated by tchelper
-                # if tchelper.trust_chain: 
-                    # self.db_engine.add_trust_attestation(
-                        # entity_id = tchelper.entity_id,
-                        # attestation = tchelper.trust_chain
-                    # )
+                # if tchelper.trust_chain:
+                # self.db_engine.add_trust_attestation(
+                # entity_id = tchelper.entity_id,
+                # attestation = tchelper.trust_chain
+                # )
                 vp.credential_jwks = tchelper.get_trusted_jwks(
-                    metadata_type = 'openid_credential_issuer'
+                    metadata_type='openid_credential_issuer'
                 )
-                
+
             except InvalidVPToken:
                 return self.handle_error(context=context, message=f"Cannot validate VP: {vp.jwt}", err_code="400")
             except ValidationError as e:
@@ -407,26 +404,26 @@ class OpenID4VPBackend(BackendModule):
                 return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
                 return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
-            
+
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # get trusted credential public keys (jwks)
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
-            
+
             vp.verify_sdjwt(
-                issuer_jwks_by_kid = {i['kid']:i for i in vp.credential_jwks},
+                issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks},
             )
-            
+
             vp.result
             vp.disclosed_user_attributes
-            
+
             # TODO: check the revocation of the credential
 
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
         # returns the user attributes ...
         all_user_attributes = dict()
 
-        for claim in user_attributes:
-            all_user_attributes.update(claim)
+        # for claim in user_attributes:
+        # all_user_attributes.update(claim)
 
         self._log(
             context, level='debug',
@@ -441,7 +438,8 @@ class OpenID4VPBackend(BackendModule):
         )
 
         try:
-            self.db_engine.update_response_object(nonce, state, internal_resp)
+            self.db_engine.update_response_object(
+                stored_session['nonce'], state, internal_resp)
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log(
@@ -449,7 +447,11 @@ class OpenID4VPBackend(BackendModule):
                 level="error",
                 message=f" Session update on storage failed: {e}"
             )
-            # return self.handle_error(context=context, message=f"Cannot update response object: {e}", err_code="500")
+            return self.handle_error(
+                context=context,
+                message=f"Cannot update response object: {e}",
+                err_code="500"
+            )
 
         return self.auth_callback_func(context, internal_resp)
 
