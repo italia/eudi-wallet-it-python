@@ -116,7 +116,7 @@ def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict):
 def verify_sd_jwt(sd_jwt_presentation: str, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
     settings.update({"issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]})
     adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
-
+    breakpoint()
     serialization_format = "compact"
     sdjwt_at_verifier = SDJWTVerifier(
         sd_jwt_presentation,

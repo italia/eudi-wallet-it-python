@@ -332,8 +332,10 @@ class OpenID4VPBackend(BackendModule):
         if context.request_method.lower() != 'post':
             raise BadRequestError("HTTP Method not supported")
 
-        _server_url = self.base_url[:-
-                                    1] if self.base_url[-1] == '/' else self.base_url
+        _server_url = self.base_url[
+            :-1
+        ] if self.base_url[-1] == '/' else self.base_url
+        
         _endpoint = f'{_server_url}{context.request_uri}'
         if _endpoint not in self.config["metadata"]['redirect_uris']:
             raise NoBoundEndpointError("request_uri not valid")
