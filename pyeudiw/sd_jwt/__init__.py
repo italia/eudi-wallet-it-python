@@ -1,24 +1,28 @@
 import cryptojwt
+import json
 
 from io import StringIO
 from typing import Dict
 
 from sd_jwt.issuer import SDJWTIssuer
-from sd_jwt.utils.demo_utils import get_jwk
 from sd_jwt.utils.yaml_specification import _yaml_load_specification
 from sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
+from pyeudiw.jwt import DEFAUL_SIG_KTY_MAP
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.tools.utils import gen_exp_time, iat_now
 
 from jwcrypto.jws import JWS
 from json import dumps, loads
 
+import jwcrypto
 
 class TrustChainSDJWTIssuer(SDJWTIssuer):
-    def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = False, serialization_format: str = "compact", additional_headers: dict = {}):
+    def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = True, serialization_format: str = "compact", additional_headers: dict = {}):
         self.additional_headers = additional_headers
+        sign_alg = DEFAUL_SIG_KTY_MAP[issuer_key.kty]
+        
         super().__init__(
             user_claims,
             issuer_key,
@@ -29,6 +33,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         )
 
     def _create_signed_jws(self):
+        breakpoint()
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
         _protected_headers = {"alg": self._sign_alg}
@@ -62,20 +67,25 @@ def _serialize_key(key):
         key = key.serialize()
     elif isinstance(key, JWK):
         key = key.as_dict()
+    elif isinstance(key, dict):
+        pass
     else:
         key = {}
     return key
 
 
-def _adapt_keys(settings: dict, issuer_key: JWK, holder_key: JWK, kty: str = "EC", key_size: int = 256):
-    keys = {
-        "key_size": key_size,
-        "kty": kty,
-        "issuer_key":  _serialize_key(issuer_key),
-        "holder_key":  _serialize_key(holder_key)
-    }
-    return get_jwk(keys, settings["no_randomness"], None)
-
+def _adapt_keys(issuer_key: JWK, holder_key: JWK):
+    _iss_key = _serialize_key(issuer_key)
+    _iss_key['key_ops'] = 'sign'
+    
+    issuer_key = jwcrypto.jwk.JWK.from_json(json.dumps(_iss_key))
+    holder_key = jwcrypto.jwk.JWK.from_json(json.dumps(_serialize_key(holder_key)))
+    issuer_public_key = jwcrypto.jwk.JWK.from_json(issuer_key.export_public())
+    return dict(
+        issuer_key=issuer_key,
+        holder_key=holder_key,
+        issuer_public_key=issuer_public_key,
+    )
 
 def load_specification_from_yaml_string(yaml_specification: str):
     return _yaml_load_specification(StringIO(yaml_specification))
@@ -89,12 +99,14 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     }
 
     specification.update(claims)
-    use_decoys = specification.get("add_decoy_claims", False)
-    adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
+    use_decoys = specification.get("add_decoy_claims", True)
+    adapted_keys = _adapt_keys(issuer_key, holder_key)
+    
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
 
-    TrustChainSDJWTIssuer.unsafe_randomness = settings["no_randomness"]
+    # TrustChainSDJWTIssuer.unsafe_randomness = False
+    
     sdjwt_at_issuer = TrustChainSDJWTIssuer(
         user_claims=specification,
         issuer_key=adapted_keys["issuer_key"],
@@ -115,7 +127,12 @@ def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict):
 
 def verify_sd_jwt(sd_jwt_presentation: str, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
     settings.update({"issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]})
-    adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
+    # adapted_keys = _adapt_keys(settings, issuer_key, holder_key)
+    adapted_keys = {
+        "issuer_key": jwcrypto.jwk.JWK(**issuer_key.as_dict()),
+        "holder_key": jwcrypto.jwk.JWK(**holder_key.as_dict()),
+        "issuer_public_key": jwcrypto.jwk.JWK(**issuer_key.as_dict())
+    }
     breakpoint()
     serialization_format = "compact"
     sdjwt_at_verifier = SDJWTVerifier(

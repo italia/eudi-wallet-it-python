@@ -321,8 +321,7 @@ ISSUER_CONF = {
             { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
 
         key_binding: True
-    """,
-    "no_randomness": True
+    """
 }
 
 

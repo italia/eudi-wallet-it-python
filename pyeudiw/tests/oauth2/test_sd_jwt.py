@@ -24,8 +24,7 @@ settings = {
             { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
 
         key_binding: True
-    """,
-    "no_randomness": True
+    """
 }
 
 sd_specification = load_specification_from_yaml_string(

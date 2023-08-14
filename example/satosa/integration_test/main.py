@@ -3,6 +3,7 @@ import os
 import uuid
 import urllib
 import datetime
+import jwcrypto
 
 from pyeudiw.tests.federation.base import (
     EXP,
@@ -109,6 +110,7 @@ db_engine_inst.add_trust_anchor(
 )
 
 WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
+WALLET_PUBLIC_JWK = JWK(leaf_wallet_jwk.serialize())
 # PRIVATE_JWK = leaf_wallet_jwk.serialize(private=True)
 jwshelper = JWSHelper(WALLET_PRIVATE_JWK)
 dpop_wia = jwshelper.sign(
@@ -159,7 +161,6 @@ ISSUER_CONF = {
 
         key_binding: True
     """,
-    "no_randomness": False,
     "issuer": leaf_cred['sub'],
     "default_exp": 1024
 }
@@ -171,19 +172,26 @@ sd_specification = load_specification_from_yaml_string(
     settings["sd_specification"]
 )
 
+ISSUER_PRIVATE_JWK = JWK(leaf_cred_jwk.serialize(private=True))
+
 issued_jwt = issue_sd_jwt(
     sd_specification,
     settings,
-    leaf_cred_jwk,
-    WALLET_PRIVATE_JWK,
+    ISSUER_PRIVATE_JWK,
+    WALLET_PUBLIC_JWK,
     trust_chain = trust_chain_issuer
 )
 
 adapted_keys = _adapt_keys(
-    settings,
-    leaf_cred_jwk, 
-    WALLET_PRIVATE_JWK
+    issuer_key = ISSUER_PRIVATE_JWK,
+    holder_key = WALLET_PUBLIC_JWK,
 )
+
+# adapted_keys = {
+    # "issuer_key": jwcrypto.jwk.JWK(**leaf_cred_jwk.serialize()),
+    # "holder_key": jwcrypto.jwk.JWK(**WALLET_PRIVATE_JWK.as_dict()),
+    # "issuer_public_key": jwcrypto.jwk.JWK(**leaf_cred_jwk.serialize())
+# }
 
 sdjwt_at_holder = SDJWTHolder(
     issued_jwt["issuance"],
