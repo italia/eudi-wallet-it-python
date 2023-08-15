@@ -16,22 +16,22 @@ from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
-DEFAUL_SIG_KTY_MAP = {
+DEFAULT_SIG_KTY_MAP = {
     "RSA": "RS256",
     "EC": "ES256"
 }
 
-DEFAUL_SIG_ALG_MAP = {
+DEFAULT_SIG_ALG_MAP = {
     "RSA": "RS256",
     "EC": "ES256"
 }
 
-DEFAUL_ENC_ALG_MAP = {
+DEFAULT_ENC_ALG_MAP = {
     "RSA": "RSA-OAEP",
     "EC": "ECDH-ES+A256KW"
 }
 
-DEFAUL_ENC_ENC_MAP = {
+DEFAULT_ENC_ENC_MAP = {
     "RSA": "A256CBC-HS512",
     "EC": "A256GCM"
 }
@@ -62,8 +62,8 @@ class JWEHelper():
 
         _keyobj = JWE_CLASS(
             _payload,
-            alg=DEFAUL_ENC_ALG_MAP[_key.kty],
-            enc=DEFAUL_ENC_ENC_MAP[_key.kty],
+            alg=DEFAULT_ENC_ALG_MAP[_key.kty],
+            enc=DEFAULT_ENC_ENC_MAP[_key.kty],
             kid=_key.kid,
             **kwargs
         )
@@ -101,7 +101,7 @@ class JWSHelper:
         self.jwk = jwk
         if isinstance(jwk, dict):
             self.jwk = JWK(jwk)
-        self.alg = DEFAUL_SIG_KTY_MAP[self.jwk.key.kty]
+        self.alg = DEFAULT_SIG_KTY_MAP[self.jwk.key.kty]
 
     def sign(
         self,

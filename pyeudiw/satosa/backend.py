@@ -371,7 +371,9 @@ class OpenID4VPBackend(BackendModule):
 
         # evaluate the trust to each credential issuer found in the vps
         # look for trust chain or x509 or do discovery!
-        tuple(vpt.credentials_by_issuer.keys())
+        cred_issuers = tuple(vpt.credentials_by_issuer.keys())
+        
+        attributes_by_issuers = {k: {} for k in cred_issuers}
 
         for vp in vps:
             try:
@@ -414,24 +416,29 @@ class OpenID4VPBackend(BackendModule):
             vp.verify_sdjwt(
                 issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks},
             )
-
-            vp.result
-            vp.disclosed_user_attributes
-
+            
+            # vp.result
+            attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
+            self._log(
+                context, 
+                level='debug', 
+                message=f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
+            )
+            
             # TODO: check the revocation of the credential
-
+        
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
         # returns the user attributes ...
         all_user_attributes = dict()
-
-        # for claim in user_attributes:
-        # all_user_attributes.update(claim)
+        for i in attributes_by_issuers.values():
+            all_user_attributes.update(**i)
 
         self._log(
             context, level='debug',
             message=f"Wallet disclosure: {all_user_attributes}"
         )
-
+        
+        # breakpoint()
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
         _info = {"issuer": {}}
 

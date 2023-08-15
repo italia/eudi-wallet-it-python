@@ -13,19 +13,20 @@ from satosa.state import State
 from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header
+from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.sd_jwt import (
     _adapt_keys,
     issue_sd_jwt,
-    load_specification_from_yaml_string
+    load_specification_from_yaml_string,
+    import_pyca_pri_rsa
 )
 from pyeudiw.storage.db_engine import DBEngine
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec
+from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk
 
 from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
@@ -146,8 +147,8 @@ class TestOpenID4VPBackend:
             CONFIG["metadata"]["request_uris"][0])
 
     def test_redirect_endpoint(self, context):
-        issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
-        holder_jwk = JWK()
+        issuer_jwk = JWK(CONFIG["metadata_jwks"][1])
+        holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
         settings = ISSUER_CONF
         settings['issuer'] = "https://issuer.example.com"
@@ -163,9 +164,7 @@ class TestOpenID4VPBackend:
             holder_jwk
         )
 
-        adapted_keys = _adapt_keys(
-            settings,
-            issuer_jwk, holder_jwk)
+        adapted_keys = _adapt_keys(issuer_jwk, holder_jwk)
 
         sdjwt_at_holder = SDJWTHolder(
             issued_jwt["issuance"],
@@ -175,8 +174,9 @@ class TestOpenID4VPBackend:
             {},
             str(uuid.uuid4()),
             str(uuid.uuid4()),
-            adapted_keys["holder_key"] if sd_specification.get(
+            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
+            sign_alg = DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
 
         data = {
@@ -189,7 +189,7 @@ class TestOpenID4VPBackend:
             "vp": sdjwt_at_holder.sd_jwt_presentation,
         }
 
-        vp_token = JWSHelper(issuer_jwk).sign(
+        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
             data,
             protected={"typ": "JWT"}
         )

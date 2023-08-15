@@ -5,6 +5,7 @@ import urllib
 import datetime
 import jwcrypto
 
+from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.tests.federation.base import (
     EXP,
     leaf_cred,
@@ -22,7 +23,7 @@ from pyeudiw.sd_jwt import (
     load_specification_from_yaml_string,
     issue_sd_jwt,
     _adapt_keys,
-    
+    import_pyca_pri_rsa
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
@@ -187,12 +188,6 @@ adapted_keys = _adapt_keys(
     holder_key = WALLET_PUBLIC_JWK,
 )
 
-# adapted_keys = {
-    # "issuer_key": jwcrypto.jwk.JWK(**leaf_cred_jwk.serialize()),
-    # "holder_key": jwcrypto.jwk.JWK(**WALLET_PRIVATE_JWK.as_dict()),
-    # "issuer_public_key": jwcrypto.jwk.JWK(**leaf_cred_jwk.serialize())
-# }
-
 sdjwt_at_holder = SDJWTHolder(
     issued_jwt["issuance"],
     serialization_format="compact",
@@ -205,8 +200,9 @@ sdjwt_at_holder.create_presentation(
     }, 
     nonce = str(uuid.uuid4()), 
     aud = str(uuid.uuid4()), 
+    sign_alg = DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
     holder_key = (
-        adapted_keys["holder_key"] 
+        import_pyca_pri_rsa(WALLET_PRIVATE_JWK.key.priv_key, kid=WALLET_PRIVATE_JWK.kid) 
         if sd_specification.get("key_binding", False) 
         else None
     )
@@ -225,7 +221,7 @@ data = {
     "vp": sdjwt_at_holder.sd_jwt_presentation,
 }
 
-vp_token = JWSHelper(issuer_jwk.serialize(private=True)).sign(
+vp_token = JWSHelper(WALLET_PRIVATE_JWK).sign(
     data,
     protected={"typ": "JWT"}
 )

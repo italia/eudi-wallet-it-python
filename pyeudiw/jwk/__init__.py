@@ -36,7 +36,8 @@ class JWK():
                 self.key = key
         else:
             # create new one
-            kwargs['crv'] = ec_crv
+            if key_type in ['EC', None]:
+                kwargs['crv'] = ec_crv
             self.key = KEY_TYPES_FUNC[key_type or 'EC'](**kwargs)
 
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
