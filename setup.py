@@ -50,7 +50,7 @@ setup(
             "satosa>=8.4,<8.6",
             "jinja2>=3.0,<4",
             "pymongo>=4.4.1,<4.5",
-            'sd-jwt @ git+https://github.com/danielfett/sd-jwt.git'
+            'sd-jwt @ git+https://github.com/openwallet-foundation-labs/sd-jwt-python.git'
         ],
         "federation": [
             "asyncio"
