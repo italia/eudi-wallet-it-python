@@ -341,38 +341,45 @@ class OpenID4VPBackend(BackendModule):
             raise NoBoundEndpointError("request_uri not valid")
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request["response"]
-        vpt = VpToken(jwt, self.metadata_jwks_by_kids)
-
-        # get state, do lookup on the db -> if not -> exception
+        jwt = context.request.get("response", None)
+        if not jwt:
+            _msg = f"Response error, missing JWT"
+            self._log(context, level='error', message=_msg)
+            raise BadRequestError(_msg)
+        
         try:
-            state = vpt.payload.get("state", None)
+            vpt = VpToken(jwt, self.metadata_jwks_by_kids)
+            ResponseSchema(**vpt.payload)
         except Exception as e:
-            _msg = f"Response error: {e}"
+            _msg = f"VpToken parse and validation error: {e}"
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
 
+        # get state, do lookup on the db -> if not -> exception
+        state = vpt.payload.get("state", None)
         if not state:
             # state is OPTIONAL in openid4vp ...
             self._log(context, level='warning',
                       message=f"Response state missing")
 
         # TODO: exception handling here
-        ResponseSchema(**vpt.payload)
-
         stored_session = self.db_engine.get_by_state(state=state)
         # TODO: update response in the stored_session
         # TODO: finalized MUST be False until the authentication doesn't complete
 
         # TODO: handle vp token ops exceptions
-        vpt.load_nonce(stored_session['nonce'])
-        vps: list = vpt.get_presentation_vps()
-        vpt.validate()
+        try:
+            vpt.load_nonce(stored_session['nonce'])
+            vps: list = vpt.get_presentation_vps()
+            vpt.validate()
+        except Exception as e:
+            _msg = f"VpToken content parse and validation error. Single VPs are faulty: {e}"
+            self._log(context, level='error', message=_msg)
+            raise BadRequestError(_msg)
 
         # evaluate the trust to each credential issuer found in the vps
         # look for trust chain or x509 or do discovery!
         cred_issuers = tuple(vpt.credentials_by_issuer.keys())
-        
         attributes_by_issuers = {k: {} for k in cred_issuers}
 
         for vp in vps:
