@@ -263,7 +263,7 @@ class OpenID4VPBackend(BackendModule):
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
-    def _translate_response(self, response :dict, issuer :str, context :Context):
+    def _translate_response(self, response: dict, issuer: str, context: Context):
         """
         Translates wallet response to SATOSA internal response.
         :type response: dict[str, str]
@@ -284,29 +284,31 @@ class OpenID4VPBackend(BackendModule):
             or iat_now()
         )
         timestamp_dt = datetime.datetime.fromtimestamp(
-            timestamp_epoch, 
+            timestamp_epoch,
             datetime.timezone.utc
         )
         timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
-        
+
         auth_class_ref = (
-            response.get("acr") or 
-            response.get("amr") or 
+            response.get("acr") or
+            response.get("amr") or
             self.config["authorization"]["default_acr_value"]
         )
-        auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
+        auth_info = AuthenticationInformation(
+            auth_class_ref, timestamp_iso, issuer)
         # TODO - acr
         internal_resp = InternalData(auth_info=auth_info)
-        
+
         sub = ""
         for i in self.config["user_attributes"]["unique_identifiers"]:
             if response.get(i):
                 _sub = response[i]
                 sub = hashlib.sha256(
-                    f"{_sub}~{self.config['user_attributes']['subject_id_salt']}".encode()
+                    f"{_sub}~{self.config['user_attributes']['subject_id_salt']}".encode(
+                    )
                 ).hexdigest()
                 break
-        
+
         if not sub:
             self._log(
                 context,
@@ -315,13 +317,12 @@ class OpenID4VPBackend(BackendModule):
                     "[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation "
                     "setting a random one for interop for internal frontends"
                 )
-            )            
+            )
             # TODO - add a salt here
             sub = hashlib.sha256(
                 json.dumps(response).encode()
             ).hexdigest()
 
-        
         response["sub"] = [sub]
         internal_resp.attributes = self.converter.to_internal(
             "openid4vp", response
@@ -370,8 +371,8 @@ class OpenID4VPBackend(BackendModule):
             raise BadRequestError("HTTP Method not supported")
 
         _server_url = (
-            self.base_url[:-1] 
-            if self.base_url[-1] == '/' 
+            self.base_url[:-1]
+            if self.base_url[-1] == '/'
             else self.base_url
         )
 
@@ -489,21 +490,26 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
         _info = {"issuer": ';'.join(cred_issuers)}
-        
         internal_resp = self._translate_response(
             all_user_attributes, _info["issuer"], context
         )
-        
+
         try:
-            self.db_engine.update_response_object(
+            nonce, state, document_status = self.db_engine.update_response_object(
                 stored_session['nonce'], state, internal_resp
             )
+            self._log(
+                context,
+                level="debug",
+                message=f"Session update on storage: {document_status}"
+            )
+            
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log(
                 context,
                 level="error",
-                message=f" Session update on storage failed: {e}"
+                message=f"Session update on storage failed: {e}"
             )
             return self.handle_error(
                 context=context,

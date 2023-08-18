@@ -151,7 +151,7 @@ class MongoStorage(BaseStorage):
     def update_response_object(self, nonce: str, state: str, response_object: dict):
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
-        documentStatus = self.sessions.update_one(
+        document_status = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
@@ -159,7 +159,7 @@ class MongoStorage(BaseStorage):
                 },
              })
 
-        return nonce, state, documentStatus
+        return nonce, state, document_status
 
     def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
         self._connect()
