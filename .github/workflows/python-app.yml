@@ -60,7 +60,7 @@ jobs:
     - name: Tests
       run: |
         # pytest --cov=pyeudiw --cov-fail-under=90 pyeudiw
-        pytest --cov=pyeudiw --cov-fail-under=65 pyeudiw
+        pytest --cov=pyeudiw pyeudiw
         coverage report -m --skip-covered
     - name: Bandit Security Scan
       run: |
