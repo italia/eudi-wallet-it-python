@@ -5,7 +5,7 @@ import pyqrcode
 
 
 class QRCode:
-    def __init__(self, data: str, size: int, color: str):
+    def __init__(self, data: str, size: int, color: str, **kwargs):
         """
         Create a QR code from the given data
         :param data: The data to be encoded

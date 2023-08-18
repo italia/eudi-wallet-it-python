@@ -1,17 +1,19 @@
-import json
 import pymongo
 from datetime import datetime
 
 from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import ChainAlreadyExist, ChainNotExist
+from pyeudiw.storage.exceptions import (
+    ChainNotExist,
+    StorageEntryUpdateFailed
+)
+from typing import Union
 
 
 class MongoStorage(BaseStorage):
-    def __init__(self, conf: dict, url: str, connection_params: dict = None) -> None:
+    def __init__(self, conf: dict, url: str, connection_params: dict = {}) -> None:
         super().__init__()
-
         self.storage_conf = conf
         self.url = url
         self.connection_params = connection_params
@@ -28,11 +30,11 @@ class MongoStorage(BaseStorage):
             self.sessions = getattr(
                 self.db, self.storage_conf["db_sessions_collection"]
             )
-            self.attestations = getattr(
-                self.db, self.storage_conf["db_attestations_collection"]
+            self.trust_attestations = getattr(
+                self.db, self.storage_conf["db_trust_attestations_collection"]
             )
-            self.trustanchors = getattr(
-                self.db, self.storage_conf["db_trustanchors_collection"]
+            self.trust_anchors = getattr(
+                self.db, self.storage_conf["db_trust_anchors_collection"]
             )
 
     def get_by_id(self, document_id: str) -> dict:
@@ -49,12 +51,27 @@ class MongoStorage(BaseStorage):
         self._connect()
 
         query = {"state": state, "nonce": nonce}
+        if not state:
+            query.pop('state')
 
         document = self.sessions.find_one(query)
 
         if document is None:
             raise ValueError(
                 f'Document with nonce {nonce} and state {state} not found')
+
+        return document
+
+    def get_by_session_id(self, session_id: str):
+        self._connect()
+
+        query = {"session_id": session_id}
+        document = self.sessions.find_one(query)
+
+        if document is None:
+            raise ValueError(
+                f'Document with session id {session_id} not found.'
+            )
 
         return document
 
@@ -68,24 +85,26 @@ class MongoStorage(BaseStorage):
 
         if document is None:
             raise ValueError(
-                f'Document with state {state} not found')
+                f'Document with state {state} not found.'
+            )
 
         return document
 
     def init_session(self, document_id: str, session_id: str, state: str) -> str:
-        creation_date = datetime.timestamp(datetime.now())
-
         entity = {
             "document_id": document_id,
-            "creation_date": creation_date,
+            "creation_date": datetime.now().isoformat(),
             "state": state,
             "session_id": session_id,
             "finalized": False,
-            "request_object": None,
-            "response": None
+            "internal_response": None,
         }
 
-        self._connect()
+        try:
+            self._connect()
+        except Exception as e:
+            raise e
+
         self.sessions.insert_one(entity)
 
         return document_id
@@ -102,7 +121,7 @@ class MongoStorage(BaseStorage):
             })
         if update_result.matched_count != 1 or update_result.modified_count != 1:
             raise ValueError(
-                f"Cannot update document {document_id}')"
+                f"Cannot update document {document_id}'."
             )
 
         return update_result
@@ -142,80 +161,93 @@ class MongoStorage(BaseStorage):
             )
         return update_result
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict):
+    def update_response_object(self, nonce: str, state: str, internal_response: dict):
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
-        documentStatus = self.sessions.update_one(
+        document_status = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
-                    "response_object": response_object
+                    "internal_response": internal_response
                 },
              })
 
-        return nonce, state, documentStatus
+        return document_status
 
     def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
-        db_collection = getattr(self, collection)
         self._connect()
+        db_collection = getattr(self, collection)
         return db_collection.find_one({"entity_id": entity_id})
 
     def get_trust_attestation(self, entity_id: str):
-        return self._get_trust_attestation("attestations", entity_id)
+        return self._get_trust_attestation("trust_attestations", entity_id)
 
     def get_trust_anchor(self, entity_id: str):
-        return self._get_trust_attestation("anchors", entity_id)
+        return self._get_trust_attestation("trust_anchors", entity_id)
 
     def _has_trust_attestation(self, collection: str, entity_id: str):
-        if self._get_trust_attestation(collection, entity_id):
-            return True
-        return False
+        return self._get_trust_attestation(collection, entity_id)
 
     def has_trust_attestation(self, entity_id: str):
-        return self._has_trust_attestation("attestations", entity_id)
+        return self._has_trust_attestation("trust_attestations", entity_id)
 
-    def has_trust_anchors(self, entity_id: str):
-        return self._has_trust_attestation("anchors", entity_id)
+    def has_trust_anchor(self, entity_id: str):
+        return self._has_trust_attestation("trust_anchors", entity_id)
 
-    def _add_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
-        if self._has_trust_attestation(collection, entity_id):
-            raise ChainAlreadyExist(
-                f"Chain with entity id {entity_id} already exist")
+    def _add_entry(
+        self,
+        collection: str,
+        entity_id: str,
+        attestation: Union[str, dict],
+        exp: datetime
+    ) -> str:
+
+        meth_suffix = collection[:-1]
+        if getattr(self, f"has_{meth_suffix}")(entity_id):
+            # update it
+            getattr(self, f"update_{meth_suffix}")(entity_id, attestation, exp)
+            return entity_id
+            # raise ChainAlreadyExist(
+            # f"Chain with entity id {entity_id} already exist"
+            # )
 
         db_collection = getattr(self, collection)
-        db_collection.insert_one(entity)
-
+        db_collection.insert_one(attestation)
         return entity_id
 
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime):
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime):
         entity = {
             "entity_id": entity_id,
             "federation": {
-                "chain": trust_chain,
+                "chain": attestation,
                 "exp": exp
             },
             "x509": {}
         }
 
-        self._add_trust_attestation("attestations", entity_id, entity, exp)
+        self._add_entry(
+            "trust_attestations", entity_id, entity, exp
+        )
 
-    def add_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
-        entity = {
+    def add_trust_anchor(self, entity_id: str, entity_configuration: Union[dict, str], exp: datetime):
+        entry = {
             "entity_id": entity_id,
             "federation": {
-                "entity_configuration": json.dumps(entity_configuration),
+                "entity_configuration": entity_configuration,
                 "exp": exp
             },
-            "x509": {}
+            "x509": {}  # TODO x509
         }
-
-        self._add_trust_attestation("anchors", entity_id, entity, exp)
+        if self.has_trust_anchor(entity_id):
+            self.update_trust_anchor(entity_id, entity_configuration, exp)
+        else:
+            self._add_entry("trust_anchors", entity_id, entry, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if not self._has_trust_attestation(collection, entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
-        documentStatus = self.attestations.update_one(
+        documentStatus = self.trust_attestations.update_one(
             {"entity_id": entity_id},
             {"$set": entity}
         )
@@ -229,14 +261,26 @@ class MongoStorage(BaseStorage):
             }
         }
 
-        return self._update_trust_attestation("attestations", entity_id, entity, exp)
+        return self._update_trust_attestation("trust_attestations", entity_id, entity, exp)
 
-    def update_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
         entity = {
             "federation": {
-                "entity_configuration": json.dumps(entity_configuration),
+                "entity_configuration": entity_configuration,
                 "exp": exp
             }
         }
 
-        return self._update_trust_attestation("anchor", entity_id, entity, exp)
+        if not self.has_trust_anchor(entity_id):
+            raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
+
+        documentStatus = self.trust_anchors.update_one(
+            {"entity_id": entity_id},
+            {"$set": entity}
+        )
+        if not documentStatus.matched_count:
+            raise StorageEntryUpdateFailed(
+                "Trust Anchor matched count is ZERO"
+            )
+
+        return documentStatus

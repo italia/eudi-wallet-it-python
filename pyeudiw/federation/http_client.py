@@ -3,7 +3,7 @@ import asyncio
 import requests
 
 
-async def fetch(session, url, httpc_params: dict = {}):
+async def fetch(session, url, httpc_params: dict):
     async with session.get(url, **httpc_params.get("connection", {})) as response:
         if response.status != 200:  # pragma: no cover
             # response.raise_for_status()
@@ -11,7 +11,7 @@ async def fetch(session, url, httpc_params: dict = {}):
         return await response.text()
 
 
-async def fetch_all(session, urls, httpc_params):
+async def fetch_all(session, urls, httpc_params: dict):
     tasks = []
     for url in urls:
         task = asyncio.create_task(fetch(session, url, httpc_params))
@@ -20,14 +20,23 @@ async def fetch_all(session, urls, httpc_params):
     return results
 
 
-async def http_get(urls, httpc_params: dict = {}, sync=True):
+async def http_get(urls, httpc_params: dict, sync=True):
 
     if sync:
+        _conf = {
+            'verify': httpc_params['connection']['ssl'],
+            'timeout': httpc_params['session']['timeout']
+        }
         res = [
-            requests.get(url, **httpc_params).content  # nosec - B113
+            requests.get(url, **_conf).content  # nosec - B113
             for url in urls
         ]
         return res
+
+    if not isinstance(httpc_params['session']['timeout'], aiohttp.ClientTimeout):
+        httpc_params['session']['timeout'] = aiohttp.ClientTimeout(
+            total=httpc_params['session']['timeout']
+        )
 
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)

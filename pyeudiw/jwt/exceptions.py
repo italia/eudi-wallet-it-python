@@ -1,0 +1,2 @@
+class JWEDecryptionError(Exception):
+    pass

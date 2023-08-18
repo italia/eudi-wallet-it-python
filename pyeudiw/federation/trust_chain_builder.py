@@ -19,7 +19,7 @@ from .statements import (
 from pyeudiw.tools.utils import datetime_from_timestamp
 
 
-logger = logging.getLogger("pyeudiw_federation")
+logger = logging.getLogger(__name__)
 
 
 class TrustChainBuilder:
@@ -38,8 +38,8 @@ class TrustChainBuilder:
         self,
         subject: str,
         trust_anchor: str,
+        httpc_params: dict,
         trust_anchor_configuration: Union[EntityStatement, None] = None,
-        httpc_params: dict = {},
         max_authority_hints: int = 10,
         subject_configuration: EntityStatement = None,
         required_trust_marks: list = [],
@@ -91,7 +91,6 @@ class TrustChainBuilder:
             f"{self.trust_path[-1]}"
         )
         last_path = self.tree_of_trust[len(self.trust_path) - 1]
-
         path_found = False
         for ec in last_path:
             for sup_ec in ec.verified_by_superiors.values():
@@ -242,7 +241,8 @@ class TrustChainBuilder:
                     self.subject, httpc_params=self.httpc_params
                 )
                 self.subject_configuration = EntityStatement(
-                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration
+                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration,
+                    httpc_params=self.httpc_params
                 )
                 self.subject_configuration.validate_by_itself()
             except Exception as e:

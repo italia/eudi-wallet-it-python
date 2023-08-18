@@ -24,8 +24,8 @@ conf = {
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",
-                    "db_attestations_collection": "attestations",
-                    "db_trustanchors_collection": "anchors"
+                    "db_trust_attestations_collection": "trust_attestations",
+                    "db_trust_anchors_collection": "trust_anchors"
                 },
                 "connection_params": {}
             }

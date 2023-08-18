@@ -5,16 +5,15 @@ from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
 
-logger = logging.getLogger("storage_db")
+logger = logging.getLogger(__name__)
 
 
 class DBEngine():
     def __init__(self, config: dict):
         self.caches = []
         self.storages = []
-
         for db_name, db_conf in config.items():
             storage_instance, cache_instance = self._handle_instance(db_conf)
 
@@ -32,8 +31,8 @@ class DBEngine():
         if storage_conf:
             module = importlib.import_module(storage_conf["module"])
             instance_class = getattr(module, storage_conf["class"])
-
-            storage_instance = instance_class(**storage_conf["init_params"])
+            storage_instance = instance_class(
+                **storage_conf.get("init_params", {}))
 
         cache_instance = None
         if cache_conf:
@@ -48,12 +47,15 @@ class DBEngine():
         for db_name, storage in self.storages:
             try:
                 storage.init_session(
-                    document_id, session_id=session_id, state=state)
-            except Exception as e:
+                    document_id, session_id=session_id, state=state
+                )
+            except StorageWriteError as e:
                 logger.critical(
                     f"Error while initializing session with document_id {document_id}. "
                     f"Cannot write document with id {document_id} on {db_name}: "
-                    f"{e.__class__.__name__}: {e}")
+                    f"{e.__class__.__name__}: {e}"
+                )
+                raise e
 
         return document_id
 
@@ -97,46 +99,36 @@ class DBEngine():
                 if res:
                     return res
 
-            except Exception as e:
-                logger.critical(f"Error {str(e)}")
+            except EntryNotFound as e:
                 logger.critical(
-                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}"
+                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}: {str(e)}"
                 )
 
-        raise Exception(f"Cannot find any result by method {method}")
+        raise EntryNotFound(f"Cannot find any result by method {method}")
 
     def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
         return self.get("get_trust_attestation", entity_id)
 
-    def has_trust_attestation(self, entity_id: str):
-        return self.get_trust_attestation(entity_id)
-
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("add_trust_attestation", trust_chain, exp)
-
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("update_trust_attestation", entity_id, trust_chain, exp)
-
-    def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
-        return self.get("get_trust_attestation", entity_id)
+    def get_trust_anchor(self, entity_id: str) -> Union[dict, None]:
+        return self.get("get_trust_anchor", entity_id)
 
     def has_trust_attestation(self, entity_id: str):
         return self.get_trust_attestation(entity_id)
 
-    def has_anchor(self, entity_id: str):
+    def has_trust_anchor(self, entity_id: str):
         return self.get_anchor(entity_id)
 
     def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("add_trust_attestation", entity_id, trust_chain)
 
-    def add_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("add_anchor", entity_id, trust_chain, exp)
+    def add_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("add_trust_anchor", entity_id, trust_chain, exp)
 
     def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         return self.write("update_trust_attestation", entity_id, trust_chain, exp)
 
-    def update_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("update_anchor", entity_id, trust_chain, exp)
+    def update_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+        return self.write("update_trust_anchor", entity_id, trust_chain, exp)
 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
@@ -197,5 +189,11 @@ class DBEngine():
     def get_by_state(self, state: str):
         return self.get_by_state_and_session_id(state=state)
 
+    def get_by_nonce_state(self, state: str, nonce: str):
+        return self.get('get_by_nonce_state', state=state, nonce=nonce)
+
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         return self.get("get_by_state_and_session_id", state, session_id)
+
+    def get_by_session_id(self, session_id: str):
+        return self.get("get_by_session_id", session_id)

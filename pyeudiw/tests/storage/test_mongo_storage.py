@@ -12,8 +12,8 @@ class TestMongoStorage:
             {
                 "db_name": "eudiw",
                 "db_sessions_collection": "sessions",
-                "db_attestations_collection": "attestations",
-                "db_trustanchors_collection": "anchors"
+                "db_trust_attestations_collection": "trust_attestations",
+                "db_trust_anchors_collection": "trust_anchors"
             },
             "mongodb://localhost:27017/",
             {}
@@ -25,7 +25,8 @@ class TestMongoStorage:
         assert self.storage.db is not None
         assert self.storage.client
         assert self.storage.sessions is not None
-        assert self.storage.attestations is not None
+        assert self.storage.trust_attestations is not None
+        assert self.storage.trust_anchors is not None
 
     def test_entity_initialization(self):
         state = str(uuid.uuid4())
@@ -109,5 +110,4 @@ class TestMongoStorage:
         assert document["state"]
         assert document["nonce"] == nonce
         assert document["request_object"] == request_object
-        assert document["response_object"]
-        assert document["response_object"] == {"response": "test"}
+        assert document["internal_response"] == {"response": "test"}

@@ -1,7 +1,7 @@
 import pytest
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import (DEFAUL_ENC_ALG_MAP, DEFAUL_ENC_ENC_MAP, JWEHelper,
+from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
                          JWSHelper)
 from pyeudiw.jwt.utils import unpad_jwt_header
 
@@ -30,8 +30,8 @@ def test_unpad_jwt_header(jwk, payload):
     assert jwe
     header = unpad_jwt_header(jwe)
     assert header
-    assert header["alg"] == DEFAUL_ENC_ALG_MAP[jwk.jwk["kty"]]
-    assert header["enc"] == DEFAUL_ENC_ENC_MAP[jwk.jwk["kty"]]
+    assert header["alg"] == DEFAULT_ENC_ALG_MAP[jwk.jwk["kty"]]
+    assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.jwk["kty"]]
     assert header["kid"] == jwk.jwk["kid"]
 
 

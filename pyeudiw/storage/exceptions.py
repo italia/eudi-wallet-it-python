@@ -8,3 +8,11 @@ class ChainNotExist(BaseException):
 
 class StorageWriteError(BaseException):
     pass
+
+
+class StorageEntryUpdateFailed(BaseException):
+    pass
+
+
+class EntryNotFound(BaseException):
+    pass

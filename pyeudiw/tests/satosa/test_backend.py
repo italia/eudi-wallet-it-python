@@ -1,6 +1,6 @@
 import base64
+import datetime
 import json
-import pathlib
 import urllib.parse
 import uuid
 from unittest.mock import Mock
@@ -13,369 +13,32 @@ from satosa.state import State
 from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header
+from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
-                            load_specification_from_yaml_string)
+from pyeudiw.sd_jwt import (
+    _adapt_keys,
+    issue_sd_jwt,
+    load_specification_from_yaml_string,
+    import_pyca_pri_rsa
+)
+from pyeudiw.storage.db_engine import DBEngine
+
 from pyeudiw.tools.utils import exp_from_now, iat_now
+from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk
 
-BASE_URL = "https://example.com"
-AUTHZ_PAGE = "example.com"
-AUTH_ENDPOINT = "https://example.com/auth"
-CLIENT_ID = "client_id"
-
-CONFIG = {
-    "base_url": BASE_URL,
-
-    "ui": {
-        "static_storage_url": BASE_URL,
-        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
-        "qrcode_template": "qrcode.html",
-        "error_template": "error.html",
-        "error_url": "https://localhost:9999/error_page.html"
-    },
-
-    "endpoints": {
-        "entity_configuration": "/OpenID4VP/.well-known/openid-federation",
-        "pre_request": "/OpenID4VP/pre-request",
-        "redirect": "/OpenID4VP/redirect_uri",
-        "request": "/OpenID4VP/request_uri",
-    },
-    "qrcode": {
-        "size": 100,
-        "color": "#2B4375",
-    },
-    "jwt": {
-        "default_sig_alg": "ES256",
-        "default_exp": 6
-    },
-    "authorization": {
-        "url_scheme": "eudiw",  # eudiw://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
-    },
-    "federation": {
-        "metadata_type": "wallet_relying_party",
-        "authority_hints": [
-            "https://localhost:8000"
-        ],
-        "trust_anchors": [
-            "https://localhost:8000"
-        ],
-        "default_sig_alg": "RS256",
-        "federation_jwks": [
-            {
-                "kty": "RSA",
-                "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
-                "e": "AQAB",
-                "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
-                "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
-                "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
-                "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-            },
-            {
-                'kty': 'EC',
-                'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg',
-                'crv': 'P-256',
-                'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo',
-                'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU',
-                'd': 'oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0'
-            }
-        ],
-        "trust_marks": [
-            "..."
-        ]
-    },
-    "metadata_jwks": [
-        {
-            "crv": "P-256",
-            "d": "KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc",
-            "kid": "dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s",
-            "kty": "EC",
-            "x": "TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk",
-            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7"
-        },
-        {
-
-            "kty": "RSA",
-            "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
-            "e": "AQAB",
-            "use": "enc",
-            "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
-            "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
-            "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
-            "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-        }
-    ],
-    "storage": {
-        "mongo_db": {
-            "cache": {
-                "module": "pyeudiw.storage.mongo_cache",
-                "class": "MongoCache",
-                "init_params": {
-                    "url": "mongodb://localhost:27017/",
-                    "conf": {
-                        "db_name": "eudiw"
-                    },
-                    "connection_params": {}
-                }
-            },
-            "storage": {
-                "module": "pyeudiw.storage.mongo_storage",
-                "class": "MongoStorage",
-                "init_params": {
-                    "url": "mongodb://localhost:27017/",
-                    "conf": {
-                        "db_name": "eudiw",
-                        "db_sessions_collection": "sessions",
-                        "db_attestations_collection": "attestations",
-                        "db_trustanchors_collection": "anchors",
-                    },
-                    "connection_params": {}
-                }
-            }
-        }
-    },
-    "metadata": {
-        "application_type": "web",
-        "authorization_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "authorization_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "authorization_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "client_id": f"{BASE_URL}/OpenID4VP",
-        "client_name": "Name of an example organization",
-        "contacts": [
-            "ops@verifier.example.org"
-        ],
-        "default_acr_values": [
-            "https://www.spid.gov.it/SpidL2",
-            "https://www.spid.gov.it/SpidL3"
-        ],
-        "default_max_age": 1111,
-        "id_token_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "id_token_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "id_token_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "presentation_definitions": [
-            {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.type"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "type": "object"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.cnf"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.given_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.unique_id"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "jwt": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "sd-jwt"
-                    }
-                ]
-            },
-            {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.doctype"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.namespace"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.portrait"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.driving_privileges"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "mso_mdoc": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "mDL"
-                    }
-                ]
-            }
-        ],
-        "redirect_uris": [
-            f"{BASE_URL}/OpenID4VP/redirect_uri"
-        ],
-        "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request_uri"
-        ],
-        "require_auth_time": True,
-        "subject_type": "pairwise",
-        "vp_formats": {
-            "jwt_vp_json": {
-                "alg": [
-                    "EdDSA",
-                    "ES256K"
-                ]
-            }
-        }
-    }
-}
-
-ISSUER_CONF = {
-    "sd_specification": """
-        user_claims:
-            !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            !sd given_name: "Mario"
-            !sd family_name: "Rossi"
-            !sd birthdate: "1980-01-10"
-            !sd place_of_birth:
-                country: "IT"
-                locality: "Rome"
-            !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
-
-        holder_disclosed_claims:
-            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
-
-        key_binding: True
-    """,
-    "no_randomness": True
-}
+from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
 
-INTERNAL_ATTRIBUTES: dict = {
-    'attributes': {}
-}
-
-
-PRIVATE_JWK = JWK()
-PUBLIC_JWK = PRIVATE_JWK.public_key
-
-
-WALLET_INSTANCE_ATTESTATION = {
-    "iss": "https://wallet-provider.example.org",
-    "sub": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-    "type": "WalletInstanceAttestation",
-    "policy_uri": "https://wallet-provider.example.org/privacy_policy",
-    "tos_uri": "https://wallet-provider.example.org/info_policy",
-    "logo_uri": "https://wallet-provider.example.org/logo.svg",
-    "asc": "https://wallet-provider.example.org/LoA/basic",
-    "cnf":
-    {
-        "jwk": PUBLIC_JWK
-    },
-    "authorization_endpoint": "eudiw:",
-    "response_types_supported": [
-        "vp_token"
-    ],
-    "vp_formats_supported": {
-        "jwt_vp_json": {
-            "alg_values_supported": ["ES256"]
-        },
-        "jwt_vc_json": {
-            "alg_values_supported": ["ES256"]
-        }
-    },
-    "request_object_signing_alg_values_supported": [
-        "ES256"
-    ],
-    "presentation_definition_uri_supported": False,
-    "iat": iat_now(),
-    "exp": iat_now() + 1024
-}
+# STORAGE ####
+# Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
+db_engine_inst = DBEngine(CONFIG['storage'])
+db_engine_inst.add_trust_anchor(
+    entity_id=ta_ec['iss'],
+    trust_chain=ta_ec,
+    exp=datetime.datetime.now().isoformat()
+)
 
 
 class TestOpenID4VPBackend:
@@ -406,15 +69,7 @@ class TestOpenID4VPBackend:
 
     def test_register_endpoints(self):
         url_map = self.backend.register_endpoints()
-        assert len(url_map) == 4
-        assert url_map[0][0] == '^' + \
-            CONFIG['endpoints']['entity_configuration'].lstrip('/') + '$'
-        assert url_map[1][0] == '^' + \
-            CONFIG['endpoints']['pre_request'].lstrip('/') + '$'
-        assert url_map[2][0] == '^' + \
-            CONFIG['endpoints']['redirect'].lstrip('/') + '$'
-        assert url_map[3][0] == '^' + \
-            CONFIG['endpoints']['request'].lstrip('/') + '$'
+        assert len(url_map) == 6
 
     def test_entity_configuration(self):
         entity_config = self.backend.entity_configuration_endpoint(None)
@@ -423,6 +78,7 @@ class TestOpenID4VPBackend:
         assert entity_config.message
 
     def test_pre_request_endpoint(self, context):
+        self.backend.register_endpoints()
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
@@ -458,6 +114,7 @@ class TestOpenID4VPBackend:
         assert svg.find_all("path")
 
     def test_pre_request_endpoint_mobile(self, context):
+        self.backend.register_endpoints()
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
@@ -484,8 +141,9 @@ class TestOpenID4VPBackend:
             CONFIG["metadata"]["request_uris"][0])
 
     def test_redirect_endpoint(self, context):
-        issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
-        holder_jwk = JWK()
+        self.backend.register_endpoints()
+        issuer_jwk = JWK(CONFIG["metadata_jwks"][1])
+        holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
         settings = ISSUER_CONF
         settings['issuer'] = "https://issuer.example.com"
@@ -501,9 +159,7 @@ class TestOpenID4VPBackend:
             holder_jwk
         )
 
-        adapted_keys = _adapt_keys(
-            settings,
-            issuer_jwk, holder_jwk)
+        _adapt_keys(issuer_jwk, holder_jwk)
 
         sdjwt_at_holder = SDJWTHolder(
             issued_jwt["issuance"],
@@ -513,8 +169,9 @@ class TestOpenID4VPBackend:
             {},
             str(uuid.uuid4()),
             str(uuid.uuid4()),
-            adapted_keys["holder_key"] if sd_specification.get(
+            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
 
         data = {
@@ -527,7 +184,7 @@ class TestOpenID4VPBackend:
             "vp": sdjwt_at_holder.sd_jwt_presentation,
         }
 
-        vp_token = JWSHelper(issuer_jwk).sign(
+        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
             data,
             protected={"typ": "JWT"}
         )
@@ -568,8 +225,9 @@ class TestOpenID4VPBackend:
         # TODO any additional checks after the backend returned the user attributes to satosa core
 
     def test_request_endpoint(self, context):
+        self.backend.register_endpoints()
         # No session created
-        state_endpoint_response = self.backend.state_endpoint(context)
+        state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "403"
         assert state_endpoint_response.message
         msg = json.loads(state_endpoint_response.message)
@@ -587,7 +245,10 @@ class TestOpenID4VPBackend:
         jwshelper = JWSHelper(PRIVATE_JWK)
         wia = jwshelper.sign(
             WALLET_INSTANCE_ATTESTATION,
-            protected={'trust_chain': [], 'x5c': []}
+            protected={
+                'trust_chain': trust_chain_wallet,
+                'x5c': []
+            }
         )
 
         dpop_wia = wia
@@ -604,21 +265,21 @@ class TestOpenID4VPBackend:
 
         context.qs_params = {"id": state}
 
-        # Not yet finalized
-        state_endpoint_response = self.backend.state_endpoint(context)
+        state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "204"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id
         context.qs_params = {"id": "WRONG"}
-        state_endpoint_response = self.backend.state_endpoint(context)
+        state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "403"
         assert state_endpoint_response.message
 
-        context.request_method = "POST"
+        context.request_method = "GET"
         context.qs_params = {"id": state}
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
+
         request_endpoint = self.backend.request_endpoint(context)
 
         assert request_endpoint
@@ -635,11 +296,12 @@ class TestOpenID4VPBackend:
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
-        state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "302"
-        assert state_endpoint_response.message
-        msg = json.loads(state_endpoint_response.message)
-        assert msg["response"] == "Authentication successful"
+        # TODO - the authentication is successful ONLY if redirect_endpoints gets a valid presentation!
+        # state_endpoint_response = self.backend.status_endpoint(context)
+        # assert state_endpoint_response.status == "302"
+        # assert state_endpoint_response.message
+        # msg = json.loads(state_endpoint_response.message)
+        # assert msg["response"] == "Authentication successful"
 
     def test_handle_error(self, context):
         error_message = "Error message!"

@@ -14,7 +14,7 @@ from pyeudiw.federation.exceptions import (
     KeyValidationError
 )
 
-logger = logging.getLogger("pyeudiw_federation")
+logger = logging.getLogger(__name__)
 
 
 def find_jwk(kid: str, jwks: list) -> dict:
@@ -31,12 +31,14 @@ class StaticTrustChainValidator:
         self,
         static_trust_chain: list,
         trust_anchor_jwks: list,
+        httpc_params: dict,
         **kwargs,
     ) -> None:
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
         self.exp = 0
+        self.httpc_params = httpc_params
 
         if not trust_anchor_jwks:
             raise MissingTrustAnchorPublicKey(
@@ -79,16 +81,19 @@ class StaticTrustChainValidator:
         rev_tc = [
             i for i in reversed(self.get_chain())
         ]
-
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
 
         last_element = rev_tc[0]
         es_header = unpad_jwt_header(last_element)
         es_payload = unpad_jwt_payload(last_element)
+
         ta_jwk = find_jwk(
             es_header.get("kid", None), self.trust_anchor_jwks
         )
+
+        if not ta_jwk:
+            return False
 
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
@@ -125,8 +130,8 @@ class StaticTrustChainValidator:
 
         return True
 
-    def _retrieve_ec(self, iss: str, httpc_params: dict = {}) -> str:
-        jwt = get_entity_configurations(iss, httpc_params)
+    def _retrieve_ec(self, iss: str) -> str:
+        jwt = get_entity_configurations(iss, self.httpc_params)
         if not jwt:
             raise HttpError(
                 f"Cannot get the Entity Configuration from {iss}")
@@ -134,28 +139,28 @@ class StaticTrustChainValidator:
         # is something weird these will raise their Exceptions
         return jwt[0]
 
-    def _retrieve_es(self, download_url: str, iss: str, httpc_params: dict = {}) -> str:
-        jwt = get_entity_statements(download_url, httpc_params)
+    def _retrieve_es(self, download_url: str, iss: str) -> str:
+        jwt = get_entity_statements(download_url, self.httpc_params)
         if not jwt:
             logger.warning(
                 f"Cannot fast refresh Entity Statement {iss}"
             )
         return jwt
 
-    def _update_st(self, st: str, httpc_params: dict = {}) -> str:
+    def _update_st(self, st: str) -> str:
         payload = unpad_jwt_payload(st)
         iss = payload['iss']
 
         if not is_es(payload):
             # It's an entity configuration
-            return self._retrieve_ec(iss, httpc_params)
+            return self._retrieve_ec(iss)
 
         # if it has the source_endpoint let's try a fast renewal
         download_url: str = payload.get("source_endpoint", "")
         if download_url:
-            jwt = self._retrieve_es(download_url, iss, httpc_params)
+            jwt = self._retrieve_es(download_url, iss)
         else:
-            ec = self._retrieve_ec(iss, httpc_params)
+            ec = self._retrieve_ec(iss)
             ec_data = unpad_jwt_payload(ec)
             fetch_api_url = None
 
@@ -170,14 +175,14 @@ class StaticTrustChainValidator:
                     f"federation_entity metadata for {ec_data['sub']}"
                 )
 
-            jwt = self._retrieve_es(fetch_api_url, iss, httpc_params)
+            jwt = self._retrieve_es(fetch_api_url, iss)
 
         return jwt
 
-    def update(self, httpc_params: dict = {}) -> bool:
+    def update(self) -> bool:
         self.exp = 0
         for st in self.static_trust_chain:
-            jwt = self._update_st(st, httpc_params)
+            jwt = self._update_st(st, self.httpc_params)
 
             exp = unpad_jwt_payload(jwt)["exp"]
 
@@ -202,3 +207,5 @@ class StaticTrustChainValidator:
         chain = self.get_chain()
         payload = unpad_jwt_payload(chain[0])
         return payload["iss"]
+
+    # TODO - apply metadata policy and get the final metadata

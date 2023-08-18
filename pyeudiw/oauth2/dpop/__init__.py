@@ -9,7 +9,7 @@ from pyeudiw.oauth2.dpop.schema import (DPoPTokenHeaderSchema,
                                         DPoPTokenPayloadSchema)
 from pyeudiw.tools.utils import iat_now
 
-logger = logging.getLogger("pyeudiw_oauth2_dpop")
+logger = logging.getLogger(__name__)
 
 
 class DPoPIssuer:

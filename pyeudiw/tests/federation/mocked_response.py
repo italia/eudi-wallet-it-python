@@ -1,5 +1,5 @@
 
-from . base import intermediate_ec_signed, intermediate_es_signed, leaf_ec_signed, ta_ec_signed, ta_es_signed
+from . base import intermediate_ec_signed, intermediate_es_wallet_signed, leaf_wallet_signed, ta_ec_signed, ta_es_signed
 
 import logging
 
@@ -19,17 +19,16 @@ class EntityResponse:
         self.result = None
 
 
-class EntityResponseNoIntermediate(EntityResponse):
+class EntityResponseWithIntermediate(EntityResponse):
     @property
     def content(self):
 
         resp_seq = {
             0: ta_ec_signed,
-            1: leaf_ec_signed,
+            1: leaf_wallet_signed,
             2: intermediate_ec_signed,
-            3: intermediate_es_signed,
-            4: ta_ec_signed,
-            5: ta_es_signed
+            3: intermediate_es_wallet_signed,
+            4: ta_es_signed
         }
 
         self.result = resp_seq.get(self.req_counter, None)
