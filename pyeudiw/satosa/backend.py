@@ -1,4 +1,6 @@
+import datetime
 import json
+import hashlib
 import logging
 import uuid
 
@@ -8,7 +10,7 @@ from urllib.parse import quote_plus, urlencode
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
 from satosa.context import Context
-from satosa.internal import InternalData
+from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
@@ -261,7 +263,7 @@ class OpenID4VPBackend(BackendModule):
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
-    def _translate_response(self, response, issuer):
+    def _translate_response(self, response :dict, issuer :str, context :Context):
         """
         Translates wallet response to SATOSA internal response.
         :type response: dict[str, str]
@@ -276,21 +278,55 @@ class OpenID4VPBackend(BackendModule):
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
 
-        # TODO - Internal Response
-        # auth_class_ref = response.get("acr", response.get("amr", UNSPECIFIED))
-        # timestamp = response.get(
-        # "auth_time",
-        # response.get('iat', iat_now())
-        # )
-        # auth_info = AuthenticationInformation(auth_class_ref, timestamp, issuer)
-        # internal_resp = InternalData(auth_info=auth_info)
-        internal_resp = InternalData()
-        internal_resp.attributes = self.converter.to_internal(
-            "openid4vp", response)
-        # response["sub"]
+        timestamp_epoch = (
+            response.get("auth_time")
+            or response.get("iat")
+            or iat_now()
+        )
+        timestamp_dt = datetime.datetime.fromtimestamp(
+            timestamp_epoch, 
+            datetime.timezone.utc
+        )
+        timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
+        
+        auth_class_ref = (
+            response.get("acr") or 
+            response.get("amr") or 
+            self.config["authorization"]["default_acr_value"]
+        )
+        auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
+        # TODO - acr
+        internal_resp = InternalData(auth_info=auth_info)
+        
+        sub = ""
+        for i in self.config["user_attributes"]["unique_identifiers"]:
+            if response.get(i):
+                _sub = response[i]
+                sub = hashlib.sha256(
+                    f"{_sub}~{self.config['user_attributes']['subject_id_salt']}".encode()
+                ).hexdigest()
+                break
+        
+        if not sub:
+            self._log(
+                context,
+                level='warning',
+                message=(
+                    "[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation "
+                    "setting a random one for interop for internal frontends"
+                )
+            )            
+            # TODO - add a salt here
+            sub = hashlib.sha256(
+                json.dumps(response).encode()
+            ).hexdigest()
 
-        # TODO: create a subject id with a pairwised strategy, mixing user attrs hash + wallet instance hash. Instead of uuid4
-        internal_resp.subject_id = str(uuid.uuid4())
+        
+        response["sub"] = [sub]
+        internal_resp.attributes = self.converter.to_internal(
+            "openid4vp", response
+        )
+        internal_resp.subject_id = sub
         return internal_resp
 
     def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
@@ -333,13 +369,16 @@ class OpenID4VPBackend(BackendModule):
         if context.request_method.lower() != 'post':
             raise BadRequestError("HTTP Method not supported")
 
-        _server_url = self.base_url[
-            :-1
-        ] if self.base_url[-1] == '/' else self.base_url
+        _server_url = (
+            self.base_url[:-1] 
+            if self.base_url[-1] == '/' 
+            else self.base_url
+        )
 
         _endpoint = f'{_server_url}{context.request_uri}'
-        if _endpoint not in self.config["metadata"]['redirect_uris']:
-            raise NoBoundEndpointError("request_uri not valid")
+        if self.config["metadata"].get('redirect_uris', None):
+            if _endpoint not in self.config["metadata"]['redirect_uris']:
+                raise NoBoundEndpointError("request_uri not valid")
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request.get("response", None)
@@ -360,8 +399,10 @@ class OpenID4VPBackend(BackendModule):
         state = vpt.payload.get("state", None)
         if not state:
             # state is OPTIONAL in openid4vp ...
-            self._log(context, level='warning',
-                      message=f"Response state missing")
+            self._log(
+                context, level='warning',
+                message=f"Response state missing"
+            )
 
         # TODO: exception handling here
         stored_session = self.db_engine.get_by_state(state=state)
@@ -446,17 +487,17 @@ class OpenID4VPBackend(BackendModule):
             message=f"Wallet disclosure: {all_user_attributes}"
         )
 
-        # breakpoint()
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
-        _info = {"issuer": {}}
-
+        _info = {"issuer": ';'.join(cred_issuers)}
+        
         internal_resp = self._translate_response(
-            all_user_attributes, _info["issuer"]
+            all_user_attributes, _info["issuer"], context
         )
-
+        
         try:
             self.db_engine.update_response_object(
-                stored_session['nonce'], state, internal_resp)
+                stored_session['nonce'], state, internal_resp
+            )
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log(
@@ -469,7 +510,7 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Cannot update response object: {e}",
                 err_code="500"
             )
-
+        
         return self.auth_callback_func(context, internal_resp)
 
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:

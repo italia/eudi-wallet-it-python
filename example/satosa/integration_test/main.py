@@ -91,8 +91,12 @@ headers_mobile = {
 }
 
 request_uri = ''
+
+# initialize the user-agent
+http_user_agent = requests.Session()
+
 try:
-    authn_response = requests.get(
+    authn_response = http_user_agent.get(
         url = req_url, 
         verify=False, 
         headers=headers_mobile
@@ -140,7 +144,7 @@ http_headers = {
     "DPOP":dpop_proof
 }
 
-sign_request_obj = requests.get(request_uri, verify=False, headers=http_headers)
+sign_request_obj = http_user_agent.get(request_uri, verify=False, headers=http_headers)
 print(sign_request_obj.json())
 
 # create a SD-JWT signed by a trusted credential issuer
@@ -158,7 +162,7 @@ ISSUER_CONF = {
             !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
 
         holder_disclosed_claims:
-            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
+            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"}, "tax_id_code": "TINIT-XXXXXXXXXXXXXXXX" }
 
         key_binding: True
     """,
@@ -227,7 +231,7 @@ vp_token = JWSHelper(WALLET_PRIVATE_JWK).sign(
 )
 
 # take relevant information from RP's EC
-rp_ec_jwt = requests.get(
+rp_ec_jwt = http_user_agent.get(
     f'{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation', 
     verify=False
 ).content.decode()
@@ -256,8 +260,11 @@ encrypted_response = JWEHelper(
 ).encrypt(response)
 
 
-sign_request_obj = requests.post(
+sign_request_obj = http_user_agent.post(
     redirect_uri, 
     verify=False, 
     data={'response': encrypted_response}
 )
+
+assert 'SAMLResponse' in sign_request_obj.content.decode()
+print(sign_request_obj.content.decode())
