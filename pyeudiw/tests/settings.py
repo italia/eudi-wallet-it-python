@@ -26,10 +26,12 @@ CONFIG = {
         "error_url": "https://localhost:9999/error_page.html"
     },
     "endpoints": {
-        "entity_configuration": "/OpenID4VP/.well-known/openid-federation",
-        "pre_request": "/OpenID4VP/pre-request",
-        "redirect": "/OpenID4VP/redirect_uri",
-        "request": "/OpenID4VP/request_uri",
+        "entity_configuration": "/.well-known/openid-federation",
+        "pre_request": "/pre-request",
+        "redirect": "/redirect-uri",
+        "request": "/request-uri",
+        "status": "/status-uri",
+        "get_response": "/get-response",
     },
     "qrcode": {
         "size": 100,
@@ -287,10 +289,10 @@ CONFIG = {
             }
         ],
         "redirect_uris": [
-            f"{BASE_URL}/OpenID4VP/redirect_uri"
+            f"{BASE_URL}/OpenID4VP/redirect-uri"
         ],
         "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request_uri"
+            f"{BASE_URL}/OpenID4VP/request-uri"
         ],
         "require_auth_time": True,
         "subject_type": "pairwise",

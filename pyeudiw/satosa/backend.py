@@ -70,7 +70,7 @@ class OpenID4VPBackend(BackendModule):
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
         self.client_id = config['metadata']['client_id']
-        
+
         self.qrcode_settings = config['qrcode']
         self.config = config
 
@@ -152,7 +152,8 @@ class OpenID4VPBackend(BackendModule):
         for k, v in self.config['endpoints'].items():
             url_map.append(
                 (
-                    f"^{self.name}/{v.lstrip('/')}$", getattr(self, f"{k}_endpoint")
+                    f"^{self.name}/{v.lstrip('/')}$", getattr(self,
+                                                              f"{k}_endpoint")
                 )
             )
             _endpoint = f"{self.client_id}{v}"
@@ -416,8 +417,8 @@ class OpenID4VPBackend(BackendModule):
         except Exception as e:
             _msg = "Session lookup by state value failed"
             self._log(
-                context, 
-                level='error', 
+                context,
+                level='error',
                 message=f"{_msg}: {e}"
             )
 
@@ -523,7 +524,7 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Cannot update response object: {e}",
                 err_code="500"
             )
-        
+
         if stored_session['session_id'] == str(context.state["SESSION_ID"]):
             # Same device flow
             return Redirect(
@@ -537,7 +538,7 @@ class OpenID4VPBackend(BackendModule):
                 },
                 status="200"
             )
-        
+
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
         """ This validates, if any, the DPoP http request header """
 
@@ -705,7 +706,7 @@ class OpenID4VPBackend(BackendModule):
             },
             status=err_code
         )
-    
+
     def get_response_endpoint(self, context):
 
         self._log(
@@ -727,10 +728,10 @@ class OpenID4VPBackend(BackendModule):
         )
 
         return self.auth_callback_func(
-            context, 
+            context,
             resp
         )
-    
+
     def status_endpoint(self, context):
 
         self._log(

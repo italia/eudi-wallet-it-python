@@ -35,4 +35,3 @@ class BaseStorage(object):
 
     def update_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         raise NotImplementedError()
-

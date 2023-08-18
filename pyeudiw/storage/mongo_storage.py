@@ -70,11 +70,10 @@ class MongoStorage(BaseStorage):
 
         if document is None:
             raise ValueError(
-                f'Document with state {state} not found.'
+                f'Document with session id {session_id} not found.'
             )
 
         return document
-
 
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()

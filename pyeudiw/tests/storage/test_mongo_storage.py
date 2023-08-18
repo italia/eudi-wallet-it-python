@@ -110,5 +110,4 @@ class TestMongoStorage:
         assert document["state"]
         assert document["nonce"] == nonce
         assert document["request_object"] == request_object
-        assert document["response_object"]
-        assert document["response_object"] == {"response": "test"}
+        assert document["internal_response"] == {"response": "test"}
