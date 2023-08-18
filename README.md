@@ -79,7 +79,7 @@ Your contribution is welcome, no question is useless and no answer is obvious, w
 
 Please open an issue if you've found a bug or if you want to ask some features.
 
-###Contribute as developer
+### Contribute as developer
 
 Please open your Pull Requests on the __dev__ branch. 
 Please consider the following branches:
