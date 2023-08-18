@@ -164,7 +164,7 @@ class TestOpenID4VPBackend:
             holder_jwk
         )
 
-        adapted_keys = _adapt_keys(issuer_jwk, holder_jwk)
+        _adapt_keys(issuer_jwk, holder_jwk)
 
         sdjwt_at_holder = SDJWTHolder(
             issued_jwt["issuance"],
@@ -176,7 +176,7 @@ class TestOpenID4VPBackend:
             str(uuid.uuid4()),
             import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
-            sign_alg = DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
 
         data = {

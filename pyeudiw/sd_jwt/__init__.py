@@ -1,7 +1,7 @@
 import cryptojwt
 import json
 
-from jwcrypto.common import base64url_decode, base64url_encode
+from jwcrypto.common import base64url_encode
 
 from binascii import unhexlify
 from io import StringIO
@@ -21,11 +21,12 @@ from json import dumps, loads
 
 import jwcrypto
 
+
 class TrustChainSDJWTIssuer(SDJWTIssuer):
     def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = True, serialization_format: str = "compact", additional_headers: dict = {}):
         self.additional_headers = additional_headers
         sign_alg = DEFAULT_SIG_KTY_MAP[issuer_key.kty]
-        
+
         super().__init__(
             user_claims,
             issuer_key,
@@ -88,6 +89,7 @@ def pk_encode_int(i, bit_size=None):
         extend = hexl % 2
     return base64url_encode(unhexlify(extend * '0' + hexi))
 
+
 def import_pyca_pri_rsa(key, **params):
     pn = key.private_numbers()
     params.update(
@@ -103,18 +105,22 @@ def import_pyca_pri_rsa(key, **params):
     )
     return jwcrypto.jwk.JWK(**params)
 
+
 def _adapt_keys(issuer_key: JWK, holder_key: JWK):
     # _iss_key = issuer_key.key.serialize(private=True)
     # _iss_key['key_ops'] = 'sign'
-    _issuer_key = import_pyca_pri_rsa(issuer_key.key.priv_key, kid=issuer_key.kid)
-    
-    holder_key = jwcrypto.jwk.JWK.from_json(json.dumps(_serialize_key(holder_key)))
+    _issuer_key = import_pyca_pri_rsa(
+        issuer_key.key.priv_key, kid=issuer_key.kid)
+
+    holder_key = jwcrypto.jwk.JWK.from_json(
+        json.dumps(_serialize_key(holder_key)))
     issuer_public_key = jwcrypto.jwk.JWK.from_json(_issuer_key.export_public())
     return dict(
         issuer_key=_issuer_key,
         holder_key=holder_key,
         issuer_public_key=issuer_public_key,
     )
+
 
 def load_specification_from_yaml_string(yaml_specification: str):
     return _yaml_load_specification(StringIO(yaml_specification))
@@ -130,7 +136,7 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
     adapted_keys = _adapt_keys(issuer_key, holder_key)
-    
+
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
 

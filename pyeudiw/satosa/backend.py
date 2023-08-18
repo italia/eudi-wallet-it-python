@@ -2,7 +2,6 @@ import json
 import logging
 import uuid
 
-from datetime import datetime
 from typing import Union
 from urllib.parse import quote_plus, urlencode
 
@@ -107,7 +106,7 @@ class OpenID4VPBackend(BackendModule):
         )
 
     def update_trust_anchors(self):
-        # TODO: get the list of the trust anchors and TRY yo update all their definitions (EC)
+        # TODO: move this to the trust evaluation helper
         tas = self.config['federation']['trust_anchors']
         logger.info(
             lu.LOG_FMT.format(
@@ -185,7 +184,6 @@ class OpenID4VPBackend(BackendModule):
 
     def entity_configuration_endpoint(self, context, *args):
 
-        datetime.now()
         data = {
             "exp": exp_from_now(minutes=self.default_exp),
             "iat": iat_now(),
@@ -300,6 +298,9 @@ class OpenID4VPBackend(BackendModule):
         trust_eval = TrustEvaluationHelper(
             self.db_engine,
             httpc_params=self.config['network']['httpc_params'],
+
+            # TODO: this helper should be initialized in the init without any specific JWS
+            # the JWS should then be submitted in the specialized methods for its specific evaluation
             **headers
         )
 
@@ -335,7 +336,7 @@ class OpenID4VPBackend(BackendModule):
         _server_url = self.base_url[
             :-1
         ] if self.base_url[-1] == '/' else self.base_url
-        
+
         _endpoint = f'{_server_url}{context.request_uri}'
         if _endpoint not in self.config["metadata"]['redirect_uris']:
             raise NoBoundEndpointError("request_uri not valid")
@@ -346,7 +347,7 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"Response error, missing JWT"
             self._log(context, level='error', message=_msg)
             raise BadRequestError(_msg)
-        
+
         try:
             vpt = VpToken(jwt, self.metadata_jwks_by_kids)
             ResponseSchema(**vpt.payload)
@@ -423,17 +424,17 @@ class OpenID4VPBackend(BackendModule):
             vp.verify_sdjwt(
                 issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks},
             )
-            
+
             # vp.result
             attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
             self._log(
-                context, 
-                level='debug', 
+                context,
+                level='debug',
                 message=f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
             )
-            
+
             # TODO: check the revocation of the credential
-        
+
         # for all the valid credentials, take the payload and the disclosure and discose the user attributes
         # returns the user attributes ...
         all_user_attributes = dict()
@@ -444,7 +445,7 @@ class OpenID4VPBackend(BackendModule):
             context, level='debug',
             message=f"Wallet disclosure: {all_user_attributes}"
         )
-        
+
         # breakpoint()
         # TODO: define "issuer"  ... it MUST be not an empty dictionary
         _info = {"issuer": {}}
@@ -608,6 +609,9 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign(data)
 
         response = {"response": jwt}
+
+        # TODO: update the storage with the acquired signed request object
+
         return JsonResponse(
             response,
             status="200"

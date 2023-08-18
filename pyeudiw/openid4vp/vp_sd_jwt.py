@@ -10,7 +10,7 @@ class VpSdJwt:
     ) -> dict:
         issuer_jwk = JWK(issuer_jwks_by_kid[self.credential_headers["kid"]])
         holder_jwk = JWK(self.credential_payload["cnf"]["jwk"])
-        
+
         result = verify_sd_jwt(
             sd_jwt_presentation=self.payload["vp"],
             issuer_key=issuer_jwk,
