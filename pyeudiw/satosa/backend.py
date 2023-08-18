@@ -399,16 +399,22 @@ class OpenID4VPBackend(BackendModule):
         # get state, do lookup on the db -> if not -> exception
         state = vpt.payload.get("state", None)
         if not state:
+            # TODO - if state is missing the db lookup fails ...
             # state is OPTIONAL in openid4vp ...
             self._log(
                 context, level='warning',
                 message=f"Response state missing"
             )
 
-        # TODO: exception handling here
-        stored_session = self.db_engine.get_by_state(state=state)
-        # TODO: update response in the stored_session
-        # TODO: finalized MUST be False until the authentication doesn't complete
+        try:
+            stored_session = self.db_engine.get_by_state(state=state)
+        except Exception as e:
+            _msg = "Session lookup by state value failed"
+            self._log(
+                context, 
+                level='error', 
+                message=f"{_msg}: {e}"
+            )
 
         # TODO: handle vp token ops exceptions
         try:
@@ -494,15 +500,20 @@ class OpenID4VPBackend(BackendModule):
             all_user_attributes, _info["issuer"], context
         )
 
+        # authentication finalized!
+        self.db_engine.set_finalized(stored_session['document_id'])
+
         try:
-            nonce, state, document_status = self.db_engine.update_response_object(
+            self.db_engine.update_response_object(
                 stored_session['nonce'], state, internal_resp
             )
-            self._log(
-                context,
-                level="debug",
-                message=f"Session update on storage: {document_status}"
-            )
+            if logger.getEffectiveLevel() == logging.DEBUG:
+                stored_session = self.db_engine.get_by_state(state=state)
+                self._log(
+                    context,
+                    level="debug",
+                    message=f"Session update on storage: {stored_session}"
+                )
             
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
@@ -640,7 +651,6 @@ class OpenID4VPBackend(BackendModule):
                 document_id, dpop_proof, attestation
             )
             self.db_engine.update_request_object(document_id, data)
-            self.db_engine.set_finalized(document_id)
         except ValueError as e:
             _msg = (
                 "Error while retrieving request object from database: "

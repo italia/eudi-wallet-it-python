@@ -159,7 +159,7 @@ class MongoStorage(BaseStorage):
                 },
              })
 
-        return nonce, state, document_status
+        return document_status
 
     def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
         self._connect()
