@@ -131,7 +131,6 @@ dpop_proof = DPoPIssuer(
         token=dpop_wia,
         private_jwk=WALLET_PRIVATE_JWK
 ).proof
-
 dpop_test = DPoPVerifier(
     public_jwk=leaf_wallet_jwk.serialize(),
     http_header_authz=f"DPoP {dpop_wia}",
@@ -146,6 +145,8 @@ http_headers = {
 
 sign_request_obj = http_user_agent.get(request_uri, verify=False, headers=http_headers)
 print(sign_request_obj.json())
+
+redirect_uri = unpad_jwt_payload(sign_request_obj.json()['response'])['response_uri']
 
 # create a SD-JWT signed by a trusted credential issuer
 issuer_jwk = leaf_cred_jwk
@@ -237,7 +238,7 @@ rp_ec_jwt = http_user_agent.get(
 ).content.decode()
 rp_ec = unpad_jwt_payload(rp_ec_jwt)
 
-redirect_uri = rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
+assert redirect_uri == rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
 
 response = {
     "state": red_data['state'],

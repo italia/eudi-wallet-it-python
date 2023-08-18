@@ -11,10 +11,12 @@ config:
     error_url: "https://localhost:9999/error_page.html"
   
   endpoints:
-      pre_request: '/<name>/pre-request'
-      redirect: '/<name>/redirect_uri'
-      request: '/<name>/request_uri'
-      entity_configuration: '/<name>/.well-known/openid-federation'
+      pre_request: '/pre-request'
+      redirect: '/redirect-uri'
+      request: '/request-uri'
+      entity_configuration: '/.well-known/openid-federation'
+      status: '/status'
+      get_response: '/get-response'
 
   qrcode:
     size: 100
@@ -222,9 +224,9 @@ config:
           id: mDL
 
     redirect_uris:
-      - <base_url>/<name>/redirect_uri
+      - <base_url>/<name>/redirect-uri
     request_uris:
-      - <base_url>/<name>/request_uri
+      - <base_url>/<name>/request-uri
 
     require_auth_time: true
     subject_type: pairwise

@@ -194,3 +194,6 @@ class DBEngine():
 
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         return self.get("get_by_state_and_session_id", state, session_id)
+
+    def get_by_session_id(self, session_id: str):
+        return self.get("get_by_session_id", session_id)

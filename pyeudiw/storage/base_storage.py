@@ -1,6 +1,7 @@
 import datetime
 
 
+# TODO: add all those defined methods in mongodb storage
 class BaseStorage(object):
     def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
         raise NotImplementedError()
@@ -34,3 +35,4 @@ class BaseStorage(object):
 
     def update_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
         raise NotImplementedError()
+

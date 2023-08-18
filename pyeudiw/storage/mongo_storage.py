@@ -62,6 +62,20 @@ class MongoStorage(BaseStorage):
 
         return document
 
+    def get_by_session_id(self, session_id: str):
+        self._connect()
+
+        query = {"session_id": session_id}
+        document = self.sessions.find_one(query)
+
+        if document is None:
+            raise ValueError(
+                f'Document with state {state} not found.'
+            )
+
+        return document
+
+
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
 
@@ -72,7 +86,8 @@ class MongoStorage(BaseStorage):
 
         if document is None:
             raise ValueError(
-                f'Document with state {state} not found')
+                f'Document with state {state} not found.'
+            )
 
         return document
 
@@ -83,8 +98,7 @@ class MongoStorage(BaseStorage):
             "state": state,
             "session_id": session_id,
             "finalized": False,
-            "request_object": None,
-            "response": None
+            "internal_response": None,
         }
 
         try:
@@ -108,7 +122,7 @@ class MongoStorage(BaseStorage):
             })
         if update_result.matched_count != 1 or update_result.modified_count != 1:
             raise ValueError(
-                f"Cannot update document {document_id}')"
+                f"Cannot update document {document_id}'."
             )
 
         return update_result
@@ -148,14 +162,14 @@ class MongoStorage(BaseStorage):
             )
         return update_result
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict):
+    def update_response_object(self, nonce: str, state: str, internal_response: dict):
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
         document_status = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
-                    "response_object": response_object
+                    "internal_response": internal_response
                 },
              })
 
