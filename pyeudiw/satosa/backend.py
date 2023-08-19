@@ -70,8 +70,6 @@ class OpenID4VPBackend(BackendModule):
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
         self.client_id = config['metadata']['client_id']
-
-        self.qrcode_settings = config['qrcode']
         self.config = config
 
         self.default_exp = int(self.config['jwt']['default_exp'])
@@ -91,7 +89,7 @@ class OpenID4VPBackend(BackendModule):
         ]
 
         # HTML template loader
-        self.template = Jinja2TemplateHandler(config)
+        self.template = Jinja2TemplateHandler(self.config["ui"])
 
         self.db_engine = DBEngine(self.config["storage"])
         self.update_trust_anchors()
