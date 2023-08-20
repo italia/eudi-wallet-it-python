@@ -742,14 +742,30 @@ class OpenID4VPBackend(BackendModule):
         )
 
         session_id = context.state["SESSION_ID"]
+
+        _err = False
+        _err_msg = ""
+        state = None
+
         try:
             state = context.qs_params["id"]
         except TypeError as e:
-            _msg = f"No query params found! {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            _err_msg = f"No query params found: {e}"
         except KeyError as e:
-            _msg = f"No id found in qs_params! {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            _err_msg = f"No id found in qs_params: {e}"
+
+        if _err:
+            self._log(
+                context,
+                level='debug',
+                message=_err_msg
+            )
+            return JsonResponse(
+                {
+                    "message": _err_msg
+                },
+                status="403"
+            )
 
         try:
             session = self.db_engine.get_by_state_and_session_id(
@@ -757,7 +773,12 @@ class OpenID4VPBackend(BackendModule):
             )
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            return JsonResponse(
+                {
+                    "message": _msg
+                },
+                status="403"
+            )
 
         if session["finalized"]:
             return Redirect(
