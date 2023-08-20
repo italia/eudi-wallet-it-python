@@ -232,6 +232,10 @@ class OpenID4VPBackend(BackendModule):
 
         session_id = str(context.state["SESSION_ID"])
         state = str(uuid.uuid4())
+
+        # TODO: do not init the session if the context is not linked to any
+        #       previous authn session (avoid to init sessions for users that has not requested an auth to a frontend)
+
         # Init session
         try:
             self.db_engine.init_session(
@@ -779,7 +783,9 @@ class OpenID4VPBackend(BackendModule):
                 },
                 status="403"
             )
-
+        
+        # TODO: if the request is expired -> return 403
+        
         if session["finalized"]:
             return Redirect(
                 f"{self.name}/get-response"
@@ -789,5 +795,5 @@ class OpenID4VPBackend(BackendModule):
                 {
                     "response": "Request object issued"
                 },
-                status="204"
+                status="200"
             )
