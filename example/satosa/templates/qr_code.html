@@ -9,16 +9,17 @@
         </div>
         <div id="content" class="col-lg-12 text-center">
             <div class="row">
-                <div id="content-text" class="qr-code-text">Inquadra il QR code con la fotocamera del tuo smartphone, oppure utilizza la funzionalità "inquadra" disponibile nell'app IO.</div>
+                <div id="content-text" class="qr-code-text">Usa la funzionalità "inquadra" disponibile nell'app IO.</div>
                 </div>
             <br>
             <div id="content-qrcode" class="row">
-                <span><img width="33%" src='data:image/svg+xml;base64,{{ qrcode_base64 }}'></span>
+                <span><img width="62%" src='data:image/svg+xml;base64,{{ qrcode_base64 }}'></span>
                 <div id="content-qrcode-info">
                     <p id="content-qrcode-info-text" class="text-helper text-info">Il codice è valido per <b id="timer"></b> secondi</p>
                     <p id="content-qrcode-subtitle" class="qr-code-text" hidden>Puoi trovarla direttamente all'interno dell'app IO. Se hai più dispositivi mobili con l'app IO, scegli su quale dispositivo preferisci ricevere le notifiche.</p>
                 </div>
             </div>
+<!--
             <div class="row">
                 <div id="content-function" class="col-lg-2 text-center button-container">
                     <button class="btn btn-outline-primary">
@@ -26,6 +27,7 @@
                     </button>
                 </div>
             </div>
+-->
         </div>
     </div>
 </div>
@@ -43,7 +45,7 @@
 
     let qrCodeExpiredInfo = "Il QR code non è più valido.";
 
-    let expirationTime = 10;
+    let expirationTime = 126;
     let pollingInterval;
 
     function StartQRcodeScanCheck(){
@@ -91,6 +93,15 @@
         changeQrCodeInfo(null)
     }
 
+    function Forbidden(data, textStatus, jqXHR){
+        console.log('403: Forbidden');
+        clearInterval(countdown);
+        changeTitle(failureTitle);
+        changeText(failureText);
+        blankQRcode();
+        changeQrCodeInfo(null)
+    }
+
     function changeTitle(str){
         $('#content-title').html(str);
     }
@@ -118,19 +129,21 @@
     }, 1000);
 
     function QRcodeScanCheck() {
-      let endpointSatosa = 'http://localhost:3000/test';
+      let endpointSatosa = 'https://localhost:10000/OpenID4VP/status';
       let data = {
-        "session-id": "session-id", 
+        "id": "{{ state }}", 
       };
 
       let ajaxRequest = $.ajax({
-        type: 'POST',
+        type: 'GET',
         url: endpointSatosa,
         data,
         statusCode: {
-          200: connectionCompleted,
+          302: connectionCompleted,
           201: connectionStarted,
-          400: StartQRcodeScanCheck,
+          200: StartQRcodeScanCheck,
+          302: connectionCompleted,
+          403: Forbidden,
           500: serverError,
         }
       })
