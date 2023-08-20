@@ -266,7 +266,7 @@ class TestOpenID4VPBackend:
         context.qs_params = {"id": state}
 
         state_endpoint_response = self.backend.status_endpoint(context)
-        assert state_endpoint_response.status == "204"
+        assert state_endpoint_response.status == "200"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id
