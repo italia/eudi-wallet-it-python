@@ -638,30 +638,29 @@ class OpenID4VPBackend(BackendModule):
 
         # check DPOP for WIA if any
         dpop_validation_error = None
+        _err_msg = (
+            f"Trust evaluation failed"
+        )
         try:
             dpop_validation_error = self._request_endpoint_dpop(context)
+            if dpop_validation_error:
+                raise Exception(_err_msg)
         except Exception as e:
-            _err_msg = (
-                f"Trust evaluation failed: {e}"
-            )
-            return JsonResponse(
-                {
-                    "error": "invalid_param",
-                    "error_description": "Wallet Provider is not Trusted"
-                },
-                status="403"
-            )
-
-        if dpop_validation_error:
             self._log(
                 context,
                 level='error',
                 message=(
                     "[DPoP VALIDATION ERROR] "
-                    f"{context.headers}"
+                    f"{_err_msg} {context.headers}: {e}"
                 )
             )
-            return dpop_validation_error
+            return JsonResponse(
+                {
+                    "error": "invalid_param",
+                    "error_description": "WIA evalution error: Wallet Provider is not Trusted"
+                },
+                status="403"
+            )
 
         try:
             state = context.qs_params["id"]
