@@ -98,14 +98,29 @@ class OpenID4VPBackend(BackendModule):
         self.absolute_redirect_url = None
         self.absolute_request_url = None
         self.registered_get_response_endpoint = None
-
+        
+        # resolve metadata pointers/placeholders
+        self._render_metadata_conf_elements()
+                
         logger.debug(
             lu.LOG_FMT.format(
                 id="OpenID4VP init",
                 message=f"Loaded configuration: {json.dumps(config)}"
             )
         )
-
+    
+    def _render_metadata_conf_elements(self) -> None:
+        for k,v in self.config['metadata'].items():
+            if isinstance(v, (int, float, dict, list)): continue
+            if not v or len(v) == 0: continue
+            if all((
+                v[0] == '<',
+                v[-1] == '>',
+                '.' in v
+            )):
+                conf_section, conf_k = v[1:-1].split('.')
+                self.config['metadata'][k] = self.config[conf_section][conf_k]
+    
     def update_trust_anchors(self):
         # TODO: move this to the trust evaluation helper
         tas = self.config['federation']['trust_anchors']
@@ -150,8 +165,8 @@ class OpenID4VPBackend(BackendModule):
         for k, v in self.config['endpoints'].items():
             url_map.append(
                 (
-                    f"^{self.name}/{v.lstrip('/')}$", getattr(self,
-                                                              f"{k}_endpoint")
+                    f"^{self.name}/{v.lstrip('/')}$", 
+                    getattr(self, f"{k}_endpoint")
                 )
             )
             _endpoint = f"{self.client_id}{v}"
@@ -204,6 +219,14 @@ class OpenID4VPBackend(BackendModule):
             },
             "authority_hints": self.config['federation']['authority_hints']
         }
+        
+        if context.qs_params.get('format', '') == 'json':
+            return Response(
+                json.dumps(data),
+                status="200",
+                content="application/json"
+            )
+        
         jwshelper = JWSHelper(self.federation_jwk)
 
         return Response(
@@ -230,7 +253,7 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-        session_id = str(context.state["SESSION_ID"])
+        session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
 
         # TODO: do not init the session if the context is not linked to any
@@ -527,7 +550,7 @@ class OpenID4VPBackend(BackendModule):
                 err_code="500"
             )
 
-        if stored_session['session_id'] == str(context.state["SESSION_ID"]):
+        if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
             return Redirect(
                 self.registered_get_response_endpoint
@@ -698,8 +721,10 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
-        self._log(context, level='error',
-                  message=f"{message}: {err}. {troubleshoot}")
+        self._log(
+            context, level='error',
+            message=f"{message}: {err}. {troubleshoot}"
+        )
 
         return JsonResponse(
             {
@@ -746,7 +771,6 @@ class OpenID4VPBackend(BackendModule):
         )
 
         session_id = context.state["SESSION_ID"]
-
         _err = False
         _err_msg = ""
         state = None
