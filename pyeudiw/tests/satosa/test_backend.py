@@ -232,7 +232,7 @@ class TestOpenID4VPBackend:
         assert state_endpoint_response.status == "403"
         assert state_endpoint_response.message
         msg = json.loads(state_endpoint_response.message)
-        assert msg["message"]
+        assert msg["error"]
 
         internal_data = InternalData()
         context.http_headers = dict(
@@ -310,4 +310,4 @@ class TestOpenID4VPBackend:
         assert error_resp.status == "500"
         assert error_resp.message
         err = json.loads(error_resp.message)
-        assert err["message"] == error_message
+        assert err["error"] == error_message

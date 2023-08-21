@@ -204,7 +204,7 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-    def entity_configuration_endpoint(self, context, *args):
+    def entity_configuration_endpoint(self, context):
 
         data = {
             "exp": exp_from_now(minutes=self.default_exp),
@@ -228,7 +228,6 @@ class OpenID4VPBackend(BackendModule):
             )
         
         jwshelper = JWSHelper(self.federation_jwk)
-
         return Response(
             jwshelper.sign(
                 protected={
@@ -391,6 +390,14 @@ class OpenID4VPBackend(BackendModule):
             )
         
         return trust_eval
+    
+    @property
+    def server_url(self):
+        return (
+            self.base_url[:-1]
+            if self.base_url[-1] == '/'
+            else self.base_url
+        )
 
     def redirect_endpoint(self, context, *args):
         self._log(
@@ -402,24 +409,39 @@ class OpenID4VPBackend(BackendModule):
             )
         )
         if context.request_method.lower() != 'post':
-            raise BadRequestError("HTTP Method not supported")
-
-        _server_url = (
-            self.base_url[:-1]
-            if self.base_url[-1] == '/'
-            else self.base_url
-        )
-        _endpoint = f'{_server_url}{context.request_uri}'
+            #raise BadRequestError("HTTP Method not supported")
+            return self.handle_error(
+                context = context,
+                message = "invalid_request",
+                troubleshoot = "HTTP Method not supported",
+                err_code="403"
+            )
+            
+        _endpoint = f'{self.server_url}{context.request_uri}'
         if self.config["metadata"].get('redirect_uris', None):
             if _endpoint not in self.config["metadata"]['redirect_uris']:
-                raise NoBoundEndpointError("request_uri not valid")
+                # raise NoBoundEndpointError("request_uri not valid")
+                return self.handle_error(
+                    context = context,
+                    # TODO: this error should be changes/defined
+                    message = "invalid_request",
+                    troubleshoot = "request_uri not valid",
+                    err_code="403"
+                )
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request.get("response", None)
         if not jwt:
             _msg = f"Response error, missing JWT"
             self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            #raise BadRequestError(_msg)
+            return self.handle_error(
+                context = context,
+                # TODO: this error should be changes/defined
+                message = "invalid_request",
+                troubleshoot = _msg,
+                err_code="403"
+            )
 
         try:
             vpt = VpToken(jwt, self.metadata_jwks_by_kids)
@@ -427,26 +449,38 @@ class OpenID4VPBackend(BackendModule):
         except Exception as e:
             _msg = f"VpToken parse and validation error: {e}"
             self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            return self.handle_error(
+                context = context,
+                # TODO: this error should be changes/defined
+                message = "invalid_request",
+                troubleshoot = _msg,
+                err_code="403"
+            )
+            # raise BadRequestError(_msg)
 
         # get state, do lookup on the db -> if not -> exception
         state = vpt.payload.get("state", None)
         if not state:
             # TODO - if state is missing the db lookup fails ...
             # state is OPTIONAL in openid4vp ...
-            self._log(
-                context, level='warning',
-                message=f"Response state missing"
-            )
+            return self.handle_error(
+                context = context,
+                # TODO: this error should be changes/defined
+                message = "invalid_request",
+                troubleshoot = "state missing",
+                err_code="403"
+            )            
 
         try:
             stored_session = self.db_engine.get_by_state(state=state)
         except Exception as e:
-            _msg = "Session lookup by state value failed"
-            self._log(
-                context,
-                level='error',
-                message=f"{_msg}: {e}"
+            _msg = f"Session lookup by state value failed: {e}"
+            return self.handle_error(
+                context = context,
+                # TODO: this error should be changes/defined
+                message = "invalid_request",
+                troubleshoot = _msg,
+                err_code="403"
             )
 
         # TODO: handle vp token ops exceptions
@@ -459,8 +493,13 @@ class OpenID4VPBackend(BackendModule):
                 "VpToken content parse and validation error. "
                 f"Single VPs are faulty: {e}"
             )
-            self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            return self.handle_error(
+                context = context,
+                # TODO: this error should be changes/defined
+                message = "invalid_request",
+                troubleshoot = _msg,
+                err_code="403"
+            )
 
         # evaluate the trust to each credential issuer found in the vps
         # look for trust chain or x509 or do discovery!
@@ -595,24 +634,22 @@ class OpenID4VPBackend(BackendModule):
                 )
             except Exception as e:
                 _msg = f"DPoP verification error: {e}"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_param",
-                        "error_description": _msg
-                    },
-                    status="400"
+                return self.handle_error(
+                    context = context,
+                    # TODO: invalid param is not a OAuth2 standard error
+                    message = "invalid_param",
+                    troubleshoot = _msg,
+                    err_code="400"
                 )
 
             if not dpop.is_valid:
                 _msg = "DPoP validation error"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_param",
-                        "error_description": _msg
-                    },
-                    status="400"
+                return self.handle_error(
+                    context = context,
+                    # TODO: invalid param is not a OAuth2 standard error
+                    message = "invalid_param",
+                    troubleshoot = _msg,
+                    err_code="400"
                 )
 
             # TODO: assert and configure the wallet capabilities
@@ -620,8 +657,8 @@ class OpenID4VPBackend(BackendModule):
 
         else:
             _msg = (
-                "The Wallet Instance didn't provide its Wallet Instance Attestation "
-                "a default set of capabilities and a low security level are accorded."
+                "The Wallet Instance doesn't provide a valid Wallet Instance Attestation "
+                "a default set of capabilities and a low security level are applied."
             )
             self._log(context, level='warning', message=_msg)
 
@@ -642,24 +679,21 @@ class OpenID4VPBackend(BackendModule):
             f"Trust evaluation failed"
         )
         try:
-            dpop_validation_error = self._request_endpoint_dpop(context)
+            dpop_validation_error :JsonResponse = self._request_endpoint_dpop(context)
             if dpop_validation_error:
-                raise Exception(_err_msg)
+                return dpop_validation_error
         except Exception as e:
-            self._log(
-                context,
-                level='error',
-                message=(
-                    "[DPoP VALIDATION ERROR] "
-                    f"{_err_msg} {context}: {e}"
-                )
+            _msg = (
+                "[DPoP VALIDATION ERROR] "
+                "WIA evalution error: Wallet Provider is not Trusted. "
+                f"{_err_msg} {context.__dict__}: {e}"
             )
-            return JsonResponse(
-                {
-                    "error": "invalid_param",
-                    "error_description": "WIA evalution error: Wallet Provider is not Trusted"
-                },
-                status="200"
+            return self.handle_error(
+                context = context,
+                # TODO: invalid param is not a OAuth2 standard error
+                message = "invalid_param",
+                troubleshoot = _msg,
+                err_code="403"
             )
 
         try:
@@ -715,7 +749,6 @@ class OpenID4VPBackend(BackendModule):
         jwt = helper.sign(data)
 
         response = {"response": jwt}
-
         # TODO: update the storage with the acquired signed request object
 
         return JsonResponse(
@@ -732,19 +765,20 @@ class OpenID4VPBackend(BackendModule):
         err_code="500",
         template_path="templates",
         error_template="error.html",
+        level = "error"
     ):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
         self._log(
-            context, level='error',
-            message=f"{message}: {err}. {troubleshoot}"
+            context, level = level,
+            message = f"{message}: {err}. {troubleshoot}"
         )
 
         return JsonResponse(
             {
-                "message": message,
-                "troubleshoot": troubleshoot
+                "error": message,
+                "error_description": troubleshoot
             },
             status=err_code
         )
@@ -786,7 +820,6 @@ class OpenID4VPBackend(BackendModule):
         )
 
         session_id = context.state["SESSION_ID"]
-        _err = False
         _err_msg = ""
         state = None
 
@@ -797,17 +830,13 @@ class OpenID4VPBackend(BackendModule):
         except KeyError as e:
             _err_msg = f"No id found in qs_params: {e}"
 
-        if _err:
-            self._log(
-                context,
-                level='debug',
-                message=_err_msg
-            )
-            return JsonResponse(
-                {
-                    "message": _err_msg
-                },
-                status="403"
+        if _err_msg:
+            return self.handle_error(
+                context = context,
+                # TODO: invalid param is not a OAuth2 standard error
+                message = "invalid_param",
+                troubleshoot = _err_msg,
+                err_code="403"
             )
 
         try:
@@ -816,11 +845,12 @@ class OpenID4VPBackend(BackendModule):
             )
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
-            return JsonResponse(
-                {
-                    "message": _msg
-                },
-                status="403"
+            return self.handle_error(
+                context = context,
+                # TODO: invalid param is not a OAuth2 standard error
+                message = "invalid_param",
+                troubleshoot = _err_msg,
+                err_code="403"
             )
         
         # TODO: if the request is expired -> return 403
