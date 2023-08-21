@@ -71,8 +71,9 @@ class TestOpenID4VPBackend:
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 6
 
-    def test_entity_configuration(self):
-        entity_config = self.backend.entity_configuration_endpoint(None)
+    def test_entity_configuration(self, context):
+        context.qs_params = {}
+        entity_config = self.backend.entity_configuration_endpoint(context)
         assert entity_config
         assert entity_config.status == "200"
         assert entity_config.message
