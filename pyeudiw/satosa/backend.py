@@ -381,13 +381,25 @@ class OpenID4VPBackend(BackendModule):
                 f"{trust_eval.entity_id}"
             )
         )
-
-        is_trusted = trust_eval.evaluation_method()
-        if not is_trusted:
-            raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} is not trusted"
+        
+        is_trusted = None
+        try:
+            is_trusted = trust_eval.evaluation_method()
+        except Exception as e:
+            _err_msg = (
+                "Trust evaluation failed"
             )
-
+            # raise NotTrustedFederationError(
+                # f"{trust_eval.entity_id} is not trusted"
+            # )
+            return JsonResponse(
+                {
+                    "error": "invalid_param",
+                    "error_description": "Wallet Provider is not Trusted"
+                },
+                status="403"
+            )
+        
         return trust_eval
 
     def redirect_endpoint(self, context, *args):
