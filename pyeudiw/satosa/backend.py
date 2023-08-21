@@ -651,7 +651,7 @@ class OpenID4VPBackend(BackendModule):
                 level='error',
                 message=(
                     "[DPoP VALIDATION ERROR] "
-                    f"{_err_msg} {context.headers}: {e}"
+                    f"{_err_msg} {context}: {e}"
                 )
             )
             return JsonResponse(
@@ -659,7 +659,7 @@ class OpenID4VPBackend(BackendModule):
                     "error": "invalid_param",
                     "error_description": "WIA evalution error: Wallet Provider is not Trusted"
                 },
-                status="403"
+                status="200"
             )
 
         try:
