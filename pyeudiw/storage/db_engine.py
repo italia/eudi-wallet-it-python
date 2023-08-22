@@ -62,15 +62,23 @@ class DBEngine():
     @property
     def is_connected(self):
         _connected = False
+        _cons = {}
         for db_name, storage in self.storages:
             try:
                 _connected = storage.is_connected
+                _cons[db_name] = _connected
             except Exception as e:
-                logger.critical(
+                logger.debug(
                     f"Error while checking db engine connection on {db_name}. "
                     f"{e.__class__.__name__}: {e}"
                 )
-                # raise e
+        
+        if True in _cons.values() and not all(_cons.values()):
+            logger.warning(
+                f"Not all the storage are found available, storages misalignment: "
+                f"{_cons}"
+            )
+        
         return _connected
         
     def close(self):
