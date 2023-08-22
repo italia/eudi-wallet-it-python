@@ -253,10 +253,10 @@ class MongoStorage(BaseStorage):
         )
         return documentStatus
 
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         entity = {
             "federation": {
-                "chain": trust_chain,
+                "chain": attestation,
                 "exp": exp
             }
         }

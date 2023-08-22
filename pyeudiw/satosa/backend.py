@@ -627,7 +627,6 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             
-            
             if not self._validate_trust(context, dpop_jws):
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(

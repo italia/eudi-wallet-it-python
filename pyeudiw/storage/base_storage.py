@@ -24,14 +24,14 @@ class BaseStorage(object):
     def has_trust_anchor(self, entity_id: str):
         raise NotImplementedError()
 
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         raise NotImplementedError()
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
         raise NotImplementedError()
 
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         raise NotImplementedError()
 
-    def update_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
         raise NotImplementedError()
