@@ -12,7 +12,7 @@ import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
-from satosa.response import Redirect, Response, Redirect
+from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
@@ -67,7 +67,7 @@ class OpenID4VPBackend(BackendModule):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-        
+
         self.config = config
         self.client_id = self.config['metadata']['client_id']
         self.default_exp = int(self.config['jwt']['default_exp'])
@@ -79,7 +79,7 @@ class OpenID4VPBackend(BackendModule):
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
-        
+
         # dumps public jwks
         self.federation_public_jwks = [
             JWK(i).public_key for i in self.config['federation']['federation_jwks']
@@ -91,7 +91,7 @@ class OpenID4VPBackend(BackendModule):
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
 
-        # we close the connection in this constructor since it must be fork safe and 
+        # we close the connection in this constructor since it must be fork safe and
         # get reinitialized later on, within each fork
         self._db_engine = self.db_engine
         self.update_trust_anchors()

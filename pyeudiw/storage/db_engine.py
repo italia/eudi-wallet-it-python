@@ -171,7 +171,7 @@ class DBEngine():
                 return cache_object, status, i
             except Exception:
                 logger.critical(
-                    f"Cannot retrieve or write cache object with identifier {object_name} on database {db_name}"
+                    f"Cannot retrieve or write cache object with identifier {object_name} on cache database {i}"
                 )
         raise ConnectionRefusedError(
             "Cannot write cache object on any instance"
