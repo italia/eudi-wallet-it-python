@@ -145,7 +145,8 @@ class OpenID4VPBackend(BackendModule):
                         message=f"{ta} update failed: {e}"
                     )
                 )
-
+        # TODO: print all the updated TA taken from the storage
+        
     @property
     def federation_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
