@@ -36,7 +36,7 @@ from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER
 db_engine_inst = DBEngine(CONFIG['storage'])
 db_engine_inst.add_trust_anchor(
     entity_id=ta_ec['iss'],
-    trust_chain=ta_ec,
+    entity_configuration=ta_ec,
     exp=datetime.datetime.now().isoformat()
 )
 
