@@ -67,30 +67,32 @@ class OpenID4VPBackend(BackendModule):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
-
-        self.client_id = config['metadata']['client_id']
+        
         self.config = config
-
+        self.client_id = self.config['metadata']['client_id']
         self.default_exp = int(self.config['jwt']['default_exp'])
 
-        # dumps public jwks in the metadata
-        self.config['metadata']['jwks'] = config["metadata_jwks"]
-
+        # private keys by kid
         self.federations_jwks_by_kids = {
             i['kid']: i for i in self.config['federation']['federation_jwks']
         }
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
-
+        
+        # dumps public jwks
         self.federation_public_jwks = [
             JWK(i).public_key for i in self.config['federation']['federation_jwks']
+        ]
+        self.config['metadata']['jwks'] = [
+            JWK(i).public_key for i in self.config['metadata_jwks']
         ]
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
 
-        # we close the connection in this constructor to be sure to be fork safe
+        # we close the connection in this constructor since it must be fork safe and 
+        # get reinitialized later on, within each fork
         self._db_engine = self.db_engine
         self.update_trust_anchors()
         self._db_engine.close()
