@@ -58,7 +58,7 @@ class DBEngine():
                 raise e
 
         return document_id
-    
+
     @property
     def is_connected(self):
         _connected = False
@@ -72,15 +72,15 @@ class DBEngine():
                     f"Error while checking db engine connection on {db_name}. "
                     f"{e.__class__.__name__}: {e}"
                 )
-        
+
         if True in _cons.values() and not all(_cons.values()):
             logger.warning(
                 f"Not all the storage are found available, storages misalignment: "
                 f"{_cons}"
             )
-        
+
         return _connected
-        
+
     def close(self):
         for db_name, storage in self.storages:
             try:
@@ -171,9 +171,11 @@ class DBEngine():
                 return cache_object, status, i
             except Exception:
                 logger.critical(
-                    "Cannot retrieve or write cache object with identifier {object_name} on database {db_name}")
+                    f"Cannot retrieve or write cache object with identifier {object_name} on database {db_name}"
+                )
         raise ConnectionRefusedError(
-            "Cannot write cache object on any instance")
+            "Cannot write cache object on any instance"
+        )
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> dict:
         # if no cache instance exist return the object
@@ -196,7 +198,8 @@ class DBEngine():
                 cache.set(cache_object)
             except Exception:
                 logger.critical(
-                    "Cannot replicate cache object with identifier {object_name} on cache {cache_name}")
+                    f"Cannot replicate cache object with identifier {object_name} on cache {cache_name}"
+                )
 
         return cache_object
 
@@ -207,7 +210,7 @@ class DBEngine():
                 cache_object = cache.overwrite(object_name, value_gen_fn)
             except Exception:
                 logger.critical(
-                    "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
+                    f"Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
                 )
             return cache_object
 

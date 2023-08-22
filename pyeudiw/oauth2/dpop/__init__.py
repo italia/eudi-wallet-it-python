@@ -75,7 +75,7 @@ class DPoPVerifier:
     @property
     def is_valid(self) -> bool:
         return self.validate()
-    
+
     def validate(self) -> bool:
         jws_verifier = JWSHelper(self.public_jwk)
         try:

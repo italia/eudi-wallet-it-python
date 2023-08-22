@@ -19,8 +19,6 @@ from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.exceptions import (
-    BadRequestError,
-    NoBoundEndpointError,
     NotTrustedFederationError
 )
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
@@ -91,7 +89,7 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
-        
+
         # we close the connection in this constructor to be sure to be fork safe
         self._db_engine = self.db_engine
         self.update_trust_anchors()
@@ -101,17 +99,17 @@ class OpenID4VPBackend(BackendModule):
         self.absolute_redirect_url = None
         self.absolute_request_url = None
         self.registered_get_response_endpoint = None
-        
+
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
-                
+
         logger.debug(
             lu.LOG_FMT.format(
                 id="OpenID4VP init",
                 message=f"Loaded configuration: {json.dumps(config)}"
             )
         )
-    
+
     @property
     def db_engine(self):
         try:
@@ -124,13 +122,15 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             self._db_engine = DBEngine(self.config["storage"])
-            
+
         return self._db_engine
-    
+
     def _render_metadata_conf_elements(self) -> None:
-        for k,v in self.config['metadata'].items():
-            if isinstance(v, (int, float, dict, list)): continue
-            if not v or len(v) == 0: continue
+        for k, v in self.config['metadata'].items():
+            if isinstance(v, (int, float, dict, list)):
+                continue
+            if not v or len(v) == 0:
+                continue
             if all((
                 v[0] == '<',
                 v[-1] == '>',
@@ -138,7 +138,7 @@ class OpenID4VPBackend(BackendModule):
             )):
                 conf_section, conf_k = v[1:-1].split('.')
                 self.config['metadata'][k] = self.config[conf_section][conf_k]
-    
+
     def update_trust_anchors(self):
         # TODO: move this to the trust evaluation helper
         tas = self.config['federation']['trust_anchors']
@@ -168,7 +168,7 @@ class OpenID4VPBackend(BackendModule):
                     message=f"Trust Anchor updated: {ta}"
                 )
             )
-        
+
     @property
     def federation_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
@@ -189,7 +189,7 @@ class OpenID4VPBackend(BackendModule):
         for k, v in self.config['endpoints'].items():
             url_map.append(
                 (
-                    f"^{self.name}/{v.lstrip('/')}$", 
+                    f"^{self.name}/{v.lstrip('/')}$",
                     getattr(self, f"{k}_endpoint")
                 )
             )
@@ -243,14 +243,14 @@ class OpenID4VPBackend(BackendModule):
             },
             "authority_hints": self.config['federation']['authority_hints']
         }
-        
+
         if context.qs_params.get('format', '') == 'json':
             return Response(
                 json.dumps(data),
                 status="200",
                 content="application/json"
             )
-        
+
         jwshelper = JWSHelper(self.federation_jwk)
         return Response(
             jwshelper.sign(
@@ -310,7 +310,7 @@ class OpenID4VPBackend(BackendModule):
         # Cross Device flow
         res_url = f'{self.client_id}?{url_params}'
         encoded_res_url = base64.urlsafe_b64encode(res_url.encode())
-        
+
         # response = base64.b64encode(res_url.encode())
         qrcode = QRCode(encoded_res_url, **self.config['qrcode'])
 
@@ -402,17 +402,16 @@ class OpenID4VPBackend(BackendModule):
                 f"{trust_eval.entity_id}"
             )
         )
-        
-        is_trusted = None
+
         try:
-            is_trusted = trust_eval.evaluation_method()
-        except Exception as e:
+            trust_eval.evaluation_method()
+        except Exception:
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted"
             )
-        
+
         return trust_eval
-    
+
     @property
     def server_url(self):
         return (
@@ -431,23 +430,23 @@ class OpenID4VPBackend(BackendModule):
             )
         )
         if context.request_method.lower() != 'post':
-            #raise BadRequestError("HTTP Method not supported")
+            # raise BadRequestError("HTTP Method not supported")
             return self.handle_error(
-                context = context,
-                message = "invalid_request",
-                troubleshoot = "HTTP Method not supported",
+                context=context,
+                message="invalid_request",
+                troubleshoot="HTTP Method not supported",
                 err_code="403"
             )
-            
+
         _endpoint = f'{self.server_url}{context.request_uri}'
         if self.config["metadata"].get('redirect_uris', None):
             if _endpoint not in self.config["metadata"]['redirect_uris']:
                 # raise NoBoundEndpointError("request_uri not valid")
                 return self.handle_error(
-                    context = context,
+                    context=context,
                     # TODO: this error should be changes/defined
-                    message = "invalid_request",
-                    troubleshoot = "request_uri not valid",
+                    message="invalid_request",
+                    troubleshoot="request_uri not valid",
                     err_code="403"
                 )
 
@@ -456,12 +455,12 @@ class OpenID4VPBackend(BackendModule):
         if not jwt:
             _msg = f"Response error, missing JWT"
             self._log(context, level='error', message=_msg)
-            #raise BadRequestError(_msg)
+            # raise BadRequestError(_msg)
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: this error should be changes/defined
-                message = "invalid_request",
-                troubleshoot = _msg,
+                message="invalid_request",
+                troubleshoot=_msg,
                 err_code="403"
             )
 
@@ -472,10 +471,10 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"VpToken parse and validation error: {e}"
             self._log(context, level='error', message=_msg)
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: this error should be changes/defined
-                message = "invalid_request",
-                troubleshoot = _msg,
+                message="invalid_request",
+                troubleshoot=_msg,
                 err_code="403"
             )
             # raise BadRequestError(_msg)
@@ -486,22 +485,22 @@ class OpenID4VPBackend(BackendModule):
             # TODO - if state is missing the db lookup fails ...
             # state is OPTIONAL in openid4vp ...
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: this error should be changes/defined
-                message = "invalid_request",
-                troubleshoot = "state missing",
+                message="invalid_request",
+                troubleshoot="state missing",
                 err_code="403"
-            )            
+            )
 
         try:
             stored_session = self.db_engine.get_by_state(state=state)
         except Exception as e:
             _msg = f"Session lookup by state value failed: {e}"
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: this error should be changes/defined
-                message = "invalid_request",
-                troubleshoot = _msg,
+                message="invalid_request",
+                troubleshoot=_msg,
                 err_code="403"
             )
 
@@ -516,10 +515,10 @@ class OpenID4VPBackend(BackendModule):
                 f"Single VPs are faulty: {e}"
             )
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: this error should be changes/defined
-                message = "invalid_request",
-                troubleshoot = _msg,
+                message="invalid_request",
+                troubleshoot=_msg,
                 err_code="403"
             )
 
@@ -629,7 +628,7 @@ class OpenID4VPBackend(BackendModule):
 
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
         """ This validates, if any, the DPoP http request header """
-        
+
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # The wallet instance uses the endpoint authentication to give its WIA
 
@@ -645,14 +644,14 @@ class OpenID4VPBackend(BackendModule):
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
-            
+
             if not self._validate_trust(context, dpop_jws):
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(
-                    context = context,
+                    context=context,
                     # TODO: invalid param is not a OAuth2 standard error
-                    message = "invalid_param",
-                    troubleshoot = _msg,
+                    message="invalid_param",
+                    troubleshoot=_msg,
                     err_code="403"
                 )
 
@@ -666,32 +665,32 @@ class OpenID4VPBackend(BackendModule):
             except Exception as e:
                 _msg = f"DPoP verification error: {e}"
                 return self.handle_error(
-                    context = context,
+                    context=context,
                     # TODO: invalid param is not a OAuth2 standard error
-                    message = "invalid_param",
-                    troubleshoot = _msg,
+                    message="invalid_param",
+                    troubleshoot=_msg,
                     err_code="400"
                 )
 
             dpop_valid = None
             try:
                 dpop_valid = dpop.validate()
-            except Exception as e:
+            except Exception:
                 _msg = "DPoP validation exception"
                 return self.handle_error(
-                    context = context,
+                    context=context,
                     # TODO: invalid param is not a OAuth2 standard error
-                    message = "invalid_param",
-                    troubleshoot = _msg,
+                    message="invalid_param",
+                    troubleshoot=_msg,
                     err_code="400"
                 )
-            
+
             if not dpop_valid:
                 return self.handle_error(
-                    context = context,
+                    context=context,
                     # TODO: invalid param is not a OAuth2 standard error
-                    message = "invalid_param",
-                    troubleshoot = "DPoP validation error",
+                    message="invalid_param",
+                    troubleshoot="DPoP validation error",
                     err_code="400"
                 )
 
@@ -722,7 +721,8 @@ class OpenID4VPBackend(BackendModule):
             f"Trust evaluation failed"
         )
         try:
-            dpop_validation_error :JsonResponse = self._request_endpoint_dpop(context)
+            dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
+                context)
             if dpop_validation_error:
                 return dpop_validation_error
         except Exception as e:
@@ -732,10 +732,10 @@ class OpenID4VPBackend(BackendModule):
                 f"{_err_msg}: {e} with {context.__dict__}"
             )
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: invalid param is not a OAuth2 standard error
-                message = "invalid_param",
-                troubleshoot = _msg,
+                message="invalid_param",
+                troubleshoot=_msg,
                 err_code="403"
             )
 
@@ -808,18 +808,18 @@ class OpenID4VPBackend(BackendModule):
         err_code="500",
         template_path="templates",
         error_template="error.html",
-        level = "error"
+        level="error"
     ):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
-        
+
         _msg = f"{message}:"
         if err:
             _msg += f" {err}."
         self._log(
-            context, level = level,
-            message = f"{_msg}. {troubleshoot}"
+            context, level=level,
+            message=f"{_msg}. {troubleshoot}"
         )
 
         return JsonResponse(
@@ -879,10 +879,10 @@ class OpenID4VPBackend(BackendModule):
 
         if _err_msg:
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: invalid param is not a OAuth2 standard error
-                message = "invalid_param",
-                troubleshoot = _err_msg,
+                message="invalid_param",
+                troubleshoot=_err_msg,
                 err_code="403"
             )
 
@@ -893,15 +893,15 @@ class OpenID4VPBackend(BackendModule):
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
             return self.handle_error(
-                context = context,
+                context=context,
                 # TODO: invalid param is not a OAuth2 standard error
-                message = "invalid_param",
-                troubleshoot = _err_msg,
+                message="invalid_param",
+                troubleshoot=_err_msg,
                 err_code="403"
             )
-        
+
         # TODO: if the request is expired -> return 403
-        
+
         if session["finalized"]:
             return Redirect(
                 f"{self.name}/get-response"

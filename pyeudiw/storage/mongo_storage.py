@@ -20,7 +20,7 @@ class MongoStorage(BaseStorage):
 
         self.client = None
         self.db = None
-    
+
     @property
     def is_connected(self):
         if not self.client:
@@ -29,8 +29,8 @@ class MongoStorage(BaseStorage):
             self.client.server_info()
         except pymongo.errors.InvalidOperation as e:
             return False
-            
-        return True 
+
+        return True
 
     def _connect(self):
         if not self.is_connected:
