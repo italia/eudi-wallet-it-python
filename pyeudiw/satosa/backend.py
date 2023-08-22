@@ -91,9 +91,11 @@ class OpenID4VPBackend(BackendModule):
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
-
-        self.db_engine = DBEngine(self.config["storage"])
+        
+        # we close the connection in this constructor to be sure to be fork safe
+        self._db_engine = self.db_engine
         self.update_trust_anchors()
+        self._db_engine.close()
 
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
@@ -109,6 +111,13 @@ class OpenID4VPBackend(BackendModule):
                 message=f"Loaded configuration: {json.dumps(config)}"
             )
         )
+    
+    @property
+    def db_engine(self):
+        if not getattr(self, '_db_engine', None) or not self._db_engine.is_connected:
+            self._db_engine = DBEngine(self.config["storage"])
+            
+        return self._db_engine
     
     def _render_metadata_conf_elements(self) -> None:
         for k,v in self.config['metadata'].items():
@@ -145,7 +154,12 @@ class OpenID4VPBackend(BackendModule):
                         message=f"{ta} update failed: {e}"
                     )
                 )
-        # TODO: print all the updated TA taken from the storage
+            logger.info(
+                lu.LOG_FMT.format(
+                    id="Trust Anchor update",
+                    message=f"Trust Anchor updated: {ta}"
+                )
+            )
         
     @property
     def federation_jwk(self):
@@ -654,13 +668,25 @@ class OpenID4VPBackend(BackendModule):
                     err_code="400"
                 )
 
-            if not dpop.is_valid:
-                _msg = "DPoP validation error"
+            dpop_valid = None
+            try:
+                dpop_valid = dpop.validate()
+            except Exception as e:
+                _msg = "DPoP validation exception"
                 return self.handle_error(
                     context = context,
                     # TODO: invalid param is not a OAuth2 standard error
                     message = "invalid_param",
                     troubleshoot = _msg,
+                    err_code="400"
+                )
+            
+            if not dpop_valid:
+                return self.handle_error(
+                    context = context,
+                    # TODO: invalid param is not a OAuth2 standard error
+                    message = "invalid_param",
+                    troubleshoot = "DPoP validation error",
                     err_code="400"
                 )
 

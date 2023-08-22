@@ -20,9 +20,16 @@ class MongoStorage(BaseStorage):
 
         self.client = None
         self.db = None
+    
+    @property
+    def is_connected(self):
+        if not self.client:
+            return False
+        
+        return self.client and self.client.server_info()
 
     def _connect(self):
-        if not self.client or not self.client.server_info():
+        if not self.is_connected:
             self.client = pymongo.MongoClient(
                 self.url, **self.connection_params
             )
@@ -36,6 +43,10 @@ class MongoStorage(BaseStorage):
             self.trust_anchors = getattr(
                 self.db, self.storage_conf["db_trust_anchors_collection"]
             )
+
+    def close(self):
+        self._connect()
+        self.client.close()
 
     def get_by_id(self, document_id: str) -> dict:
         self._connect()

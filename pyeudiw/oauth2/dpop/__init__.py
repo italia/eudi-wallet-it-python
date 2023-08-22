@@ -73,7 +73,10 @@ class DPoPVerifier:
         self.proof = http_header_dpop
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
+        return self.validate()
+    
+    def validate(self) -> bool:
         jws_verifier = JWSHelper(self.public_jwk)
         try:
             dpop_valid = jws_verifier.verify(self.proof)

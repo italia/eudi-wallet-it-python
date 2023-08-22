@@ -58,6 +58,31 @@ class DBEngine():
                 raise e
 
         return document_id
+    
+    @property
+    def is_connected(self):
+        _connected = False
+        for db_name, storage in self.storages:
+            try:
+                _connected = storage.is_connected
+            except Exception as e:
+                logger.critical(
+                    f"Error while checking db engine connection on {db_name}. "
+                    f"{e.__class__.__name__}: {e}"
+                )
+                # raise e
+        return _connected
+        
+    def close(self):
+        for db_name, storage in self.storages:
+            try:
+                storage.close()
+            except Exception as e:
+                logger.critical(
+                    f"Error while closing db engine {db_name}. "
+                    f"{e.__class__.__name__}: {e}"
+                )
+                raise e
 
     def write(self, method: str, *args, **kwargs):
         replica_count = 0
