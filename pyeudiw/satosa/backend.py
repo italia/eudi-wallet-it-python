@@ -295,10 +295,10 @@ class OpenID4VPBackend(BackendModule):
                 f"Error while initializing session with state {state} and {session_id}. "
             )
             return self.handle_error(
-                context, 
+                context,
                 message="server_error",
-                troubleshoot = f"{_msg}", 
-                err = f"{_msg}. {e.__class__.__name__}: {e}",
+                troubleshoot=f"{_msg}",
+                err=f"{_msg}. {e.__class__.__name__}: {e}",
                 err_code="500"
             )
 
@@ -500,7 +500,7 @@ class OpenID4VPBackend(BackendModule):
                 context=context,
                 message="invalid_request",
                 troubleshoot=_msg,
-                err = f"{e.__class__.__name__}: {e}",
+                err=f"{e.__class__.__name__}: {e}",
                 err_code="400"
             )
 
@@ -518,7 +518,7 @@ class OpenID4VPBackend(BackendModule):
                 context=context,
                 message="invalid_request",
                 troubleshoot=_msg,
-                err = f"{e.__class__.__name__}: {e}",
+                err=f"{e.__class__.__name__}: {e}",
                 err_code="400"
             )
 
@@ -610,7 +610,7 @@ class OpenID4VPBackend(BackendModule):
                 context=context,
                 message="server_error",
                 troubleshoot=f"Cannot update response object.",
-                err = f"{e.__class__.__name__}: {e}",
+                err=f"{e.__class__.__name__}: {e}",
                 err_code="500"
             )
 
@@ -681,7 +681,7 @@ class OpenID4VPBackend(BackendModule):
                     context=context,
                     message="invalid_client",
                     troubleshoot=_msg,
-                    err = f"{e}",
+                    err=f"{e}",
                     err_code="401"
                 )
 
@@ -734,7 +734,7 @@ class OpenID4VPBackend(BackendModule):
                 context=context,
                 message="invalid_client",
                 troubleshoot=_msg,
-                err = f"{e} with {context.__dict__}",
+                err=f"{e} with {context.__dict__}",
                 err_code="401"
             )
 
@@ -746,10 +746,10 @@ class OpenID4VPBackend(BackendModule):
                 f"{e.__class__.__name__}: {e}"
             )
             return self.handle_error(
-                context, 
+                context,
                 message="invalid_request",
-                troubleshoot = _msg, 
-                err = f"{e} with {context.__dict__}"
+                troubleshoot=_msg,
+                err=f"{e} with {context.__dict__}",
                 err_code="400"
             )
 
@@ -773,9 +773,9 @@ class OpenID4VPBackend(BackendModule):
         except KeyError as e:
             _msg = f"Error while accessing http headers: {e}"
             return self.handle_error(
-                context, 
-                message="invalid_request", 
-                err = f"{e} with {context.__dict__}",
+                context,
+                message="invalid_request",
+                err=f"{e} with {context.__dict__}",
                 err_code="400"
             )
 
@@ -792,18 +792,18 @@ class OpenID4VPBackend(BackendModule):
                 "Error while retrieving request object from database."
             )
             return self.handle_error(
-                context, 
+                context,
                 message="server_error",
-                troubleshoot=_msg, 
-                err= f"{e} with {context.__dict__}",
+                troubleshoot=_msg,
+                err=f"{e} with {context.__dict__}",
                 err_code="500"
             )
         except Exception as e:
             _msg = f"Error while updating request object: {e}"
             return self.handle_error(
-                context, 
-                message="server_error", 
-                err = _msg,
+                context,
+                message="server_error",
+                err=_msg,
                 err_code="500"
             )
 
