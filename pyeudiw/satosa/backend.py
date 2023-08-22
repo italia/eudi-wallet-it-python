@@ -120,7 +120,7 @@ class OpenID4VPBackend(BackendModule):
             logger.debug(
                 lu.LOG_FMT.format(
                     id="OpenID4VP db storage handling",
-                    message=f"connection checking silently fails: {e}"
+                    message=f"connection check silently fails and get restored: {e}"
                 )
             )
             self._db_engine = DBEngine(self.config["storage"])
@@ -172,11 +172,11 @@ class OpenID4VPBackend(BackendModule):
             )
 
     @property
-    def federation_jwk(self):
+    def default_federation_private_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
 
     @property
-    def metadata_jwk(self):
+    def default_metadata_private_jwk(self):
         return tuple(self.metadata_jwks_by_kids.values())[0]
 
     def register_endpoints(self):
@@ -253,12 +253,12 @@ class OpenID4VPBackend(BackendModule):
                 content="application/json"
             )
 
-        jwshelper = JWSHelper(self.federation_jwk)
+        jwshelper = JWSHelper(self.default_federation_private_jwk)
         return Response(
             jwshelper.sign(
                 protected={
                     "alg": self.config['federation']["default_sig_alg"],
-                    "kid": self.federation_jwk["kid"],
+                    "kid": self.default_federation_private_jwk["kid"],
                     "typ": "entity-statement+jwt"
                 },
                 plain_dict=data
@@ -784,7 +784,7 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"Error while updating request object: {e}"
             return self.handle_error(context, message=_msg, err_code="500")
 
-        helper = JWSHelper(self.metadata_jwk)
+        helper = JWSHelper(self.default_metadata_private_jwk)
         # TODO: add the trust chain in the JWS headers here
         jwt = helper.sign(data)
 
