@@ -435,7 +435,7 @@ class OpenID4VPBackend(BackendModule):
                 context=context,
                 message="invalid_request",
                 troubleshoot="HTTP Method not supported",
-                err_code="403"
+                err_code="400"
             )
 
         _endpoint = f'{self.server_url}{context.request_uri}'
@@ -447,7 +447,7 @@ class OpenID4VPBackend(BackendModule):
                     # TODO: this error should be changes/defined
                     message="invalid_request",
                     troubleshoot="request_uri not valid",
-                    err_code="403"
+                    err_code="400"
                 )
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
@@ -461,7 +461,7 @@ class OpenID4VPBackend(BackendModule):
                 # TODO: this error should be changes/defined
                 message="invalid_request",
                 troubleshoot=_msg,
-                err_code="403"
+                err_code="400"
             )
 
         try:
@@ -475,7 +475,7 @@ class OpenID4VPBackend(BackendModule):
                 # TODO: this error should be changes/defined
                 message="invalid_request",
                 troubleshoot=_msg,
-                err_code="403"
+                err_code="400"
             )
             # raise BadRequestError(_msg)
 
@@ -489,7 +489,7 @@ class OpenID4VPBackend(BackendModule):
                 # TODO: this error should be changes/defined
                 message="invalid_request",
                 troubleshoot="state missing",
-                err_code="403"
+                err_code="400"
             )
 
         try:
@@ -501,7 +501,7 @@ class OpenID4VPBackend(BackendModule):
                 # TODO: this error should be changes/defined
                 message="invalid_request",
                 troubleshoot=_msg,
-                err_code="403"
+                err_code="400"
             )
 
         # TODO: handle vp token ops exceptions
@@ -519,7 +519,7 @@ class OpenID4VPBackend(BackendModule):
                 # TODO: this error should be changes/defined
                 message="invalid_request",
                 troubleshoot=_msg,
-                err_code="403"
+                err_code="400"
             )
 
         # evaluate the trust to each credential issuer found in the vps
@@ -649,10 +649,9 @@ class OpenID4VPBackend(BackendModule):
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(
                     context=context,
-                    # TODO: invalid param is not a OAuth2 standard error
-                    message="invalid_param",
+                    message="invalid_client",
                     troubleshoot=_msg,
-                    err_code="403"
+                    err_code="401"
                 )
 
             # TODO: validate wia scheme using pydantic
@@ -666,10 +665,9 @@ class OpenID4VPBackend(BackendModule):
                 _msg = f"DPoP verification error: {e}"
                 return self.handle_error(
                     context=context,
-                    # TODO: invalid param is not a OAuth2 standard error
-                    message="invalid_param",
+                    message="invalid_client",
                     troubleshoot=_msg,
-                    err_code="400"
+                    err_code="401"
                 )
 
             dpop_valid = None
@@ -679,19 +677,17 @@ class OpenID4VPBackend(BackendModule):
                 _msg = "DPoP validation exception"
                 return self.handle_error(
                     context=context,
-                    # TODO: invalid param is not a OAuth2 standard error
-                    message="invalid_param",
+                    message="invalid_client",
                     troubleshoot=_msg,
-                    err_code="400"
+                    err_code="401"
                 )
 
             if not dpop_valid:
                 return self.handle_error(
                     context=context,
-                    # TODO: invalid param is not a OAuth2 standard error
-                    message="invalid_param",
+                    message="invalid_client",
                     troubleshoot="DPoP validation error",
-                    err_code="400"
+                    err_code="401"
                 )
 
             # TODO: assert and configure the wallet capabilities
@@ -733,10 +729,9 @@ class OpenID4VPBackend(BackendModule):
             )
             return self.handle_error(
                 context=context,
-                # TODO: invalid param is not a OAuth2 standard error
-                message="invalid_param",
+                message="invalid_client",
                 troubleshoot=_msg,
-                err_code="403"
+                err_code="401"
             )
 
         try:
@@ -880,10 +875,9 @@ class OpenID4VPBackend(BackendModule):
         if _err_msg:
             return self.handle_error(
                 context=context,
-                # TODO: invalid param is not a OAuth2 standard error
-                message="invalid_param",
+                message="invalid_request",
                 troubleshoot=_err_msg,
-                err_code="403"
+                err_code="400"
             )
 
         try:
@@ -894,10 +888,9 @@ class OpenID4VPBackend(BackendModule):
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
             return self.handle_error(
                 context=context,
-                # TODO: invalid param is not a OAuth2 standard error
-                message="invalid_param",
+                message="invalid_client",
                 troubleshoot=_err_msg,
-                err_code="403"
+                err_code="401"
             )
 
         # TODO: if the request is expired -> return 403

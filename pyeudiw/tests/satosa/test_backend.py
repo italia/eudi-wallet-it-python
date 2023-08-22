@@ -229,7 +229,7 @@ class TestOpenID4VPBackend:
         self.backend.register_endpoints()
         # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
-        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         msg = json.loads(state_endpoint_response.message)
         assert msg["error"]
@@ -273,7 +273,7 @@ class TestOpenID4VPBackend:
         # Passing wrong state, hence no match state-session_id
         context.qs_params = {"id": "WRONG"}
         state_endpoint_response = self.backend.status_endpoint(context)
-        assert state_endpoint_response.status == "403"
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
 
         context.request_method = "GET"
