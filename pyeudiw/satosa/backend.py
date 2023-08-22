@@ -688,7 +688,7 @@ class OpenID4VPBackend(BackendModule):
             _msg = (
                 "[DPoP VALIDATION ERROR] "
                 "WIA evalution error: Wallet Provider is not Trusted. "
-                f"{_err_msg} {context.__dict__}: {e}"
+                f"{_err_msg}: {e} with {context.__dict__}"
             )
             return self.handle_error(
                 context = context,

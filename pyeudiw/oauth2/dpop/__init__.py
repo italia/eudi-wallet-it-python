@@ -5,8 +5,10 @@ import uuid
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
-from pyeudiw.oauth2.dpop.schema import (DPoPTokenHeaderSchema,
-                                        DPoPTokenPayloadSchema)
+from pyeudiw.oauth2.dpop.schema import (
+    DPoPTokenHeaderSchema,
+    DPoPTokenPayloadSchema
+)
 from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
