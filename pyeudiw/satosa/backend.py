@@ -114,7 +114,15 @@ class OpenID4VPBackend(BackendModule):
     
     @property
     def db_engine(self):
-        if not getattr(self, '_db_engine', None) or not self._db_engine.is_connected:
+        try:
+            self._db_engine.is_connected
+        except Exception as e:
+            logger.debug(
+                lu.LOG_FMT.format(
+                    id="OpenID4VP db storage handling",
+                    message=f"connection checking silently fails: {e}"
+                )
+            )
             self._db_engine = DBEngine(self.config["storage"])
             
         return self._db_engine
@@ -383,9 +391,6 @@ class OpenID4VPBackend(BackendModule):
         trust_eval = TrustEvaluationHelper(
             self.db_engine,
             httpc_params=self.config['network']['httpc_params'],
-
-            # TODO: this helper should be initialized in the init without any specific JWS
-            # the JWS should then be submitted in the specialized methods for its specific evaluation
             **headers
         )
 
@@ -393,7 +398,7 @@ class OpenID4VPBackend(BackendModule):
             context,
             level='debug',
             message=(
-                "[TRUST EVALUATION] evaluating trust with "
+                "[TRUST EVALUATION] evaluating trust "
                 f"{trust_eval.entity_id}"
             )
         )
@@ -624,7 +629,7 @@ class OpenID4VPBackend(BackendModule):
 
     def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
         """ This validates, if any, the DPoP http request header """
-
+        
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # The wallet instance uses the endpoint authentication to give its WIA
 
@@ -808,9 +813,13 @@ class OpenID4VPBackend(BackendModule):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
+        
+        _msg = f"{message}:"
+        if err:
+            _msg += f" {err}."
         self._log(
             context, level = level,
-            message = f"{message}: {err}. {troubleshoot}"
+            message = f"{_msg}. {troubleshoot}"
         )
 
         return JsonResponse(
