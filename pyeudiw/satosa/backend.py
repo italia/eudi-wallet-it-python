@@ -614,7 +614,7 @@ class OpenID4VPBackend(BackendModule):
             # The wallet instance uses the endpoint authentication to give its WIA
 
             # take WIA
-            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
+            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[-1]
             _head = unpad_jwt_header(dpop_jws)
             wia = unpad_jwt_payload(dpop_jws)
 
@@ -625,6 +625,8 @@ class OpenID4VPBackend(BackendModule):
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
+            
+            
             self._validate_trust(context, dpop_jws)
 
             # TODO: validate wia scheme using pydantic
