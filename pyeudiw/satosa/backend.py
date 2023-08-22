@@ -628,7 +628,15 @@ class OpenID4VPBackend(BackendModule):
             )
             
             
-            self._validate_trust(context, dpop_jws)
+            if not self._validate_trust(context, dpop_jws):
+                _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
+                return self.handle_error(
+                    context = context,
+                    # TODO: invalid param is not a OAuth2 standard error
+                    message = "invalid_param",
+                    troubleshoot = _msg,
+                    err_code="403"
+                )
 
             # TODO: validate wia scheme using pydantic
             try:
