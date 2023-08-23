@@ -27,8 +27,9 @@ def datetime_from_timestamp(value) -> datetime.datetime:
 
 
 def get_http_url(url: str):
-    # TODO - utils.get_http_url
-    raise NotImplementedError(f"{__name__} get_http_url")
+    raise NotImplementedError(
+        f"{__name__} get_http_url is not implemented, please see federation.statements"
+    )
 
 
 def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> dict:

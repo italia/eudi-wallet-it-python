@@ -1,21 +1,34 @@
 import datetime
 
+from typing import Union
 
-# TODO: add all those defined methods in mongodb storage
+
 class BaseStorage(object):
     def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
         raise NotImplementedError()
 
-    def update_request_object(self, document_id: str, nonce: str, state: str | None, request_object: dict):
+    def is_connected(self) -> bool:
         raise NotImplementedError()
 
-    def update_response_object(self, nonce: str, state: str | None, response_object: dict):
+    def close(self) -> None:
         raise NotImplementedError()
 
-    def get_trust_attestation(self, entity_id: str):
+    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
         raise NotImplementedError()
 
-    def get_trust_anchor(self, entity_id: str):
+    def set_finalized(self, document_id: str):
+        raise NotImplementedError()
+
+    def update_request_object(self, document_id: str, request_object: dict) -> int:
+        raise NotImplementedError()
+
+    def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
+        raise NotImplementedError()
+
+    def get_trust_attestation(self, entity_id: str) -> Union[dict, None]:
+        raise NotImplementedError()
+
+    def get_trust_anchor(self, entity_id: str) -> Union[dict, None]:
         raise NotImplementedError()
 
     def has_trust_attestation(self, entity_id: str):
@@ -34,4 +47,19 @@ class BaseStorage(object):
         raise NotImplementedError()
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
+        raise NotImplementedError()
+
+    def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:
+        raise NotImplementedError()
+
+    def get_by_state(self, state: str):
+        raise NotImplementedError()
+
+    def get_by_nonce_state(self, state: str, nonce: str):
+        raise NotImplementedError()
+
+    def get_by_state_and_session_id(self, state: str, session_id: str = ""):
+        raise NotImplementedError()
+
+    def get_by_session_id(self, session_id: str):
         raise NotImplementedError()
