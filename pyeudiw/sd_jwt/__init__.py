@@ -14,7 +14,7 @@ from sd_jwt.verifier import SDJWTVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.utils import unpad_jwt_payload
-from pyeudiw.tools.utils import gen_exp_time, iat_now
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 from jwcrypto.jws import JWS
 from json import dumps, loads
@@ -130,7 +130,7 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
-        "exp": gen_exp_time(settings["default_exp"])  # in seconds
+        "exp": exp_from_now(settings["default_exp"])  # in seconds
     }
 
     specification.update(claims)
