@@ -33,7 +33,7 @@ from pyeudiw.openid4vp.exceptions import (
     InvalidVPToken
 )
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
 from pyeudiw.trust import TrustEvaluationHelper
 from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
@@ -96,7 +96,7 @@ class OpenID4VPBackend(BackendModule):
         self.update_trust_anchors()
         self.db_engine.close()
         self._db_engine = None
-        
+
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
         self.absolute_request_url = None
@@ -412,7 +412,7 @@ class OpenID4VPBackend(BackendModule):
 
         try:
             trust_eval.evaluation_method()
-        except Exception as e:
+        except Exception:
             self._log(
                 context,
                 level='error',
@@ -422,7 +422,7 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             # raise NotTrustedFederationError(
-                # f"{trust_eval.entity_id} is not trusted: {e}"
+            # f"{trust_eval.entity_id} is not trusted: {e}"
             # )
         except EntryNotFound:
             self._log(
@@ -434,7 +434,7 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             # raise NotTrustedFederationError(
-                # f"{trust_eval.entity_id} not found for Trust evaluation"
+            # f"{trust_eval.entity_id} not found for Trust evaluation"
             # )
 
         return trust_eval
@@ -556,15 +556,15 @@ class OpenID4VPBackend(BackendModule):
                 # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
                 # establish the trust to each credential issuer
                 tchelper = self._validate_trust(context, vp.payload['vp'])
-                
+
                 if not tchelper.is_trusted:
                     return self.handle_error(
-                        context=context, 
-                        message="invalid_request", 
-                        troubleshoot=f"Trust Evaluation failed for {tchelper.entity_id}", 
+                        context=context,
+                        message="invalid_request",
+                        troubleshoot=f"Trust Evaluation failed for {tchelper.entity_id}",
                         err_code="400"
                     )
-                
+
                 # TODO: generalyze also for x509
                 vp.credential_jwks = tchelper.get_trusted_jwks(
                     metadata_type='openid_credential_issuer'

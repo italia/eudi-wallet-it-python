@@ -15,7 +15,7 @@ class TrustEvaluationHelper:
         self.entity_id: str = ""
         self.httpc_params = httpc_params,
         self.is_trusted = False
-        
+
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -68,7 +68,7 @@ class TrustEvaluationHelper:
             else:
                 self.storage.update_chain(
                     self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
-        
+
         self.is_trusted = _is_valid
         return self.is_trusted
 
