@@ -411,7 +411,7 @@ class OpenID4VPBackend(BackendModule):
 
         try:
             trust_eval.evaluation_method()
-        except Exception:
+        except Exception as e:
             self._log(
                 context,
                 level='error',
@@ -673,10 +673,10 @@ class OpenID4VPBackend(BackendModule):
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
-            
+
             try:
                 self._validate_trust(context, dpop_jws)
-            except Exception as e:
+            except Exception:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(
                     context=context,
