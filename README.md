@@ -52,6 +52,24 @@ Install using github:
 `pip install git+https://github.com/italia/eudi-wallet-it-python`
 
 
+## Usage
+
+TBD. Here a section that points to the documentation of each single package and some common example about their usage for some specific tasks.
+
+| Name | Description |
+| :--- | --- |
+| __jwk__ | link to the API documentation [](). | 
+| __jwt__ | link to the API documentation [](). | 
+| __tools.qrcode__ | QRCodes creation. | 
+| __oauth2.dpop__ | link to the API documentation [](). |
+| __federation__ | link to the API documentation [](). |
+| __trust__ | link to the API documentation [](). |
+| __satosa.backend__ | link to the API documentation [](). |
+| __openid4vp__ | link to the API documentation [](). |
+| __presentation_exchange__ | link to the API documentation [](). |
+| __sd_jwt__ | link to the API documentation [](). |
+
+
 ## Example project
 
 The example project is a docker-compose that runs a demo composed by the following component:
@@ -60,6 +78,7 @@ The example project is a docker-compose that runs a demo composed by the followi
 - [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid) IAM Proxy with a preconfigured OpenID4VP backend.
 
 Please read [this README](example/README.md) to get a fully working demo setup.
+
 
 ## SatoSa configuration
 
@@ -70,9 +89,6 @@ backend to enable the OpenID4VP protocol.
 
 Please read  [README-SATOSA.md](README-SATOSA.md) for details.
 
-## API
-
-TBD. Here a section that points to the documentation of each single package and some common example about their usage for some specific tasks.
 
 ## Contribute
 

@@ -378,7 +378,7 @@ class EntityStatement:
         if header.get("kid") not in self.kids:
             raise UnknownKid(
                 f"{self.header.get('kid')} not found in {self.jwks}")
-        
+
         # verify signature
         jwsh = JWSHelper(self.jwks[self.kids.index(header["kid"])])
         payload = jwsh.verify(jwt)

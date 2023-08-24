@@ -62,4 +62,3 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> 
 
 def random_token(n=254):
     return token_hex(n)
-
