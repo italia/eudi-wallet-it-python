@@ -14,12 +14,13 @@ class TrustEvaluationHelper:
         self.storage = storage
         self.entity_id: str = ""
         self.httpc_params = httpc_params,
-
+        self.is_trusted = False
+        
         for k, v in kwargs.items():
             setattr(self, k, v)
 
     @property
-    def evaluation_method(self):
+    def evaluation_method(self) -> bool:
         # TODO: implement automatic detection of trust evaluation
         # method based on internal trust evaluetion property
         return self.federation
@@ -67,8 +68,9 @@ class TrustEvaluationHelper:
             else:
                 self.storage.update_chain(
                     self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
-
-        return _is_valid
+        
+        self.is_trusted = _is_valid
+        return self.is_trusted
 
     def federation(self) -> bool:
         if self.trust_chain:
