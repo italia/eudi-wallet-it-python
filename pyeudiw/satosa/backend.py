@@ -405,8 +405,7 @@ class OpenID4VPBackend(BackendModule):
             context,
             level='debug',
             message=(
-                "[TRUST EVALUATION] evaluating trust "
-                f"{trust_eval.entity_id}"
+                "[TRUST EVALUATION] evaluating trust"
             )
         )
 
@@ -421,9 +420,9 @@ class OpenID4VPBackend(BackendModule):
                     f"{trust_eval.entity_id}"
                 )
             )
-            # raise NotTrustedFederationError(
-            # f"{trust_eval.entity_id} is not trusted: {e}"
-            # )
+            raise NotTrustedFederationError(
+                f"{trust_eval.entity_id} is not trusted: {e}"
+            )
         except EntryNotFound:
             self._log(
                 context,
@@ -433,9 +432,9 @@ class OpenID4VPBackend(BackendModule):
                     f"{trust_eval.entity_id}"
                 )
             )
-            # raise NotTrustedFederationError(
-            # f"{trust_eval.entity_id} not found for Trust evaluation"
-            # )
+            raise NotTrustedFederationError(
+                f"{trust_eval.entity_id} not found for Trust evaluation"
+            )
 
         return trust_eval
 
@@ -674,8 +673,10 @@ class OpenID4VPBackend(BackendModule):
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
-
-            if not self._validate_trust(context, dpop_jws):
+            
+            try:
+                self._validate_trust(context, dpop_jws)
+            except Exception as e:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(
                     context=context,
