@@ -114,15 +114,17 @@ class OpenID4VPBackend(BackendModule):
 
     @property
     def db_engine(self):
+
         try:
             self._db_engine.is_connected
         except Exception as e:
-            logger.debug(
-                lu.LOG_FMT.format(
-                    id="OpenID4VP db storage handling",
-                    message=f"connection check silently fails and get restored: {e}"
+            if getattr(self, '_db_engine', None):
+                logger.debug(
+                    lu.LOG_FMT.format(
+                        id="OpenID4VP db storage handling",
+                        message=f"connection check silently fails and get restored: {e}"
+                    )
                 )
-            )
             self._db_engine = DBEngine(self.config["storage"])
 
         return self._db_engine
