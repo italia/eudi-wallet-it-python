@@ -49,14 +49,19 @@ class TrustEvaluationHelper:
         self.exp = tc.get_exp()
 
         _is_valid = tc.is_valid
-        if not _is_valid:
-            db_chain = self.storage.get_trust_attestation(
-                self.entity_id
-            )["federation"]["chain"]
 
-            if db_chain is not None and \
-                    StaticTrustChainValidator(db_chain).is_valid:
-                return True
+        db_chain = None
+        if not _is_valid:
+            try:
+                db_chain = self.storage.get_trust_attestation(
+                    self.entity_id
+                )["federation"]["chain"]
+            except (EntryNotFound, Exception):
+                pass
+
+            if db_chain:
+                if StaticTrustChainValidator(db_chain).is_valid:
+                    return True
 
             _is_valid = tc.update()
             self.exp = tc.get_exp()
