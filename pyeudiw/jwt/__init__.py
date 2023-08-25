@@ -11,7 +11,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS as JWSec
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwk.exceptions import KidError
+from pyeudiw.jwk.exceptions import KidError, JwkError
 from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
@@ -128,20 +128,19 @@ class JWSHelper:
 
     def verify(self, jws: str, **kwargs):
         _key = key_from_jwk_dict(self.jwk.as_dict())
-
+        _jwk_dict = self.jwk.as_dict()
         _head = unpad_jwt_header(jws)
-        
+
         if _head.get("kid"):
-            if _head["kid"] != self.jwk.as_dict()["kid"]:  # pragma: no cover
+            if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
                 raise KidError(
-                    f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
+                    f"{_head.get('kid')} != {_jwk_dict['kid']}"
                 )
-        elif _head.get("jwk"):
-            if _head["jwk"] != self.jwk.as_dict():  # pragma: no cover
-                raise KidError(
-                    f"{_head['jwk']} != {self.jwk.as_dict()}"
+        elif _head.get("jwk"):            
+            if _head["jwk"] != _jwk_dict:  # pragma: no cover
+                raise JwkError(
+                    f"{_head['jwk']} != {_jwk_dict}"
                 )
-        _head["alg"]
 
         verifier = JWSec(alg=_head["alg"], **kwargs)
         msg = verifier.verify_compact(jws, [_key])

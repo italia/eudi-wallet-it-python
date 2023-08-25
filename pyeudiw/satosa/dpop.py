@@ -8,7 +8,6 @@ from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.response import JsonResponse
 
 
-
 logger = logging.getLogger(__name__)
 
 

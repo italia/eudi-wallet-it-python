@@ -275,7 +275,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         )
         auth_info = AuthenticationInformation(
             auth_class_ref, timestamp_iso, issuer)
-            
+
         # TODO - ACR values
         internal_resp = InternalData(auth_info=auth_info)
 
@@ -387,7 +387,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
         try:
             stored_session = self.db_engine.get_by_nonce_state(
-                nonce = nonce, state=state
+                nonce=nonce, state=state
             )
         except Exception as e:
             _msg = f"Session lookup by state value failed"
