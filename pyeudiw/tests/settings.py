@@ -12,7 +12,7 @@ CLIENT_ID = "client_id"
 
 httpc_params = {
     "connection": {"ssl": True},
-    "session": {"timeout": 6},
+    "session": {"timeout": 1},
 }
 
 CONFIG = {

@@ -5,7 +5,6 @@ import hashlib
 import logging
 import uuid
 
-from typing import Union
 from urllib.parse import quote_plus, urlencode
 
 import satosa.logging_util as lu
@@ -16,14 +15,13 @@ from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
-from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
-from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.exceptions import (
     NotTrustedFederationError
 )
+from pyeudiw.satosa.dpop import BackendDPoP
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
+from pyeudiw.satosa.trust import BackendTrust
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
@@ -34,9 +32,7 @@ from pyeudiw.openid4vp.exceptions import (
     InvalidVPToken
 )
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
-from pyeudiw.trust import TrustEvaluationHelper
-from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
+from pyeudiw.storage.exceptions import StorageWriteError
 
 from pydantic import ValidationError
 
@@ -44,7 +40,7 @@ from pydantic import ValidationError
 logger = logging.getLogger(__name__)
 
 
-class OpenID4VPBackend(BackendModule):
+class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
     """
     A backend module (acting as a OpenID4VP SP).
     """
@@ -73,30 +69,16 @@ class OpenID4VPBackend(BackendModule):
         self.client_id = self.config['metadata']['client_id']
         self.default_exp = int(self.config['jwt']['default_exp'])
 
-        # private keys by kid
-        self.federations_jwks_by_kids = {
-            i['kid']: i for i in self.config['federation']['federation_jwks']
-        }
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
 
-        # dumps public jwks
-        self.federation_public_jwks = [
-            JWK(i).public_key for i in self.config['federation']['federation_jwks']
-        ]
         self.config['metadata']['jwks'] = [
             JWK(i).public_key for i in self.config['metadata_jwks']
         ]
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
-
-        # we close the connection in this constructor since it must be fork safe and
-        # get reinitialized later on, within each fork
-        self.update_trust_anchors()
-        self.db_engine.close()
-        self._db_engine = None
 
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
@@ -106,6 +88,8 @@ class OpenID4VPBackend(BackendModule):
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
 
+        self.init_trust_resources()
+
         logger.debug(
             lu.LOG_FMT.format(
                 id="OpenID4VP init",
@@ -114,7 +98,7 @@ class OpenID4VPBackend(BackendModule):
         )
 
     @property
-    def db_engine(self):
+    def db_engine(self) -> DBEngine:
 
         try:
             self._db_engine.is_connected
@@ -144,45 +128,11 @@ class OpenID4VPBackend(BackendModule):
                 conf_section, conf_k = v[1:-1].split('.')
                 self.config['metadata'][k] = self.config[conf_section][conf_k]
 
-    def update_trust_anchors(self):
-        # TODO: move this to the trust evaluation helper
-        tas = self.config['federation']['trust_anchors']
-        logger.info(
-            lu.LOG_FMT.format(
-                id="Trust Anchors updates",
-                message=f"Trying to update: {tas}"
-            )
-        )
-        for ta in tas:
-            try:
-                update_trust_anchors_ecs(
-                    db=self.db_engine,
-                    trust_anchors=[ta],
-                    httpc_params=self.config['network']['httpc_params']
-                )
-            except Exception as e:
-                logger.warning(
-                    lu.LOG_FMT.format(
-                        id=f"Trust Anchor updates",
-                        message=f"{ta} update failed: {e}"
-                    )
-                )
-            logger.info(
-                lu.LOG_FMT.format(
-                    id="Trust Anchor update",
-                    message=f"Trust Anchor updated: {ta}"
-                )
-            )
-
     @property
-    def default_federation_private_jwk(self):
-        return tuple(self.federations_jwks_by_kids.values())[0]
-
-    @property
-    def default_metadata_private_jwk(self):
+    def default_metadata_private_jwk(self) -> tuple:
         return tuple(self.metadata_jwks_by_kids.values())[0]
 
-    def register_endpoints(self):
+    def register_endpoints(self) -> list:
         """
         Creates a list of all the endpoints this backend module needs to listen to. In this case
         it's the authentication response from the underlying OP that is redirected from the OP to
@@ -224,7 +174,7 @@ class OpenID4VPBackend(BackendModule):
         """
         return self.pre_request_endpoint(context, internal_request)
 
-    def _log(self, context: Context, level: str, message: str):
+    def _log(self, context: Context, level: str, message: str) -> None:
         log_level = getattr(logger, level)
         log_level(
             lu.LOG_FMT.format(
@@ -232,98 +182,6 @@ class OpenID4VPBackend(BackendModule):
                 message=message
             )
         )
-
-    @property
-    def entity_configuration_as_dict(self) -> dict:
-        ec_payload = {
-            "exp": exp_from_now(minutes=self.default_exp),
-            "iat": iat_now(),
-            "iss": self.client_id,
-            "sub": self.client_id,
-            "jwks": {
-                "keys": self.federation_public_jwks
-            },
-            "metadata": {
-                self.config['federation']["metadata_type"]: self.config['metadata']
-            },
-            "authority_hints": self.config['federation']['authority_hints']
-        }
-        return ec_payload
-
-    @property
-    def entity_configuration(self) -> dict:
-        data = self.entity_configuration_as_dict
-        jwshelper = JWSHelper(self.default_federation_private_jwk)
-        return jwshelper.sign(
-            protected={
-                "alg": self.config['federation']["default_sig_alg"],
-                "kid": self.default_federation_private_jwk["kid"],
-                "typ": "entity-statement+jwt"
-            },
-            plain_dict=data
-        )
-
-    def entity_configuration_endpoint(self, context):
-
-        data = self.entity_configuration_as_dict
-        if context.qs_params.get('format', '') == 'json':
-            return Response(
-                json.dumps(data),
-                status="200",
-                content="application/json"
-            )
-
-        return Response(
-            self.entity_configuration,
-            status="200",
-            content="application/entity-statement+jwt"
-        )
-
-    @property
-    def my_trust_chain(self) -> None:
-        # TODO: move it to the TrustEvaluationHelper
-        trust_chain = []
-        is_good = False
-        try:
-            db_chain = self.db_engine.get_trust_attestation(
-                self.client_id
-            )
-            trust_eval = TrustEvaluationHelper(
-                self.db_engine,
-                httpc_params=self.config['network']['httpc_params'],
-                trust_chain=db_chain["federation"]["chain"]
-            )
-            is_good = trust_eval.evaluation_method()
-            trust_chain = db_chain['federation']['chain']
-            exp = db_chain['federation']['exp']
-        except (EntryNotFound, Exception):
-            pass
-
-        if not is_good:
-            # TODO: move this trust chain discovery into the trust helper
-            ta_eid = self.config['federation']['trust_anchors'][0]
-            ta_ec = self.db_engine.get_trust_anchor(
-                entity_id=ta_eid
-            )['federation']['entity_configuration']
-
-            tcbuilder = TrustChainBuilder(
-                subject=self.client_id,
-                trust_anchor=ta_eid,
-                trust_anchor_configuration=ta_ec,
-                subject_configuration=self.entity_configuration,
-                httpc_params=self.config['network']['httpc_params']
-            )
-            is_good = tcbuilder.is_valid
-            trust_chain = tcbuilder.get_trust_chain()
-            exp = tcbuilder.exp
-
-        if is_good:
-            self.db_engine.add_or_update_trust_attestation(
-                entity_id=self.client_id,
-                attestation=trust_chain,
-                exp=exp
-            )
-        return trust_chain
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
@@ -450,51 +308,6 @@ class OpenID4VPBackend(BackendModule):
         )
         internal_resp.subject_id = sub
         return internal_resp
-
-    def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
-        self._log(
-            context,
-            level='debug',
-            message=(
-                "[TRUST EVALUATION] evaluating trust."
-            )
-        )
-
-        headers = unpad_jwt_header(jws)
-        trust_eval = TrustEvaluationHelper(
-            self.db_engine,
-            httpc_params=self.config['network']['httpc_params'],
-            **headers
-        )
-
-        try:
-            trust_eval.evaluation_method()
-        except Exception as e:
-            self._log(
-                context,
-                level='error',
-                message=(
-                    "[TRUST EVALUATION] failed for "
-                    f"{trust_eval.entity_id}: {e}"
-                )
-            )
-            raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} is not trusted."
-            )
-        except EntryNotFound:
-            self._log(
-                context,
-                level='error',
-                message=(
-                    "[TRUST EVALUATION] not found for "
-                    f"{trust_eval.entity_id}"
-                )
-            )
-            raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} not found for Trust evaluation."
-            )
-
-        return trust_eval
 
     @property
     def server_url(self):
@@ -713,83 +526,6 @@ class OpenID4VPBackend(BackendModule):
                 status="200"
             )
 
-    def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
-        """ This validates, if any, the DPoP http request header """
-
-        if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
-            # The wallet instance uses the endpoint authentication to give its WIA
-
-            # take WIA
-            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[-1]
-            _head = unpad_jwt_header(dpop_jws)
-            wia = unpad_jwt_payload(dpop_jws)
-
-            self._log(
-                context,
-                level='debug',
-                message=(
-                    f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
-                )
-            )
-
-            try:
-                self._validate_trust(context, dpop_jws)
-            except Exception:
-                _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
-                return self.handle_error(
-                    context=context,
-                    message="invalid_client",
-                    troubleshoot=_msg,
-                    err_code="401"
-                )
-
-            # TODO: validate wia scheme using pydantic
-            try:
-                dpop = DPoPVerifier(
-                    public_jwk=wia['cnf']['jwk'],
-                    http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
-                    http_header_dpop=context.http_headers['HTTP_DPOP']
-                )
-            except Exception as e:
-                _msg = f"DPoP verification error: {e}"
-                return self.handle_error(
-                    context=context,
-                    message="invalid_client",
-                    troubleshoot=_msg,
-                    err_code="401"
-                )
-
-            dpop_valid = None
-            try:
-                dpop_valid = dpop.validate()
-            except Exception as e:
-                _msg = "DPoP validation exception"
-                return self.handle_error(
-                    context=context,
-                    message="invalid_client",
-                    troubleshoot=_msg,
-                    err=f"{e}",
-                    err_code="401"
-                )
-
-            if not dpop_valid:
-                return self.handle_error(
-                    context=context,
-                    message="invalid_client",
-                    troubleshoot="DPoP validation error",
-                    err_code="401"
-                )
-
-            # TODO: assert and configure the wallet capabilities
-            # TODO: assert and configure the wallet Attested Security Context
-
-        else:
-            _msg = (
-                "The Wallet Instance doesn't provide a valid Wallet Instance Attestation "
-                "a default set of capabilities and a low security level are applied."
-            )
-            self._log(context, level='warning', message=_msg)
-
     def request_endpoint(self, context, *args):
 
         self._log(
@@ -923,7 +659,7 @@ class OpenID4VPBackend(BackendModule):
             _msg += f" {err}."
         self._log(
             context, level=level,
-            message=f"{_msg}. {troubleshoot}"
+            message=f"{_msg} {troubleshoot}"
         )
 
         return JsonResponse(

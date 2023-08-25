@@ -25,10 +25,8 @@ from pyeudiw.sd_jwt import (
     import_pyca_pri_rsa
 )
 from pyeudiw.storage.db_engine import DBEngine
-
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk, EXP, NOW, ta_jwk
-
 from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
 
