@@ -106,7 +106,7 @@ class DPoPVerifier:
 
         payload = unpad_jwt_payload(self.proof)
         DPoPTokenPayloadSchema(**payload)
-
-        proof_valid = hashlib.sha256(
-            self.dpop_token.encode()).hexdigest() == payload['ath']
+        
+        _ath = hashlib.sha256(self.dpop_token.encode()).hexdigest()
+        proof_valid = _ath == payload['ath']
         return dpop_valid and proof_valid
