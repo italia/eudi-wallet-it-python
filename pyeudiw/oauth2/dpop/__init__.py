@@ -29,7 +29,7 @@ class DPoPIssuer:
             "htm": "GET",
             "htu": self.htu,
             "iat": iat_now(),
-            "ath": base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest()).decode()
+            "ath": base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest()).rstrip(b'=').decode()
         }
         jwt = self.signer.sign(
             data,
@@ -109,6 +109,6 @@ class DPoPVerifier:
         DPoPTokenPayloadSchema(**payload)
         
         _ath = hashlib.sha256(self.dpop_token.encode())
-        _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).decode()
+        _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).rstrip(b'=').decode()
         proof_valid = _ath_b64 == payload['ath']
         return dpop_valid and proof_valid
