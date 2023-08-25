@@ -51,10 +51,10 @@ CONFIG = {
     "federation": {
         "metadata_type": "wallet_relying_party",
         "authority_hints": [
-            "https://localhost:8000"
+            "https://trust-anchor.example.org"
         ],
         "trust_anchors": [
-            "https://localhost:8000"
+            "https://trust-anchor.example.org"
         ],
         "default_sig_alg": "RS256",
         "federation_jwks": [

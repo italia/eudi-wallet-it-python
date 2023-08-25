@@ -5,7 +5,11 @@ from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
+from pyeudiw.storage.exceptions import (
+    ChainNotExist,
+    StorageWriteError,
+    EntryNotFound
+)
 
 logger = logging.getLogger(__name__)
 
@@ -152,13 +156,20 @@ class DBEngine():
         return self.get_anchor(entity_id)
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
-        return self.write("add_trust_attestation", entity_id, attestation)
+        return self.write("add_trust_attestation", entity_id, attestation, exp)
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp)
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         return self.write("update_trust_attestation", entity_id, attestation, exp)
+
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+        try:
+            self.get_trust_attestation(entity_id)
+            return self.write("update_trust_attestation", entity_id, attestation, exp)
+        except (EntryNotFound, ChainNotExist):
+            return self.write("add_trust_attestation", entity_id, attestation, exp)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
         return self.write("update_trust_anchor", entity_id, entity_configuration, exp)

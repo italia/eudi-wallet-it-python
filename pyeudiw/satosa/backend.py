@@ -17,6 +17,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.exceptions import (
     NotTrustedFederationError
@@ -232,9 +233,9 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-    def entity_configuration_endpoint(self, context):
-
-        data = {
+    @property
+    def entity_configuration_as_dict(self) -> dict:
+        ec_payload = {
             "exp": exp_from_now(minutes=self.default_exp),
             "iat": iat_now(),
             "iss": self.client_id,
@@ -247,7 +248,24 @@ class OpenID4VPBackend(BackendModule):
             },
             "authority_hints": self.config['federation']['authority_hints']
         }
+        return ec_payload
 
+    @property
+    def entity_configuration(self) -> dict:
+        data = self.entity_configuration_as_dict
+        jwshelper = JWSHelper(self.default_federation_private_jwk)
+        return jwshelper.sign(
+            protected={
+                "alg": self.config['federation']["default_sig_alg"],
+                "kid": self.default_federation_private_jwk["kid"],
+                "typ": "entity-statement+jwt"
+            },
+            plain_dict=data
+        )
+
+    def entity_configuration_endpoint(self, context):
+
+        data = self.entity_configuration_as_dict
         if context.qs_params.get('format', '') == 'json':
             return Response(
                 json.dumps(data),
@@ -255,19 +273,57 @@ class OpenID4VPBackend(BackendModule):
                 content="application/json"
             )
 
-        jwshelper = JWSHelper(self.default_federation_private_jwk)
         return Response(
-            jwshelper.sign(
-                protected={
-                    "alg": self.config['federation']["default_sig_alg"],
-                    "kid": self.default_federation_private_jwk["kid"],
-                    "typ": "entity-statement+jwt"
-                },
-                plain_dict=data
-            ),
+            self.entity_configuration,
             status="200",
             content="application/entity-statement+jwt"
         )
+
+    @property
+    def my_trust_chain(self) -> None:
+        # TODO: move it to the TrustEvaluationHelper
+        trust_chain = []
+        is_good = False
+        try:
+            db_chain = self.db_engine.get_trust_attestation(
+                self.client_id
+            )
+            trust_eval = TrustEvaluationHelper(
+                self.db_engine,
+                httpc_params=self.config['network']['httpc_params'],
+                trust_chain=db_chain["federation"]["chain"]
+            )
+            is_good = trust_eval.evaluation_method()
+            trust_chain = db_chain['federation']['chain']
+            exp = db_chain['federation']['exp']
+        except (EntryNotFound, Exception):
+            pass
+
+        if not is_good:
+            # TODO: move this trust chain discovery into the trust helper
+            ta_eid = self.config['federation']['trust_anchors'][0]
+            ta_ec = self.db_engine.get_trust_anchor(
+                entity_id=ta_eid
+            )['federation']['entity_configuration']
+
+            tcbuilder = TrustChainBuilder(
+                subject=self.client_id,
+                trust_anchor=ta_eid,
+                trust_anchor_configuration=ta_ec,
+                subject_configuration=self.entity_configuration,
+                httpc_params=self.config['network']['httpc_params']
+            )
+            is_good = tcbuilder.is_valid
+            trust_chain = tcbuilder.get_trust_chain()
+            exp = tcbuilder.exp
+
+        if is_good:
+            self.db_engine.add_or_update_trust_attestation(
+                entity_id=self.client_id,
+                attestation=trust_chain,
+                exp=exp
+            )
+        return trust_chain
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
 
@@ -396,19 +452,19 @@ class OpenID4VPBackend(BackendModule):
         return internal_resp
 
     def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
+        self._log(
+            context,
+            level='debug',
+            message=(
+                "[TRUST EVALUATION] evaluating trust."
+            )
+        )
+
         headers = unpad_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(
             self.db_engine,
             httpc_params=self.config['network']['httpc_params'],
             **headers
-        )
-
-        self._log(
-            context,
-            level='debug',
-            message=(
-                "[TRUST EVALUATION] evaluating trust"
-            )
         )
 
         try:
@@ -419,11 +475,11 @@ class OpenID4VPBackend(BackendModule):
                 level='error',
                 message=(
                     "[TRUST EVALUATION] failed for "
-                    f"{trust_eval.entity_id}"
+                    f"{trust_eval.entity_id}: {e}"
                 )
             )
             raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} is not trusted: {e}"
+                f"{trust_eval.entity_id} is not trusted."
             )
         except EntryNotFound:
             self._log(
@@ -435,7 +491,7 @@ class OpenID4VPBackend(BackendModule):
                 )
             )
             raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} not found for Trust evaluation"
+                f"{trust_eval.entity_id} not found for Trust evaluation."
             )
 
         return trust_eval
@@ -746,20 +802,15 @@ class OpenID4VPBackend(BackendModule):
         )
 
         # check DPOP for WIA if any
-        dpop_validation_error = None
-        _err_msg = (
-            f"Trust evaluation failed"
-        )
         try:
             dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
-                context)
+                context
+            )
             if dpop_validation_error:
                 return dpop_validation_error
         except Exception as e:
             _msg = (
-                "[DPoP VALIDATION ERROR] "
-                "WIA evalution error: Wallet Provider is not Trusted. "
-                f"{_err_msg}"
+                f"[DPoP VALIDATION ERROR] WIA evalution error: {e}."
             )
             return self.handle_error(
                 context=context,
@@ -839,12 +890,14 @@ class OpenID4VPBackend(BackendModule):
             )
 
         helper = JWSHelper(self.default_metadata_private_jwk)
-        # TODO: add the trust chain in the JWS headers here
-        jwt = helper.sign(data)
 
+        jwt = helper.sign(
+            data,
+            protected={'trust_chain': self.my_trust_chain}
+        )
         response = {"response": jwt}
-        # TODO: update the storage with the acquired signed request object
 
+        # TODO: update the storage with the acquired signed request object
         return JsonResponse(
             response,
             status="200"

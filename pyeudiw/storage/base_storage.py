@@ -63,3 +63,7 @@ class BaseStorage(object):
 
     def get_by_session_id(self, session_id: str):
         raise NotImplementedError()
+
+    # TODO: create add_or_update for all the write methods
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+        raise NotImplementedError()

@@ -14,6 +14,7 @@ from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_SIG_KTY_MAP
+from cryptojwt.jws.jws import JWS
 from pyeudiw.jwt.utils import unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
@@ -26,22 +27,24 @@ from pyeudiw.sd_jwt import (
 from pyeudiw.storage.db_engine import DBEngine
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk
+from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk, EXP, NOW, ta_jwk
 
 from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
 
 
-# STORAGE ####
-# Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
-db_engine_inst = DBEngine(CONFIG['storage'])
-db_engine_inst.add_trust_anchor(
-    entity_id=ta_ec['iss'],
-    entity_configuration=ta_ec,
-    exp=datetime.datetime.now().isoformat()
-)
-
-
 class TestOpenID4VPBackend:
+
+    @pytest.fixture(autouse=True)
+    def store_ta(self):
+        # STORAGE ####
+        # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
+        db_engine_inst = DBEngine(CONFIG['storage'])
+        db_engine_inst.add_trust_anchor(
+            entity_id=ta_ec['iss'],
+            entity_configuration=ta_ec,
+            exp=datetime.datetime.now().isoformat()
+        )
+
     @pytest.fixture(autouse=True)
     def create_backend(self):
         self.backend = OpenID4VPBackend(
@@ -239,7 +242,8 @@ class TestOpenID4VPBackend:
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
         pre_request_endpoint = self.backend.pre_request_endpoint(
-            context, internal_data)
+            context, internal_data
+        )
         state = urllib.parse.unquote(
             pre_request_endpoint.message).split("=")[-1]
 
@@ -265,6 +269,32 @@ class TestOpenID4VPBackend:
         )
 
         context.qs_params = {"id": state}
+
+        # put a trust attestation related itself into the storage
+        # this then is used as trust_chain header paramenter in the signed
+        # request object
+        db_engine_inst = DBEngine(CONFIG['storage'])
+
+        _es = ta_es = {
+            "exp": EXP,
+            "iat": NOW,
+            "iss": "https://trust-anchor.example.org",
+            "sub": self.backend.client_id,
+            'jwks': self.backend.entity_configuration_as_dict['jwks']
+        }
+        ta_signer = JWS(_es, alg="RS256",
+                        typ="application/entity-statement+jwt")
+
+        its_trust_chain = [
+            self.backend.entity_configuration,
+            ta_signer.sign_compact([ta_jwk])
+        ]
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=self.backend.client_id,
+            attestation=its_trust_chain,
+            exp=datetime.datetime.now().isoformat()
+        )
+        # End RP trust chain
 
         state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "200"

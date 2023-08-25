@@ -8,12 +8,13 @@ from pyeudiw.trust.exceptions import UnknownTrustAnchor
 
 
 class TrustEvaluationHelper:
-    def __init__(self, storage: DBEngine, httpc_params, **kwargs):
+    def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
         self.exp: int = 0
         self.trust_chain: list = []
+        self.trust_anchor = trust_anchor
         self.storage = storage
         self.entity_id: str = ""
-        self.httpc_params = httpc_params,
+        self.httpc_params = httpc_params
         self.is_trusted = False
 
         for k, v in kwargs.items():
@@ -26,16 +27,13 @@ class TrustEvaluationHelper:
         return self.federation
 
     def _handle_chain(self):
-
-        trust_anchor_eid = unpad_jwt_payload(
-            self.trust_chain[-1]).get('iss', None)
+        trust_anchor_eid = self.trust_anchor or unpad_jwt_payload(
+            self.trust_chain[-1]
+        ).get('iss', None)
 
         try:
             trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
         except EntryNotFound:
-            return False
-
-        if not trust_anchor:
             raise UnknownTrustAnchor(
                 f"Unknown Trust Anchor '{trust_anchor_eid}'"
             )
@@ -44,35 +42,31 @@ class TrustEvaluationHelper:
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
-
-        self.entity_id = tc.get_entityID()
-        self.exp = tc.get_exp()
-
-        _is_valid = tc.is_valid
-
+        self.entity_id = tc.entity_id
+        self.exp = tc.exp
+        _is_valid = tc.validate()
         db_chain = None
         if not _is_valid:
             try:
                 db_chain = self.storage.get_trust_attestation(
                     self.entity_id
                 )["federation"]["chain"]
-            except (EntryNotFound, Exception):
-                pass
-
-            if db_chain:
                 if StaticTrustChainValidator(db_chain).is_valid:
                     return True
 
-            _is_valid = tc.update()
-            self.exp = tc.get_exp()
-            self.trust_chain = tc.get_chain()
+            except (EntryNotFound, Exception):
+                pass
 
-            if db_chain is None:
-                self.storage.add_chain(
-                    self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
-            else:
-                self.storage.update_chain(
-                    self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
+            _is_valid = tc.update()
+            self.exp = tc.exp
+            self.trust_chain = tc.trust_chain
+
+        # the good trust chain is then stored
+        self.storage.add_or_update_trust_attestation(
+            entity_id=self.entity_id,
+            attestation=tc.trust_chain,
+            exp=datetime.fromtimestamp(tc.exp)
+        )
 
         self.is_trusted = _is_valid
         return self.is_trusted

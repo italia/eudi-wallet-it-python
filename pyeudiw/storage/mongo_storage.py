@@ -54,7 +54,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_id(self, document_id: str) -> dict:
         self._connect()
-
         document = self.sessions.find_one({"document_id": document_id})
 
         if document is None:
@@ -64,7 +63,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_nonce_state(self, nonce: str, state: str | None) -> dict:
         self._connect()
-
         query = {"state": state, "nonce": nonce}
         if not state:
             query.pop('state')
@@ -79,7 +77,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_session_id(self, session_id: str):
         self._connect()
-
         query = {"session_id": session_id}
         document = self.sessions.find_one(query)
 
@@ -92,7 +89,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
-
         query = {"state": state}
         if session_id:
             query["session_id"] = session_id

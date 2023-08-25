@@ -2,42 +2,13 @@ import uuid
 import pytest
 
 from pyeudiw.storage.db_engine import DBEngine
-
-conf = {
-    "mongo_db": {
-        "cache": {
-            "module": "pyeudiw.storage.mongo_cache",
-            "class": "MongoCache",
-            "init_params": {
-                "url": "mongodb://localhost:27017/",
-                "conf": {
-                    "db_name": "eudiw"
-                },
-                "connection_params": {}
-            }
-        },
-        "storage": {
-            "module": "pyeudiw.storage.mongo_storage",
-            "class": "MongoStorage",
-            "init_params": {
-                "url": "mongodb://localhost:27017/",
-                "conf": {
-                    "db_name": "eudiw",
-                    "db_sessions_collection": "sessions",
-                    "db_trust_attestations_collection": "trust_attestations",
-                    "db_trust_anchors_collection": "trust_anchors"
-                },
-                "connection_params": {}
-            }
-        }
-    }
-}
+from pyeudiw.tests.settings import CONFIG
 
 
 class TestMongoDBEngine:
     @pytest.fixture(autouse=True)
     def create_engine_instance(self):
-        self.engine = DBEngine(conf)
+        self.engine = DBEngine(CONFIG['storage'])
 
     @pytest.fixture(autouse=True)
     def test_init_session(self):
