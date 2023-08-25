@@ -13,6 +13,8 @@ def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: di
     for jwt in ta_ecs:
         if isinstance(jwt, bytes):
             jwt = jwt.decode()
+        
+        
         ec = EntityStatement(jwt, httpc_params=httpc_params)
         if not ec.validate_by_itself():
             # TODO: log warning

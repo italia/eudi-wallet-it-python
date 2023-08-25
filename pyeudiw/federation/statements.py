@@ -9,6 +9,7 @@ from pyeudiw.federation.http_client import http_get
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwt import JWSHelper
 
+import aiohttp
 import asyncio
 import json
 import logging
@@ -37,8 +38,14 @@ def get_federation_jwks(jwt_payload: dict, httpc_params: dict):
 
 def get_http_url(urls: list, httpc_params: dict, http_async: bool = True) -> list:
     if http_async:
+
+        _httpc_params = deepcopy(httpc_params)
+        _httpc_params['session'] = {
+            "timeout": aiohttp.ClientTimeout(total=_httpc_params.get('session', 3))
+        }
+
         responses = asyncio.run(
-            http_get(urls, httpc_params))  # pragma: no cover
+            http_get(urls, _httpc_params))  # pragma: no cover
     else:
         responses = []
         for i in urls:

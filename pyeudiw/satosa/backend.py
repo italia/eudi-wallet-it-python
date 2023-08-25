@@ -87,7 +87,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
-
         self.init_trust_resources()
 
         logger.debug(
