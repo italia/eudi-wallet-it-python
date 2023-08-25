@@ -130,11 +130,17 @@ class JWSHelper:
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _head = unpad_jwt_header(jws)
-        if _head.get("kid") != self.jwk.as_dict()["kid"]:  # pragma: no cover
-            raise KidError(
-                f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
-            )
-
+        
+        if _head.get("kid"):
+            if _head["kid"] != self.jwk.as_dict()["kid"]:  # pragma: no cover
+                raise KidError(
+                    f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
+                )
+        elif _head.get("jwk"):
+            if _head["jwk"] != self.jwk.as_dict():  # pragma: no cover
+                raise KidError(
+                    f"{_head['jwk']} != {self.jwk.as_dict()}"
+                )
         _head["alg"]
 
         verifier = JWSec(alg=_head["alg"], **kwargs)
