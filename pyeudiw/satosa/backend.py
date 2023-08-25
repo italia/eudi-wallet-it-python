@@ -275,7 +275,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         )
         auth_info = AuthenticationInformation(
             auth_class_ref, timestamp_iso, issuer)
-        # TODO - acr
+            
+        # TODO - ACR values
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
@@ -370,20 +371,24 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err_code="400"
             )
 
-        # get state, do lookup on the db -> if not -> exception
+        # state or nonce MUST be present, at least one of them
+        # then do lookup on the db -> if not -> exception
         state = vpt.payload.get("state", None)
-        if not state:
+        nonce = vpt.payload.get("nonce", None)
+        if not nonce and not state:
             # TODO - if state is missing the db lookup fails ...
             # state is OPTIONAL in openid4vp ...
             return self.handle_error(
                 context=context,
                 message="invalid_request",
-                troubleshoot="state missing",
+                troubleshoot="nonce and state are missing",
                 err_code="400"
             )
 
         try:
-            stored_session = self.db_engine.get_by_state(state=state)
+            stored_session = self.db_engine.get_by_nonce_state(
+                nonce = nonce, state=state
+            )
         except Exception as e:
             _msg = f"Session lookup by state value failed"
             return self.handle_error(

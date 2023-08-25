@@ -10,7 +10,7 @@ MAP = {
         'http://schemas.xmlsoap.org/claims/emailaddress': 'emailAddress',
         'http://schemas.xmlsoap.org/claims/group': 'group',
         'http://schemas.xmlsoap.org/claims/upn': 'upn',
-        },
+    },
     "to": {
         'commonName': 'http://schemas.xmlsoap.org/claims/commonname',
         'emailAddress': 'http://schemas.xmlsoap.org/claims/emailaddress',

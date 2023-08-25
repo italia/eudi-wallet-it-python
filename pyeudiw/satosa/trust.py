@@ -66,21 +66,21 @@ class BackendTrust:
         for ta in tas:
             try:
                 update_trust_anchors_ecs(
-                    db=self.db_engine,
-                    trust_anchors=[ta],
-                    httpc_params=self.config['network']['httpc_params']
+                    db = self.db_engine,
+                    trust_anchors = [ta],
+                    httpc_params = self.config['network']['httpc_params']
                 )
             except Exception as e:
                 logger.warning(
                     lu.LOG_FMT.format(
-                        id=f"Trust Anchor updates",
-                        message=f"{ta} update failed: {e}"
+                        id = f"Trust Anchor updates",
+                        message = f"{ta} update failed: {e}"
                     )
                 )
             logger.info(
                 lu.LOG_FMT.format(
-                    id="Trust Anchor update",
-                    message=f"Trust Anchor updated: {ta}"
+                    id = "Trust Anchor update",
+                    message = f"Trust Anchor updated: {ta}"
                 )
             )
 
