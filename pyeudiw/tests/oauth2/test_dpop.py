@@ -1,5 +1,5 @@
+import base64
 import hashlib
-
 import pytest
 
 from pyeudiw.jwk import JWK
@@ -88,7 +88,9 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     assert "d" not in header["jwk"]
 
     payload = unpad_jwt_payload(proof)
-    assert payload["ath"] == hashlib.sha256(wia_jws.encode()).hexdigest()
+    assert payload["ath"] == base64.urlsafe_b64encode(
+        hashlib.sha256(wia_jws.encode()
+    ).digest()).decode()
     assert payload["htm"] in ["GET", "POST", "get", "post"]
     assert payload["htu"] == "https://example.org/redirect"
     assert payload["jti"]

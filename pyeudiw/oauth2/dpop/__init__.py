@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import logging
 import uuid
@@ -28,7 +29,7 @@ class DPoPIssuer:
             "htm": "GET",
             "htu": self.htu,
             "iat": iat_now(),
-            "ath": hashlib.sha256(self.token.encode()).hexdigest()
+            "ath": base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest()).decode()
         }
         jwt = self.signer.sign(
             data,
@@ -107,6 +108,7 @@ class DPoPVerifier:
         payload = unpad_jwt_payload(self.proof)
         DPoPTokenPayloadSchema(**payload)
         
-        _ath = hashlib.sha256(self.dpop_token.encode()).hexdigest()
-        proof_valid = _ath == payload['ath']
+        _ath = hashlib.sha256(self.dpop_token.encode())
+        _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).decode()
+        proof_valid = _ath_b64 == payload['ath']
         return dpop_valid and proof_valid
