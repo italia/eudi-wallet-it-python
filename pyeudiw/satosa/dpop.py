@@ -1,12 +1,9 @@
 import logging
 
 from typing import Union
-
-
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.response import JsonResponse
-
 
 
 logger = logging.getLogger(__name__)

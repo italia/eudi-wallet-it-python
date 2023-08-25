@@ -1,5 +1,7 @@
 import base64
 import datetime
+import importlib
+import inspect
 import json
 import hashlib
 import logging
@@ -21,7 +23,7 @@ from pyeudiw.satosa.exceptions import (
 from pyeudiw.satosa.dpop import BackendDPoP
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
-from pyeudiw.satosa.trust import BackendTrust
+# from pyeudiw.satosa.trust import BackendTrust
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
@@ -40,7 +42,7 @@ from pydantic import ValidationError
 logger = logging.getLogger(__name__)
 
 
-class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
+class OpenID4VPBackend(BackendModule, BackendDPoP):
     """
     A backend module (acting as a OpenID4VP SP).
     """
@@ -83,11 +85,25 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
         self.absolute_request_url = None
+        
         self.registered_get_response_endpoint = None
 
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
-
+        
+        trust_module = importlib.import_module(self.config['core']['trust']["module"])
+        trust_class = getattr(trust_module, self.config['core']['trust']["class"])
+        trust_backend = trust_class(**self.__dict__)
+        for method_name, method_object in inspect.getmembers(trust_backend, inspect.ismethod) :
+            logger.debug(
+                lu.LOG_FMT.format(
+                    id="Trust Backend dynamic load",
+                    message=f"adding method {method_name} to {self}"
+                )
+            )
+            setattr(self, method_name, method_object)
+        
+        breakpoint()
         self.init_trust_resources()
 
         logger.debug(

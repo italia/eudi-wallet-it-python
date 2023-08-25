@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 class BackendTrust:
-
+    
+    def __init__(self, **kwargs):
+        for k,v in kwargs.items():
+            setattr(self, k, v)
+    
     def init_trust_resources(self) -> None:
         # private keys by kid
         self.federations_jwks_by_kids = {
