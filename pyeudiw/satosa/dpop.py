@@ -34,13 +34,14 @@ class BackendDPoP:
 
             try:
                 self._validate_trust(context, dpop_jws)
-            except Exception:
+            except Exception as e:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 return self.handle_error(
                     context=context,
                     message="invalid_client",
                     troubleshoot=_msg,
-                    err_code="401"
+                    err_code="401",
+                    err=f"{e}"
                 )
 
             # TODO: validate wia scheme using pydantic
@@ -56,12 +57,12 @@ class BackendDPoP:
                     context=context,
                     message="invalid_client",
                     troubleshoot=_msg,
-                    err_code="401"
+                    err_code="401",
+                    err=f"{e}"
                 )
 
-            dpop_valid = None
             try:
-                dpop_valid = dpop.validate()
+                dpop.validate()
             except Exception as e:
                 _msg = "DPoP validation exception"
                 return self.handle_error(
@@ -69,14 +70,6 @@ class BackendDPoP:
                     message="invalid_client",
                     troubleshoot=_msg,
                     err=f"{e}",
-                    err_code="401"
-                )
-
-            if not dpop_valid:
-                return self.handle_error(
-                    context=context,
-                    message="invalid_client",
-                    troubleshoot="DPoP validation error",
                     err_code="401"
                 )
 

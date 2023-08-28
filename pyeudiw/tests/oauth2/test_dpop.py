@@ -6,6 +6,7 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
+from pyeudiw.oauth2.dpop.exceptions import InvalidDPoPKid
 from pyeudiw.tools.utils import iat_now
 
 PRIVATE_JWK = JWK()
@@ -90,7 +91,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     payload = unpad_jwt_payload(proof)
     assert payload["ath"] == base64.urlsafe_b64encode(
         hashlib.sha256(wia_jws.encode()
-    ).digest()).rstrip(b'=').decode()
+                       ).digest()).rstrip(b'=').decode()
     assert payload["htm"] in ["GET", "POST", "get", "post"]
     assert payload["htu"] == "https://example.org/redirect"
     assert payload["jti"]
@@ -110,7 +111,8 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
         http_header_authz=f"DPoP {wia_jws}",
         http_header_dpop=proof
     )
-    assert dpop.is_valid is False
+    with pytest.raises(InvalidDPoPKid):
+        dpop.validate()
 
     with pytest.raises(ValueError):
         dpop = DPoPVerifier(
@@ -126,4 +128,3 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
             http_header_authz=f"DPoP {wia_jws}",
             http_header_dpop="aaa" + proof[3:]
         )
-        assert dpop.is_valid is False

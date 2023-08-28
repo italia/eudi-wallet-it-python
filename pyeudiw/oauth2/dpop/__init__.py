@@ -3,6 +3,11 @@ import hashlib
 import logging
 import uuid
 
+from pyeudiw.oauth2.dpop.exceptions import (
+    InvalidDPoP,
+    InvalidDPoPAth,
+    InvalidDPoPKid
+)
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
@@ -82,33 +87,33 @@ class DPoPVerifier:
         try:
             dpop_valid = jws_verifier.verify(self.proof)
         except KidError as e:
-            logger.error(
-                "DPoP proof validation error, "
-                f"kid does not match: {e}"
+            raise InvalidDPoPKid(
+                (
+                    "DPoP proof validation error, "
+                    f"kid does not match: {e}"
+                )
             )
-            return False
         except Exception as e:
-            logger.error(
+            raise InvalidDPoP(
                 "DPoP proof validation error, "
                 f"{e.__class__.__name__}: {e}"
             )
-            return False
 
         header = unpad_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)
 
         if header['jwk'] != self.public_jwk:
-            logger.error(
+            raise InvalidDPoPAth((
                 "DPoP proof validation error,  "
                 "header['jwk'] != self.public_jwk, "
                 f"{header['jwk']} != {self.public_jwk}"
-            )
-            return False
+            ))
 
         payload = unpad_jwt_payload(self.proof)
         DPoPTokenPayloadSchema(**payload)
-        
+
         _ath = hashlib.sha256(self.dpop_token.encode())
-        _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).rstrip(b'=').decode()
+        _ath_b64 = base64.urlsafe_b64encode(
+            _ath.digest()).rstrip(b'=').decode()
         proof_valid = _ath_b64 == payload['ath']
         return dpop_valid and proof_valid

@@ -620,7 +620,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=f"{e} with {context.__dict__}",
                 err_code="500"
             )
-        except Exception as e:
+        except (Exception, BaseException) as e:
             _msg = f"Error while updating request object: {e}"
             return self.handle_error(
                 context,

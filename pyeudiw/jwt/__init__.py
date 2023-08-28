@@ -136,7 +136,7 @@ class JWSHelper:
                 raise KidError(
                     f"{_head.get('kid')} != {_jwk_dict['kid']}"
                 )
-        elif _head.get("jwk"):            
+        elif _head.get("jwk"):
             if _head["jwk"] != _jwk_dict:  # pragma: no cover
                 raise JwkError(
                     f"{_head['jwk']} != {_jwk_dict}"
