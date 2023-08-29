@@ -9,7 +9,6 @@ from pyeudiw.federation.http_client import http_get
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwt import JWSHelper
 
-import aiohttp
 import asyncio
 import json
 import logging

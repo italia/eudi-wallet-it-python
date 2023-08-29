@@ -367,7 +367,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 context=context,
                 message="invalid_request",
                 troubleshoot=_msg,
-                err_code="400"
+                err_code="400",
+                err=f"Error:{e}, with JWT: {jwt}"
             )
 
         # state or nonce MUST be present, at least one of them
@@ -377,11 +378,13 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         if not nonce and not state:
             # TODO - if state is missing the db lookup fails ...
             # state is OPTIONAL in openid4vp ...
+            _msg = "nonce and state are missing"
             return self.handle_error(
                 context=context,
                 message="invalid_request",
-                troubleshoot="nonce and state are missing",
-                err_code="400"
+                troubleshoot=_msg,
+                err_code="400",
+                err=f"{_msg} with: {vpt.payload}"
             )
 
         try:
