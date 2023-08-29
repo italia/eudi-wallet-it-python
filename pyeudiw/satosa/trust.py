@@ -122,7 +122,7 @@ class BackendTrust:
             _ta_ec = self.db_engine.get_trust_anchor(
                 entity_id=ta_eid
             )
-            ta_ec = _ta_ec['federation']['entity_configuration_jwt']
+            ta_ec = _ta_ec['federation']['entity_configuration']
 
             tcbuilder = TrustChainBuilder(
                 subject=self.client_id,
