@@ -40,7 +40,7 @@ class TrustChainBuilder:
         subject: str,
         trust_anchor: str,
         httpc_params: dict,
-        trust_anchor_configuration: Union[EntityStatement, None] = None,
+        trust_anchor_configuration: Union[EntityStatement, str, None] = None,
         max_authority_hints: int = 10,
         subject_configuration: EntityStatement = None,
         required_trust_marks: list = [],
@@ -69,6 +69,11 @@ class TrustChainBuilder:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
                 logger.error(_msg)
                 raise InvalidEntityStatement(_msg)
+        elif isinstance(trust_anchor_configuration, str):
+            trust_anchor_configuration = EntityStatement(
+                trust_anchor_configuration,
+                httpc_params=self.httpc_params
+            )
 
         self.trust_anchor_configuration = trust_anchor_configuration
 
