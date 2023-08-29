@@ -26,25 +26,37 @@ from pyeudiw.sd_jwt import (
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.federation.base import trust_chain_wallet, ta_ec, leaf_wallet_jwk, EXP, NOW, ta_jwk
-from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES, ISSUER_CONF, PRIVATE_JWK, WALLET_INSTANCE_ATTESTATION
+from pyeudiw.tests.federation.base import (
+    trust_chain_wallet,
+    ta_ec,
+    leaf_wallet_jwk,
+    EXP,
+    NOW,
+    ta_jwk,
+    ta_ec_signed
+)
+from pyeudiw.tests.settings import (
+    BASE_URL,
+    CONFIG,
+    INTERNAL_ATTRIBUTES,
+    ISSUER_CONF,
+    PRIVATE_JWK,
+    WALLET_INSTANCE_ATTESTATION
+)
 
 
 class TestOpenID4VPBackend:
 
     @pytest.fixture(autouse=True)
-    def store_ta(self):
-        # STORAGE ####
-        # Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
+    def create_backend(self):
+
         db_engine_inst = DBEngine(CONFIG['storage'])
         db_engine_inst.add_trust_anchor(
             entity_id=ta_ec['iss'],
-            entity_configuration=ta_ec,
-            exp=datetime.datetime.now().isoformat()
+            entity_configuration=ta_ec_signed,
+            exp=datetime.datetime.now().isoformat(),
         )
 
-    @pytest.fixture(autouse=True)
-    def create_backend(self):
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 

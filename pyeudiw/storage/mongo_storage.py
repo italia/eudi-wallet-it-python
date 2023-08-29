@@ -240,7 +240,7 @@ class MongoStorage(BaseStorage):
             "trust_attestations", entity_id, entity, exp
         )
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: Union[dict, str], exp: datetime):
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
         entry = {
             "entity_id": entity_id,
             "federation": {
@@ -274,7 +274,7 @@ class MongoStorage(BaseStorage):
 
         return self._update_trust_attestation("trust_attestations", entity_id, entity, exp)
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime) -> str:
         entity = {
             "federation": {
                 "entity_configuration": entity_configuration,

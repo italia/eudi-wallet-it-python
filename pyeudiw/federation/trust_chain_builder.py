@@ -71,7 +71,7 @@ class TrustChainBuilder:
                 raise InvalidEntityStatement(_msg)
         elif isinstance(trust_anchor_configuration, str):
             trust_anchor_configuration = EntityStatement(
-                trust_anchor_configuration,
+                jwt=trust_anchor_configuration,
                 httpc_params=self.httpc_params
             )
 
@@ -246,6 +246,7 @@ class TrustChainBuilder:
         self._set_max_path_len()
 
     def _set_max_path_len(self):
+
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
             "max_path_length"
         ):

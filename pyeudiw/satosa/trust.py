@@ -36,6 +36,14 @@ class BackendTrust:
         # we close the connection in this constructor since it must be fork safe and
         # get reinitialized later on, within each fork
         self.update_trust_anchors()
+
+        try:
+            self.my_trust_chain
+        except Exception as e:
+            logger.critical(
+                f"Cannot fetch the trust anchor configuration: {e}"
+            )
+
         self.db_engine.close()
         self._db_engine = None
 
@@ -111,9 +119,10 @@ class BackendTrust:
         if not is_good:
             # TODO: move this trust chain discovery into the trust helper
             ta_eid = self.config['federation']['trust_anchors'][0]
-            ta_ec = self.db_engine.get_trust_anchor(
+            _ta_ec = self.db_engine.get_trust_anchor(
                 entity_id=ta_eid
-            )['federation']['entity_configuration']
+            )
+            ta_ec = _ta_ec['federation']['entity_configuration_jwt']
 
             tcbuilder = TrustChainBuilder(
                 subject=self.client_id,

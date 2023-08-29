@@ -38,7 +38,8 @@ class TrustEvaluationHelper:
                 f"Unknown Trust Anchor '{trust_anchor_eid}'"
             )
 
-        jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
+        jwks = unpad_jwt_payload(trust_anchor['federation']['entity_configuration'])[
+            'jwks']['keys']
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )

@@ -21,6 +21,6 @@ def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: di
 
         db.add_trust_anchor(
             entity_id=ec.sub,
-            entity_configuration=ec.payload,
+            entity_configuration=ec.jwt,
             exp=ec.exp
         )

@@ -40,13 +40,13 @@ class BaseStorage(object):
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         raise NotImplementedError()
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
+    def add_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
         raise NotImplementedError()
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         raise NotImplementedError()
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: list[str], exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
         raise NotImplementedError()
 
     def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:
