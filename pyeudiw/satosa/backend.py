@@ -26,7 +26,7 @@ from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
-from pyeudiw.openid4vp.vp_token import VpToken
+from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
 from pyeudiw.openid4vp.exceptions import (
     KIDNotFound,
     InvalidVPToken
@@ -358,7 +358,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
 
         try:
-            vpt = VpToken(jwt, self.metadata_jwks_by_kids)
+            vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
             self._log(
                 context,
                 level='debug',
@@ -368,7 +368,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
             ResponseSchema(**vpt.payload)
         except Exception as e:
-            _msg = f"VpToken parse and validation error: {e}"
+            _msg = f"DirectPostResponse parse and validation error: {e}"
             self._log(context, level='error', message=_msg)
             return self.handle_error(
                 context=context,
@@ -415,7 +415,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             vpt.validate()
         except Exception as e:
             _msg = (
-                "VpToken content parse and validation error. "
+                "DirectPostResponse content parse and validation error. "
                 f"Single VPs are faulty."
             )
             return self.handle_error(

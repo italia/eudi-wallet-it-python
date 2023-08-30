@@ -13,7 +13,7 @@ from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
 
 
-class VpToken:
+class DirectPostResponse:
     def __init__(self, jwt: str, jwks_by_kids: dict, nonce: str = ""):
 
         self.headers = unpad_jwt_header(jwt)

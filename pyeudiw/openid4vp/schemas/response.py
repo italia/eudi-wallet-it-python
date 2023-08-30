@@ -19,6 +19,7 @@ class PresentationSubmissionSchema(BaseModel):
 
 class ResponseSchema(BaseModel):
     state: Optional[str]
+    nonce: str
     vp_token: str
     presentation_submission: PresentationSubmissionSchema
 
