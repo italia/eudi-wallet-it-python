@@ -2,7 +2,8 @@ import base64
 import json
 import re
 
-JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
+# JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
+JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
 
 
 def unpad_jwt_element(jwt: str, position: int) -> dict:
