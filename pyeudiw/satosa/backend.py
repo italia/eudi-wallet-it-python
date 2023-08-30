@@ -359,6 +359,13 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
         try:
             vpt = VpToken(jwt, self.metadata_jwks_by_kids)
+            self._log(
+                context,
+                level='debug',
+                message=(
+                    f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
+                )
+            )
             ResponseSchema(**vpt.payload)
         except Exception as e:
             _msg = f"VpToken parse and validation error: {e}"
