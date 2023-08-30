@@ -24,22 +24,31 @@ class TrustEvaluationHelper:
     def evaluation_method(self) -> bool:
         # TODO: implement automatic detection of trust evaluation
         # method based on internal trust evaluetion property
+        # TODO: implement the detect of x509 trust evaluation method here
         return self.federation
 
     def _handle_chain(self):
-        trust_anchor_eid = self.trust_anchor or unpad_jwt_payload(
-            self.trust_chain[-1]
-        ).get('iss', None)
+        _first_statement = unpad_jwt_payload(self.trust_chain[-1])
+        trust_anchor_eid = self.trust_anchor or _first_statement.get(
+            'iss', None)
+
+        if not trust_anchor_eid:
+            raise UnknownTrustAnchor(
+                "Unknown Trust Anchor: can't find 'iss' in the "
+                f"first entity statement: {_first_statement} "
+            )
 
         try:
             trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
         except EntryNotFound:
             raise UnknownTrustAnchor(
-                f"Unknown Trust Anchor '{trust_anchor_eid}'"
+                f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
+                "a recognizable Trust Anchor."
             )
 
-        jwks = unpad_jwt_payload(trust_anchor['federation']['entity_configuration'])[
-            'jwks']['keys']
+        jwks = unpad_jwt_payload(
+            trust_anchor['federation']['entity_configuration']
+        )['jwks']['keys']
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
@@ -70,7 +79,7 @@ class TrustEvaluationHelper:
         )
 
         self.is_trusted = _is_valid
-        return self.is_trusted
+        return _is_valid
 
     def federation(self) -> bool:
         if self.trust_chain:
