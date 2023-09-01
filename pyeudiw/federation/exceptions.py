@@ -68,3 +68,7 @@ class KeyValidationError(Exception):
 
 class InvalidChainError(Exception):
     pass
+
+
+class ProtocolMetadataNotFound(Exception):
+    pass

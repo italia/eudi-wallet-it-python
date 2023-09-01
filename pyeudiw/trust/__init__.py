@@ -1,5 +1,6 @@
 from datetime import datetime
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
@@ -105,7 +106,14 @@ class TrustEvaluationHelper:
         # TODO - apply metadata policy and get the final metadata
         # for now the final_metadata is the EC metadata -> TODO final_metadata
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
-        return self.final_metadata
+        try:
+            # TODO: there are some cases where the jwks are taken from a uri ...
+            return self.final_metadata['metadata'][metadata_type]['jwks']
+        except KeyError as e:
+            raise ProtocolMetadataNotFound(
+                f"{metadata_type} not found in the final metadata:"
+                f" {self.final_metadata}"
+            )
 
     def get_trusted_jwks(self, metadata_type: str) -> list:
         return self.get_final_metadata(
