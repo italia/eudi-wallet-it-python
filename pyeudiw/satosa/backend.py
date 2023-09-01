@@ -383,11 +383,11 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         state = vpt.payload.get("state", None)
         if not state:
             return self.handle_error(
-                context = context,
-                message = "invalid_request",
-                troubleshoot = "state not found in the response",
-                err_code = "400",
-                err = f"{_msg} with: {vpt.payload}"
+                context=context,
+                message="invalid_request",
+                troubleshoot="state not found in the response",
+                err_code="400",
+                err=f"{_msg} with: {vpt.payload}"
             )
 
         try:
@@ -590,7 +590,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
-            "exp": exp_from_now(minutes=5) # TODO: set an exp for the request in the general conf
+            # TODO: set an exp for the request in the general conf
+            "exp": exp_from_now(minutes=5)
         }
 
         try:
