@@ -13,7 +13,7 @@ class VpSdJwt:
 
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(
-                f"issuer jwks {issuer_jwks_by_kid} doesn't contains "
+                f"issuer jwks {issuer_jwks_by_kid} doesn't contain "
                 f"the KID {self.credential_headers['kid']}"
             )
 
