@@ -378,26 +378,20 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=f"Error:{e}, with JWT: {jwt}"
             )
 
-        # state or nonce MUST be present, at least one of them
+        # state MUST be present in the response since it was in the request
         # then do lookup on the db -> if not -> exception
         state = vpt.payload.get("state", None)
-        nonce = vpt.payload.get("nonce", None)
-        if not nonce and not state:
-            # TODO - if state is missing the db lookup fails ...
-            # state is OPTIONAL in openid4vp ...
-            _msg = "nonce and state are missing"
+        if not state:
             return self.handle_error(
-                context=context,
-                message="invalid_request",
-                troubleshoot=_msg,
-                err_code="400",
-                err=f"{_msg} with: {vpt.payload}"
+                context = context,
+                message = "invalid_request",
+                troubleshoot = "state not found in the response",
+                err_code = "400",
+                err = f"{_msg} with: {vpt.payload}"
             )
 
         try:
-            stored_session = self.db_engine.get_by_nonce_state(
-                nonce=nonce, state=state
-            )
+            stored_session = self.db_engine.get_by_state(state=state)
         except Exception as e:
             _msg = f"Session lookup by state value failed"
             return self.handle_error(
@@ -596,7 +590,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
-            "exp": exp_from_now(minutes=5)
+            "exp": exp_from_now(minutes=5) # TODO: set an exp for the request in the general conf
         }
 
         try:
