@@ -108,7 +108,7 @@ class TrustEvaluationHelper:
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...
-            return self.final_metadata['metadata'][metadata_type]['jwks']
+            return self.final_metadata['metadata'][metadata_type]
         except KeyError as e:
             raise ProtocolMetadataNotFound(
                 f"{metadata_type} not found in the final metadata:"

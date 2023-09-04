@@ -442,7 +442,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                         troubleshoot=f"Trust Evaluation failed for {tchelper.entity_id}",
                         err_code="400"
                     )
-
+                
                 # TODO: generalyze also for x509
                 vp.credential_jwks = tchelper.get_trusted_jwks(
                     metadata_type='openid_credential_issuer'
