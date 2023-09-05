@@ -109,7 +109,7 @@ class TrustEvaluationHelper:
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...
             return self.final_metadata['metadata'][metadata_type]
-        except KeyError as e:
+        except KeyError:
             raise ProtocolMetadataNotFound(
                 f"{metadata_type} not found in the final metadata:"
                 f" {self.final_metadata}"

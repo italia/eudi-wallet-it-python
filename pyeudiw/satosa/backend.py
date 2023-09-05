@@ -83,6 +83,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
         self.absolute_request_url = None
+        self.absolute_status_url = None
         self.registered_get_response_endpoint = None
 
         # resolve metadata pointers/placeholders
@@ -157,6 +158,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 self.absolute_redirect_url = _endpoint
             elif k == 'request':
                 self.absolute_request_url = _endpoint
+            elif k == "status":
+                self.absolute_status_url = _endpoint
         return url_map
 
     def start_auth(self, context, internal_request):
@@ -237,7 +240,11 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         qrcode = QRCode(encoded_res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
-            {'qrcode_base64': qrcode.to_base64(), "state": state}
+            {
+                'qrcode_base64': qrcode.to_base64(),
+                "state": state,
+                "status_endpoint": self.absolute_status_url
+            }
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -442,7 +449,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                         troubleshoot=f"Trust Evaluation failed for {tchelper.entity_id}",
                         err_code="400"
                     )
-                
+
                 # TODO: generalyze also for x509
                 vp.credential_jwks = tchelper.get_trusted_jwks(
                     metadata_type='openid_credential_issuer'
@@ -690,9 +697,29 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
         )
 
-        finalized_session = self.db_engine.get_by_session_id(
-            context.state["SESSION_ID"]
-        )
+        state = context.qs_params.get("id")
+        session_id = context.state["SESSION_ID"]
+        finalized_session = None
+        try:
+            finalized_session = self.db_engine.get_by_state_and_session_id(
+                state=state, session_id=session_id
+            )
+        except Exception as e:
+            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
+            return self.handle_error(
+                context=context,
+                message="invalid_client",
+                troubleshoot=_msg,
+                err_code="401"
+            )
+
+        if not finalized_session:
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot="session not found or invalid",
+                err_code="400"
+            )
 
         internal_response = InternalData()
         resp = internal_response.from_dict(
@@ -748,15 +775,20 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
 
         # TODO: if the request is expired -> return 403
-
         if session["finalized"]:
-            return Redirect(
-                f"{self.name}/get-response"
+            #  return Redirect(
+            #      self.registered_get_response_endpoint
+            #  )
+            return JsonResponse(
+                {
+                    "response_url": f"{self.registered_get_response_endpoint}?id={state}"
+                },
+                status="200"
             )
         else:
             return JsonResponse(
                 {
                     "response": "Request object issued"
                 },
-                status="200"
+                status="201"
             )

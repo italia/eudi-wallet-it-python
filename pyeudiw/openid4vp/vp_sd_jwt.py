@@ -26,16 +26,16 @@ class VpSdJwt:
             holder_key=holder_jwk
         )
         self.result = result
-        
-        # TODO: with unit tests we have holder_disclosed_claims while in 
+
+        # TODO: with unit tests we have holder_disclosed_claims while in
         # interop we don't have it!
-        
+
         self.disclosed_user_attributes = result.get(
             "holder_disclosed_claims", result
         )
-        
+
         # If IDA flatten the user attributes to be released
         if 'verified_claims' in result:
             result.update(result['verified_claims'].get('claims', {}))
-        
+
         return True
