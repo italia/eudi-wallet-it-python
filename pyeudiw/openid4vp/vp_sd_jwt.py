@@ -33,4 +33,9 @@ class VpSdJwt:
         self.disclosed_user_attributes = result.get(
             "holder_disclosed_claims", result
         )
+        
+        # If IDA flatten the user attributes to be released
+        if 'verified_claims' in result:
+            result.update(result['verified_claims'].get('claims', {}))
+        
         return True
