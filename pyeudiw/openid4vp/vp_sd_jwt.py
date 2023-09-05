@@ -26,5 +26,11 @@ class VpSdJwt:
             holder_key=holder_jwk
         )
         self.result = result
-        self.disclosed_user_attributes = result["holder_disclosed_claims"]
+        
+        # TODO: with unit tests we have holder_disclosed_claims while in 
+        # interop we don't have it!
+        
+        self.disclosed_user_attributes = result.get(
+            "holder_disclosed_claims", result
+        )
         return True
