@@ -166,7 +166,7 @@ class MongoStorage(BaseStorage):
                 },
             }
         )
-        if update_result.matched_count != 1 or update_result.modified_count != 1:
+        if update_result.matched_count != 1: # or update_result.modified_count != 1:
             raise ValueError(
                 f"Cannot update document {document_id}')"
             )
