@@ -154,7 +154,8 @@ class BackendTrust:
                 "keys": self.federation_public_jwks
             },
             "metadata": {
-                self.config['federation']["metadata_type"]: self.config['metadata']
+                self.config['federation']["metadata_type"]: self.config['metadata'],
+                "federation_entity": self.config['federation']['federation_entity_metadata']
             },
             "authority_hints": self.config['federation']['authority_hints']
         }

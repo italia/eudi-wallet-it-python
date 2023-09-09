@@ -78,7 +78,14 @@ CONFIG = {
         ],
         "trust_marks": [
             "..."
-        ]
+        ],
+        "federation_entity_metadata": {
+          "organization_name": "Example RP",
+          "homepage_uri": "https://developers.italia.it",
+          "policy_uri": "https://developers.italia.it/privacy-policy",
+          "tos_uri": "https://developers.italia.it/privacy-policy",
+          "logo_uri": "https://developers.italia.it/assets/img/io-it-logo-white.svg"
+        }
     },
     "metadata_jwks": [
         {

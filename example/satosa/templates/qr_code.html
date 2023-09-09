@@ -55,10 +55,8 @@
     let startingConnectionTitle = "Continua sul tuo smartphone";
     let startingConnectionText = "Per proseguire, segui le istruzioni sull'app IO e autorizza l'accesso";
     let startingConnectionQRInfo = "<b>Non hai ricevuto la notifica?</b>";
-
+    let clickAccessLabel = "Clicca qui per accedere al servizio";
     let connectedTitle = "Autenticazione effettuata";
-    // let connectedText = "Clicca per accedere al servizio.";
-
     let qrCodeExpiredInfo = "Il QR code non è più valido.";
 
     let expirationTime = 126;
@@ -98,26 +96,12 @@
                      aria-expanded="false" 
                      data-focus-mouse="false"
                    >
-                    <span>Clicca qui per accedere al servizio</span>
+                    <span>"${clickAccessLabel}"</span>
                   </a>
               </div>
             </div>`
         )
 }
-
-    function connectionStarted(data, textStatus, jqXHR) {
-        console.log('201: starting Connection')
-
-        clearInterval(countdown);
-        changeTitle(startingConnectionTitle);
-        changeText(startingConnectionText);
-        blankQRcode();
-        $('#content-qrcode-subtitle').removeAttr('hidden');
-        changeQrCodeInfo(startingConnectionQRInfo)
-        
-        //Sets up a qrcode scan status check once again
-        StartQRcodeScanCheck();
-    }
 
     function QRcodeExpired(){
         console.log('session expired');
@@ -170,7 +154,6 @@
         url: endpointSatosa,
         data,
         statusCode: {
-          // 201: connectionStarted,
           201: StartQRcodeScanCheck,
           200: connectionCompleted,
           400: Forbidden,
