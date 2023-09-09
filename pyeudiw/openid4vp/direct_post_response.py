@@ -2,6 +2,7 @@
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper
 from pyeudiw.jwt.exceptions import JWEDecryptionError
+from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import unpad_jwt_header
 from pyeudiw.openid4vp.exceptions import (
     VPNotFound,
@@ -12,7 +13,7 @@ from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
 
 
-class VpToken:
+class DirectPostResponse:
     def __init__(self, jwt: str, jwks_by_kids: dict, nonce: str = ""):
 
         self.headers = unpad_jwt_header(jwt)
@@ -34,7 +35,12 @@ class VpToken:
         return self._payload
 
     def decrypt(self) -> None:
-        self.jwk = JWK(self.jwks_by_kids[self.headers.get('kid', None)])
+        _kid = self.headers.get('kid', None)
+        if not _kid:
+            raise KidNotFoundError(
+                f"The JWT headers {self.headers} doesnt have any KID value"
+            )
+        self.jwk = JWK(self.jwks_by_kids[_kid])
         jweHelper = JWEHelper(self.jwk)
         try:
             self._payload = jweHelper.decrypt(self.jwt)

@@ -4,7 +4,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 class Jinja2TemplateHandler:
 
     def __init__(self, config):
-        config = config['ui']
 
         # error pages handler
         self.loader = Environment(

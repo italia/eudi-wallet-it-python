@@ -12,7 +12,7 @@ CLIENT_ID = "client_id"
 
 httpc_params = {
     "connection": {"ssl": True},
-    "session": {"timeout": 6},
+    "session": {"timeout": 1},
 }
 
 CONFIG = {
@@ -51,10 +51,10 @@ CONFIG = {
     "federation": {
         "metadata_type": "wallet_relying_party",
         "authority_hints": [
-            "https://localhost:8000"
+            "https://trust-anchor.example.org"
         ],
         "trust_anchors": [
-            "https://localhost:8000"
+            "https://trust-anchor.example.org"
         ],
         "default_sig_alg": "RS256",
         "federation_jwks": [
@@ -78,7 +78,14 @@ CONFIG = {
         ],
         "trust_marks": [
             "..."
-        ]
+        ],
+        "federation_entity_metadata": {
+          "organization_name": "Example RP",
+          "homepage_uri": "https://developers.italia.it",
+          "policy_uri": "https://developers.italia.it/privacy-policy",
+          "tos_uri": "https://developers.italia.it/privacy-policy",
+          "logo_uri": "https://developers.italia.it/assets/img/io-it-logo-white.svg"
+        }
     },
     "metadata_jwks": [
         {

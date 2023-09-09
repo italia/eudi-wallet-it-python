@@ -48,16 +48,6 @@ def test_exp_from_now(fake_now, delta_mins, timestamp):
     assert exp == timestamp
 
 
-def test_datetime_from_timestamp():
-    # TODO: test the function after it is implemented
-    pass
-
-
-def test_get_http_url():
-    # TODO: test the function after it is implemented
-    pass
-
-
 @pytest.mark.parametrize("n", [
     -1, 0, 1, 2, 3, 10, 999, 10**1000, 2.,
     sys.maxsize, sys.maxsize - 1,
@@ -87,6 +77,6 @@ def test_random_token(n):
 
     assert rand
     assert len(rand) == n * 2
-    hex = int(rand, 16)
-    assert hex
-    assert type(hex) == int
+    _hex = int(rand, 16)
+    assert _hex
+    assert type(_hex) == int

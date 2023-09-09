@@ -1,5 +1,6 @@
 from datetime import datetime
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
@@ -8,66 +9,77 @@ from pyeudiw.trust.exceptions import UnknownTrustAnchor
 
 
 class TrustEvaluationHelper:
-    def __init__(self, storage: DBEngine, httpc_params, **kwargs):
+    def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
         self.exp: int = 0
         self.trust_chain: list = []
+        self.trust_anchor = trust_anchor
         self.storage = storage
         self.entity_id: str = ""
-        self.httpc_params = httpc_params,
+        self.httpc_params = httpc_params
+        self.is_trusted = False
 
         for k, v in kwargs.items():
             setattr(self, k, v)
 
     @property
-    def evaluation_method(self):
+    def evaluation_method(self) -> bool:
         # TODO: implement automatic detection of trust evaluation
         # method based on internal trust evaluetion property
+        # TODO: implement the detect of x509 trust evaluation method here
         return self.federation
 
     def _handle_chain(self):
+        _first_statement = unpad_jwt_payload(self.trust_chain[-1])
+        trust_anchor_eid = self.trust_anchor or _first_statement.get(
+            'iss', None)
 
-        trust_anchor_eid = unpad_jwt_payload(
-            self.trust_chain[-1]).get('iss', None)
+        if not trust_anchor_eid:
+            raise UnknownTrustAnchor(
+                "Unknown Trust Anchor: can't find 'iss' in the "
+                f"first entity statement: {_first_statement} "
+            )
 
         try:
             trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
         except EntryNotFound:
-            return False
-
-        if not trust_anchor:
             raise UnknownTrustAnchor(
-                f"Unknown Trust Anchor '{trust_anchor_eid}'"
+                f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
+                "a recognizable Trust Anchor."
             )
 
-        jwks = trust_anchor['federation']['entity_configuration']['jwks']['keys']
+        jwks = unpad_jwt_payload(
+            trust_anchor['federation']['entity_configuration']
+        )['jwks']['keys']
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
-
-        self.entity_id = tc.get_entityID()
-        self.exp = tc.get_exp()
-
-        _is_valid = tc.is_valid
+        self.entity_id = tc.entity_id
+        self.exp = tc.exp
+        _is_valid = tc.validate()
+        db_chain = None
         if not _is_valid:
-            db_chain = self.storage.get_trust_attestation(
-                self.entity_id
-            )["federation"]["chain"]
+            try:
+                db_chain = self.storage.get_trust_attestation(
+                    self.entity_id
+                )["federation"]["chain"]
+                if StaticTrustChainValidator(db_chain).is_valid:
+                    return True
 
-            if db_chain is not None and \
-                    StaticTrustChainValidator(db_chain).is_valid:
-                return True
+            except (EntryNotFound, Exception):
+                pass
 
             _is_valid = tc.update()
-            self.exp = tc.get_exp()
-            self.trust_chain = tc.get_chain()
+            self.exp = tc.exp
+            self.trust_chain = tc.trust_chain
 
-            if db_chain is None:
-                self.storage.add_chain(
-                    self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
-            else:
-                self.storage.update_chain(
-                    self.entity_id, tc.get_chain(), datetime.fromtimestamp(tc.get_exp()))
+        # the good trust chain is then stored
+        self.storage.add_or_update_trust_attestation(
+            entity_id=self.entity_id,
+            attestation=tc.trust_chain,
+            exp=datetime.fromtimestamp(tc.exp)
+        )
 
+        self.is_trusted = _is_valid
         return _is_valid
 
     def federation(self) -> bool:
@@ -94,7 +106,14 @@ class TrustEvaluationHelper:
         # TODO - apply metadata policy and get the final metadata
         # for now the final_metadata is the EC metadata -> TODO final_metadata
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
-        return self.final_metadata
+        try:
+            # TODO: there are some cases where the jwks are taken from a uri ...
+            return self.final_metadata['metadata'][metadata_type]
+        except KeyError:
+            raise ProtocolMetadataNotFound(
+                f"{metadata_type} not found in the final metadata:"
+                f" {self.final_metadata}"
+            )
 
     def get_trusted_jwks(self, metadata_type: str) -> list:
         return self.get_final_metadata(

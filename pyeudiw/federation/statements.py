@@ -95,7 +95,6 @@ class TrustMark:
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
         # verify signature
-
         jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
@@ -379,6 +378,7 @@ class EntityStatement:
         if header.get("kid") not in self.kids:
             raise UnknownKid(
                 f"{self.header.get('kid')} not found in {self.jwks}")
+
         # verify signature
         jwsh = JWSHelper(self.jwks[self.kids.index(header["kid"])])
         payload = jwsh.verify(jwt)
@@ -431,7 +431,7 @@ class EntityStatement:
     def validate_by_superiors(
         self,
         superiors_entity_configurations: dict = {},
-    ):  # -> dict[str, EntityConfiguration]:
+    ) -> dict:
         """
         validates the entity configuration with the entity statements
         issued by its superiors
@@ -461,14 +461,16 @@ class EntityStatement:
                 _url = f"{fetch_api_url}?sub={self.sub}"
                 logger.info(f"Getting entity statements from {_url}")
                 jwts = get_entity_statements([_url], self.httpc_params)
-                # TODO - this could be different from ZERO
-                # to be tested and fixed when the tests will be available
+                if not jwts:
+                    logger.error(
+                        f"Empty response for {_url}"
+                    )
                 jwt = jwts[0]
                 if jwt:
                     self.validate_by_superior_statement(jwt, ec)
                 else:
                     logger.error(
-                        f"Empty response for {_url}"
+                        f"JWT validation for {_url}"
                     )
 
         return self.verified_by_superiors

@@ -128,14 +128,20 @@ class JWSHelper:
 
     def verify(self, jws: str, **kwargs):
         _key = key_from_jwk_dict(self.jwk.as_dict())
-
+        _jwk_dict = self.jwk.as_dict()
         _head = unpad_jwt_header(jws)
-        if _head.get("kid") != self.jwk.as_dict()["kid"]:  # pragma: no cover
-            raise KidError(
-                f"{_head.get('kid')} != {self.jwk.as_dict()['kid']}"
-            )
 
-        _head["alg"]
+        if _head.get("kid"):
+            if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
+                raise KidError(
+                    f"{_head.get('kid')} != {_jwk_dict['kid']}"
+                )
+        # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y valu using EC keys
+        # elif _head.get("jwk"):
+            # if _head["jwk"] != _jwk_dict:  # pragma: no cover
+                # raise JwkError(
+                # f"{_head['jwk']} != {_jwk_dict}"
+                # )
 
         verifier = JWSec(alg=_head["alg"], **kwargs)
         msg = verifier.verify_compact(jws, [_key])

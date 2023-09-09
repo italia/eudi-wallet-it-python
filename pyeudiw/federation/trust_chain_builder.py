@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 
 from collections import OrderedDict
@@ -39,7 +40,7 @@ class TrustChainBuilder:
         subject: str,
         trust_anchor: str,
         httpc_params: dict,
-        trust_anchor_configuration: Union[EntityStatement, None] = None,
+        trust_anchor_configuration: Union[EntityStatement, str, None] = None,
         max_authority_hints: int = 10,
         subject_configuration: EntityStatement = None,
         required_trust_marks: list = [],
@@ -55,6 +56,25 @@ class TrustChainBuilder:
         self.httpc_params = httpc_params
 
         self.trust_anchor = trust_anchor
+        if not trust_anchor_configuration:
+            try:
+                jwts = get_entity_configurations(
+                    trust_anchor, httpc_params=self.httpc_params
+                )
+                trust_anchor_configuration = EntityStatement(
+                    jwts[0], httpc_params=self.httpc_params
+                )
+                trust_anchor_configuration.subject_configuration.validate_by_itself()
+            except Exception as e:
+                _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
+                logger.error(_msg)
+                raise InvalidEntityStatement(_msg)
+        elif isinstance(trust_anchor_configuration, str):
+            trust_anchor_configuration = EntityStatement(
+                jwt=trust_anchor_configuration,
+                httpc_params=self.httpc_params
+            )
+
         self.trust_anchor_configuration = trust_anchor_configuration
 
         self.required_trust_marks = required_trust_marks
@@ -206,7 +226,8 @@ class TrustChainBuilder:
 
     def get_trust_anchor_configuration(self) -> None:
         if not isinstance(self.trust_anchor, EntityStatement):
-            logger.info(f"Starting Metadata Discovery for {self.subject}")
+            logger.info(
+                f"Get Trust Anchor Entity Configuration for {self.subject}")
             ta_jwt = get_entity_configurations(
                 self.trust_anchor, httpc_params=self.httpc_params
             )[0]
@@ -225,6 +246,7 @@ class TrustChainBuilder:
         self._set_max_path_len()
 
     def _set_max_path_len(self):
+
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
             "max_path_length"
         ):
@@ -268,6 +290,9 @@ class TrustChainBuilder:
                     self.verified_trust_marks.extend(sc.verified_trust_marks)
 
     def serialize(self):
+        return json.dumps(self.get_trust_chain())
+
+    def get_trust_chain(self):
         res = []
         # we keep just the leaf's and TA's EC, all the intermediates EC will be dropped
         ta_ec: str = ""

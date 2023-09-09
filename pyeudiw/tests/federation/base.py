@@ -1,19 +1,8 @@
-import datetime
-
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.rsa import new_rsa_key
 
 import pyeudiw.federation.trust_chain_validator as tcv_test
-
-
-def iat_now() -> int:
-    return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-
-
-def exp_from_now(minutes: int = 33) -> int:
-    now = datetime.datetime.now(datetime.timezone.utc)
-    return int((now + datetime.timedelta(minutes=minutes)).timestamp())
-
+from pyeudiw.tools.utils import iat_now, exp_from_now
 
 httpc_params = {
     "connection": {"ssl": True},
@@ -21,7 +10,7 @@ httpc_params = {
 }
 
 NOW = iat_now()
-EXP = exp_from_now(50)
+EXP = exp_from_now(5000)
 
 # Define intermediate ec
 intermediate_jwk = new_rsa_key()
@@ -84,11 +73,11 @@ leaf_wallet = {
         },
         "federation_entity": {
             "organization_name": "OpenID Wallet Verifier example",
-            "homepage_uri": "https://verifier.example.org/home",
-            "policy_uri": "https://verifier.example.org/policy",
-            "logo_uri": "https://verifier.example.org/static/logo.svg",
+            "homepage_uri": "https://wallet-provider.example.org/home",
+            "policy_uri": "https://wallet-provider.example.org/policy",
+            "logo_uri": "https://wallet-provider.example.org/static/logo.svg",
             "contacts": [
-                "tech@verifier.example.org"
+                "tech@wallet-provider.example.org"
             ]
         }
     },
@@ -211,9 +200,11 @@ trust_chain_wallet = [
 ]
 
 test_cred = tcv_test.StaticTrustChainValidator(
-    trust_chain_issuer, [ta_jwk.serialize()], httpc_params=httpc_params)
+    trust_chain_issuer, [ta_jwk.serialize()], httpc_params=httpc_params
+)
 assert test_cred.is_valid
 
 test_wallet = tcv_test.StaticTrustChainValidator(
-    trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params)
+    trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params
+)
 assert test_wallet.is_valid

@@ -27,8 +27,9 @@ def datetime_from_timestamp(value) -> datetime.datetime:
 
 
 def get_http_url(url: str):
-    # TODO - utils.get_http_url
-    raise NotImplementedError(f"{__name__} get_http_url")
+    raise NotImplementedError(
+        f"{__name__} get_http_url is not implemented, please see federation.statements"
+    )
 
 
 def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> dict:
@@ -61,7 +62,3 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> 
 
 def random_token(n=254):
     return token_hex(n)
-
-
-def gen_exp_time(default_exp: int):
-    return iat_now() + (default_exp * 60)

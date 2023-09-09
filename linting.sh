@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SRC="pyeudiw"
+# SRC="example/satosa/integration_test"
 
 autopep8 -r --in-place $SRC
 autoflake -r --in-place  --remove-unused-variables --expand-star-imports --remove-all-unused-imports $SRC

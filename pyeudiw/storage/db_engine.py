@@ -5,7 +5,11 @@ from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage
-from pyeudiw.storage.exceptions import StorageWriteError, EntryNotFound
+from pyeudiw.storage.exceptions import (
+    ChainNotExist,
+    StorageWriteError,
+    EntryNotFound
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +62,39 @@ class DBEngine():
                 raise e
 
         return document_id
+
+    @property
+    def is_connected(self):
+        _connected = False
+        _cons = {}
+        for db_name, storage in self.storages:
+            try:
+                _connected = storage.is_connected
+                _cons[db_name] = _connected
+            except Exception as e:
+                logger.debug(
+                    f"Error while checking db engine connection on {db_name}. "
+                    f"{e.__class__.__name__}: {e}"
+                )
+
+        if True in _cons.values() and not all(_cons.values()):
+            logger.warning(
+                f"Not all the storage are found available, storages misalignment: "
+                f"{_cons}"
+            )
+
+        return _connected
+
+    def close(self):
+        for db_name, storage in self.storages:
+            try:
+                storage.close()
+            except Exception as e:
+                logger.critical(
+                    f"Error while closing db engine {db_name}. "
+                    f"{e.__class__.__name__}: {e}"
+                )
+                raise e
 
     def write(self, method: str, *args, **kwargs):
         replica_count = 0
@@ -118,17 +155,24 @@ class DBEngine():
     def has_trust_anchor(self, entity_id: str):
         return self.get_anchor(entity_id)
 
-    def add_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("add_trust_attestation", entity_id, trust_chain)
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+        return self.write("add_trust_attestation", entity_id, attestation, exp)
 
-    def add_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("add_trust_anchor", entity_id, trust_chain, exp)
+    def add_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
+        return self.write("add_trust_anchor", entity_id, entity_configuration, exp)
 
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("update_trust_attestation", entity_id, trust_chain, exp)
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+        return self.write("update_trust_attestation", entity_id, attestation, exp)
 
-    def update_trust_anchor(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
-        return self.write("update_trust_anchor", entity_id, trust_chain, exp)
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+        try:
+            self.get_trust_attestation(entity_id)
+            return self.write("update_trust_attestation", entity_id, attestation, exp)
+        except (EntryNotFound, ChainNotExist):
+            return self.write("add_trust_attestation", entity_id, attestation, exp)
+
+    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+        return self.write("update_trust_anchor", entity_id, entity_configuration, exp)
 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):
@@ -138,9 +182,11 @@ class DBEngine():
                 return cache_object, status, i
             except Exception:
                 logger.critical(
-                    "Cannot retrieve or write cache object with identifier {object_name} on database {db_name}")
+                    f"Cannot retrieve or write cache object with identifier {object_name} on cache database {i}"
+                )
         raise ConnectionRefusedError(
-            "Cannot write cache object on any instance")
+            "Cannot write cache object on any instance"
+        )
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> dict:
         # if no cache instance exist return the object
@@ -163,7 +209,8 @@ class DBEngine():
                 cache.set(cache_object)
             except Exception:
                 logger.critical(
-                    "Cannot replicate cache object with identifier {object_name} on cache {cache_name}")
+                    f"Cannot replicate cache object with identifier {object_name} on cache {cache_name}"
+                )
 
         return cache_object
 
@@ -174,7 +221,7 @@ class DBEngine():
                 cache_object = cache.overwrite(object_name, value_gen_fn)
             except Exception:
                 logger.critical(
-                    "Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
+                    f"Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
                 )
             return cache_object
 

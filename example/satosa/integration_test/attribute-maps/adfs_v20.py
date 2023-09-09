@@ -23,7 +23,7 @@ MAP = {
         'http://schemas.microsoft.com/ws/2008/06/identity/claims/primarygroupsid': 'primaryGroupSid',
         'http://schemas.microsoft.com/ws/2008/06/identity/claims/primarysid': 'primarySid',
         'http://schemas.microsoft.com/ws/2008/06/identity/claims/windowsaccountname': 'windowsAccountName',
-        },
+    },
     "to": {
         'emailAddress': 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
         'givenName': 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',

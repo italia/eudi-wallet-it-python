@@ -75,15 +75,14 @@ class StaticTrustChainValidator:
 
         return True
 
-    @property
-    def is_valid(self) -> bool:
+    def validate(self) -> bool:
         # start from the last entity statement
         rev_tc = [
-            i for i in reversed(self.get_chain())
+            i for i in reversed(self.trust_chain)
         ]
+
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
-
         last_element = rev_tc[0]
         es_header = unpad_jwt_header(last_element)
         es_payload = unpad_jwt_payload(last_element)
@@ -102,9 +101,9 @@ class StaticTrustChainValidator:
             return False
 
         # then go ahead with other checks
-        es_exp = es_payload["exp"]
+        self.exp = es_payload["exp"]
 
-        if self._check_expired(es_exp):
+        if self._check_expired(self.exp):
             raise TimeValidationError()
 
         fed_jwks = es_payload["jwks"]["keys"]
@@ -128,7 +127,13 @@ class StaticTrustChainValidator:
             else:
                 fed_jwks = st_payload["jwks"]["keys"]
 
+            self.set_exp(st_payload["exp"])
+
         return True
+
+    @property
+    def is_valid(self) -> bool:
+        return self.validate()
 
     def _retrieve_ec(self, iss: str) -> str:
         jwt = get_entity_configurations(iss, self.httpc_params)
@@ -179,32 +184,33 @@ class StaticTrustChainValidator:
 
         return jwt
 
+    def set_exp(self, exp: int) -> None:
+        if not self.exp or self.exp > exp:
+            self.exp = exp
+
     def update(self) -> bool:
         self.exp = 0
         for st in self.static_trust_chain:
-            jwt = self._update_st(st, self.httpc_params)
+            jwt = self._update_st(st)
 
             exp = unpad_jwt_payload(jwt)["exp"]
-
-            if not self.exp or self.exp > exp:
-                self.exp = exp
+            self.set_exp(exp)
 
             self.updated_trust_chain.append(jwt)
 
         return self.is_valid
 
-    def get_chain(self) -> list[str]:
+    @property
+    def trust_chain(self) -> list[str]:
         return self.updated_trust_chain or self.static_trust_chain
-
-    def get_exp(self) -> int:
-        return self.exp
 
     @property
     def is_expired(self) -> int:
         return self._check_expired(self.exp)
 
-    def get_entityID(self) -> str:
-        chain = self.get_chain()
+    @property
+    def entity_id(self) -> str:
+        chain = self.trust_chain
         payload = unpad_jwt_payload(chain[0])
         return payload["iss"]
 

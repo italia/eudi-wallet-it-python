@@ -21,8 +21,19 @@ class MongoStorage(BaseStorage):
         self.client = None
         self.db = None
 
+    @property
+    def is_connected(self):
+        if not self.client:
+            return False
+        try:
+            self.client.server_info()
+        except pymongo.errors.InvalidOperation as e:
+            return False
+
+        return True
+
     def _connect(self):
-        if not self.client or not self.client.server_info():
+        if not self.is_connected:
             self.client = pymongo.MongoClient(
                 self.url, **self.connection_params
             )
@@ -37,9 +48,12 @@ class MongoStorage(BaseStorage):
                 self.db, self.storage_conf["db_trust_anchors_collection"]
             )
 
+    def close(self):
+        self._connect()
+        self.client.close()
+
     def get_by_id(self, document_id: str) -> dict:
         self._connect()
-
         document = self.sessions.find_one({"document_id": document_id})
 
         if document is None:
@@ -49,7 +63,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_nonce_state(self, nonce: str, state: str | None) -> dict:
         self._connect()
-
         query = {"state": state, "nonce": nonce}
         if not state:
             query.pop('state')
@@ -64,7 +77,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_session_id(self, session_id: str):
         self._connect()
-
         query = {"session_id": session_id}
         document = self.sessions.find_one(query)
 
@@ -77,7 +89,6 @@ class MongoStorage(BaseStorage):
 
     def get_by_state_and_session_id(self, state: str, session_id: str = ""):
         self._connect()
-
         query = {"state": state}
         if session_id:
             query["session_id"] = session_id
@@ -155,9 +166,9 @@ class MongoStorage(BaseStorage):
                 },
             }
         )
-        if update_result.matched_count != 1 or update_result.modified_count != 1:
+        if update_result.matched_count != 1:  # or update_result.modified_count != 1:
             raise ValueError(
-                f"Cannot update document {document_id}')"
+                f"Cannot update document {document_id}'"
             )
         return update_result
 
@@ -229,7 +240,7 @@ class MongoStorage(BaseStorage):
             "trust_attestations", entity_id, entity, exp
         )
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: Union[dict, str], exp: datetime):
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
         entry = {
             "entity_id": entity_id,
             "federation": {
@@ -253,17 +264,17 @@ class MongoStorage(BaseStorage):
         )
         return documentStatus
 
-    def update_trust_attestation(self, entity_id: str, trust_chain: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         entity = {
             "federation": {
-                "chain": trust_chain,
+                "chain": attestation,
                 "exp": exp
             }
         }
 
         return self._update_trust_attestation("trust_attestations", entity_id, entity, exp)
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime) -> str:
         entity = {
             "federation": {
                 "entity_configuration": entity_configuration,

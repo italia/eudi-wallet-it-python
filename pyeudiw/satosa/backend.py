@@ -1,42 +1,38 @@
+import base64
 import datetime
 import json
 import hashlib
 import logging
 import uuid
 
-from typing import Union
 from urllib.parse import quote_plus, urlencode
 
 import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
-from satosa.response import Redirect, Response, Redirect
+from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
-from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.satosa.exceptions import (
-    BadRequestError,
-    NoBoundEndpointError,
     NotTrustedFederationError
 )
+from pyeudiw.satosa.dpop import BackendDPoP
 from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
+from pyeudiw.satosa.trust import BackendTrust
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
-from pyeudiw.openid4vp.vp_token import VpToken
+from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
 from pyeudiw.openid4vp.exceptions import (
     KIDNotFound,
     InvalidVPToken
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
-from pyeudiw.trust import TrustEvaluationHelper
-from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
 from pydantic import ValidationError
 
@@ -44,7 +40,7 @@ from pydantic import ValidationError
 logger = logging.getLogger(__name__)
 
 
-class OpenID4VPBackend(BackendModule):
+class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
     """
     A backend module (acting as a OpenID4VP SP).
     """
@@ -69,37 +65,30 @@ class OpenID4VPBackend(BackendModule):
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
-        self.client_id = config['metadata']['client_id']
-
-        self.qrcode_settings = config['qrcode']
         self.config = config
-
+        self.client_id = self.config['metadata']['client_id']
         self.default_exp = int(self.config['jwt']['default_exp'])
 
-        # dumps public jwks in the metadata
-        self.config['metadata']['jwks'] = config["metadata_jwks"]
-
-        self.federations_jwks_by_kids = {
-            i['kid']: i for i in self.config['federation']['federation_jwks']
-        }
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
 
-        self.federation_public_jwks = [
-            JWK(i).public_key for i in self.config['federation']['federation_jwks']
+        self.config['metadata']['jwks'] = [
+            JWK(i).public_key for i in self.config['metadata_jwks']
         ]
 
         # HTML template loader
-        self.template = Jinja2TemplateHandler(config)
-
-        self.db_engine = DBEngine(self.config["storage"])
-        self.update_trust_anchors()
+        self.template = Jinja2TemplateHandler(self.config["ui"])
 
         # it will be filled by .register_endpoints
         self.absolute_redirect_url = None
         self.absolute_request_url = None
+        self.absolute_status_url = None
         self.registered_get_response_endpoint = None
+
+        # resolve metadata pointers/placeholders
+        self._render_metadata_conf_elements()
+        self.init_trust_resources()
 
         logger.debug(
             lu.LOG_FMT.format(
@@ -108,39 +97,42 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-    def update_trust_anchors(self):
-        # TODO: move this to the trust evaluation helper
-        tas = self.config['federation']['trust_anchors']
-        logger.info(
-            lu.LOG_FMT.format(
-                id="Trust Anchors updates",
-                message=f"Trying to update: {tas}"
-            )
-        )
-        for ta in tas:
-            try:
-                update_trust_anchors_ecs(
-                    db=self.db_engine,
-                    trust_anchors=[ta],
-                    httpc_params=self.config['network']['httpc_params']
-                )
-            except Exception as e:
-                logger.warning(
+    @property
+    def db_engine(self) -> DBEngine:
+
+        try:
+            self._db_engine.is_connected
+        except Exception as e:
+            if getattr(self, '_db_engine', None):
+                logger.debug(
                     lu.LOG_FMT.format(
-                        id=f"Trust Anchor updates",
-                        message=f"{ta} update failed: {e}"
+                        id="OpenID4VP db storage handling",
+                        message=f"connection check silently fails and get restored: {e}"
                     )
                 )
+            self._db_engine = DBEngine(self.config["storage"])
+
+        return self._db_engine
+
+    def _render_metadata_conf_elements(self) -> None:
+        for k, v in self.config['metadata'].items():
+            if isinstance(v, (int, float, dict, list)):
+                continue
+            if not v or len(v) == 0:
+                continue
+            if all((
+                v[0] == '<',
+                v[-1] == '>',
+                '.' in v
+            )):
+                conf_section, conf_k = v[1:-1].split('.')
+                self.config['metadata'][k] = self.config[conf_section][conf_k]
 
     @property
-    def federation_jwk(self):
-        return tuple(self.federations_jwks_by_kids.values())[0]
-
-    @property
-    def metadata_jwk(self):
+    def default_metadata_private_jwk(self) -> tuple:
         return tuple(self.metadata_jwks_by_kids.values())[0]
 
-    def register_endpoints(self):
+    def register_endpoints(self) -> list:
         """
         Creates a list of all the endpoints this backend module needs to listen to. In this case
         it's the authentication response from the underlying OP that is redirected from the OP to
@@ -152,8 +144,8 @@ class OpenID4VPBackend(BackendModule):
         for k, v in self.config['endpoints'].items():
             url_map.append(
                 (
-                    f"^{self.name}/{v.lstrip('/')}$", getattr(self,
-                                                              f"{k}_endpoint")
+                    f"^{self.name}/{v.lstrip('/')}$",
+                    getattr(self, f"{k}_endpoint")
                 )
             )
             _endpoint = f"{self.client_id}{v}"
@@ -166,6 +158,8 @@ class OpenID4VPBackend(BackendModule):
                 self.absolute_redirect_url = _endpoint
             elif k == 'request':
                 self.absolute_request_url = _endpoint
+            elif k == "status":
+                self.absolute_status_url = _endpoint
         return url_map
 
     def start_auth(self, context, internal_request):
@@ -182,43 +176,13 @@ class OpenID4VPBackend(BackendModule):
         """
         return self.pre_request_endpoint(context, internal_request)
 
-    def _log(self, context: Context, level: str, message: str):
+    def _log(self, context: Context, level: str, message: str) -> None:
         log_level = getattr(logger, level)
         log_level(
             lu.LOG_FMT.format(
                 id=lu.get_session_id(context.state),
                 message=message
             )
-        )
-
-    def entity_configuration_endpoint(self, context, *args):
-
-        data = {
-            "exp": exp_from_now(minutes=self.default_exp),
-            "iat": iat_now(),
-            "iss": self.client_id,
-            "sub": self.client_id,
-            "jwks": {
-                "keys": self.federation_public_jwks
-            },
-            "metadata": {
-                self.config['federation']["metadata_type"]: self.config['metadata']
-            },
-            "authority_hints": self.config['federation']['authority_hints']
-        }
-        jwshelper = JWSHelper(self.federation_jwk)
-
-        return Response(
-            jwshelper.sign(
-                protected={
-                    "alg": self.config['federation']["default_sig_alg"],
-                    "kid": self.federation_jwk["kid"],
-                    "typ": "entity-statement+jwt"
-                },
-                plain_dict=data
-            ),
-            status="200",
-            content="application/entity-statement+jwt"
         )
 
     def pre_request_endpoint(self, context, internal_request, **kwargs):
@@ -232,8 +196,12 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-        session_id = str(context.state["SESSION_ID"])
+        session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
+
+        # TODO: do not init the session if the context is not linked to any
+        #       previous authn session (avoid to init sessions for users that has not requested an auth to a frontend)
+
         # Init session
         try:
             self.db_engine.init_session(
@@ -243,9 +211,14 @@ class OpenID4VPBackend(BackendModule):
         except (Exception, StorageWriteError) as e:
             _msg = (
                 f"Error while initializing session with state {state} and {session_id}. "
-                f"{e.__class__.__name__}: {e}"
             )
-            return self.handle_error(context, message=_msg, err_code="500")
+            return self.handle_error(
+                context,
+                message="server_error",
+                troubleshoot=f"{_msg}",
+                err=f"{_msg}. {e.__class__.__name__}: {e}",
+                err_code="500"
+            )
 
         # PAR
         payload = {
@@ -261,12 +234,17 @@ class OpenID4VPBackend(BackendModule):
 
         # Cross Device flow
         res_url = f'{self.client_id}?{url_params}'
+        encoded_res_url = base64.urlsafe_b64encode(res_url.encode())
 
         # response = base64.b64encode(res_url.encode())
-        qrcode = QRCode(res_url, **self.config['qrcode'])
+        qrcode = QRCode(encoded_res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
-            {'qrcode_base64': qrcode.to_base64(), "state": state}
+            {
+                'qrcode_base64': qrcode.to_base64(),
+                "state": state,
+                "status_endpoint": self.absolute_status_url
+            }
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
@@ -303,7 +281,8 @@ class OpenID4VPBackend(BackendModule):
         )
         auth_info = AuthenticationInformation(
             auth_class_ref, timestamp_iso, issuer)
-        # TODO - acr
+
+        # TODO - ACR values
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
@@ -337,33 +316,13 @@ class OpenID4VPBackend(BackendModule):
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
-        headers = unpad_jwt_header(jws)
-        trust_eval = TrustEvaluationHelper(
-            self.db_engine,
-            httpc_params=self.config['network']['httpc_params'],
-
-            # TODO: this helper should be initialized in the init without any specific JWS
-            # the JWS should then be submitted in the specialized methods for its specific evaluation
-            **headers
+    @property
+    def server_url(self):
+        return (
+            self.base_url[:-1]
+            if self.base_url[-1] == '/'
+            else self.base_url
         )
-
-        self._log(
-            context,
-            level='debug',
-            message=(
-                "[TRUST EVALUATION] evaluating trust with "
-                f"{trust_eval.entity_id}"
-            )
-        )
-
-        is_trusted = trust_eval.evaluation_method()
-        if not is_trusted:
-            raise NotTrustedFederationError(
-                f"{trust_eval.entity_id} is not trusted"
-            )
-
-        return trust_eval
 
     def redirect_endpoint(self, context, *args):
         self._log(
@@ -375,51 +334,79 @@ class OpenID4VPBackend(BackendModule):
             )
         )
         if context.request_method.lower() != 'post':
-            raise BadRequestError("HTTP Method not supported")
+            # raise BadRequestError("HTTP Method not supported")
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot="HTTP Method not supported",
+                err_code="400"
+            )
 
-        _server_url = (
-            self.base_url[:-1]
-            if self.base_url[-1] == '/'
-            else self.base_url
-        )
-        _endpoint = f'{_server_url}{context.request_uri}'
+        _endpoint = f'{self.server_url}{context.request_uri}'
         if self.config["metadata"].get('redirect_uris', None):
             if _endpoint not in self.config["metadata"]['redirect_uris']:
-                raise NoBoundEndpointError("request_uri not valid")
+                return self.handle_error(
+                    context=context,
+                    message="invalid_request",
+                    troubleshoot="request_uri not valid",
+                    err_code="400"
+                )
 
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request.get("response", None)
         if not jwt:
             _msg = f"Response error, missing JWT"
             self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err_code="400"
+            )
 
         try:
-            vpt = VpToken(jwt, self.metadata_jwks_by_kids)
+            vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
+            self._log(
+                context,
+                level='debug',
+                message=(
+                    f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
+                )
+            )
             ResponseSchema(**vpt.payload)
         except Exception as e:
-            _msg = f"VpToken parse and validation error: {e}"
+            _msg = f"DirectPostResponse parse and validation error: {e}"
             self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err_code="400",
+                err=f"Error:{e}, with JWT: {jwt}"
+            )
 
-        # get state, do lookup on the db -> if not -> exception
+        # state MUST be present in the response since it was in the request
+        # then do lookup on the db -> if not -> exception
         state = vpt.payload.get("state", None)
         if not state:
-            # TODO - if state is missing the db lookup fails ...
-            # state is OPTIONAL in openid4vp ...
-            self._log(
-                context, level='warning',
-                message=f"Response state missing"
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot="state not found in the response",
+                err_code="400",
+                err=f"{_msg} with: {vpt.payload}"
             )
 
         try:
             stored_session = self.db_engine.get_by_state(state=state)
         except Exception as e:
-            _msg = "Session lookup by state value failed"
-            self._log(
-                context,
-                level='error',
-                message=f"{_msg}: {e}"
+            _msg = f"Session lookup by state value failed"
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
             )
 
         # TODO: handle vp token ops exceptions
@@ -429,11 +416,16 @@ class OpenID4VPBackend(BackendModule):
             vpt.validate()
         except Exception as e:
             _msg = (
-                "VpToken content parse and validation error. "
-                f"Single VPs are faulty: {e}"
+                "DirectPostResponse content parse and validation error. "
+                f"Single VPs are faulty."
             )
-            self._log(context, level='error', message=_msg)
-            raise BadRequestError(_msg)
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
 
         # evaluate the trust to each credential issuer found in the vps
         # look for trust chain or x509 or do discovery!
@@ -450,20 +442,28 @@ class OpenID4VPBackend(BackendModule):
                 # establish the trust to each credential issuer
                 tchelper = self._validate_trust(context, vp.payload['vp'])
 
+                if not tchelper.is_trusted:
+                    return self.handle_error(
+                        context=context,
+                        message="invalid_request",
+                        troubleshoot=f"Trust Evaluation failed for {tchelper.entity_id}",
+                        err_code="400"
+                    )
+
                 # TODO: generalyze also for x509
                 vp.credential_jwks = tchelper.get_trusted_jwks(
                     metadata_type='openid_credential_issuer'
                 )
             except InvalidVPToken:
-                return self.handle_error(context=context, message=f"Cannot validate VP: {vp.jwt}", err_code="400")
+                return self.handle_error(context=context, message="invalid_request", troubleshoot=f"Cannot validate VP: {vp.jwt}", err_code="400")
             except ValidationError as e:
-                return self.handle_error(context=context, message=f"Error validating schemas: {e}", err_code="400")
+                return self.handle_error(context=context, message="invalid_request", troubleshoot=f"Error validating schemas: {e}", err_code="400")
             except KIDNotFound as e:
-                return self.handle_error(context=context, message=f"Kid error: {e}", err_code="400")
+                return self.handle_error(context=context, message="invalid_request", troubleshoot=f"Kid error: {e}", err_code="400")
             except NotTrustedFederationError as e:
-                return self.handle_error(context=context, message=f"Not trusted federation error: {e}", err_code="400")
+                return self.handle_error(context=context, message="invalid_request", troubleshoot=f"Not trusted federation error: {e}", err_code="400")
             except Exception as e:
-                return self.handle_error(context=context, message=f"VP parsing error: {e}", err_code="400")
+                return self.handle_error(context=context, message="invalid_request", troubleshoot=f"VP parsing error: {e}", err_code="400")
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
@@ -521,11 +521,13 @@ class OpenID4VPBackend(BackendModule):
             )
             return self.handle_error(
                 context=context,
-                message=f"Cannot update response object: {e}",
+                message="server_error",
+                troubleshoot=f"Cannot update response object.",
+                err=f"{e.__class__.__name__}: {e}",
                 err_code="500"
             )
 
-        if stored_session['session_id'] == str(context.state["SESSION_ID"]):
+        if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
             return Redirect(
                 self.registered_get_response_endpoint
@@ -539,65 +541,6 @@ class OpenID4VPBackend(BackendModule):
                 status="200"
             )
 
-    def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
-        """ This validates, if any, the DPoP http request header """
-
-        if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
-            # The wallet instance uses the endpoint authentication to give its WIA
-
-            # take WIA
-            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[1]
-            _head = unpad_jwt_header(dpop_jws)
-            wia = unpad_jwt_payload(dpop_jws)
-
-            self._log(
-                context,
-                level='debug',
-                message=(
-                    f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
-                )
-            )
-            self._validate_trust(context, dpop_jws)
-
-            # TODO: validate wia scheme using pydantic
-            try:
-                dpop = DPoPVerifier(
-                    public_jwk=wia['cnf']['jwk'],
-                    http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
-                    http_header_dpop=context.http_headers['HTTP_DPOP']
-                )
-            except Exception as e:
-                _msg = f"DPoP verification error: {e}"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_param",
-                        "error_description": _msg
-                    },
-                    status="400"
-                )
-
-            if not dpop.is_valid:
-                _msg = "DPoP validation error"
-                self._log(context, level='error', message=_msg)
-                return JsonResponse(
-                    {
-                        "error": "invalid_param",
-                        "error_description": _msg
-                    },
-                    status="400"
-                )
-
-            # TODO: assert and configure the wallet capabilities
-            # TODO: assert and configure the wallet Attested Security Context
-
-        else:
-            _msg = (
-                "The Wallet Instance didn't provide its Wallet Instance Attestation "
-                "a default set of capabilities and a low security level are accorded."
-            )
-            self._log(context, level='warning', message=_msg)
-
     def request_endpoint(self, context, *args):
 
         self._log(
@@ -610,17 +553,23 @@ class OpenID4VPBackend(BackendModule):
         )
 
         # check DPOP for WIA if any
-        dpop_validation_error = self._request_endpoint_dpop(context)
-        if dpop_validation_error:
-            self._log(
-                context,
-                level='error',
-                message=(
-                    "[DPoP VALIDATION ERROR] "
-                    f"{context.headers}"
-                )
+        try:
+            dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
+                context
             )
-            return dpop_validation_error
+            if dpop_validation_error:
+                return dpop_validation_error
+        except Exception as e:
+            _msg = (
+                f"[DPoP VALIDATION ERROR] WIA evalution error: {e}."
+            )
+            return self.handle_error(
+                context=context,
+                message="invalid_client",
+                troubleshoot=_msg,
+                err=f"{e} with {context.__dict__}",
+                err_code="401"
+            )
 
         try:
             state = context.qs_params["id"]
@@ -629,7 +578,13 @@ class OpenID4VPBackend(BackendModule):
                 "Error while retrieving id from qs_params: "
                 f"{e.__class__.__name__}: {e}"
             )
-            return self.handle_error(context, message=_msg, err_code="403")
+            return self.handle_error(
+                context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e} with {context.__dict__}",
+                err_code="400"
+            )
 
         data = {
             "scope": ' '.join(self.config['authorization']['scopes']),
@@ -642,6 +597,7 @@ class OpenID4VPBackend(BackendModule):
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
+            # TODO: set an exp for the request in the general conf
             "exp": exp_from_now(minutes=5)
         }
 
@@ -650,7 +606,12 @@ class OpenID4VPBackend(BackendModule):
             attestation = context.http_headers['HTTP_AUTHORIZATION']
         except KeyError as e:
             _msg = f"Error while accessing http headers: {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            return self.handle_error(
+                context,
+                message="invalid_request",
+                err=f"{e} with {context.__dict__}",
+                err_code="400"
+            )
 
         # take the session created in the pre-request authz endpoint
         try:
@@ -662,22 +623,33 @@ class OpenID4VPBackend(BackendModule):
             self.db_engine.update_request_object(document_id, data)
         except ValueError as e:
             _msg = (
-                "Error while retrieving request object from database: "
-                f"{e.__class__.__name__}: {e}"
+                "Error while retrieving request object from database."
             )
-            return self.handle_error(context, message=_msg, err_code="403")
-        except Exception as e:
+            return self.handle_error(
+                context,
+                message="server_error",
+                troubleshoot=_msg,
+                err=f"{e} with {context.__dict__}",
+                err_code="500"
+            )
+        except (Exception, BaseException) as e:
             _msg = f"Error while updating request object: {e}"
-            return self.handle_error(context, message=_msg, err_code="500")
+            return self.handle_error(
+                context,
+                message="server_error",
+                err=_msg,
+                err_code="500"
+            )
 
-        helper = JWSHelper(self.metadata_jwk)
-        # TODO: add the trust chain in the JWS headers here
-        jwt = helper.sign(data)
+        helper = JWSHelper(self.default_metadata_private_jwk)
 
+        jwt = helper.sign(
+            data,
+            protected={'trust_chain': self.my_trust_chain}
+        )
         response = {"response": jwt}
 
         # TODO: update the storage with the acquired signed request object
-
         return JsonResponse(
             response,
             status="200"
@@ -692,17 +664,24 @@ class OpenID4VPBackend(BackendModule):
         err_code="500",
         template_path="templates",
         error_template="error.html",
+        level="error"
     ):
 
         # TODO: evaluate with UX designers if Jinja2 template
         # loader and rendering is required, it seems not.
-        self._log(context, level='error',
-                  message=f"{message}: {err}. {troubleshoot}")
+
+        _msg = f"{message}:"
+        if err:
+            _msg += f" {err}."
+        self._log(
+            context, level=level,
+            message=f"{_msg} {troubleshoot}"
+        )
 
         return JsonResponse(
             {
-                "message": message,
-                "troubleshoot": troubleshoot
+                "error": message,
+                "error_description": troubleshoot
             },
             status=err_code
         )
@@ -718,9 +697,29 @@ class OpenID4VPBackend(BackendModule):
             )
         )
 
-        finalized_session = self.db_engine.get_by_session_id(
-            context.state["SESSION_ID"]
-        )
+        state = context.qs_params.get("id")
+        session_id = context.state["SESSION_ID"]
+        finalized_session = None
+        try:
+            finalized_session = self.db_engine.get_by_state_and_session_id(
+                state=state, session_id=session_id
+            )
+        except Exception as e:
+            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
+            return self.handle_error(
+                context=context,
+                message="invalid_client",
+                troubleshoot=_msg,
+                err_code="401"
+            )
+
+        if not finalized_session:
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot="session not found or invalid",
+                err_code="400"
+            )
 
         internal_response = InternalData()
         resp = internal_response.from_dict(
@@ -744,14 +743,23 @@ class OpenID4VPBackend(BackendModule):
         )
 
         session_id = context.state["SESSION_ID"]
+        _err_msg = ""
+        state = None
+
         try:
             state = context.qs_params["id"]
         except TypeError as e:
-            _msg = f"No query params found! {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            _err_msg = f"No query params found: {e}"
         except KeyError as e:
-            _msg = f"No id found in qs_params! {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            _err_msg = f"No id found in qs_params: {e}"
+
+        if _err_msg:
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_err_msg,
+                err_code="400"
+            )
 
         try:
             session = self.db_engine.get_by_state_and_session_id(
@@ -759,16 +767,28 @@ class OpenID4VPBackend(BackendModule):
             )
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
-            return self.handle_error(context, message=_msg, err_code="403")
+            return self.handle_error(
+                context=context,
+                message="invalid_client",
+                troubleshoot=_msg,
+                err_code="401"
+            )
 
+        # TODO: if the request is expired -> return 403
         if session["finalized"]:
-            return Redirect(
-                f"{self.name}/get-response"
+            #  return Redirect(
+            #      self.registered_get_response_endpoint
+            #  )
+            return JsonResponse(
+                {
+                    "response_url": f"{self.registered_get_response_endpoint}?id={state}"
+                },
+                status="200"
             )
         else:
             return JsonResponse(
                 {
                     "response": "Request object issued"
                 },
-                status="204"
+                status="201"
             )
