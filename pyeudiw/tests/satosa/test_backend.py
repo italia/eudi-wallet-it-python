@@ -307,7 +307,7 @@ class TestOpenID4VPBackend:
         # End RP trust chain
 
         state_endpoint_response = self.backend.status_endpoint(context)
-        assert state_endpoint_response.status == "200"
+        assert state_endpoint_response.status == "201"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id
