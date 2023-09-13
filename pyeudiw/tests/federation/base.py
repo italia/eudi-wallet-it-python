@@ -1,5 +1,6 @@
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.rsa import new_rsa_key
+import json
 
 import pyeudiw.federation.trust_chain_validator as tcv_test
 from pyeudiw.tools.utils import iat_now, exp_from_now
@@ -31,12 +32,12 @@ leaf_cred = {
             'jwks': {"keys": []}
         },
         "federation_entity": {
-            "organization_name": "OpenID Wallet Verifier example",
-            "homepage_uri": "https://verifier.example.org/home",
-            "policy_uri": "https://verifier.example.org/policy",
-            "logo_uri": "https://verifier.example.org/static/logo.svg",
+            "organization_name": "OpenID Credential Issuer example",
+            "homepage_uri": "https://credential_issuer.example.org/home",
+            "policy_uri": "https://credential_issuer.example.org/policy",
+            "logo_uri": "https://credential_issuer.example.org/static/logo.svg",
             "contacts": [
-                "tech@verifier.example.org"
+                "tech@credential_issuer.example.org"
             ]
         }
     },
@@ -208,3 +209,5 @@ test_wallet = tcv_test.StaticTrustChainValidator(
     trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params
 )
 assert test_wallet.is_valid
+
+#  print(json.dumps(trust_chain_issuer, indent=2))
