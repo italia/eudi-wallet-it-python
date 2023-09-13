@@ -87,7 +87,7 @@ proxy solution that allows interoperability between different entities that impl
 authentication protocols such as SAML2, OpenID Connect and OAuth2. This project offers a SaToSa
 backend to enable the OpenID4VP protocol. 
 
-<img src="docs/gallery/iam-proxy.svg" width="256">
+<img src="docs/gallery/iam-proxy.svg" width="512">
 
 Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
 
