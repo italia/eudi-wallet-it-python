@@ -9,7 +9,7 @@
 
 The EUDI Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
-to the [Italian Wallet implementation profile](https://italia.github.io/eudi-wallet-it-docs/en/).
+to the [Italian Wallet implementation profile](https://italia.github.io/eudi-wallet-it-docs/versione-corrente/en/).
 
 The toolchain contains the following components:
 
@@ -77,7 +77,7 @@ The example project is a docker-compose that runs a demo composed by the followi
 - Wordpress with SAML2 support and Bootstrap Italia template preregistered to the IAM Proxy.
 - [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid) IAM Proxy with a preconfigured OpenID4VP backend.
 
-Please read [this README](example/README.md) to get a fully working demo setup.
+Please read [this README](example/README.Wordpress.md) to get a fully working Wordpress setup with SAML2 support.
 
 
 ## SatoSa configuration
@@ -87,7 +87,9 @@ proxy solution that allows interoperability between different entities that impl
 authentication protocols such as SAML2, OpenID Connect and OAuth2. This project offers a SaToSa
 backend to enable the OpenID4VP protocol. 
 
-Please read  [README-SATOSA.md](README-SATOSA.md) for details.
+<img src="docs/gallery/iam-proxy.svg" width="256">
+
+Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
 
 
 ## Contribute
