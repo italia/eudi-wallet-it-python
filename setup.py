@@ -40,7 +40,8 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.8.2,<1.9",
-        "pydantic>=2.0,<2.2"
+        "pydantic>=2.0,<2.2",
+        "pyqrcode>=1.2,<1.3"
     ],
     extra_require={
         "satosa": [
@@ -49,7 +50,6 @@ setup(
             "satosa>=8.4,<8.6",
             "jinja2>=3.0,<4",
             "pymongo>=4.4.1,<4.5",
-            "pyqrcode>=1.2,<1.3",
             "requests>=2.2,<2.3",            
             "sd-jwt @ git+https://github.com/openwallet-foundation-labs/sd-jwt-python.git",
         ],
