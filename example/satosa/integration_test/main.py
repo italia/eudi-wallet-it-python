@@ -95,7 +95,6 @@ except requests.exceptions.InvalidSchema as e:
 
 WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
 WALLET_PUBLIC_JWK = JWK(leaf_wallet_jwk.serialize())
-# PRIVATE_JWK = leaf_wallet_jwk.serialize(private=True)
 jwshelper = JWSHelper(WALLET_PRIVATE_JWK)
 dpop_wia = jwshelper.sign(
     WALLET_INSTANCE_ATTESTATION,
