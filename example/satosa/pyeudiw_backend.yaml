@@ -78,11 +78,11 @@ config:
         - http://127.0.0.1:8000
     default_sig_alg: "RS256"
     federation_entity_metadata:
-      - organization_name: Developers Italia SATOSA OpenID4VP backend
-      - homepage_uri: https://developers.italia.it
-      - policy_uri: https://developers.italia.it
-      - tos_uri: https://developers.italia.it
-      - logo_uri: https://developers.italia.it/assets/icons/logo-it.svg
+        organization_name: Developers Italia SATOSA OpenID4VP backend
+        homepage_uri: https://developers.italia.it
+        policy_uri: https://developers.italia.it
+        tos_uri: https://developers.italia.it
+        logo_uri: https://developers.italia.it/assets/icons/logo-it.svg
 
     # private jwk
     federation_jwks:

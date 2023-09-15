@@ -551,7 +551,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 f"{context.__dict__} and args: {args}"
             )
         )
-
         # check DPOP for WIA if any
         try:
             dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
@@ -697,9 +696,10 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
         )
 
-        state = context.qs_params.get("id")
+        state = context.qs_params.get("id", None)
         session_id = context.state["SESSION_ID"]
         finalized_session = None
+        
         try:
             finalized_session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id

@@ -9,9 +9,13 @@ from pyeudiw.tests.federation.base import (
     leaf_cred,
     leaf_cred_jwk,
     leaf_wallet_jwk,
+    leaf_wallet,
+    leaf_wallet_signed,
     trust_chain_issuer,
     trust_chain_wallet,
-    ta_ec
+    ta_ec,
+    ta_ec_signed,
+    leaf_cred_signed
 )
 
 from pyeudiw.jwk import JWK
@@ -30,16 +34,22 @@ from pyeudiw.tools.utils import iat_now, exp_from_now
 from saml2_sp import saml2_request, IDP_BASEURL
 from sd_jwt.holder import SDJWTHolder
 
-from settings import CONFIG_DB, RP_EID, WALLET_INSTANCE_ATTESTATION, its_trust_chain
+from settings import (
+    CONFIG_DB, 
+    RP_EID, 
+    WALLET_INSTANCE_ATTESTATION, 
+    its_trust_chain
+)
 
 # put a trust attestation related itself into the storage
 # this then is used as trust_chain header paramenter in the signed
 # request object
 db_engine_inst = DBEngine(CONFIG_DB)
 
+# STORAGE ####
 db_engine_inst.add_trust_anchor(
-    entity_id=ta_ec['iss'],
-    entity_configuration=ta_ec,
+    entity_id = ta_ec['iss'],
+    entity_configuration = ta_ec_signed,
     exp=EXP
 )
 
@@ -48,7 +58,18 @@ db_engine_inst.add_or_update_trust_attestation(
     attestation=its_trust_chain,
     exp=datetime.datetime.now().isoformat()
 )
-# End RP trust chain
+
+db_engine_inst.add_or_update_trust_attestation(
+    entity_id=leaf_wallet['iss'],
+    attestation=leaf_wallet_signed,
+    exp=datetime.datetime.now().isoformat()
+)
+
+db_engine_inst.add_or_update_trust_attestation(
+    entity_id=leaf_cred['iss'],
+    attestation=leaf_cred_signed,
+    exp=datetime.datetime.now().isoformat()
+)
 
 req_url = f"{saml2_request['headers'][0][1]}&idp_hinting=wallet"
 headers_mobile = {
@@ -71,14 +92,6 @@ except requests.exceptions.InvalidSchema as e:
         e.args[0].split("request_uri="
                         )[1][:-1]
     )
-
-# STORAGE ####
-# Put the trust anchor EC and the trust chains related to the credential issuer and the wallet provider in the trust storage
-db_engine_inst.add_trust_anchor(
-    ta_ec['iss'],
-    ta_ec,
-    datetime.datetime.now().isoformat()
-)
 
 WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
 WALLET_PUBLIC_JWK = JWK(leaf_wallet_jwk.serialize())
