@@ -104,7 +104,9 @@ class StaticTrustChainValidator:
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
-            raise TimeValidationError()
+            raise TimeValidationError(
+                "Expired validation error"
+            )
 
         fed_jwks = es_payload["jwks"]["keys"]
 

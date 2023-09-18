@@ -5,7 +5,10 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
 from pyeudiw.storage.exceptions import EntryNotFound
-from pyeudiw.trust.exceptions import UnknownTrustAnchor
+from pyeudiw.trust.exceptions import (
+    MissingProtocolSpecificJwks,
+    UnknownTrustAnchor
+)
 
 
 class TrustEvaluationHelper:
@@ -46,10 +49,17 @@ class TrustEvaluationHelper:
                 f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
                 "a recognizable Trust Anchor."
             )
-
-        jwks = unpad_jwt_payload(
+        
+        decoded_ec = unpad_jwt_payload(
             trust_anchor['federation']['entity_configuration']
-        )['jwks']['keys']
+        )
+        jwks = decoded_ec.get('jwks', {}).get('keys', [])
+        
+        if not jwks:
+            raise MissingProtocolSpecificJwks(
+                f"Cannot find any jwks in {decoded_ec}"
+            )
+        
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
