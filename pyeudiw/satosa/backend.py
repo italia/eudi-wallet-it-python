@@ -701,9 +701,14 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         finalized_session = None
         
         try:
-            finalized_session = self.db_engine.get_by_state_and_session_id(
-                state=state, session_id=session_id
-            )
+            if state:
+                finalized_session = self.db_engine.get_by_state_and_session_id(
+                    state=state, session_id=session_id
+                )
+            else:
+                finalized_session = self.db_engine.get_by_session_id(
+                    session_id=session_id
+                )
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
             return self.handle_error(
