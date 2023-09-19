@@ -702,10 +702,12 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         
         try:
             if state:
+                # cross device
                 finalized_session = self.db_engine.get_by_state_and_session_id(
                     state=state, session_id=session_id
                 )
             else:
+                # same device
                 finalized_session = self.db_engine.get_by_session_id(
                     session_id=session_id
                 )
