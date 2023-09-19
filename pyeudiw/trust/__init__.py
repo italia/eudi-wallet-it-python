@@ -65,15 +65,21 @@ class TrustEvaluationHelper:
         )
         self.entity_id = tc.entity_id
         self.exp = tc.exp
-        _is_valid = tc.validate()
+        _is_valid = False
+        try:
+            _is_valid = tc.validate()
+        except Exception as e:
+           # raise / log here that's expired
+           pass
         db_chain = None
         if not _is_valid:
             try:
                 db_chain = self.storage.get_trust_attestation(
                     self.entity_id
                 )["federation"]["chain"]
-                if StaticTrustChainValidator(db_chain).is_valid:
-                    return True
+                if StaticTrustChainValidator(db_chain, jwks, self.httpc_params).is_valid:
+                    self.is_trusted = True
+                    return self.is_trusted
 
             except (EntryNotFound, Exception):
                 pass
