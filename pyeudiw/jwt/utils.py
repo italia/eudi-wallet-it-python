@@ -7,6 +7,8 @@ JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
 
 
 def unpad_jwt_element(jwt: str, position: int) -> dict:
+    if isinstance(jwt, bytes):
+        jwt = jwt.decode()
     b = jwt.split(".")[position]
     padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
     data = json.loads(base64.urlsafe_b64decode(padded))
