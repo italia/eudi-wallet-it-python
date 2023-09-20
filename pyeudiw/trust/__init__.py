@@ -49,17 +49,17 @@ class TrustEvaluationHelper:
                 f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
                 "a recognizable Trust Anchor."
             )
-        
+
         decoded_ec = unpad_jwt_payload(
             trust_anchor['federation']['entity_configuration']
         )
         jwks = decoded_ec.get('jwks', {}).get('keys', [])
-        
+
         if not jwks:
             raise MissingProtocolSpecificJwks(
                 f"Cannot find any jwks in {decoded_ec}"
             )
-        
+
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
@@ -68,9 +68,9 @@ class TrustEvaluationHelper:
         _is_valid = False
         try:
             _is_valid = tc.validate()
-        except Exception as e:
-           # raise / log here that's expired
-           pass
+        except Exception:
+            # raise / log here that's expired
+            pass  # nosec - B110
         db_chain = None
         if not _is_valid:
             try:
