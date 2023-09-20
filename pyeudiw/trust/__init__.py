@@ -83,7 +83,6 @@ class TrustEvaluationHelper:
 
             except (EntryNotFound, Exception):
                 pass
-            breakpoint()
             _is_valid = tc.update()
             self.exp = tc.exp
             self.trust_chain = tc.trust_chain
