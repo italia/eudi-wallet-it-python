@@ -467,9 +467,18 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
-            vp.verify_sdjwt(
-                issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks}
-            )
+            
+            try:
+                vp.verify_sdjwt(
+                    issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks}
+                )
+            except Exception as e:
+                return self.handle_error(
+                    context=context, 
+                    message="invalid_request", 
+                    troubleshoot=f"VP SD-JWT validation error: {e}", 
+                    err_code="400"
+                )
 
             # vp.result
             attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
