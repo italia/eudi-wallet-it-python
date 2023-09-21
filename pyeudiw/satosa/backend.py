@@ -708,7 +708,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         state = context.qs_params.get("id", None)
         session_id = context.state["SESSION_ID"]
         finalized_session = None
-        
+
         try:
             finalized_session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
