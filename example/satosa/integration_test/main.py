@@ -187,8 +187,10 @@ sdjwt_at_holder.create_presentation(
     aud=str(uuid.uuid4()),
     sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
     holder_key=(
-        import_pyca_pri_rsa(WALLET_PRIVATE_JWK.key.priv_key,
-                            kid=WALLET_PRIVATE_JWK.kid)
+        import_pyca_pri_rsa(
+            WALLET_PRIVATE_JWK.key.priv_key,
+            kid=WALLET_PRIVATE_JWK.kid
+        )
         if sd_specification.get("key_binding", False)
         else None
     )
