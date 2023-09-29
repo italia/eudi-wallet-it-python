@@ -408,7 +408,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=f"{e.__class__.__name__}: {e}",
                 err_code="400"
             )
-
+        
+        if stored_session["finalized"]:
+            _msg = f"Session already finalized"
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
+        
         # TODO: handle vp token ops exceptions
         try:
             vpt.load_nonce(stored_session['nonce'])
@@ -798,6 +808,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 message="invalid_client",
                 troubleshoot=_msg,
                 err_code="401"
+            )
+
+        if session["finalized"]:
+            _msg = f"Session already finalized"
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
             )
 
         # TODO: if the request is expired -> return 403
