@@ -415,7 +415,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 context=context,
                 message="invalid_request",
                 troubleshoot=_msg,
-                err=f"{e.__class__.__name__}: {e}",
+                err=_msg,
                 err_code="400"
             )
         
