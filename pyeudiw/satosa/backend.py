@@ -736,7 +736,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 troubleshoot="session not found or invalid",
                 err_code="400"
             )
-
+        
+        _now = iat_now()
+        _exp = finalized_session['request_object']['exp']
+        if _exp > _now:
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=f"session expired, request object exp is {_exp} while now is {_now}",
+                err_code="400"
+            )
+        
         internal_response = InternalData()
         resp = internal_response.from_dict(
             finalized_session['internal_response']
