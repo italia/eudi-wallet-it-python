@@ -749,7 +749,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         
         _now = iat_now()
         _exp = finalized_session['request_object']['exp']
-        if _exp > _now:
+        if _exp < _now:
             return self.handle_error(
                 context=context,
                 message="invalid_request",
@@ -808,16 +808,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 message="invalid_client",
                 troubleshoot=_msg,
                 err_code="401"
-            )
-
-        if session["finalized"]:
-            _msg = f"Session already finalized"
-            return self.handle_error(
-                context=context,
-                message="invalid_request",
-                troubleshoot=_msg,
-                err=_msg,
-                err_code="400"
             )
 
         # TODO: if the request is expired -> return 403
