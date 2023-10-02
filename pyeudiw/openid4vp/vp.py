@@ -33,11 +33,11 @@ class Vp(VpSdJwt):
         return self.credential_payload.get('iss', None)
 
     def parse_digital_credential(self):
-
-        if self._detect_vp_type() == 'jwt':
+        _typ = self._detect_vp_type()
+        if _typ == 'jwt':
             self.credential_headers = unpad_jwt_header(self.payload['vp'])
             self.credential_payload = unpad_jwt_payload(self.payload['vp'])
         else:
             raise NotImplementedError(
-                "VP Digital credentials type not implemented yet"
+                f"VP Digital credentials type not implemented yet: {_typ}"
             )

@@ -10,6 +10,8 @@ class ESSchema(BaseModel, extra='forbid'):
     sub: str
     jwks: dict
     source_endpoint: Optional[str] = None
+    metadata_policy: Optional[dict] = None
+    trust_marks: Optional[list] = None
 
 
 def is_es(payload: dict) -> bool:

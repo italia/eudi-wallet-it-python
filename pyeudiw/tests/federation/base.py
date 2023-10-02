@@ -1,6 +1,5 @@
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.rsa import new_rsa_key
-import json
 
 import pyeudiw.federation.trust_chain_validator as tcv_test
 from pyeudiw.tools.utils import iat_now, exp_from_now

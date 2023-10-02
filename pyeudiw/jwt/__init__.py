@@ -134,9 +134,9 @@ class JWSHelper:
         if _head.get("kid"):
             if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
                 raise KidError(
-                    f"{_head.get('kid')} != {_jwk_dict['kid']}"
+                    f"{_head.get('kid')} != {_jwk_dict['kid']}. Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
                 )
-        # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y valu using EC keys
+        # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y value using EC keys
         # elif _head.get("jwk"):
             # if _head["jwk"] != _jwk_dict:  # pragma: no cover
                 # raise JwkError(
