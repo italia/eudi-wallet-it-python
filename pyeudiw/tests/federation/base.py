@@ -1,6 +1,7 @@
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.rsa import new_rsa_key
 
+import json
 import pyeudiw.federation.trust_chain_validator as tcv_test
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
@@ -20,6 +21,7 @@ ta_jwk = new_rsa_key()
 
 # Define leaf Credential Issuer
 leaf_cred_jwk = new_rsa_key()
+leaf_cred_jwk_prot = new_rsa_key()
 leaf_cred = {
     "exp": EXP,
     "iat": NOW,
@@ -46,7 +48,7 @@ leaf_cred = {
 }
 leaf_cred['jwks']['keys'] = [leaf_cred_jwk.serialize()]
 leaf_cred['metadata']['openid_credential_issuer']['jwks']['keys'] = [
-    leaf_cred_jwk.serialize()]
+    leaf_cred_jwk_prot.serialize()]
 
 
 # Define intermediate Entity Statement for credential
@@ -164,7 +166,7 @@ leaf_wallet_signed = leaf_wallet_signer.sign_compact([leaf_wallet_jwk])
 
 intermediate_signer_ec = JWS(
     intermediate_ec, alg="RS256",
-    typ="application/entity-statement+jwt"
+    typ="entity-statement+jwt"
 )
 intermediate_ec_signed = intermediate_signer_ec.sign_compact([
                                                              intermediate_jwk])
@@ -210,4 +212,4 @@ test_wallet = tcv_test.StaticTrustChainValidator(
 )
 assert test_wallet.is_valid
 
-#  print(json.dumps(trust_chain_issuer, indent=2))
+print(json.dumps(trust_chain_issuer, indent=2))

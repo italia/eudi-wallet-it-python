@@ -40,8 +40,8 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
         _protected_headers = {"alg": self._sign_alg}
-        if self.SD_JWT_HEADER:
-            _protected_headers["typ"] = self.SD_JWT_HEADER
+        if getattr(self, "SD_JWT_TYP_HEADER", None):
+            _protected_headers["typ"] = self.SD_JWT_TYP_HEADER
 
         for k, v in self.additional_headers.items():
             _protected_headers[k] = v
