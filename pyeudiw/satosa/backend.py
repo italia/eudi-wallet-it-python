@@ -73,9 +73,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             i['kid']: i for i in self.config['metadata_jwks']
         }
 
-        self.config['metadata']['jwks'] = [
+        self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
-        ]
+        ]}
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
