@@ -40,8 +40,8 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
         _protected_headers = {"alg": self._sign_alg}
-        if self.SD_JWT_HEADER:
-            _protected_headers["typ"] = self.SD_JWT_HEADER
+        if getattr(self, "SD_JWT_TYP_HEADER", None):
+            _protected_headers["typ"] = self.SD_JWT_TYP_HEADER
 
         for k, v in self.additional_headers.items():
             _protected_headers[k] = v
@@ -151,27 +151,42 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
 
-def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict):
+def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict, *args, **kwargs):
     if issuer == settings["issuer"]:
         return adapted_keys["issuer_public_key"]
     else:
         raise Exception(f"Unknown issuer: {issuer}")
 
 
-def verify_sd_jwt(sd_jwt_presentation: str, issuer_key: JWK, holder_key: JWK, settings: dict = {'default_exp': 60, 'key_binding': True}) -> dict:
-    settings.update({"issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]})
+def verify_sd_jwt(
+    sd_jwt_presentation: str, 
+    issuer_key: JWK, 
+    holder_key: JWK, 
+    settings: dict = {'key_binding': True}
+) -> dict:
+
+    settings.update(
+        {
+            "issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]
+        }
+    )
     adapted_keys = {
         "issuer_key": jwcrypto.jwk.JWK(**issuer_key.as_dict()),
         "holder_key": jwcrypto.jwk.JWK(**holder_key.as_dict()),
         "issuer_public_key": jwcrypto.jwk.JWK(**issuer_key.as_dict())
     }
+    
     serialization_format = "compact"
     sdjwt_at_verifier = SDJWTVerifier(
         sd_jwt_presentation,
-        (lambda x: _cb_get_issuer_key(x, settings, adapted_keys)),
-        None,
-        None,
-        serialization_format=serialization_format,
+        cb_get_issuer_key = (
+            lambda x, unverified_header_parameters: _cb_get_issuer_key(
+                x, settings, adapted_keys, **unverified_header_parameters
+            )
+        ),
+        expected_aud = None,
+        expected_nonce = None,
+        serialization_format = serialization_format,
     )
 
     return sdjwt_at_verifier.get_verified_payload()

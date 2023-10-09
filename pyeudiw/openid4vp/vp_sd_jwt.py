@@ -1,4 +1,5 @@
 from pyeudiw.jwk import JWK
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
@@ -19,6 +20,11 @@ class VpSdJwt:
 
         issuer_jwk = JWK(issuer_jwks_by_kid[self.credential_headers["kid"]])
         holder_jwk = JWK(self.credential_payload["cnf"]["jwk"])
+
+        # verify PoP
+        jws = JWSHelper(holder_jwk)
+        if not jws.verify(self.jwt):
+            return False
 
         result = verify_sd_jwt(
             sd_jwt_presentation=self.payload["vp"],

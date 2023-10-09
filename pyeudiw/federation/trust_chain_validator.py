@@ -104,7 +104,9 @@ class StaticTrustChainValidator:
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
-            raise TimeValidationError()
+            raise TimeValidationError(
+                "Expired validation error"
+            )
 
         fed_jwks = es_payload["jwks"]["keys"]
 
@@ -150,12 +152,13 @@ class StaticTrustChainValidator:
             logger.warning(
                 f"Cannot fast refresh Entity Statement {iss}"
             )
+        if isinstance(jwt, list) and jwt:
+            return jwt[0]
         return jwt
 
     def _update_st(self, st: str) -> str:
         payload = unpad_jwt_payload(st)
         iss = payload['iss']
-
         if not is_es(payload):
             # It's an entity configuration
             return self._retrieve_ec(iss)
@@ -163,7 +166,9 @@ class StaticTrustChainValidator:
         # if it has the source_endpoint let's try a fast renewal
         download_url: str = payload.get("source_endpoint", "")
         if download_url:
-            jwt = self._retrieve_es(download_url, iss)
+            jwt = self._retrieve_es(
+                f"{download_url}?sub={payload['sub']}", iss
+            )
         else:
             ec = self._retrieve_ec(iss)
             ec_data = unpad_jwt_payload(ec)

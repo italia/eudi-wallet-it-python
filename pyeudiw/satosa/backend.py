@@ -73,9 +73,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             i['kid']: i for i in self.config['metadata_jwks']
         }
 
-        self.config['metadata']['jwks'] = [
+        self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
-        ]
+        ]}
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
@@ -408,7 +408,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=f"{e.__class__.__name__}: {e}",
                 err_code="400"
             )
-
+        
+        if stored_session["finalized"]:
+            _msg = f"Session already finalized"
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=_msg,
+                err_code="400"
+            )
+        
         # TODO: handle vp token ops exceptions
         try:
             vpt.load_nonce(stored_session['nonce'])
@@ -467,9 +477,18 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
-            vp.verify_sdjwt(
-                issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks},
-            )
+            
+            try:
+                vp.verify_sdjwt(
+                    issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks}
+                )
+            except Exception as e:
+                return self.handle_error(
+                    context=context, 
+                    message="invalid_request", 
+                    troubleshoot=f"VP SD-JWT validation error: {e}", 
+                    err_code="400"
+                )
 
             # vp.result
             attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
@@ -551,7 +570,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 f"{context.__dict__} and args: {args}"
             )
         )
-
         # check DPOP for WIA if any
         try:
             dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
@@ -697,13 +715,21 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
         )
 
-        state = context.qs_params.get("id")
+        state = context.qs_params.get("id", None)
         session_id = context.state["SESSION_ID"]
         finalized_session = None
+
         try:
-            finalized_session = self.db_engine.get_by_state_and_session_id(
-                state=state, session_id=session_id
-            )
+            if state:
+                # cross device
+                finalized_session = self.db_engine.get_by_state_and_session_id(
+                    state=state, session_id=session_id
+                )
+            else:
+                # same device
+                finalized_session = self.db_engine.get_by_session_id(
+                    session_id=session_id
+                )
         except Exception as e:
             _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
             return self.handle_error(
@@ -720,7 +746,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 troubleshoot="session not found or invalid",
                 err_code="400"
             )
-
+        
+        _now = iat_now()
+        _exp = finalized_session['request_object']['exp']
+        if _exp < _now:
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=f"session expired, request object exp is {_exp} while now is {_now}",
+                err_code="400"
+            )
+        
         internal_response = InternalData()
         resp = internal_response.from_dict(
             finalized_session['internal_response']

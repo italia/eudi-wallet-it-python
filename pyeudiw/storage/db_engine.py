@@ -158,7 +158,7 @@ class DBEngine():
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp)
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime):
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp)
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:

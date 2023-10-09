@@ -4,3 +4,7 @@ class NoTrustChainProvided(Exception):
 
 class UnknownTrustAnchor(Exception):
     pass
+
+
+class MissingProtocolSpecificJwks(Exception):
+    pass

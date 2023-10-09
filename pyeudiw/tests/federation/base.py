@@ -1,6 +1,7 @@
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.rsa import new_rsa_key
 
+import json
 import pyeudiw.federation.trust_chain_validator as tcv_test
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
@@ -20,6 +21,7 @@ ta_jwk = new_rsa_key()
 
 # Define leaf Credential Issuer
 leaf_cred_jwk = new_rsa_key()
+leaf_cred_jwk_prot = new_rsa_key()
 leaf_cred = {
     "exp": EXP,
     "iat": NOW,
@@ -31,12 +33,12 @@ leaf_cred = {
             'jwks': {"keys": []}
         },
         "federation_entity": {
-            "organization_name": "OpenID Wallet Verifier example",
-            "homepage_uri": "https://verifier.example.org/home",
-            "policy_uri": "https://verifier.example.org/policy",
-            "logo_uri": "https://verifier.example.org/static/logo.svg",
+            "organization_name": "OpenID Credential Issuer example",
+            "homepage_uri": "https://credential_issuer.example.org/home",
+            "policy_uri": "https://credential_issuer.example.org/policy",
+            "logo_uri": "https://credential_issuer.example.org/static/logo.svg",
             "contacts": [
-                "tech@verifier.example.org"
+                "tech@credential_issuer.example.org"
             ]
         }
     },
@@ -46,7 +48,7 @@ leaf_cred = {
 }
 leaf_cred['jwks']['keys'] = [leaf_cred_jwk.serialize()]
 leaf_cred['metadata']['openid_credential_issuer']['jwks']['keys'] = [
-    leaf_cred_jwk.serialize()]
+    leaf_cred_jwk_prot.serialize()]
 
 
 # Define intermediate Entity Statement for credential
@@ -154,43 +156,44 @@ ta_ec = {
 
 # Sign step
 leaf_cred_signer = JWS(leaf_cred, alg='RS256',
-                       typ='application/entity-statement+jwt')
+                       typ='entity-statement+jwt')
 leaf_cred_signed = leaf_cred_signer.sign_compact([leaf_cred_jwk])
 
 leaf_wallet_signer = JWS(leaf_wallet, alg='RS256',
-                         typ='application/entity-statement+jwt')
+                         typ='entity-statement+jwt')
 leaf_wallet_signed = leaf_wallet_signer.sign_compact([leaf_wallet_jwk])
 
 
 intermediate_signer_ec = JWS(
     intermediate_ec, alg="RS256",
-    typ="application/entity-statement+jwt"
+    typ="entity-statement+jwt"
 )
 intermediate_ec_signed = intermediate_signer_ec.sign_compact([
                                                              intermediate_jwk])
 
 
 intermediate_signer_es_cred = JWS(
-    intermediate_es_cred, alg='RS256', typ='application/entity-statement+jwt')
+    intermediate_es_cred, alg='RS256', typ='entity-statement+jwt')
 intermediate_es_cred_signed = intermediate_signer_es_cred.sign_compact([
                                                                        intermediate_jwk])
 
 intermediate_signer_es_wallet = JWS(
-    intermediate_es_wallet, alg='RS256', typ='application/entity-statement+jwt')
+    intermediate_es_wallet, alg='RS256', typ='entity-statement+jwt')
 intermediate_es_wallet_signed = intermediate_signer_es_wallet.sign_compact([
                                                                            intermediate_jwk])
 
-ta_es_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+ta_es_signer = JWS(ta_es, alg="RS256", typ="entity-statement+jwt")
 ta_es_signed = ta_es_signer.sign_compact([ta_jwk])
 
-ta_ec_signer = JWS(ta_ec, alg="RS256", typ="application/entity-statement+jwt")
+ta_ec_signer = JWS(ta_ec, alg="RS256", typ="entity-statement+jwt")
 ta_ec_signed = ta_ec_signer.sign_compact([ta_jwk])
 
 
 trust_chain_issuer = [
     leaf_cred_signed,
     intermediate_es_cred_signed,
-    ta_es_signed
+    ta_es_signed,
+    ta_ec_signed
 ]
 
 trust_chain_wallet = [
@@ -208,3 +211,5 @@ test_wallet = tcv_test.StaticTrustChainValidator(
     trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params
 )
 assert test_wallet.is_valid
+
+print(json.dumps(trust_chain_issuer, indent=2))

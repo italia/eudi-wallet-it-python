@@ -2,62 +2,59 @@
 
 
 {% block body %}
-<div class="col-12 py-md-5 bd-content">
+<div class="py-md-5 bd-content">
   <div class="card-wrapper card-space">
     <div class="card card-bg no-after">
-      <div class="card-body">
-                  
-<div class="qr-code-box">
     <div class="card-body">
-        <div class="row border-md-bottom-title">
-            <p id="content-title" class="qr-code-title text-center">Inquadra il QR code</p>
+        <div class="row">
+            <p id="content-title" class="qr-code-title text-center">Inquadra il codice QR</p>
         </div>
-        <div id="content" class="col-lg-12 text-center">
+        <div id="content" class="text-center">
             <div class="row">
-                <div id="content-text" class="qr-code-text">Usa la funzionalità "inquadra" disponibile in AppIO.</div>
+                <div id="content-text" class="qr-code-text">Usa la funzionalità "Inquadra" dell'app IO per accedere con IT Wallet al servizio.</div>
                 </div>
             <br>
             <div id="content-qrcode" class="row">
-                <span id="content-qrcode-payload"><img width="45%" src='data:image/svg+xml;base64,{{ qrcode_base64 }}'></span>
+                <span id="content-qrcode-payload"><img width="256px" src='data:image/svg+xml;base64,{{ qrcode_base64 }}'></span>
                 <div id="content-qrcode-info">
                     <p id="content-qrcode-info-text" class="text-helper text-info">
                         Il codice è valido per <b id="timer"></b> secondi
+                    </p>
+                    <p class="">
+                        <a href="javascript:window.location.reload(true)"><b>Ho bisogno di più tempo</b></a>
                     </p>
                     <p id="content-qrcode-subtitle" class="qr-code-text" hidden>
                         Puoi trovarla direttamente all'interno dell'app IO. 
                         Se hai più dispositivi mobili,
                         scegli su quale dispositivo preferisci ricevere le notifiche.
                     </p>
+                    
+                    <div id="content-function" class="text-center button-container mt-2">
+                        <button class="btn btn-outline-primary"
+                            action="action"
+                            onclick="window.history.go(-1); return false;"
+                        >
+                            <span>Indietro</span>
+                        </button>
+                    </div>
+                    
                 </div>
             </div>
-<!--
-            <div class="row">
-                <div id="content-function" class="col-lg-2 text-center button-container">
-                    <button class="btn btn-outline-primary">
-                        <span>Annulla</span>
-                    </button>
-                </div>
-            </div>
--->
         </div>
     </div>
-</div>
-
-        </div>
     </div>
 </div>
 </div>
 
 <script>
-    let failureTitle = "Autenticazione fallita";
-    let failureText = "Qualcosa non ha funzionato. Genera un nuovo QR code per riprovare oppure segui le istruzioni visibili sull'app IO.";
+    let failureTitle = "Autenticazione fallita. Per accedere al servizio prova ad autenticarti nuovamente prestando il consenso alla presentazione dei tuoi dati dall'app IO.";
+    let failureText = "Qualcosa non ha funzionato. Genera un nuovo codice QR per riprovare oppure segui le istruzioni visibili sull'app IO.";
 
     let startingConnectionTitle = "Continua sul tuo smartphone";
     let startingConnectionText = "Per proseguire, segui le istruzioni sull'app IO e autorizza l'accesso";
-    let startingConnectionQRInfo = "<b>Non hai ricevuto la notifica?</b>";
     let clickAccessLabel = "Clicca qui per accedere al servizio";
-    let connectedTitle = "Autenticazione effettuata";
-    let qrCodeExpiredInfo = "Il QR code non è più valido.";
+    let connectedTitle = "Autenticazione completata";
+    let qrCodeExpiredInfo = "Il codice QR non è più valido";
 
     let expirationTime = 126;
     let pollingInterval;
@@ -96,7 +93,7 @@
                      aria-expanded="false" 
                      data-focus-mouse="false"
                    >
-                    <span>"${clickAccessLabel}"</span>
+                    <span>${clickAccessLabel}</span>
                   </a>
               </div>
             </div>`

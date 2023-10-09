@@ -5,7 +5,10 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
 
 from pyeudiw.storage.exceptions import EntryNotFound
-from pyeudiw.trust.exceptions import UnknownTrustAnchor
+from pyeudiw.trust.exceptions import (
+    MissingProtocolSpecificJwks,
+    UnknownTrustAnchor
+)
 
 
 class TrustEvaluationHelper:
@@ -47,27 +50,39 @@ class TrustEvaluationHelper:
                 "a recognizable Trust Anchor."
             )
 
-        jwks = unpad_jwt_payload(
+        decoded_ec = unpad_jwt_payload(
             trust_anchor['federation']['entity_configuration']
-        )['jwks']['keys']
+        )
+        jwks = decoded_ec.get('jwks', {}).get('keys', [])
+
+        if not jwks:
+            raise MissingProtocolSpecificJwks(
+                f"Cannot find any jwks in {decoded_ec}"
+            )
+
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
         self.entity_id = tc.entity_id
         self.exp = tc.exp
-        _is_valid = tc.validate()
+        _is_valid = False
+        try:
+            _is_valid = tc.validate()
+        except Exception:
+            # raise / log here that's expired
+            pass  # nosec - B110
         db_chain = None
         if not _is_valid:
             try:
                 db_chain = self.storage.get_trust_attestation(
                     self.entity_id
                 )["federation"]["chain"]
-                if StaticTrustChainValidator(db_chain).is_valid:
-                    return True
+                if StaticTrustChainValidator(db_chain, jwks, self.httpc_params).is_valid:
+                    self.is_trusted = True
+                    return self.is_trusted
 
             except (EntryNotFound, Exception):
                 pass
-
             _is_valid = tc.update()
             self.exp = tc.exp
             self.trust_chain = tc.trust_chain
