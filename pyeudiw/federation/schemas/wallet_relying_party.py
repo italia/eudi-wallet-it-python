@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, List
 from pyeudiw.jwk.schema import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
-from pyeudiw.openid4vp.schemas.wallet_relying_party import VPFormat
+from pyeudiw.openid4vp.schemas import VPFormat
 
 class AcrValuesSupported(str, Enum):
     spid_l1 = "https://www.spid.gov.it/SpidL1"
