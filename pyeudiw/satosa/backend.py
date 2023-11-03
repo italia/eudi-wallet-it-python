@@ -33,9 +33,9 @@ from pyeudiw.openid4vp.exceptions import (
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
 
 from pydantic import ValidationError
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,15 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
+
+        try:
+            WalletRelyingParty(**config['metadata'])
+        except ValidationError as e:
+            logger.warning(
+                """
+                The backend configuration presents the following validation issues:
+                {}
+                """.format(logger.warning(e)))
 
         self.config = config
         self.client_id = self.config['metadata']['client_id']
