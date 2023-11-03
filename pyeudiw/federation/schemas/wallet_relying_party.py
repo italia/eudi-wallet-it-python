@@ -1,45 +1,41 @@
-from typing import Any, Dict, List
-
-from pydantic import BaseModel, HttpUrl, field_validator
-from pydantic_core.core_schema import FieldValidationInfo
-
+from enum import Enum
+from typing import Any, List
 from pyeudiw.jwk.schema import JwksSchema
+from pydantic import BaseModel, HttpUrl, PositiveInt
+from pyeudiw.openid4vp.schemas import VPFormat
 
-_default_algorithms = {
-    "authorization_signed_response_alg": [
-        "RS256",
-        "ES256"
-    ],
-    "authorization_encrypted_response_alg": [
-        "RSA-OAEP",
-        "RSA-OAEP-256",
-    ],
-    "authorization_encrypted_response_enc": [
-        "A128CBC-HS256",
-        "A192CBC-HS384",
-        "A256CBC-HS512",
-        "A128GCM",
-        "A192GCM",
-        "A256GCM",
-    ],
-    "id_token_signed_response_alg": [
-        "RS256",
-        "ES256"
-    ],
-    "id_token_encrypted_response_alg": [
-        "RSA-OAEP",
-        "RSA-OAEP-256",
-    ],
-    "id_token_encrypted_response_enc": [
-        "A128CBC-HS256",
-        "A192CBC-HS384",
-        "A256CBC-HS512",
-        "A128GCM",
-        "A192GCM",
-        "A256GCM",
-    ]
-}
+class AcrValuesSupported(str, Enum):
+    spid_l1 = "https://www.spid.gov.it/SpidL1"
+    spid_l2 = "https://www.spid.gov.it/SpidL2"
+    spid_l3 = "https://www.spid.gov.it/SpidL3"
 
+class EncryptionAlgValuesSupported(str, Enum):
+    rsa_oaep = "RSA-OAEP"
+    ras_oaep_256 = "RSA-OAEP-256"
+    ecdh_es = "ECDH-ES"
+    ecdh_es_a128kw = "ECDH-ES+A128KW"
+    ecdh_es_a192kw = "ECDH-ES+A192KW"
+    ecdh_es_a256kw = "ECDH-ES+A256KW"
+
+class EncryptionEncValuesSupported(str, Enum):
+    a128cbc_hs256 = "A128CBC-HS256"
+    a192cbc_hs384 = "A192CBC-HS384"
+    a256cbc_hs512 = "A256CBC-HS512"
+    a128gcm = "A128GCM"
+    a192gcm = "A192GCM"
+    a256gcm = "A256GCM"
+
+class SigningAlgValuesSupported(str, Enum):
+    es256 = "ES256"
+    es384 = "ES384"
+    es512 = "ES512"
+    rs256 = "RS256"
+    rs384 = "RS384"
+    rs512 = "RS512"
+
+class AuthorizationSignedResponseAlg(str, Enum):
+    rs256 = "RS256"
+    es256 = "ES256"
 
 class WalletRelyingParty(BaseModel):
     application_type: str
@@ -50,48 +46,15 @@ class WalletRelyingParty(BaseModel):
     request_uris: List[HttpUrl]
     redirect_uris: List[HttpUrl]
     default_acr_values: List[HttpUrl]
-    vp_formats: Dict[str, Dict[str, List[str]]]
     presentation_definitions: List[Any]
-    default_max_age: int
-    authorization_signed_response_alg: List[str]
-    authorization_encrypted_response_alg: List[str]
-    authorization_encrypted_response_enc: List[str]
+    authorization_signed_response_alg: List[AuthorizationSignedResponseAlg]
+    authorization_encrypted_response_alg: List[EncryptionAlgValuesSupported]
+    authorization_encrypted_response_enc: List[EncryptionEncValuesSupported]
     subject_type: str
     require_auth_time: bool
-    id_token_signed_response_alg: List[str]
-    id_token_encrypted_response_alg: List[str]
-    id_token_encrypted_response_enc: List[str]
-
-    @classmethod
-    def _get_algorithms_supported(cls, name: str, info: FieldValidationInfo) -> list[str]:
-        if not info.context:
-            return _default_algorithms[name]
-        return info.context.get(name, _default_algorithms[name])
-
-    @classmethod
-    def _check_algorithms(cls, algorithms: list[str], name: str, info: FieldValidationInfo):
-        supported_algorithms = WalletRelyingParty._get_algorithms_supported(
-            name, info)
-        for alg in algorithms:
-            if alg not in supported_algorithms:
-                raise ValueError(
-                    f"Unsupported algorithm: {alg} for {name}. "
-                    f"Supported algorithms: {supported_algorithms}."
-                )
-        return algorithms
-
-    @field_validator(
-        "authorization_signed_response_alg",
-        "authorization_encrypted_response_alg",
-        "authorization_encrypted_response_enc",
-        "id_token_signed_response_alg",
-        "id_token_encrypted_response_alg",
-        "id_token_encrypted_response_enc"
-    )
-    @classmethod
-    def check_alg(cls, value, info: FieldValidationInfo):
-        return WalletRelyingParty._check_algorithms(
-            value,
-            info.field_name,
-            info
-        )
+    id_token_encrypted_response_alg: List[EncryptionAlgValuesSupported]
+    id_token_encrypted_response_enc: List[EncryptionEncValuesSupported]
+    id_token_signed_response_alg: List[SigningAlgValuesSupported]
+    default_acr_values: List[AcrValuesSupported]
+    default_max_age: PositiveInt
+    vp_formats: VPFormat
