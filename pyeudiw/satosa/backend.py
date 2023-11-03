@@ -36,8 +36,6 @@ from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
 
 from pydantic import ValidationError
-from pprint import pformat
-
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +72,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 """
                 The backend configuration presents the following validation issues:
                 {}
-                """.format(logger.warning(pformat(e))))
+                """.format(logger.warning(e)))
 
         self.config = config
         self.client_id = self.config['metadata']['client_id']
