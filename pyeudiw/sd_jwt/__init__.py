@@ -159,9 +159,9 @@ def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict, *args, *
 
 
 def verify_sd_jwt(
-    sd_jwt_presentation: str, 
-    issuer_key: JWK, 
-    holder_key: JWK, 
+    sd_jwt_presentation: str,
+    issuer_key: JWK,
+    holder_key: JWK,
     settings: dict = {'key_binding': True}
 ) -> dict:
 
@@ -175,18 +175,18 @@ def verify_sd_jwt(
         "holder_key": jwcrypto.jwk.JWK(**holder_key.as_dict()),
         "issuer_public_key": jwcrypto.jwk.JWK(**issuer_key.as_dict())
     }
-    
+
     serialization_format = "compact"
     sdjwt_at_verifier = SDJWTVerifier(
         sd_jwt_presentation,
-        cb_get_issuer_key = (
+        cb_get_issuer_key=(
             lambda x, unverified_header_parameters: _cb_get_issuer_key(
                 x, settings, adapted_keys, **unverified_header_parameters
             )
         ),
-        expected_aud = None,
-        expected_nonce = None,
-        serialization_format = serialization_format,
+        expected_aud=None,
+        expected_nonce=None,
+        serialization_format=serialization_format,
     )
 
     return sdjwt_at_verifier.get_verified_payload()
