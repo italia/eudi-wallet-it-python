@@ -70,8 +70,11 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         try:
             WalletRelyingParty(**config['metadata'])
         except ValidationError as e:
-            logger.warning("The backend configuration presents the following validation issues:")
-            logger.warning(pformat(e))
+            logger.warning(
+                """
+                The backend configuration presents the following validation issues:
+                {}
+                """.format(logger.warning(pformat(e))))
 
         self.config = config
         self.client_id = self.config['metadata']['client_id']
