@@ -3,7 +3,7 @@ import datetime
 import json
 import urllib.parse
 import uuid
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from bs4 import BeautifulSoup
@@ -336,6 +336,16 @@ class TestOpenID4VPBackend:
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
+
+        datetime_mock = Mock(wraps=datetime.datetime)
+        datetime_mock.now.return_value = datetime.datetime(1999, 1, 1)
+        with patch('datetime.datetime', new=datetime_mock):
+            self.backend.status_endpoint(context)
+            state_endpoint_response = self.backend.status_endpoint(context)
+            assert state_endpoint_response.status == "403"
+            assert state_endpoint_response.message
+            err = json.loads(state_endpoint_response.message)
+            assert err["error"] == "expired"
 
         # TODO - the authentication is successful ONLY if redirect_endpoints gets a valid presentation!
         # state_endpoint_response = self.backend.status_endpoint(context)

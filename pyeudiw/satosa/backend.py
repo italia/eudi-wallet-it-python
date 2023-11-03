@@ -810,7 +810,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err_code="401"
             )
 
-        # TODO: if the request is expired -> return 403
+        request_object = session.get("request_object", None)
+        if request_object:
+            if request_object["exp"] >= iat_now():
+                return self.handle_error(
+                    context=context,
+                    message="expired",
+                    troubleshoot=f"Request object expired",
+                    err_code="403"
+                )
+
         if session["finalized"]:
             #  return Redirect(
             #      self.registered_get_response_endpoint
