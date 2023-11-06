@@ -1,10 +1,12 @@
 import logging
+from pprint import pprint
 
 from typing import Union
 
 
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
+from pyeudiw.openid4vp.schemas.wallet_instance_attestation import WalletInstanceAttestationPayload
 from pyeudiw.satosa.response import JsonResponse
 
 
@@ -44,8 +46,9 @@ class BackendDPoP:
                     err=f"{e}"
                 )
 
-            # TODO: validate wia scheme using pydantic
             try:
+                # Validate the WIA before passing it to the verifier
+                WalletInstanceAttestationPayload(**wia)
                 dpop = DPoPVerifier(
                     public_jwk=wia['cnf']['jwk'],
                     http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],

@@ -350,7 +350,7 @@ WALLET_INSTANCE_ATTESTATION = {
     "policy_uri": "https://wallet-provider.example.org/privacy_policy",
     "tos_uri": "https://wallet-provider.example.org/info_policy",
     "logo_uri": "https://wallet-provider.example.org/logo.svg",
-    "asc": "https://wallet-provider.example.org/LoA/basic",
+    "aal": "https://wallet-provider.example.org/LoA/basic",
     "cnf":
     {
         "jwk": PUBLIC_JWK
