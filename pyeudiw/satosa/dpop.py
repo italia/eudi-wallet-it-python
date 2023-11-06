@@ -46,6 +46,15 @@ class BackendDPoP:
                 )
 
             try:
+                WalletInstanceAttestationPayload(**wia)
+            except Exception as e:
+                self._log(
+                    context,
+                    level='warning',
+                    message=f"[FOUND WIA] Invalid WIA: {wia}! \nValidation error: {e}"
+                )
+
+            try:
                 self._validate_trust(context, dpop_jws)
             except Exception as e:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
@@ -58,8 +67,6 @@ class BackendDPoP:
                 )
 
             try:
-                # Validate the WIA before passing it to the verifier
-                WalletInstanceAttestationPayload(**wia)
                 dpop = DPoPVerifier(
                     public_jwk=wia['cnf']['jwk'],
                     http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
