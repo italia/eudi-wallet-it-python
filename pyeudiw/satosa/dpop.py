@@ -5,9 +5,12 @@ from typing import Union
 
 from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
-from pyeudiw.openid4vp.schemas.wallet_instance_attestation import WalletInstanceAttestationPayload
+from pyeudiw.openid4vp.schemas.wallet_instance_attestation import WalletInstanceAttestationPayload, \
+    WalletInstanceAttestationHeader
 from pyeudiw.satosa.response import JsonResponse
 
+import satosa.logging_util as lu
+from satosa.context import Context
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +35,15 @@ class BackendDPoP:
                     f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
                 )
             )
+
+            try:
+                WalletInstanceAttestationHeader(**_head)
+            except Exception as e:
+                self._log(
+                    context,
+                    level='warning',
+                    message=f"[FOUND WIA] Invalid Headers: {_head}! \nValidation error: {e}"
+                )
 
             try:
                 self._validate_trust(context, dpop_jws)
@@ -84,3 +96,12 @@ class BackendDPoP:
                 "a default set of capabilities and a low security level are applied."
             )
             self._log(context, level='warning', message=_msg)
+
+    def _log(self, context: Context, level: str, message: str) -> None:
+        log_level = getattr(logger, level)
+        log_level(
+            lu.LOG_FMT.format(
+                id=lu.get_session_id(context.state),
+                message=message
+            )
+        )
