@@ -102,12 +102,12 @@ def test_invalid_intermediary_chain():
     assert verify_x509_cert_chain(chain) == False
 
 def test_invalid_len():
-    chain = gen_chain(datetime.fromisoformat('2014-12-04'))
+    chain = gen_chain(datetime.fromisoformat('2050-12-04'))
     del chain["x5c"][0]
     del chain["x5c"][1]
     assert verify_x509_cert_chain(chain) == False
 
 def test_invalid_chain_order():
-    chain = gen_chain(datetime.fromisoformat('2014-12-04'))
+    chain = gen_chain(datetime.fromisoformat('2050-12-04'))
     chain["x5c"].reverse()
     assert verify_x509_cert_chain(chain) == False
