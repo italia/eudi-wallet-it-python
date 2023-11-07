@@ -8,7 +8,7 @@ LOG_ERROR = "x509 verification failed: {}"
 logger = logging.getLogger(__name__)
 
 def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
-    chain_len = len(x509["exp"])
+    chain_len = len(x509["x5c"])
 
     if chain_len < 2:
         message = "invalid chain lenght -> minimum expected 2 found {}".format(chain_len)
