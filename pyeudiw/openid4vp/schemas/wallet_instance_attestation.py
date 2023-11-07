@@ -28,7 +28,6 @@ class WalletInstanceAttestationHeader(BaseModel):
     alg: str
     typ: Literal["wallet-attestation+jwt"]
     kid: str
-    x5c: Optional[List[str]] = None
     trust_chain: Optional[List[str]] = None
 
     @field_validator("alg")
@@ -42,14 +41,15 @@ class WalletInstanceAttestationPayload(BaseModel):
     sub: str
     iat: int
     exp: int
-    type: Literal["WalletInstanceAttestation"]
-    policy_uri: HttpUrl
-    tos_uri: HttpUrl
-    logo_uri: HttpUrl
-    attested_security_context: HttpUrl
+    aal: HttpUrl
     cnf: CNFSchema
-    authorization_endpoint: str
-    response_types_supported: List[str]
-    vp_formats_supported: VPFormatSchema
-    request_object_signing_alg_values_supported: List[str]
-    presentation_definition_uri_supported: bool
+    # Wallet Capabilities
+    type: Optional[Literal["WalletInstanceAttestation"]]
+    policy_uri: Optional[HttpUrl]
+    tos_uri: Optional[HttpUrl]
+    logo_uri: Optional[HttpUrl]
+    authorization_endpoint: Optional[str]
+    response_types_supported: Optional[List[str]]
+    vp_formats_supported: Optional[VPFormatSchema]
+    request_object_signing_alg_values_supported: Optional[List[str]]
+    presentation_definition_uri_supported: Optional[bool]
