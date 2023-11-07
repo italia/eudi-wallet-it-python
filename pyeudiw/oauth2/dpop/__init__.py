@@ -3,6 +3,7 @@ import hashlib
 import logging
 import uuid
 
+from pyeudiw.jwk.schema import JwkSchema
 from pyeudiw.oauth2.dpop.exceptions import (
     InvalidDPoP,
     InvalidDPoPAth,
@@ -61,6 +62,14 @@ class DPoPVerifier:
             if self.dpop_header_prefix in http_header_authz
             else http_header_authz
         )
+        # If the jwk is invalid, raise an exception
+        try:
+            JwkSchema(**public_jwk)
+        except Exception as e:
+            logger.error(
+                "Jwk validation error, "
+                f"{e.__class__.__name__}: {e}"
+            )
         # If the jwt is invalid, this will raise an exception
         try:
             unpad_jwt_header(http_header_dpop)
