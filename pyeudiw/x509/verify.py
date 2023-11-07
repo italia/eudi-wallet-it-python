@@ -16,7 +16,6 @@ def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
         x509_certs = [crypto.load_certificate(crypto.FILETYPE_PEM, str(pem)) for pem in pems]
 
         for cert in x509_certs[:-1]:
-            breakpoint()
             store.add_cert(cert)
 
         store_ctx = crypto.X509StoreContext(store, x509_certs[-1])
@@ -25,5 +24,5 @@ def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
 
         return True
     except Exception as e:
-        logging.warn("x509 verification failed: {}".format(e))
+        logging.warning("x509 verification failed: {}".format(e))
         return False
