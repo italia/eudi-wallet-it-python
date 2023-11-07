@@ -3,10 +3,21 @@ from OpenSSL import crypto
 from datetime import datetime
 from ssl import DER_cert_to_PEM_cert
 
+LOG_ERROR = "x509 verification failed: {}"
+
 logger = logging.getLogger(__name__)
 
 def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
+    chain_len = len(x509["exp"])
+
+    if chain_len < 2:
+        message = "invalid chain lenght -> minimum expected 2 found {}".format(chain_len)
+        logging.warning(LOG_ERROR.format(message))
+        return False
+    
     if datetime.now() > x509["exp"]:
+        message = "expired chain date -> {}".format(x509["exp"])
+        logging.warning(LOG_ERROR.format(message))
         return False
 
     try:
@@ -24,5 +35,5 @@ def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
 
         return True
     except Exception as e:
-        logging.warning("x509 verification failed: {}".format(e))
+        logging.warning(LOG_ERROR.format(e))
         return False
