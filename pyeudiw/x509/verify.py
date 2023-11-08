@@ -16,7 +16,7 @@ def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
         return False
     
     if datetime.now() > x509["exp"]:
-        message = "expired chain date -> {}".format(x509["exp"])
+        message = f"expired chain date -> {x509["exp"]}"
         logging.warning(LOG_ERROR.format(message))
         return False
 
