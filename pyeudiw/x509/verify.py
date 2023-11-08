@@ -11,7 +11,7 @@ def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
     chain_len = len(x509["x5c"])
 
     if chain_len < 2:
-        message = "invalid chain lenght -> minimum expected 2 found {}".format(chain_len)
+        message = f"invalid chain lenght -> minimum expected 2 found {chain_len}"
         logging.warning(LOG_ERROR.format(message))
         return False
     
