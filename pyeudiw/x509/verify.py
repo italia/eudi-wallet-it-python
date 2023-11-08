@@ -7,23 +7,23 @@ LOG_ERROR = "x509 verification failed: {}"
 
 logger = logging.getLogger(__name__)
 
-def verify_x509_cert_chain(x509: dict[str, list[bytes] | datetime]) -> bool:
-    chain_len = len(x509["x5c"])
+def verify_x509_cert_chain(x5c: list[bytes], exp: datetime) -> bool:
+    chain_len = len(x5c)
 
     if chain_len < 2:
         message = f"invalid chain lenght -> minimum expected 2 found {chain_len}"
         logging.warning(LOG_ERROR.format(message))
         return False
     
-    if datetime.now() > x509["exp"]:
-        message = f"expired chain date -> {x509['exp']}"
+    if datetime.now() > exp:
+        message = f"expired chain date -> {exp}"
         logging.warning(LOG_ERROR.format(message))
         return False
 
     try:
         store = crypto.X509Store()
 
-        pems = [DER_cert_to_PEM_cert(cert) for cert in x509["x5c"]]
+        pems = [DER_cert_to_PEM_cert(cert) for cert in x5c]
         x509_certs = [crypto.load_certificate(crypto.FILETYPE_PEM, str(pem)) for pem in pems]
 
         for cert in x509_certs[:-1]:
