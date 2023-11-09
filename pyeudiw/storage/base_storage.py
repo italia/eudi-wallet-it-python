@@ -1,6 +1,10 @@
 import datetime
-
+from enum import Enum
 from typing import Union
+
+class TrustType(Enum):
+    X509 = 0
+    FEDERATION = 1
 
 
 class BaseStorage(object):
@@ -37,16 +41,16 @@ class BaseStorage(object):
     def has_trust_anchor(self, entity_id: str):
         raise NotImplementedError()
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
         raise NotImplementedError()
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
         raise NotImplementedError()
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
         raise NotImplementedError()
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
+    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
         raise NotImplementedError()
 
     def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:

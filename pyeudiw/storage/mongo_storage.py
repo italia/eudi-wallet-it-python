@@ -3,13 +3,12 @@ from datetime import datetime
 
 from pymongo.results import UpdateResult
 
-from pyeudiw.storage.base_storage import BaseStorage
+from pyeudiw.storage.base_storage import BaseStorage, TrustType
 from pyeudiw.storage.exceptions import (
     ChainNotExist,
     StorageEntryUpdateFailed
 )
 from typing import Union
-
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = {}) -> None:
@@ -225,34 +224,58 @@ class MongoStorage(BaseStorage):
         db_collection = getattr(self, collection)
         db_collection.insert_one(attestation)
         return entity_id
+    
+    def _update_attestation_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
+        trust_name = "x509" if trust_type == TrustType.X509 else "federation"
+        attestation_name = "x5c" if trust_type == TrustType.X509 else "chain"
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime):
+        trust_entity = ta.get(trust_name, None) or {}
+
+        trust_entity[attestation_name] = attestation
+        trust_entity["exp"] = exp
+
+        ta[trust_name] = trust_entity
+
+        return ta
+    
+    def _update_anchor_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
+        trust_name = "x509" if trust_type == TrustType.X509 else "federation"
+        attestation_name = "pem" if trust_type == TrustType.X509 else "entity_configuration"
+
+        trust_entity = ta.get(trust_name, None) or {}
+
+        trust_entity[attestation_name] = attestation
+        trust_entity["exp"] = exp
+
+        ta[trust_name] = trust_entity
+
+        return ta
+
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType):
         entity = {
             "entity_id": entity_id,
-            "federation": {
-                "chain": attestation,
-                "exp": exp
-            },
+            "federation": {},
             "x509": {}
         }
 
+        ta = self._update_attestation_metadata(entity, attestation, exp, trust_type)
+
         self._add_entry(
-            "trust_attestations", entity_id, entity, exp
+            "trust_attestations", entity_id, ta, exp
         )
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
-        entry = {
-            "entity_id": entity_id,
-            "federation": {
-                "entity_configuration": entity_configuration,
-                "exp": exp
-            },
-            "x509": {}  # TODO x509
-        }
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
         if self.has_trust_anchor(entity_id):
-            self.update_trust_anchor(entity_id, entity_configuration, exp)
+            self.update_trust_anchor(entity_id, entity_configuration, exp, trust_type)
         else:
-            self._add_entry("trust_anchors", entity_id, entry, exp)
+            entry = {
+                "entity_id": entity_id,
+                "federation": {},
+                "x509": {}
+            }
+
+            ta = self._update_anchor_metadata(entry, entity_configuration, exp, trust_type)
+            self._add_entry("trust_anchors", entity_id, ta, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if not self._has_trust_attestation(collection, entity_id):
@@ -264,30 +287,22 @@ class MongoStorage(BaseStorage):
         )
         return documentStatus
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
-        entity = {
-            "federation": {
-                "chain": attestation,
-                "exp": exp
-            }
-        }
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
+        old_ta = self._get_trust_attestation("trust_attestations", entity_id) or {}
+        upd_ta = self._update_attestation_metadata(old_ta, attestation, exp, trust_type)
 
-        return self._update_trust_attestation("trust_attestations", entity_id, entity, exp)
+        return self._update_trust_attestation("trust_attestations", entity_id, upd_ta, exp)
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime) -> str:
-        entity = {
-            "federation": {
-                "entity_configuration": entity_configuration,
-                "exp": exp
-            }
-        }
+    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
+        old_ta = self._get_trust_attestation("trust_attestations", entity_id) or {}
+        upd_ta = self._update_anchor_metadata(old_ta, entity_configuration, exp, trust_type)
 
         if not self.has_trust_anchor(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
         documentStatus = self.trust_anchors.update_one(
             {"entity_id": entity_id},
-            {"$set": entity}
+            {"$set": upd_ta}
         )
         if not documentStatus.matched_count:
             raise StorageEntryUpdateFailed(
