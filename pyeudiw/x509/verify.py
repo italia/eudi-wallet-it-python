@@ -36,7 +36,10 @@ def _check_chain_len(pems: list) -> bool:
     
     return True
     
-def _check_datetime(exp: datetime):
+def _check_datetime(exp: datetime | None):
+    if exp == None:
+        return True
+
     if datetime.now() > exp:
         message = f"expired chain date -> {exp}"
         logging.warning(LOG_ERROR.format(message))
@@ -44,7 +47,7 @@ def _check_datetime(exp: datetime):
     
     return True
 
-def verify_x509_attestation_chain(x5c: list[bytes], exp: datetime) -> bool:
+def verify_x509_attestation_chain(x5c: list[bytes], exp: datetime | None = None) -> bool:
     if not _check_chain_len(x5c) or not _check_datetime(exp):
         return False
     
@@ -52,7 +55,7 @@ def verify_x509_attestation_chain(x5c: list[bytes], exp: datetime) -> bool:
 
     return _verify_chain(pems)
     
-def verify_x509_anchor(pem_str: str, exp: datetime) -> bool:
+def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
     if not _check_datetime(exp):
         return False
 
