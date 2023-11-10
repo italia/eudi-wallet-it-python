@@ -92,6 +92,10 @@ def test_valid_chain():
     chain = gen_chain()
     assert verify_x509_attestation_chain(chain, datetime.fromisoformat('2050-12-04')) == True
 
+def test_valid_chain_with_none_exp():
+    chain = gen_chain()
+    assert verify_x509_attestation_chain(chain) == True
+
 def test_valid_chain_invalid_date():
     chain = gen_chain()
     assert verify_x509_attestation_chain(chain, datetime.fromisoformat('2014-12-04')) == False
@@ -117,6 +121,12 @@ def test_valid_anchor():
     pem = chain_to_pem(chain)
 
     assert verify_x509_anchor(pem, datetime.fromisoformat('2050-12-04')) == True
+
+def test_valid_anchor():
+    chain = gen_chain()
+    pem = chain_to_pem(chain)
+
+    assert verify_x509_anchor(pem) == True
 
 def test_anchor_valid_chain_invalid_date():
     chain = gen_chain()
