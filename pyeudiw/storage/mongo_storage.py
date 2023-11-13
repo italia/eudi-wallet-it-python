@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pymongo.results import UpdateResult
 
-from pyeudiw.storage.base_storage import BaseStorage, TrustType
+from pyeudiw.storage.base_storage import BaseStorage, TrustType, trust_type_map
 from pyeudiw.storage.exceptions import (
     ChainNotExist,
     StorageEntryUpdateFailed
@@ -226,7 +226,7 @@ class MongoStorage(BaseStorage):
         return entity_id
     
     def _update_attestation_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
-        trust_name = "x509" if trust_type == TrustType.X509 else "federation"
+        trust_name = trust_type_map[trust_type]
         attestation_name = "x5c" if trust_type == TrustType.X509 else "chain"
 
         trust_entity = ta.get(trust_name, {})
@@ -239,7 +239,7 @@ class MongoStorage(BaseStorage):
         return ta
     
     def _update_anchor_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
-        trust_name = "x509" if trust_type == TrustType.X509 else "federation"
+        trust_name = trust_type_map[trust_type]
         attestation_name = "pem" if trust_type == TrustType.X509 else "entity_configuration"
 
         trust_entity = ta.get(trust_name, {})

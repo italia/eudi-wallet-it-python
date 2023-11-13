@@ -6,6 +6,10 @@ class TrustType(Enum):
     X509 = 0
     FEDERATION = 1
 
+trust_type_map :dict = {
+  TrustType.X509 : "x509",
+  TrustType.FEDERATION: "federation"
+}
 
 class BaseStorage(object):
     def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
