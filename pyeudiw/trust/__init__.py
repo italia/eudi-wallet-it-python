@@ -3,12 +3,14 @@ from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload
-from pyeudiw.x509.verify import verify_x509_anchor
+from pyeudiw.x509.verify import verify_x509_anchor, get_issuer_from_x5c
 
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.trust.exceptions import (
     MissingProtocolSpecificJwks,
-    UnknownTrustAnchor
+    UnknownTrustAnchor,
+    InvalidTrustType,
+    MissingTrustType
 )
 
 
@@ -27,15 +29,30 @@ class TrustEvaluationHelper:
 
     @property
     def evaluation_method(self) -> bool:
-        # TODO: implement automatic detection of trust evaluation
-        # method based on internal trust evaluetion property
-        # TODO: implement the detect of x509 trust evaluation method here
-        return self.federation
+        try:
+            getattr(self, "typ")
+        except Exception:
+            raise MissingTrustType(
+                "Unknown Trust Type: can't find 'typ' in headers"
+            )
+
+        if self.typ.upper() == "JWT":
+            return self.federation
+        elif self.typ.upper() == "X509":
+            return self.x509
+        else:
+            raise InvalidTrustType(
+                "Unknown Trust Type: trust type not supported"
+                f"Found {self.typ}"
+            )
     
     def _retrieve_anchor(self):
-        _first_statement = unpad_jwt_payload(self.trust_chain[-1])
-        trust_anchor_eid = self.trust_anchor or _first_statement.get(
-            'iss', None)
+        if self.typ.upper() == "JWT":
+            _first_statement = unpad_jwt_payload(self.trust_chain[-1])
+            trust_anchor_eid = self.trust_anchor or _first_statement.get(
+                'iss', None)
+        else:
+            trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.x5c)
 
         if not trust_anchor_eid:
             raise UnknownTrustAnchor(
