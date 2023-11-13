@@ -242,7 +242,7 @@ class MongoStorage(BaseStorage):
         trust_name = "x509" if trust_type == TrustType.X509 else "federation"
         attestation_name = "pem" if trust_type == TrustType.X509 else "entity_configuration"
 
-        trust_entity = ta.get(trust_name, None) or {}
+        trust_entity = ta.get(trust_name, {})
 
         trust_entity[attestation_name] = attestation
         trust_entity["exp"] = exp
