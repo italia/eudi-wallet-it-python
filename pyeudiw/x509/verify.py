@@ -3,6 +3,7 @@ import logging
 from OpenSSL import crypto
 from datetime import datetime
 from ssl import DER_cert_to_PEM_cert
+from cryptography.x509 import load_der_x509_certificate
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -65,3 +66,7 @@ def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
         return False
     
     return _verify_chain(pems)
+
+def get_issuer_from_x5c(x5c: list[bytes]) -> str:
+    cert = load_der_x509_certificate(x5c[-1])
+    return cert.subject.rfc4514_string().split("=")[1]
