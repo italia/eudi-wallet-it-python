@@ -258,24 +258,24 @@ class MongoStorage(BaseStorage):
             "x509": {}
         }
 
-        ta = self._update_attestation_metadata(entity, attestation, exp, trust_type)
+        updated_entity = self._update_attestation_metadata(entity, attestation, exp, trust_type)
 
         self._add_entry(
-            "trust_attestations", entity_id, ta, exp
+            "trust_attestations", entity_id, updated_entity, exp
         )
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
         if self.has_trust_anchor(entity_id):
             self.update_trust_anchor(entity_id, entity_configuration, exp, trust_type)
         else:
-            entry = {
+            entity = {
                 "entity_id": entity_id,
                 "federation": {},
                 "x509": {}
             }
 
-            ta = self._update_anchor_metadata(entry, entity_configuration, exp, trust_type)
-            self._add_entry("trust_anchors", entity_id, ta, exp)
+            updated_entity = self._update_anchor_metadata(entity, entity_configuration, exp, trust_type)
+            self._add_entry("trust_anchors", entity_id, updated_entity, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
         if not self._has_trust_attestation(collection, entity_id):
@@ -288,21 +288,21 @@ class MongoStorage(BaseStorage):
         return documentStatus
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
-        old_ta = self._get_trust_attestation("trust_attestations", entity_id) or {}
-        upd_ta = self._update_attestation_metadata(old_ta, attestation, exp, trust_type)
+        old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
+        upd_entity = self._update_attestation_metadata(old_entity, attestation, exp, trust_type)
 
-        return self._update_trust_attestation("trust_attestations", entity_id, upd_ta, exp)
+        return self._update_trust_attestation("trust_attestations", entity_id, upd_entity, exp)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
-        old_ta = self._get_trust_attestation("trust_attestations", entity_id) or {}
-        upd_ta = self._update_anchor_metadata(old_ta, entity_configuration, exp, trust_type)
+        old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
+        upd_entity = self._update_anchor_metadata(old_entity, entity_configuration, exp, trust_type)
 
         if not self.has_trust_anchor(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
         documentStatus = self.trust_anchors.update_one(
             {"entity_id": entity_id},
-            {"$set": upd_ta}
+            {"$set": upd_entity}
         )
         if not documentStatus.matched_count:
             raise StorageEntryUpdateFailed(
