@@ -70,3 +70,11 @@ def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
 def get_issuer_from_x5c(x5c: list[bytes]) -> str:
     cert = load_der_x509_certificate(x5c[-1])
     return cert.subject.rfc4514_string().split("=")[1]
+
+def is_der_format(cert: bytes) -> str:
+    try:
+        pem = DER_cert_to_PEM_cert(cert)
+        crypto.load_certificate(crypto.FILETYPE_PEM, str(pem))
+        return True
+    except crypto.Error:
+        return False
