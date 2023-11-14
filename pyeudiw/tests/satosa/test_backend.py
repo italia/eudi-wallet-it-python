@@ -263,7 +263,6 @@ class TestOpenID4VPBackend:
             protected={
                 'trust_chain': trust_chain_wallet,
                 'x5c': [],
-                'typ': 'JWT'
             }
         )
 
