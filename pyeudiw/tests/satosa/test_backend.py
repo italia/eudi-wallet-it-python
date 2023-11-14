@@ -262,7 +262,7 @@ class TestOpenID4VPBackend:
             WALLET_INSTANCE_ATTESTATION,
             protected={
                 'trust_chain': trust_chain_wallet,
-                'x5c': []
+                'x5c': [],
             }
         )
 
