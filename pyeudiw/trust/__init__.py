@@ -2,8 +2,8 @@ from datetime import datetime
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.jwt.utils import unpad_jwt_payload
-from pyeudiw.x509.verify import verify_x509_anchor, get_issuer_from_x5c
+from pyeudiw.jwt.utils import unpad_jwt_payload, is_jwt_format
+from pyeudiw.x509.verify import verify_x509_anchor, get_issuer_from_x5c, is_der_format
 
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.trust.exceptions import (
@@ -29,30 +29,24 @@ class TrustEvaluationHelper:
 
     @property
     def evaluation_method(self) -> bool:
-        try:
-            getattr(self, "typ")
-        except Exception:
+        if not (type(self.trust_chain) is list) or len(self.trust_chain) == 0:
             raise MissingTrustType(
-                "Unknown Trust Type: can't find 'typ' in headers"
+                "Missing Trust Type: can't find 'typ' in headers"
             )
 
-        if self.typ.upper() == "JWT":
+        if is_jwt_format(self.trust_chain[0]):
             return self.federation
-        elif self.typ.upper() == "X509":
+        elif is_der_format(self.trust_chain[0]):
             return self.x509
-        else:
-            raise InvalidTrustType(
-                "Unknown Trust Type: trust type not supported"
-                f"Found {self.typ}"
-            )
-    
-    def _retrieve_anchor(self):
-        if self.typ.upper() == "JWT":
-            _first_statement = unpad_jwt_payload(self.trust_chain[-1])
-            trust_anchor_eid = self.trust_anchor or _first_statement.get(
-                'iss', None)
-        else:
-            trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.x5c)
+
+        raise InvalidTrustType(
+            "Invalid Trust Type: trust type not supported"
+        )
+
+    def _handle_federation_chain(self):
+        _first_statement = unpad_jwt_payload(self.trust_chain[-1])
+        trust_anchor_eid = self.trust_anchor or _first_statement.get(
+            'iss', None)
 
         if not trust_anchor_eid:
             raise UnknownTrustAnchor(
@@ -67,11 +61,6 @@ class TrustEvaluationHelper:
                 f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
                 "a recognizable Trust Anchor."
             )
-        
-        return trust_anchor
-
-    def _handle_federation_chain(self):
-        trust_anchor = self._retrieve_anchor()
 
         decoded_ec = unpad_jwt_payload(
             trust_anchor['federation']['entity_configuration']
@@ -121,11 +110,23 @@ class TrustEvaluationHelper:
         return _is_valid
     
     def _handle_x509_pem(self):
-        trust_anchor = self._retrieve_anchor()
+        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.x5c)
 
-        pem = unpad_jwt_payload(
-            trust_anchor['x509']['pem']
-        )
+        if not trust_anchor_eid:
+            raise UnknownTrustAnchor(
+                "Unknown Trust Anchor: can't find 'iss' in the "
+                "first entity statement"
+            )
+
+        try:
+            trust_anchor = self.storage.get_trust_anchor(trust_anchor_eid)
+        except EntryNotFound:
+            raise UnknownTrustAnchor(
+                f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
+                "a recognizable Trust Anchor."
+            )
+
+        pem = trust_anchor['x509']['pem']
 
         _is_valid = verify_x509_anchor(pem)
 
