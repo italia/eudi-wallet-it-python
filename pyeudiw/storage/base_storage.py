@@ -6,9 +6,19 @@ class TrustType(Enum):
     X509 = 0
     FEDERATION = 1
 
-trust_type_map :dict = {
+trust_type_map : dict = {
   TrustType.X509 : "x509",
   TrustType.FEDERATION: "federation"
+}
+
+trust_attestation_field_map : dict = {
+  TrustType.X509 : "x5c",
+  TrustType.FEDERATION: "chain"
+}
+
+trust_anchor_field_map : dict = {
+  TrustType.X509 : "pem",
+  TrustType.FEDERATION: "entity_configuration"
 }
 
 class BaseStorage(object):

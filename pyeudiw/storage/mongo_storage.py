@@ -3,7 +3,13 @@ from datetime import datetime
 
 from pymongo.results import UpdateResult
 
-from pyeudiw.storage.base_storage import BaseStorage, TrustType, trust_type_map
+from pyeudiw.storage.base_storage import (
+    BaseStorage, 
+    TrustType, 
+    trust_type_map, 
+    trust_attestation_field_map, 
+    trust_anchor_field_map
+)
 from pyeudiw.storage.exceptions import (
     ChainNotExist,
     StorageEntryUpdateFailed
@@ -225,31 +231,31 @@ class MongoStorage(BaseStorage):
         db_collection.insert_one(attestation)
         return entity_id
     
-    def _update_attestation_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
+    def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
         trust_name = trust_type_map[trust_type]
-        attestation_name = "x5c" if trust_type == TrustType.X509 else "chain"
+        trust_field = trust_attestation_field_map[trust_type]
 
-        trust_entity = ta.get(trust_name, {})
+        trust_entity = entity.get(trust_name, {})
 
-        trust_entity[attestation_name] = attestation
+        trust_entity[trust_field] = attestation
         trust_entity["exp"] = exp
 
-        ta[trust_name] = trust_entity
+        entity[trust_name] = trust_entity
 
-        return ta
+        return entity
     
-    def _update_anchor_metadata(self, ta: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
+    def _update_anchor_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
         trust_name = trust_type_map[trust_type]
-        attestation_name = "pem" if trust_type == TrustType.X509 else "entity_configuration"
+        trust_field = trust_anchor_field_map[trust_type]
 
-        trust_entity = ta.get(trust_name, {})
+        trust_entity = entity.get(trust_name, {})
 
-        trust_entity[attestation_name] = attestation
+        trust_entity[trust_field] = attestation
         trust_entity["exp"] = exp
 
-        ta[trust_name] = trust_entity
+        entity[trust_name] = trust_entity
 
-        return ta
+        return entity
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType):
         entity = {
