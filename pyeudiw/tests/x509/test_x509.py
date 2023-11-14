@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
 from datetime import datetime, timedelta
 from ssl import DER_cert_to_PEM_cert
-from pyeudiw.x509.verify import verify_x509_attestation_chain, verify_x509_anchor, get_issuer_from_x5c
+from pyeudiw.x509.verify import verify_x509_attestation_chain, verify_x509_anchor, get_issuer_from_x5c, is_der_format
 
 def gen_chain() -> list[bytes]:
     # Generate a private key for the CA
@@ -161,3 +161,9 @@ def test_anchor_invalid_chain_order():
     pem = chain_to_pem(chain)
 
     assert verify_x509_anchor(pem, datetime.fromisoformat('2050-12-04')) == False
+
+def test_valid_der():
+    assert is_der_format(gen_chain()[0]) == True
+
+def test_invalid_der():
+    assert is_der_format(b"INVALID") == False
