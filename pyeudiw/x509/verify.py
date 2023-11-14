@@ -9,7 +9,7 @@ LOG_ERROR = "x509 verification failed: {}"
 
 logger = logging.getLogger(__name__)
 
-def _verify_chain(pems: list[str]):
+def _verify_x509_certificate_chain(pems: list[str]):
     try:
         store = crypto.X509Store()
 
@@ -54,7 +54,7 @@ def verify_x509_attestation_chain(x5c: list[bytes], exp: datetime | None = None)
     
     pems = [DER_cert_to_PEM_cert(cert) for cert in x5c]
 
-    return _verify_chain(pems)
+    return _verify_x509_certificate_chain(pems)
     
 def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
     if not _check_datetime(exp):
@@ -65,7 +65,7 @@ def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
     if not _check_chain_len(pems):
         return False
     
-    return _verify_chain(pems)
+    return _verify_x509_certificate_chain(pems)
 
 def get_issuer_from_x5c(x5c: list[bytes]) -> str:
     cert = load_der_x509_certificate(x5c[-1])
