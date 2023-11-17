@@ -295,7 +295,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
-        for i in self.config["user_attributes"]["unique_identifiers"]:
+        for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]
                 sub = hashlib.sha256(
