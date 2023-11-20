@@ -822,7 +822,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
         request_object = session.get("request_object", None)
         if request_object:
-            if request_object["exp"] >= iat_now():
+            if iat_now() > request_object["exp"]:
                 return self.handle_error(
                     context=context,
                     message="expired",

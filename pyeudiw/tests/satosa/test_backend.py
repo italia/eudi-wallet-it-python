@@ -380,7 +380,7 @@ class TestOpenID4VPBackend:
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
         datetime_mock = Mock(wraps=datetime.datetime)
-        datetime_mock.now.return_value = datetime.datetime(1999, 1, 1)
+        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
         with patch('datetime.datetime', new=datetime_mock):
             self.backend.status_endpoint(context)
             state_endpoint_response = self.backend.status_endpoint(context)
