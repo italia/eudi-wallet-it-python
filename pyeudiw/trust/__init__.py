@@ -27,17 +27,18 @@ class TrustEvaluationHelper:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    @property
     def evaluation_method(self) -> bool:
-        if not (type(self.trust_chain) is list) or len(self.trust_chain) == 0:
+        # The trust chain can be either federation or x509
+        # If the trust_chain is empty, and we don't have a trust anchor
+        if not self.trust_chain and not self.trust_anchor:
             raise MissingTrustType(
-                "Missing Trust Type: can't find 'typ' in headers"
+                "Static trust chain is not available"
             )
 
         if is_jwt_format(self.trust_chain[0]):
-            return self.federation
+            return self.federation()
         elif is_der_format(self.trust_chain[0]):
-            return self.x509
+            return self.x509()
 
         raise InvalidTrustType(
             "Invalid Trust Type: trust type not supported"

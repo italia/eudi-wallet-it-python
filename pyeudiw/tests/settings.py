@@ -44,6 +44,7 @@ CONFIG = {
     "authorization": {
         "url_scheme": "eudiw",  # eudiw://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
+        "default_acr_value": "https://www.spid.gov.it/SpidL2",
     },
     'network': {
         "httpc_params": httpc_params
