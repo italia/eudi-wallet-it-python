@@ -15,7 +15,7 @@ from pyeudiw.tests.federation.base import (
     trust_chain_wallet,
     ta_ec,
     ta_ec_signed,
-    leaf_cred_signed
+    leaf_cred_signed, leaf_cred_jwk_prot
 )
 
 from pyeudiw.jwk import JWK
@@ -160,10 +160,12 @@ sd_specification = load_specification_from_yaml_string(
 
 ISSUER_PRIVATE_JWK = JWK(leaf_cred_jwk.serialize(private=True))
 
+CREDENTIAL_ISSUER_JWK = JWK(leaf_cred_jwk_prot.serialize(private=True))
+
 issued_jwt = issue_sd_jwt(
     sd_specification,
     settings,
-    ISSUER_PRIVATE_JWK,
+    CREDENTIAL_ISSUER_JWK,
     WALLET_PUBLIC_JWK,
     trust_chain=trust_chain_issuer
 )
@@ -242,7 +244,7 @@ response = {
 }
 encrypted_response = JWEHelper(
     # RSA (EC is not fully supported todate)
-    JWK(rp_ec["metadata"]['wallet_relying_party']['jwks'][1])
+    JWK(rp_ec["metadata"]['wallet_relying_party']['jwks']['keys'][1])
 ).encrypt(response)
 
 

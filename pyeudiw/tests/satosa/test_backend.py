@@ -28,12 +28,13 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.federation.base import (
     trust_chain_wallet,
+    trust_chain_issuer,
     ta_ec,
     leaf_wallet_jwk,
     EXP,
     NOW,
     ta_jwk,
-    ta_ec_signed
+    ta_ec_signed, leaf_cred_jwk_prot
 )
 from pyeudiw.tests.settings import (
     BASE_URL,
@@ -54,7 +55,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_trust_anchor(
             entity_id=ta_ec['iss'],
             entity_configuration=ta_ec_signed,
-            exp=datetime.datetime.now().isoformat(),
+            exp=EXP,
         )
 
         self.backend = OpenID4VPBackend(
@@ -156,7 +157,8 @@ class TestOpenID4VPBackend:
 
     def test_redirect_endpoint(self, context):
         self.backend.register_endpoints()
-        issuer_jwk = JWK(CONFIG["metadata_jwks"][1])
+
+        issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
         holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
         settings = ISSUER_CONF
@@ -170,7 +172,8 @@ class TestOpenID4VPBackend:
             sd_specification,
             settings,
             issuer_jwk,
-            holder_jwk
+            holder_jwk,
+            trust_chain=trust_chain_issuer
         )
 
         _adapt_keys(issuer_jwk, holder_jwk)
@@ -179,9 +182,11 @@ class TestOpenID4VPBackend:
             issued_jwt["issuance"],
             serialization_format="compact",
         )
+
+        nonce = str(uuid.uuid4())
         sdjwt_at_holder.create_presentation(
             {},
-            str(uuid.uuid4()),
+            nonce,
             str(uuid.uuid4()),
             import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
@@ -194,7 +199,7 @@ class TestOpenID4VPBackend:
             "aud": "https://verifier.example.org/callback",
             "iat": iat_now(),
             "exp": exp_from_now(minutes=15),
-            "nonce": str(uuid.uuid4()),
+            "nonce": nonce,
             "vp": sdjwt_at_holder.sd_jwt_presentation,
         }
 
@@ -204,10 +209,11 @@ class TestOpenID4VPBackend:
         )
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
+        context.request_uri = CONFIG["metadata"]["redirect_uris"][0].removeprefix(CONFIG["base_url"])
 
+        state = str(uuid.uuid4())
         response = {
-            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
+            "state": state,
             "vp_token": vp_token,
             "presentation_submission": {
                 "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
@@ -227,16 +233,52 @@ class TestOpenID4VPBackend:
             "response": encrypted_response
         }
 
-        # create a document with that state and that nonce
+        # no nonce
+        redirect_endpoint = self.backend.redirect_endpoint(context)
+        msg = json.loads(redirect_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert "nonce" in msg["error_description"]
+        assert "missing" in msg["error_description"]
 
-        try:
-            redirect_endpoint = self.backend.redirect_endpoint(context)
-            assert redirect_endpoint
-        except Exception:
-            # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
-            # raise e
-            pass
+        # wrong nonce
+        response["nonce"] = str(uuid.uuid4())
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        redirect_endpoint = self.backend.redirect_endpoint(context)
+        msg = json.loads(redirect_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "Session lookup by state value failed"
+
+        # correct nonce but not the state
+        response["nonce"] = nonce
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        redirect_endpoint = self.backend.redirect_endpoint(context)
+        msg = json.loads(redirect_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "Session lookup by state value failed"
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+        redirect_endpoint = self.backend.redirect_endpoint(context)
+        assert redirect_endpoint.status == "302 Found"
+
         # TODO any additional checks after the backend returned the user attributes to satosa core
+
 
     def test_request_endpoint(self, context):
         self.backend.register_endpoints()
@@ -249,7 +291,7 @@ class TestOpenID4VPBackend:
 
         internal_data = InternalData()
         context.http_headers = dict(
-            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+           HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
         pre_request_endpoint = self.backend.pre_request_endpoint(
             context, internal_data
@@ -262,7 +304,7 @@ class TestOpenID4VPBackend:
             WALLET_INSTANCE_ATTESTATION,
             protected={
                 'trust_chain': trust_chain_wallet,
-                'x5c': []
+                'x5c': [],
             }
         )
 

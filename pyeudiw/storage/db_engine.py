@@ -4,7 +4,7 @@ import importlib
 from datetime import datetime
 from typing import Callable, Union
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
-from pyeudiw.storage.base_storage import BaseStorage
+from pyeudiw.storage.base_storage import BaseStorage, TrustType
 from pyeudiw.storage.exceptions import (
     ChainNotExist,
     StorageWriteError,
@@ -155,24 +155,24 @@ class DBEngine():
     def has_trust_anchor(self, entity_id: str):
         return self.get_anchor(entity_id)
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
-        return self.write("add_trust_attestation", entity_id, attestation, exp)
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
+        return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime):
-        return self.write("add_trust_anchor", entity_id, entity_configuration, exp)
+    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION):
+        return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
-        return self.write("update_trust_attestation", entity_id, attestation, exp)
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
+        return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type)
 
-    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         try:
             self.get_trust_attestation(entity_id)
-            return self.write("update_trust_attestation", entity_id, attestation, exp)
+            return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type)
         except (EntryNotFound, ChainNotExist):
-            return self.write("add_trust_attestation", entity_id, attestation, exp)
+            return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime) -> str:
-        return self.write("update_trust_anchor", entity_id, entity_configuration, exp)
+    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
+        return self.write("update_trust_anchor", entity_id, entity_configuration, exp, trust_type)
 
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         for i, cache in enumerate(self.caches):

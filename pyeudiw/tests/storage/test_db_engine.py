@@ -1,7 +1,10 @@
 import uuid
 import pytest
 
+from datetime import datetime
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.storage.base_storage import TrustType
+from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tests.settings import CONFIG
 
 
@@ -58,4 +61,140 @@ class TestMongoDBEngine:
             replica_count = self.engine.update_response_object(
                 str(uuid.uuid4()), str(uuid.uuid4()), response_object)
         except:
+            return
+        
+    @pytest.fixture(autouse=True)   
+    def test_insert_trusted_attestation_federation(self):
+        self.federation_entity_id = str(uuid.uuid4())
+        date = datetime.now()
+
+        replica_count = self.engine.add_trust_attestation(
+            self.federation_entity_id, ["a", "b", "c"], date)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_attestation(self.federation_entity_id)
+
+        assert ta.get("federation", None) != None
+        assert ta["federation"]["chain"] == ["a", "b", "c"]
+
+    @pytest.fixture(autouse=True)
+    def test_insert_trusted_attestation_x509(self):
+        self.x509_entity_id = str(uuid.uuid4())
+        date = datetime.now()
+
+        replica_count = self.engine.add_trust_attestation(
+            self.x509_entity_id, ["a", "b", "c"], date, TrustType.X509)
+            
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_attestation(self.x509_entity_id)
+
+        assert ta.get("x509", None) != None
+        assert ta["x509"]["x5c"] == ["a", "b", "c"]
+
+    def test_update_trusted_attestation_federation(self):
+        date = datetime.now()
+
+        replica_count = self.engine.update_trust_attestation(
+            self.federation_entity_id, ["a", "b", "d"], date)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_attestation(self.federation_entity_id)
+
+        assert ta.get("federation", None) != None
+        assert ta["federation"]["chain"] == ["a", "b", "d"]
+
+    def test_update_trusted_attestation_x509(self):
+        date = datetime.now()
+
+        replica_count = self.engine.update_trust_attestation(
+            self.x509_entity_id, ["a", "b", "d"], date, TrustType.X509)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_attestation(self.x509_entity_id)
+
+        assert ta.get("x509", None) != None
+        assert ta["x509"]["x5c"] == ["a", "b", "d"]
+
+    def test_update_unexistent_trusted_attestation(self):
+        try:
+            date = datetime.now()
+
+            self.engine.update_trust_attestation(
+                "12345", ["a", "b", "d"], date)
+            
+            assert False
+
+        except StorageWriteError as e:
+            return
+
+    @pytest.fixture(autouse=True)   
+    def test_insert_trusted_anchor_federation(self):
+        self.federation_entity_anchor_id = str(uuid.uuid4())
+        date = datetime.now()
+
+        replica_count = self.engine.add_trust_anchor(
+            self.federation_entity_anchor_id, "test123", date)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_anchor(self.federation_entity_anchor_id)
+
+        assert ta.get("federation", None) != None
+        assert ta["federation"]["entity_configuration"] == "test123"
+
+    @pytest.fixture(autouse=True)   
+    def test_insert_trusted_anchor_x509(self):
+        self.x509_entity_anchor_id = str(uuid.uuid4())
+        date = datetime.now()
+
+        replica_count = self.engine.add_trust_anchor(
+            self.x509_entity_anchor_id, "test123", date, TrustType.X509)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_anchor(self.x509_entity_anchor_id)
+
+        assert ta.get("x509", None) != None
+        assert ta["x509"]["pem"] == "test123"
+
+    def test_update_trusted_anchor_federation(self):
+        date = datetime.now()
+
+        replica_count = self.engine.update_trust_anchor(
+            self.federation_entity_anchor_id, "test124", date)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_anchor(self.federation_entity_anchor_id)
+
+        assert ta.get("federation", None) != None
+        assert ta["federation"]["entity_configuration"] == "test124"
+
+    def test_update_trusted_anchor_x509(self):
+        date = datetime.now()
+
+        replica_count = self.engine.update_trust_anchor(
+            self.x509_entity_anchor_id, "test124", date, TrustType.X509)
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_anchor(self.x509_entity_anchor_id)
+
+        assert ta.get("x509", None) != None
+        assert ta["x509"]["pem"] == "test124"
+
+    def test_update_unexistent_trusted_anchor(self):
+        try:
+            date = datetime.now()
+
+            self.engine.update_trust_anchor(
+                "12345", "test124", date, TrustType.X509)
+            
+            assert False
+
+        except StorageWriteError as e:
             return
