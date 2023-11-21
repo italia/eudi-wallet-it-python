@@ -2,6 +2,8 @@ import requests
 import uuid
 import urllib
 import datetime
+import base64
+from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.tests.federation.base import (
@@ -256,3 +258,26 @@ sign_request_obj = http_user_agent.post(
 
 assert 'SAMLResponse' in sign_request_obj.content.decode()
 print(sign_request_obj.content.decode())
+
+soup = BeautifulSoup(sign_request_obj.content.decode(), features="lxml")
+form = soup.find("form")
+assert "/saml2" in form["action"]
+input_tag = soup.find("input")
+assert input_tag["name"] == "SAMLResponse"
+value = BeautifulSoup(base64.b64decode(input_tag["value"]), features="xml")
+attributes = value.find_all("saml:attribute")
+
+
+expected = {
+    # https://oidref.com/2.5.4.42
+    "urn:oid:2.5.4.42": ISSUER_CONF['sd_specification'].split('!sd given_name:')[1].split('"')[1],
+    # https://oidref.com/2.5.4.4
+    "urn:oid:2.5.4.4": ISSUER_CONF['sd_specification'].split('!sd family_name:')[1].split('"')[1]
+}
+
+for attribute in attributes:
+    name = attribute["name"]
+    value = attribute.contents[0].contents[0]
+    expected_value = expected.get(name, None)
+    if expected_value:
+        assert value == expected_value
