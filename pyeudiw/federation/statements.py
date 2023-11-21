@@ -4,10 +4,17 @@ from pyeudiw.federation.exceptions import (
     MissingJwksClaim,
     MissingTrustMark,
     TrustAnchorNeeded,
+    InvalidEntityHeader,
+    InvalidEntityStatementPayload
 )
 from pyeudiw.federation.http_client import http_get
+from pyeudiw.federation.schemas.entity_configuration import (
+    EntityConfigurationHeader, 
+    EntityStatementPayload
+)
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwt import JWSHelper
+from pydantic import ValidationError
 
 import asyncio
 import json
@@ -87,7 +94,15 @@ class TrustMark:
         self.httpc_params = httpc_params
 
     def validate_by(self, ec) -> bool:
-        # TODO: pydantic entity configuration validation here
+        try:
+            EntityConfigurationHeader(**self.header)
+        except ValidationError as e:
+            raise InvalidEntityHeader(
+                # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
+
 
         if self.header.get("kid") not in ec.kids:
             raise UnknownKid(  # pragma: no cover
@@ -185,7 +200,15 @@ class EntityStatement:
         """
         validates the entity configuration by it self
         """
-        # TODO: pydantic entity configuration validation here
+        try:
+            EntityConfigurationHeader(**self.header)
+        except ValidationError as e:
+            raise InvalidEntityHeader(
+                # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
+        
         if self.header.get("kid") not in self.kids:
             raise UnknownKid(
                 f"{self.header.get('kid')} not found in {self.jwks}")  # pragma: no cover
@@ -371,9 +394,24 @@ class EntityStatement:
         """
         jwt is a descendant entity statement issued by self
         """
-        # TODO: pydantic entity configuration validation here
         header = unpad_jwt_header(jwt)
         payload = unpad_jwt_payload(jwt)
+
+        try:
+            EntityConfigurationHeader(**header)
+        except ValidationError as e:
+            raise InvalidEntityHeader( # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
+        
+        try:
+            EntityStatementPayload(**payload)
+        except ValidationError as e:
+            raise InvalidEntityStatementPayload( # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
 
         if header.get("kid") not in self.kids:
             raise UnknownKid(
