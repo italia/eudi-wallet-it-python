@@ -2,7 +2,7 @@ import logging
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
-from pyeudiw.federation.schema import is_es
+from pyeudiw.federation import is_es
 from pyeudiw.federation.statements import (
     get_entity_configurations,
     get_entity_statements
