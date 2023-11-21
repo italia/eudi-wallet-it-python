@@ -277,8 +277,6 @@ class TestOpenID4VPBackend:
         redirect_endpoint = self.backend.redirect_endpoint(context)
         assert redirect_endpoint.status == "302 Found"
 
-        # TODO any additional checks after the backend returned the user attributes to satosa core
-
 
     def test_request_endpoint(self, context):
         self.backend.register_endpoints()
