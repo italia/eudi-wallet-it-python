@@ -42,4 +42,5 @@ class EntityStatementPayload(BaseModel, extra='forbid'):
     jwks: JwksSchema
     source_endpoint: Optional[str] = None
     metadata_policy: Optional[dict] = None
+    metadata: Optional[dict] = None
     trust_marks: Optional[list] = None
