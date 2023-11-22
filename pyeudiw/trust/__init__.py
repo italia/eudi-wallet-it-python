@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.storage.db_engine import DBEngine
@@ -175,3 +177,21 @@ class TrustEvaluationHelper:
         return self.get_final_metadata(
             metadata_type=metadata_type
         ).get('jwks', {}).get('keys', [])
+
+    def discovery(self, client_id, entity_configuration):
+        trust_anchor_eid = self.trust_anchor
+        _ta_ec = self.storage.get_trust_anchor(entity_id=trust_anchor_eid)
+        ta_ec = _ta_ec['federation']['entity_configuration']
+
+        tcbuilder = TrustChainBuilder(
+            subject=client_id,
+            trust_anchor=trust_anchor_eid,
+            trust_anchor_configuration=ta_ec,
+            subject_configuration=entity_configuration,
+            httpc_params=self.httpc_params
+        )
+        is_good = tcbuilder.is_valid
+        trust_chain = tcbuilder.get_trust_chain()
+        exp = tcbuilder.exp
+        return is_good, trust_chain, exp
+

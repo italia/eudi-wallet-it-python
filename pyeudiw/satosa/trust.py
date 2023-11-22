@@ -113,27 +113,12 @@ class BackendTrust:
             is_good = trust_eval.evaluation_method()
             trust_chain = db_chain['federation']['chain']
             exp = db_chain['federation']['exp']
+
+            if not is_good:
+                is_good, trust_chain, exp = trust_eval.discovery(self.client_id, self.entity_configuration)
+
         except (EntryNotFound, Exception):
             pass
-
-        if not is_good:
-            # TODO: move this trust chain discovery into the trust helper
-            ta_eid = self.config['federation']['trust_anchors'][0]
-            _ta_ec = self.db_engine.get_trust_anchor(
-                entity_id=ta_eid
-            )
-            ta_ec = _ta_ec['federation']['entity_configuration']
-
-            tcbuilder = TrustChainBuilder(
-                subject=self.client_id,
-                trust_anchor=ta_eid,
-                trust_anchor_configuration=ta_ec,
-                subject_configuration=self.entity_configuration,
-                httpc_params=self.config['network']['httpc_params']
-            )
-            is_good = tcbuilder.is_valid
-            trust_chain = tcbuilder.get_trust_chain()
-            exp = tcbuilder.exp
 
         if is_good:
             self.db_engine.add_or_update_trust_attestation(
