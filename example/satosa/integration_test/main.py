@@ -2,6 +2,8 @@ import requests
 import uuid
 import urllib
 import datetime
+import base64
+from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.tests.federation.base import (
@@ -15,7 +17,7 @@ from pyeudiw.tests.federation.base import (
     trust_chain_wallet,
     ta_ec,
     ta_ec_signed,
-    leaf_cred_signed
+    leaf_cred_signed, leaf_cred_jwk_prot
 )
 
 from pyeudiw.jwk import JWK
@@ -160,10 +162,12 @@ sd_specification = load_specification_from_yaml_string(
 
 ISSUER_PRIVATE_JWK = JWK(leaf_cred_jwk.serialize(private=True))
 
+CREDENTIAL_ISSUER_JWK = JWK(leaf_cred_jwk_prot.serialize(private=True))
+
 issued_jwt = issue_sd_jwt(
     sd_specification,
     settings,
-    ISSUER_PRIVATE_JWK,
+    CREDENTIAL_ISSUER_JWK,
     WALLET_PUBLIC_JWK,
     trust_chain=trust_chain_issuer
 )
@@ -242,7 +246,7 @@ response = {
 }
 encrypted_response = JWEHelper(
     # RSA (EC is not fully supported todate)
-    JWK(rp_ec["metadata"]['wallet_relying_party']['jwks'][1])
+    JWK(rp_ec["metadata"]['wallet_relying_party']['jwks']['keys'][1])
 ).encrypt(response)
 
 
@@ -254,3 +258,26 @@ sign_request_obj = http_user_agent.post(
 
 assert 'SAMLResponse' in sign_request_obj.content.decode()
 print(sign_request_obj.content.decode())
+
+soup = BeautifulSoup(sign_request_obj.content.decode(), features="lxml")
+form = soup.find("form")
+assert "/saml2" in form["action"]
+input_tag = soup.find("input")
+assert input_tag["name"] == "SAMLResponse"
+value = BeautifulSoup(base64.b64decode(input_tag["value"]), features="xml")
+attributes = value.find_all("saml:attribute")
+
+
+expected = {
+    # https://oidref.com/2.5.4.42
+    "urn:oid:2.5.4.42": ISSUER_CONF['sd_specification'].split('!sd given_name:')[1].split('"')[1],
+    # https://oidref.com/2.5.4.4
+    "urn:oid:2.5.4.4": ISSUER_CONF['sd_specification'].split('!sd family_name:')[1].split('"')[1]
+}
+
+for attribute in attributes:
+    name = attribute["name"]
+    value = attribute.contents[0].contents[0]
+    expected_value = expected.get(name, None)
+    if expected_value:
+        assert value == expected_value

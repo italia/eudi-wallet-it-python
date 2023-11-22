@@ -33,9 +33,9 @@ from pyeudiw.openid4vp.exceptions import (
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
 
 from pydantic import ValidationError
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,15 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         :type name: str
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
+
+        try:
+            WalletRelyingParty(**config['metadata'])
+        except ValidationError as e:
+            logger.warning(
+                """
+                The backend configuration presents the following validation issues:
+                {}
+                """.format(logger.warning(e)))
 
         self.config = config
         self.client_id = self.config['metadata']['client_id']
@@ -286,7 +295,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
-        for i in self.config["user_attributes"]["unique_identifiers"]:
+        for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]
                 sub = hashlib.sha256(
@@ -408,7 +417,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=f"{e.__class__.__name__}: {e}",
                 err_code="400"
             )
-        
+
         if stored_session["finalized"]:
             _msg = f"Session already finalized"
             return self.handle_error(
@@ -418,7 +427,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err=_msg,
                 err_code="400"
             )
-        
+
         # TODO: handle vp token ops exceptions
         try:
             vpt.load_nonce(stored_session['nonce'])
@@ -477,16 +486,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
-            
+
             try:
                 vp.verify_sdjwt(
-                    issuer_jwks_by_kid={i['kid']: i for i in vp.credential_jwks}
+                    issuer_jwks_by_kid={
+                        i['kid']: i for i in vp.credential_jwks}
                 )
             except Exception as e:
                 return self.handle_error(
-                    context=context, 
-                    message="invalid_request", 
-                    troubleshoot=f"VP SD-JWT validation error: {e}", 
+                    context=context,
+                    message="invalid_request",
+                    troubleshoot=f"VP SD-JWT validation error: {e}",
                     err_code="400"
                 )
 
@@ -746,7 +756,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 troubleshoot="session not found or invalid",
                 err_code="400"
             )
-        
+
         _now = iat_now()
         _exp = finalized_session['request_object']['exp']
         if _exp < _now:
@@ -756,7 +766,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 troubleshoot=f"session expired, request object exp is {_exp} while now is {_now}",
                 err_code="400"
             )
-        
+
         internal_response = InternalData()
         resp = internal_response.from_dict(
             finalized_session['internal_response']
@@ -810,7 +820,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err_code="401"
             )
 
-        # TODO: if the request is expired -> return 403
+        request_object = session.get("request_object", None)
+        if request_object:
+            if iat_now() > request_object["exp"]:
+                return self.handle_error(
+                    context=context,
+                    message="expired",
+                    troubleshoot=f"Request object expired",
+                    err_code="403"
+                )
+
         if session["finalized"]:
             #  return Redirect(
             #      self.registered_get_response_endpoint

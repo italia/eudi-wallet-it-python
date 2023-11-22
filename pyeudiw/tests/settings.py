@@ -44,6 +44,7 @@ CONFIG = {
     "authorization": {
         "url_scheme": "eudiw",  # eudiw://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
+        "default_acr_value": "https://www.spid.gov.it/SpidL2",
     },
     'network': {
         "httpc_params": httpc_params
@@ -350,7 +351,7 @@ WALLET_INSTANCE_ATTESTATION = {
     "policy_uri": "https://wallet-provider.example.org/privacy_policy",
     "tos_uri": "https://wallet-provider.example.org/info_policy",
     "logo_uri": "https://wallet-provider.example.org/logo.svg",
-    "asc": "https://wallet-provider.example.org/LoA/basic",
+    "aal": "https://wallet-provider.example.org/LoA/basic",
     "cnf":
     {
         "jwk": PUBLIC_JWK

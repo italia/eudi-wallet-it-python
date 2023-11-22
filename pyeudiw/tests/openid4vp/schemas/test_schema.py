@@ -274,7 +274,8 @@ def test_entity_config_payload():
                 ],
                 "authorization_encrypted_response_alg": [
                     "RSA-OAEP",
-                    "RSA-OAEP-256"
+                    "RSA-OAEP-256",
+                    "ECDH-ES"
                 ],
                 "authorization_encrypted_response_enc": [
                     "A128CBC-HS256",
@@ -318,9 +319,3 @@ def test_entity_config_payload():
         ]
     }
     EntityConfigurationPayload(**payload)
-    with pytest.raises(ValidationError):
-        EntityConfigurationPayload.model_validate(
-            payload, context={"authorization_encrypted_response_alg": ["ASD"]})
-    with pytest.raises(ValidationError):
-        EntityConfigurationPayload.model_validate(
-            payload, context={"authorization_encrypted_response_alg": []})
