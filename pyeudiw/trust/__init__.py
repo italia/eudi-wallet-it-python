@@ -30,7 +30,7 @@ class TrustEvaluationHelper:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def evaluation_method(self) -> bool:
+    def _get_evaluation_method(self):
         # The trust chain can be either federation or x509
         # If the trust_chain is empty, and we don't have a trust anchor
         if not self.trust_chain and not self.trust_anchor:
@@ -38,14 +38,23 @@ class TrustEvaluationHelper:
                 "Static trust chain is not available"
             )
 
-        if is_jwt_format(self.trust_chain[0]):
-            return self.federation()
-        elif is_der_format(self.trust_chain[0]):
-            return self.x509()
+        try:
+            if is_jwt_format(self.trust_chain[0]):
+                return self.federation
+        except TypeError:
+            pass
+        
+        if is_der_format(self.trust_chain[0]):
+            return self.x509
 
         raise InvalidTrustType(
             "Invalid Trust Type: trust type not supported"
         )
+
+
+    def evaluation_method(self) -> bool:
+        ev_method = self._get_evaluation_method()
+        return ev_method()
 
     def _handle_federation_chain(self):
         _first_statement = unpad_jwt_payload(self.trust_chain[-1])
@@ -114,7 +123,8 @@ class TrustEvaluationHelper:
         return _is_valid
     
     def _handle_x509_pem(self):
-        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.x5c)
+        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.trust_chain)
+        _is_valid = False
 
         if not trust_anchor_eid:
             raise UnknownTrustAnchor(
@@ -130,9 +140,12 @@ class TrustEvaluationHelper:
                 "a recognizable Trust Anchor."
             )
 
-        pem = trust_anchor['x509']['pem']
-
-        _is_valid = verify_x509_anchor(pem)
+        try:
+            pem = trust_anchor['x509']['pem']
+            _is_valid = verify_x509_anchor(pem)
+        except KeyError:
+            raise MissingTrustType(
+                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trusst entity")
 
         if not self.is_trusted and trust_anchor['federation'].get("chain", None) != None:
             self._handle_federation_chain()
@@ -180,6 +193,7 @@ class TrustEvaluationHelper:
                 selected_metadata, 
                 policy_acc
             )
+
             return self.final_metadata["metadata"][metadata_type]
         except KeyError:
             raise ProtocolMetadataNotFound(
