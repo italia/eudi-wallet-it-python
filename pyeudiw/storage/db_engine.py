@@ -157,6 +157,9 @@ class DBEngine():
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
+    
+    def add_trust_attestation_metadata(self, entity_id: str, metadata: dict) -> str:
+        return self.write("add_trust_attestation_metadata", entity_id, metadata)
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION):
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)
