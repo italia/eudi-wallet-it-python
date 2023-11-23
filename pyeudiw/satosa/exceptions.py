@@ -14,3 +14,10 @@ class NoBoundEndpointError(Exception):
 
 class NotTrustedFederationError(Exception):
     pass
+
+
+class DiscoveryFailedError(Exception):
+    """
+    Raised when the discovery fails
+    """
+    pass
