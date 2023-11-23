@@ -6,7 +6,6 @@ from pydantic import BaseModel, field_validator
 class JwkSchema(BaseModel):
     kid: str  # Base64url-encoded thumbprint string
     kty: Literal["EC", "RSA"]
-    # TODO: verify if is optional
     alg: Optional[
         Literal[
             "RS256",
