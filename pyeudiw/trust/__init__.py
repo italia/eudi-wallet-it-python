@@ -13,6 +13,9 @@ from pyeudiw.trust.exceptions import (
     MissingTrustType
 )
 
+import pyeudiw.metadata.policy as pcl
+
+#from pyeudiw.metadata.policy import TrustChainPolicy, combine
 
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
@@ -158,20 +161,34 @@ class TrustEvaluationHelper:
         self.is_valid = self._handle_x509_pem()
         return self.is_valid
 
-    def get_final_metadata(self, metadata_type: str) -> dict:
-        # TODO - apply metadata policy and get the final metadata
-        # for now the final_metadata is the EC metadata -> TODO final_metadata
+    def get_final_metadata(self, metadata_type: str, policies: list[dict]) -> dict:
+        policy_acc = {"metadata": {}, "metadata_policy": {}}
+
+        for policy in policies:
+            policy_acc = pcl.combine(policy, policy_acc)
+
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
+
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...
-            return self.final_metadata['metadata'][metadata_type]
+            selected_metadata = {
+                "metadata": self.final_metadata['metadata'], 
+                "metadata_policy": {}
+            }
+
+            self.final_metadata = pcl.TrustChainPolicy().apply_policy(
+                selected_metadata, 
+                policy_acc
+            )
+            return self.final_metadata["metadata"][metadata_type]
         except KeyError:
             raise ProtocolMetadataNotFound(
                 f"{metadata_type} not found in the final metadata:"
-                f" {self.final_metadata}"
+                f" {self.final_metadata['metadata']}"
             )
 
-    def get_trusted_jwks(self, metadata_type: str) -> list:
+    def get_trusted_jwks(self, metadata_type: str, policies: list[dict] = []) -> list:
         return self.get_final_metadata(
-            metadata_type=metadata_type
+            metadata_type=metadata_type, 
+            policies=policies
         ).get('jwks', {}).get('keys', [])
