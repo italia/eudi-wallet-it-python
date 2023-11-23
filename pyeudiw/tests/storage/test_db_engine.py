@@ -131,6 +131,25 @@ class TestMongoDBEngine:
         except StorageWriteError as e:
             return
 
+    def test_update_trusted_attestation_metadata(self):
+        replica_count = self.engine.add_trust_attestation_metadata(
+            self.federation_entity_id, {"metadata": "test"})
+        
+        assert replica_count > 0
+        
+        ta = self.engine.get_trust_attestation(self.federation_entity_id)
+
+        assert ta.get("metadata", None) != None
+        assert ta["metadata"] == {"metadata": "test"}
+
+    def test_update_unexistent_trusted_attestation_metadata(self):
+        try:
+            self.engine.add_trust_attestation_metadata(
+                "test", {"metadata": "test"})
+            assert False
+        except StorageWriteError as e:
+            return
+
     @pytest.fixture(autouse=True)   
     def test_insert_trusted_anchor_federation(self):
         self.federation_entity_anchor_id = str(uuid.uuid4())
