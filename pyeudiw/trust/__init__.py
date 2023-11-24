@@ -180,6 +180,11 @@ class TrustEvaluationHelper:
         ).get('jwks', {}).get('keys', [])
 
     def discovery(self, entity_id, entity_configuration):
+        """
+        Updates fields ``trust_chain`` and ``exp`` based on the discovery process.
+
+        :raises: DiscoveryFailedError: raises an error if the discovery fails.
+        """
         trust_anchor_eid = self.trust_anchor
         _ta_ec = self.storage.get_trust_anchor(entity_id=trust_anchor_eid)
         ta_ec = _ta_ec['federation']['entity_configuration']
@@ -200,6 +205,13 @@ class TrustEvaluationHelper:
 
     @staticmethod
     def build_trust_chain_for_entity_id(storage: DBEngine, entity_id, entity_configuration, httpc_params):
+        """
+        Builds a ``TrustEvaluationHelper`` and returns it if the trust chain is valid.
+        In case the trust chain is invalid, tries to validate it in discovery before returning it.
+
+        :return: The svg data for html, base64 encoded
+        :rtype: str
+        """
         db_chain = storage.get_trust_attestation(entity_id)
 
         trust_evaluation_helper = TrustEvaluationHelper(
