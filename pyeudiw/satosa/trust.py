@@ -38,7 +38,7 @@ class BackendTrust:
         self.update_trust_anchors()
 
         try:
-            self.get_trust_chain()
+            self.get_backend_trust_chain()
         except Exception as e:
             logger.critical(
                 f"Cannot fetch the trust anchor configuration: {e}"
@@ -96,7 +96,14 @@ class BackendTrust:
     def default_federation_private_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
 
-    def get_trust_chain(self) -> list:
+    def get_backend_trust_chain(self) -> list:
+        """
+        Get the backend trust chain. In case something raises an Exception (e.g. faulty storage), logs a warning message
+        and returns an empty list.
+
+        :return: The trust chain
+        :rtype: list
+        """
         try:
             trust_evaluation_helper = TrustEvaluationHelper.build_trust_chain_for_entity_id(
                 storage=self.db_engine,

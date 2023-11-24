@@ -673,7 +673,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
 
         jwt = helper.sign(
             data,
-            protected={'trust_chain': self.get_trust_chain()}
+            protected={'trust_chain': self.get_backend_trust_chain()}
         )
         response = {"response": jwt}
 
