@@ -18,8 +18,6 @@ from pyeudiw.trust.exceptions import (
 
 import pyeudiw.metadata.policy as pcl
 
-#from pyeudiw.metadata.policy import TrustChainPolicy, combine
-
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
         self.exp: int = 0
