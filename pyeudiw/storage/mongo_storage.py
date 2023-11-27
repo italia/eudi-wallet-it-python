@@ -271,7 +271,7 @@ class MongoStorage(BaseStorage):
             "trust_attestations", entity_id, updated_entity, exp
         )
 
-    def add_trust_attestation_metadata(self, entity_id: str, metadata: dict):
+    def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
         entity = self._get_trust_attestation("trust_attestations", entity_id)
 
         if entity is None:
@@ -279,7 +279,7 @@ class MongoStorage(BaseStorage):
                 f'Document with entity_id {entity_id} not found.'
             )
         
-        entity["metadata"] = metadata
+        entity["metadata"][metadata_type] = metadata
 
         return self._update_trust_attestation("trust_attestations", entity_id, entity)
 
