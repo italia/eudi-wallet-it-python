@@ -133,19 +133,19 @@ class TestMongoDBEngine:
 
     def test_update_trusted_attestation_metadata(self):
         replica_count = self.engine.add_trust_attestation_metadata(
-            self.federation_entity_id, "test_metadata", {"metadata": "test"})
+            self.federation_entity_id, "test_metadata", {"metadata": {"data_type": "test"}})
         
         assert replica_count > 0
         
         ta = self.engine.get_trust_attestation(self.federation_entity_id)
 
         assert ta.get("metadata", None) != None
-        assert ta["metadata"]["test_metadata"] == {"metadata": "test"}
+        assert ta["metadata"]["test_metadata"] == {"metadata": {"data_type": "test"}}
 
     def test_update_unexistent_trusted_attestation_metadata(self):
         try:
             self.engine.add_trust_attestation_metadata(
-                "test", "test_metadata", {"metadata": "test"})
+                "test", "test_metadata", {"metadata": {"data_type": "test"}})
             assert False
         except StorageWriteError as e:
             return
