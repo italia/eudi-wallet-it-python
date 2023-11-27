@@ -13,7 +13,8 @@ from pyeudiw.trust.exceptions import (
     MissingProtocolSpecificJwks,
     UnknownTrustAnchor,
     InvalidTrustType,
-    MissingTrustType
+    MissingTrustType,
+    InvalidAnchor
 )
 
 import pyeudiw.metadata.policy as pcl
@@ -141,12 +142,20 @@ class TrustEvaluationHelper:
                 "a recognizable Trust Anchor."
             )
 
-        try:
-            pem = trust_anchor['x509']['pem']
-            _is_valid = verify_x509_anchor(pem)
-        except KeyError:
+        pem = trust_anchor['x509'].get('pem')
+
+        if pem == None:
             raise MissingTrustType(
-                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trusst entity")
+                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trusst entity"
+            )
+
+        try:
+            _is_valid = verify_x509_anchor(pem)
+        except Exception as e:
+            raise InvalidAnchor(
+                f"Anchor verification raised the following exception: {e}"
+            )
+            
 
         if not self.is_trusted and trust_anchor['federation'].get("chain", None) != None:
             self._handle_federation_chain()
