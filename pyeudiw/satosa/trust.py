@@ -11,7 +11,7 @@ from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_header
 from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
 from pyeudiw.satosa.exceptions import (
-    NotTrustedFederationError
+    NotTrustedFederationError, DiscoveryFailedError
 )
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.storage.exceptions import EntryNotFound
@@ -38,7 +38,7 @@ class BackendTrust:
         self.update_trust_anchors()
 
         try:
-            self.my_trust_chain
+            self.get_backend_trust_chain()
         except Exception as e:
             logger.critical(
                 f"Cannot fetch the trust anchor configuration: {e}"
@@ -96,52 +96,35 @@ class BackendTrust:
     def default_federation_private_jwk(self):
         return tuple(self.federations_jwks_by_kids.values())[0]
 
-    @property
-    def my_trust_chain(self) -> None:
-        # TODO: move it to the TrustEvaluationHelper
-        trust_chain = []
-        is_good = False
+    def get_backend_trust_chain(self) -> list:
+        """
+        Get the backend trust chain. In case something raises an Exception (e.g. faulty storage), logs a warning message
+        and returns an empty list.
+
+        :return: The trust chain
+        :rtype: list
+        """
         try:
-            db_chain = self.db_engine.get_trust_attestation(
-                self.client_id
-            )
-            trust_eval = TrustEvaluationHelper(
-                self.db_engine,
-                httpc_params=self.config['network']['httpc_params'],
-                trust_chain=db_chain["federation"]["chain"]
-            )
-            is_good = trust_eval.evaluation_method()
-            trust_chain = db_chain['federation']['chain']
-            exp = db_chain['federation']['exp']
-        except (EntryNotFound, Exception):
-            pass
-
-        if not is_good:
-            # TODO: move this trust chain discovery into the trust helper
-            ta_eid = self.config['federation']['trust_anchors'][0]
-            _ta_ec = self.db_engine.get_trust_anchor(
-                entity_id=ta_eid
-            )
-            ta_ec = _ta_ec['federation']['entity_configuration']
-
-            tcbuilder = TrustChainBuilder(
-                subject=self.client_id,
-                trust_anchor=ta_eid,
-                trust_anchor_configuration=ta_ec,
-                subject_configuration=self.entity_configuration,
+            trust_evaluation_helper = TrustEvaluationHelper.build_trust_chain_for_entity_id(
+                storage=self.db_engine,
+                entity_id=self.client_id,
+                entity_configuration=self.entity_configuration,
                 httpc_params=self.config['network']['httpc_params']
             )
-            is_good = tcbuilder.is_valid
-            trust_chain = tcbuilder.get_trust_chain()
-            exp = tcbuilder.exp
-
-        if is_good:
             self.db_engine.add_or_update_trust_attestation(
                 entity_id=self.client_id,
-                attestation=trust_chain,
-                exp=exp
+                attestation=trust_evaluation_helper.trust_chain,
+                exp=trust_evaluation_helper.exp
             )
-        return trust_chain
+            return trust_evaluation_helper.trust_chain
+
+        except (DiscoveryFailedError, EntryNotFound, Exception) as e:
+            logger.warning(
+                f"Error while building trust chain for client with id: {self.client_id}\n"
+                f"{e.__class__.__name__}: {e}"
+            )
+
+        return []
 
     @property
     def entity_configuration_as_dict(self) -> dict:

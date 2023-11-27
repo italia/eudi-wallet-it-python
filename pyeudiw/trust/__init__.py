@@ -1,6 +1,9 @@
 from datetime import datetime
+
+from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
+from pyeudiw.satosa.exceptions import DiscoveryFailedError
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import unpad_jwt_payload, is_jwt_format
 from pyeudiw.x509.verify import verify_x509_anchor, get_issuer_from_x5c, is_der_format
@@ -206,3 +209,53 @@ class TrustEvaluationHelper:
             metadata_type=metadata_type, 
             policies=policies
         ).get('jwks', {}).get('keys', [])
+
+    def discovery(self, entity_id, entity_configuration):
+        """
+        Updates fields ``trust_chain`` and ``exp`` based on the discovery process.
+
+        :raises: DiscoveryFailedError: raises an error if the discovery fails.
+        """
+        trust_anchor_eid = self.trust_anchor
+        _ta_ec = self.storage.get_trust_anchor(entity_id=trust_anchor_eid)
+        ta_ec = _ta_ec['federation']['entity_configuration']
+
+        tcbuilder = TrustChainBuilder(
+            subject=entity_id,
+            trust_anchor=trust_anchor_eid,
+            trust_anchor_configuration=ta_ec,
+            subject_configuration=entity_configuration,
+            httpc_params=self.httpc_params
+        )
+        self.trust_chain = tcbuilder.get_trust_chain()
+        self.exp = tcbuilder.exp
+        is_good = tcbuilder.is_valid
+        if not is_good:
+            raise DiscoveryFailedError(
+                f"Discovery failed for entity {entity_id}\nwith configuration {entity_configuration}")
+
+    @staticmethod
+    def build_trust_chain_for_entity_id(storage: DBEngine, entity_id, entity_configuration, httpc_params):
+        """
+        Builds a ``TrustEvaluationHelper`` and returns it if the trust chain is valid.
+        In case the trust chain is invalid, tries to validate it in discovery before returning it.
+
+        :return: The svg data for html, base64 encoded
+        :rtype: str
+        """
+        db_chain = storage.get_trust_attestation(entity_id)
+
+        trust_evaluation_helper = TrustEvaluationHelper(
+            storage=storage,
+            httpc_params=httpc_params,
+            trust_chain=db_chain
+        )
+
+        is_good = trust_evaluation_helper.evaluation_method()
+        if is_good:
+            return trust_evaluation_helper
+
+        trust_evaluation_helper.discovery(entity_id=entity_id, entity_configuration=entity_configuration)
+        return trust_evaluation_helper
+
+
