@@ -146,7 +146,7 @@ class TrustEvaluationHelper:
 
         if pem == None:
             raise MissingTrustType(
-                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trusst entity"
+                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trust entity"
             )
 
         try:
