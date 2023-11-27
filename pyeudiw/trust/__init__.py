@@ -13,9 +13,11 @@ from pyeudiw.trust.exceptions import (
     MissingProtocolSpecificJwks,
     UnknownTrustAnchor,
     InvalidTrustType,
-    MissingTrustType
+    MissingTrustType,
+    InvalidAnchor
 )
 
+import pyeudiw.metadata.policy as pcl
 
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
@@ -30,7 +32,7 @@ class TrustEvaluationHelper:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def evaluation_method(self) -> bool:
+    def _get_evaluation_method(self):
         # The trust chain can be either federation or x509
         # If the trust_chain is empty, and we don't have a trust anchor
         if not self.trust_chain and not self.trust_anchor:
@@ -38,14 +40,23 @@ class TrustEvaluationHelper:
                 "Static trust chain is not available"
             )
 
-        if is_jwt_format(self.trust_chain[0]):
-            return self.federation()
-        elif is_der_format(self.trust_chain[0]):
-            return self.x509()
+        try:
+            if is_jwt_format(self.trust_chain[0]):
+                return self.federation
+        except TypeError:
+            pass
+        
+        if is_der_format(self.trust_chain[0]):
+            return self.x509
 
         raise InvalidTrustType(
             "Invalid Trust Type: trust type not supported"
         )
+
+
+    def evaluation_method(self) -> bool:
+        ev_method = self._get_evaluation_method()
+        return ev_method()
 
     def _handle_federation_chain(self):
         _first_statement = unpad_jwt_payload(self.trust_chain[-1])
@@ -114,7 +125,8 @@ class TrustEvaluationHelper:
         return _is_valid
     
     def _handle_x509_pem(self):
-        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.x5c)
+        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.trust_chain)
+        _is_valid = False
 
         if not trust_anchor_eid:
             raise UnknownTrustAnchor(
@@ -130,9 +142,20 @@ class TrustEvaluationHelper:
                 "a recognizable Trust Anchor."
             )
 
-        pem = trust_anchor['x509']['pem']
+        pem = trust_anchor['x509'].get('pem')
 
-        _is_valid = verify_x509_anchor(pem)
+        if pem == None:
+            raise MissingTrustType(
+                f"Trust Anchor: '{trust_anchor_eid}' has no x509 trust entity"
+            )
+
+        try:
+            _is_valid = verify_x509_anchor(pem)
+        except Exception as e:
+            raise InvalidAnchor(
+                f"Anchor verification raised the following exception: {e}"
+            )
+            
 
         if not self.is_trusted and trust_anchor['federation'].get("chain", None) != None:
             self._handle_federation_chain()
@@ -161,22 +184,37 @@ class TrustEvaluationHelper:
         self.is_valid = self._handle_x509_pem()
         return self.is_valid
 
-    def get_final_metadata(self, metadata_type: str) -> dict:
-        # TODO - apply metadata policy and get the final metadata
-        # for now the final_metadata is the EC metadata -> TODO final_metadata
+    def get_final_metadata(self, metadata_type: str, policies: list[dict]) -> dict:
+        policy_acc = {"metadata": {}, "metadata_policy": {}}
+
+        for policy in policies:
+            policy_acc = pcl.combine(policy, policy_acc)
+
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
+
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...
-            return self.final_metadata['metadata'][metadata_type]
+            selected_metadata = {
+                "metadata": self.final_metadata['metadata'], 
+                "metadata_policy": {}
+            }
+
+            self.final_metadata = pcl.TrustChainPolicy().apply_policy(
+                selected_metadata, 
+                policy_acc
+            )
+
+            return self.final_metadata["metadata"][metadata_type]
         except KeyError:
             raise ProtocolMetadataNotFound(
                 f"{metadata_type} not found in the final metadata:"
-                f" {self.final_metadata}"
+                f" {self.final_metadata['metadata']}"
             )
 
-    def get_trusted_jwks(self, metadata_type: str) -> list:
+    def get_trusted_jwks(self, metadata_type: str, policies: list[dict] = []) -> list:
         return self.get_final_metadata(
-            metadata_type=metadata_type
+            metadata_type=metadata_type, 
+            policies=policies
         ).get('jwks', {}).get('keys', [])
 
     def discovery(self, entity_id, entity_configuration):
