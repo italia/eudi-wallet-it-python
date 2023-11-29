@@ -1,8 +1,8 @@
 import pytest
-from pyeudiw.metadata.policy import combine
-from pyeudiw.metadata.policy import combine_claim_policy
-from pyeudiw.metadata.policy import TrustChainPolicy
-from pyeudiw.metadata.exceptions import PolicyError
+from pyeudiw.federation.policy import combine
+from pyeudiw.federation.policy import combine_claim_policy
+from pyeudiw.federation.policy import TrustChainPolicy
+from pyeudiw.federation.exceptions import PolicyError
 
 __author__ = "Roland Hedberg"
 __license__ = "Apache 2.0"

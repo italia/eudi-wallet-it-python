@@ -1,7 +1,9 @@
 
 from pyeudiw.federation.policy import (
-    do_sub_one_super_add, PolicyError, do_value
+    do_sub_one_super_add, do_value
 )
+
+from pyeudiw.federation.exceptions import PolicyError
 
 
 def test_do_sub_one_super_add_subset_of():
