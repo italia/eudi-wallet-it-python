@@ -78,3 +78,6 @@ class InvalidEntityHeader(Exception):
 
 class InvalidEntityStatementPayload(Exception):
     pass
+
+class PolicyError(Exception):
+    pass

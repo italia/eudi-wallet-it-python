@@ -218,5 +218,15 @@ class StaticTrustChainValidator:
         chain = self.trust_chain
         payload = unpad_jwt_payload(chain[0])
         return payload["iss"]
+    
+    @property
+    def final_metadata(self) -> dict:
+        anchor = self.trust_anchor_jwks[-1]
+        es_anchor_payload = unpad_jwt_payload(anchor)
 
-    # TODO - apply metadata policy and get the final metadata
+        policy = es_anchor_payload.get("metadata_policy", {})
+
+        leaf = self.trust_anchor_jwks[0]
+        es_leaf_payload = unpad_jwt_payload(leaf)
+
+        #return TrustChainPolicy().apply_policy(es_leaf_payload["metadata"], policy)

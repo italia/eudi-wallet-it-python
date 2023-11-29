@@ -5,7 +5,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from pyeudiw.federation.policy import apply_policy
+from .policy import TrustChainPolicy
 
 from .exceptions import (
     InvalidEntityStatement,
@@ -150,7 +150,7 @@ class TrustChainBuilder:
                 for md_type, md in _pol.items():
                     if not self.final_metadata.get(md_type):
                         continue
-                    self.final_metadata[md_type] = apply_policy(
+                    self.final_metadata[md_type] = TrustChainPolicy().apply_policy(
                         self.final_metadata[md_type], _pol[md_type]
                     )
 

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
@@ -17,7 +18,11 @@ from pyeudiw.trust.exceptions import (
     InvalidAnchor
 )
 
-import pyeudiw.metadata.policy as pcl
+from pyeudiw.federation.statements import EntityStatement
+from pyeudiw.federation.exceptions import TimeValidationError
+from pyeudiw.federation.policy import TrustChainPolicy, combine
+
+logger = logging.getLogger(__name__)
 
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
@@ -57,6 +62,16 @@ class TrustEvaluationHelper:
     def evaluation_method(self) -> bool:
         ev_method = self._get_evaluation_method()
         return ev_method()
+    
+    def _update_chain(self, entity_id: str | None = None, exp: datetime | None = None, trust_chain: list | None = None):
+        if entity_id != None:
+            self.entity_id = entity_id
+
+        if exp != None:
+            self.exp = exp
+
+        if trust_chain != None:
+            self.trust_chain = trust_chain
 
     def _handle_federation_chain(self):
         _first_statement = unpad_jwt_payload(self.trust_chain[-1])
@@ -90,15 +105,22 @@ class TrustEvaluationHelper:
         tc = StaticTrustChainValidator(
             self.trust_chain, jwks, self.httpc_params
         )
-        self.entity_id = tc.entity_id
-        self.exp = tc.exp
+        self._update_chain(
+            entity_id=tc.entity_id, 
+            exp=tc.exp
+        )
+
         _is_valid = False
+
         try:
             _is_valid = tc.validate()
-        except Exception:
-            # raise / log here that's expired
-            pass  # nosec - B110
+        except TimeValidationError:
+            logger.warn(f"Trust Chain {tc.entity_id} is expired")
+        except Exception as e:
+            logger.warn(f"Cannot validate Trust Chain {tc.entity_id} for the following reason: {e}")
+
         db_chain = None
+        
         if not _is_valid:
             try:
                 db_chain = self.storage.get_trust_attestation(
@@ -110,9 +132,13 @@ class TrustEvaluationHelper:
 
             except (EntryNotFound, Exception):
                 pass
+
             _is_valid = tc.update()
-            self.exp = tc.exp
-            self.trust_chain = tc.trust_chain
+
+            self._update_chain(
+                trust_chain=tc.trust_chain, 
+                exp=tc.exp
+            )
 
         # the good trust chain is then stored
         self.storage.add_or_update_trust_attestation(
@@ -164,21 +190,14 @@ class TrustEvaluationHelper:
         return _is_valid
 
     def federation(self) -> bool:
+        if len(self.trust_chain) == 0:
+            self.discovery(self.entity_id)
+
         if self.trust_chain:
             self.is_valid = self._handle_federation_chain()
             return self.is_valid
 
-        # TODO - at least a TA entity id is required for a discovery process
-        # _tc = TrustChainBuilder(
-            # subject= self.entity_id,
-            # trust_anchor=trust_anchor_ec,
-            # trust_anchor_configuration=trust_anchor_ec
-        # )
-        # if _tc.is_valid:
-            # self.trust_chain = _tc.serialize()
-            # return self.trust_chain
-
-        return []
+        return False
 
     def x509(self) -> bool:
         self.is_valid = self._handle_x509_pem()
@@ -188,7 +207,7 @@ class TrustEvaluationHelper:
         policy_acc = {"metadata": {}, "metadata_policy": {}}
 
         for policy in policies:
-            policy_acc = pcl.combine(policy, policy_acc)
+            policy_acc = combine(policy, policy_acc)
 
         self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
 
@@ -199,7 +218,7 @@ class TrustEvaluationHelper:
                 "metadata_policy": {}
             }
 
-            self.final_metadata = pcl.TrustChainPolicy().apply_policy(
+            self.final_metadata = TrustChainPolicy().apply_policy(
                 selected_metadata, 
                 policy_acc
             )
@@ -217,7 +236,7 @@ class TrustEvaluationHelper:
             policies=policies
         ).get('jwks', {}).get('keys', [])
 
-    def discovery(self, entity_id, entity_configuration):
+    def discovery(self, entity_id: str, entity_configuration: EntityStatement | None = None):
         """
         Updates fields ``trust_chain`` and ``exp`` based on the discovery process.
 
@@ -234,8 +253,11 @@ class TrustEvaluationHelper:
             subject_configuration=entity_configuration,
             httpc_params=self.httpc_params
         )
-        self.trust_chain = tcbuilder.get_trust_chain()
-        self.exp = tcbuilder.exp
+
+        self._update_chain(
+            trust_chain=tcbuilder.get_trust_chain(),
+            exp=tcbuilder.exp
+        )
         is_good = tcbuilder.is_valid
         if not is_good:
             raise DiscoveryFailedError(
