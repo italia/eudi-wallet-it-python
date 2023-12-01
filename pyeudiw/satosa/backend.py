@@ -29,7 +29,7 @@ from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
 from pyeudiw.openid4vp.exceptions import (
     KIDNotFound,
-    InvalidVPToken
+    InvalidVPToken, VPNotFound, NoNonceInVPToken, VPInvalidNonce
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
@@ -428,11 +428,37 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err_code="400"
             )
 
-        # TODO: handle vp token ops exceptions
         try:
             vpt.load_nonce(stored_session['nonce'])
             vps: list = vpt.get_presentation_vps()
             vpt.validate()
+        except VPNotFound as e:
+            _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
+        except NoNonceInVPToken as e:
+            _msg = "Error while validating VP: vp has no nonce."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
+        except VPInvalidNonce as e:
+            _msg = "Error while validating VP: unexpected value."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
         except Exception as e:
             _msg = (
                 "DirectPostResponse content parse and validation error. "
