@@ -702,8 +702,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             protected={'trust_chain': self.get_backend_trust_chain()}
         )
         response = {"response": jwt}
-
-        # TODO: update the storage with the acquired signed request object
         return JsonResponse(
             response,
             status="200"
