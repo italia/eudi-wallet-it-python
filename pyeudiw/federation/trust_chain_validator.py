@@ -3,6 +3,7 @@ from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.federation import is_es
+from pyeudiw.federation.policy import TrustChainPolicy
 from pyeudiw.federation.statements import (
     get_entity_configurations,
     get_entity_statements
@@ -17,7 +18,18 @@ from pyeudiw.federation.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def find_jwk(kid: str, jwks: list) -> dict:
+def find_jwk(kid: str, jwks: list[dict]) -> dict:
+    """
+    Find the JWK with the indicated kid in the jwks list.
+
+    :param kid: the identifier of the jwk
+    :type kid: str
+    :param jwks: the list of jwks
+    :type jwks: list[dict]
+
+    :returns: the jwk with the indicated kid or an empty dict if no jwk is found
+    :rtype: dict 
+    """
     if not kid:
         return {}
     for jwk in jwks:
@@ -27,13 +39,25 @@ def find_jwk(kid: str, jwks: list) -> dict:
 
 
 class StaticTrustChainValidator:
+    """Helper class for Static Trust Chain validation"""
     def __init__(
         self,
-        static_trust_chain: list,
-        trust_anchor_jwks: list,
+        static_trust_chain: list[str],
+        trust_anchor_jwks: list[dict],
         httpc_params: dict,
         **kwargs,
     ) -> None:
+        
+        """
+        Generates a new StaticTrustChainValidator istance
+
+        :param static_trust_chain: the list of JWTs, containing the EC, componing the static tust chain
+        :type static_trust_chain: list[str]
+        :param trust_anchor_jwks: the list of trust anchor jwks
+        :type trust_anchor_jwks: list[dict]
+        :param httpc_params: parameters to perform http requests
+        :type httpc_params: dict
+        """
 
         self.static_trust_chain = static_trust_chain
         self.updated_trust_chain = []
@@ -51,9 +75,45 @@ class StaticTrustChainValidator:
             setattr(self, k, v)
 
     def _check_expired(self, exp: int) -> bool:
-        return exp < iat_now()
+        """
+        Checks if exp value is expired.
 
-    def _validate_keys(self, fed_jwks: list[str], st_header: dict) -> None:
+        :param exp: an integer that represent the timestemp to check
+        :type exp: int
+        :returns: True if exp is expired and False otherwise
+        :rtype: bool
+        """
+
+        return exp < iat_now()
+    
+    def _validate_exp(self, exp: int) -> None:
+        """
+        Checks if exp value is expired.
+
+        :param exp: an integer that represent the timestemp to check
+        :type exp: int
+
+        :raises TimeValidationError: if exp value is expired
+        """
+
+        if not self._check_expired(exp):
+            raise TimeValidationError(
+                "Expired validation error"
+            )
+
+    def _validate_keys(self, fed_jwks: list[dict], st_header: dict) -> None:
+        """
+        Checks that the kid in st_header match with one JWK present
+        in the federation JWKs list.
+
+        :param fed_jwks: the list of federation's JWKs
+        :type fed_jwks: list[dict]
+        :param st_header: the statement header
+        :type st_header: dict
+
+        :raises KeyValidationError: if no JWK with the kid specified in feild st_header is found
+        """
+
         current_kid = st_header["kid"]
 
         validation_kid = None
@@ -65,17 +125,14 @@ class StaticTrustChainValidator:
         if not validation_kid:
             raise KeyValidationError(f"Kid {current_kid} not found")
 
-    def _validate_single(self, fed_jwks: list[str], header: dict, payload: dict) -> bool:
-        try:
-            self._validate_keys(fed_jwks, header)
-            self._validate_exp(payload["exp"])
-        except Exception as e:
-            logger.warning(f"Warning: {e}")
-            return False
-
-        return True
-
     def validate(self) -> bool:
+        """
+        Validates the static chain checking the validity in all jwt inside the field trust_chain.
+        
+        :returns: True if static chain is valid and False otherwise
+        :rtype: bool
+        """
+
         # start from the last entity statement
         rev_tc = [
             i for i in reversed(self.trust_chain)
@@ -104,9 +161,7 @@ class StaticTrustChainValidator:
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
-            raise TimeValidationError(
-                "Expired validation error"
-            )
+            return False
 
         fed_jwks = es_payload["jwks"]["keys"]
 
@@ -133,11 +188,16 @@ class StaticTrustChainValidator:
 
         return True
 
-    @property
-    def is_valid(self) -> bool:
-        return self.validate()
-
     def _retrieve_ec(self, iss: str) -> str:
+        """
+        Retrieves the Entity configuration from an on-line source.
+
+        :param iss: The issuer url where retrieve the entity configuration.
+        :type iss: str
+
+        :returns: the entity configuration in form of JWT.
+        :rtype: str
+        """
         jwt = get_entity_configurations(iss, self.httpc_params)
         if not jwt:
             raise HttpError(
@@ -147,6 +207,17 @@ class StaticTrustChainValidator:
         return jwt[0]
 
     def _retrieve_es(self, download_url: str, iss: str) -> str:
+        """
+        Retrieves the Entity Statement from an on-line source.
+
+        :param download_url: The path where retrieve the entity configuration.
+        :type download_url: str
+        :param iss: The issuer url.
+        :type iss: str
+
+        :returns: the entity statement in form of JWT.
+        :rtype: str
+        """
         jwt = get_entity_statements(download_url, self.httpc_params)
         if not jwt:
             logger.warning(
@@ -157,6 +228,15 @@ class StaticTrustChainValidator:
         return jwt
 
     def _update_st(self, st: str) -> str:
+        """
+        Updates the statement retrieving the new one using the source end_point and the sub fields of st payload.
+
+        :param st: The statement in form of a JWT.
+        :type st: str
+
+        :returns: the entity statement in form of JWT.
+        :rtype: str
+        """
         payload = unpad_jwt_payload(st)
         iss = payload['iss']
         if not is_es(payload):
@@ -190,10 +270,22 @@ class StaticTrustChainValidator:
         return jwt
 
     def set_exp(self, exp: int) -> None:
+        """
+        Updates the self.exp field if the exp parameter is more recent than the previous one.
+
+        :param exp: an integer that represent the timestemp to check
+        :type exp: int
+        """
         if not self.exp or self.exp > exp:
             self.exp = exp
 
     def update(self) -> bool:
+        """
+        Updates the statement retrieving and the exp filed and determines the validity of it.
+
+        :returns: True if the updated chain is valid, False otherwise.
+        :rtype: bool
+        """
         self.exp = 0
         for st in self.static_trust_chain:
             jwt = self._update_st(st)
@@ -204,29 +296,38 @@ class StaticTrustChainValidator:
             self.updated_trust_chain.append(jwt)
 
         return self.is_valid
+    
+    @property
+    def is_valid(self) -> bool:
+        """Get the validity of chain."""
+        return self.validate()
 
     @property
     def trust_chain(self) -> list[str]:
+        """Get the list of the jwt that compones the trust chain."""
         return self.updated_trust_chain or self.static_trust_chain
 
     @property
     def is_expired(self) -> int:
+        """Get the status of chain expiration."""
         return self._check_expired(self.exp)
 
     @property
     def entity_id(self) -> str:
+        """Get the chain's entity_id."""
         chain = self.trust_chain
         payload = unpad_jwt_payload(chain[0])
         return payload["iss"]
     
     @property
     def final_metadata(self) -> dict:
-        anchor = self.trust_anchor_jwks[-1]
+        """Apply the metadata and returns the final metadata."""
+        anchor = self.static_trust_chain[-1]
         es_anchor_payload = unpad_jwt_payload(anchor)
 
         policy = es_anchor_payload.get("metadata_policy", {})
 
-        leaf = self.trust_anchor_jwks[0]
+        leaf = self.static_trust_chain[0]
         es_leaf_payload = unpad_jwt_payload(leaf)
 
-        #return TrustChainPolicy().apply_policy(es_leaf_payload["metadata"], policy)
+        return TrustChainPolicy().apply_policy(es_leaf_payload["metadata"], policy)
