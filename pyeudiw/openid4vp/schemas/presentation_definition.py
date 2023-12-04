@@ -43,11 +43,11 @@ class PresentationDefinitionClaimFormatDesignations(BaseModel):
 
     __root__: Union[
         Dict[
-            constr(regex=r'^jwt$|^jwt_vc$|^jwt_vp$'),
+            constr(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$'),
             PresentationDefinitionClaimFormatDesignations1,
         ],
         Dict[
-            constr(regex=r'^ldp_vc$|^ldp_vp$|^ldp$'),
+            constr(pattern=r'^ldp_vc$|^ldp_vp$|^ldp$'),
             PresentationDefinitionClaimFormatDesignations2,
         ],
     ] = Field(..., title='Presentation Definition Claim Format Designations')
