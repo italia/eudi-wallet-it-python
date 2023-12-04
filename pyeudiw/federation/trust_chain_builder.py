@@ -64,7 +64,9 @@ class TrustChainBuilder:
                 trust_anchor_configuration = EntityStatement(
                     jwts[0], httpc_params=self.httpc_params
                 )
-                trust_anchor_configuration.subject_configuration.validate_by_itself()
+
+                subject_configuration.update_trust_anchor_conf(trust_anchor_configuration)
+                subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
                 logger.error(_msg)

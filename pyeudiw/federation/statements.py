@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copy import deepcopy
 from pyeudiw.federation.exceptions import (
     UnknownKid,
@@ -155,7 +157,7 @@ class EntityStatement:
         jwt: str,
         httpc_params: dict,
         filter_by_allowed_trust_marks: list = [],
-        trust_anchor_entity_conf=None,
+        trust_anchor_entity_conf: 'EntityStatement' | None = None,
         trust_mark_issuers_entity_confs: dict = [],
     ):
         self.jwt = jwt
@@ -195,6 +197,9 @@ class EntityStatement:
 
         self.verified_trust_marks = []
         self.is_valid = False
+
+    def update_trust_anchor_conf(self, trust_anchor_entity_conf: 'EntityStatement') -> None:
+        self.trust_anchor_entity_conf = trust_anchor_entity_conf
 
     def validate_by_itself(self) -> bool:
         """
