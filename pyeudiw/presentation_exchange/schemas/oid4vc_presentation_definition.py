@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Annotated
 
-from pydantic import BaseModel, Extra, Field, conint, constr, RootModel
+from pydantic import BaseModel, Extra, Field, conint, RootModel
 
 
 class LimitDisclosure(Enum):
@@ -43,11 +43,11 @@ class PresentationDefinitionClaimFormatDesignations(RootModel):
 
     root: Union[
         Dict[
-            constr(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$'),
+            Annotated[str, Field(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$')],
             PresentationDefinitionClaimFormatDesignations1,
         ],
         Dict[
-            constr(pattern=r'^ldp_vc$|^ldp_vp$|^ldp$'),
+            Annotated[str, Field(pattern=r'^ldp_vc$|^ldp_vp$|^ldp$')],
             PresentationDefinitionClaimFormatDesignations2,
         ],
     ] = Field(..., title='Presentation Definition Claim Format Designations')
