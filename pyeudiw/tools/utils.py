@@ -44,7 +44,6 @@ def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = T
     :returns: A list of responses.
     :rtype: list[dict]
     """
-
     urls = urls if isinstance(urls, list) else [urls]
 
     if http_async:
@@ -54,7 +53,7 @@ def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = T
         responses = []
         for i in urls:
             res = requests.get(i, **httpc_params)  # nosec - B113
-            responses.append(res.content.decode())
+            responses.append(res.content)
     return responses
 
 
