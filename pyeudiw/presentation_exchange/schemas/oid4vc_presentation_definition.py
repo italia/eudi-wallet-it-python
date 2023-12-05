@@ -7,7 +7,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field, conint, constr
+from pydantic import BaseModel, Extra, Field, conint, constr, RootModel
 
 
 class LimitDisclosure(Enum):
@@ -37,11 +37,11 @@ class PresentationDefinitionClaimFormatDesignations2(BaseModel):
     proof_type: Optional[List[str]] = Field(None, min_items=1)
 
 
-class PresentationDefinitionClaimFormatDesignations(BaseModel):
+class PresentationDefinitionClaimFormatDesignations(RootModel):
     class Config:
         extra = Extra.forbid
 
-    __root__: Union[
+    root: Union[
         Dict[
             constr(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$'),
             PresentationDefinitionClaimFormatDesignations1,
@@ -57,7 +57,7 @@ class Rule(Enum):
     pick = 'pick'
 
 
-class SubmissionRequirement1(BaseModel):
+class SubmissionRequirement(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -65,10 +65,6 @@ class SubmissionRequirement1(BaseModel):
     rule: Rule
     count: Optional[conint(ge=1)] = None
     from_: str = Field(..., alias='from')
-
-
-class SubmissionRequirement(BaseModel):
-    __root__: SubmissionRequirement1
 
 
 class InputDescriptor(BaseModel):
@@ -91,6 +87,3 @@ class PresentationDefinition(BaseModel):
     input_descriptors: List[InputDescriptor]
     submission_requirements: Optional[List[SubmissionRequirement]] = None
 
-
-class PresentationDefinitionForAHighAssuranceProfile(BaseModel):
-    presentation_definition: Optional[PresentationDefinition] = None
