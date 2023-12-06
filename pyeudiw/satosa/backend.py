@@ -217,7 +217,19 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 state=state,
                 session_id=session_id
             )
-        except (Exception, StorageWriteError) as e:
+        except (StorageWriteError) as e:
+            _msg = (
+                f"Error while initializing session with state {state} and {session_id}."
+            )
+            logger.error(f"{_msg} for the following reason {e}")
+            return self.handle_error(
+                context,
+                message="server_error",
+                troubleshoot=f"{_msg}",
+                err=f"{_msg}. {e.__class__.__name__}: {e}",
+                err_code="500"
+            )
+        except (Exception) as e:
             _msg = (
                 f"Error while initializing session with state {state} and {session_id}. "
             )
