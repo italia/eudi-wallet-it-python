@@ -29,7 +29,7 @@ from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
 from pyeudiw.openid4vp.exceptions import (
     KIDNotFound,
-    InvalidVPToken
+    InvalidVPToken, VPNotFound, NoNonceInVPToken, VPInvalidNonce
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
@@ -217,7 +217,19 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 state=state,
                 session_id=session_id
             )
-        except (Exception, StorageWriteError) as e:
+        except (StorageWriteError) as e:
+            _msg = (
+                f"Error while initializing session with state {state} and {session_id}."
+            )
+            logger.error(f"{_msg} for the following reason {e}")
+            return self.handle_error(
+                context,
+                message="server_error",
+                troubleshoot=f"{_msg}",
+                err=f"{_msg}. {e.__class__.__name__}: {e}",
+                err_code="500"
+            )
+        except (Exception) as e:
             _msg = (
                 f"Error while initializing session with state {state} and {session_id}. "
             )
@@ -428,11 +440,37 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 err_code="400"
             )
 
-        # TODO: handle vp token ops exceptions
         try:
             vpt.load_nonce(stored_session['nonce'])
             vps: list = vpt.get_presentation_vps()
             vpt.validate()
+        except VPNotFound as e:
+            _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
+        except NoNonceInVPToken as e:
+            _msg = "Error while validating VP: vp has no nonce."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
+        except VPInvalidNonce as e:
+            _msg = "Error while validating VP: unexpected value."
+            return self.handle_error(
+                context=context,
+                message="invalid_request",
+                troubleshoot=_msg,
+                err=f"{e.__class__.__name__}: {e}",
+                err_code="400"
+            )
         except Exception as e:
             _msg = (
                 "DirectPostResponse content parse and validation error. "
@@ -676,8 +714,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             protected={'trust_chain': self.get_backend_trust_chain()}
         )
         response = {"response": jwt}
-
-        # TODO: update the storage with the acquired signed request object
         return JsonResponse(
             response,
             status="200"
