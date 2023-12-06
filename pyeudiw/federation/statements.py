@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copy import deepcopy
 from pyeudiw.federation.exceptions import (
     UnknownKid,
@@ -7,20 +9,18 @@ from pyeudiw.federation.exceptions import (
     InvalidEntityHeader,
     InvalidEntityStatementPayload
 )
-from pyeudiw.federation.http_client import http_get
 from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader, 
     EntityStatementPayload
 )
 from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
 from pyeudiw.jwt import JWSHelper
+from pyeudiw.tools.utils import get_http_url
 from pydantic import ValidationError
 
-import asyncio
+
 import json
 import logging
-import requests
-
 
 try:
     pass
@@ -32,42 +32,84 @@ OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
 logger = logging.getLogger(__name__)
 
 
-def jwks_from_jwks_uri(jwks_uri: str, httpc_params: dict) -> list:
-    return [json.loads(asyncio.run(http_get([jwks_uri], httpc_params)))]  # pragma: no cover
-
-
-def get_federation_jwks(jwt_payload: dict, httpc_params: dict):
-    return (
-        jwt_payload.get("jwks", {}).get("keys", [])
-    )
-
-
-def get_http_url(urls: list, httpc_params: dict, http_async: bool = True) -> list:
-    if http_async:
-        responses = asyncio.run(
-            http_get(urls, httpc_params))  # pragma: no cover
-    else:
-        responses = []
-        for i in urls:
-            res = requests.get(i, **httpc_params)  # nosec - B113
-            responses.append(res.content.decode())
-    return responses
-
-
-def get_entity_statements(urls: list, httpc_params: dict) -> list:
+def jwks_from_jwks_uri(jwks_uri: str, httpc_params: dict, http_async: bool = True) -> list[dict]:
     """
-    Fetches an entity statement/configuration
+    Retrieves jwks from an entity uri.
+
+    :param jwks_uri: the uri where the jwks are located.
+    :type jwks_uri: str
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param http_async: if is set to True the operation will be performed in async (deafault True)
+    :type http_async: bool
+
+    :returns: A list of entity jwks.
+    :rtype: list[dict]
     """
-    if isinstance(urls, str):
-        urls = [urls]  # pragma: no cover
+
+    response = get_http_url(jwks_uri, httpc_params, http_async)
+    jwks = json.loads(response)
+
+    return [jwks]
+
+
+def get_federation_jwks(jwt_payload: dict) -> list[dict]:
+    """
+    Returns the list of JWKS inside a JWT payload.
+
+    :param jwt_payload: the jwt payload from where extract the JWKs.
+    :type jwt_payload: dict
+
+    :returns: A list of entity jwk's keys.
+    :rtype: list[dict]
+    """
+
+    jwks = jwt_payload.get("jwks", {})
+    keys = jwks.get("keys", [])
+
+    return keys
+
+
+def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[dict]:
+    """
+    Fetches an entity statement from the specified urls.
+
+    :param urls: The url or a list of url where perform the GET HTTP calls
+    :type urls: list[str] | str
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param http_async: if is set to True the operation will be performed in async (deafault True)
+    :type http_async: bool
+
+    :returns: A list of entity statements.
+    :rtype: list[dict]
+    """
+    
+    urls = urls if isinstance(urls, list) else [urls]
+
     for url in urls:
         logger.debug(f"Starting Entity Statement Request to {url}")
-    return get_http_url(urls, httpc_params)
+
+    return get_http_url(urls, httpc_params, http_async)
 
 
-def get_entity_configurations(subjects: list, httpc_params: dict):
-    if isinstance(subjects, str):
-        subjects = [subjects]
+def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, http_async: bool = True):
+    """
+    Fetches an entity configuration from the specified subjects.
+
+    :param subjects: The url or a list of url where perform the GET HTTP calls
+    :type subjects: list[str] | str
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param http_async: if is set to True the operation will be performed in async (deafault True)
+    :type http_async: bool
+
+    :returns: A list of entity statements.
+    :rtype: list[dict]
+    """
+
+    subjects = subjects if isinstance(subjects, list) else [subjects]
+
     urls = []
     for subject in subjects:
         if subject[-1] != "/":
@@ -75,11 +117,23 @@ def get_entity_configurations(subjects: list, httpc_params: dict):
         url = f"{subject}{OIDCFED_FEDERATION_WELLKNOWN_URL}"
         urls.append(url)
         logger.info(f"Starting Entity Configuration Request for {url}")
-    return get_http_url(urls, httpc_params)
+
+    return get_http_url(urls, httpc_params, http_async)
 
 
 class TrustMark:
+    """The class representing a Trust Mark"""
+
     def __init__(self, jwt: str, httpc_params: dict):
+        """
+        Create an instance of Trust Mark
+
+        :param jwt: the JWT containing the trust marks
+        :type jwt: str
+        :param httpc_params: parameters to perform http requests.
+        :type httpc_params: dict
+        """
+
         self.jwt = jwt
         self.header = unpad_jwt_header(jwt)
         self.payload = unpad_jwt_payload(jwt)
@@ -93,7 +147,16 @@ class TrustMark:
         self.issuer_entity_configuration = None
         self.httpc_params = httpc_params
 
-    def validate_by(self, ec) -> bool:
+    def validate_by(self, ec: dict) -> bool:
+        """
+        Validates Trust Marks by an Entity Configuration
+
+        :param ec: the entity configuration to validate by
+        :type ec: dict
+
+        :returns: True if is valid otherwise False
+        :rtype: bool
+        """
         try:
             EntityConfigurationHeader(**self.header)
         except ValidationError as e:
@@ -116,9 +179,15 @@ class TrustMark:
         return payload
 
     def validate_by_its_issuer(self) -> bool:
+        """
+        Validates Trust Marks by it's issuer
+
+        :returns: True if is valid otherwise False
+        :rtype: bool
+        """
         if not self.issuer_entity_configuration:
             self.issuer_entity_configuration = get_entity_configurations(
-                self.iss, self.httpc_params
+                self.iss, self.httpc_params, False
             )
         try:
             ec = EntityStatement(self.issuer_entity_configuration[0])
@@ -154,17 +223,30 @@ class EntityStatement:
         self,
         jwt: str,
         httpc_params: dict,
-        filter_by_allowed_trust_marks: list = [],
-        trust_anchor_entity_conf=None,
-        trust_mark_issuers_entity_confs: dict = [],
+        filter_by_allowed_trust_marks: list[str] = [],
+        trust_anchor_entity_conf: 'EntityStatement' | None = None,
+        trust_mark_issuers_entity_confs: list[EntityStatement] = [],
     ):
+        """
+        Creates EntityStatement istance
+
+        :param jwt: the JWT containing the trust marks.
+        :type jwt: str
+        :param httpc_params: parameters to perform http requests.
+        :type httpc_params: dict
+        :param filter_by_allowed_trust_marks: allowed trust marks list.
+        :type filter_by_allowed_trust_marks: list[str]
+        :param trust_anchor_entity_conf: the trust anchor entity conf or None
+        :type trust_anchor_entity_conf: EntityStatement | None
+        :param trust_mark_issuers_entity_confs: the list containig the trust mark's entiity confs
+        """
         self.jwt = jwt
         self.header = unpad_jwt_header(jwt)
         self.payload = unpad_jwt_payload(jwt)
         self.sub = self.payload["sub"]
         self.iss = self.payload["iss"]
         self.exp = self.payload["exp"]
-        self.jwks = get_federation_jwks(self.payload, httpc_params)
+        self.jwks = get_federation_jwks(self.payload)
         if not self.jwks or not self.jwks[0]:
             _msg = f"Missing jwks in the statement for {self.sub}"
             logger.error(_msg)
@@ -195,6 +277,15 @@ class EntityStatement:
 
         self.verified_trust_marks = []
         self.is_valid = False
+
+    def update_trust_anchor_conf(self, trust_anchor_entity_conf: 'EntityStatement') -> None:
+        """
+        Updates the internal Trust Anchor conf.
+
+        :param trust_anchor_entity_conf: the trust anchor entity conf
+        :type trust_anchor_entity_conf: EntityStatement
+        """
+        self.trust_anchor_entity_conf = trust_anchor_entity_conf
 
     def validate_by_itself(self) -> bool:
         """
@@ -319,12 +410,22 @@ class EntityStatement:
 
     def get_superiors(
         self,
-        authority_hints: list = [],
+        authority_hints: list[str] = [],
         max_authority_hints: int = 0,
-        superiors_hints: list = [],
+        superiors_hints: list[dict] = [],
     ) -> dict:
         """
         get superiors entity configurations
+
+        :param authority_hints: the authority hint list
+        :type authority_hints: list[str]
+        :param max_authority_hints: the number of max authority hint
+        :type max_authority_hints: int
+        :param superiors_hints: the list of superior hints
+        :type superiors_hints: list[dict]
+
+        :returns: a dict with the superior's entity configurations
+        :rtype: dict
         """
         # apply limits if defined
         authority_hints = authority_hints or deepcopy(
@@ -361,7 +462,7 @@ class EntityStatement:
 
         if not jwts:
             jwts = get_entity_configurations(
-                authority_hints, self.httpc_params)
+                authority_hints, self.httpc_params, False)
 
         for jwt in jwts:
             try:
@@ -393,6 +494,12 @@ class EntityStatement:
     def validate_descendant_statement(self, jwt: str) -> bool:
         """
         jwt is a descendant entity statement issued by self
+
+        :param jwt: the JWT to validate by
+        :type jwt: str
+
+        :returns: True if is valid or False otherwise
+        :rtype: bool
         """
         header = unpad_jwt_header(jwt)
         payload = unpad_jwt_payload(jwt)
@@ -425,13 +532,16 @@ class EntityStatement:
         self.verified_descendant_statements_as_jwt[payload["sub"]] = jwt
         return self.verified_descendant_statements
 
-    def validate_by_superior_statement(self, jwt: str, ec):
+    def validate_by_superior_statement(self, jwt: str, ec: 'EntityStatement') -> str:
         """
-        jwt is a statement issued by a superior
-        ec is a superior entity configuration
-
-        this method validates self with the jwks contained in statement
-        of the superior
+        validates self with the jwks contained in statement of the superior
+        :param jwt: the statement issued by a superior in form of JWT
+        :type jwt: str
+        :param ec: is a superior entity configuration
+        :type ec: EntityStatement
+        
+        :returns: the entity configuration subject if is valid
+        :rtype: str
         """
         is_valid = None
         payload = {}
@@ -439,7 +549,7 @@ class EntityStatement:
             payload = unpad_jwt_payload(jwt)
             ec.validate_by_itself()
             ec.validate_descendant_statement(jwt)
-            _jwks = get_federation_jwks(payload, self.httpc_params)
+            _jwks = get_federation_jwks(payload)
             _kids = [i.get("kid") for i in _jwks]
 
             jwsh = JWSHelper(_jwks[_kids.index(self.header["kid"])])
@@ -471,11 +581,14 @@ class EntityStatement:
         superiors_entity_configurations: dict = {},
     ) -> dict:
         """
-        validates the entity configuration with the entity statements
-        issued by its superiors
+        validates the entity configuration with the entity statements issued by its superiors
+        this methods create self.verified_superiors and failed ones and self.verified_by_superiors and failed ones
 
-        this methods create self.verified_superiors and failed ones
-        and self.verified_by_superiors and failed ones
+        :param superiors_entity_configurations: an object containing the entity configurations of superiors
+        :type superiors_entity_configurations: dict
+        
+        :returns: an object containing the superior validations
+        :rtype: dict
         """
         for ec in superiors_entity_configurations:
             if ec.sub in ec.verified_by_superiors:
@@ -498,7 +611,7 @@ class EntityStatement:
             else:
                 _url = f"{fetch_api_url}?sub={self.sub}"
                 logger.info(f"Getting entity statements from {_url}")
-                jwts = get_entity_statements([_url], self.httpc_params)
+                jwts = get_entity_statements([_url], self.httpc_params, False)
                 if not jwts:
                     logger.error(
                         f"Empty response for {_url}"
