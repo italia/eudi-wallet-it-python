@@ -19,9 +19,6 @@ JWKs_RSA = [
 
 JWKs = JWKs_EC + JWKs_RSA
 
-# TODO: ENC also with EC and not only with RSA
-ENC_JWKs = JWKs_RSA
-
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
 def test_unpad_jwt_header(jwk, payload):
@@ -42,7 +39,7 @@ def test_jwe_helper_init(key_type):
     assert helper.jwk == jwk
 
 
-@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_encrypt(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
@@ -60,7 +57,7 @@ def test_jwe_helper_decrypt(jwk, payload):
     assert decrypted == payload or decrypted == payload.encode()
 
 
-@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_decrypt_fail(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)

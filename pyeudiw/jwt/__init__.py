@@ -71,8 +71,8 @@ class JWEHelper():
         )
 
         if _key.kty == 'EC':
-            # TODO - TypeError: key must be bytes-like
-            return _keyobj.encrypt(cek=_key.public_key())
+            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(_payload, key=_key)
+            return _keyobj.encrypt(cek=cek)
         else:
             return _keyobj.encrypt(key=_key.public_key())
 
