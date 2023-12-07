@@ -71,8 +71,10 @@ class JWEHelper():
         )
 
         if _key.kty == 'EC':
-            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(_payload, key=_key)
-            return _keyobj.encrypt(cek=cek)
+            _keyobj: JWE_EC
+            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(msg=_payload, key=_key)
+            kwargs = {"params": params, "cek": cek, "iv": iv, "encrypted_key": encrypted_key}
+            return _keyobj.encrypt(**kwargs)
         else:
             return _keyobj.encrypt(key=_key.public_key())
 
@@ -89,7 +91,13 @@ class JWEHelper():
         _decryptor = factory(jwe, alg=_alg, enc=_enc)
 
         _dkey = key_from_jwk_dict(self.jwk.as_dict())
-        msg = _decryptor.decrypt(jwe, [_dkey])
+
+        if isinstance(_dkey, cryptojwt.jwk.ec.ECKey):
+            jwdec = JWE_EC()
+            jwdec.dec_setup(_decryptor.jwt, key=self.jwk.key.private_key())
+            msg = jwdec.decrypt(_decryptor.jwt)
+        else:
+            msg = _decryptor.decrypt(jwe, [_dkey])
 
         try:
             msg_dict = json.loads(msg)
