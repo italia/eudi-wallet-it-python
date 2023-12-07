@@ -12,6 +12,7 @@ from cryptojwt.jws.jws import JWS as JWSec
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
+from pyeudiw.jwt.exceptions import JWEEncryptionError
 from pyeudiw.jwt.utils import unpad_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
@@ -43,11 +44,12 @@ class JWEHelper():
 
     def encrypt(self, plain_dict: Union[dict, str, int, None], **kwargs) -> str:
         _key = key_from_jwk_dict(self.jwk.as_dict())
-
         if isinstance(_key, cryptojwt.jwk.rsa.RSAKey):
             JWE_CLASS = JWE_RSA
         elif isinstance(_key, cryptojwt.jwk.ec.ECKey):
             JWE_CLASS = JWE_EC
+        else:
+            raise JWEEncryptionError(f"Error while encrypting: f{_key.__class__.__name__} not supported!")
 
         _payload: str | int | bytes = ""
 
