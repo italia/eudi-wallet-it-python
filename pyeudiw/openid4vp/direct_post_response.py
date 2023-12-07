@@ -28,7 +28,7 @@ class DirectPostResponse:
 
     @property
     def payload(self) -> dict:
-        # TODO: detect if if it encrypted otherwise ...
+        # TODO: detect if it is encrypted otherwise ...
         # here we support only the encrypted jwt
         if not self._payload:
             self.decrypt()
