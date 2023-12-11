@@ -127,6 +127,9 @@ def find_jwk(kid: str, jwks: list[dict], as_dict: bool=True) -> dict | JWK:
     :param as_dict: if True the return type will be a dict, JWK otherwise.
     :type as_dict: bool
 
+    :raises InvalidKid: if kid is None.
+    :raises KidNotFoundError: if kid is not in jwks list.
+
     :returns: the jwk with the indicated kid or an empty dict if no jwk is found
     :rtype: dict | JWK 
     """
