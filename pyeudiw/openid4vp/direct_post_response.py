@@ -3,7 +3,7 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwk.exceptions import KidNotFoundError
-from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.openid4vp.exceptions import (
     VPNotFound,
     VPInvalidNonce,
@@ -16,7 +16,7 @@ from pyeudiw.openid4vp.vp import Vp
 class DirectPostResponse:
     def __init__(self, jwt: str, jwks_by_kids: dict, nonce: str = ""):
 
-        self.headers = unpad_jwt_header(jwt)
+        self.headers = decode_jwt_header(jwt)
         self.jwks_by_kids = jwks_by_kids
         self.jwt = jwt
         self.nonce = nonce

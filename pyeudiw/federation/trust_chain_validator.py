@@ -1,7 +1,7 @@
 import logging
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.federation import is_es
 from pyeudiw.federation.policy import TrustChainPolicy
 from pyeudiw.federation.statements import (
@@ -141,8 +141,8 @@ class StaticTrustChainValidator:
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
         last_element = rev_tc[0]
-        es_header = unpad_jwt_header(last_element)
-        es_payload = unpad_jwt_payload(last_element)
+        es_header = decode_jwt_header(last_element)
+        es_payload = decode_jwt_payload(last_element)
 
         ta_jwk = find_jwk(
             es_header.get("kid", None), self.trust_anchor_jwks
@@ -169,8 +169,8 @@ class StaticTrustChainValidator:
         # validate the entire chain taking in cascade using fed_jwks
         # if valid -> update fed_jwks with $st
         for st in rev_tc[1:]:
-            st_header = unpad_jwt_header(st)
-            st_payload = unpad_jwt_payload(st)
+            st_header = decode_jwt_header(st)
+            st_payload = decode_jwt_payload(st)
             jwk = find_jwk(
                 st_header.get("kid", None), fed_jwks
             )
@@ -237,7 +237,7 @@ class StaticTrustChainValidator:
         :returns: the entity statement in form of JWT.
         :rtype: str
         """
-        payload = unpad_jwt_payload(st)
+        payload = decode_jwt_payload(st)
         iss = payload['iss']
         if not is_es(payload):
             # It's an entity configuration
@@ -251,7 +251,7 @@ class StaticTrustChainValidator:
             )
         else:
             ec = self._retrieve_ec(iss)
-            ec_data = unpad_jwt_payload(ec)
+            ec_data = decode_jwt_payload(ec)
             fetch_api_url = None
 
             try:
@@ -290,7 +290,7 @@ class StaticTrustChainValidator:
         for st in self.static_trust_chain:
             jwt = self._update_st(st)
 
-            exp = unpad_jwt_payload(jwt)["exp"]
+            exp = decode_jwt_payload(jwt)["exp"]
             self.set_exp(exp)
 
             self.updated_trust_chain.append(jwt)
@@ -316,18 +316,18 @@ class StaticTrustChainValidator:
     def entity_id(self) -> str:
         """Get the chain's entity_id."""
         chain = self.trust_chain
-        payload = unpad_jwt_payload(chain[0])
+        payload = decode_jwt_payload(chain[0])
         return payload["iss"]
     
     @property
     def final_metadata(self) -> dict:
         """Apply the metadata and returns the final metadata."""
         anchor = self.static_trust_chain[-1]
-        es_anchor_payload = unpad_jwt_payload(anchor)
+        es_anchor_payload = decode_jwt_payload(anchor)
 
         policy = es_anchor_payload.get("metadata_policy", {})
 
         leaf = self.static_trust_chain[0]
-        es_leaf_payload = unpad_jwt_payload(leaf)
+        es_leaf_payload = decode_jwt_payload(leaf)
 
         return TrustChainPolicy().apply_policy(es_leaf_payload["metadata"], policy)

@@ -13,7 +13,7 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader, 
     EntityStatementPayload
 )
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.tools.utils import get_http_url
 from pydantic import ValidationError
@@ -135,8 +135,8 @@ class TrustMark:
         """
 
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
 
         self.id = self.payload["id"]
         self.sub = self.payload["sub"]
@@ -241,8 +241,8 @@ class EntityStatement:
         :param trust_mark_issuers_entity_confs: the list containig the trust mark's entiity confs
         """
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
         self.sub = self.payload["sub"]
         self.iss = self.payload["iss"]
         self.exp = self.payload["exp"]
@@ -501,8 +501,8 @@ class EntityStatement:
         :returns: True if is valid or False otherwise
         :rtype: bool
         """
-        header = unpad_jwt_header(jwt)
-        payload = unpad_jwt_payload(jwt)
+        header = decode_jwt_header(jwt)
+        payload = decode_jwt_payload(jwt)
 
         try:
             EntityConfigurationHeader(**header)
@@ -546,7 +546,7 @@ class EntityStatement:
         is_valid = None
         payload = {}
         try:
-            payload = unpad_jwt_payload(jwt)
+            payload = decode_jwt_payload(jwt)
             ec.validate_by_itself()
             ec.validate_descendant_statement(jwt)
             _jwks = get_federation_jwks(payload)

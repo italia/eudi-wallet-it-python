@@ -11,7 +11,7 @@ from pyeudiw.oauth2.dpop.exceptions import (
 )
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop.schema import (
     DPoPTokenHeaderSchema,
     DPoPTokenPayloadSchema
@@ -72,7 +72,7 @@ class DPoPVerifier:
             )
         # If the jwt is invalid, this will raise an exception
         try:
-            unpad_jwt_header(http_header_dpop)
+            decode_jwt_header(http_header_dpop)
         except UnicodeDecodeError as e:
             logger.error(
                 "DPoP proof validation error, "
@@ -108,7 +108,7 @@ class DPoPVerifier:
                 f"{e.__class__.__name__}: {e}"
             )
 
-        header = unpad_jwt_header(self.proof)
+        header = decode_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)
 
         if header['jwk'] != self.public_jwk:
@@ -118,7 +118,7 @@ class DPoPVerifier:
                 f"{header['jwk']} != {self.public_jwk}"
             ))
 
-        payload = unpad_jwt_payload(self.proof)
+        payload = decode_jwt_payload(self.proof)
         DPoPTokenPayloadSchema(**payload)
 
         _ath = hashlib.sha256(self.dpop_token.encode())

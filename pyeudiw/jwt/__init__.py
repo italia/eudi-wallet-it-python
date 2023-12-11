@@ -12,7 +12,7 @@ from cryptojwt.jws.jws import JWS as JWSec
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
-from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -107,7 +107,7 @@ class JWEHelper():
         :rtype: dict
         """
         try:
-            jwe_header = unpad_jwt_header(jwe)
+            jwe_header = decode_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
             raise VerificationError("The JWT is not valid")
 
@@ -191,7 +191,7 @@ class JWSHelper:
         """
         _key = key_from_jwk_dict(self.jwk.as_dict())
         _jwk_dict = self.jwk.as_dict()
-        _head = unpad_jwt_header(jws)
+        _head = decode_jwt_header(jws)
 
         if _head.get("kid"):
             if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover

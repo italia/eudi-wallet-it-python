@@ -4,7 +4,7 @@ from typing import Optional
 
 from cryptojwt import KeyJar
 from cryptojwt.jwt import utc_time_sans_frac
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 
 __author__ = "Roland Hedberg"
 __license__ = "Apache 2.0"

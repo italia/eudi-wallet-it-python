@@ -2,11 +2,16 @@ import base64
 import json
 import re
 
+from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
+
 # JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
 JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
 
 
-def unpad_jwt_element(jwt: str, position: int) -> dict:
+def decode_jwt_element(jwt: str, position: int) -> dict:
+    if position > 1:
+        raise JWTInvalidElementPosition(f"JWT has no jwt element in position {position}")
+
     if isinstance(jwt, bytes):
         jwt = jwt.decode()
     b = jwt.split(".")[position]
@@ -15,19 +20,19 @@ def unpad_jwt_element(jwt: str, position: int) -> dict:
     return data
 
 
-def unpad_jwt_header(jwt: str) -> dict:
-    return unpad_jwt_element(jwt, position=0)
+def decode_jwt_header(jwt: str) -> dict:
+    return decode_jwt_element(jwt, position=0)
 
 
-def unpad_jwt_payload(jwt: str) -> dict:
-    return unpad_jwt_element(jwt, position=1)
+def decode_jwt_payload(jwt: str) -> dict:
+    return decode_jwt_element(jwt, position=1)
 
 
 def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
     """
         docs here
     """
-    head = unpad_jwt_header(jwt)
+    head = decode_jwt_header(jwt)
     kid = head["kid"]
     if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
         provider_jwks = provider_jwks['keys']
