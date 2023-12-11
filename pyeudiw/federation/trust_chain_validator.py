@@ -15,27 +15,10 @@ from pyeudiw.federation.exceptions import (
     KeyValidationError
 )
 
+from pyeudiw.jwk import find_jwk
+from pyeudiw.jwk.exceptions import KidNotFoundError, InvalidKid
+
 logger = logging.getLogger(__name__)
-
-
-def find_jwk(kid: str, jwks: list[dict]) -> dict:
-    """
-    Find the JWK with the indicated kid in the jwks list.
-
-    :param kid: the identifier of the jwk
-    :type kid: str
-    :param jwks: the list of jwks
-    :type jwks: list[dict]
-
-    :returns: the jwk with the indicated kid or an empty dict if no jwk is found
-    :rtype: dict 
-    """
-    if not kid:
-        return {}
-    for jwk in jwks:
-        valid_jwk = jwk.get("kid", None)
-        if valid_jwk and kid == valid_jwk:
-            return jwk
 
 
 class StaticTrustChainValidator:
@@ -171,11 +154,12 @@ class StaticTrustChainValidator:
         for st in rev_tc[1:]:
             st_header = decode_jwt_header(st)
             st_payload = decode_jwt_payload(st)
-            jwk = find_jwk(
-                st_header.get("kid", None), fed_jwks
-            )
 
-            if not jwk:
+            try:
+                jwk = find_jwk(
+                    st_header.get("kid", None), fed_jwks
+                )
+            except (KidNotFoundError, InvalidKid):
                 return False
 
             jwsh = JWSHelper(jwk)
