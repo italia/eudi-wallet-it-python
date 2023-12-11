@@ -46,6 +46,10 @@ CONFIG = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
     },
+    'user_attributes': {
+        "unique_identifiers": ["tax_id_code", "unique_id"],
+        "subject_id_random_value": "CHANGEME!"
+    },
     'network': {
         "httpc_params": httpc_params
     },

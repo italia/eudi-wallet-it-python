@@ -307,11 +307,12 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
+        pepper = self.config.get("user_attributes", {})['subject_id_random_value']
         for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]
                 sub = hashlib.sha256(
-                    f"{_sub}~{self.config['user_attributes']['subject_id_salt']}".encode(
+                    f"{_sub}~{pepper}".encode(
                     )
                 ).hexdigest()
                 break
@@ -325,9 +326,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                     "setting a random one for interop for internal frontends"
                 )
             )
-            # TODO - add a salt here
             sub = hashlib.sha256(
-                json.dumps(response).encode()
+                f"{json.dumps(response).encode()}~{pepper}".encode()
             ).hexdigest()
 
         response["sub"] = [sub]
@@ -730,9 +730,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         error_template="error.html",
         level="error"
     ):
-
-        # TODO: evaluate with UX designers if Jinja2 template
-        # loader and rendering is required, it seems not.
 
         _msg = f"{message}:"
         if err:
