@@ -105,12 +105,29 @@ def import_pyca_pri_rsa(key, **params):
     )
     return jwcrypto.jwk.JWK(**params)
 
+def import_ec(key, **params):
+    pn = key.private_numbers()
+    params.update(
+        kty="EC",
+        crv="P-256",
+        x=pk_encode_int(pn.public_numbers.x),
+        y=pk_encode_int(pn.public_numbers.y),
+        d=pk_encode_int(pn.private_value)
+    )
+    return jwcrypto.jwk.JWK(**params)
 
 def _adapt_keys(issuer_key: JWK, holder_key: JWK):
     # _iss_key = issuer_key.key.serialize(private=True)
     # _iss_key['key_ops'] = 'sign'
-    _issuer_key = import_pyca_pri_rsa(
-        issuer_key.key.priv_key, kid=issuer_key.kid)
+
+    match issuer_key.jwk["kty"]:
+        case "RSA":
+            _issuer_key = import_pyca_pri_rsa(
+                issuer_key.key.priv_key, kid=issuer_key.kid)
+        case "EC":
+            _issuer_key = import_ec(issuer_key.key.priv_key, kid=issuer_key.kid)
+        case _:
+            raise KeyError(f"Unsupported 'kty' {issuer_key.key['kty']}")
 
     holder_key = jwcrypto.jwk.JWK.from_json(
         json.dumps(_serialize_key(holder_key)))
@@ -136,7 +153,6 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
     adapted_keys = _adapt_keys(issuer_key, holder_key)
-
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
 
