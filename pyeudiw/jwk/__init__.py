@@ -13,6 +13,10 @@ KEY_TYPES_FUNC = dict(
 
 
 class JWK():
+    """
+    The class representing a JWK istance
+    """
+
     def __init__(
         self,
         key: Union[dict, None] = None,
@@ -20,7 +24,19 @@ class JWK():
         hash_func: str = 'SHA-256',
         ec_crv: str = "P-256"
     ) -> None:
+        """
+        Creates an instance of JWK.
 
+        :param key: An optional key in dict form.
+        If no key is provided a randomic key will be generated.
+        :type key: Union[dict, None]
+        :param key_type: a string that represents the key type. Can be EC or RSA.
+        :type key_type: str
+        :param hash_func: a string that represents the hash function to use with the instance.
+        :type hash_func: str
+        :param ec_crv: a string that represents the curve to use with the instance.
+        :type ec_crv: str
+        """
         kwargs = {}
         self.kid = ""
 
@@ -46,10 +62,22 @@ class JWK():
         self.public_key = self.key.serialize()
         self.public_key['kid'] = self.jwk["kid"]
 
-    def as_json(self):
+    def as_json(self) -> str:
+        """
+        Returns the JWK in format of json string.
+
+        :returns: A json string that represents the key.
+        :rtype: str
+        """
         return json.dumps(self.jwk)
 
-    def export_private_pem(self):
+    def export_private_pem(self) -> str:
+        """
+        Returns the JWK in format of a private pem certificte.
+
+        :returns: A private pem certificate that represents the key.
+        :rtype: str
+        """
         _k = key_from_jwk_dict(self.jwk)
         pk = _k.private_key()
         pem = pk.private_bytes(
@@ -59,7 +87,13 @@ class JWK():
         )
         return pem.decode()
 
-    def export_public_pem(self):
+    def export_public_pem(self) -> str:
+        """
+        Returns the JWK in format of a public pem certificte.
+
+        :returns: A public pem certificate that represents the key.
+        :rtype: str
+        """
         _k = key_from_jwk_dict(self.jwk)
         pk = _k.public_key()
         cert = pk.public_bytes(
@@ -68,7 +102,13 @@ class JWK():
         )
         return cert.decode()
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
+        """
+        Returns the JWK in format of dict.
+
+        :returns: The key in form of dict.
+        :rtype: dict
+        """
         return self.jwk
 
     def __repr__(self):
