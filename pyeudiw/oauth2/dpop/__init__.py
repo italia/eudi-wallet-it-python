@@ -22,7 +22,20 @@ logger = logging.getLogger(__name__)
 
 
 class DPoPIssuer:
+    """
+    Helper class for generate DPoP proofs.
+    """
     def __init__(self, htu: str, token: str, private_jwk: dict):
+        """
+        Generates an instance of DPoPIssuer.
+
+        :param htu: a string representing the htu value.
+        :type htu: str
+        :param token: a string representing the token value.
+        :type token: str
+        :param private_jwk: a dict representing the private JWK of DPoP.
+        :type private_jwk: dict
+        """
         self.token = token
         self.private_jwk = private_jwk
         self.signer = JWSHelper(private_jwk)
@@ -30,6 +43,7 @@ class DPoPIssuer:
 
     @property
     def proof(self):
+        """Returns the proof."""
         data = {
             "jti": str(uuid.uuid4()),
             "htm": "GET",
@@ -48,6 +62,10 @@ class DPoPIssuer:
 
 
 class DPoPVerifier:
+    """
+    Helper class for validate DPoP proofs.
+    """
+
     dpop_header_prefix = 'DPoP '
 
     def __init__(
@@ -56,6 +74,19 @@ class DPoPVerifier:
         http_header_authz: str,
         http_header_dpop: str,
     ):
+        """
+        Generate an instance of DPoPVerifier.
+
+        :param public_jwk: a dict representing the public JWK of DPoP.
+        :type public_jwk: dict
+        :param http_header_authz: a string representing the authz value.
+        :type http_header_authz: str
+        :param http_header_dpop: a string representing the DPoP value.
+        :type http_header_dpop: str
+
+        :raises ValueError: if DPoP proof is not a valid JWT
+
+        """
         self.public_jwk = public_jwk
         self.dpop_token = (
             http_header_authz.replace(self.dpop_header_prefix, '')
@@ -89,9 +120,20 @@ class DPoPVerifier:
 
     @property
     def is_valid(self) -> bool:
+        """Returns True if DPoP is valid."""
         return self.validate()
 
     def validate(self) -> bool:
+        """
+        Validates the content of DPoP.
+
+        :raises InvalidDPoPKid: if the kid of DPoP is invalid.
+        :raises InvalidDPoPAth: if the header's JWK is different from public_jwk's one.
+        
+        :returns: True if the validation is correctly executed, False otherwise
+        :rtype: bool
+        """
+
         jws_verifier = JWSHelper(self.public_jwk)
         try:
             dpop_valid = jws_verifier.verify(self.proof)
