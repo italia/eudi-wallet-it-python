@@ -1,6 +1,6 @@
 import binascii
 import json
-from typing import Union
+from typing import Union, Any
 
 import cryptojwt
 from cryptojwt.exception import VerificationError
@@ -38,10 +38,32 @@ DEFAULT_ENC_ENC_MAP = {
 
 
 class JWEHelper():
-    def __init__(self, jwk: JWK):
+    """
+    The helper class for work with JWEs.
+    """
+    def __init__(self, jwk: Union[JWK, dict]):
+        """
+        Creates an instance of JWEHelper.
+
+        :param jwk: The JWK used to crypt and encrypt the content of JWE.
+        :type jwk: JWK
+        """
         self.jwk = jwk
+        if isinstance(jwk, dict):
+            self.jwk = JWK(jwk)
+        self.alg = DEFAULT_SIG_KTY_MAP[self.jwk.key.kty]
 
     def encrypt(self, plain_dict: Union[dict, str, int, None], **kwargs) -> str:
+        """
+        Generate a encrypted JWE string.
+
+        :param plain_dict: The payload of JWE.
+        :type plain_dict: Union[dict, str, int, None]
+        :param kwargs: Other optional fields to generate the JWE.
+
+        :returns: A string that represents the JWE.
+        :rtype: str
+        """
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         if isinstance(_key, cryptojwt.jwk.rsa.RSAKey):
@@ -75,6 +97,15 @@ class JWEHelper():
             return _keyobj.encrypt(key=_key.public_key())
 
     def decrypt(self, jwe: str) -> dict:
+        """
+        Generate a dict containing the content of decrypted JWE string.
+
+        :param jwe: A string representing the jwe.
+        :type jwe: str
+
+        :returns: A dict that represents the payload of decrypted JWE.
+        :rtype: dict
+        """
         try:
             jwe_header = unpad_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
@@ -97,7 +128,16 @@ class JWEHelper():
 
 
 class JWSHelper:
+    """
+    The helper class for work with JWEs.
+    """
     def __init__(self, jwk: Union[JWK, dict]):
+        """
+        Creates an instance of JWSHelper.
+
+        :param jwk: The JWK used to sign and verify the content of JWS.
+        :type jwk: Union[JWK, dict]
+        """
         self.jwk = jwk
         if isinstance(jwk, dict):
             self.jwk = JWK(jwk)
@@ -109,7 +149,19 @@ class JWSHelper:
         protected: dict = {},
         **kwargs
     ) -> str:
+        """
+        Generate a encrypted JWS string.
 
+        :param plain_dict: The payload of JWS.
+        :type plain_dict: Union[dict, str, int, None]
+        :param protected: a dict containing all the values 
+        to include in the protected header.
+        :type protected: dict
+        :param kwargs: Other optional fields to generate the JWE.
+
+        :returns: A string that represents the JWS.
+        :rtype: str
+        """
         _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _payload: str | int | bytes = ""
@@ -126,7 +178,17 @@ class JWSHelper:
         _signer = JWSec(_payload, alg=self.alg, **kwargs)
         return _signer.sign_compact([_key], protected=protected, **kwargs)
 
-    def verify(self, jws: str, **kwargs):
+    def verify(self, jws: str, **kwargs) -> (str | Any | bytes):
+        """
+        Verify a JWS string.
+
+        :param jws: A string representing the jwe.
+        :type jws: str
+        :param kwargs: Other optional fields to generate the JWE.
+
+        :returns: A string that represents the payload of JWS.
+        :rtype: str
+        """
         _key = key_from_jwk_dict(self.jwk.as_dict())
         _jwk_dict = self.jwk.as_dict()
         _head = unpad_jwt_header(jws)
