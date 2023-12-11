@@ -11,6 +11,19 @@ JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
 
 
 def decode_jwt_element(jwt: str, position: int) -> dict:
+    """
+    Decodes the element in a determinated position.
+
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+    :param position: the position of segment to unpad.
+    :type position: int
+
+    :raises JWTInvalidElementPosition: If the JWT element position is greather then one or less of 0
+
+    :returns: a dict with the content of the decoded section.
+    :rtype: dict
+    """
     if position > 1 or position < 0:
         raise JWTInvalidElementPosition(f"JWT has no element in position {position}")
 
@@ -24,16 +37,46 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
 
 
 def decode_jwt_header(jwt: str) -> dict:
+    """
+    Decodes the jwt header.
+
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+
+    :returns: a dict with the content of the decoded header.
+    :rtype: dict
+    """
     return decode_jwt_element(jwt, position=0)
 
 
 def decode_jwt_payload(jwt: str) -> dict:
+    """
+    Decodes the jwt payload.
+
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+
+    :returns: a dict with the content of the decoded payload.
+    :rtype: dict
+    """
     return decode_jwt_element(jwt, position=1)
 
 
-def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
+def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
     """
-        docs here
+    Find the JWK inside the provider JWKs with the kid 
+    specified in jwt header.
+
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+    :param provider_jwks: a dictionary that contains one or more JWKs with the KID as the key.
+    :type provider_jwks: Dict[str, dict]
+
+    :raises InvalidKid: if kid is None.
+    :raises KidNotFoundError: if kid is not in jwks list.
+
+    :returns: the jwk as dict.
+    :rtype: dict
     """
     head = decode_jwt_header(jwt)
     kid = head["kid"]
@@ -44,5 +87,15 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: dict) -> dict:
 
 
 def is_jwt_format(jwt: str) -> bool:
+    """
+    Check if a string is in JWT format.
+    
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+
+    :returns: True if the string is a JWT, False otherwise.
+    :rtype: bool
+    """
+
     res = re.match(JWT_REGEXP, jwt)
     return bool(res)
