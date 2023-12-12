@@ -13,7 +13,7 @@ from sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 from jwcrypto.jws import JWS
@@ -167,7 +167,7 @@ def verify_sd_jwt(
 
     settings.update(
         {
-            "issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]
+            "issuer": decode_jwt_payload(sd_jwt_presentation)["iss"]
         }
     )
     adapted_keys = {

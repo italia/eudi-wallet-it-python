@@ -3,7 +3,7 @@ import pytest
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
                          JWSHelper)
-from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header
 
 JWKs_EC = [
     (JWK(key_type="EC"), {"key": "value"}),
@@ -24,11 +24,11 @@ ENC_JWKs = JWKs_RSA
 
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
-def test_unpad_jwt_header(jwk, payload):
+def test_decode_jwt_header(jwk, payload):
     jwe_helper = JWEHelper(jwk)
     jwe = jwe_helper.encrypt(payload)
     assert jwe
-    header = unpad_jwt_header(jwe)
+    header = decode_jwt_header(jwe)
     assert header
     assert header["alg"] == DEFAULT_ENC_ALG_MAP[jwk.jwk["kty"]]
     assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.jwk["kty"]]

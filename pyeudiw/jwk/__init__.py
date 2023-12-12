@@ -6,13 +6,18 @@ from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import new_rsa_key
 
+from .exceptions import InvalidKid, KidNotFoundError
+
 KEY_TYPES_FUNC = dict(
     EC=new_ec_key,
     RSA=new_rsa_key
 )
 
-
 class JWK():
+    """
+    The class representing a JWK istance
+    """
+
     def __init__(
         self,
         key: Union[dict, None] = None,
@@ -20,7 +25,19 @@ class JWK():
         hash_func: str = 'SHA-256',
         ec_crv: str = "P-256"
     ) -> None:
+        """
+        Creates an instance of JWK.
 
+        :param key: An optional key in dict form.
+        If no key is provided a randomic key will be generated.
+        :type key: Union[dict, None]
+        :param key_type: a string that represents the key type. Can be EC or RSA.
+        :type key_type: str
+        :param hash_func: a string that represents the hash function to use with the instance.
+        :type hash_func: str
+        :param ec_crv: a string that represents the curve to use with the instance.
+        :type ec_crv: str
+        """
         kwargs = {}
         self.kid = ""
 
@@ -46,10 +63,22 @@ class JWK():
         self.public_key = self.key.serialize()
         self.public_key['kid'] = self.jwk["kid"]
 
-    def as_json(self):
+    def as_json(self) -> str:
+        """
+        Returns the JWK in format of json string.
+
+        :returns: A json string that represents the key.
+        :rtype: str
+        """
         return json.dumps(self.jwk)
 
-    def export_private_pem(self):
+    def export_private_pem(self) -> str:
+        """
+        Returns the JWK in format of a private pem certificte.
+
+        :returns: A private pem certificate that represents the key.
+        :rtype: str
+        """
         _k = key_from_jwk_dict(self.jwk)
         pk = _k.private_key()
         pem = pk.private_bytes(
@@ -59,7 +88,13 @@ class JWK():
         )
         return pem.decode()
 
-    def export_public_pem(self):
+    def export_public_pem(self) -> str:
+        """
+        Returns the JWK in format of a public pem certificte.
+
+        :returns: A public pem certificate that represents the key.
+        :rtype: str
+        """
         _k = key_from_jwk_dict(self.jwk)
         pk = _k.public_key()
         cert = pk.public_bytes(
@@ -68,9 +103,41 @@ class JWK():
         )
         return cert.decode()
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
+        """
+        Returns the JWK in format of dict.
+
+        :returns: The key in form of dict.
+        :rtype: dict
+        """
         return self.jwk
 
     def __repr__(self):
         # private part!
         return self.as_json()
+
+def find_jwk(kid: str, jwks: list[dict], as_dict: bool=True) -> dict | JWK:
+    """
+    Find the JWK with the indicated kid in the jwks list.
+
+    :param kid: the identifier of the jwk
+    :type kid: str
+    :param jwks: the list of jwks
+    :type jwks: list[dict]
+    :param as_dict: if True the return type will be a dict, JWK otherwise.
+    :type as_dict: bool
+
+    :raises InvalidKid: if kid is None.
+    :raises KidNotFoundError: if kid is not in jwks list.
+
+    :returns: the jwk with the indicated kid or an empty dict if no jwk is found
+    :rtype: dict | JWK 
+    """
+    if not kid:
+        raise InvalidKid("Kid cannot be empty")
+    for jwk in jwks:
+        valid_jwk = jwk.get("kid", None)
+        if valid_jwk and kid == valid_jwk:
+            return jwk if as_dict else JWK(jwk)
+    
+    raise KidNotFoundError(f"Key with Kid {kid} not found")

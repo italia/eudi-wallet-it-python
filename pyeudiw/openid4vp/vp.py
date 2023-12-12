@@ -1,5 +1,5 @@
 
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 
 
@@ -7,9 +7,9 @@ class Vp(VpSdJwt):
 
     def __init__(self, jwt: str):
         # TODO: what if the credential is not a JWT?
-        self.headers = unpad_jwt_header(jwt)
+        self.headers = decode_jwt_header(jwt)
         self.jwt = jwt
-        self.payload = unpad_jwt_payload(jwt)
+        self.payload = decode_jwt_payload(jwt)
 
         self.credential_headers: dict = {}
         self.credential_payload: dict = {}
@@ -35,8 +35,8 @@ class Vp(VpSdJwt):
     def parse_digital_credential(self):
         _typ = self._detect_vp_type()
         if _typ == 'jwt':
-            self.credential_headers = unpad_jwt_header(self.payload['vp'])
-            self.credential_payload = unpad_jwt_payload(self.payload['vp'])
+            self.credential_headers = decode_jwt_header(self.payload['vp'])
+            self.credential_payload = decode_jwt_payload(self.payload['vp'])
         else:
             raise NotImplementedError(
                 f"VP Digital credentials type not implemented yet: {_typ}"
