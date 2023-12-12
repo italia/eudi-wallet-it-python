@@ -30,7 +30,7 @@ from pyeudiw.sd_jwt import (
     import_pyca_pri_rsa
 )
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 from saml2_sp import saml2_request, IDP_BASEURL
@@ -127,7 +127,7 @@ sign_request_obj = http_user_agent.get(
     request_uri, verify=False, headers=http_headers)
 print(sign_request_obj.json())
 
-redirect_uri = unpad_jwt_payload(sign_request_obj.json()['response'])[
+redirect_uri = decode_jwt_payload(sign_request_obj.json()['response'])[
     'response_uri']
 
 # create a SD-JWT signed by a trusted credential issuer
@@ -200,7 +200,7 @@ sdjwt_at_holder.create_presentation(
     )
 )
 
-red_data = unpad_jwt_payload(sign_request_obj.json()['response'])
+red_data = decode_jwt_payload(sign_request_obj.json()['response'])
 req_nonce = red_data['nonce']
 
 data = {
@@ -223,7 +223,7 @@ rp_ec_jwt = http_user_agent.get(
     f'{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation',
     verify=False
 ).content.decode()
-rp_ec = unpad_jwt_payload(rp_ec_jwt)
+rp_ec = decode_jwt_payload(rp_ec_jwt)
 
 assert redirect_uri == rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
 
