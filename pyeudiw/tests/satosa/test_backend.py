@@ -13,9 +13,9 @@ from satosa.state import State
 from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_SIG_KTY_MAP
+from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIG_KTY_MAP
 from cryptojwt.jws.jws import JWS
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.sd_jwt import (
@@ -522,8 +522,8 @@ class TestOpenID4VPBackend:
         msg = json.loads(request_endpoint.message)
         assert msg["response"]
 
-        header = unpad_jwt_header(msg["response"])
-        payload = unpad_jwt_payload(msg["response"])
+        header = decode_jwt_header(msg["response"])
+        payload = decode_jwt_payload(msg["response"])
         assert header["alg"]
         assert header["kid"]
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])

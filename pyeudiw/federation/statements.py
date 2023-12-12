@@ -13,11 +13,12 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader, 
     EntityStatementPayload
 )
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.tools.utils import get_http_url
 from pydantic import ValidationError
 
+from pyeudiw.jwk import find_jwk
 
 import json
 import logging
@@ -135,8 +136,8 @@ class TrustMark:
         """
 
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
 
         self.id = self.payload["id"]
         self.sub = self.payload["sub"]
@@ -165,15 +166,19 @@ class TrustMark:
                 f"Trust Mark validation failed: "
                 f"{e}"
             )
+        
+        _kid = self.header["kid"]
 
-
-        if self.header.get("kid") not in ec.kids:
+        if _kid not in ec.kids:
             raise UnknownKid(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
+        
+        _jwk = find_jwk(_kid, ec.jwks)
+
         # verify signature
-        jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
         return payload
@@ -189,13 +194,15 @@ class TrustMark:
             self.issuer_entity_configuration = get_entity_configurations(
                 self.iss, self.httpc_params, False
             )
+
+        _kid = self.header.get('kid')
         try:
             ec = EntityStatement(self.issuer_entity_configuration[0])
             ec.validate_by_itself()
         except UnknownKid:
             logger.warning(
                 f"Trust Mark validation failed by its Issuer: "
-                f"{self.header.get('kid')} not found in "
+                f"{_kid} not found in "
                 f"{self.issuer_entity_configuration.jwks}")
             return False
         except Exception:
@@ -205,7 +212,8 @@ class TrustMark:
             return False
 
         # verify signature
-        jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
+        _jwk = find_jwk(_kid, ec.jwks)
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
         return payload
@@ -241,8 +249,8 @@ class EntityStatement:
         :param trust_mark_issuers_entity_confs: the list containig the trust mark's entiity confs
         """
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
         self.sub = self.payload["sub"]
         self.iss = self.payload["iss"]
         self.exp = self.payload["exp"]
@@ -300,11 +308,15 @@ class EntityStatement:
                 f"{e}"
             )
         
-        if self.header.get("kid") not in self.kids:
+        _kid = self.header.get("kid")
+        
+        if _kid not in self.kids:
             raise UnknownKid(
-                f"{self.header.get('kid')} not found in {self.jwks}")  # pragma: no cover
+                f"{_kid} not found in {self.jwks}")  # pragma: no cover
+        
         # verify signature
-        jwsh = JWSHelper(self.jwks[self.kids.index(self.header["kid"])])
+        _jwk = find_jwk(_kid, self.jwks)
+        jwsh = JWSHelper(_jwk)
         jwsh.verify(self.jwt)
         self.is_valid = True
         return True
@@ -501,8 +513,8 @@ class EntityStatement:
         :returns: True if is valid or False otherwise
         :rtype: bool
         """
-        header = unpad_jwt_header(jwt)
-        payload = unpad_jwt_payload(jwt)
+        header = decode_jwt_header(jwt)
+        payload = decode_jwt_payload(jwt)
 
         try:
             EntityConfigurationHeader(**header)
@@ -520,12 +532,15 @@ class EntityStatement:
                 f"{e}"
             )
 
-        if header.get("kid") not in self.kids:
+        _kid = header.get("kid")
+
+        if _kid not in self.kids:
             raise UnknownKid(
-                f"{self.header.get('kid')} not found in {self.jwks}")
+                f"{_kid} not found in {self.jwks}")
 
         # verify signature
-        jwsh = JWSHelper(self.jwks[self.kids.index(header["kid"])])
+        _jwk = find_jwk(_kid, self.jwks)
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(jwt)
 
         self.verified_descendant_statements[payload["sub"]] = payload
@@ -546,13 +561,13 @@ class EntityStatement:
         is_valid = None
         payload = {}
         try:
-            payload = unpad_jwt_payload(jwt)
+            payload = decode_jwt_payload(jwt)
             ec.validate_by_itself()
             ec.validate_descendant_statement(jwt)
             _jwks = get_federation_jwks(payload)
-            _kids = [i.get("kid") for i in _jwks]
+            _jwk = find_jwk(self.header["kid"], _jwks)
 
-            jwsh = JWSHelper(_jwks[_kids.index(self.header["kid"])])
+            jwsh = JWSHelper(_jwk)
             payload = jwsh.verify(self.jwt)
 
             is_valid = True

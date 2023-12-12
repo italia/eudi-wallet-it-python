@@ -6,7 +6,7 @@ from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.federation.exceptions import ProtocolMetadataNotFound
 from pyeudiw.satosa.exceptions import DiscoveryFailedError
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.jwt.utils import unpad_jwt_payload, is_jwt_format
+from pyeudiw.jwt.utils import decode_jwt_payload, is_jwt_format
 from pyeudiw.x509.verify import verify_x509_anchor, get_issuer_from_x5c, is_der_format
 
 from pyeudiw.storage.exceptions import EntryNotFound
@@ -74,7 +74,7 @@ class TrustEvaluationHelper:
             self.trust_chain = trust_chain
 
     def _handle_federation_chain(self):
-        _first_statement = unpad_jwt_payload(self.trust_chain[-1])
+        _first_statement = decode_jwt_payload(self.trust_chain[-1])
         trust_anchor_eid = self.trust_anchor or _first_statement.get(
             'iss', None)
 
@@ -92,7 +92,7 @@ class TrustEvaluationHelper:
                 "a recognizable Trust Anchor."
             )
 
-        decoded_ec = unpad_jwt_payload(
+        decoded_ec = decode_jwt_payload(
             trust_anchor['federation']['entity_configuration']
         )
         jwks = decoded_ec.get('jwks', {}).get('keys', [])
@@ -209,7 +209,7 @@ class TrustEvaluationHelper:
         for policy in policies:
             policy_acc = combine(policy, policy_acc)
 
-        self.final_metadata = unpad_jwt_payload(self.trust_chain[0])
+        self.final_metadata = decode_jwt_payload(self.trust_chain[0])
 
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...

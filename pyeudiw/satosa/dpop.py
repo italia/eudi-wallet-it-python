@@ -3,7 +3,7 @@ import logging
 from typing import Union
 
 
-from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import WalletInstanceAttestationPayload, \
     WalletInstanceAttestationHeader
@@ -25,8 +25,8 @@ class BackendDPoP:
 
             # take WIA
             dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[-1]
-            _head = unpad_jwt_header(dpop_jws)
-            wia = unpad_jwt_payload(dpop_jws)
+            _head = decode_jwt_header(dpop_jws)
+            wia = decode_jwt_payload(dpop_jws)
 
             self._log(
                 context,

@@ -8,8 +8,7 @@ from satosa.response import Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_header
-from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
+from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.satosa.exceptions import (
     NotTrustedFederationError, DiscoveryFailedError
 )
@@ -166,7 +165,7 @@ class BackendTrust:
             )
         )
 
-        headers = unpad_jwt_header(jws)
+        headers = decode_jwt_header(jws)
         trust_eval = TrustEvaluationHelper(
             self.db_engine,
             httpc_params=self.config['network']['httpc_params'],
