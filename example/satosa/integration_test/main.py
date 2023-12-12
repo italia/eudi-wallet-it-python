@@ -6,7 +6,7 @@ import base64
 from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
-from pyeudiw.tests.federation.base import (
+from pyeudiw.tests.federation.base_ec import (
     EXP,
     leaf_cred,
     leaf_cred_jwk,
@@ -27,7 +27,7 @@ from pyeudiw.sd_jwt import (
     load_specification_from_yaml_string,
     issue_sd_jwt,
     _adapt_keys,
-    import_pyca_pri_rsa
+    import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import decode_jwt_payload
@@ -36,7 +36,7 @@ from pyeudiw.tools.utils import iat_now, exp_from_now
 from saml2_sp import saml2_request, IDP_BASEURL
 from sd_jwt.holder import SDJWTHolder
 
-from settings import (
+from settings_ec import (
     CONFIG_DB, 
     RP_EID, 
     WALLET_INSTANCE_ATTESTATION, 
@@ -191,7 +191,7 @@ sdjwt_at_holder.create_presentation(
     aud=str(uuid.uuid4()),
     sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
     holder_key=(
-        import_pyca_pri_rsa(
+        import_ec(
             WALLET_PRIVATE_JWK.key.priv_key,
             kid=WALLET_PRIVATE_JWK.kid
         )
