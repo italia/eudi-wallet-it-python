@@ -99,3 +99,40 @@ def is_jwt_format(jwt: str) -> bool:
 
     res = re.match(JWT_REGEXP, jwt)
     return bool(res)
+
+def is_jwe_format(jwt: str):
+    """
+    Check if a string is in JWE format.
+    
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+
+    :returns: True if the string is a JWE, False otherwise.
+    :rtype: bool
+    """
+
+    if not is_jwt_format(jwt):
+        return False
+    
+    header = decode_jwt_header(jwt)
+
+    if header.get("enc", None) == None:
+        return False
+    
+    return True
+
+def is_jws_format(jwt: str):
+    """
+    Check if a string is in JWS format.
+    
+    :param jwt: a string that represents the jwt.
+    :type jwt: str
+
+    :returns: True if the string is a JWS, False otherwise.
+    :rtype: bool
+    """
+    breakpoint()
+    if not is_jwt_format(jwt):
+        return False
+    
+    return not is_jwe_format(jwt)
