@@ -1,36 +1,36 @@
-from .exceptions import InvalidVPToken
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header, is_jwt_format
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 
 
 class Vp(VpSdJwt):
 
-    def __init__(self, jwt: str):
+    def __init__(self, jwt: str) -> None:
         super().__init__(jwt)
 
         self.parse_digital_credential()
         self.disclosed_user_attributes: dict = {}
 
-    def _detect_vp_type(self):
+    def _detect_vp_type(self) -> str:
         return self.headers["typ"].lower()
 
-    def get_credential_jwks(self):
+    def get_credential_jwks(self) -> list[dict]:
         if not self.credential_jwks:
             return {}
         return self.credential_jwks
 
-    @property
-    def credential_issuer(self):
-        if not self.credential_payload.get('iss', None):
-            self.parse_digital_credential()
-        return self.credential_payload.get('iss', None)
-
-    def parse_digital_credential(self):
+    def parse_digital_credential(self) -> None:
         _typ = self._detect_vp_type()
-        if _typ == 'jwt':
-            self.credential_headers = decode_jwt_header(self.payload['vp'])
-            self.credential_payload = decode_jwt_payload(self.payload['vp'])
-        else:
+
+        if _typ != 'jwt':
             raise NotImplementedError(
                 f"VP Digital credentials type not implemented yet: {_typ}"
             )
+
+        self.credential_headers = decode_jwt_header(self.payload['vp'])
+        self.credential_payload = decode_jwt_payload(self.payload['vp'])
+
+    @property
+    def credential_issuer(self) -> str:
+        if not self.credential_payload.get('iss', None):
+            self.parse_digital_credential()
+        return self.credential_payload.get('iss', None)
