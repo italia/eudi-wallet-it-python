@@ -1,12 +1,14 @@
-
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
+from .exceptions import InvalidVPToken
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header, is_jwt_format
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 
 
 class Vp(VpSdJwt):
 
     def __init__(self, jwt: str):
-        # TODO: what if the credential is not a JWT?
+        if not is_jwt_format(jwt):
+            raise InvalidVPToken(f"VP is not in JWT format.")
+
         self.headers = decode_jwt_header(jwt)
         self.jwt = jwt
         self.payload = decode_jwt_payload(jwt)
