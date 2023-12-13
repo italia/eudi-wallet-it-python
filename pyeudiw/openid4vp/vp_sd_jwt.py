@@ -1,16 +1,28 @@
+from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_payload
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 
 
 class VpSdJwt:
+    def __init__(self, jwt: str):
+        if not is_jwt_format(jwt):
+            raise InvalidVPToken(f"VP is not in JWT format.")
+
+        self.headers = decode_jwt_header(jwt)
+        self.jwt = jwt
+        self.payload = decode_jwt_payload(jwt)
+
+        self.credential_headers: dict = {}
+        self.credential_payload: dict = {}
 
     def verify_sdjwt(
         self,
-        issuer_jwks_by_kid: dict = {}
-    ) -> dict:
+        issuer_jwks_by_kid: Dict[str, dict] = {}
+    ) -> bool:
 
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(

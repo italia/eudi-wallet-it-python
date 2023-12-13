@@ -6,15 +6,7 @@ from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 class Vp(VpSdJwt):
 
     def __init__(self, jwt: str):
-        if not is_jwt_format(jwt):
-            raise InvalidVPToken(f"VP is not in JWT format.")
-
-        self.headers = decode_jwt_header(jwt)
-        self.jwt = jwt
-        self.payload = decode_jwt_payload(jwt)
-
-        self.credential_headers: dict = {}
-        self.credential_payload: dict = {}
+        super().__init__(jwt)
 
         self.parse_digital_credential()
         self.disclosed_user_attributes: dict = {}
