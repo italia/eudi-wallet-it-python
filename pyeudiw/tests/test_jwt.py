@@ -3,7 +3,7 @@ import pytest
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
                          JWSHelper)
-from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jws_format
 
 JWKs_EC = [
     (JWK(key_type="EC"), {"key": "value"}),
@@ -47,6 +47,7 @@ def test_jwe_helper_encrypt(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
     assert jwe
+    assert is_jwe_format(jwe)
 
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
@@ -82,7 +83,6 @@ def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
     assert jws
-
 
 @pytest.mark.parametrize("jwk, payload", JWKs_RSA)
 def test_jws_helper_verify(jwk, payload):
