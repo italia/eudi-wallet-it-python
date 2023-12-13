@@ -1,7 +1,6 @@
 from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
-from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 from pyeudiw.openid4vp.exceptions import (
@@ -14,8 +13,20 @@ from pyeudiw.openid4vp.vp import Vp
 from pydantic import ValidationError
 
 class DirectPostResponse:
+    """
+    Helper class for generate Direct Post Response.
+    """
     def __init__(self, jwt: str, jwks_by_kids: Dict[str, dict], nonce: str = ""):
+        """
+        Generate an instance of DirectPostResponse.
 
+        :param jwt: a string that represents the jwt.
+        :type jwt: str
+        :param jwks_by_kids: a dictionary that contains one or more JWKs with the KID as the key.
+        :type jwks_by_kids: Dict[str, dict]
+        :param nonce: a string that represents the nonce.
+        :type nonce: str
+        """
         self.headers = decode_jwt_header(jwt)
         self.jwks_by_kids = jwks_by_kids
         self.jwt = jwt
@@ -27,8 +38,12 @@ class DirectPostResponse:
         self._claims_by_issuer: dict = {}
 
     def _decode_payload(self) -> None:
+        """
+        Internally decrypts the content of the JWT.
 
-    def decrypt(self) -> None:
+        :raises JWSVerificationError: if jws field is not in a JWS Format
+        :raises JWEDecryptionError: if jwe field is not in a JWE Format
+        """
         _kid = self.headers.get('kid', None)
         if not _kid:
             raise KidNotFoundError(
@@ -44,10 +59,24 @@ class DirectPostResponse:
             self._payload = jwsHelper.verify(self.jwt)
 
     def load_nonce(self, nonce: str) -> None:
+        """
+        Load a nonce string inside the body of response.
+
+        :param nonce: a string that represents the nonce.
+        :type nonce: str
+        """
         self.nonce = nonce
 
     def _validate_vp(self, vp: dict) -> bool:
+        """
+        Validate a single Verifiable Presentation.
 
+        :param vp: the verifiable presentation to validate.
+        :type vp: str
+
+        :returns: True if is valid, False otherwhise.
+        :rtype: bool
+        """
         try:
             # check nonce
             if self.nonce:
@@ -67,6 +96,12 @@ class DirectPostResponse:
     
 
     def validate(self) -> bool:
+        """
+        Validates all VPs inside JWT's body.
+
+        :returns: True if all VP are valid, False otherwhise.
+        :rtype: bool
+        """
         
         for vp in self.get_presentation_vps():
             if not self._validate_vp(vp):
@@ -74,13 +109,13 @@ class DirectPostResponse:
         
         return True
 
-    @property
-    def vps(self):
-        if not self._vps:
-            self.get_presentation_vps()
-        return self._vps
+    def get_presentation_vps(self) -> list[dict]:
+        """
+        Returns the presentation's verifiable presentations
 
-    def get_presentation_vps(self):
+        :returns: the list of vps.
+        :rtype: list[dict]
+        """
         if self._vps:
             return self._vps
 
@@ -103,13 +138,15 @@ class DirectPostResponse:
         return self._vps
 
     @property
-    def vps(self):
+    def vps(self) -> list[dict]:
+        """Returns the presentation's verifiable presentations"""
         if not self._vps:
             self.get_presentation_vps()
         return self._vps
     
     @property
     def payload(self) -> dict:
+        """Returns the decoded payload of presentation"""
         if not self._payload:
             self._decode_payload()
         return self._payload
