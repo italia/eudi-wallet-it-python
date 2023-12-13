@@ -1,4 +1,4 @@
-
+from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.exceptions import JWEDecryptionError
@@ -11,10 +11,10 @@ from pyeudiw.openid4vp.exceptions import (
 )
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
-
+from pydantic import ValidationError
 
 class DirectPostResponse:
-    def __init__(self, jwt: str, jwks_by_kids: dict, nonce: str = ""):
+    def __init__(self, jwt: str, jwks_by_kids: Dict[str, dict], nonce: str = ""):
 
         self.headers = decode_jwt_header(jwt)
         self.jwks_by_kids = jwks_by_kids
@@ -43,13 +43,13 @@ class DirectPostResponse:
             jwsHelper = JWSHelper(self.jwk)
             self._payload = jwsHelper.verify(self.jwt)
 
-    def load_nonce(self, nonce: str):
+    def load_nonce(self, nonce: str) -> None:
         self.nonce = nonce
 
-    def validate(self) -> bool:
+    def _validate_vp(self, vp: dict) -> bool:
 
-        # check nonces
-        for vp in self.get_presentation_vps():
+        try:
+            # check nonce
             if self.nonce:
                 if not vp.payload.get('nonce', None):
                     raise NoNonceInVPToken()
@@ -61,7 +61,17 @@ class DirectPostResponse:
                     )
             VPTokenPayload(**vp.payload)
             VPTokenHeader(**vp.headers)
+        except ValidationError:
+            return False
+        return True
+    
 
+    def validate(self) -> bool:
+        
+        for vp in self.get_presentation_vps():
+            if not self._validate_vp(vp):
+                return False
+        
         return True
 
     @property
@@ -76,8 +86,9 @@ class DirectPostResponse:
 
         _vps = self.payload.get('vp_token', [])
         vps = [_vps] if isinstance(_vps, str) else _vps
+
         if not vps:
-            raise VPNotFound("vp is null")
+            raise VPNotFound(f"Vps for response with nonce \"{self.nonce}\" are empty")
 
         for vp in vps:
             _vp = Vp(vp)
