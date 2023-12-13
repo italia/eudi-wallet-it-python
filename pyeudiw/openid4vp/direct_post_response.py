@@ -1,9 +1,9 @@
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper
+from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwk.exceptions import KidNotFoundError
-from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 from pyeudiw.openid4vp.exceptions import (
     VPNotFound,
     VPInvalidNonce,
@@ -26,13 +26,7 @@ class DirectPostResponse:
         self.credentials_by_issuer: dict = {}
         self._claims_by_issuer: dict = {}
 
-    @property
-    def payload(self) -> dict:
-        # TODO: detect if it is encrypted otherwise ...
-        # here we support only the encrypted jwt
-        if not self._payload:
-            self.decrypt()
-        return self._payload
+    def _decode_payload(self) -> None:
 
     def decrypt(self) -> None:
         _kid = self.headers.get('kid', None)
@@ -41,12 +35,13 @@ class DirectPostResponse:
                 f"The JWT headers {self.headers} doesnt have any KID value"
             )
         self.jwk = JWK(self.jwks_by_kids[_kid])
-        jweHelper = JWEHelper(self.jwk)
-        try:
+
+        if is_jwe_format(self.jwt):
+            jweHelper = JWEHelper(self.jwk)
             self._payload = jweHelper.decrypt(self.jwt)
-        except Exception as e:
-            _msg = f"Response decryption error: {e}"
-            raise JWEDecryptionError(_msg)
+        else:
+            jwsHelper = JWSHelper(self.jwk)
+            self._payload = jwsHelper.verify(self.jwt)
 
     def load_nonce(self, nonce: str):
         self.nonce = nonce
@@ -95,3 +90,15 @@ class DirectPostResponse:
             self.credentials_by_issuer[cred_iss].append(_vp.payload['vp'])
 
         return self._vps
+
+    @property
+    def vps(self):
+        if not self._vps:
+            self.get_presentation_vps()
+        return self._vps
+    
+    @property
+    def payload(self) -> dict:
+        if not self._payload:
+            self._decode_payload()
+        return self._payload
