@@ -6,6 +6,7 @@ from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 
+from .exceptions import InvalidVPToken
 
 class VpSdJwt:
     def __init__(self, jwt: str):
