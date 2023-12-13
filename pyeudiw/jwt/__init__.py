@@ -112,7 +112,7 @@ class JWEHelper():
         try:
             jwe_header = decode_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
-            raise JWEDecryptionError("Not a valid JWE format")
+            raise JWEDecryptionError(f"Not a valid JWE format for the following reason: {e}")
 
         _alg = jwe_header.get("alg")
         _enc = jwe_header.get("enc")
@@ -200,7 +200,7 @@ class JWSHelper:
         try:
             _head = decode_jwt_header(jws)
         except (binascii.Error, Exception) as e:
-            raise JWSVerificationError("Not a valid JWS format")
+            raise JWSVerificationError(f"Not a valid JWS format for the following reason: {e}")
 
         if _head.get("kid"):
             if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
