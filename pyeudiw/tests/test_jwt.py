@@ -3,7 +3,7 @@ import pytest
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
                          JWSHelper)
-from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jws_format
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 
 JWKs_EC = [
     (JWK(key_type="EC"), {"key": "value"}),
