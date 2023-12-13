@@ -20,8 +20,7 @@ class Vp(VpSdJwt):
         self.disclosed_user_attributes: dict = {}
 
     def _detect_vp_type(self):
-        # TODO - automatic detection of the credential
-        return 'jwt'
+        return self.headers["typ"].lower()
 
     def get_credential_jwks(self):
         if not self.credential_jwks:
