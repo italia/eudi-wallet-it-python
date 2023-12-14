@@ -34,7 +34,7 @@ class DirectPostResponse:
 
         self._payload: dict = {}
         self._vps: list = []
-        self.credentials_by_issuer: dict = {}
+        self.credentials_by_issuer: Dict[str, list[dict]] = {}
         self._claims_by_issuer: dict = {}
 
     def _decode_payload(self) -> None:
@@ -109,9 +109,11 @@ class DirectPostResponse:
         
         return True
 
-    def get_presentation_vps(self) -> list[dict]:
+    def get_presentation_vps(self) -> list[Vp]:
         """
-        Returns the presentation's verifiable presentations
+        Returns the presentation's verifiable presentations.
+
+        :raises VPNotFound: if no VPs are found.
 
         :returns: the list of vps.
         :rtype: list[dict]
@@ -123,7 +125,7 @@ class DirectPostResponse:
         vps = [_vps] if isinstance(_vps, str) else _vps
 
         if not vps:
-            raise VPNotFound(f"Vps for response with nonce \"{self.nonce}\" are empty")
+            raise VPNotFound(f"Vps are empty for response with nonce \"{self.nonce}\"")
 
         for vp in vps:
             _vp = Vp(vp)
