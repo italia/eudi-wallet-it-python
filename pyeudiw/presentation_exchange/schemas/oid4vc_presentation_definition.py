@@ -114,7 +114,3 @@ class PresentationDefinition(BaseModel):
     id: str
     input_descriptors: List[InputDescriptor]
     submission_requirements: Optional[List[SubmissionRequirement]] = None
-
-
-class PresentationDefinitionForAHighAssuranceProfile(BaseModel):
-    presentation_definition: Optional[PresentationDefinition] = None
