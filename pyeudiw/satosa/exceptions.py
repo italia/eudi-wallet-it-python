@@ -21,3 +21,9 @@ class DiscoveryFailedError(Exception):
     Raised when the discovery fails
     """
     pass
+
+class HTTPError(Exception):
+    pass
+
+class EmptyHTTPError(HTTPError):
+    pass
