@@ -37,6 +37,8 @@ class JWK():
         :type hash_func: str
         :param ec_crv: a string that represents the curve to use with the instance.
         :type ec_crv: str
+
+        :raises NotImplementedError: the key_type is not implemented
         """
         kwargs = {}
         self.kid = ""

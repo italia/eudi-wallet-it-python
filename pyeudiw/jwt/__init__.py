@@ -3,7 +3,6 @@ import json
 from typing import Union, Any
 
 import cryptojwt
-from cryptojwt.exception import VerificationError
 from cryptojwt.jwe.jwe import factory
 from cryptojwt.jwe.jwe_ec import JWE_EC
 from cryptojwt.jwe.jwe_rsa import JWE_RSA
@@ -14,6 +13,8 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.jwt.exceptions import JWEEncryptionError
+
+from .exceptions import JWEDecryptionError, JWSVerificationError
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -108,13 +109,15 @@ class JWEHelper():
         :param jwe: A string representing the jwe.
         :type jwe: str
 
+        :raises JWEDecryptionError: if jwe field is not in a JWE Format
+
         :returns: A dict that represents the payload of decrypted JWE.
         :rtype: dict
         """
         try:
             jwe_header = decode_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
-            raise VerificationError("The JWT is not valid")
+            raise JWEDecryptionError(f"Not a valid JWE format for the following reason: {e}")
 
         _alg = jwe_header.get("alg")
         _enc = jwe_header.get("enc")
@@ -197,12 +200,18 @@ class JWSHelper:
         :type jws: str
         :param kwargs: Other optional fields to generate the JWE.
 
+        :raises JWSVerificationError: if jws field is not in a JWS Format
+
         :returns: A string that represents the payload of JWS.
         :rtype: str
         """
         _key = key_from_jwk_dict(self.jwk.as_dict())
         _jwk_dict = self.jwk.as_dict()
-        _head = decode_jwt_header(jws)
+
+        try:
+            _head = decode_jwt_header(jws)
+        except (binascii.Error, Exception) as e:
+            raise JWSVerificationError(f"Not a valid JWS format for the following reason: {e}")
 
         if _head.get("kid"):
             if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
