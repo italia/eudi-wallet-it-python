@@ -230,7 +230,7 @@ class TrustEvaluationHelper:
                 f" {self.final_metadata['metadata']}"
             )
 
-    def get_trusted_jwks(self, metadata_type: str, policies: list[dict] = []) -> list:
+    def get_trusted_jwks(self, metadata_type: str, policies: list[dict] = []) -> list[dict]:
         return self.get_final_metadata(
             metadata_type=metadata_type, 
             policies=policies
