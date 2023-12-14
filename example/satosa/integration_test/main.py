@@ -264,9 +264,12 @@ form = soup.find("form")
 assert "/saml2" in form["action"]
 input_tag = soup.find("input")
 assert input_tag["name"] == "SAMLResponse"
-value = BeautifulSoup(base64.b64decode(input_tag["value"]), features="xml")
-attributes = value.find_all("saml:attribute")
 
+lowered = base64.b64decode(input_tag["value"]).lower()
+value = BeautifulSoup(lowered, features="xml")
+attributes = value.find_all("saml:attribute")
+# expect to have a non-empty list of attributes
+assert attributes
 
 expected = {
     # https://oidref.com/2.5.4.42
@@ -280,4 +283,4 @@ for attribute in attributes:
     value = attribute.contents[0].contents[0]
     expected_value = expected.get(name, None)
     if expected_value:
-        assert value == expected_value
+        assert value == expected_value.lower()
