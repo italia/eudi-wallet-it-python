@@ -39,13 +39,11 @@ from pyeudiw.openid4vp.vp import Vp
 from typing import Callable
 from pydantic import ValidationError
 
-from .http_error import HTTPErrorHandler
-from .exceptions import HTTPError, EmptyHTTPError
+from .exceptions import HTTPError
+from .base_http_error_handler import BaseHTTPErrorHandler
+from .base_logger import BaseLogger
 
-logger = logging.getLogger(__name__)
-
-
-class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
+class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHandler, BaseLogger):
     """
     A backend module (acting as a OpenID4VP SP).
     """
@@ -79,9 +77,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         try:
             WalletRelyingParty(**config['metadata'])
         except ValidationError as e:
-            logger.warning(
-                f"""The backend configuration presents the following validation issues:
-                {logger.warning(e)}""")
+            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
+            self._log_warning("OpenID4VPBackend", debug_message)
 
         self.config = config
         self.client_id = self.config['metadata']['client_id']
@@ -107,11 +104,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
         self.init_trust_resources()
-
-        self.http_error_handler = HTTPErrorHandler("templates", "error.html", self._log)
         self._log_debug("OpenID4VP init", f"Loaded configuration: {json.dumps(config)}")
 
-    def register_endpoints(self) -> list:
+    def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
         Creates a list of all the endpoints this backend module needs to listen to. In this case
         it's the authentication response from the underlying OP that is redirected from the OP to
@@ -128,7 +123,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 )
             )
             _endpoint = f"{self.client_id}{v}"
-            logger.debug(
+            self._log_debug(
+                "OpenID4VPBackend",
                 f"Exposing backend entity endpoint = {_endpoint}"
             )
             if k == 'get_response':
@@ -375,7 +371,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             )
             # authentication finalized!
             self.db_engine.set_finalized(stored_session['document_id'])
-            if logger.getEffectiveLevel() == logging.DEBUG:
+            if self.effective_log_level == logging.DEBUG:
                 stored_session = self.db_engine.get_by_state(state=state)
                 self._log_debug(context, f"Session update on storage: {stored_session}")
 
@@ -607,73 +603,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 conf_section, conf_k = v[1:-1].split('.')
                 self.config['metadata'][k] = self.config[conf_section][conf_k]
 
-    def _log(self, context: str | Context, level: str, message: str) -> None:
-        """
-        Log a message with the given level.
-        
-        :param context: the request context or the scope of the class
-        :type context: satosa.context.Context | str
-        :param level: the log level
-        :type level: str
-        :param message: the message to log
-        :type message: str
-        """
-
-        context = context if isinstance(context, str) else context.state
-
-        log_level = getattr(logger, level)
-        log_level(
-            lu.LOG_FMT.format(
-                id=lu.get_session_id(context),
-                message=message
-            )
-        )
-
-    def _log_debug(self, context: str | Context, message: str) -> None:
-        """
-        Log a message with the DEBUG level.
-
-        :param context: the request context or the scope of the class
-        :type context: satosa.context.Context | str
-        :param message: the message to log
-        :type message: str
-        """
-
-        self._log(context, "debug", message)
-
-    def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args = None) -> None:
-        """
-        Logs a message at the start of a backend function.
-        
-        :param fn_name: the name of the function
-        :type fn_name: str
-        :param context: the request context
-        :param args_name: the name of the arguments field
-        :type args_name: str | None
-        :param args: the arguments provided to the function
-        :type args: Any
-        """
-
-        args_str = f" and {args_name}: {args}" if not args_name else ""
-
-        debug_message = (
-            f"[INCOMING REQUEST] {fn_name} with Context: "
-            f"{context.__dict__}{args_str}"
-        )
-        self._log_debug(context, debug_message)
-
-    def _log_error(self, context: str | Context, message: str) -> None:
-        """
-        Log a message with the ERROR level.
-
-        :param context: the request context or the scope of the class
-        :type context: satosa.context.Context | str
-        :param message: the message to log
-        :type message: str
-        """
-
-        self._log(context, "error", message)
-
     def _translate_response(self, response: dict, issuer: str, context: Context):
         """
         Translates wallet response to SATOSA internal response.
@@ -742,104 +671,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _handle_500(self, context: Context, msg: str, err: Exception) -> JsonResponse:
-        """
-        Handles a 500 error.
-        
-        :param context: the request context
-        :type context: satosa.context.Context
-        :param msg: the error message
-        :type msg: str
-        :param err: the exception raised
-        :type err: Exception
-
-        :return: a json response containing the error
-        :rtype: JsonResponse
-        """
-
-        return self.http_error_handler.handle500(
-            context=context,
-            troubleshoot=f"{msg}",
-            err=f"{msg}. {err.__class__.__name__}: {err}",
-        )
-    
-    def _handle_40X(self, code_number: str, message: str, context, troubleshoot: str, err: Exception) -> JsonResponse:
-        """
-        Handles a 40X error.
-        
-        :param code_number: the code number
-        :type code_number: str
-        :param message: the error message
-        :type message: str
-        :param context: the request context
-        :type context: satosa.context.Context
-        :param troubleshoot: the troubleshoot message
-        :type troubleshoot: str
-        :param err: the exception raised
-        :type err: Exception
-
-        :return: a json response containing the error
-        :rtype: JsonResponse
-        """
-
-        return self.http_error_handler.handle40X(
-            code_number,
-            message,
-            context,
-            troubleshoot=f"{troubleshoot}",
-            err=f"{err.__class__.__name__}: {err}",
-        )
-    
-    def _handle_400(self, context: Context, troubleshoot: str, err: Exception = EmptyHTTPError("")) -> JsonResponse:
-        """
-        Handles a 400 error.
-
-        :param context: the request context
-        :type context: satosa.context.Context
-        :param troubleshoot: the troubleshoot message
-        :type troubleshoot: str
-        :param err: the exception raised
-        :type err: Exception
-
-        :return: a json response containing the error
-        :rtype: JsonResponse
-        """
-        return self._handle_40X("0", "invalid_request", context, troubleshoot, err)
-    
-    def _handle_401(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
-        """
-        Handles a 401 error.
-        
-        :param context: the request context
-        :type context: satosa.context.Context
-        :param troubleshoot: the troubleshoot message
-        :type troubleshoot: str
-        :param err: the exception raised
-        :type err: Exception
-
-        :return: a json response containing the error
-        :rtype: JsonResponse
-        """
-
-        return self._handle_40X("1", "invalid_client", context, troubleshoot, err)
-    
-    def _handle_403(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
-        """
-        Handles a 403 error.
-        
-        :param context: the request context
-        :type context: satosa.context.Context
-        :param troubleshoot: the troubleshoot message
-        :type troubleshoot: str
-        :param err: the exception raised
-        :type err: Exception
-
-        :return: a json response containing the error
-        :rtype: JsonResponse
-        """
-
-        return self._handle_40X("3", "expired", context, troubleshoot, err)
-
     @property
     def db_engine(self) -> DBEngine:
         """Returns the DBEngine instance used by the class"""
@@ -847,11 +678,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             self._db_engine.is_connected
         except Exception as e:
             if getattr(self, '_db_engine', None):
-                logger.debug(
-                    lu.LOG_FMT.format(
-                        id="OpenID4VP db storage handling",
-                        message=f"connection check silently fails and get restored: {e}"
-                    )
+                self._log_debug(
+                    "OpenID4VP db storage handling",
+                    f"connection check silently fails and get restored: {e}"
                 )
             self._db_engine = DBEngine(self.config["storage"])
 
