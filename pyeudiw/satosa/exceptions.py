@@ -23,7 +23,13 @@ class DiscoveryFailedError(Exception):
     pass
 
 class HTTPError(Exception):
+    """
+    Raised when an error occurs during an HTTP request
+    """
     pass
 
 class EmptyHTTPError(HTTPError):
+    """
+    Default HTTP empty error
+    """
     pass
