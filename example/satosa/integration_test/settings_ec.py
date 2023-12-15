@@ -12,7 +12,7 @@ from pyeudiw.tests.federation.base_ec import (
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 
-RP_EID = "https://localhost:10000/OpenID4VP"
+RP_EID = "https://localhost/OpenID4VP"
 
 CONFIG_DB = {
     "mongo_db": {
