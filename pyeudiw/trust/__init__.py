@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
         self.exp: int = 0
-        self.trust_chain: list = []
+        self.trust_chain: list[str] = []
         self.trust_anchor = trust_anchor
         self.storage = storage
         self.entity_id: str = ""
