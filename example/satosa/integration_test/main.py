@@ -6,6 +6,7 @@ import base64
 from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
+from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 from pyeudiw.tests.federation.base_ec import (
     EXP,
     leaf_cred,
@@ -224,6 +225,9 @@ rp_ec_jwt = http_user_agent.get(
     verify=False
 ).content.decode()
 rp_ec = decode_jwt_payload(rp_ec_jwt)
+
+presentation_definition = rp_ec["metadata"]["wallet_relying_party"]["presentation_definition"]
+PresentationDefinition(**presentation_definition)
 
 assert redirect_uri == rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
 
