@@ -14,11 +14,17 @@ from satosa.context import Context
 
 logger = logging.getLogger(__name__)
 
-
-class BackendDPoP:
-
-    def _request_endpoint_dpop(self, context, *args) -> Union[JsonResponse, None]:
-        """ This validates, if any, the DPoP http request header """
+        """
+        Validates, if any, the DPoP http request header 
+        
+        :param context: The current context
+        :type context: Context
+        :param args: The current request arguments
+        :type args: tuple
+        
+        :return:
+        :rtype: Union[JsonResponse, None]
+        """
 
         if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
             # The wallet instance uses the endpoint authentication to give its WIA
