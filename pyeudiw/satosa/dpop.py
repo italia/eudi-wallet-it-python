@@ -13,6 +13,10 @@ from .base_logger import BaseLogger
 from .base_http_error_handler import BaseHTTPErrorHandler
 
 class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
+    """
+    Backend DPoP class.
+    """
+
     def _request_endpoint_dpop(self, context: Context, *args) -> Union[JsonResponse, None]:
         """
         Validates, if any, the DPoP http request header 
