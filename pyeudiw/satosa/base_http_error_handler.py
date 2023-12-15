@@ -13,7 +13,27 @@ class BaseHTTPErrorHandler(BaseLogger):
             err: str, 
             err_code: str, 
             level: str
-    ):
+    ) -> JsonResponse:
+        """
+        Serializes an error.
+        
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param message: the error message
+        :type message: str
+        :param troubleshoot: the troubleshoot message
+        :type troubleshoot: str
+        :param err: more info about the error
+        :type err: str
+        :param err_code: the error code
+        :type err_code: str
+        :param level: the log level
+        :type level: str
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
+
         _msg = f"{message}:"
         if err:
             _msg += f" {err}."
