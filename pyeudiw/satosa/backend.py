@@ -242,7 +242,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request.get("response", None)
         if not jwt:
-            self._log_error(context, f"Response error, missing JWT")
+            _msg = f"Response error, missing JWT"
+            self._log_error(context, _msg)
             return self._handle_400(context, _msg)
 
         try:
