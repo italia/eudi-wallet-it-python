@@ -21,6 +21,8 @@ from json import dumps, loads
 
 import jwcrypto
 
+from typing import Any
+
 
 class TrustChainSDJWTIssuer(SDJWTIssuer):
     def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = True, serialization_format: str = "compact", additional_headers: dict = {}):
@@ -163,7 +165,7 @@ def verify_sd_jwt(
     issuer_key: JWK,
     holder_key: JWK,
     settings: dict = {'key_binding': True}
-) -> dict:
+) -> (list | dict | Any):
 
     settings.update(
         {
