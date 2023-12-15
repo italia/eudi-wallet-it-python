@@ -141,7 +141,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 self.absolute_status_url = _endpoint
         return url_map
 
-    def start_auth(self, context: Context, internal_request):
+    def start_auth(self, context: Context, internal_request) -> Response:
         """
         This is the start up function of the backend authorization.
 
@@ -155,7 +155,19 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         """
         return self.pre_request_endpoint(context, internal_request)
 
-    def pre_request_endpoint(self, context: Context, internal_request, **kwargs):
+    def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
+        """
+        This endpoint is called by the frontend before calling the request endpoint.
+        It initializes the session and returns the request_uri to be used by the frontend.
+
+        :type context: the context of current request
+        :param context: the request context
+        :type internal_request: satosa.internal.InternalData
+        :param internal_request: Information about the authorization request
+        
+        :return: a response containing the request_uri
+        :rtype: satosa.response.Response
+        """
 
         self._log_function_debug("pre_request_endpoint", context, "internal_request", internal_request)
 
@@ -209,7 +221,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
-    def redirect_endpoint(self, context: Context, *args):
+    def redirect_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
+        """
+        This endpoint is called by the frontend after the user has been authenticated.
+
+        :type context: the context of current request
+        :param context: the request context
+
+        :return: a redirect to the frontend, if is in same device flow, or a json response if is in cross device flow.
+        :rtype: Redirect | JsonResponse
+        """
 
         self._log_function_debug("redirect_endpoint", context, "args", args)
 
@@ -377,7 +398,18 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 status="200"
             )
 
-    def request_endpoint(self, context: Context, *args):
+    def request_endpoint(self, context: Context, *args) -> JsonResponse:
+        """
+        This endpoint is called by the frontend to retrieve the signed signed Request Object.
+
+        :type context: the context of current request
+        :param context: the request context
+        :param args: the request arguments
+        :type args: tuple
+
+        :return: a json response containing the request object
+        :rtype: JsonResponse
+        """
 
         self._log_function_debug("request_endpoint", context, "args", args)
 
@@ -452,7 +484,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             status="200"
         )
 
-    def get_response_endpoint(self, context: Context):
+    def get_response_endpoint(self, context: Context) -> Response:
+        """
+        This endpoint is called by the frontend to retrieve the response of the authentication.
+        
+        :param context: the request context
+        :type context: satosa.context.Context
+
+        :return: a response containing the response object with the authenctication status
+        :rtype: Response
+        """
 
         self._log_function_debug("get_response_endpoint", context)
 
@@ -493,7 +534,16 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             resp
         )
 
-    def status_endpoint(self, context: Context):
+    def status_endpoint(self, context: Context) -> JsonResponse:
+        """
+        This endpoint is called by the frontend the url to the response endpoint to finalize the process.
+
+        :param context: the request context
+        :type context: satosa.context.Context
+
+        :return: a json response containing the status and the url to get the response
+        :rtype: JsonResponse
+        """
 
         self._log_function_debug("status_endpoint", context)
 
@@ -558,6 +608,17 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
                 self.config['metadata'][k] = self.config[conf_section][conf_k]
 
     def _log(self, context: str | Context, level: str, message: str) -> None:
+        """
+        Log a message with the given level.
+        
+        :param context: the request context or the scope of the class
+        :type context: satosa.context.Context | str
+        :param level: the log level
+        :type level: str
+        :param message: the message to log
+        :type message: str
+        """
+
         context = context if isinstance(context, str) else context.state
 
         log_level = getattr(logger, level)
@@ -569,9 +630,30 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         )
 
     def _log_debug(self, context: str | Context, message: str) -> None:
+        """
+        Log a message with the DEBUG level.
+
+        :param context: the request context or the scope of the class
+        :type context: satosa.context.Context | str
+        :param message: the message to log
+        :type message: str
+        """
+
         self._log(context, "debug", message)
 
     def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args = None) -> None:
+        """
+        Logs a message at the start of a backend function.
+        
+        :param fn_name: the name of the function
+        :type fn_name: str
+        :param context: the request context
+        :param args_name: the name of the arguments field
+        :type args_name: str | None
+        :param args: the arguments provided to the function
+        :type args: Any
+        """
+
         args_str = f" and {args_name}: {args}" if not args_name else ""
 
         debug_message = (
@@ -581,6 +663,15 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         self._log_debug(context, debug_message)
 
     def _log_error(self, context: str | Context, message: str) -> None:
+        """
+        Log a message with the ERROR level.
+
+        :param context: the request context or the scope of the class
+        :type context: satosa.context.Context | str
+        :param message: the message to log
+        :type message: str
+        """
+
         self._log(context, "error", message)
 
     def _translate_response(self, response: dict, issuer: str, context: Context):
@@ -651,14 +742,46 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _handle_500(self, context, msg: str, err: Exception):
+    def _handle_500(self, context: Context, msg: str, err: Exception) -> JsonResponse:
+        """
+        Handles a 500 error.
+        
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param msg: the error message
+        :type msg: str
+        :param err: the exception raised
+        :type err: Exception
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
+
         return self.http_error_handler.handle500(
             context=context,
             troubleshoot=f"{msg}",
             err=f"{msg}. {err.__class__.__name__}: {err}",
         )
     
-    def _handle_40X(self, code_number: str, message: str, context, troubleshoot: str, err: Exception):
+    def _handle_40X(self, code_number: str, message: str, context, troubleshoot: str, err: Exception) -> JsonResponse:
+        """
+        Handles a 40X error.
+        
+        :param code_number: the code number
+        :type code_number: str
+        :param message: the error message
+        :type message: str
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param troubleshoot: the troubleshoot message
+        :type troubleshoot: str
+        :param err: the exception raised
+        :type err: Exception
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
+
         return self.http_error_handler.handle40X(
             code_number,
             message,
@@ -667,13 +790,54 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
             err=f"{err.__class__.__name__}: {err}",
         )
     
-    def _handle_400(self, context, troubleshoot: str, err: Exception = EmptyHTTPError("")):
+    def _handle_400(self, context: Context, troubleshoot: str, err: Exception = EmptyHTTPError("")) -> JsonResponse:
+        """
+        Handles a 400 error.
+
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param troubleshoot: the troubleshoot message
+        :type troubleshoot: str
+        :param err: the exception raised
+        :type err: Exception
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
         return self._handle_40X("0", "invalid_request", context, troubleshoot, err)
     
     def _handle_401(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
+        """
+        Handles a 401 error.
+        
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param troubleshoot: the troubleshoot message
+        :type troubleshoot: str
+        :param err: the exception raised
+        :type err: Exception
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
+
         return self._handle_40X("1", "invalid_client", context, troubleshoot, err)
     
     def _handle_403(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
+        """
+        Handles a 403 error.
+        
+        :param context: the request context
+        :type context: satosa.context.Context
+        :param troubleshoot: the troubleshoot message
+        :type troubleshoot: str
+        :param err: the exception raised
+        :type err: Exception
+
+        :return: a json response containing the error
+        :rtype: JsonResponse
+        """
+
         return self._handle_40X("3", "expired", context, troubleshoot, err)
 
     @property
@@ -695,10 +859,12 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
     
     @property
     def default_metadata_private_jwk(self) -> tuple:
+        """Returns the default metadata private JWK"""
         return tuple(self.metadata_jwks_by_kids.values())[0]
     
     @property
     def server_url(self):
+        """Returns the server url"""
         return (
             self.base_url[:-1]
             if self.base_url[-1] == '/'
