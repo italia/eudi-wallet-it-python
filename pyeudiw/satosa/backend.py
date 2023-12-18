@@ -203,14 +203,11 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
         # Cross Device flow
         res_url = f'{self.client_id}?{url_params}'
-        encoded_res_url = base64.urlsafe_b64encode(res_url.encode())
-
-        # response = base64.b64encode(res_url.encode())
-        qrcode = QRCode(encoded_res_url, **self.config['qrcode'])
 
         result = self.template.qrcode_page.render(
             {
-                'qrcode_base64': qrcode.to_base64(),
+                "qrcode_color" : self.config["qrcode"]["color"],
+                "qrcode_text": res_url,
                 "state": state,
                 "status_endpoint": self.absolute_status_url
             }

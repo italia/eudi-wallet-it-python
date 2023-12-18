@@ -123,11 +123,6 @@ class TestOpenID4VPBackend:
         assert state_div
         assert state_div["value"]
 
-        svg = BeautifulSoup(decoded, features="xml")
-        assert svg
-        assert svg.find("svg")
-        assert svg.find_all("path")
-
     def test_pre_request_endpoint_mobile(self, context):
         self.backend.register_endpoints()
         internal_data = InternalData()
