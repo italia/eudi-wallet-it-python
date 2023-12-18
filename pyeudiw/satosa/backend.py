@@ -65,18 +65,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
-        try:
-            WalletRelyingParty(**config['metadata'])
-        except ValidationError as e:
-            logger.warning(
-                """
-                The backend configuration presents the following validation issues:
-                {}
-                """.format(logger.warning(e)))
-
         self.config = config
-        self.client_id = self.config['metadata']['client_id']
-        self.default_exp = int(self.config['jwt']['default_exp'])
 
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
@@ -85,6 +74,10 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
         ]}
+
+
+        self.client_id = self.config['metadata']['client_id']
+        self.default_exp = int(self.config['jwt']['default_exp'])
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
@@ -98,6 +91,15 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP):
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
         self.init_trust_resources()
+
+        try:
+            WalletRelyingParty(**config['metadata'])
+        except ValidationError as e:
+            logger.warning(
+                """
+                The backend configuration presents the following validation issues:
+                {}
+                """.format(logger.warning(e)))
 
         logger.debug(
             lu.LOG_FMT.format(

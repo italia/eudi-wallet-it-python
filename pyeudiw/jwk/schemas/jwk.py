@@ -1,4 +1,4 @@
-from typing import Literal, Annotated, Union, Optional
+from typing import Literal, Annotated, Union, Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -22,3 +22,7 @@ class ECJwkSchema(JwkBaseModel):
 
 
 JwkSchema = Annotated[Union[ECJwkSchema, RSAJwkSchema], Field(discriminator="kty")]
+
+
+class JwksSchema(BaseModel):
+    keys: List[JwkSchema]
