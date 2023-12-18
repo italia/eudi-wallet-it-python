@@ -548,8 +548,8 @@ class TestOpenID4VPBackend:
         # assert msg["response"] == "Authentication successful"
 
     def test_handle_error(self, context):
-        error_message = "Error message!"
-        error_resp = self.backend.handle_error(context, error_message)
+        error_message = "server_error"
+        error_resp = self.backend._handle_500(context, error_message, Exception())
         assert error_resp.status == "500"
         assert error_resp.message
         err = json.loads(error_resp.message)

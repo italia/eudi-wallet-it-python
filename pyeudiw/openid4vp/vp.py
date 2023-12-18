@@ -17,6 +17,7 @@ class Vp(VpSdJwt):
 
         self.parse_digital_credential()
         self.disclosed_user_attributes: dict = {}
+        self._credential_jwks: list[dict] = []
 
     def _detect_vp_type(self) -> str:
         """
@@ -53,6 +54,20 @@ class Vp(VpSdJwt):
 
         self.credential_headers = decode_jwt_header(self.payload['vp'])
         self.credential_payload = decode_jwt_payload(self.payload['vp'])
+
+    def set_credential_jwks(self, credential_jwks: list[dict]) -> None:
+        """
+        Set the credential JWKs for the current istance.
+
+        :param credential_jwks: a list containing the credential's JWKs.
+        :type credential_jwks: list[dict]
+        """
+        self._credential_jwks = credential_jwks
+
+    @property
+    def credential_jwks(self) -> list[dict]:
+        """Returns the credential JWKs"""
+        return self._credential_jwks
 
     @property
     def credential_issuer(self) -> str:
