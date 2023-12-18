@@ -37,7 +37,11 @@ class SigningAlgValuesSupported(str, Enum):
 
 class AuthorizationSignedResponseAlg(str, Enum):
     rs256 = "RS256"
+    rs384 = "RS384"
+    rs512 = "RS512"
     es256 = "ES256"
+    es384 = "ES384"
+    es512 = "ES512"
 
 class WalletRelyingParty(BaseModel):
     application_type: str
