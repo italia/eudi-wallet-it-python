@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
-from pyeudiw.tests.federation.base_ec import (
+from pyeudiw.tests.federation.base import (
     EXP,
     leaf_cred,
     leaf_cred_jwk,
@@ -37,7 +37,7 @@ from pyeudiw.tools.utils import iat_now, exp_from_now
 from saml2_sp import saml2_request, IDP_BASEURL
 from sd_jwt.holder import SDJWTHolder
 
-from settings_ec import (
+from settings import (
     CONFIG_DB, 
     RP_EID, 
     WALLET_INSTANCE_ATTESTATION, 

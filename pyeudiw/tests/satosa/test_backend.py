@@ -22,7 +22,7 @@ from pyeudiw.sd_jwt import (
     _adapt_keys,
     issue_sd_jwt,
     load_specification_from_yaml_string,
-    import_pyca_pri_rsa
+    import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
@@ -188,7 +188,7 @@ class TestOpenID4VPBackend:
             {},
             nonce,
             str(uuid.uuid4()),
-            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
@@ -341,7 +341,7 @@ class TestOpenID4VPBackend:
             {},
             nonce,
             str(uuid.uuid4()),
-            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
@@ -485,7 +485,7 @@ class TestOpenID4VPBackend:
             "sub": self.backend.client_id,
             'jwks': self.backend.entity_configuration_as_dict['jwks']
         }
-        ta_signer = JWS(_es, alg="RS256",
+        ta_signer = JWS(_es, alg="ES256",
                         typ="application/entity-statement+jwt")
 
         its_trust_chain = [

@@ -110,7 +110,7 @@ rp_ec = {
     ]
 }
 rp_signer = JWS(
-    rp_ec, alg="RS256",
+    rp_ec, alg="ES256",
     typ="application/entity-statement+jwt"
 )
 
@@ -125,11 +125,11 @@ _es = ta_es = {
     }
 }
 ta_signer = JWS(
-    _es, alg="RS256",
+    _es, alg="ES256",
     typ="application/entity-statement+jwt"
 )
 
 its_trust_chain = [
-    rp_signer.sign_compact([key_from_jwk_dict(rp_jwks[0])]),
+    rp_signer.sign_compact([key_from_jwk_dict(rp_jwks[1])]),
     ta_signer.sign_compact([ta_jwk])
 ]
