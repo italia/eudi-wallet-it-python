@@ -74,12 +74,6 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
-        try:
-            WalletRelyingParty(**config['metadata'])
-        except ValidationError as e:
-            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
-            self._log_warning("OpenID4VPBackend", debug_message)
-
         self.config = config
         self.client_id = self.config['metadata']['client_id']
         self.default_exp = int(self.config['jwt']['default_exp'])
@@ -104,6 +98,11 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
         self.init_trust_resources()
+        try:
+            WalletRelyingParty(**config['metadata'])
+        except ValidationError as e:
+            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
+            self._log_warning("OpenID4VPBackend", debug_message)
         self._log_debug("OpenID4VP init", f"Loaded configuration: {json.dumps(config)}")
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:

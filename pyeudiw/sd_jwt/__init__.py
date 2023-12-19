@@ -14,6 +14,7 @@ from sd_jwt.verifier import SDJWTVerifier
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.sd_jwt.exceptions import UnknownCurveNistName
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 from jwcrypto.jws import JWS
@@ -107,12 +108,39 @@ def import_pyca_pri_rsa(key, **params):
     )
     return jwcrypto.jwk.JWK(**params)
 
+def import_ec(key, **params):
+    pn = key.private_numbers()
+    curve_name = key.curve.name
+    match curve_name:
+        case "secp256r1":
+            nist_name = "P-256"
+        case "secp384r1":
+            nist_name = "P-384"
+        case "secp512r1":
+            nist_name = "P-512"
+        case _:
+            raise UnknownCurveNistName(f"Cannot translate {key.curve.name} into NIST name.")
+    params.update(
+        kty="EC",
+        crv=nist_name,
+        x=pk_encode_int(pn.public_numbers.x),
+        y=pk_encode_int(pn.public_numbers.y),
+        d=pk_encode_int(pn.private_value)
+    )
+    return jwcrypto.jwk.JWK(**params)
 
 def _adapt_keys(issuer_key: JWK, holder_key: JWK):
     # _iss_key = issuer_key.key.serialize(private=True)
     # _iss_key['key_ops'] = 'sign'
-    _issuer_key = import_pyca_pri_rsa(
-        issuer_key.key.priv_key, kid=issuer_key.kid)
+
+    match issuer_key.jwk["kty"]:
+        case "RSA":
+            _issuer_key = import_pyca_pri_rsa(
+                issuer_key.key.priv_key, kid=issuer_key.kid)
+        case "EC":
+            _issuer_key = import_ec(issuer_key.key.priv_key, kid=issuer_key.kid)
+        case _:
+            raise KeyError(f"Unsupported 'kty' {issuer_key.key['kty']}")
 
     holder_key = jwcrypto.jwk.JWK.from_json(
         json.dumps(_serialize_key(holder_key)))
@@ -138,7 +166,6 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
     adapted_keys = _adapt_keys(issuer_key, holder_key)
-
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
 

@@ -12,6 +12,7 @@ from cryptojwt.jws.jws import JWS as JWSec
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.jwt.exceptions import JWEEncryptionError
 
 from .exceptions import JWEDecryptionError, JWSVerificationError
 
@@ -71,6 +72,8 @@ class JWEHelper():
             JWE_CLASS = JWE_RSA
         elif isinstance(_key, cryptojwt.jwk.ec.ECKey):
             JWE_CLASS = JWE_EC
+        else:
+            raise JWEEncryptionError(f"Error while encrypting: f{_key.__class__.__name__} not supported!")
 
         _payload: str | int | bytes = ""
 
@@ -92,8 +95,10 @@ class JWEHelper():
         )
 
         if _key.kty == 'EC':
-            # TODO - TypeError: key must be bytes-like
-            return _keyobj.encrypt(cek=_key.public_key())
+            _keyobj: JWE_EC
+            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(msg=_payload, key=_key)
+            kwargs = {"params": params, "cek": cek, "iv": iv, "encrypted_key": encrypted_key}
+            return _keyobj.encrypt(**kwargs)
         else:
             return _keyobj.encrypt(key=_key.public_key())
 
@@ -121,7 +126,13 @@ class JWEHelper():
         _decryptor = factory(jwe, alg=_alg, enc=_enc)
 
         _dkey = key_from_jwk_dict(self.jwk.as_dict())
-        msg = _decryptor.decrypt(jwe, [_dkey])
+
+        if isinstance(_dkey, cryptojwt.jwk.ec.ECKey):
+            jwdec = JWE_EC()
+            jwdec.dec_setup(_decryptor.jwt, key=self.jwk.key.private_key())
+            msg = jwdec.decrypt(_decryptor.jwt)
+        else:
+            msg = _decryptor.decrypt(jwe, [_dkey])
 
         try:
             msg_dict = json.loads(msg)
@@ -157,7 +168,7 @@ class JWSHelper:
 
         :param plain_dict: The payload of JWS.
         :type plain_dict: Union[dict, str, int, None]
-        :param protected: a dict containing all the values 
+        :param protected: a dict containing all the values
         to include in the protected header.
         :type protected: dict
         :param kwargs: Other optional fields to generate the JWE.
