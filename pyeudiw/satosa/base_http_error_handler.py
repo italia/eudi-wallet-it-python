@@ -1,5 +1,5 @@
 from satosa.context import Context
-from .base_logger import BaseLogger
+from pyeudiw.tools.base_logger import BaseLogger
 from .exceptions import EmptyHTTPError
 from pyeudiw.satosa.response import JsonResponse
 
