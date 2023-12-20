@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Callable
+from .base_db import BaseDB
 
 
 class RetrieveStatus(Enum):
@@ -7,6 +8,7 @@ class RetrieveStatus(Enum):
     ADDED = 1
 
 
+class BaseCache(BaseDB):
     """
     Interface class for cache storage.
     """
