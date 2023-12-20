@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from typing import Union
+from .base_db import BaseDB
 
 class TrustType(Enum):
     X509 = 0
@@ -21,8 +22,7 @@ trust_anchor_field_map : dict = {
   TrustType.FEDERATION: "entity_configuration"
 }
 
-class BaseStorage(object):
-    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict):
+class BaseStorage(BaseDB):
         raise NotImplementedError()
 
     def is_connected(self) -> bool:
