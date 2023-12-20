@@ -41,7 +41,7 @@ from pydantic import ValidationError
 
 from .exceptions import HTTPError
 from .base_http_error_handler import BaseHTTPErrorHandler
-from .base_logger import BaseLogger
+from pyeudiw.tools.base_logger import BaseLogger
 
 class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHandler, BaseLogger):
     """

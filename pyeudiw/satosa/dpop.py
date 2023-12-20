@@ -9,7 +9,7 @@ from pyeudiw.satosa.response import JsonResponse
 from satosa.context import Context
 from pydantic import ValidationError
 
-from .base_logger import BaseLogger
+from pyeudiw.tools.base_logger import BaseLogger
 from .base_http_error_handler import BaseHTTPErrorHandler
 
 class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
