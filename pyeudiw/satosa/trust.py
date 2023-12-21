@@ -14,7 +14,7 @@ from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.trust import TrustEvaluationHelper
 from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
-from .base_logger import BaseLogger
+from pyeudiw.tools.base_logger import BaseLogger
 
 class BackendTrust(BaseLogger):
     """

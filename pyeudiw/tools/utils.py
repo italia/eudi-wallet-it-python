@@ -10,7 +10,18 @@ from pyeudiw.federation.http_client import http_get
 logger = logging.getLogger(__name__)
 
 
-def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc):
+def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.tzinfo = datetime.timezone.utc) -> datetime.datetime:
+    """
+    Make a datetime timezone aware.
+
+    :param dt: The datetime to make timezone aware
+    :type dt: datetime.datetime
+    :param tz: The timezone to use
+    :type tz: datetime.timezone | datetime.tzinfo
+
+    :returns: The timezone aware datetime
+    :rtype: datetime.datetime
+    """
     if dt.tzinfo is None:
         return dt.replace(tzinfo=tz)
     else:
@@ -18,16 +29,41 @@ def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.
 
 
 def iat_now() -> int:
+    """
+    Get the current timestamp in seconds.
+    
+    :returns: The current timestamp in seconds
+    :rtype: int
+    """
     return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
 
 def exp_from_now(minutes: int = 33) -> int:
+    """
+    Get the expiration timestamp in seconds for the given minutes from now.
+
+    :param minutes: The minutes from now
+    :type minutes: int
+
+    :returns: The timestamp in seconds for the given minutes from now
+    :rtype: int
+    """
     now = datetime.datetime.now(datetime.timezone.utc)
     return int((now + datetime.timedelta(minutes=minutes)).timestamp())
 
 
-def datetime_from_timestamp(value) -> datetime.datetime:
-    return make_timezone_aware(datetime.datetime.fromtimestamp(value))
+def datetime_from_timestamp(timestamp: int | float) -> datetime.datetime:
+    """
+    Get a datetime from a timestamp.
+
+    :param value: The timestamp
+    :type value: int | float
+
+    :returns: The datetime
+    :rtype: datetime.datetime
+    """
+
+    return make_timezone_aware(datetime.datetime.fromtimestamp(timestamp))
 
 
 def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[dict]:
@@ -57,9 +93,19 @@ def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = T
     return responses
 
 
-def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> dict:
+def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list[dict] = []) -> dict:
     """
-    get jwks or jwks_uri or signed_jwks_uri
+    Get jwks or jwks_uri or signed_jwks_uri
+
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param metadata: metadata of the entity
+    :type metadata: dict
+    :param federation_jwks: jwks of the federation
+    :type federation_jwks: list
+
+    :returns: A list of responses.
+    :rtype: list[dict]
     """
     jwks_list = []
     if metadata.get('jwks'):
@@ -85,5 +131,14 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list = []) -> 
     return jwks_list
 
 
-def random_token(n=254):
+def random_token(n=254) -> str:
+    """
+    Generate a random token.
+
+    :param n: The length of the token
+    :type n: int
+
+    :returns: The random token
+    :rtype: str
+    """
     return token_hex(n)
