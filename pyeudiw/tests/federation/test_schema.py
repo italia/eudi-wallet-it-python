@@ -41,7 +41,40 @@ ta_ec = {
                 'request_uris': [],
                 'redirect_uris': [],
                 'default_acr_values': [],
-                'presentation_definitions': [],
+                'presentation_definition': {
+                    "id": "d76c51b7-ea90-49bb-8368-6b3d194fc131",
+                    "input_descriptors": [
+                        {
+                            "id": "IdentityCredential",
+                            "format": {
+                                "vc+sd-jwt": {}
+                            },
+                            "constraints": {
+                                "limit_disclosure": "required",
+                                "fields": [
+                                    {
+                                        "path": [
+                                            "$.vct"
+                                        ],
+                                        "filter": {
+                                            "type": "string",
+                                            "const": "IdentityCredential"
+                                        }
+                                    },
+                                    {
+                                        "path": [
+                                            "$.family_name"
+                                        ]
+                                    },
+                                    {
+                                        "path": [
+                                            "$.given_name"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]},
                 'authorization_signed_response_alg': ['RS256'],
                 'authorization_encrypted_response_alg': ["RSA-OAEP"],
                 'authorization_encrypted_response_enc': ["A128CBC-HS256"],
