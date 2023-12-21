@@ -153,8 +153,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
     def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
         """
-        This endpoint is called by the frontend before calling the request endpoint.
-        It initializes the session and returns the request_uri to be used by the frontend.
+        This endpoint is called by the User-Agent/Wallet Instance before calling the request endpoint.
+        It initializes the session and returns the request_uri to be used by the User-Agent/Wallet Instance.
 
         :type context: the context of current request
         :param context: the request context
@@ -219,12 +219,12 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
     def redirect_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         """
-        This endpoint is called by the frontend after the user has been authenticated.
+        This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
 
         :type context: the context of current request
         :param context: the request context
 
-        :return: a redirect to the frontend, if is in same device flow, or a json response if is in cross device flow.
+        :return: a redirect to the User-Agent/Wallet Instance, if is in same device flow, or a json response if is in cross device flow.
         :rtype: Redirect | JsonResponse
         """
 
@@ -397,7 +397,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
     def request_endpoint(self, context: Context, *args) -> JsonResponse:
         """
-        This endpoint is called by the frontend to retrieve the signed signed Request Object.
+        This endpoint is called by the User-Agent/Wallet Instance to retrieve the signed signed Request Object.
 
         :type context: the context of current request
         :param context: the request context
@@ -483,7 +483,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
     def get_response_endpoint(self, context: Context) -> Response:
         """
-        This endpoint is called by the frontend to retrieve the response of the authentication.
+        This endpoint is called by the User-Agent/Wallet Instance to retrieve the response of the authentication.
         
         :param context: the request context
         :type context: satosa.context.Context
@@ -533,7 +533,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
     def status_endpoint(self, context: Context) -> JsonResponse:
         """
-        This endpoint is called by the frontend the url to the response endpoint to finalize the process.
+        This endpoint is called by the User-Agent/Wallet Instance the url to the response endpoint to finalize the process.
 
         :param context: the request context
         :type context: satosa.context.Context
