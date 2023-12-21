@@ -213,9 +213,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         )
         return Response(result, content="text/html; charset=utf8", status="200")
 
-    def redirect_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
+    def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         """
-        This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
+        This endpoint is called by the User-Agent/Wallet Instance to retrieve the signed signed Request Object.
 
         :type context: the context of current request
         :param context: the request context
@@ -224,7 +224,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         :rtype: Redirect | JsonResponse
         """
 
-        self._log_function_debug("redirect_endpoint", context, "args", args)
+        self._log_function_debug("request_endpoint", context, "args", args)
 
         if context.request_method.lower() != 'post':
             # raise BadRequestError("HTTP Method not supported")
@@ -391,9 +391,9 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
                 status="200"
             )
 
-    def request_endpoint(self, context: Context, *args) -> JsonResponse:
+    def redirect_endpoint(self, context: Context, *args) -> JsonResponse:
         """
-        This endpoint is called by the User-Agent/Wallet Instance to retrieve the signed signed Request Object.
+        This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
 
         :type context: the context of current request
         :param context: the request context
@@ -404,7 +404,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         :rtype: JsonResponse
         """
 
-        self._log_function_debug("request_endpoint", context, "args", args)
+        self._log_function_debug("redirect_endpoint", context, "args", args)
 
         # check DPOP for WIA if any
         try:
