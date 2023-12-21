@@ -37,7 +37,7 @@ invalid_leaf_jwk["kid"] = str(uuid.uuid4())
 invalid_intermediate["jwks"]['keys'] = [invalid_leaf_jwk]
 
 intermediate_signer = JWS(
-    invalid_intermediate, alg="RS256",
+    invalid_intermediate, alg="ES256",
     typ="application/entity-statement+jwt"
 )
 invalid_intermediate_es_wallet_signed = intermediate_signer.sign_compact(
@@ -110,7 +110,7 @@ def test_update_st_es_case_source_endpoint():
         "source_endpoint": "https://trust-anchor.example.org/fetch"
     }
 
-    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_signer = JWS(ta_es, alg="ES256", typ="application/entity-statement+jwt")
     ta_es_signed = ta_signer.sign_compact([ta_jwk])
 
     def mock_method(*args, **kwargs):
@@ -133,7 +133,7 @@ def test_update_st_es_case_no_source_endpoint():
         'jwks': {"keys": []},
     }
 
-    ta_signer = JWS(ta_es, alg="RS256", typ="application/entity-statement+jwt")
+    ta_signer = JWS(ta_es, alg="ES256", typ="application/entity-statement+jwt")
     ta_es_signed = ta_signer.sign_compact([ta_jwk])
 
     def mock_method_ec(*args, **kwargs):

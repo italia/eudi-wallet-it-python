@@ -168,66 +168,25 @@ config:
     # jwks:
 
     #This section contains the details for presentation request
-    presentation_definitions:
-      - id: pid-sd-jwt:unique_id+given_name+family_name
-        input_descriptors:
-        - id: pid-sd-jwt:unique_id+given_name+family_name
+    presentation_definition:
+      id: d76c51b7-ea90-49bb-8368-6b3d194fc131
+      input_descriptors:
+        - id: IdentityCredential
           format:
-            constraints:
-              fields:
-              - filter:
-                  const: PersonIdentificationData
+            vc+sd-jwt: { }
+          constraints:
+            limit_disclosure: required
+            fields:
+              - path:
+                  - "$.vct"
+                filter:
                   type: string
-                path:
-                - $.sd-jwt.type
-              - filter:
-                  type: object
-                path:
-                - $.sd-jwt.cnf
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.family_name
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.given_name
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.unique_id
-              limit_disclosure: required
-            jwt:
-              alg:
-              - EdDSA
-              - ES256
-      - id: mDL-sample-req
-        input_descriptors:
-        - format:
-            constraints:
-              fields:
-              - filter:
-                  const: org.iso.18013.5.1.mDL
-                  type: string
-                path:
-                - $.mdoc.doctype
-              - filter:
-                  const: org.iso.18013.5.1
-                  type: string
-                path:
-                - $.mdoc.namespace
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.family_name
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.portrait
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.driving_privileges
-              limit_disclosure: required
-            mso_mdoc:
-              alg:
-              - EdDSA
-              - ES256
-          id: mDL
+                  const: IdentityCredential
+              - path:
+                  - "$.family_name"
+              - path:
+                  - "$.given_name"
+
 
     redirect_uris:
       - <base_url>/<name>/redirect-uri

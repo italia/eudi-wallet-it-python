@@ -22,7 +22,7 @@ from pyeudiw.sd_jwt import (
     _adapt_keys,
     issue_sd_jwt,
     load_specification_from_yaml_string,
-    import_pyca_pri_rsa
+    import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
@@ -183,7 +183,7 @@ class TestOpenID4VPBackend:
             {},
             nonce,
             str(uuid.uuid4()),
-            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
@@ -241,9 +241,9 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        assert redirect_endpoint.status == "400"
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Error while validating VP: unexpected value."
 
@@ -283,9 +283,9 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        assert redirect_endpoint.status == "400"
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Error while validating VP: vp has no nonce."
 
@@ -296,9 +296,9 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        assert redirect_endpoint.status == "400"
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "DirectPostResponse content parse and validation error. Single VPs are faulty."
 
@@ -336,7 +336,7 @@ class TestOpenID4VPBackend:
             {},
             nonce,
             str(uuid.uuid4()),
-            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
@@ -382,8 +382,8 @@ class TestOpenID4VPBackend:
         }
 
         # no nonce
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert "nonce" in msg["error_description"]
         assert "missing" in msg["error_description"]
@@ -395,8 +395,8 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
 
@@ -407,8 +407,8 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
 
@@ -422,8 +422,8 @@ class TestOpenID4VPBackend:
         self.backend.db_engine.update_request_object(
             document_id=doc_id,
             request_object={"nonce": nonce, "state": state})
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        assert redirect_endpoint.status == "302 Found"
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "302 Found"
 
 
     def test_request_endpoint(self, context):
@@ -480,7 +480,7 @@ class TestOpenID4VPBackend:
             "sub": self.backend.client_id,
             'jwks': self.backend.entity_configuration_as_dict['jwks']
         }
-        ta_signer = JWS(_es, alg="RS256",
+        ta_signer = JWS(_es, alg="ES256",
                         typ="application/entity-statement+jwt")
 
         its_trust_chain = [
@@ -509,12 +509,12 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
 
-        request_endpoint = self.backend.request_endpoint(context)
+        redirect_endpoint = self.backend.redirect_endpoint(context)
 
-        assert request_endpoint
-        assert request_endpoint.status == "200"
-        assert request_endpoint.message
-        msg = json.loads(request_endpoint.message)
+        assert redirect_endpoint
+        assert redirect_endpoint.status == "200"
+        assert redirect_endpoint.message
+        msg = json.loads(redirect_endpoint.message)
         assert msg["response"]
 
         header = decode_jwt_header(msg["response"])

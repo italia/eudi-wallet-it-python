@@ -6,3 +6,6 @@ class JWTInvalidElementPosition(Exception):
 
 class JWSVerificationError(Exception):
     pass
+
+class JWEEncryptionError(Exception):
+    pass

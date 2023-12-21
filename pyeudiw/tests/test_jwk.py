@@ -1,6 +1,8 @@
 import pytest
+from pydantic import TypeAdapter
 
 from pyeudiw.jwk import JWK
+from pyeudiw.jwk.schemas.jwk import JwkSchema, ECJwkSchema, RSAJwkSchema
 
 
 @pytest.mark.parametrize(
@@ -50,3 +52,18 @@ def test_export_public_pem():
     jwk_public_pem = jwk.export_public_pem()
     assert jwk_public_pem
     assert "BEGIN PUBLIC KEY" in jwk_public_pem
+
+
+@pytest.mark.parametrize("key_type", ["EC", "RSA"])
+def test_dynamic_schema_validation(key_type):
+    jwk = JWK(key_type=key_type)
+    model = TypeAdapter(JwkSchema).validate_python(jwk.as_dict())
+    match key_type:
+        case "EC":
+            assert isinstance(model, ECJwkSchema)
+            assert not isinstance(model, RSAJwkSchema)
+        case "RSA":
+            assert isinstance(model, RSAJwkSchema)
+            assert not isinstance(model, ECJwkSchema)
+
+

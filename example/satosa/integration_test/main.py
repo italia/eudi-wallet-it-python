@@ -6,6 +6,7 @@ import base64
 from bs4 import BeautifulSoup
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
+from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 from pyeudiw.tests.federation.base import (
     EXP,
     leaf_cred,
@@ -27,10 +28,10 @@ from pyeudiw.sd_jwt import (
     load_specification_from_yaml_string,
     issue_sd_jwt,
     _adapt_keys,
-    import_pyca_pri_rsa
+    import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 from saml2_sp import saml2_request, IDP_BASEURL
@@ -127,7 +128,7 @@ sign_request_obj = http_user_agent.get(
     request_uri, verify=False, headers=http_headers)
 print(sign_request_obj.json())
 
-redirect_uri = unpad_jwt_payload(sign_request_obj.json()['response'])[
+redirect_uri = decode_jwt_payload(sign_request_obj.json()['response'])[
     'response_uri']
 
 # create a SD-JWT signed by a trusted credential issuer
@@ -191,7 +192,7 @@ sdjwt_at_holder.create_presentation(
     aud=str(uuid.uuid4()),
     sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
     holder_key=(
-        import_pyca_pri_rsa(
+        import_ec(
             WALLET_PRIVATE_JWK.key.priv_key,
             kid=WALLET_PRIVATE_JWK.kid
         )
@@ -200,7 +201,7 @@ sdjwt_at_holder.create_presentation(
     )
 )
 
-red_data = unpad_jwt_payload(sign_request_obj.json()['response'])
+red_data = decode_jwt_payload(sign_request_obj.json()['response'])
 req_nonce = red_data['nonce']
 
 data = {
@@ -223,7 +224,10 @@ rp_ec_jwt = http_user_agent.get(
     f'{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation',
     verify=False
 ).content.decode()
-rp_ec = unpad_jwt_payload(rp_ec_jwt)
+rp_ec = decode_jwt_payload(rp_ec_jwt)
+
+presentation_definition = rp_ec["metadata"]["wallet_relying_party"]["presentation_definition"]
+PresentationDefinition(**presentation_definition)
 
 assert redirect_uri == rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
 
@@ -264,9 +268,12 @@ form = soup.find("form")
 assert "/saml2" in form["action"]
 input_tag = soup.find("input")
 assert input_tag["name"] == "SAMLResponse"
-value = BeautifulSoup(base64.b64decode(input_tag["value"]), features="xml")
-attributes = value.find_all("saml:attribute")
 
+lowered = base64.b64decode(input_tag["value"]).lower()
+value = BeautifulSoup(lowered, features="xml")
+attributes = value.find_all("saml:attribute")
+# expect to have a non-empty list of attributes
+assert attributes
 
 expected = {
     # https://oidref.com/2.5.4.42
@@ -280,4 +287,4 @@ for attribute in attributes:
     value = attribute.contents[0].contents[0]
     expected_value = expected.get(name, None)
     if expected_value:
-        assert value == expected_value
+        assert value == expected_value.lower()

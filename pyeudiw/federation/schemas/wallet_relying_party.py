@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import Any, List
-from pyeudiw.jwk.schema import JwksSchema
+from pyeudiw.jwk.schemas.jwk import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
 from pyeudiw.openid4vp.schemas import VPFormat
+from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
+
 
 class AcrValuesSupported(str, Enum):
     spid_l1 = "https://www.spid.gov.it/SpidL1"
@@ -35,7 +37,11 @@ class SigningAlgValuesSupported(str, Enum):
 
 class AuthorizationSignedResponseAlg(str, Enum):
     rs256 = "RS256"
+    rs384 = "RS384"
+    rs512 = "RS512"
     es256 = "ES256"
+    es384 = "ES384"
+    es512 = "ES512"
 
 class WalletRelyingParty(BaseModel):
     application_type: str
@@ -46,7 +52,7 @@ class WalletRelyingParty(BaseModel):
     request_uris: List[HttpUrl]
     redirect_uris: List[HttpUrl]
     default_acr_values: List[HttpUrl]
-    presentation_definitions: List[Any]
+    presentation_definition: PresentationDefinition
     authorization_signed_response_alg: List[AuthorizationSignedResponseAlg]
     authorization_encrypted_response_alg: List[EncryptionAlgValuesSupported]
     authorization_encrypted_response_enc: List[EncryptionEncValuesSupported]
