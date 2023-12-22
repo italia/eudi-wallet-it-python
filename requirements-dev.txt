@@ -12,3 +12,5 @@ beautifulsoup4
 lxml
 freezegun
 html-linter
+sphinx
+sphinx_rtd_theme

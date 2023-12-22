@@ -28,7 +28,7 @@ CONFIG = {
     "endpoints": {
         "entity_configuration": "/.well-known/openid-federation",
         "pre_request": "/pre-request",
-        "redirect": "/redirect-uri",
+        "response": "/redirect-uri",
         "request": "/request-uri",
         "status": "/status-uri",
         "get_response": "/get-response",
