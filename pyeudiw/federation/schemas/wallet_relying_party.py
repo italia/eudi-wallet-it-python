@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, List
 from pyeudiw.jwk.schemas.jwk import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
-from pyeudiw.openid4vp.schemas import VPFormat
+from pyeudiw.openid4vp.schemas.vp_format import VPFormat
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 
 
