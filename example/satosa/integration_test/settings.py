@@ -27,7 +27,10 @@ CONFIG_DB = {
                     "db_trust_attestations_collection": "trust_attestations",
                     "db_trust_anchors_collection": "trust_anchors"
                 },
-                "connection_params": {}
+                "connection_params": {
+                    "username": "satosa",
+                    "password": "thatpassword"
+                }
             }
         }
     }
