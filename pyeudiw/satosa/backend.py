@@ -128,7 +128,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
             )
             if k == 'get_response':
                 self.registered_get_response_endpoint = _endpoint
-            elif k == 'redirect':
+            elif k == 'response':
                 self.absolute_redirect_url = _endpoint
             elif k == 'request':
                 self.absolute_request_url = _endpoint
@@ -391,7 +391,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
                 status="200"
             )
 
-    def redirect_endpoint(self, context: Context, *args) -> JsonResponse:
+    def response_endpoint(self, context: Context, *args) -> JsonResponse:
         """
         This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
 
@@ -404,7 +404,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         :rtype: JsonResponse
         """
 
-        self._log_function_debug("redirect_endpoint", context, "args", args)
+        self._log_function_debug("response_endpoint", context, "args", args)
 
         # check DPOP for WIA if any
         try:
