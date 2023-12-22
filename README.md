@@ -51,6 +51,8 @@ Install using github:
 
 `pip install git+https://github.com/italia/eudi-wallet-it-python`
 
+Optionally for generate the documentation you need to install the following packages:
+`pip install sphinx sphinx_rtd_theme`
 
 ## Usage
 
@@ -91,6 +93,13 @@ backend to enable the OpenID4VP protocol.
 
 Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
 
+## Setup Documentation
+For generate the documentaation enter in the terminal the following commands:
+````
+cd docs
+sphinx-apidoc -o ./source ../pyeudiw
+make html
+````
 
 ## Contribute
 
