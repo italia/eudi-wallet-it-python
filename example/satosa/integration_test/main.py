@@ -47,11 +47,7 @@ from settings import (
 # put a trust attestation related itself into the storage
 # this then is used as trust_chain header paramenter in the signed
 # request object
-docker_config_db = CONFIG_DB
-docker_config_db["mongo_db"]["storage"]["init_params"]["connection_params"]["username"] = "satosa"
-docker_config_db["mongo_db"]["storage"]["init_params"]["connection_params"]["password"] = "thatpassword"
-
-db_engine_inst = DBEngine(docker_config_db)
+db_engine_inst = DBEngine(CONFIG_DB)
 
 # STORAGE ####
 db_engine_inst.add_trust_anchor(
