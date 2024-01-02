@@ -188,7 +188,6 @@ class JWSHelper:
             _payload = plain_dict
         else:
             _payload = ""
-
         _signer = JWSec(_payload, alg=self.alg, **kwargs)
         return _signer.sign_compact([_key], protected=protected, **kwargs)
 

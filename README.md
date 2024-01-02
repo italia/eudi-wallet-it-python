@@ -54,22 +54,12 @@ Install using github:
 Optionally for generate the documentation you need to install the following packages:
 `pip install sphinx sphinx_rtd_theme`
 
-## Usage
 
-TBD. Here a section that points to the documentation of each single package and some common example about their usage for some specific tasks.
+## Documentation
 
-| Name | Description |
-| :--- | --- |
-| __jwk__ | link to the API documentation [](). | 
-| __jwt__ | link to the API documentation [](). | 
-| __tools.qrcode__ | QRCodes creation. | 
-| __oauth2.dpop__ | link to the API documentation [](). |
-| __federation__ | link to the API documentation [](). |
-| __trust__ | link to the API documentation [](). |
-| __satosa.backend__ | link to the API documentation [](). |
-| __openid4vp__ | link to the API documentation [](). |
-| __presentation_exchange__ | link to the API documentation [](). |
-| __sd_jwt__ | link to the API documentation [](). |
+The API documentation is available in the githubpages, [here](https://italia.github.io/eudi-wallet-it-python/).
+
+In the [docs/](docs) folder there are some common example for some specific tasks.
 
 
 ## Example project
@@ -93,11 +83,11 @@ backend to enable the OpenID4VP protocol.
 
 Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
 
-## Setup Documentation
-For generate the documentaation enter in the terminal the following commands:
+## Build the Documentation
+For generate the documentaation enter in the terminal the following commands. The last argument is the exclude path (unit tests excluded).
 ````
 cd docs
-sphinx-apidoc -o ./source ../pyeudiw
+sphinx-apidoc -o ./source ../pyeudiw ../pyeudiw/tests
 make html
 ````
 
