@@ -132,18 +132,27 @@ class StaticTrustChainValidator:
         )
 
         if not ta_jwk:
+            logger.error(
+                f"Trust chain validation error: TA jwks not found."
+            )
             return False
 
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
 
         if not jwsh.verify(last_element):
+            logger.error(
+                f"Trust chain signature validation error: {last_element} using {ta_jwk}"
+            )
             return False
 
         # then go ahead with other checks
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
+            logger.error(
+                f"Trust chain validation error, statement expired: {es_payload}"
+            )
             return False
 
         fed_jwks = es_payload["jwks"]["keys"]
@@ -160,10 +169,16 @@ class StaticTrustChainValidator:
                     st_header.get("kid", None), fed_jwks
                 )
             except (KidNotFoundError, InvalidKid):
+                logger.error(
+                    f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}"
+                )
                 return False
 
             jwsh = JWSHelper(jwk)
             if not jwsh.verify(st):
+                logger.error(
+                    f"Trust chain signature validation error: {st} using {jwk}"
+                )
                 return False
             else:
                 fed_jwks = st_payload["jwks"]["keys"]
@@ -184,8 +199,9 @@ class StaticTrustChainValidator:
         """
         jwt = get_entity_configurations(iss, self.httpc_params)
         if not jwt:
-            raise HttpError(
-                f"Cannot get the Entity Configuration from {iss}")
+            _msg = f"Cannot get the Entity Configuration from {iss}"
+            logger.error(_msg)
+            raise HttpError(_msg)
 
         # is something weird these will raise their Exceptions
         return jwt[0]
@@ -204,9 +220,9 @@ class StaticTrustChainValidator:
         """
         jwt = get_entity_statements(download_url, self.httpc_params)
         if not jwt:
-            logger.warning(
-                f"Cannot fast refresh Entity Statement {iss}"
-            )
+            _msg = f"Cannot fast refresh Entity Statement {iss}"
+            logger.warning(_msg)
+            raise HttpError(_msg)
         if isinstance(jwt, list) and jwt:
             return jwt[0]
         return jwt

@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from pyeudiw.tools.base_logger import BaseLogger
 from .base_http_error_handler import BaseHTTPErrorHandler
 
+
 class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
     """
     Backend DPoP class.
@@ -50,9 +51,13 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
             try:
                 WalletInstanceAttestationPayload(**wia)
             except ValidationError as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid WIA: {wia}! \nValidation error: {e}")
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}! \nValidation error: {e}"
+                self._log_warning(context, message=_msg)
+                #  return self._handle_401(context, _msg, e)
             except Exception as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid WIA: {wia}! \nUnexpected error: {e}")
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}! \nUnexpected error: {e}"
+                self._log_warning(context, message=_msg)
+                #  return self._handle_401(context, _msg, e)
 
             try:
                 self._validate_trust(context, dpop_jws)
@@ -84,7 +89,7 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
 
         else:
             _msg = (
-                "The Wallet Instance doesn't provide a valid Wallet Instance Attestation "
+                "The Wallet Instance doesn't provide a valid Wallet Attestation "
                 "a default set of capabilities and a low security level are applied."
             )
             self._log_warning(context, message=_msg)

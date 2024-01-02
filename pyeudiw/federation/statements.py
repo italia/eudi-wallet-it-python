@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from copy import deepcopy
 from pyeudiw.federation.exceptions import (
     UnknownKid,
@@ -13,21 +11,14 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader, 
     EntityStatementPayload
 )
+from pydantic import ValidationError
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.tools.utils import get_http_url
-from pydantic import ValidationError
-
 from pyeudiw.jwk import find_jwk
+from pyeudiw.tools.utils import get_http_url
 
 import json
 import logging
-
-try:
-    pass
-except ImportError:  # pragma: no cover
-    pass
-
 
 OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
 logger = logging.getLogger(__name__)
@@ -67,7 +58,6 @@ def get_federation_jwks(jwt_payload: dict) -> list[dict]:
 
     jwks = jwt_payload.get("jwks", {})
     keys = jwks.get("keys", [])
-
     return keys
 
 
@@ -87,7 +77,6 @@ def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async:
     """
     
     urls = urls if isinstance(urls, list) else [urls]
-
     for url in urls:
         logger.debug(f"Starting Entity Statement Request to {url}")
 
