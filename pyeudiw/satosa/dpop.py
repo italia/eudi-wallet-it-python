@@ -44,18 +44,18 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
             try:
                 WalletInstanceAttestationHeader(**_head)
             except ValidationError as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}! \nValidation error: {e}")
+                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
             except Exception as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}! \nUnexpected error: {e}")
+                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}")
 
             try:
                 WalletInstanceAttestationPayload(**wia)
             except ValidationError as e:
-                _msg = f"[FOUND WIA] Invalid WIA: {wia}! \nValidation error: {e}"
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}. Validation error: {e}"
                 self._log_warning(context, message=_msg)
                 #  return self._handle_401(context, _msg, e)
             except Exception as e:
-                _msg = f"[FOUND WIA] Invalid WIA: {wia}! \nUnexpected error: {e}"
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}. Unexpected error: {e}"
                 self._log_warning(context, message=_msg)
                 #  return self._handle_401(context, _msg, e)
 

@@ -261,7 +261,8 @@ class TrustEvaluationHelper:
         is_good = tcbuilder.is_valid
         if not is_good:
             raise DiscoveryFailedError(
-                f"Discovery failed for entity {entity_id}\nwith configuration {entity_configuration}")
+                f"Discovery failed for entity {entity_id} with configuration {entity_configuration}"
+            )
 
     @staticmethod
     def build_trust_chain_for_entity_id(storage: DBEngine, entity_id, entity_configuration, httpc_params):
