@@ -222,14 +222,14 @@ class StaticTrustChainValidator:
         if not jwt:
             _msg = f"Cannot fast refresh Entity Statement {iss}"
             logger.warning(_msg)
-            raise HttpError(_msg)
+            #  raise HttpError(_msg)
         if isinstance(jwt, list) and jwt:
             return jwt[0]
         return jwt
 
     def _update_st(self, st: str) -> str:
         """
-        Updates the statement retrieving the new one using the source end_point and the sub fields of st payload.
+        Updates the statement retrieving the new one using the source_endpoint and the sub fields of the entity statement payload.
 
         :param st: The statement in form of a JWT.
         :type st: str

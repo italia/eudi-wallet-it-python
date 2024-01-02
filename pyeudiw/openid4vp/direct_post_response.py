@@ -1,9 +1,12 @@
+import logging
+
 from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 from pyeudiw.openid4vp.exceptions import (
+    InvalidVPToken,
     VPNotFound,
     VPInvalidNonce,
     NoNonceInVPToken
@@ -11,6 +14,8 @@ from pyeudiw.openid4vp.exceptions import (
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
 from pydantic import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 class DirectPostResponse:

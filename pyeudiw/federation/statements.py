@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copy import deepcopy
 from pyeudiw.federation.exceptions import (
     UnknownKid,
@@ -221,7 +223,7 @@ class EntityStatement:
         jwt: str,
         httpc_params: dict,
         filter_by_allowed_trust_marks: list[str] = [],
-        trust_anchor_entity_conf: 'EntityStatement' | None = None,
+        trust_anchor_entity_conf: EntityStatement | None = None,
         trust_mark_issuers_entity_confs: list[EntityStatement] = [],
     ):
         """
