@@ -16,6 +16,7 @@ from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
 from pyeudiw.tools.base_logger import BaseLogger
 
+
 class BackendTrust(BaseLogger):
     """
     Backend Trust class.
@@ -41,7 +42,10 @@ class BackendTrust(BaseLogger):
         try:
             self.get_backend_trust_chain()
         except Exception as e:
-            self._log_critical("Backend Trust", f"Cannot fetch the trust anchor configuration: {e}")
+            self._log_critical(
+                "Backend Trust", 
+                f"Cannot fetch the trust anchor configuration: {e}"
+            )
 
         self.db_engine.close()
         self._db_engine = None
@@ -57,10 +61,9 @@ class BackendTrust(BaseLogger):
         :rtype: Response
         """
 
-        data = self.entity_configuration_as_dict
         if context.qs_params.get('format', '') == 'json':
             return Response(
-                json.dumps(data),
+                json.dumps(self.entity_configuration_as_dict),
                 status="200",
                 content="application/json"
             )
@@ -101,21 +104,21 @@ class BackendTrust(BaseLogger):
         """
         try:
             trust_evaluation_helper = TrustEvaluationHelper.build_trust_chain_for_entity_id(
-                storage=self.db_engine,
-                entity_id=self.client_id,
-                entity_configuration=self.entity_configuration,
-                httpc_params=self.config['network']['httpc_params']
+                storage = self.db_engine,
+                entity_id = self.client_id,
+                entity_configuration = self.entity_configuration,
+                httpc_params = self.config['network']['httpc_params']
             )
             self.db_engine.add_or_update_trust_attestation(
-                entity_id=self.client_id,
-                attestation=trust_evaluation_helper.trust_chain,
-                exp=trust_evaluation_helper.exp
+                entity_id = self.client_id,
+                attestation = trust_evaluation_helper.trust_chain,
+                exp = trust_evaluation_helper.exp
             )
             return trust_evaluation_helper.trust_chain
 
         except (DiscoveryFailedError, EntryNotFound, Exception) as e:
             message = (
-                f"Error while building trust chain for client with id: {self.client_id}\n"
+                f"Error while building trust chain for client with id: {self.client_id}. "
                 f"{e.__class__.__name__}: {e}"
             )
             self._log_warning("Trust Chain", message)
@@ -154,7 +157,6 @@ class BackendTrust(BaseLogger):
                 f"{trust_eval.entity_id}"
             )
             self._log_error(context, message)
-
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} not found for Trust evaluation."
             )
@@ -164,7 +166,6 @@ class BackendTrust(BaseLogger):
                 f"{trust_eval.entity_id}: {e}"
             )
             self._log_error(context, message)
-
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted."
             )
