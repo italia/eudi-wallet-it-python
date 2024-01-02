@@ -19,8 +19,8 @@ The toolchain contains the following components:
 | __jwt__ | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
 | __tools.qrcode__ | QRCodes creation | 
 | __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
-| __federation__ | Trust evaluation mechanisms, according to [OpenID Connect Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html) |
-| __trust__ | Helper classes to handle both X.509 and OIDC Federation trust evaluation mechanisms |
+| __federation__ | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html) |
+| __trust__ | Helper classes to handle both X.509 and OpenID Federation trust evaluation mechanisms |
 | __satosa.backend__ | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
 | __openid4vp__ | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
 | __presentation_exchange__ | Resources related to [DiF Presentation Exchange](https://identity.foundation/presentation-exchange/) |
@@ -62,6 +62,17 @@ The API documentation is available in the githubpages, [here](https://italia.git
 In the [docs/](docs) folder there are some common example for some specific tasks.
 
 
+### Build the Documentation
+For generate the documentaation enter in the terminal the following commands. 
+The last argument is the exclude path, unit tests are then excluded from the API documentation.
+
+````
+cd docs
+sphinx-apidoc -o ./source ../pyeudiw ../pyeudiw/tests
+make html
+````
+
+
 ## Example project
 
 The example project is a docker-compose that runs a demo composed by the following component:
@@ -82,14 +93,6 @@ backend to enable the OpenID4VP protocol.
 <img src="docs/gallery/iam-proxy.svg" width="512">
 
 Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
-
-## Build the Documentation
-For generate the documentaation enter in the terminal the following commands. The last argument is the exclude path (unit tests excluded).
-````
-cd docs
-sphinx-apidoc -o ./source ../pyeudiw ../pyeudiw/tests
-make html
-````
 
 ## Contribute
 
