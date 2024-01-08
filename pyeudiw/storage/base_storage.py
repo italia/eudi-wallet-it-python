@@ -40,6 +40,24 @@ class BaseStorage(BaseDB):
         :param attestation: the attestation.
         """
         raise NotImplementedError()
+    
+    def set_session_retention_ttl(self, ttl: int | None) -> None:
+        """
+        Set the database retention ttl.
+
+        :param ttl: the ttl.
+        :type ttl: int | None
+        """
+        raise NotImplementedError()
+    
+    def has_session_retention_ttl(self) -> bool:
+        """
+        Check if the session has a retention ttl.
+
+        :returns: True if the session has a retention ttl, False otherwise.
+        :rtype: bool
+        """
+        raise NotImplementedError()
 
     def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict) -> UpdateResult:
         """

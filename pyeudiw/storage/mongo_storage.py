@@ -1,4 +1,5 @@
 import pymongo
+import datetime as dt
 from datetime import datetime
 
 from pymongo.results import UpdateResult
@@ -25,6 +26,8 @@ class MongoStorage(BaseStorage):
 
         self.client = None
         self.db = None
+
+        self.set_session_retention_ttl(conf.get("data_ttl", None))
 
     @property
     def is_connected(self) -> bool:
@@ -109,7 +112,7 @@ class MongoStorage(BaseStorage):
     def init_session(self, document_id: str, session_id: str, state: str) -> str:
         entity = {
             "document_id": document_id,
-            "creation_date": datetime.now().isoformat(),
+            "creation_date": dt.datetime.now(tz=dt.timezone.utc),
             "state": state,
             "session_id": session_id,
             "finalized": False,
@@ -124,6 +127,19 @@ class MongoStorage(BaseStorage):
         self.sessions.insert_one(entity)
 
         return document_id
+    
+    def set_session_retention_ttl(self, ttl: int | None) -> None:
+        self._connect()
+
+        if ttl == None:
+            if self.sessions.index_information().get("creation_date_1"):
+                self.sessions.drop_index("creation_date_1")
+        else:
+            self.sessions.create_index([("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)
+
+    def has_session_retention_ttl(self) -> bool:
+        self._connect()
+        return self.sessions.index_information().get("creation_date_1") is not None
 
     def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict) -> UpdateResult:
         self._connect()
