@@ -25,9 +25,6 @@
                       <p id="content-qrcode-info-text" class="text-helper text-info">
                           Il codice è valido per <b id="timer"></b> secondi
                       </p>
-                    <p class="">
-                        <a href="javascript:window.location.reload(true)"><b>Ho bisogno di più tempo</b></a>
-                    </p>
                       <p id="content-qrcode-subtitle" class="qr-code-text" hidden>
                           Puoi trovarla direttamente all'interno dell'app IO. 
                           Se hai più dispositivi mobili,
@@ -42,7 +39,6 @@
                               <span>Indietro</span>
                           </button>
                       </div>
-
                   </div>
               </div>
           </div>
@@ -65,17 +61,17 @@
 
     let startingConnectionTitle = "Continua sul tuo smartphone";
     let startingConnectionText = "Per proseguire, segui le istruzioni sull'app IO e autorizza l'accesso";
-        let clickAccessLabel = "Clicca qui per accedere al servizio";
+    let startingConnectionQRInfo = "<b>Non hai ricevuto la notifica?</b>";
+    let clickAccessLabel = "Clicca qui per accedere al servizio";
     let connectedTitle = "Autenticazione completata";
     let qrCodeExpiredInfo = "Il codice QR non è più valido";
 
-    let expirationTime = 120;
+    let expirationTime = "{{ qrcode_expiration_time }}";
     let pollingInterval;
 
     function StartQRcodeScanCheck(){
-        $('#timer').text(expirationTime);        
+        $('#timer').text(expirationTime); 
         let timeout = expirationTime*1000;
-        // setTimeout(timeout);
         pollingInterval = setTimeout(QRcodeScanCheck, timeout);
     }
 
@@ -115,6 +111,8 @@
 
     function QRcodeExpired(){
         console.log('session expired');
+        blankQRcode();
+        clearInterval(countdown);
         changeQrCodeInfo(qrCodeExpiredInfo);
     }
 

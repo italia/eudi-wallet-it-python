@@ -207,6 +207,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
             {
                 "qrcode_color" : self.config["qrcode"]["color"],
                 "qrcode_text": res_url,
+                "qrcode_expiration_time": self.config["qrcode"]["expiration_time"],
                 "state": state,
                 "status_endpoint": self.absolute_status_url
             }

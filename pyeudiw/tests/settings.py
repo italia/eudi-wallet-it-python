@@ -36,6 +36,7 @@ CONFIG = {
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
+        "expiration_time": 120,
     },
     "jwt": {
         "default_sig_alg": "ES256",
