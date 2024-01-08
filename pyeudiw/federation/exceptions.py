@@ -72,3 +72,12 @@ class InvalidChainError(Exception):
 
 class ProtocolMetadataNotFound(Exception):
     pass
+
+class InvalidEntityHeader(Exception):
+    pass
+
+class InvalidEntityStatementPayload(Exception):
+    pass
+
+class PolicyError(Exception):
+    pass

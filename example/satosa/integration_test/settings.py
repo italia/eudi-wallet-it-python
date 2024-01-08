@@ -12,7 +12,7 @@ from pyeudiw.tests.federation.base import (
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 
-RP_EID = "https://localhost:10000/OpenID4VP"
+RP_EID = "https://localhost/OpenID4VP"
 
 CONFIG_DB = {
     "mongo_db": {
@@ -27,7 +27,10 @@ CONFIG_DB = {
                     "db_trust_attestations_collection": "trust_attestations",
                     "db_trust_anchors_collection": "trust_anchors"
                 },
-                "connection_params": {}
+                "connection_params": {
+                    "username": "satosa",
+                    "password": "thatpassword"
+                }
             }
         }
     }
@@ -110,7 +113,7 @@ rp_ec = {
     ]
 }
 rp_signer = JWS(
-    rp_ec, alg="RS256",
+    rp_ec, alg="ES256",
     typ="application/entity-statement+jwt"
 )
 
@@ -125,11 +128,11 @@ _es = ta_es = {
     }
 }
 ta_signer = JWS(
-    _es, alg="RS256",
+    _es, alg="ES256",
     typ="application/entity-statement+jwt"
 )
 
 its_trust_chain = [
-    rp_signer.sign_compact([key_from_jwk_dict(rp_jwks[0])]),
+    rp_signer.sign_compact([key_from_jwk_dict(rp_jwks[1])]),
     ta_signer.sign_compact([ta_jwk])
 ]

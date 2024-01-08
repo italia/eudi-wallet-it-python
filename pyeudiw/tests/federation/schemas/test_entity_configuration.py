@@ -57,130 +57,53 @@ ENTITY_CONFIGURATION = {
                     "https://www.spid.gov.it/SpidL2",
                     "https://www.spid.gov.it/SpidL3"
                 ],
-
                 "vp_formats": {
-                    "jwt_vp_json": {
-                        "alg": [
-                            "EdDSA",
-                            "ES256K"
+                    "vc+sd-jwt": {
+                        "sd-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
+                        ],
+                        "kb-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
                         ]
                     }
                 },
-                "presentation_definitions": [
-                    {
-                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                "presentation_definition": {
+                        "id": "d76c51b7-ea90-49bb-8368-6b3d194fc131",
                         "input_descriptors": [
                             {
-                                "id": "sd-jwt",
+                                "id": "IdentityCredential",
                                 "format": {
-                                    "jwt": {
-                                        "alg": [
-                                            "EdDSA",
-                                            "ES256"
-                                        ]
-                                    },
-                                    "constraints": {
-                                        "limit_disclosure": "required",
-                                        "fields": [
-                                            {
-                                                "path": [
-                                                    "$.sd-jwt.type"
-                                                ],
-                                                "filter": {
-                                                    "type": "string",
-                                                    "const": "PersonIdentificationData"
-                                                }
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.sd-jwt.cnf"
-                                                ],
-                                                "filter": {
-                                                    "type": "object",
-                                                }
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.sd-jwt.family_name"
-                                                ],
-                                                "intent_to_retain": "true"
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.sd-jwt.given_name"
-                                                ],
-                                                "intent_to_retain": "true"
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.sd-jwt.unique_id"
-                                                ],
-                                                "intent_to_retain": "true"
+                                    "vc+sd-jwt": {}
+                                },
+                                "constraints": {
+                                    "limit_disclosure": "required",
+                                    "fields": [
+                                        {
+                                            "path": [
+                                                "$.vct"
+                                            ],
+                                            "filter": {
+                                                "type": "string",
+                                                "const": "IdentityCredential"
                                             }
-                                        ]
-                                    }
+                                        },
+                                        {
+                                            "path": [
+                                                "$.family_name"
+                                            ]
+                                        },
+                                        {
+                                            "path": [
+                                                "$.given_name"
+                                            ]
+                                        }
+                                    ]
                                 }
                             }
                         ]
                     },
-                    {
-                        "id": "mDL-sample-req",
-                        "input_descriptors": [
-                            {
-                                "id": "mDL",
-                                "format": {
-                                    "mso_mdoc": {
-                                        "alg": [
-                                            "EdDSA",
-                                            "ES256"
-                                        ]
-                                    },
-                                    "constraints": {
-                                        "limit_disclosure": "required",
-                                        "fields": [
-                                            {
-                                                "path": [
-                                                    "$.mdoc.doctype"
-                                                ],
-                                                "filter": {
-                                                    "type": "string",
-                                                    "const": "org.iso.18013.5.1.mDL"
-                                                }
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.mdoc.namespace"
-                                                ],
-                                                "filter": {
-                                                    "type": "string",
-                                                    "const": "org.iso.18013.5.1"
-                                                }
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.mdoc.family_name"
-                                                ],
-                                                "intent_to_retain": "false"
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.mdoc.portrait"
-                                                ],
-                                                "intent_to_retain": "false"
-                                            },
-                                            {
-                                                "path": [
-                                                    "$.mdoc.driving_privileges"
-                                                ],
-                                                "intent_to_retain": "false"
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                ],
 
                 "default_max_age": 1111,
 

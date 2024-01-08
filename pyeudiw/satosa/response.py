@@ -1,12 +1,23 @@
 import json
-
 from satosa.response import Response
 
 
 class JsonResponse(Response):
+    """
+    A JSON response istance class.
+    """
+
     _content_type = "application/json"
 
     def __init__(self, *args, **kwargs):
+        """
+        Creates an instance of JsonResponse.
+
+        :param args: a list of arguments
+        :type args: Any
+        :param kwargs: a dictionary of arguments
+        :type kwargs: Any
+        """
         super().__init__(*args, **kwargs)
 
         if isinstance(self.message, list):

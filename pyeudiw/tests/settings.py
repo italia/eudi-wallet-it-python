@@ -28,7 +28,7 @@ CONFIG = {
     "endpoints": {
         "entity_configuration": "/.well-known/openid-federation",
         "pre_request": "/pre-request",
-        "redirect": "/redirect-uri",
+        "response": "/redirect-uri",
         "request": "/request-uri",
         "status": "/status-uri",
         "get_response": "/get-response",
@@ -45,6 +45,10 @@ CONFIG = {
         "url_scheme": "eudiw",  # eudiw://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
+    },
+    'user_attributes': {
+        "unique_identifiers": ["tax_id_code", "unique_id"],
+        "subject_id_random_value": "CHANGEME!"
     },
     'network': {
         "httpc_params": httpc_params
@@ -305,10 +309,14 @@ CONFIG = {
         "require_auth_time": True,
         "subject_type": "pairwise",
         "vp_formats": {
-            "jwt_vp_json": {
-                "alg": [
-                    "EdDSA",
-                    "ES256K"
+            "vc+sd-jwt": {
+                "sd-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
+                ],
+                "kb-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
                 ]
             }
         }

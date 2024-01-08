@@ -14,3 +14,6 @@ class MissingTrustType(Exception):
 
 class InvalidTrustType(Exception):
     pass
+
+class InvalidAnchor(Exception):
+    pass

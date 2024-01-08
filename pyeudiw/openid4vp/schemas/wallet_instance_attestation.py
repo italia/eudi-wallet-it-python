@@ -44,12 +44,12 @@ class WalletInstanceAttestationPayload(BaseModel):
     aal: HttpUrl
     cnf: CNFSchema
     # Wallet Capabilities
-    type: Optional[Literal["WalletInstanceAttestation"]]
-    policy_uri: Optional[HttpUrl]
-    tos_uri: Optional[HttpUrl]
-    logo_uri: Optional[HttpUrl]
-    authorization_endpoint: Optional[str]
-    response_types_supported: Optional[List[str]]
-    vp_formats_supported: Optional[VPFormatSchema]
-    request_object_signing_alg_values_supported: Optional[List[str]]
-    presentation_definition_uri_supported: Optional[bool]
+    type: Optional[Literal["WalletInstanceAttestation"]] = None
+    policy_uri: Optional[HttpUrl] = None
+    tos_uri: Optional[HttpUrl] = None
+    logo_uri: Optional[HttpUrl] = None
+    authorization_endpoint: Optional[str] = None
+    response_types_supported: Optional[List[str]] = None
+    vp_formats_supported: Optional[VPFormatSchema] = None
+    request_object_signing_alg_values_supported: Optional[List[str]] = None
+    presentation_definition_uri_supported: Optional[bool] = None

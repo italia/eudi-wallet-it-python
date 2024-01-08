@@ -4,7 +4,7 @@ import pytest
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unpad_jwt_header, unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.oauth2.dpop.exceptions import InvalidDPoPKid
 from pyeudiw.tools.utils import iat_now
@@ -67,7 +67,7 @@ def wia_jws(jwshelper):
 
 def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     # create
-    header = unpad_jwt_header(wia_jws)
+    header = decode_jwt_header(wia_jws)
     assert header
     assert isinstance(header["trust_chain"], list)
     assert isinstance(header["x5c"], list)
@@ -82,13 +82,13 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     proof = new_dpop.proof
     assert proof
 
-    header = unpad_jwt_header(proof)
+    header = decode_jwt_header(proof)
     assert header["typ"] == "dpop+jwt"
     assert header["alg"]
     assert "mac" not in str(header["alg"]).lower()
     assert "d" not in header["jwk"]
 
-    payload = unpad_jwt_payload(proof)
+    payload = decode_jwt_payload(proof)
     assert payload["ath"] == base64.urlsafe_b64encode(
         hashlib.sha256(wia_jws.encode()
                        ).digest()).rstrip(b'=').decode()

@@ -5,7 +5,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from pyeudiw.federation.policy import apply_policy
+from .policy import TrustChainPolicy
 
 from .exceptions import (
     InvalidEntityStatement,
@@ -26,13 +26,6 @@ logger = logging.getLogger(__name__)
 class TrustChainBuilder:
     """
     A trust walker that fetches statements and evaluate the evaluables
-
-    max_intermediaries means how many hops are allowed to the trust anchor
-    max_authority_hints means how much authority_hints to follow on each hop
-
-    required_trust_marks means all the trsut marks needed to start a metadata discovery
-     at least one of the required trust marks is needed to start a metadata discovery
-     if this param if absent the filter won't be considered.
     """
 
     def __init__(
@@ -42,14 +35,37 @@ class TrustChainBuilder:
         httpc_params: dict,
         trust_anchor_configuration: Union[EntityStatement, str, None] = None,
         max_authority_hints: int = 10,
-        subject_configuration: EntityStatement = None,
-        required_trust_marks: list = [],
+        subject_configuration: EntityStatement | None = None,
+        required_trust_marks: list[dict] = [],
         # TODO - prefetch cache?
         # pre_fetched_entity_configurations = {},
         # pre_fetched_statements = {},
         #
         **kwargs,
     ) -> None:
+        """
+        Initialized a TrustChainBuilder istance
+
+        :parameter subject: represents the subject url (leaf) of the Trust Chain
+        :type subject: str
+        :parameter trust_anchor: represents the issuer url (leaf) of the Trust Chain
+        :type trust_anchor: str
+        :param httpc_params: parameters needed to perform http requests
+        :type httpc_params: dict
+        :param trust_anchor_configuration: is the entity statment configuration of Trust Anchor.
+        The assigned value can be an EntityStatement, a str or None.
+        If the value is a string it will be converted in an EntityStatement istance.
+        If the value is None it will be retrieved from an http request on the trust_anchor field.
+        :parameter max_authority_hints: the number of how many authority_hints to follow on each hop
+        :type max_authority_hints: int
+        :parameter subject_configuration: the configuration of subject
+        :type subject_configuration: EntityStatement
+        :parameter required_trust_marks: means all the trust marks needed to start a metadata discovery
+        at least one of the required trust marks is needed to start a metadata discovery
+        if this param if absent the filter won't be considered.
+        :type required_trust_marks: list[dict]
+
+        """
 
         self.subject = subject
         self.subject_configuration = subject_configuration
@@ -64,7 +80,9 @@ class TrustChainBuilder:
                 trust_anchor_configuration = EntityStatement(
                     jwts[0], httpc_params=self.httpc_params
                 )
-                trust_anchor_configuration.subject_configuration.validate_by_itself()
+
+                subject_configuration.update_trust_anchor_conf(trust_anchor_configuration)
+                subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
                 logger.error(_msg)
@@ -95,8 +113,10 @@ class TrustChainBuilder:
     def apply_metadata_policy(self) -> dict:
         """
         filters the trust path from subject to trust anchor
-        apply the metadata policies along the path and
-        returns the final metadata
+        apply the metadata policies along the path.
+
+        :returns: the final metadata with policy applied
+        :rtype: dict 
         """
         # find the path of trust
         if not self.trust_path:
@@ -150,28 +170,31 @@ class TrustChainBuilder:
                 for md_type, md in _pol.items():
                     if not self.final_metadata.get(md_type):
                         continue
-                    self.final_metadata[md_type] = apply_policy(
+                    self.final_metadata[md_type] = TrustChainPolicy().apply_policy(
                         self.final_metadata[md_type], _pol[md_type]
                     )
 
         # set exp
-        self.set_exp()
+        self._set_exp()
         return self.final_metadata
 
-    @property
-    def exp_datetime(self) -> datetime.datetime:
-        if self.exp:  # pragma: no cover
-            return datetime_from_timestamp(self.exp)
-
-    def set_exp(self) -> int:
+    def _set_exp(self) -> None:
+        """
+        updates the internal exp field with the nearest 
+        expiraton date found in the trust_path field
+        """
         exps = [i.payload["exp"] for i in self.trust_path]
         if exps:
             self.exp = min(exps)
 
     def discovery(self) -> bool:
         """
-        return a chain of verified statements
-        from the lower up to the trust anchor
+        discovers the chain of verified statements
+        from the lower up to the trust anchor and updates
+        the internal representation of chain.
+
+        :returns: the validity status of the updated chain
+        :rtype: bool 
         """
         logger.info(
             f"Starting a Walk into Metadata Discovery for {self.subject}")
@@ -225,6 +248,10 @@ class TrustChainBuilder:
         return self.is_valid
 
     def get_trust_anchor_configuration(self) -> None:
+        """
+        Download and updates the internal field trust_anchor_configuration
+        with the entity statement of trust anchor.
+        """
         if not isinstance(self.trust_anchor, EntityStatement):
             logger.info(
                 f"Get Trust Anchor Entity Configuration for {self.subject}")
@@ -245,8 +272,11 @@ class TrustChainBuilder:
 
         self._set_max_path_len()
 
-    def _set_max_path_len(self):
-
+    def _set_max_path_len(self) -> None:
+        """
+        Sets the internal field max_path_len with the costraint 
+        found in trust anchor payload
+        """
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
             "max_path_length"
         ):
@@ -257,6 +287,12 @@ class TrustChainBuilder:
             )
 
     def get_subject_configuration(self) -> None:
+        """
+        Download and updates the internal field subject_configuration
+        with the entity statement of leaf.
+
+        :rtype: None
+        """
         if not self.subject_configuration:
             try:
                 jwts = get_entity_configurations(
@@ -289,10 +325,22 @@ class TrustChainBuilder:
                 else:
                     self.verified_trust_marks.extend(sc.verified_trust_marks)
 
-    def serialize(self):
+    def serialize(self) -> str:
+        """
+        Serializes the chain in JSON format.
+
+        :returns: the serialized chain in JSON format
+        :rtype: str
+        """
         return json.dumps(self.get_trust_chain())
 
-    def get_trust_chain(self):
+    def get_trust_chain(self) -> list[str]:
+        """
+        Retrieves the leaf and the Trust Anchor entity configurations.
+
+        :returns: the list containing the ECs
+        :rtype: list[str]
+        """
         res = []
         # we keep just the leaf's and TA's EC, all the intermediates EC will be dropped
         ta_ec: str = ""
@@ -312,6 +360,13 @@ class TrustChainBuilder:
         return res
 
     def start(self):
+        """
+        Retrieves the subject (leaf) configuration and starts 
+        chain discovery.
+
+        :returns: the list containing the ECs
+        :rtype: list[str] 
+        """
         try:
             # self.get_trust_anchor_configuration()
             self.get_subject_configuration()
@@ -320,3 +375,9 @@ class TrustChainBuilder:
             self.is_valid = False
             logger.error(f"{e}")
             raise e
+
+    @property
+    def exp_datetime(self) -> datetime.datetime:
+        """The exp filed converted in datetime format"""
+        if self.exp:  # pragma: no cover
+            return datetime_from_timestamp(self.exp)

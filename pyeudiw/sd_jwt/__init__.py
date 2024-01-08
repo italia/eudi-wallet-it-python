@@ -1,4 +1,3 @@
-import cryptojwt
 import json
 
 from jwcrypto.common import base64url_encode
@@ -13,7 +12,8 @@ from sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.sd_jwt.exceptions import UnknownCurveNistName
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 from jwcrypto.jws import JWS
@@ -21,11 +21,46 @@ from json import dumps, loads
 
 import jwcrypto
 
+from typing import Any
+from cryptojwt.jwk.rsa import RSAKey
+from cryptojwt.jwk.ec import ECKey
+from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 
 class TrustChainSDJWTIssuer(SDJWTIssuer):
-    def __init__(self, user_claims: Dict, issuer_key, holder_key=None, sign_alg=None, add_decoy_claims: bool = True, serialization_format: str = "compact", additional_headers: dict = {}):
+    """
+    Class for issue SD-JWT of TrustChain.
+    """
+    def __init__(
+            self, 
+            user_claims: Dict[str, Any], 
+            issuer_key: dict, 
+            holder_key: dict | None = None, 
+            sign_alg: str | None = None, 
+            add_decoy_claims: bool = True, 
+            serialization_format: str = "compact", 
+            additional_headers: dict = {}
+        ) -> None:
+        """
+        Crate an istance of TrustChainSDJWTIssuer.
+
+        :param user_claims: the claims of the SD-JWT.
+        :type user_claims: dict
+        :param issuer_key: the issuer key.
+        :type issuer_key: dict
+        :param holder_key: the holder key.
+        :type holder_key: dict | None
+        :param sign_alg: the signing algorithm.
+        :type sign_alg: str | None
+        :param add_decoy_claims: if True add decoy claims.
+        :type add_decoy_claims: bool
+        :param serialization_format: the serialization format.
+        :type serialization_format: str
+        :param additional_headers: additional headers.
+        :type additional_headers: dict        
+        """
+
         self.additional_headers = additional_headers
-        sign_alg = DEFAULT_SIG_KTY_MAP[issuer_key.kty]
+        sign_alg = sign_alg if sign_alg else DEFAULT_SIG_KTY_MAP[issuer_key.kty]
 
         super().__init__(
             user_claims,
@@ -37,6 +72,9 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         )
 
     def _create_signed_jws(self):
+        """
+        Creates the signed JWS.        
+        """
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
         _protected_headers = {"alg": self._sign_alg}
@@ -64,9 +102,19 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
             self.serialized_sd_jwt = dumps(jws_content)
 
 
-def _serialize_key(key, **kwargs):
+def _serialize_key(
+        key: RSAKey | ECKey | JWK | dict, 
+        **kwargs
+    ) -> dict:
+    """
+    Serialize a key into dict.
 
-    if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
+    :param key: the key to serialize.
+    :type key: RSAKey | ECKey | JWK | dict
+
+    :returns: the serialized key into a dict.
+    """
+    if isinstance(key, RSAKey) or isinstance(key, ECKey):
         key = key.serialize()
     elif isinstance(key, JWK):
         key = key.as_dict()
@@ -77,7 +125,19 @@ def _serialize_key(key, **kwargs):
     return key
 
 
-def pk_encode_int(i, bit_size=None):
+def pk_encode_int(i: str, bit_size: int = None) -> str:
+    """
+    Encode an integer as a base64url string with padding.
+
+    :param i: the integer to encode.
+    :type i: str
+    :param bit_size: the bit size of the integer.
+    :type bit_size: int
+
+    :returns: the encoded integer.
+    :rtype: str   
+    """
+
     extend = 0
     if bit_size is not None:
         extend = ((bit_size + 7) // 8) * 2
@@ -90,7 +150,22 @@ def pk_encode_int(i, bit_size=None):
     return base64url_encode(unhexlify(extend * '0' + hexi))
 
 
-def import_pyca_pri_rsa(key, **params):
+def import_pyca_pri_rsa(key: _RSAPrivateKey, **params) -> jwcrypto.jwk.JWK:
+    """
+    Import a private RSA key from a PyCA object.
+
+    :param key: the key to import.
+    :type key: RSAKey | ECKey
+
+    :raises ValueError: if the key is not a PyCA RSAKey object.
+
+    :returns: the imported key.
+    :rtype: RSAKey
+    """
+
+    if not isinstance(key, _RSAPrivateKey):
+        raise ValueError("key must be a ssl RSAPrivateKey object")
+
     pn = key.private_numbers()
     params.update(
         kty='RSA',
@@ -105,12 +180,51 @@ def import_pyca_pri_rsa(key, **params):
     )
     return jwcrypto.jwk.JWK(**params)
 
+def import_ec(key, **params):
+    pn = key.private_numbers()
+    curve_name = key.curve.name
+    match curve_name:
+        case "secp256r1":
+            nist_name = "P-256"
+        case "secp384r1":
+            nist_name = "P-384"
+        case "secp512r1":
+            nist_name = "P-512"
+        case _:
+            raise UnknownCurveNistName(f"Cannot translate {key.curve.name} into NIST name.")
+    params.update(
+        kty="EC",
+        crv=nist_name,
+        x=pk_encode_int(pn.public_numbers.x),
+        y=pk_encode_int(pn.public_numbers.y),
+        d=pk_encode_int(pn.private_value)
+    )
+    return jwcrypto.jwk.JWK(**params)
 
-def _adapt_keys(issuer_key: JWK, holder_key: JWK):
+def _adapt_keys(issuer_key: JWK, holder_key: JWK) -> dict:
+    """
+    Adapt the keys to the SD-JWT library.
+
+    :param issuer_key: the issuer key.
+    :type issuer_key: JWK
+    :param holder_key: the holder key.
+    :type holder_key: JWK
+
+    :returns: the adapted keys as a dict.
+    :rtype: dict
+    """
+
     # _iss_key = issuer_key.key.serialize(private=True)
     # _iss_key['key_ops'] = 'sign'
-    _issuer_key = import_pyca_pri_rsa(
-        issuer_key.key.priv_key, kid=issuer_key.kid)
+
+    match issuer_key.jwk["kty"]:
+        case "RSA":
+            _issuer_key = import_pyca_pri_rsa(
+                issuer_key.key.priv_key, kid=issuer_key.kid)
+        case "EC":
+            _issuer_key = import_ec(issuer_key.key.priv_key, kid=issuer_key.kid)
+        case _:
+            raise KeyError(f"Unsupported 'kty' {issuer_key.key['kty']}")
 
     holder_key = jwcrypto.jwk.JWK.from_json(
         json.dumps(_serialize_key(holder_key)))
@@ -122,11 +236,45 @@ def _adapt_keys(issuer_key: JWK, holder_key: JWK):
     )
 
 
-def load_specification_from_yaml_string(yaml_specification: str):
+def load_specification_from_yaml_string(yaml_specification: str) -> dict:
+    """
+    Load a specification from a yaml string.
+
+    :param yaml_specification: the yaml string.
+    :type yaml_specification: str
+
+    :returns: the specification as a dict.
+    :rtype: dict
+    """
+
     return _yaml_load_specification(StringIO(yaml_specification))
 
 
-def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, trust_chain: list[str] | None = None) -> str:
+def issue_sd_jwt(
+        specification: Dict[str, Any], 
+        settings: dict, 
+        issuer_key: JWK, 
+        holder_key: JWK, 
+        trust_chain: list[str] | None = None
+    ) -> str:
+    """
+    Issue a SD-JWT.
+
+    :param specification: the specification of the SD-JWT.
+    :type specification: Dict[str, Any]
+    :param settings: the settings of the SD-JWT.
+    :type settings: dict
+    :param issuer_key: the issuer key.
+    :type issuer_key: JWK
+    :param holder_key: the holder key.
+    :type holder_key: JWK
+    :param trust_chain: the trust chain.
+    :type trust_chain: list[str] | None
+
+    :returns: the issued SD-JWT.
+    :rtype: str
+    """
+
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
@@ -136,7 +284,6 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
     adapted_keys = _adapt_keys(issuer_key, holder_key)
-
     additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key.kid
 
@@ -151,7 +298,23 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
 
-def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict, *args, **kwargs):
+def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict, *args, **kwargs) -> JWK:
+    """
+    Helper function for get the issuer key.
+    
+    :param issuer: the issuer.
+    :type issuer: str
+    :param settings: the settings of SD-JWT.
+    :type settings: dict
+    :param adapted_keys: the adapted keys.
+    :type adapted_keys: dict
+
+    :raises Exception: if the issuer is unknown.
+
+    :returns: the issuer key.
+    :rtype: JWK
+    """
+
     if issuer == settings["issuer"]:
         return adapted_keys["issuer_public_key"]
     else:
@@ -163,11 +326,25 @@ def verify_sd_jwt(
     issuer_key: JWK,
     holder_key: JWK,
     settings: dict = {'key_binding': True}
-) -> dict:
+) -> (list | dict | Any):
+    """
+    Verify a SD-JWT.
+
+    :param sd_jwt_presentation: the SD-JWT to verify.
+    :type sd_jwt_presentation: str
+    :param issuer_key: the issuer key.
+    :type issuer_key: JWK
+    :param holder_key: the holder key.
+    :type holder_key: JWK
+    :param settings: the settings of SD-JWT.
+
+    :returns: the verified payload.
+    :rtype: list | dict | Any
+    """
 
     settings.update(
         {
-            "issuer": unpad_jwt_payload(sd_jwt_presentation)["iss"]
+            "issuer": decode_jwt_payload(sd_jwt_presentation)["iss"]
         }
     )
     adapted_keys = {

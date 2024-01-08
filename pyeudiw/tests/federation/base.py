@@ -1,5 +1,5 @@
+from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jws.jws import JWS
-from cryptojwt.jwk.rsa import new_rsa_key
 
 import json
 import pyeudiw.federation.trust_chain_validator as tcv_test
@@ -13,15 +13,18 @@ httpc_params = {
 NOW = iat_now()
 EXP = exp_from_now(5000)
 
+ec_crv = "P-256"
+ec_alg = "ES256"
+
 # Define intermediate ec
-intermediate_jwk = new_rsa_key()
+intermediate_jwk = new_ec_key(ec_crv, alg=ec_alg)
 
 # Define TA ec
-ta_jwk = new_rsa_key()
+ta_jwk = new_ec_key(ec_crv, alg=ec_alg)
 
 # Define leaf Credential Issuer
-leaf_cred_jwk = new_rsa_key()
-leaf_cred_jwk_prot = new_rsa_key()
+leaf_cred_jwk = new_ec_key(ec_crv, alg=ec_alg)
+leaf_cred_jwk_prot = new_ec_key(ec_crv, alg=ec_alg)
 leaf_cred = {
     "exp": EXP,
     "iat": NOW,
@@ -62,7 +65,7 @@ intermediate_es_cred = {
 intermediate_es_cred["jwks"]['keys'] = [leaf_cred_jwk.serialize()]
 
 # Define leaf Wallet Provider
-leaf_wallet_jwk = new_rsa_key()
+leaf_wallet_jwk = new_ec_key(ec_crv, alg=ec_alg)
 leaf_wallet = {
     "exp": EXP,
     "iat": NOW,
@@ -155,17 +158,17 @@ ta_ec = {
 }
 
 # Sign step
-leaf_cred_signer = JWS(leaf_cred, alg='RS256',
+leaf_cred_signer = JWS(leaf_cred, alg=ec_alg,
                        typ='entity-statement+jwt')
 leaf_cred_signed = leaf_cred_signer.sign_compact([leaf_cred_jwk])
 
-leaf_wallet_signer = JWS(leaf_wallet, alg='RS256',
+leaf_wallet_signer = JWS(leaf_wallet, alg=ec_alg,
                          typ='entity-statement+jwt')
 leaf_wallet_signed = leaf_wallet_signer.sign_compact([leaf_wallet_jwk])
 
 
 intermediate_signer_ec = JWS(
-    intermediate_ec, alg="RS256",
+    intermediate_ec, alg=ec_alg,
     typ="entity-statement+jwt"
 )
 intermediate_ec_signed = intermediate_signer_ec.sign_compact([
@@ -173,19 +176,19 @@ intermediate_ec_signed = intermediate_signer_ec.sign_compact([
 
 
 intermediate_signer_es_cred = JWS(
-    intermediate_es_cred, alg='RS256', typ='entity-statement+jwt')
+    intermediate_es_cred, alg=ec_alg, typ='entity-statement+jwt')
 intermediate_es_cred_signed = intermediate_signer_es_cred.sign_compact([
                                                                        intermediate_jwk])
 
 intermediate_signer_es_wallet = JWS(
-    intermediate_es_wallet, alg='RS256', typ='entity-statement+jwt')
+    intermediate_es_wallet, alg=ec_alg, typ='entity-statement+jwt')
 intermediate_es_wallet_signed = intermediate_signer_es_wallet.sign_compact([
                                                                            intermediate_jwk])
 
-ta_es_signer = JWS(ta_es, alg="RS256", typ="entity-statement+jwt")
+ta_es_signer = JWS(ta_es, alg=ec_alg, typ="entity-statement+jwt")
 ta_es_signed = ta_es_signer.sign_compact([ta_jwk])
 
-ta_ec_signer = JWS(ta_ec, alg="RS256", typ="entity-statement+jwt")
+ta_ec_signer = JWS(ta_ec, alg=ec_alg, typ="entity-statement+jwt")
 ta_ec_signed = ta_ec_signer.sign_compact([ta_jwk])
 
 

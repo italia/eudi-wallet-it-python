@@ -13,16 +13,16 @@ from satosa.state import State
 from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header, DEFAULT_SIG_KTY_MAP
+from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIG_KTY_MAP
 from cryptojwt.jws.jws import JWS
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.sd_jwt import (
     _adapt_keys,
     issue_sd_jwt,
     load_specification_from_yaml_string,
-    import_pyca_pri_rsa
+    import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.utils import exp_from_now, iat_now
@@ -123,11 +123,6 @@ class TestOpenID4VPBackend:
         assert state_div
         assert state_div["value"]
 
-        svg = BeautifulSoup(decoded, features="xml")
-        assert svg
-        assert svg.find("svg")
-        assert svg.find_all("path")
-
     def test_pre_request_endpoint_mobile(self, context):
         self.backend.register_endpoints()
         internal_data = InternalData()
@@ -154,6 +149,159 @@ class TestOpenID4VPBackend:
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
         assert qs["request_uri"][0].startswith(
             CONFIG["metadata"]["request_uris"][0])
+
+    def test_vp_validation_in_redirect_endpoint(self, context):
+        self.backend.register_endpoints()
+
+        issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
+        holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
+
+        settings = ISSUER_CONF
+        settings['issuer'] = "https://issuer.example.com"
+        settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+        sd_specification = load_specification_from_yaml_string(
+            settings["sd_specification"])
+
+        issued_jwt = issue_sd_jwt(
+            sd_specification,
+            settings,
+            issuer_jwk,
+            holder_jwk,
+            trust_chain=trust_chain_issuer
+        )
+
+        _adapt_keys(issuer_jwk, holder_jwk)
+
+        sdjwt_at_holder = SDJWTHolder(
+            issued_jwt["issuance"],
+            serialization_format="compact",
+        )
+
+        nonce = str(uuid.uuid4())
+        sdjwt_at_holder.create_presentation(
+            {},
+            nonce,
+            str(uuid.uuid4()),
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+                "key_binding", False) else None,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+        )
+
+        data = {
+            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
+            "jti": str(uuid.uuid4()),
+            "aud": "https://verifier.example.org/callback",
+            "iat": iat_now(),
+            "exp": exp_from_now(minutes=15),
+            "nonce": nonce,
+            "vp": sdjwt_at_holder.sd_jwt_presentation,
+        }
+
+        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
+            data,
+            protected={"typ": "JWT"}
+        )
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["redirect_uris"][0].removeprefix(CONFIG["base_url"])
+
+        state = str(uuid.uuid4())
+        response = {
+            "nonce": nonce,
+            "state": state,
+            "vp_token": vp_token,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        # Put a different nonce in the stored request object.
+        # This will trigger a `VPInvalidNonce` error
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": str(uuid.uuid4()), "state": state})
+
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "Error while validating VP: unexpected value."
+
+        # Recreate data without nonce
+        # This will trigger a `NoNonceInVPToken` error
+        data = {
+            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
+            "jti": str(uuid.uuid4()),
+            "aud": "https://verifier.example.org/callback",
+            "iat": iat_now(),
+            "exp": exp_from_now(minutes=15),
+            "vp": sdjwt_at_holder.sd_jwt_presentation,
+        }
+
+        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
+            data,
+            protected={"typ": "JWT"}
+        )
+        response = {
+            "nonce": nonce,
+            "state": state,
+            "vp_token": vp_token,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "Error while validating VP: vp has no nonce."
+
+        # This will trigger a `UnicodeDecodeError` which will be caught by the generic `Exception case`.
+        response["vp_token"] = "asd.fgh.jkl"
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "400"
+        msg = json.loads(request_endpoint.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "DirectPostResponse content parse and validation error. Single VPs are faulty."
+
 
     def test_redirect_endpoint(self, context):
         self.backend.register_endpoints()
@@ -188,7 +336,7 @@ class TestOpenID4VPBackend:
             {},
             nonce,
             str(uuid.uuid4()),
-            import_pyca_pri_rsa(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
@@ -234,8 +382,8 @@ class TestOpenID4VPBackend:
         }
 
         # no nonce
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert "nonce" in msg["error_description"]
         assert "missing" in msg["error_description"]
@@ -247,8 +395,8 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
 
@@ -259,8 +407,8 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        msg = json.loads(redirect_endpoint.message)
+        request_endpoint = self.backend.request_endpoint(context)
+        msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
 
@@ -274,10 +422,8 @@ class TestOpenID4VPBackend:
         self.backend.db_engine.update_request_object(
             document_id=doc_id,
             request_object={"nonce": nonce, "state": state})
-        redirect_endpoint = self.backend.redirect_endpoint(context)
-        assert redirect_endpoint.status == "302 Found"
-
-        # TODO any additional checks after the backend returned the user attributes to satosa core
+        request_endpoint = self.backend.request_endpoint(context)
+        assert request_endpoint.status == "302 Found"
 
 
     def test_request_endpoint(self, context):
@@ -334,7 +480,7 @@ class TestOpenID4VPBackend:
             "sub": self.backend.client_id,
             'jwks': self.backend.entity_configuration_as_dict['jwks']
         }
-        ta_signer = JWS(_es, alg="RS256",
+        ta_signer = JWS(_es, alg="ES256",
                         typ="application/entity-statement+jwt")
 
         its_trust_chain = [
@@ -363,16 +509,16 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
 
-        request_endpoint = self.backend.request_endpoint(context)
+        response_endpoint = self.backend.response_endpoint(context)
 
-        assert request_endpoint
-        assert request_endpoint.status == "200"
-        assert request_endpoint.message
-        msg = json.loads(request_endpoint.message)
+        assert response_endpoint
+        assert response_endpoint.status == "200"
+        assert response_endpoint.message
+        msg = json.loads(response_endpoint.message)
         assert msg["response"]
 
-        header = unpad_jwt_header(msg["response"])
-        payload = unpad_jwt_payload(msg["response"])
+        header = decode_jwt_header(msg["response"])
+        payload = decode_jwt_payload(msg["response"])
         assert header["alg"]
         assert header["kid"]
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
@@ -380,7 +526,7 @@ class TestOpenID4VPBackend:
         assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
 
         datetime_mock = Mock(wraps=datetime.datetime)
-        datetime_mock.now.return_value = datetime.datetime(1999, 1, 1)
+        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
         with patch('datetime.datetime', new=datetime_mock):
             self.backend.status_endpoint(context)
             state_endpoint_response = self.backend.status_endpoint(context)
@@ -397,8 +543,8 @@ class TestOpenID4VPBackend:
         # assert msg["response"] == "Authentication successful"
 
     def test_handle_error(self, context):
-        error_message = "Error message!"
-        error_resp = self.backend.handle_error(context, error_message)
+        error_message = "server_error"
+        error_resp = self.backend._handle_500(context, error_message, Exception())
         assert error_resp.status == "500"
         assert error_resp.message
         err = json.loads(error_resp.message)

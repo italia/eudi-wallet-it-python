@@ -7,7 +7,18 @@ from pyeudiw.storage.db_engine import DBEngine
 
 logger = logging.getLogger(__name__)
 
-def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: dict):
+def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: dict) -> None:
+    """
+    Update the trust anchors entity configurations.
+
+    :param trust_anchors: The trust anchors
+    :type trust_anchors: list
+    :param db: The database engine
+    :type db: DBEngine
+    :param httpc_params: The HTTP client parameters
+    :type httpc_params: dict
+    """
+
     ta_ecs = get_entity_configurations(
         trust_anchors, httpc_params=httpc_params
     )

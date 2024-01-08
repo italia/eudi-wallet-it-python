@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, HttpUrl
 
+from pyeudiw.jwk.schemas.jwk import JwkSchema
+
 
 class DPoPTokenHeaderSchema(BaseModel):
     # header
@@ -17,8 +19,7 @@ class DPoPTokenHeaderSchema(BaseModel):
         "PS384",
         "PS512",
     ]
-    # TODO - dynamic schemas loader if EC or RSA
-    # jwk: JwkSchema
+    jwk: JwkSchema
 
 
 class DPoPTokenPayloadSchema(BaseModel):

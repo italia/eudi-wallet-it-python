@@ -27,7 +27,7 @@ class MongoStorage(BaseStorage):
         self.db = None
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
         if not self.client:
             return False
         try:
@@ -80,7 +80,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def get_by_session_id(self, session_id: str):
+    def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         self._connect()
         query = {"session_id": session_id}
         document = self.sessions.find_one(query)
@@ -92,7 +92,7 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def get_by_state_and_session_id(self, state: str, session_id: str = ""):
+    def get_by_state_and_session_id(self, state: str, session_id: str = "") -> Union[dict, None]:
         self._connect()
         query = {"state": state}
         if session_id:
@@ -125,7 +125,7 @@ class MongoStorage(BaseStorage):
 
         return document_id
 
-    def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict):
+    def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict) -> UpdateResult:
         self._connect()
         update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
@@ -142,7 +142,7 @@ class MongoStorage(BaseStorage):
 
         return update_result
 
-    def update_request_object(self, document_id: str, request_object: dict):
+    def update_request_object(self, document_id: str, request_object: dict) -> UpdateResult:
         self.get_by_id(document_id)
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
@@ -177,7 +177,7 @@ class MongoStorage(BaseStorage):
             )
         return update_result
 
-    def update_response_object(self, nonce: str, state: str, internal_response: dict):
+    def update_response_object(self, nonce: str, state: str, internal_response: dict) -> UpdateResult:
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
         document_status = self.sessions.update_one(
@@ -190,24 +190,24 @@ class MongoStorage(BaseStorage):
 
         return document_status
 
-    def _get_trust_attestation(self, collection: str, entity_id: str) -> dict:
+    def _get_trust_attestation(self, collection: str, entity_id: str) -> dict | None:
         self._connect()
         db_collection = getattr(self, collection)
         return db_collection.find_one({"entity_id": entity_id})
 
-    def get_trust_attestation(self, entity_id: str):
+    def get_trust_attestation(self, entity_id: str) -> dict | None:
         return self._get_trust_attestation("trust_attestations", entity_id)
 
-    def get_trust_anchor(self, entity_id: str):
+    def get_trust_anchor(self, entity_id: str) -> dict | None:
         return self._get_trust_attestation("trust_anchors", entity_id)
 
-    def _has_trust_attestation(self, collection: str, entity_id: str):
-        return self._get_trust_attestation(collection, entity_id)
+    def _has_trust_attestation(self, collection: str, entity_id: str) -> bool:
+        return self._get_trust_attestation(collection, entity_id) != None
 
-    def has_trust_attestation(self, entity_id: str):
+    def has_trust_attestation(self, entity_id: str) -> bool:
         return self._has_trust_attestation("trust_attestations", entity_id)
 
-    def has_trust_anchor(self, entity_id: str):
+    def has_trust_anchor(self, entity_id: str) -> bool:
         return self._has_trust_attestation("trust_anchors", entity_id)
 
     def _add_entry(
@@ -257,22 +257,35 @@ class MongoStorage(BaseStorage):
 
         return entity
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType):
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
         entity = {
             "entity_id": entity_id,
             "federation": {},
-            "x509": {}
+            "x509": {},
+            "metadata": {}
         }
 
         updated_entity = self._update_attestation_metadata(entity, attestation, exp, trust_type)
 
-        self._add_entry(
+        return self._add_entry(
             "trust_attestations", entity_id, updated_entity, exp
         )
 
+    def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
+        entity = self._get_trust_attestation("trust_attestations", entity_id)
+
+        if entity is None:
+            raise ValueError(
+                f'Document with entity_id {entity_id} not found.'
+            )
+        
+        entity["metadata"][metadata_type] = metadata
+
+        return self._update_trust_attestation("trust_attestations", entity_id, entity)
+
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
         if self.has_trust_anchor(entity_id):
-            self.update_trust_anchor(entity_id, entity_configuration, exp, trust_type)
+            return self.update_trust_anchor(entity_id, entity_configuration, exp, trust_type)
         else:
             entity = {
                 "entity_id": entity_id,
@@ -281,9 +294,9 @@ class MongoStorage(BaseStorage):
             }
 
             updated_entity = self._update_anchor_metadata(entity, entity_configuration, exp, trust_type)
-            self._add_entry("trust_anchors", entity_id, updated_entity, exp)
+            return self._add_entry("trust_anchors", entity_id, updated_entity, exp)
 
-    def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict, exp: datetime) -> str:
+    def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict) -> str:
         if not self._has_trust_attestation(collection, entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
@@ -297,7 +310,7 @@ class MongoStorage(BaseStorage):
         old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
         upd_entity = self._update_attestation_metadata(old_entity, attestation, exp, trust_type)
 
-        return self._update_trust_attestation("trust_attestations", entity_id, upd_entity, exp)
+        return self._update_trust_attestation("trust_attestations", entity_id, upd_entity)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
         old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
