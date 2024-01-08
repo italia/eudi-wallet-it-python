@@ -36,6 +36,7 @@ CONFIG = {
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
+        "expiration_time": 120,
     },
     "jwt": {
         "default_sig_alg": "ES256",
@@ -122,7 +123,10 @@ CONFIG = {
                     "conf": {
                         "db_name": "eudiw"
                     },
-                    "connection_params": {}
+                    "connection_params": {
+                        "username": "satosa",
+                        "password": "thatpassword"
+                    }
                 }
             },
             "storage": {
@@ -136,7 +140,10 @@ CONFIG = {
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors"
                     },
-                    "connection_params": {}
+                    "connection_params": {
+                        "username": "satosa",
+                        "password": "thatpassword"
+                    }
                 }
             }
         }
