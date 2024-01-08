@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, List
 from pyeudiw.jwk.schemas.jwk import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
-from pyeudiw.openid4vp.schemas import VPFormat
+from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 
 
@@ -63,4 +63,4 @@ class WalletRelyingParty(BaseModel):
     id_token_signed_response_alg: List[SigningAlgValuesSupported]
     default_acr_values: List[AcrValuesSupported]
     default_max_age: PositiveInt
-    vp_formats: VPFormat
+    vp_formats: VpFormats

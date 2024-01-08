@@ -4,11 +4,11 @@ name: OpenID4VP
 config:
   
   ui:
-    static_storage_url: "https://localhost:9999"
+    static_storage_url: "https://localhost"
     template_folder: "templates" # project root
     qrcode_template: "qr_code.html"
     error_template: "error.html"
-    error_url: "https://localhost:9999/error_page.html"
+    error_url: "https://localhost/error_page.html"
   
   endpoints:
       pre_request: '/pre-request'
@@ -197,7 +197,10 @@ config:
     subject_type: pairwise
 
     vp_formats:
-      jwt_vp_json:
-        alg:
-          - EdDSA
-          - ES256K
+      vc+sd-jwt:
+        sd-jwt_alg_values:
+          - ES256
+          - ES384
+        kb-jwt_alg_values:
+          - ES256
+          - ES384

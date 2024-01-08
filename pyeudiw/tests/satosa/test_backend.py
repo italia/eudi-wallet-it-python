@@ -509,12 +509,12 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
 
-        redirect_endpoint = self.backend.redirect_endpoint(context)
+        response_endpoint = self.backend.response_endpoint(context)
 
-        assert redirect_endpoint
-        assert redirect_endpoint.status == "200"
-        assert redirect_endpoint.message
-        msg = json.loads(redirect_endpoint.message)
+        assert response_endpoint
+        assert response_endpoint.status == "200"
+        assert response_endpoint.message
+        msg = json.loads(response_endpoint.message)
         assert msg["response"]
 
         header = decode_jwt_header(msg["response"])

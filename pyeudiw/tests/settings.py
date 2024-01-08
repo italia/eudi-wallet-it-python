@@ -28,7 +28,7 @@ CONFIG = {
     "endpoints": {
         "entity_configuration": "/.well-known/openid-federation",
         "pre_request": "/pre-request",
-        "redirect": "/redirect-uri",
+        "response": "/redirect-uri",
         "request": "/request-uri",
         "status": "/status-uri",
         "get_response": "/get-response",
@@ -309,10 +309,14 @@ CONFIG = {
         "require_auth_time": True,
         "subject_type": "pairwise",
         "vp_formats": {
-            "jwt_vp_json": {
-                "alg": [
-                    "EdDSA",
-                    "ES256K"
+            "vc+sd-jwt": {
+                "sd-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
+                ],
+                "kb-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
                 ]
             }
         }

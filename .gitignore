@@ -168,3 +168,5 @@ env
 */__MACOSX
 
 .DS_Store
+
+docs/source

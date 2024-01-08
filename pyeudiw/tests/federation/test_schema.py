@@ -84,9 +84,16 @@ ta_ec = {
                 'id_token_encrypted_response_enc': ["A128CBC-HS256"],
                 'id_token_signed_response_alg': ["ES256"],
                 'default_max_age': 5000,
-                'vp_formats': {
-                    'jwt_vp_json': {
-                        'alg': ["EdDSA"]
+                "vp_formats": {
+                    "vc+sd-jwt": {
+                        "sd-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
+                        ],
+                        "kb-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
+                        ]
                     }
                 },
                 'policy_uri': ''

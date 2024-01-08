@@ -145,10 +145,14 @@ def test_entity_config_payload():
                     "https://www.spid.gov.it/SpidL3"
                 ],
                 "vp_formats": {
-                    "jwt_vp_json": {
-                        "alg": [
-                            "EdDSA",
-                            "ES256K"
+                    "vc+sd-jwt": {
+                        "sd-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
+                        ],
+                        "kb-jwt_alg_values": [
+                            "ES256",
+                            "ES384"
                         ]
                     }
                 },
