@@ -131,7 +131,7 @@ class MongoStorage(BaseStorage):
     def set_session_retention_ttl(self, ttl: int | None) -> None:
         self._connect()
 
-        if ttl == None:
+        if not ttl:
             if self.sessions.index_information().get("creation_date_1"):
                 self.sessions.drop_index("creation_date_1")
         else:
