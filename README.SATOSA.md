@@ -3,8 +3,8 @@
 To install the OpenID4VP SATOSA backend you just need to:
 
 1. install this package and the extra dependencies: `pip install pyeudiw[satosa]`
-2. copy and customize [example/pyeudiw_backend.yml](example/pyeudiw_backend.yml)
-3. copy and customize the content of the folders [static](example/satosa/static) and [templates](example/satosa/) to your satosa deployment.
+2. copy and customize [example/satosa/pyeudiw_backend.yaml](example/satosa/pyeudiw_backend.yaml)
+3. copy and customize the content of the folders [static](example/satosa/static) and [templates](example/satosa/templates) to your satosa deployment.
 4. include the backend configuration in your satosa configuration
 5. customize the file `internal_attributes.yaml` used in your deployment, enabling the `openid4vp` protocol. See [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml) as example. 
 6. start Satosa.
