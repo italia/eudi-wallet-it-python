@@ -41,7 +41,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
     
-    def set_session_retention_ttl(self, ttl: int | None) -> None:
+    def set_session_retention_ttl(self, ttl: int) -> None:
         """
         Set the database retention ttl.
 
