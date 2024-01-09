@@ -128,7 +128,7 @@ class MongoStorage(BaseStorage):
 
         return document_id
     
-    def set_session_retention_ttl(self, ttl: int | None) -> None:
+    def set_session_retention_ttl(self, ttl: int) -> None:
         self._connect()
 
         if not ttl:
