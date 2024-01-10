@@ -138,6 +138,7 @@ config:
             db_sessions_collection: sessions
             db_trust_attestations_collection: trust_attestations
             db_trust_anchors_collection: trust_anchors
+            data_ttl: 63072000 # 2 years
           # - connection_params:
 
   #This is the configuration for the relaying party metadata
