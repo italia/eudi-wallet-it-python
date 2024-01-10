@@ -57,14 +57,19 @@
 </script>
 <script>
     let failureTitle = "Autenticazione fallita. Per accedere al servizio prova ad autenticarti nuovamente prestando il consenso alla presentazione dei tuoi dati dall'app IO.";
-    let failureText = "Qualcosa non ha funzionato. Genera un nuovo codice QR per riprovare oppure segui le istruzioni visibili sull'app IO.";
+    let failureText = "Qualcosa non ha funzionato. Premi “Riprova” per autenticarti nuovamente oppure segui le istruzioni visibili sull’app IO.";
+    let crossImg = "/static/img/cross.svg";
 
     let startingConnectionTitle = "Continua sul tuo smartphone";
     let startingConnectionText = "Per proseguire, segui le istruzioni sull'app IO e autorizza l'accesso";
     let startingConnectionQRInfo = "<b>Non hai ricevuto la notifica?</b>";
-    let clickAccessLabel = "Clicca qui per accedere al servizio";
+
+    let clickAccessLabel = "Vai al servizio";
     let connectedTitle = "Autenticazione completata";
-    let qrCodeExpiredInfo = "Il codice QR non è più valido";
+    let connectedText = "Da questo momento puoi iniziare a utilizzare il servizio";
+    let connectedImg = "/static/img/check.svg";
+    
+    let qrCodeExpiredInfo = "Il QR code non è più valido.";
 
     let expirationTime = "{{ qrcode_expiration_time }}";
     let pollingInterval;
@@ -72,16 +77,12 @@
     function StartQRcodeScanCheck(){
         $('#timer').text(expirationTime); 
         let timeout = expirationTime*1000;
-        pollingInterval = setTimeout(QRcodeScanCheck, timeout);
+        pollingInterval = setTimeout(QRcodeScanCheck, 1000);
     }
 
     function Forbidden(data, textStatus, jqXHR){
         console.log('403: Forbidden');
-        clearInterval(countdown);
-        changeTitle(failureTitle);
-        changeText(failureText);
-        blankQRcode();
-        changeQrCodeInfo(null)
+        errorPage();
     }
 
     function connectionCompleted(data, textStatus, jqXHR) {
@@ -89,25 +90,21 @@
 
         clearInterval(countdown);
         changeTitle(connectedTitle);
-        //changeText(connectedText);
-        // changeQrCodeInfo(null)
-        $('#content-text').html("");
-        $('#content-qrcode-payload').html("");
+        changeText(connectedText);
+        changeQrCodeImg(connectedImg);
         $('#content-qrcode-info').html(`
-            <div class="row">
-              <div class="col-lg-12 text-center button-container column-buttons">
-                  <a href="${data.response_url}" 
-                     class="btn btn-primary w-100" 
+                <div id="content-function" class="text-center button-container mt-2">
+                  <button href="${data.response_url}" 
+                     class="btn btn-primary" 
                      aria-haspopup="false" 
                      aria-expanded="false" 
                      data-focus-mouse="false"
                    >
                     <span>${clickAccessLabel}</span>
-                  </a>
-              </div>
-            </div>`
-        )
-}
+                  </button>
+                </div>`
+        );
+    }
 
     function QRcodeExpired(){
         console.log('session expired');
@@ -118,10 +115,14 @@
 
     function serverError(data, textStatus, jqXHR){
         console.log('500: Server Error');
+        errorPage()
+    }
+
+    function errorPage(){
         clearInterval(countdown);
         changeTitle(failureTitle);
         changeText(failureText);
-        blankQRcode();
+        changeQrCodeImg(crossImg);
         changeQrCodeInfo(null)
     }
 
@@ -136,7 +137,9 @@
     function changeQrCodeInfo(str){
         $('#content-qrcode-info-text').html(str);
     }
-
+    function changeQrCodeImg(str){
+        $('#content img').attr('src', str);
+    }
     function blankQRcode(){
         $('#content img').css({
             'opacity': '0.2'
