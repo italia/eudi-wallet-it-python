@@ -199,12 +199,6 @@ class StaticTrustChainValidator:
         :rtype: str
         """
         jwt = get_entity_configurations(iss, self.httpc_params)
-        if not jwt:
-            _msg = f"Cannot get the Entity Configuration from {iss}"
-            logger.error(_msg)
-            raise HttpError(_msg)
-
-        # is something weird these will raise their Exceptions
         return jwt[0]
 
     def _retrieve_es(self, download_url: str, iss: str) -> str:
@@ -220,13 +214,7 @@ class StaticTrustChainValidator:
         :rtype: str
         """
         jwt = get_entity_statements(download_url, self.httpc_params)
-        if not jwt:
-            _msg = f"Cannot fast refresh Entity Statement {iss}"
-            logger.warning(_msg)
-            #  raise HttpError(_msg)
-        if isinstance(jwt, list) and jwt:
-            return jwt[0]
-        return jwt
+        return jwt[0]
 
     def _update_st(self, st: str) -> str:
         """

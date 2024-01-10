@@ -19,7 +19,6 @@ from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwk import find_jwk
 from pyeudiw.tools.utils import get_http_url
 
-import json
 import logging
 
 OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
@@ -42,9 +41,9 @@ def jwks_from_jwks_uri(jwks_uri: str, httpc_params: dict, http_async: bool = Tru
     """
 
     response = get_http_url(jwks_uri, httpc_params, http_async)
-    jwks = json.loads(response)
+    jwks = [i.json() for i in response]
 
-    return [jwks]
+    return jwks
 
 
 def get_federation_jwks(jwt_payload: dict) -> list[dict]:
@@ -63,7 +62,7 @@ def get_federation_jwks(jwt_payload: dict) -> list[dict]:
     return keys
 
 
-def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[dict]:
+def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[bytes]:
     """
     Fetches an entity statement from the specified urls.
 
@@ -75,17 +74,20 @@ def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async:
     :type http_async: bool
 
     :returns: A list of entity statements.
-    :rtype: list[dict]
+    :rtype: list[Response]
     """
     
     urls = urls if isinstance(urls, list) else [urls]
     for url in urls:
         logger.debug(f"Starting Entity Statement Request to {url}")
 
-    return get_http_url(urls, httpc_params, http_async)
+    return [
+        i.content for i in
+        get_http_url(urls, httpc_params, http_async)
+    ]
 
 
-def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, http_async: bool = True):
+def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, http_async: bool = False) -> list[bytes]:
     """
     Fetches an entity configuration from the specified subjects.
 
@@ -97,7 +99,7 @@ def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, htt
     :type http_async: bool
 
     :returns: A list of entity statements.
-    :rtype: list[dict]
+    :rtype: list[Response]
     """
 
     subjects = subjects if isinstance(subjects, list) else [subjects]
@@ -110,7 +112,10 @@ def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, htt
         urls.append(url)
         logger.info(f"Starting Entity Configuration Request for {url}")
 
-    return get_http_url(urls, httpc_params, http_async)
+    return [
+        i.content for i in
+        get_http_url(urls, httpc_params, http_async)
+    ]
 
 
 class TrustMark:
@@ -136,7 +141,7 @@ class TrustMark:
 
         self.is_valid = False
 
-        self.issuer_entity_configuration = None
+        self.issuer_entity_configuration: list[bytes] = None
         self.httpc_params = httpc_params
 
     def validate_by(self, ec: dict) -> bool:
@@ -182,9 +187,12 @@ class TrustMark:
         :rtype: bool
         """
         if not self.issuer_entity_configuration:
-            self.issuer_entity_configuration = get_entity_configurations(
-                self.iss, self.httpc_params, False
-            )
+            self.issuer_entity_configuration = [
+                i.content for i in
+                get_entity_configurations(
+                    self.iss, self.httpc_params, False
+                )
+            ]
 
         _kid = self.header.get('kid')
         try:
@@ -465,7 +473,8 @@ class EntityStatement:
 
         if not jwts:
             jwts = get_entity_configurations(
-                authority_hints, self.httpc_params, False)
+                authority_hints, self.httpc_params, False
+            )
 
         for jwt in jwts:
             try:
