@@ -3,9 +3,9 @@ from pyeudiw.federation.schemas.entity_configuration import EntityStatementPaylo
 
 def is_es(payload: dict) -> None:
     """
-    Determines if payload dict is an Entity Statement
+    Determines if payload dict is a Subordinate Entity Statement
 
-    :param payload: the object to determine if is an Entity Statement
+    :param payload: the object to determine if is a Subordinate Entity Statement
     :type payload: dict
     """
 
