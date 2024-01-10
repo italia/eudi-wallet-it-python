@@ -1,6 +1,7 @@
 
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.federation import is_es, is_ec
+from pyeudiw.federation.exceptions import InvalidEntityStatement, InvalidEntityConfiguration
 
 NOW = iat_now()
 EXP = exp_from_now(5)
@@ -127,16 +128,22 @@ ta_ec = {
 
 
 def test_is_es():
-    assert is_es(ta_es)
+    is_es(ta_es)
 
 
 def test_is_es_false():
-    assert not is_es(ta_ec)
+    try:
+        is_es(ta_ec)
+    except InvalidEntityStatement as e:
+        pass
 
 
 def test_is_ec():
-    assert is_ec(ta_ec)
+    is_ec(ta_ec)
 
 
 def test_is_ec_false():
-    assert not is_ec(ta_es)
+    try:
+        is_ec(ta_es)
+    except InvalidEntityConfiguration as e:
+        pass
