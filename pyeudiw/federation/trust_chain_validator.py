@@ -12,7 +12,8 @@ from pyeudiw.federation.exceptions import (
     HttpError,
     MissingTrustAnchorPublicKey,
     TimeValidationError,
-    KeyValidationError
+    KeyValidationError,
+    InvalidEntityStatement
 )
 
 from pyeudiw.jwk import find_jwk
@@ -239,8 +240,11 @@ class StaticTrustChainValidator:
         """
         payload = decode_jwt_payload(st)
         iss = payload['iss']
-        if not is_es(payload):
+
+        try:
+            is_es(payload)
             # It's an entity configuration
+        except InvalidEntityStatement:    
             return self._retrieve_ec(iss)
 
         # if it has the source_endpoint let's try a fast renewal
