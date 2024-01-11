@@ -131,7 +131,6 @@ def is_jws_format(jwt: str):
     :returns: True if the string is a JWS, False otherwise.
     :rtype: bool
     """
-    breakpoint()
     if not is_jwt_format(jwt):
         return False
     

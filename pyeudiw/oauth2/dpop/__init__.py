@@ -101,6 +101,8 @@ class DPoPVerifier:
                 "Jwk validation error, "
                 f"{e.__class__.__name__}: {e}"
             )
+            raise ValueError("JWK schema validation error during DPoP init")
+            
         # If the jwt is invalid, this will raise an exception
         try:
             decode_jwt_header(http_header_dpop)
