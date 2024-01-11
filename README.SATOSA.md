@@ -139,26 +139,27 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 ##### Metadata
 
-| Parameter                                            | Description                                                                              | Example value                                                    |
-|------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------|
-| config.metadata.application_type                     | The type of application that uses the OpenID Connect protocol                            | web                                                              |
-| config.metadata.authorization_encrypted_response_alg | The algorithm used to encrypt the authorization response                                 | `<jwt.enc_alg_supported>`                                        |
-| config.metadata.authorization_encrypted_response_enc | The encryption method used to encrypt the authorization response                         | `<jwt.enc_enc_supported>`                                        |
-| config.metadata.authorization_signed_response_alg    | The algorithm used to sign the authorization response                                    | `<jwt.sig_alg_supported>`                                        |
-| config.metadata.client_id                            | The unique identifier of the client                                                      | https://example.org/verifier                                     |
-| config.metadata.client_name                          | The human-readable name of the client                                                    | Name of an example organization                                  |
-| config.metadata.contacts                             | The list of email addresses of the client's contacts                                     | [ops@verifier.example.org]                                       |
-| config.metadata.default_acr_values                   | The list of default authentication context class references that the client requests     | [https://www.spid.gov.it/SpidL2, https://www.spid.gov.it/SpidL3] |
-| config.metadata.default_max_age                      | The default maximum amount of time that the authentication session is valid              | 1111                                                             |
-| config.metadata.id_token_encrypted_response_alg      | The algorithm used to encrypt the ID token response                                      | `<jwt.enc_alg_supported>`                                        |
-| config.metadata.id_token_encrypted_response_enc      | The encryption method used to encrypt the ID token response                              | `<jwt.enc_enc_supported>`                                        |
-| config.metadata.id_token_signed_response_alg         | The algorithm used to sign the ID token response                                         | `<jwt.sig_alg_supported>`                                        |
-| config.metadata.presentation_definition              | The object that defines the presentation request                                         | [Presentation definition](#presentation-definition)              |
-| config.metadata.redirect_uris                        | The list of URIs that the client can use to receive the authorization response           | https://example.org/verifier/redirect-uri                        |
-| config.metadata.request_uris                         | The list of URIs that the client can use to request the authorization                    | https://example.org/verifier/request-uri                         |
-| config.metadata.require_auth_time                    | The boolean value that indicates whether the auth_time claim is required in the ID token | true                                                             |
-| config.metadata.subject_type                         | The subject identifier type that the client requests                                     | pairwise                                                         |
-| config.metadata.vp_formats.jwt_vp_json.alg           | VP formats specification algorithms for JWT VP                                           | [EdDSA, ES256K]                                                  |
+| Parameter                                              | Description                                                                              | Example value                                                    |
+|--------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| config.metadata.application_type                       | The type of application that uses the OpenID Connect protocol                            | web                                                              |
+| config.metadata.authorization_encrypted_response_alg   | The algorithm used to encrypt the authorization response                                 | `<jwt.enc_alg_supported>`                                        |
+| config.metadata.authorization_encrypted_response_enc   | The encryption method used to encrypt the authorization response                         | `<jwt.enc_enc_supported>`                                        |
+| config.metadata.authorization_signed_response_alg      | The algorithm used to sign the authorization response                                    | `<jwt.sig_alg_supported>`                                        |
+| config.metadata.client_id                              | The unique identifier of the client                                                      | https://example.org/verifier                                     |
+| config.metadata.client_name                            | The human-readable name of the client                                                    | Name of an example organization                                  |
+| config.metadata.contacts                               | The list of email addresses of the client's contacts                                     | [ops@verifier.example.org]                                       |
+| config.metadata.default_acr_values                     | The list of default authentication context class references that the client requests     | [https://www.spid.gov.it/SpidL2, https://www.spid.gov.it/SpidL3] |
+| config.metadata.default_max_age                        | The default maximum amount of time that the authentication session is valid              | 1111                                                             |
+| config.metadata.id_token_encrypted_response_alg        | The algorithm used to encrypt the ID token response                                      | `<jwt.enc_alg_supported>`                                        |
+| config.metadata.id_token_encrypted_response_enc        | The encryption method used to encrypt the ID token response                              | `<jwt.enc_enc_supported>`                                        |
+| config.metadata.id_token_signed_response_alg           | The algorithm used to sign the ID token response                                         | `<jwt.sig_alg_supported>`                                        |
+| config.metadata.presentation_definition                | The object that defines the presentation request                                         | [Presentation definition](#presentation-definition)              |
+| config.metadata.redirect_uris                          | The list of URIs that the client can use to receive the authorization response           | https://example.org/verifier/redirect-uri                        |
+| config.metadata.request_uris                           | The list of URIs that the client can use to request the authorization                    | https://example.org/verifier/request-uri                         |
+| config.metadata.require_auth_time                      | The boolean value that indicates whether the auth_time claim is required in the ID token | true                                                             |
+| config.metadata.subject_type                           | The subject identifier type that the client requests                                     | pairwise                                                         |
+| config.metadata.vp_formats.vc+sd-jwt.sd-jwt_alg_values | VP formats specification algorithms for SD-JWT                                           | [ES256, ES384]                                                   |
+| config.metadata.vp_formats.vc+sd-jwt.kb-jwt_alg_values | VP formats specification algorithms for Key Binding JWT                                  | [ES256, ES384]                                                   |
 
 ###### Presentation definition
 
