@@ -70,6 +70,7 @@
     let connectedImg = "/static/img/check.svg";
     let qrCodeExpiredInfo = "Il QR code non è più valido.";
     let qrCodeReloadLabel = "Aggiorna codice QR";
+    let retryLabel = "Riprova";
 
     let expirationTime = "{{ qrcode_expiration_time }}";
     let pollingInterval;
@@ -137,7 +138,7 @@
         $('#content-qrcode-info').html(`
             <div id="content-function" class="text-center button-container mt-2">
                 <button href="" 
-                    class="btn btn-primary" 
+                    class=""btn btn-outline-primary"" 
                     aria-haspopup="false" 
                     aria-expanded="false" 
                     data-focus-mouse="false"
