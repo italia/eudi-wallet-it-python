@@ -284,6 +284,7 @@ COMPLEX = [
     )
 ]
 
+
 def assert_equal(val1, val2):
     assert set(val1.keys()) == set(val2.keys())
 
@@ -436,27 +437,27 @@ def test_apply_policies():
 @pytest.mark.parametrize("policy, metadata, result",
                          [
                              (
-                                     [{
-                                         'metadata': {'B': 123},
-                                         'metadata_policy': {
-                                             "A": {"subset_of": ['a', 'b']}
-                                         }},
-                                         {
-                                             'metadata': {'C': 'foo'},
-                                             'metadata_policy': {
-                                                 "A": {"subset_of": ['a']}
-                                             }
-                                         }
-                                     ],
-                                     {
-                                         "A": ['a', 'b', 'e'],
-                                         "C": 'foo'
-                                     },
-                                     {
-                                         'A': ['a'],
-                                         'B': 123,
-                                         'C': 'foo'
+                                 [{
+                                     'metadata': {'B': 123},
+                                     'metadata_policy': {
+                                         "A": {"subset_of": ['a', 'b']}
+                                     }},
+                                  {
+                                     'metadata': {'C': 'foo'},
+                                     'metadata_policy': {
+                                         "A": {"subset_of": ['a']}
                                      }
+                                 }
+                                 ],
+                                 {
+                                     "A": ['a', 'b', 'e'],
+                                     "C": 'foo'
+                                 },
+                                 {
+                                     'A': ['a'],
+                                     'B': 123,
+                                     'C': 'foo'
+                                 }
                              )
                          ])
 def test_combine_metadata_and_metadata_policy_OK(policy, metadata, result):
@@ -485,7 +486,7 @@ def test_combine_metadata_and_metadata_policy_OK(policy, metadata, result):
                                      }
                                  }
                              ],
-[
+                             [
                                  {
                                      'metadata': {'B': 123},
                                  },
@@ -499,6 +500,7 @@ def test_combine_metadata_and_metadata_policy_OK(policy, metadata, result):
 def test_combine_metadata_and_metadata_policy_NOT_OK(policy):
     with pytest.raises(PolicyError):
         combine(policy[0], policy[1])
+
 
 POLICY_1 = {
     "scopes": {
@@ -520,6 +522,7 @@ ENT = {
     "response_types": ["code", "code id_token", "id_token"],
     "scopes": ["openid", "eduperson", "email", "address"]
 }
+
 
 def test_set_equality():
     comb_policy = combine({'metadata_policy': POLICY_1, 'metadata': {}},
