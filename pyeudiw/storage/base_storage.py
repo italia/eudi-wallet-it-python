@@ -5,24 +5,27 @@ from pymongo.results import UpdateResult
 
 from .base_db import BaseDB
 
+
 class TrustType(Enum):
     X509 = 0
     FEDERATION = 1
 
-trust_type_map : dict = {
-  TrustType.X509 : "x509",
-  TrustType.FEDERATION: "federation"
+
+trust_type_map: dict = {
+    TrustType.X509: "x509",
+    TrustType.FEDERATION: "federation"
 }
 
-trust_attestation_field_map : dict = {
-  TrustType.X509 : "x5c",
-  TrustType.FEDERATION: "chain"
+trust_attestation_field_map: dict = {
+    TrustType.X509: "x5c",
+    TrustType.FEDERATION: "chain"
 }
 
-trust_anchor_field_map : dict = {
-  TrustType.X509 : "pem",
-  TrustType.FEDERATION: "entity_configuration"
+trust_anchor_field_map: dict = {
+    TrustType.X509: "pem",
+    TrustType.FEDERATION: "entity_configuration"
 }
+
 
 class BaseStorage(BaseDB):
     """
@@ -40,7 +43,7 @@ class BaseStorage(BaseDB):
         :param attestation: the attestation.
         """
         raise NotImplementedError()
-    
+
     def set_session_retention_ttl(self, ttl: int) -> None:
         """
         Set the database retention ttl.
@@ -49,7 +52,7 @@ class BaseStorage(BaseDB):
         :type ttl: int | None
         """
         raise NotImplementedError()
-    
+
     def has_session_retention_ttl(self) -> bool:
         """
         Check if the session has a retention ttl.
@@ -184,7 +187,7 @@ class BaseStorage(BaseDB):
         :rtype: str
         """
         raise NotImplementedError()
-    
+
     def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict) -> str:
         """
         Add a trust attestation metadata.
@@ -335,7 +338,7 @@ class BaseStorage(BaseDB):
         :rtype: str
         """
         raise NotImplementedError()
-    
+
     @property
     def is_connected(self) -> bool:
         """

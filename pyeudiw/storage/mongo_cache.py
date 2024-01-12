@@ -80,7 +80,7 @@ class MongoCache(BaseCache):
         self._connect()
 
         return self.collection.insert_one(data)
-    
+
     def _connect(self) -> None:
         if not self.client or not self.client.server_info():
             self.client = pymongo.MongoClient(
