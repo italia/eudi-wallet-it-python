@@ -2,8 +2,10 @@ import aiohttp
 import asyncio
 import requests
 
+from .exceptions import HttpError
 
-async def fetch(session: dict, url: str, httpc_params: dict) -> str:
+
+async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict) -> requests.Response:
     """
     Fetches the content of a URL.
 
@@ -20,12 +22,11 @@ async def fetch(session: dict, url: str, httpc_params: dict) -> str:
 
     async with session.get(url, **httpc_params.get("connection", {})) as response:
         if response.status != 200:  # pragma: no cover
-            # response.raise_for_status()
-            return ""
-        return await response.text()
+            response.raise_for_status()
+        return await response
 
 
-async def fetch_all(session: dict, urls: list[str], httpc_params: dict) -> list[str]:
+async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_params: dict) -> list[requests.Response]:
     """
     Fetches the content of a list of URL.
 
@@ -36,6 +37,8 @@ async def fetch_all(session: dict, urls: list[str], httpc_params: dict) -> list[
     :param httpc_params: parameters to perform http requests.
     :type httpc_params: dict
 
+    :raises HttpError: if the response status code is not 200 or a connection error occurs
+
     :returns: the list of responses in string format
     :rtype: list[str]
     """
@@ -44,13 +47,21 @@ async def fetch_all(session: dict, urls: list[str], httpc_params: dict) -> list[
     for url in urls:
         task = asyncio.create_task(fetch(session, url, httpc_params))
         tasks.append(task)
-    results = await asyncio.gather(*tasks)
+
+    try:
+        results: list[requests.Response] = await asyncio.gather(*tasks)
+    except aiohttp.ClientConnectorError as e:
+        raise HttpError(f"Connection error: {e}")
+
+    for r in results:
+        if r.status_code != 200:
+            raise HttpError(f"HTTP error: {r.status_code} -- {r.reason}")
+
     return results
 
-
-async def http_get(urls, httpc_params: dict, sync=True):
+def http_get_sync(urls, httpc_params: dict) -> list[requests.Response]:
     """
-    Perform a GET http call.
+    Perform a GET http call sync.
 
     :param session: a dict representing the current session
     :type session: dict
@@ -59,20 +70,45 @@ async def http_get(urls, httpc_params: dict, sync=True):
     :param httpc_params: parameters to perform http requests.
     :type httpc_params: dict
 
-    :returns: the list of responses in string format
-    :rtype: list[str]
+    :raises HttpError: if the response status code is not 200 or a connection error occurs
+
+    :returns: the list of responses
+    :rtype: list[requests.Response]
     """
-    if sync:
-        _conf = {
-            'verify': httpc_params['connection']['ssl'],
-            'timeout': httpc_params['session']['timeout']
-        }
+    _conf = {
+        'verify': httpc_params['connection']['ssl'],
+        'timeout': httpc_params['session']['timeout']
+    }
+    try:
         res = [
-            requests.get(url, **_conf).content  # nosec - B113
+            requests.get(url, **_conf)  # nosec - B113
             for url in urls
         ]
-        return res
+    except requests.exceptions.ConnectionError as e:
+        raise HttpError(f"Connection error: {e}")
 
+    for r in res:
+        if r.status_code != 200:
+            raise HttpError(f"HTTP error: {r.status_code} -- {r.reason}")
+
+    return res
+
+async def http_get_async(urls, httpc_params: dict) -> list[requests.Response]:
+    """
+    Perform a GET http call async.
+
+    :param session: a dict representing the current session
+    :type session: dict
+    :param urls: the url list where fetch the content
+    :type urls: list[str]
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+
+    :raises HttpError: if the response status code is not 200 or a connection error occurs
+
+    :returns: the list of responses
+    :rtype: list[requests.Response]
+    """
     if not isinstance(httpc_params['session']['timeout'], aiohttp.ClientTimeout):
         httpc_params['session']['timeout'] = aiohttp.ClientTimeout(
             total=httpc_params['session']['timeout']
@@ -95,4 +131,4 @@ if __name__ == "__main__":  # pragma: no cover
         "http://127.0.0.1:8001/.well-known/openid-federation",
         "http://google.it",
     ]
-    asyncio.run(http_get(urls, httpc_params=httpc_params))
+    asyncio.run(http_get_async(urls, httpc_params=httpc_params))
