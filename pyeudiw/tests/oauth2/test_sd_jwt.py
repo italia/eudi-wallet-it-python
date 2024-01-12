@@ -61,7 +61,7 @@ def test_verify_sd_jwt():
         holder_jwk
     )
 
-    adapted_keys = _adapt_keys(
+    _adapt_keys(
         issuer_jwk,
         holder_jwk
     )
@@ -83,7 +83,7 @@ def test_verify_sd_jwt():
         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
     )
 
-    verified_payload = verify_sd_jwt(
+    verify_sd_jwt(
         sdjwt_at_holder.sd_jwt_presentation,
         issuer_jwk,
         holder_jwk,
