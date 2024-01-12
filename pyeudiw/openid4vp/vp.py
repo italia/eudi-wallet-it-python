@@ -4,6 +4,7 @@ from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 
 class Vp(VpSdJwt):
     "Class for SD-JWT Format"
+
     def __init__(self, jwt: str) -> None:
         """
         Generates a VP istance.
@@ -22,7 +23,7 @@ class Vp(VpSdJwt):
     def _detect_vp_type(self) -> str:
         """
         Detects and return the type of verifiable presentation.
-        
+
         :returns: the type of VP.
         :rtype: str
         """
@@ -31,7 +32,7 @@ class Vp(VpSdJwt):
     def get_credential_jwks(self) -> list[dict]:
         """
         Returns the credential JWKs.
-        
+
         :returns: the list containing credential's JWKs.
         :rtype: list[dict]
         """
@@ -42,7 +43,7 @@ class Vp(VpSdJwt):
     def parse_digital_credential(self) -> None:
         """
         Parse the digital credential of VP.
-        
+
         :raises NotImplementedError: if VP Digital credentials type not implemented.
         """
         _typ = self._detect_vp_type()

@@ -8,6 +8,7 @@ from pyeudiw.jwk.exceptions import KidNotFoundError
 
 from .exceptions import InvalidVPToken
 
+
 class VpSdJwt:
     """Class for SD-JWT Format"""
 
@@ -22,7 +23,7 @@ class VpSdJwt:
         """
 
         if not is_jwt_format(jwt):
-            raise InvalidVPToken(f"VP is not in JWT format.")
+            raise InvalidVPToken("VP is not in JWT format.")
 
         self.headers = decode_jwt_header(jwt)
         self.jwt = jwt
@@ -43,7 +44,7 @@ class VpSdJwt:
 
         :raises KidNotFoundError: if the needed kid is not inside the issuer_jwks_by_kid.
         :raises NotImplementedError: the key_type of one or more JWK is not implemented.
-        :raises JWSVerificationError: if self.jwt field is not in a JWS Format.        
+        :raises JWSVerificationError: if self.jwt field is not in a JWS Format.
 
         :returns: True if is valid, False otherwise.
         """
