@@ -21,7 +21,8 @@ class ECJwkSchema(JwkBaseModel):
     y: str
 
 
-JwkSchema = Annotated[Union[ECJwkSchema, RSAJwkSchema], Field(discriminator="kty")]
+JwkSchema = Annotated[Union[ECJwkSchema, RSAJwkSchema],
+                      Field(discriminator="kty")]
 
 
 class JwksSchema(BaseModel):

@@ -15,6 +15,7 @@ KEY_TYPES_FUNC = dict(
     RSA=new_rsa_key
 )
 
+
 class JWK:
     """
     The class representing a JWK istance
@@ -119,14 +120,17 @@ class JWK:
     def __repr__(self):
         # private part!
         return self.as_json()
-    
+
+
 class RSAJWK(JWK):
     def __init__(self, key: dict | None = None, hash_func: str = "SHA-256") -> None:
         super().__init__(key, "RSA", hash_func, None)
 
+
 class ECJWK(JWK):
     def __init__(self, key: dict | None = None, hash_func: str = "SHA-256", ec_crv: str = "P-256") -> None:
         super().__init__(key, "EC", hash_func, ec_crv)
+
 
 def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
     """
@@ -140,7 +144,7 @@ def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
     """
     _kty = key.get('kty', None)
 
-    if _kty == None or _kty not in ['EC', 'RSA']:
+    if _kty is None or _kty not in ['EC', 'RSA']:
         raise InvalidJwk("Invalid JWK")
     elif _kty == "RSA":
         return RSAJWK(key, hash_func)
@@ -148,7 +152,8 @@ def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
         ec_crv = key.get('crv', "P-256")
         return ECJWK(key, hash_func, ec_crv)
 
-def find_jwk(kid: str, jwks: list[dict], as_dict: bool=True) -> dict | JWK:
+
+def find_jwk(kid: str, jwks: list[dict], as_dict: bool = True) -> dict | JWK:
     """
     Find the JWK with the indicated kid in the jwks list.
 
@@ -163,7 +168,7 @@ def find_jwk(kid: str, jwks: list[dict], as_dict: bool=True) -> dict | JWK:
     :raises KidNotFoundError: if kid is not in jwks list.
 
     :returns: the jwk with the indicated kid or an empty dict if no jwk is found
-    :rtype: dict | JWK 
+    :rtype: dict | JWK
     """
     if not kid:
         raise InvalidKid("Kid cannot be empty")
@@ -171,5 +176,5 @@ def find_jwk(kid: str, jwks: list[dict], as_dict: bool=True) -> dict | JWK:
         valid_jwk = jwk.get("kid", None)
         if valid_jwk and kid == valid_jwk:
             return jwk if as_dict else JWK(jwk)
-    
+
     raise KidNotFoundError(f"Key with Kid {kid} not found")
