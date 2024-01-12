@@ -43,6 +43,7 @@ class JWEHelper():
     """
     The helper class for work with JWEs.
     """
+
     def __init__(self, jwk: Union[JWK, dict]):
         """
         Creates an instance of JWEHelper.
@@ -73,7 +74,8 @@ class JWEHelper():
         elif isinstance(_key, cryptojwt.jwk.ec.ECKey):
             JWE_CLASS = JWE_EC
         else:
-            raise JWEEncryptionError(f"Error while encrypting: f{_key.__class__.__name__} not supported!")
+            raise JWEEncryptionError(
+                f"Error while encrypting: f{_key.__class__.__name__} not supported!")
 
         _payload: str | int | bytes = ""
 
@@ -96,8 +98,10 @@ class JWEHelper():
 
         if _key.kty == 'EC':
             _keyobj: JWE_EC
-            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(msg=_payload, key=_key)
-            kwargs = {"params": params, "cek": cek, "iv": iv, "encrypted_key": encrypted_key}
+            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(
+                msg=_payload, key=_key)
+            kwargs = {"params": params, "cek": cek,
+                      "iv": iv, "encrypted_key": encrypted_key}
             return _keyobj.encrypt(**kwargs)
         else:
             return _keyobj.encrypt(key=_key.public_key())
@@ -117,7 +121,8 @@ class JWEHelper():
         try:
             jwe_header = decode_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
-            raise JWEDecryptionError(f"Not a valid JWE format for the following reason: {e}")
+            raise JWEDecryptionError(
+                f"Not a valid JWE format for the following reason: {e}")
 
         _alg = jwe_header.get("alg")
         _enc = jwe_header.get("enc")
@@ -145,6 +150,7 @@ class JWSHelper:
     """
     The helper class for work with JWEs.
     """
+
     def __init__(self, jwk: Union[JWK, dict]):
         """
         Creates an instance of JWSHelper.
@@ -210,7 +216,8 @@ class JWSHelper:
         try:
             _head = decode_jwt_header(jws)
         except (binascii.Error, Exception) as e:
-            raise JWSVerificationError(f"Not a valid JWS format for the following reason: {e}")
+            raise JWSVerificationError(
+                f"Not a valid JWS format for the following reason: {e}")
 
         if _head.get("kid"):
             if _head["kid"] != _jwk_dict["kid"]:  # pragma: no cover
