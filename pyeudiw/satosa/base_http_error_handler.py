@@ -7,16 +7,16 @@ from pyeudiw.satosa.response import JsonResponse
 class BaseHTTPErrorHandler(BaseLogger):
     def _serialize_error(
             self,
-            context: Context, 
+            context: Context,
             message: str,
-            troubleshoot: str, 
-            err: str, 
-            err_code: str, 
+            troubleshoot: str,
+            err: str,
+            err_code: str,
             level: str
     ) -> JsonResponse:
         """
         Serializes an error.
-        
+
         :param context: the request context
         :type context: satosa.context.Context
         :param message: the error message
@@ -43,16 +43,16 @@ class BaseHTTPErrorHandler(BaseLogger):
         )
 
         return JsonResponse({
-                "error": message,
-                "error_description": troubleshoot
-            },
+            "error": message,
+            "error_description": troubleshoot
+        },
             status=err_code
-        )        
-    
+        )
+
     def _handle_500(self, context: Context, msg: str, err: Exception) -> JsonResponse:
         """
         Handles a 500 error.
-        
+
         :param context: the request context
         :type context: satosa.context.Context
         :param msg: the error message
@@ -65,18 +65,18 @@ class BaseHTTPErrorHandler(BaseLogger):
         """
 
         return self._serialize_error(
-            context, 
-            "server_error", 
-            f"{msg}", 
-            f"{msg}. {err.__class__.__name__}: {err}", 
-            "500", 
+            context,
+            "server_error",
+            f"{msg}",
+            f"{msg}. {err.__class__.__name__}: {err}",
+            "500",
             "error"
         )
 
     def _handle_40X(self, code_number: str, message: str, context: Context, troubleshoot: str, err: Exception) -> JsonResponse:
         """
         Handles a 40X error.
-        
+
         :param code_number: the code number
         :type code_number: str
         :param message: the error message
@@ -93,14 +93,14 @@ class BaseHTTPErrorHandler(BaseLogger):
         """
 
         return self._serialize_error(
-            context, 
-            message, 
-            troubleshoot, 
-            f"{err.__class__.__name__}: {err}", 
-            f"40{code_number}", 
+            context,
+            message,
+            troubleshoot,
+            f"{err.__class__.__name__}: {err}",
+            f"40{code_number}",
             "error"
         )
-    
+
     def _handle_400(self, context: Context, troubleshoot: str, err: Exception = EmptyHTTPError("")) -> JsonResponse:
         """
         Handles a 400 error.
@@ -116,11 +116,11 @@ class BaseHTTPErrorHandler(BaseLogger):
         :rtype: JsonResponse
         """
         return self._handle_40X("0", "invalid_request", context, troubleshoot, err)
-    
+
     def _handle_401(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
         """
         Handles a 401 error.
-        
+
         :param context: the request context
         :type context: satosa.context.Context
         :param troubleshoot: the troubleshoot message
@@ -133,11 +133,11 @@ class BaseHTTPErrorHandler(BaseLogger):
         """
 
         return self._handle_40X("1", "invalid_client", context, troubleshoot, err)
-    
+
     def _handle_403(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
         """
         Handles a 403 error.
-        
+
         :param context: the request context
         :type context: satosa.context.Context
         :param troubleshoot: the troubleshoot message

@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import hashlib
@@ -7,7 +6,6 @@ import uuid
 
 from urllib.parse import quote_plus, urlencode
 
-import satosa.logging_util as lu
 from satosa.backends.base import BackendModule
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
@@ -23,7 +21,6 @@ from pyeudiw.satosa.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.response import JsonResponse
 from pyeudiw.satosa.trust import BackendTrust
 from pyeudiw.tools.mobile import is_smartphone
-from pyeudiw.tools.qr_code import QRCode
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
@@ -43,19 +40,20 @@ from .exceptions import HTTPError
 from .base_http_error_handler import BaseHTTPErrorHandler
 from pyeudiw.tools.base_logger import BaseLogger
 
+
 class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHandler, BaseLogger):
     """
     A backend module (acting as a OpenID4VP SP).
     """
 
     def __init__(
-            self, 
-            auth_callback_func: Callable[[Context, InternalData], Response], 
-            internal_attributes: dict[str, dict[str, str | list[str]]], 
-            config: dict[str, dict[str, str] | list[str]], 
-            base_url: str, 
-            name: str
-        ) -> None:
+        self,
+        auth_callback_func: Callable[[Context, InternalData], Response],
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        config: dict[str, dict[str, str] | list[str]],
+        base_url: str,
+        name: str
+    ) -> None:
         """
         OpenID4VP backend module.
         :param auth_callback_func: Callback should be called by the module after the authorization
@@ -103,7 +101,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
-        self._log_debug("OpenID4VP init", f"Loaded configuration: {json.dumps(config)}")
+        self._log_debug("OpenID4VP init",
+                        f"Loaded configuration: {json.dumps(config)}")
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
@@ -159,12 +158,13 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         :param context: the request context
         :type internal_request: satosa.internal.InternalData
         :param internal_request: Information about the authorization request
-        
+
         :return: a response containing the request_uri
         :rtype: satosa.response.Response
         """
 
-        self._log_function_debug("pre_request_endpoint", context, "internal_request", internal_request)
+        self._log_function_debug(
+            "pre_request_endpoint", context, "internal_request", internal_request)
 
         session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
@@ -182,7 +182,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
             _msg = f"Error while initializing session with state {state} and {session_id}."
             self._log_error(context, f"{_msg} for the following reason {e}")
             return self._handle_500(context, _msg, e)
-        
+
         except (Exception) as e:
             _msg = f"Error while initializing session with state {state} and {session_id}."
             self._log_error(context, _msg)
@@ -205,7 +205,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
         result = self.template.qrcode_page.render(
             {
-                "qrcode_color" : self.config["qrcode"]["color"],
+                "qrcode_color": self.config["qrcode"]["color"],
                 "qrcode_text": res_url,
                 "qrcode_expiration_time": self.config["qrcode"]["expiration_time"],
                 "state": state,
@@ -239,13 +239,13 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
         jwt = context.request.get("response", None)
         if not jwt:
-            _msg = f"Response error, missing JWT"
+            _msg = "Response error, missing JWT"
             self._log_error(context, _msg)
             return self._handle_400(context, _msg)
 
         try:
             vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-            
+
             debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
             self._log_debug(context, debug_message)
 
@@ -264,18 +264,18 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         try:
             stored_session = self.db_engine.get_by_state(state=state)
         except Exception as e:
-            _msg = f"Session lookup by state value failed"
+            _msg = "Session lookup by state value failed"
             return self._handle_400(context, _msg, e)
 
         if stored_session["finalized"]:
-            _msg = f"Session already finalized"
+            _msg = "Session already finalized"
             return self._handle_400(context, _msg, HTTPError(_msg))
 
         try:
             vpt.load_nonce(stored_session['nonce'])
             vps: list[Vp] = vpt.get_presentation_vps()
             vpt.validate()
-            
+
         except VPNotFound as e:
             _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
             return self._handle_400(context, _msg, e)
@@ -287,7 +287,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         except VPInvalidNonce as e:
             _msg = "Error while validating VP: unexpected value."
             return self._handle_400(context, _msg, e)
-        
+
         except Exception as e:
             _msg = (
                 "DirectPostResponse content parse and validation error. "
@@ -317,7 +317,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
                 credential_jwks = tchelper.get_trusted_jwks(
                     metadata_type='openid_credential_issuer'
                 )
-                vp.set_credential_jwks(credential_jwks) 
+                vp.set_credential_jwks(credential_jwks)
             except InvalidVPToken:
                 return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
             except ValidationError as e:
@@ -334,7 +334,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
 
             try:
                 vp.verify_sdjwt(
-                    issuer_jwks_by_kid = {
+                    issuer_jwks_by_kid={
                         i['kid']: i for i in vp.credential_jwks}
                 )
             except Exception as e:
@@ -371,12 +371,13 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
             self.db_engine.set_finalized(stored_session['document_id'])
             if self.effective_log_level == logging.DEBUG:
                 stored_session = self.db_engine.get_by_state(state=state)
-                self._log_debug(context, f"Session update on storage: {stored_session}")
+                self._log_debug(
+                    context, f"Session update on storage: {stored_session}")
 
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log_error(context, f"Session update on storage failed: {e}")
-            return self._handle_500(context, f"Cannot update response object.", e)
+            return self._handle_500(context, "Cannot update response object.", e)
 
         if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
@@ -461,7 +462,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         except ValueError as e:
             _msg = "Error while retrieving request object from database."
             return self._handle_500(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
-        
+
         except (Exception, BaseException) as e:
             _msg = f"Error while updating request object: {e}"
             return self._handle_500(context, _msg, e)
@@ -481,7 +482,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
     def get_response_endpoint(self, context: Context) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance to retrieve the response of the authentication.
-        
+
         :param context: the request context
         :type context: satosa.context.Context
 
@@ -566,7 +567,7 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         request_object = session.get("request_object", None)
         if request_object:
             if iat_now() > request_object["exp"]:
-                return self._handle_403("expired", f"Request object expired")
+                return self._handle_403("expired", "Request object expired")
 
         if session["finalized"]:
             #  return Redirect(
@@ -639,7 +640,8 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         internal_resp = InternalData(auth_info=auth_info)
 
         sub = ""
-        pepper = self.config.get("user_attributes", {})['subject_id_random_value']
+        pepper = self.config.get("user_attributes", {})[
+            'subject_id_random_value']
         for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]
@@ -683,12 +685,12 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
             self._db_engine = DBEngine(self.config["storage"])
 
         return self._db_engine
-    
+
     @property
     def default_metadata_private_jwk(self) -> tuple:
         """Returns the default metadata private JWK"""
         return tuple(self.metadata_jwks_by_kids.values())[0]
-    
+
     @property
     def server_url(self):
         """Returns the server url"""
