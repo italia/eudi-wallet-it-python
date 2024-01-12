@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import asyncio
 import requests
@@ -31,7 +30,7 @@ def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.
 def iat_now() -> int:
     """
     Get the current timestamp in seconds.
-    
+
     :returns: The current timestamp in seconds
     :rtype: int
     """
