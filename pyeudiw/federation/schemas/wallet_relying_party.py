@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List
+from typing import List
 from pyeudiw.jwk.schemas.jwk import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
 from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
@@ -11,6 +11,7 @@ class AcrValuesSupported(str, Enum):
     spid_l2 = "https://www.spid.gov.it/SpidL2"
     spid_l3 = "https://www.spid.gov.it/SpidL3"
 
+
 class EncryptionAlgValuesSupported(str, Enum):
     rsa_oaep = "RSA-OAEP"
     ras_oaep_256 = "RSA-OAEP-256"
@@ -18,6 +19,7 @@ class EncryptionAlgValuesSupported(str, Enum):
     ecdh_es_a128kw = "ECDH-ES+A128KW"
     ecdh_es_a192kw = "ECDH-ES+A192KW"
     ecdh_es_a256kw = "ECDH-ES+A256KW"
+
 
 class EncryptionEncValuesSupported(str, Enum):
     a128cbc_hs256 = "A128CBC-HS256"
@@ -27,6 +29,7 @@ class EncryptionEncValuesSupported(str, Enum):
     a192gcm = "A192GCM"
     a256gcm = "A256GCM"
 
+
 class SigningAlgValuesSupported(str, Enum):
     es256 = "ES256"
     es384 = "ES384"
@@ -35,6 +38,7 @@ class SigningAlgValuesSupported(str, Enum):
     rs384 = "RS384"
     rs512 = "RS512"
 
+
 class AuthorizationSignedResponseAlg(str, Enum):
     rs256 = "RS256"
     rs384 = "RS384"
@@ -42,6 +46,7 @@ class AuthorizationSignedResponseAlg(str, Enum):
     es256 = "ES256"
     es384 = "ES384"
     es512 = "ES512"
+
 
 class WalletRelyingParty(BaseModel):
     application_type: str

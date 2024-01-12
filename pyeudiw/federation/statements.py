@@ -10,7 +10,7 @@ from pyeudiw.federation.exceptions import (
     InvalidEntityStatementPayload
 )
 from pyeudiw.federation.schemas.entity_configuration import (
-    EntityConfigurationHeader, 
+    EntityConfigurationHeader,
     EntityStatementPayload
 )
 from pydantic import ValidationError
@@ -76,7 +76,7 @@ def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async:
     :returns: A list of entity statements.
     :rtype: list[Response]
     """
-    
+
     urls = urls if isinstance(urls, list) else [urls]
     for url in urls:
         logger.debug(f"Starting Entity Statement Request to {url}")
@@ -162,7 +162,7 @@ class TrustMark:
                 f"Trust Mark validation failed: "
                 f"{e}"
             )
-        
+
         _kid = self.header["kid"]
 
         if _kid not in ec.kids:
@@ -170,7 +170,7 @@ class TrustMark:
                 f"Trust Mark validation failed: "
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
-        
+
         _jwk = find_jwk(_kid, ec.jwks)
 
         # verify signature
@@ -306,13 +306,13 @@ class EntityStatement:
                 f"Trust Mark validation failed: "
                 f"{e}"
             )
-        
+
         _kid = self.header.get("kid")
-        
+
         if _kid not in self.kids:
             raise UnknownKid(
                 f"{_kid} not found in {self.jwks}")  # pragma: no cover
-        
+
         # verify signature
         _jwk = find_jwk(_kid, self.jwks)
         jwsh = JWSHelper(_jwk)
@@ -519,15 +519,15 @@ class EntityStatement:
         try:
             EntityConfigurationHeader(**header)
         except ValidationError as e:
-            raise InvalidEntityHeader( # pragma: no cover
+            raise InvalidEntityHeader(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{e}"
             )
-        
+
         try:
             EntityStatementPayload(**payload)
         except ValidationError as e:
-            raise InvalidEntityStatementPayload( # pragma: no cover
+            raise InvalidEntityStatementPayload(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{e}"
             )
@@ -554,7 +554,7 @@ class EntityStatement:
         :type jwt: str
         :param ec: is a superior entity configuration
         :type ec: EntityStatement
-        
+
         :returns: the entity configuration subject if is valid
         :rtype: str
         """
@@ -601,7 +601,7 @@ class EntityStatement:
 
         :param superiors_entity_configurations: an object containing the entity configurations of superiors
         :type superiors_entity_configurations: dict
-        
+
         :returns: an object containing the superior validations
         :rtype: dict
         """

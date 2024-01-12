@@ -34,6 +34,7 @@ class EntityConfigurationPayload(BaseModel):
     metadata: EntityConfigurationMetadataSchema
     authority_hints: List[HttpUrl]
 
+
 class EntityStatementPayload(BaseModel, extra='forbid'):
     exp: int
     iat: int
