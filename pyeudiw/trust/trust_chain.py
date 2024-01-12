@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 
 from cryptojwt.jwt import utc_time_sans_frac
@@ -8,11 +7,13 @@ __author__ = "Roland Hedberg"
 __license__ = "Apache 2.0"
 __version__ = ""
 
+
 class TrustChain(BaseLogger):
     """
     Class in which to store the parsed result from applying metadata policies on a
     metadata statement.
     """
+
     def __init__(self,
                  exp: int = 0,
                  verified_chain: Optional[list] = None) -> None:
@@ -31,7 +32,7 @@ class TrustChain(BaseLogger):
         self.exp = exp
         self.verified_chain = verified_chain
         self.combined_policy = {}
-    
+
     def keys(self) -> list[str]:
         """
         Returns the metadata fields keys
@@ -83,14 +84,14 @@ class TrustChain(BaseLogger):
         """
         Exports the verified chain in such a way that it can be used as value on the
         trust_chain claim in an authorization or explicit registration request.
-        
+
         :return: The exported chain in reverse order
         :rtype: list
         """
         _chain = self.verified_chain
         _chain.reverse()
         return _chain
-    
+
     def set_combined_policy(self, entity_type: str, combined_policy: dict):
         """
         Set the combined policy for the given entity type.

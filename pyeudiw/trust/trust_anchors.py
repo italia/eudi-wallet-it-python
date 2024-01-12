@@ -7,6 +7,7 @@ from pyeudiw.storage.db_engine import DBEngine
 
 logger = logging.getLogger(__name__)
 
+
 def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: dict) -> None:
     """
     Update the trust anchors entity configurations.
@@ -29,7 +30,8 @@ def update_trust_anchors_ecs(trust_anchors: list, db: DBEngine, httpc_params: di
 
         ec = EntityStatement(jwt, httpc_params=httpc_params)
         if not ec.validate_by_itself():
-            logger.warning(f"The trust anchor failed the validation of its EntityConfiguration {ec}")
+            logger.warning(
+                f"The trust anchor failed the validation of its EntityConfiguration {ec}")
 
         db.add_trust_anchor(
             entity_id=ec.sub,
