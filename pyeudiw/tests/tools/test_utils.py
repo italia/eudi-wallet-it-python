@@ -54,7 +54,7 @@ def test_exp_from_now(fake_now, delta_mins, timestamp):
     # sys.maxsize // 2 -1,
     "1"])
 def test_random_token(n):
-    if type(n) != int:
+    if type(n) is not int:
         with pytest.raises(TypeError):
             random_token(n)
         return
@@ -79,4 +79,4 @@ def test_random_token(n):
     assert len(rand) == n * 2
     _hex = int(rand, 16)
     assert _hex
-    assert type(_hex) == int
+    assert type(_hex) is int
