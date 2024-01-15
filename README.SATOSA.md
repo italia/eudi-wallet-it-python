@@ -55,11 +55,11 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 | Parameter                     | Description                                        | Example value |
 |-------------------------------|----------------------------------------------------|---------------|
-| ~~config.qrcode.size~~        | The size of the QR code in pixels                  | 100           |
+| config.qrcode.size            | The size of the QR code in pixels                  | 100           |
 | config.qrcode.color           | The color of the QR code in hexadecimal            | #2B4375       |
 | config.qrcode.expiration_time | The expiration time of the QR code in seconds      | 120           |
-| ~~config.qrcode.logo_path~~   | The path of the logo to be embedded in the QR code |               |
-| ~~config.qrcode.use_zlib~~    | Whether to use zlib compression for the QR code    | false         |
+| config.qrcode.logo_path       | The path of the logo to be embedded in the QR code |               |
+| config.qrcode.use_zlib        | Whether to use zlib compression for the QR code    | false         |
 
 ##### JWT
 
