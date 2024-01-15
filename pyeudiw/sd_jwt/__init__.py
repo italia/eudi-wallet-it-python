@@ -26,20 +26,22 @@ from cryptojwt.jwk.rsa import RSAKey
 from cryptojwt.jwk.ec import ECKey
 from cryptography.hazmat.backends.openssl.rsa import _RSAPrivateKey
 
+
 class TrustChainSDJWTIssuer(SDJWTIssuer):
     """
     Class for issue SD-JWT of TrustChain.
     """
+
     def __init__(
-            self, 
-            user_claims: Dict[str, Any], 
-            issuer_key: dict, 
-            holder_key: dict | None = None, 
-            sign_alg: str | None = None, 
-            add_decoy_claims: bool = True, 
-            serialization_format: str = "compact", 
-            additional_headers: dict = {}
-        ) -> None:
+        self,
+        user_claims: Dict[str, Any],
+        issuer_key: dict,
+        holder_key: dict | None = None,
+        sign_alg: str | None = None,
+        add_decoy_claims: bool = True,
+        serialization_format: str = "compact",
+        additional_headers: dict = {}
+    ) -> None:
         """
         Crate an istance of TrustChainSDJWTIssuer.
 
@@ -56,7 +58,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         :param serialization_format: the serialization format.
         :type serialization_format: str
         :param additional_headers: additional headers.
-        :type additional_headers: dict        
+        :type additional_headers: dict
         """
 
         self.additional_headers = additional_headers
@@ -73,7 +75,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
     def _create_signed_jws(self):
         """
-        Creates the signed JWS.        
+        Creates the signed JWS.
         """
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
@@ -103,9 +105,9 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
 
 def _serialize_key(
-        key: RSAKey | ECKey | JWK | dict, 
-        **kwargs
-    ) -> dict:
+    key: RSAKey | ECKey | JWK | dict,
+    **kwargs
+) -> dict:
     """
     Serialize a key into dict.
 
@@ -135,7 +137,7 @@ def pk_encode_int(i: str, bit_size: int = None) -> str:
     :type bit_size: int
 
     :returns: the encoded integer.
-    :rtype: str   
+    :rtype: str
     """
 
     extend = 0
@@ -180,6 +182,7 @@ def import_pyca_pri_rsa(key: _RSAPrivateKey, **params) -> jwcrypto.jwk.JWK:
     )
     return jwcrypto.jwk.JWK(**params)
 
+
 def import_ec(key, **params):
     pn = key.private_numbers()
     curve_name = key.curve.name
@@ -191,7 +194,8 @@ def import_ec(key, **params):
         case "secp512r1":
             nist_name = "P-512"
         case _:
-            raise UnknownCurveNistName(f"Cannot translate {key.curve.name} into NIST name.")
+            raise UnknownCurveNistName(
+                f"Cannot translate {key.curve.name} into NIST name.")
     params.update(
         kty="EC",
         crv=nist_name,
@@ -200,6 +204,7 @@ def import_ec(key, **params):
         d=pk_encode_int(pn.private_value)
     )
     return jwcrypto.jwk.JWK(**params)
+
 
 def _adapt_keys(issuer_key: JWK, holder_key: JWK) -> dict:
     """
@@ -222,7 +227,8 @@ def _adapt_keys(issuer_key: JWK, holder_key: JWK) -> dict:
             _issuer_key = import_pyca_pri_rsa(
                 issuer_key.key.priv_key, kid=issuer_key.kid)
         case "EC":
-            _issuer_key = import_ec(issuer_key.key.priv_key, kid=issuer_key.kid)
+            _issuer_key = import_ec(
+                issuer_key.key.priv_key, kid=issuer_key.kid)
         case _:
             raise KeyError(f"Unsupported 'kty' {issuer_key.key['kty']}")
 
@@ -251,12 +257,12 @@ def load_specification_from_yaml_string(yaml_specification: str) -> dict:
 
 
 def issue_sd_jwt(
-        specification: Dict[str, Any], 
-        settings: dict, 
-        issuer_key: JWK, 
-        holder_key: JWK, 
-        trust_chain: list[str] | None = None
-    ) -> str:
+    specification: Dict[str, Any],
+    settings: dict,
+    issuer_key: JWK,
+    holder_key: JWK,
+    trust_chain: list[str] | None = None
+) -> str:
     """
     Issue a SD-JWT.
 
@@ -301,7 +307,7 @@ def issue_sd_jwt(
 def _cb_get_issuer_key(issuer: str, settings: dict, adapted_keys: dict, *args, **kwargs) -> JWK:
     """
     Helper function for get the issuer key.
-    
+
     :param issuer: the issuer.
     :type issuer: str
     :param settings: the settings of SD-JWT.

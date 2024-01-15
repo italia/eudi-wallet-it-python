@@ -33,7 +33,8 @@ def combine_add(s1, s2):
     return list(set1.union(set2))
 
 
-POLICY_FUNCTIONS = {"subset_of", "superset_of", "one_of", "add", "value", "default", "essential"}
+POLICY_FUNCTIONS = {"subset_of", "superset_of",
+                    "one_of", "add", "value", "default", "essential"}
 
 OP2FUNC = {
     "subset_of": combine_subset_of,
@@ -130,7 +131,8 @@ def combine_claim_policy(superior, child):
                         f"value can only be combined with essential, not {child_set}")
             elif "value" in child_set:
                 if child["value"] != superior["value"]:  # Not OK
-                    raise PolicyError("Child can not set another value then superior")
+                    raise PolicyError(
+                        "Child can not set another value then superior")
                 else:
                     return superior
             else:
@@ -146,7 +148,8 @@ def combine_claim_policy(superior, child):
         comb_policy = superior_set.union(child_set)
         if "one_of" in comb_policy:
             if "subset_of" in comb_policy or "superset_of" in comb_policy:
-                raise PolicyError("one_of can not be combined with subset_of/superset_of")
+                raise PolicyError(
+                    "one_of can not be combined with subset_of/superset_of")
 
         rule = {}
         for policy in comb_policy:
@@ -212,11 +215,13 @@ def combine(superior: dict, sub: dict) -> dict:
 
         # A metadata_policy claim can not change a metadata claim
         for claim in chi_set.intersection(sup_m_set):
-            combine_claim_policy({'value': sup_metadata[claim]}, _sub_policy[claim])
+            combine_claim_policy(
+                {'value': sup_metadata[claim]}, _sub_policy[claim])
 
         _mp = {}
         for claim in set(sup_set).intersection(chi_set):
-            _mp[claim] = combine_claim_policy(_sup_policy[claim], _sub_policy[claim])
+            _mp[claim] = combine_claim_policy(
+                _sup_policy[claim], _sub_policy[claim])
 
         for claim in sup_set.difference(chi_set):
             _mp[claim] = _sup_policy[claim]
@@ -226,6 +231,7 @@ def combine(superior: dict, sub: dict) -> dict:
 
         superior['metadata_policy'] = _mp
     return superior
+
 
 def gather_policies(chain, entity_type):
     """
@@ -248,6 +254,7 @@ def gather_policies(chain, entity_type):
             combined_policy = combine(combined_policy, child)
 
     return combined_policy
+
 
 def union(val1, val2):
     if isinstance(val1, list):
@@ -313,7 +320,8 @@ class TrustChainPolicy(object):
             else:
                 if "one_of" in metadata_policy[claim]:
                     # The is for claims that can have only one value
-                    if isinstance(metadata[claim], list):  # Should not be but ...
+                    # Should not be but ...
+                    if isinstance(metadata[claim], list):
                         _claim = [c for c in metadata[claim] if
                                   c in metadata_policy[claim]['one_of']]
                         if _claim:
@@ -377,7 +385,8 @@ class TrustChainPolicy(object):
         """
 
         if policy['metadata_policy']:
-            metadata = self._apply_metadata_policy(metadata, policy['metadata_policy'])
+            metadata = self._apply_metadata_policy(
+                metadata, policy['metadata_policy'])
 
         # All that are in metadata but not in policy should just remain
         metadata.update(policy['metadata'])
@@ -385,7 +394,6 @@ class TrustChainPolicy(object):
         return metadata
 
     def _policy(self, trust_chain, entity_type: str):
-        
 
         combined_policy = self.gather_policies(trust_chain[:-1], entity_type)
         logger.debug("Combined policy: %s", combined_policy)
@@ -408,10 +416,12 @@ class TrustChainPolicy(object):
         """
         if len(trust_chain.verified_chain) > 1:
             if entity_type:
-                trust_chain.metadata[entity_type] = self._policy(trust_chain, entity_type)
+                trust_chain.metadata[entity_type] = self._policy(
+                    trust_chain, entity_type)
             else:
                 for _type in trust_chain.verified_chain[-1]['metadata'].keys():
-                    trust_chain.metadata[_type] = self._policy(trust_chain, _type)
+                    trust_chain.metadata[_type] = self._policy(
+                        trust_chain, _type)
         else:
             trust_chain.metadata = trust_chain.verified_chain[0]["metadata"][entity_type]
             trust_chain.combined_policy[entity_type] = {}

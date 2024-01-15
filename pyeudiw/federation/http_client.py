@@ -59,6 +59,7 @@ async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_param
 
     return results
 
+
 def http_get_sync(urls, httpc_params: dict) -> list[requests.Response]:
     """
     Perform a GET http call sync.
@@ -92,6 +93,7 @@ def http_get_sync(urls, httpc_params: dict) -> list[requests.Response]:
             raise HttpError(f"HTTP error: {r.status_code} -- {r.reason}")
 
     return res
+
 
 async def http_get_async(urls, httpc_params: dict) -> list[requests.Response]:
     """

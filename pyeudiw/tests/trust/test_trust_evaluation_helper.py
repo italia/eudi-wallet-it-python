@@ -13,17 +13,20 @@ class TestTrustEvaluationHelper:
         self.engine = DBEngine(CONFIG['storage'])
 
     def test_evaluation_method_federation(self):
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
 
         assert teh.federation == teh._get_evaluation_method()
 
     def test_chain_validity_federation(self):
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
 
-        assert teh.evaluation_method() == True
+        assert teh.evaluation_method()
 
     def test_evaluation_method_x509(self):
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": gen_chain()})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": gen_chain()})
 
         assert teh.x509 == teh._get_evaluation_method()
 
@@ -35,9 +38,10 @@ class TestTrustEvaluationHelper:
         self.engine.add_trust_anchor(
             "leaf.example.org", chain_to_pem(x509_chain), date, TrustType.X509)
 
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": x509_chain})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": x509_chain})
 
-        assert teh.evaluation_method() == True
+        assert teh.evaluation_method()
 
     def test_chain_invalid_x509(self):
         date = datetime.now()
@@ -47,12 +51,14 @@ class TestTrustEvaluationHelper:
         self.engine.add_trust_anchor(
             "leaf.example.org", chain_to_pem(x509_chain), date, TrustType.X509)
 
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": x509_chain})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": x509_chain})
 
-        assert teh.evaluation_method() == False
+        assert not teh.evaluation_method()
 
     def test_get_trusted_jwk(self):
-        teh = TrustEvaluationHelper(self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
+        teh = TrustEvaluationHelper(
+            self.engine, {}, "", **{"trust_chain": trust_chain_issuer})
 
         trusted_jwks = teh.get_trusted_jwks("openid_credential_issuer")
 

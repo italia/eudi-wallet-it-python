@@ -1,5 +1,4 @@
 import json
-import satosa.logging_util as lu
 from satosa.context import Context
 from satosa.response import Response
 
@@ -43,7 +42,7 @@ class BackendTrust(BaseLogger):
             self.get_backend_trust_chain()
         except Exception as e:
             self._log_critical(
-                "Backend Trust", 
+                "Backend Trust",
                 f"Cannot fetch the trust anchor configuration: {e}"
             )
 
@@ -81,7 +80,7 @@ class BackendTrust(BaseLogger):
 
         tas = self.config['federation']['trust_anchors']
         self._log_info("Trust Anchors updates", f"Trying to update: {tas}")
-        
+
         for ta in tas:
             try:
                 update_trust_anchors_ecs(
@@ -90,7 +89,8 @@ class BackendTrust(BaseLogger):
                     httpc_params=self.config['network']['httpc_params']
                 )
             except Exception as e:
-                self._log_warning("Trust Anchor updates", f"{ta} update failed: {e}")
+                self._log_warning("Trust Anchor updates",
+                                  f"{ta} update failed: {e}")
 
             self._log_info("Trust Anchor updates", f"{ta} updated")
 
@@ -104,15 +104,15 @@ class BackendTrust(BaseLogger):
         """
         try:
             trust_evaluation_helper = TrustEvaluationHelper.build_trust_chain_for_entity_id(
-                storage = self.db_engine,
-                entity_id = self.client_id,
-                entity_configuration = self.entity_configuration,
-                httpc_params = self.config['network']['httpc_params']
+                storage=self.db_engine,
+                entity_id=self.client_id,
+                entity_configuration=self.entity_configuration,
+                httpc_params=self.config['network']['httpc_params']
             )
             self.db_engine.add_or_update_trust_attestation(
-                entity_id = self.client_id,
-                attestation = trust_evaluation_helper.trust_chain,
-                exp = trust_evaluation_helper.exp
+                entity_id=self.client_id,
+                attestation=trust_evaluation_helper.trust_chain,
+                exp=trust_evaluation_helper.exp
             )
             return trust_evaluation_helper.trust_chain
 
@@ -124,7 +124,7 @@ class BackendTrust(BaseLogger):
             self._log_warning("Trust Chain", message)
 
         return []
-    
+
     def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
         """
         Validates the trust of the given jws.
@@ -172,7 +172,6 @@ class BackendTrust(BaseLogger):
 
         return trust_eval
 
-    
     @property
     def default_federation_private_jwk(self) -> dict:
         """Returns the default federation private jwk."""

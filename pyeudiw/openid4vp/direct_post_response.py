@@ -22,6 +22,7 @@ class DirectPostResponse:
     """
     Helper class for generate Direct Post Response.
     """
+
     def __init__(self, jwt: str, jwks_by_kids: Dict[str, dict], nonce: str = ""):
         """
         Generate an instance of DirectPostResponse.
@@ -98,10 +99,9 @@ class DirectPostResponse:
             VPTokenHeader(**vp.headers)
         except ValidationError as e:
             raise InvalidVPToken(
-               f"VP is not valid, {e}: {vp.headers}.{vp.payload}"
+                f"VP is not valid, {e}: {vp.headers}.{vp.payload}"
             )
         return True
-    
 
     def validate(self) -> bool:
         """
@@ -114,14 +114,14 @@ class DirectPostResponse:
         for vp in self.get_presentation_vps():
             try:
                 self._validate_vp(vp)
-                if all_valid == None:
+                if all_valid is None:
                     all_valid = True
-            except Exception as e:
+            except Exception:
                 logger.error(
-                    
+
                 )
                 all_valid = False
-                
+
         return all_valid
 
     def get_presentation_vps(self) -> list[Vp]:
@@ -162,7 +162,7 @@ class DirectPostResponse:
         if not self._vps:
             self.get_presentation_vps()
         return self._vps
-    
+
     @property
     def payload(self) -> dict:
         """Returns the decoded payload of presentation"""

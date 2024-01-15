@@ -1,7 +1,7 @@
 import uuid
 import importlib
 from datetime import datetime
-from typing import Callable, Union, Tuple, Dict
+from typing import Callable, Union, Tuple
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage, TrustType
 from pyeudiw.storage.exceptions import (
@@ -13,10 +13,12 @@ from pyeudiw.tools.base_logger import BaseLogger
 
 from .base_db import BaseDB
 
+
 class DBEngine(BaseStorage, BaseCache, BaseLogger):
     """
     DB Engine class.
     """
+
     def __init__(self, config: dict):
         """
         Create a DB Engine instance.
@@ -26,7 +28,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         """
         self.caches: list[Tuple[str, BaseCache]] = []
         self.storages: list[Tuple[str, BaseStorage]] = []
-        
+
         for db_name, db_conf in config.items():
             storage_instance, cache_instance = self._handle_instance(db_conf)
 
@@ -148,14 +150,14 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         return self.get("get_trust_anchor", entity_id)
 
     def has_trust_attestation(self, entity_id: str) -> bool:
-        return self.get_trust_attestation(entity_id) != None
+        return self.get_trust_attestation(entity_id) is not None
 
     def has_trust_anchor(self, entity_id: str) -> bool:
-        return self.get_trust_anchor(entity_id) != None
+        return self.get_trust_anchor(entity_id) is not None
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
-    
+
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
         return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
 
@@ -233,7 +235,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         return self.get("get_by_session_id", session_id)
-    
+
     @property
     def is_connected(self):
         _connected = False
@@ -256,7 +258,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             )
 
         return _connected
-    
+
     def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
         """
         Try to retrieve an object from the cache. If the object is not found, call the on_not_found function.
@@ -285,8 +287,8 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         raise ConnectionRefusedError(
             "Cannot write cache object on any instance"
         )
-    
-    def _close_list(self, db_list: list[Tuple[str,BaseDB]]) -> None:
+
+    def _close_list(self, db_list: list[Tuple[str, BaseDB]]) -> None:
         """
         Close a list of db.
 
@@ -305,14 +307,14 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
                     f"Error while closing db engine {db_name}: {e}"
                 )
                 raise e
-            
+
     def _handle_instance(self, instance: dict) -> dict[BaseStorage | None, BaseCache | None]:
         """
         Handle the initialization of a storage/cache instance.
 
         :param instance: the instance configuration.
         :type instance: dict
-        
+
         :returns: a tuple with the storage and cache instance.
         :rtype: tuple[BaseStorage | None, BaseCache | None]
         """

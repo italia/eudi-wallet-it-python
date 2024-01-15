@@ -65,5 +65,3 @@ def test_dynamic_schema_validation(key_type):
         case "RSA":
             assert isinstance(model, RSAJwkSchema)
             assert not isinstance(model, ECJwkSchema)
-
-

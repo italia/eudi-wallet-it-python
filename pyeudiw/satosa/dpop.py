@@ -20,13 +20,13 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
 
     def _request_endpoint_dpop(self, context: Context, *args) -> Union[JsonResponse, None]:
         """
-        Validates, if any, the DPoP http request header 
-        
+        Validates, if any, the DPoP http request header
+
         :param context: The current context
         :type context: Context
         :param args: The current request arguments
         :type args: tuple
-        
+
         :return:
         :rtype: Union[JsonResponse, None]
         """
@@ -39,14 +39,17 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
             _head = decode_jwt_header(dpop_jws)
             wia = decode_jwt_payload(dpop_jws)
 
-            self._log_debug(context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}")
+            self._log_debug(
+                context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}")
 
             try:
                 WalletInstanceAttestationHeader(**_head)
             except ValidationError as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
+                self._log_warning(
+                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
             except Exception as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}")
+                self._log_warning(
+                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}")
 
             try:
                 WalletInstanceAttestationPayload(**wia)

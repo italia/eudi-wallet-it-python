@@ -25,11 +25,12 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
     :rtype: dict
     """
     if position > 1 or position < 0:
-        raise JWTInvalidElementPosition(f"JWT has no element in position {position}")
+        raise JWTInvalidElementPosition(
+            f"JWT has no element in position {position}")
 
     if isinstance(jwt, bytes):
         jwt = jwt.decode()
-    
+
     b = jwt.split(".")[position]
     padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
     data = json.loads(base64.urlsafe_b64decode(padded))
@@ -64,7 +65,7 @@ def decode_jwt_payload(jwt: str) -> dict:
 
 def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
     """
-    Find the JWK inside the provider JWKs with the kid 
+    Find the JWK inside the provider JWKs with the kid
     specified in jwt header.
 
     :param jwt: a string that represents the jwt.
@@ -82,14 +83,14 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
     kid = head["kid"]
     if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
         provider_jwks = provider_jwks['keys']
-    
+
     return find_jwk(kid, provider_jwks)
 
 
 def is_jwt_format(jwt: str) -> bool:
     """
     Check if a string is in JWT format.
-    
+
     :param jwt: a string that represents the jwt.
     :type jwt: str
 
@@ -100,10 +101,11 @@ def is_jwt_format(jwt: str) -> bool:
     res = re.match(JWT_REGEXP, jwt)
     return bool(res)
 
+
 def is_jwe_format(jwt: str):
     """
     Check if a string is in JWE format.
-    
+
     :param jwt: a string that represents the jwt.
     :type jwt: str
 
@@ -113,18 +115,19 @@ def is_jwe_format(jwt: str):
 
     if not is_jwt_format(jwt):
         return False
-    
+
     header = decode_jwt_header(jwt)
 
-    if header.get("enc", None) == None:
+    if header.get("enc", None) is None:
         return False
-    
+
     return True
+
 
 def is_jws_format(jwt: str):
     """
     Check if a string is in JWS format.
-    
+
     :param jwt: a string that represents the jwt.
     :type jwt: str
 
@@ -133,5 +136,5 @@ def is_jws_format(jwt: str):
     """
     if not is_jwt_format(jwt):
         return False
-    
+
     return not is_jwe_format(jwt)

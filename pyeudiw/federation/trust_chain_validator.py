@@ -9,7 +9,6 @@ from pyeudiw.federation.statements import (
     get_entity_statements
 )
 from pyeudiw.federation.exceptions import (
-    HttpError,
     MissingTrustAnchorPublicKey,
     TimeValidationError,
     KeyValidationError,
@@ -24,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class StaticTrustChainValidator:
     """Helper class for Static Trust Chain validation"""
+
     def __init__(
         self,
         static_trust_chain: list[str],
@@ -31,7 +31,6 @@ class StaticTrustChainValidator:
         httpc_params: dict,
         **kwargs,
     ) -> None:
-        
         """
         Generates a new StaticTrustChainValidator istance
 
@@ -69,7 +68,7 @@ class StaticTrustChainValidator:
         """
 
         return exp < iat_now()
-    
+
     def _validate_exp(self, exp: int) -> None:
         """
         Checks if exp value is expired.
@@ -112,7 +111,7 @@ class StaticTrustChainValidator:
     def validate(self) -> bool:
         """
         Validates the static chain checking the validity in all jwt inside the field trust_chain.
-        
+
         :returns: True if static chain is valid and False otherwise
         :rtype: bool
         """
@@ -134,7 +133,7 @@ class StaticTrustChainValidator:
 
         if not ta_jwk:
             logger.error(
-                f"Trust chain validation error: TA jwks not found."
+                "Trust chain validation error: TA jwks not found."
             )
             return False
 
@@ -232,7 +231,7 @@ class StaticTrustChainValidator:
         try:
             is_es(payload)
             # It's an entity configuration
-        except InvalidEntityStatement:    
+        except InvalidEntityStatement:
             return self._retrieve_ec(iss)
 
         # if it has the source_endpoint let's try a fast renewal
@@ -288,7 +287,7 @@ class StaticTrustChainValidator:
             self.updated_trust_chain.append(jwt)
 
         return self.is_valid
-    
+
     @property
     def is_valid(self) -> bool:
         """Get the validity of chain."""
@@ -310,7 +309,7 @@ class StaticTrustChainValidator:
         chain = self.trust_chain
         payload = decode_jwt_payload(chain[0])
         return payload["iss"]
-    
+
     @property
     def final_metadata(self) -> dict:
         """Apply the metadata and returns the final metadata."""

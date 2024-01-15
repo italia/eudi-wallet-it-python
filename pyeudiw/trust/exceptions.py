@@ -9,11 +9,14 @@ class UnknownTrustAnchor(Exception):
 class MissingProtocolSpecificJwks(Exception):
     pass
 
+
 class MissingTrustType(Exception):
     pass
 
+
 class InvalidTrustType(Exception):
     pass
+
 
 class InvalidAnchor(Exception):
     pass

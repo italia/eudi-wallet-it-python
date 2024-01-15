@@ -4,11 +4,12 @@ from satosa.context import Context
 
 logger = logging.getLogger(__name__)
 
+
 class BaseLogger:
     def _log(self, context: str | Context, level: str, message: str) -> None:
         """
         Log a message with the given level.
-        
+
         :param context: the request context or the scope of the class
         :type context: satosa.context.Context | str
         :param level: the log level
@@ -39,10 +40,10 @@ class BaseLogger:
 
         self._log(context, "debug", message)
 
-    def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args = None) -> None:
+    def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args=None) -> None:
         """
         Logs a message at the start of a backend function.
-        
+
         :param fn_name: the name of the function
         :type fn_name: str
         :param context: the request context
@@ -112,7 +113,7 @@ class BaseLogger:
     def effective_log_level(self) -> int:
         """
         Returns the effective log level.
-        
+
         :return: the effective log level
         :rtype: int
         """

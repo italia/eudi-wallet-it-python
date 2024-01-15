@@ -112,7 +112,6 @@ class TestMongoStorage:
         assert document["request_object"] == request_object
         assert document["internal_response"] == {"response": "test"}
 
-
     def test_retention_ttl(self):
         self.storage.set_session_retention_ttl(5)
 
@@ -124,7 +123,7 @@ class TestMongoStorage:
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
             session_id=session_id, state=state)
-        
+
         assert document_id
 
         # MongoDB does not garantee that the document will be deleted at the exact time

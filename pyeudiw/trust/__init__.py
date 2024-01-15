@@ -24,6 +24,7 @@ from pyeudiw.federation.policy import TrustChainPolicy, combine
 
 logger = logging.getLogger(__name__)
 
+
 class TrustEvaluationHelper:
     def __init__(self, storage: DBEngine, httpc_params, trust_anchor: str = None, **kwargs):
         self.exp: int = 0
@@ -50,7 +51,7 @@ class TrustEvaluationHelper:
                 return self.federation
         except TypeError:
             pass
-        
+
         if is_der_format(self.trust_chain[0]):
             return self.x509
 
@@ -58,19 +59,18 @@ class TrustEvaluationHelper:
             "Invalid Trust Type: trust type not supported"
         )
 
-
     def evaluation_method(self) -> bool:
         ev_method = self._get_evaluation_method()
         return ev_method()
-    
+
     def _update_chain(self, entity_id: str | None = None, exp: datetime | None = None, trust_chain: list | None = None):
-        if entity_id != None:
+        if entity_id is not None:
             self.entity_id = entity_id
 
-        if exp != None:
+        if exp is not None:
             self.exp = exp
 
-        if trust_chain != None:
+        if trust_chain is not None:
             self.trust_chain = trust_chain
 
     def _handle_federation_chain(self):
@@ -106,7 +106,7 @@ class TrustEvaluationHelper:
             self.trust_chain, jwks, self.httpc_params
         )
         self._update_chain(
-            entity_id=tc.entity_id, 
+            entity_id=tc.entity_id,
             exp=tc.exp
         )
 
@@ -117,10 +117,11 @@ class TrustEvaluationHelper:
         except TimeValidationError:
             logger.warn(f"Trust Chain {tc.entity_id} is expired")
         except Exception as e:
-            logger.warn(f"Cannot validate Trust Chain {tc.entity_id} for the following reason: {e}")
+            logger.warn(
+                f"Cannot validate Trust Chain {tc.entity_id} for the following reason: {e}")
 
         db_chain = None
-        
+
         if not _is_valid:
             try:
                 db_chain = self.storage.get_trust_attestation(
@@ -136,7 +137,7 @@ class TrustEvaluationHelper:
             _is_valid = tc.update()
 
             self._update_chain(
-                trust_chain=tc.trust_chain, 
+                trust_chain=tc.trust_chain,
                 exp=tc.exp
             )
 
@@ -149,9 +150,10 @@ class TrustEvaluationHelper:
 
         self.is_trusted = _is_valid
         return _is_valid
-    
+
     def _handle_x509_pem(self):
-        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(self.trust_chain)
+        trust_anchor_eid = self.trust_anchor or get_issuer_from_x5c(
+            self.trust_chain)
         _is_valid = False
 
         if not trust_anchor_eid:
@@ -170,7 +172,7 @@ class TrustEvaluationHelper:
 
         pem = trust_anchor['x509'].get('pem')
 
-        if pem == None:
+        if pem is None:
             raise MissingTrustType(
                 f"Trust Anchor: '{trust_anchor_eid}' has no x509 trust entity"
             )
@@ -181,9 +183,8 @@ class TrustEvaluationHelper:
             raise InvalidAnchor(
                 f"Anchor verification raised the following exception: {e}"
             )
-            
 
-        if not self.is_trusted and trust_anchor['federation'].get("chain", None) != None:
+        if not self.is_trusted and trust_anchor['federation'].get("chain", None) is not None:
             self._handle_federation_chain()
 
         self.is_trusted = _is_valid
@@ -214,12 +215,12 @@ class TrustEvaluationHelper:
         try:
             # TODO: there are some cases where the jwks are taken from a uri ...
             selected_metadata = {
-                "metadata": self.final_metadata['metadata'], 
+                "metadata": self.final_metadata['metadata'],
                 "metadata_policy": {}
             }
 
             self.final_metadata = TrustChainPolicy().apply_policy(
-                selected_metadata, 
+                selected_metadata,
                 policy_acc
             )
 
@@ -232,7 +233,7 @@ class TrustEvaluationHelper:
 
     def get_trusted_jwks(self, metadata_type: str, policies: list[dict] = []) -> list[dict]:
         return self.get_final_metadata(
-            metadata_type=metadata_type, 
+            metadata_type=metadata_type,
             policies=policies
         ).get('jwks', {}).get('keys', [])
 
@@ -285,7 +286,6 @@ class TrustEvaluationHelper:
         if is_good:
             return trust_evaluation_helper
 
-        trust_evaluation_helper.discovery(entity_id=entity_id, entity_configuration=entity_configuration)
+        trust_evaluation_helper.discovery(
+            entity_id=entity_id, entity_configuration=entity_configuration)
         return trust_evaluation_helper
-
-

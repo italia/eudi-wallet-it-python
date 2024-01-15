@@ -81,7 +81,8 @@ class TrustChainBuilder:
                     jwts[0], httpc_params=self.httpc_params
                 )
 
-                subject_configuration.update_trust_anchor_conf(trust_anchor_configuration)
+                subject_configuration.update_trust_anchor_conf(
+                    trust_anchor_configuration)
                 subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
@@ -116,7 +117,7 @@ class TrustChainBuilder:
         apply the metadata policies along the path.
 
         :returns: the final metadata with policy applied
-        :rtype: dict 
+        :rtype: dict
         """
         # find the path of trust
         if not self.trust_path:
@@ -180,7 +181,7 @@ class TrustChainBuilder:
 
     def _set_exp(self) -> None:
         """
-        updates the internal exp field with the nearest 
+        updates the internal exp field with the nearest
         expiraton date found in the trust_path field
         """
         exps = [i.payload["exp"] for i in self.trust_path]
@@ -194,7 +195,7 @@ class TrustChainBuilder:
         the internal representation of chain.
 
         :returns: the validity status of the updated chain
-        :rtype: bool 
+        :rtype: bool
         """
         logger.info(
             f"Starting a Walk into Metadata Discovery for {self.subject}")
@@ -274,7 +275,7 @@ class TrustChainBuilder:
 
     def _set_max_path_len(self) -> None:
         """
-        Sets the internal field max_path_len with the costraint 
+        Sets the internal field max_path_len with the costraint
         found in trust anchor payload
         """
         if self.trust_anchor_configuration.payload.get("constraints", {}).get(
@@ -361,11 +362,11 @@ class TrustChainBuilder:
 
     def start(self):
         """
-        Retrieves the subject (leaf) configuration and starts 
+        Retrieves the subject (leaf) configuration and starts
         chain discovery.
 
         :returns: the list containing the ECs
-        :rtype: list[str] 
+        :rtype: list[str]
         """
         try:
             # self.get_trust_anchor_configuration()
