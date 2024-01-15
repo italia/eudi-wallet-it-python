@@ -21,7 +21,7 @@ class BaseCache(BaseDB):
         :type object_name: str
         :param on_not_found: the function to call if the object is not found.
         :type on_not_found: Callable[[], str]
-        
+
         :returns: a tuple with the retrieved object and a status.
         :rtype: tuple[dict, RetrieveStatus]
         """

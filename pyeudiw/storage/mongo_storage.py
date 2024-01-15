@@ -1,13 +1,14 @@
 import pymongo
+import datetime as dt
 from datetime import datetime
 
 from pymongo.results import UpdateResult
 
 from pyeudiw.storage.base_storage import (
-    BaseStorage, 
-    TrustType, 
-    trust_type_map, 
-    trust_attestation_field_map, 
+    BaseStorage,
+    TrustType,
+    trust_type_map,
+    trust_attestation_field_map,
     trust_anchor_field_map
 )
 from pyeudiw.storage.exceptions import (
@@ -15,6 +16,7 @@ from pyeudiw.storage.exceptions import (
     StorageEntryUpdateFailed
 )
 from typing import Union
+
 
 class MongoStorage(BaseStorage):
     def __init__(self, conf: dict, url: str, connection_params: dict = {}) -> None:
@@ -26,13 +28,15 @@ class MongoStorage(BaseStorage):
         self.client = None
         self.db = None
 
+        self.set_session_retention_ttl(conf.get("data_ttl", None))
+
     @property
     def is_connected(self) -> bool:
         if not self.client:
             return False
         try:
             self.client.server_info()
-        except pymongo.errors.InvalidOperation as e:
+        except pymongo.errors.InvalidOperation:
             return False
 
         return True
@@ -109,7 +113,7 @@ class MongoStorage(BaseStorage):
     def init_session(self, document_id: str, session_id: str, state: str) -> str:
         entity = {
             "document_id": document_id,
-            "creation_date": datetime.now().isoformat(),
+            "creation_date": dt.datetime.now(tz=dt.timezone.utc),
             "state": state,
             "session_id": session_id,
             "finalized": False,
@@ -124,6 +128,20 @@ class MongoStorage(BaseStorage):
         self.sessions.insert_one(entity)
 
         return document_id
+
+    def set_session_retention_ttl(self, ttl: int) -> None:
+        self._connect()
+
+        if not ttl:
+            if self.sessions.index_information().get("creation_date_1"):
+                self.sessions.drop_index("creation_date_1")
+        else:
+            self.sessions.create_index(
+                [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)
+
+    def has_session_retention_ttl(self) -> bool:
+        self._connect()
+        return self.sessions.index_information().get("creation_date_1") is not None
 
     def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict) -> UpdateResult:
         self._connect()
@@ -202,7 +220,7 @@ class MongoStorage(BaseStorage):
         return self._get_trust_attestation("trust_anchors", entity_id)
 
     def _has_trust_attestation(self, collection: str, entity_id: str) -> bool:
-        return self._get_trust_attestation(collection, entity_id) != None
+        return self._get_trust_attestation(collection, entity_id) is not None
 
     def has_trust_attestation(self, entity_id: str) -> bool:
         return self._has_trust_attestation("trust_attestations", entity_id)
@@ -230,7 +248,7 @@ class MongoStorage(BaseStorage):
         db_collection = getattr(self, collection)
         db_collection.insert_one(attestation)
         return entity_id
-    
+
     def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
         trust_name = trust_type_map[trust_type]
         trust_field = trust_attestation_field_map[trust_type]
@@ -243,7 +261,7 @@ class MongoStorage(BaseStorage):
         entity[trust_name] = trust_entity
 
         return entity
-    
+
     def _update_anchor_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
         trust_name = trust_type_map[trust_type]
         trust_field = trust_anchor_field_map[trust_type]
@@ -265,7 +283,8 @@ class MongoStorage(BaseStorage):
             "metadata": {}
         }
 
-        updated_entity = self._update_attestation_metadata(entity, attestation, exp, trust_type)
+        updated_entity = self._update_attestation_metadata(
+            entity, attestation, exp, trust_type)
 
         return self._add_entry(
             "trust_attestations", entity_id, updated_entity, exp
@@ -278,7 +297,7 @@ class MongoStorage(BaseStorage):
             raise ValueError(
                 f'Document with entity_id {entity_id} not found.'
             )
-        
+
         entity["metadata"][metadata_type] = metadata
 
         return self._update_trust_attestation("trust_attestations", entity_id, entity)
@@ -293,7 +312,8 @@ class MongoStorage(BaseStorage):
                 "x509": {}
             }
 
-            updated_entity = self._update_anchor_metadata(entity, entity_configuration, exp, trust_type)
+            updated_entity = self._update_anchor_metadata(
+                entity, entity_configuration, exp, trust_type)
             return self._add_entry("trust_anchors", entity_id, updated_entity, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict) -> str:
@@ -307,14 +327,18 @@ class MongoStorage(BaseStorage):
         return documentStatus
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
-        old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
-        upd_entity = self._update_attestation_metadata(old_entity, attestation, exp, trust_type)
+        old_entity = self._get_trust_attestation(
+            "trust_attestations", entity_id) or {}
+        upd_entity = self._update_attestation_metadata(
+            old_entity, attestation, exp, trust_type)
 
         return self._update_trust_attestation("trust_attestations", entity_id, upd_entity)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
-        old_entity = self._get_trust_attestation("trust_attestations", entity_id) or {}
-        upd_entity = self._update_anchor_metadata(old_entity, entity_configuration, exp, trust_type)
+        old_entity = self._get_trust_attestation(
+            "trust_attestations", entity_id) or {}
+        upd_entity = self._update_anchor_metadata(
+            old_entity, entity_configuration, exp, trust_type)
 
         if not self.has_trust_anchor(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")

@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from pyeudiw.tools.base_logger import BaseLogger
 from .base_http_error_handler import BaseHTTPErrorHandler
 
+
 class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
     """
     Backend DPoP class.
@@ -19,13 +20,13 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
 
     def _request_endpoint_dpop(self, context: Context, *args) -> Union[JsonResponse, None]:
         """
-        Validates, if any, the DPoP http request header 
-        
+        Validates, if any, the DPoP http request header
+
         :param context: The current context
         :type context: Context
         :param args: The current request arguments
         :type args: tuple
-        
+
         :return:
         :rtype: Union[JsonResponse, None]
         """
@@ -38,21 +39,28 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
             _head = decode_jwt_header(dpop_jws)
             wia = decode_jwt_payload(dpop_jws)
 
-            self._log_debug(context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}")
+            self._log_debug(
+                context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}")
 
             try:
                 WalletInstanceAttestationHeader(**_head)
             except ValidationError as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}! \nValidation error: {e}")
+                self._log_warning(
+                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
             except Exception as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid Headers: {_head}! \nUnexpected error: {e}")
+                self._log_warning(
+                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}")
 
             try:
                 WalletInstanceAttestationPayload(**wia)
             except ValidationError as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid WIA: {wia}! \nValidation error: {e}")
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}. Validation error: {e}"
+                self._log_warning(context, message=_msg)
+                #  return self._handle_401(context, _msg, e)
             except Exception as e:
-                self._log_warning(context, message=f"[FOUND WIA] Invalid WIA: {wia}! \nUnexpected error: {e}")
+                _msg = f"[FOUND WIA] Invalid WIA: {wia}. Unexpected error: {e}"
+                self._log_warning(context, message=_msg)
+                #  return self._handle_401(context, _msg, e)
 
             try:
                 self._validate_trust(context, dpop_jws)
@@ -84,7 +92,7 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
 
         else:
             _msg = (
-                "The Wallet Instance doesn't provide a valid Wallet Instance Attestation "
+                "The Wallet Instance doesn't provide a valid Wallet Attestation "
                 "a default set of capabilities and a low security level are applied."
             )
             self._log_warning(context, message=_msg)

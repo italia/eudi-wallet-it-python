@@ -1,9 +1,12 @@
+import logging
+
 from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 from pyeudiw.openid4vp.exceptions import (
+    InvalidVPToken,
     VPNotFound,
     VPInvalidNonce,
     NoNonceInVPToken
@@ -12,10 +15,14 @@ from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
 from pydantic import ValidationError
 
+logger = logging.getLogger(__name__)
+
+
 class DirectPostResponse:
     """
     Helper class for generate Direct Post Response.
     """
+
     def __init__(self, jwt: str, jwks_by_kids: Dict[str, dict], nonce: str = ""):
         """
         Generate an instance of DirectPostResponse.
@@ -90,10 +97,11 @@ class DirectPostResponse:
                     )
             VPTokenPayload(**vp.payload)
             VPTokenHeader(**vp.headers)
-        except ValidationError:
-            return False
+        except ValidationError as e:
+            raise InvalidVPToken(
+                f"VP is not valid, {e}: {vp.headers}.{vp.payload}"
+            )
         return True
-    
 
     def validate(self) -> bool:
         """
@@ -102,12 +110,19 @@ class DirectPostResponse:
         :returns: True if all VP are valid, False otherwhise.
         :rtype: bool
         """
-        
+        all_valid = None
         for vp in self.get_presentation_vps():
-            if not self._validate_vp(vp):
-                return False
-        
-        return True
+            try:
+                self._validate_vp(vp)
+                if all_valid is None:
+                    all_valid = True
+            except Exception:
+                logger.error(
+
+                )
+                all_valid = False
+
+        return all_valid
 
     def get_presentation_vps(self) -> list[Vp]:
         """
@@ -125,16 +140,18 @@ class DirectPostResponse:
         vps = [_vps] if isinstance(_vps, str) else _vps
 
         if not vps:
-            raise VPNotFound(f"Vps are empty for response with nonce \"{self.nonce}\"")
+            raise VPNotFound(
+                f'Vps are empty for response with nonce "{self.nonce}"'
+            )
 
         for vp in vps:
+            # TODO - add an exception handling here
             _vp = Vp(vp)
             self._vps.append(_vp)
 
             cred_iss = _vp.credential_payload['iss']
             if not self.credentials_by_issuer.get(cred_iss, None):
                 self.credentials_by_issuer[cred_iss] = []
-
             self.credentials_by_issuer[cred_iss].append(_vp.payload['vp'])
 
         return self._vps
@@ -145,7 +162,7 @@ class DirectPostResponse:
         if not self._vps:
             self.get_presentation_vps()
         return self._vps
-    
+
     @property
     def payload(self) -> dict:
         """Returns the decoded payload of presentation"""

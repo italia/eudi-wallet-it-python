@@ -1,5 +1,5 @@
 import uuid
-
+import time
 import pytest
 
 from pyeudiw.storage.mongo_storage import MongoStorage
@@ -111,3 +111,29 @@ class TestMongoStorage:
         assert document["nonce"] == nonce
         assert document["request_object"] == request_object
         assert document["internal_response"] == {"response": "test"}
+
+    def test_retention_ttl(self):
+        self.storage.set_session_retention_ttl(5)
+
+        assert self.storage.has_session_retention_ttl()
+
+        state = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+
+        document_id = self.storage.init_session(
+            str(uuid.uuid4()),
+            session_id=session_id, state=state)
+
+        assert document_id
+
+        # MongoDB does not garantee that the document will be deleted at the exact time
+        # https://www.mongodb.com/docs/v7.0/core/index-ttl/#timing-of-the-delete-operation
+
+        document = self.storage.get_by_id(document_id)
+
+        while document:
+            try:
+                time.sleep(2)
+                document = self.storage.get_by_id(document_id)
+            except ValueError:
+                document = None

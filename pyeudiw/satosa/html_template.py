@@ -1,10 +1,12 @@
 from typing import Any, Dict
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+
 class Jinja2TemplateHandler:
     """
     Jinja2 template handler
     """
+
     def __init__(self, config: Dict[str, Any]):
         """
         Create an istance of Jinja2TemplateHandler

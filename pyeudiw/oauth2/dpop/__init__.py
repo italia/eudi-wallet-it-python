@@ -25,6 +25,7 @@ class DPoPIssuer:
     """
     Helper class for generate DPoP proofs.
     """
+
     def __init__(self, htu: str, token: str, private_jwk: dict):
         """
         Generates an instance of DPoPIssuer.
@@ -101,6 +102,8 @@ class DPoPVerifier:
                 "Jwk validation error, "
                 f"{e.__class__.__name__}: {e}"
             )
+            raise ValueError("JWK schema validation error during DPoP init")
+
         # If the jwt is invalid, this will raise an exception
         try:
             decode_jwt_header(http_header_dpop)
@@ -129,7 +132,7 @@ class DPoPVerifier:
 
         :raises InvalidDPoPKid: if the kid of DPoP is invalid.
         :raises InvalidDPoPAth: if the header's JWK is different from public_jwk's one.
-        
+
         :returns: True if the validation is correctly executed, False otherwise
         :rtype: bool
         """

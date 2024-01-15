@@ -1,11 +1,10 @@
 import datetime
-import json
 import logging
 import asyncio
 import requests
 
 from secrets import token_hex
-from pyeudiw.federation.http_client import http_get
+from pyeudiw.federation.http_client import http_get_sync, http_get_async
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ def make_timezone_aware(dt: datetime.datetime, tz: datetime.timezone | datetime.
 def iat_now() -> int:
     """
     Get the current timestamp in seconds.
-    
+
     :returns: The current timestamp in seconds
     :rtype: int
     """
@@ -66,7 +65,7 @@ def datetime_from_timestamp(timestamp: int | float) -> datetime.datetime:
     return make_timezone_aware(datetime.datetime.fromtimestamp(timestamp))
 
 
-def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[dict]:
+def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[requests.Response]:
     """
     Perform an HTTP Request returning the payload of the call.
 
@@ -84,12 +83,9 @@ def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = T
 
     if http_async:
         responses = asyncio.run(
-            http_get(urls, httpc_params))  # pragma: no cover
+            http_get_async(urls, httpc_params))  # pragma: no cover
     else:
-        responses = []
-        for i in urls:
-            res = requests.get(i, **httpc_params)  # nosec - B113
-            responses.append(res.content)
+        responses = http_get_sync(urls, httpc_params)
     return responses
 
 
@@ -116,7 +112,7 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list[dict] = [
             jwks_list = get_http_url(
                 [jwks_uri], httpc_params=httpc_params
             )
-            jwks_list = json.loads(jwks_list[0])
+            jwks_list = jwks_list[0].json()
         except Exception as e:
             logger.error(f"Failed to download jwks from {jwks_uri}: {e}")
     elif metadata.get('signed_jwks_uri'):
@@ -124,7 +120,7 @@ def get_jwks(httpc_params: dict, metadata: dict, federation_jwks: list[dict] = [
             signed_jwks_uri = metadata["signed_jwks_uri"]
             jwks_list = get_http_url(
                 [signed_jwks_uri], httpc_params=httpc_params
-            )[0]
+            )[0].json()
         except Exception as e:
             logger.error(
                 f"Failed to download jwks from {signed_jwks_uri}: {e}")

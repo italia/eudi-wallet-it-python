@@ -9,10 +9,10 @@ from pyeudiw.federation.statements import (
     get_entity_statements
 )
 from pyeudiw.federation.exceptions import (
-    HttpError,
     MissingTrustAnchorPublicKey,
     TimeValidationError,
-    KeyValidationError
+    KeyValidationError,
+    InvalidEntityStatement
 )
 
 from pyeudiw.jwk import find_jwk
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class StaticTrustChainValidator:
     """Helper class for Static Trust Chain validation"""
+
     def __init__(
         self,
         static_trust_chain: list[str],
@@ -30,7 +31,6 @@ class StaticTrustChainValidator:
         httpc_params: dict,
         **kwargs,
     ) -> None:
-        
         """
         Generates a new StaticTrustChainValidator istance
 
@@ -68,7 +68,7 @@ class StaticTrustChainValidator:
         """
 
         return exp < iat_now()
-    
+
     def _validate_exp(self, exp: int) -> None:
         """
         Checks if exp value is expired.
@@ -111,7 +111,7 @@ class StaticTrustChainValidator:
     def validate(self) -> bool:
         """
         Validates the static chain checking the validity in all jwt inside the field trust_chain.
-        
+
         :returns: True if static chain is valid and False otherwise
         :rtype: bool
         """
@@ -132,18 +132,27 @@ class StaticTrustChainValidator:
         )
 
         if not ta_jwk:
+            logger.error(
+                "Trust chain validation error: TA jwks not found."
+            )
             return False
 
         # Validate the last statement with ta_jwk
         jwsh = JWSHelper(ta_jwk)
 
         if not jwsh.verify(last_element):
+            logger.error(
+                f"Trust chain signature validation error: {last_element} using {ta_jwk}"
+            )
             return False
 
         # then go ahead with other checks
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
+            logger.error(
+                f"Trust chain validation error, statement expired: {es_payload}"
+            )
             return False
 
         fed_jwks = es_payload["jwks"]["keys"]
@@ -160,10 +169,16 @@ class StaticTrustChainValidator:
                     st_header.get("kid", None), fed_jwks
                 )
             except (KidNotFoundError, InvalidKid):
+                logger.error(
+                    f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}"
+                )
                 return False
 
             jwsh = JWSHelper(jwk)
             if not jwsh.verify(st):
+                logger.error(
+                    f"Trust chain signature validation error: {st} using {jwk}"
+                )
                 return False
             else:
                 fed_jwks = st_payload["jwks"]["keys"]
@@ -183,11 +198,6 @@ class StaticTrustChainValidator:
         :rtype: str
         """
         jwt = get_entity_configurations(iss, self.httpc_params)
-        if not jwt:
-            raise HttpError(
-                f"Cannot get the Entity Configuration from {iss}")
-
-        # is something weird these will raise their Exceptions
         return jwt[0]
 
     def _retrieve_es(self, download_url: str, iss: str) -> str:
@@ -203,17 +213,11 @@ class StaticTrustChainValidator:
         :rtype: str
         """
         jwt = get_entity_statements(download_url, self.httpc_params)
-        if not jwt:
-            logger.warning(
-                f"Cannot fast refresh Entity Statement {iss}"
-            )
-        if isinstance(jwt, list) and jwt:
-            return jwt[0]
-        return jwt
+        return jwt[0]
 
     def _update_st(self, st: str) -> str:
         """
-        Updates the statement retrieving the new one using the source end_point and the sub fields of st payload.
+        Updates the statement retrieving the new one using the source_endpoint and the sub fields of the entity statement payload.
 
         :param st: The statement in form of a JWT.
         :type st: str
@@ -223,8 +227,11 @@ class StaticTrustChainValidator:
         """
         payload = decode_jwt_payload(st)
         iss = payload['iss']
-        if not is_es(payload):
+
+        try:
+            is_es(payload)
             # It's an entity configuration
+        except InvalidEntityStatement:
             return self._retrieve_ec(iss)
 
         # if it has the source_endpoint let's try a fast renewal
@@ -280,7 +287,7 @@ class StaticTrustChainValidator:
             self.updated_trust_chain.append(jwt)
 
         return self.is_valid
-    
+
     @property
     def is_valid(self) -> bool:
         """Get the validity of chain."""
@@ -302,7 +309,7 @@ class StaticTrustChainValidator:
         chain = self.trust_chain
         payload = decode_jwt_payload(chain[0])
         return payload["iss"]
-    
+
     @property
     def final_metadata(self) -> dict:
         """Apply the metadata and returns the final metadata."""

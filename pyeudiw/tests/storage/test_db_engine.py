@@ -46,7 +46,7 @@ class TestMongoDBEngine:
         try:
             self.engine.update_request_object(
                 unx_document_id, request_object)
-        except:
+        except Exception:
             return
 
     def test_update_response_object(self):
@@ -58,24 +58,24 @@ class TestMongoDBEngine:
         response_object = {"response_object": "response_object"}
 
         try:
-            replica_count = self.engine.update_response_object(
+            self.engine.update_response_object(
                 str(uuid.uuid4()), str(uuid.uuid4()), response_object)
-        except:
+        except Exception:
             return
-        
-    @pytest.fixture(autouse=True)   
+
+    @pytest.fixture(autouse=True)
     def test_insert_trusted_attestation_federation(self):
         self.federation_entity_id = str(uuid.uuid4())
         date = datetime.now()
 
         replica_count = self.engine.add_trust_attestation(
             self.federation_entity_id, ["a", "b", "c"], date)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_attestation(self.federation_entity_id)
 
-        assert ta.get("federation", None) != None
+        assert ta.get("federation", None) is not None
         assert ta["federation"]["chain"] == ["a", "b", "c"]
 
     @pytest.fixture(autouse=True)
@@ -85,12 +85,12 @@ class TestMongoDBEngine:
 
         replica_count = self.engine.add_trust_attestation(
             self.x509_entity_id, ["a", "b", "c"], date, TrustType.X509)
-            
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_attestation(self.x509_entity_id)
 
-        assert ta.get("x509", None) != None
+        assert ta.get("x509", None) is not None
         assert ta["x509"]["x5c"] == ["a", "b", "c"]
 
     def test_update_trusted_attestation_federation(self):
@@ -98,12 +98,12 @@ class TestMongoDBEngine:
 
         replica_count = self.engine.update_trust_attestation(
             self.federation_entity_id, ["a", "b", "d"], date)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_attestation(self.federation_entity_id)
 
-        assert ta.get("federation", None) != None
+        assert ta.get("federation", None) is not None
         assert ta["federation"]["chain"] == ["a", "b", "d"]
 
     def test_update_trusted_attestation_x509(self):
@@ -111,12 +111,12 @@ class TestMongoDBEngine:
 
         replica_count = self.engine.update_trust_attestation(
             self.x509_entity_id, ["a", "b", "d"], date, TrustType.X509)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_attestation(self.x509_entity_id)
 
-        assert ta.get("x509", None) != None
+        assert ta.get("x509", None) is not None
         assert ta["x509"]["x5c"] == ["a", "b", "d"]
 
     def test_update_unexistent_trusted_attestation(self):
@@ -125,59 +125,60 @@ class TestMongoDBEngine:
 
             self.engine.update_trust_attestation(
                 "12345", ["a", "b", "d"], date)
-            
+
             assert False
 
-        except StorageWriteError as e:
+        except StorageWriteError:
             return
 
     def test_update_trusted_attestation_metadata(self):
         replica_count = self.engine.add_trust_attestation_metadata(
             self.federation_entity_id, "test_metadata", {"metadata": {"data_type": "test"}})
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_attestation(self.federation_entity_id)
 
-        assert ta.get("metadata", None) != None
-        assert ta["metadata"]["test_metadata"] == {"metadata": {"data_type": "test"}}
+        assert ta.get("metadata", None) is not None
+        assert ta["metadata"]["test_metadata"] == {
+            "metadata": {"data_type": "test"}}
 
     def test_update_unexistent_trusted_attestation_metadata(self):
         try:
             self.engine.add_trust_attestation_metadata(
                 "test", "test_metadata", {"metadata": {"data_type": "test"}})
             assert False
-        except StorageWriteError as e:
+        except StorageWriteError:
             return
 
-    @pytest.fixture(autouse=True)   
+    @pytest.fixture(autouse=True)
     def test_insert_trusted_anchor_federation(self):
         self.federation_entity_anchor_id = str(uuid.uuid4())
         date = datetime.now()
 
         replica_count = self.engine.add_trust_anchor(
             self.federation_entity_anchor_id, "test123", date)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_anchor(self.federation_entity_anchor_id)
 
-        assert ta.get("federation", None) != None
+        assert ta.get("federation", None) is not None
         assert ta["federation"]["entity_configuration"] == "test123"
 
-    @pytest.fixture(autouse=True)   
+    @pytest.fixture(autouse=True)
     def test_insert_trusted_anchor_x509(self):
         self.x509_entity_anchor_id = str(uuid.uuid4())
         date = datetime.now()
 
         replica_count = self.engine.add_trust_anchor(
             self.x509_entity_anchor_id, "test123", date, TrustType.X509)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_anchor(self.x509_entity_anchor_id)
 
-        assert ta.get("x509", None) != None
+        assert ta.get("x509", None) is not None
         assert ta["x509"]["pem"] == "test123"
 
     def test_update_trusted_anchor_federation(self):
@@ -185,12 +186,12 @@ class TestMongoDBEngine:
 
         replica_count = self.engine.update_trust_anchor(
             self.federation_entity_anchor_id, "test124", date)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_anchor(self.federation_entity_anchor_id)
 
-        assert ta.get("federation", None) != None
+        assert ta.get("federation", None) is not None
         assert ta["federation"]["entity_configuration"] == "test124"
 
     def test_update_trusted_anchor_x509(self):
@@ -198,12 +199,12 @@ class TestMongoDBEngine:
 
         replica_count = self.engine.update_trust_anchor(
             self.x509_entity_anchor_id, "test124", date, TrustType.X509)
-        
+
         assert replica_count > 0
-        
+
         ta = self.engine.get_trust_anchor(self.x509_entity_anchor_id)
 
-        assert ta.get("x509", None) != None
+        assert ta.get("x509", None) is not None
         assert ta["x509"]["pem"] == "test124"
 
     def test_update_unexistent_trusted_anchor(self):
@@ -212,8 +213,8 @@ class TestMongoDBEngine:
 
             self.engine.update_trust_anchor(
                 "12345", "test124", date, TrustType.X509)
-            
+
             assert False
 
-        except StorageWriteError as e:
+        except StorageWriteError:
             return

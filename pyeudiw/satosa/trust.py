@@ -1,5 +1,4 @@
 import json
-import satosa.logging_util as lu
 from satosa.context import Context
 from satosa.response import Response
 
@@ -15,6 +14,7 @@ from pyeudiw.trust import TrustEvaluationHelper
 from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
 from pyeudiw.tools.base_logger import BaseLogger
+
 
 class BackendTrust(BaseLogger):
     """
@@ -41,7 +41,10 @@ class BackendTrust(BaseLogger):
         try:
             self.get_backend_trust_chain()
         except Exception as e:
-            self._log_critical("Backend Trust", f"Cannot fetch the trust anchor configuration: {e}")
+            self._log_critical(
+                "Backend Trust",
+                f"Cannot fetch the trust anchor configuration: {e}"
+            )
 
         self.db_engine.close()
         self._db_engine = None
@@ -57,10 +60,9 @@ class BackendTrust(BaseLogger):
         :rtype: Response
         """
 
-        data = self.entity_configuration_as_dict
         if context.qs_params.get('format', '') == 'json':
             return Response(
-                json.dumps(data),
+                json.dumps(self.entity_configuration_as_dict),
                 status="200",
                 content="application/json"
             )
@@ -78,7 +80,7 @@ class BackendTrust(BaseLogger):
 
         tas = self.config['federation']['trust_anchors']
         self._log_info("Trust Anchors updates", f"Trying to update: {tas}")
-        
+
         for ta in tas:
             try:
                 update_trust_anchors_ecs(
@@ -87,7 +89,8 @@ class BackendTrust(BaseLogger):
                     httpc_params=self.config['network']['httpc_params']
                 )
             except Exception as e:
-                self._log_warning("Trust Anchor updates", f"{ta} update failed: {e}")
+                self._log_warning("Trust Anchor updates",
+                                  f"{ta} update failed: {e}")
 
             self._log_info("Trust Anchor updates", f"{ta} updated")
 
@@ -115,13 +118,13 @@ class BackendTrust(BaseLogger):
 
         except (DiscoveryFailedError, EntryNotFound, Exception) as e:
             message = (
-                f"Error while building trust chain for client with id: {self.client_id}\n"
+                f"Error while building trust chain for client with id: {self.client_id}. "
                 f"{e.__class__.__name__}: {e}"
             )
             self._log_warning("Trust Chain", message)
 
         return []
-    
+
     def _validate_trust(self, context: Context, jws: str) -> TrustEvaluationHelper:
         """
         Validates the trust of the given jws.
@@ -154,7 +157,6 @@ class BackendTrust(BaseLogger):
                 f"{trust_eval.entity_id}"
             )
             self._log_error(context, message)
-
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} not found for Trust evaluation."
             )
@@ -164,14 +166,12 @@ class BackendTrust(BaseLogger):
                 f"{trust_eval.entity_id}: {e}"
             )
             self._log_error(context, message)
-
             raise NotTrustedFederationError(
                 f"{trust_eval.entity_id} is not trusted."
             )
 
         return trust_eval
 
-    
     @property
     def default_federation_private_jwk(self) -> dict:
         """Returns the default federation private jwk."""
