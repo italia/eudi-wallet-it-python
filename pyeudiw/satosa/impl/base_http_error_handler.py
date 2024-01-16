@@ -1,8 +1,7 @@
 from satosa.context import Context
+from ..exceptions import EmptyHTTPError
+from .response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
-from .exceptions import EmptyHTTPError
-from pyeudiw.satosa.response import JsonResponse
-
 
 class BaseHTTPErrorHandler(BaseLogger):
     def _serialize_error(

@@ -5,7 +5,7 @@ from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
     WalletInstanceAttestationPayload,
     WalletInstanceAttestationHeader
 )
-from pyeudiw.satosa.response import JsonResponse
+from ..impl.response import JsonResponse
 from satosa.context import Context
 from pydantic import ValidationError
 
