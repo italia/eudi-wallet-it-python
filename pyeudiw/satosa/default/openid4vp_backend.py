@@ -4,15 +4,15 @@ from typing import Callable
 from pyeudiw.jwk import JWK
 from satosa.context import Context
 from pydantic import ValidationError
-from ..impl.trust import BackendTrust
-from ..impl.response import JsonResponse
+from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.utils import iat_now
 from satosa.internal import InternalData
 from pyeudiw.storage.db_engine import DBEngine
 from satosa.response import Response, Redirect
 from pyeudiw.tools.mobile import is_smartphone
 from urllib.parse import quote_plus, urlencode
-from ..impl.html_template import Jinja2TemplateHandler
+from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
 

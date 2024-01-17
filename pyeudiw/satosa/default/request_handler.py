@@ -7,9 +7,9 @@ from satosa.context import Context
 from pyeudiw.openid4vp.vp import Vp
 from pydantic import ValidationError
 from satosa.response import Redirect
-from ..impl.trust import BackendTrust
+from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.tools.utils import iat_now
-from ..impl.response import JsonResponse
+from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.satosa.exceptions import NotTrustedFederationError

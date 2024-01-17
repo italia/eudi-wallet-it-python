@@ -1,5 +1,5 @@
 from satosa.context import Context
-from ..impl.response import JsonResponse
+from pyeudiw.satosa.utils.response import JsonResponse
 from .event_handler import EventHandlerInterface
 
 class ResponseHandlerInterface(EventHandlerInterface):

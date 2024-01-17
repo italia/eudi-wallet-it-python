@@ -1,6 +1,6 @@
 from satosa.context import Context
 from satosa.response import Redirect
-from ..impl.response import JsonResponse
+from pyeudiw.satosa.utils.response import JsonResponse
 from .event_handler import EventHandlerInterface
 
 class RequestHandlerInterface(EventHandlerInterface):
