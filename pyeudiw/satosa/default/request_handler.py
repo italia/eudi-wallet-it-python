@@ -29,7 +29,6 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
         self._log_function_debug("request_endpoint", context, "args", args)
 
         if context.request_method.lower() != 'post':
-            # raise BadRequestError("HTTP Method not supported")
             return self._handle_400(context, "HTTP Method not supported")
 
         _endpoint = f'{self.server_url}{context.request_uri}'
