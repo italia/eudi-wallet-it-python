@@ -200,7 +200,11 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self._log_function_debug("get_response_endpoint", context)
 
         state = context.qs_params.get("id", None)
-        session_id = context.state["SESSION_ID"]
+        session_id = context.state.get("SESSION_ID", None)
+
+        if not state:
+            return self._handle_400(context, "No state found in query params")
+        
         finalized_session = None
 
         try:
