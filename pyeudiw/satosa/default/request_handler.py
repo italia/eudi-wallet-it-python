@@ -230,7 +230,8 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
 
         sub = ""
         pepper = self.config.get("user_attributes", {})[
-            'subject_id_random_value']
+            'subject_id_random_value'
+        ]
         for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]
