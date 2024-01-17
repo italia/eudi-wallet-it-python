@@ -3,6 +3,7 @@ from satosa.backends.base import BackendModule
 from pyeudiw.tools.base_logger import BaseLogger
 from ..impl.base_http_error_handler import BaseHTTPErrorHandler
 
+
 class EventHandlerInterface(BackendModule, BaseHTTPErrorHandler, BaseLogger):
     """
     Interface for event handlers.
