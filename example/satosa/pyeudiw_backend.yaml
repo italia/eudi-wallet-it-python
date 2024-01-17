@@ -19,11 +19,9 @@ config:
       get_response: '/get-response'
 
   qrcode:
-    size: 100
+    size: 250 #px
     color: '#2B4375'
     expiration_time: 120 # seconds
-    logo_path: 
-    use_zlib: false
 
   jwt:
     default_sig_alg: ES256 # or RS256
