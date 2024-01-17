@@ -74,8 +74,10 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
-        self._log_debug("OpenID4VP init",
-                        f"Loaded configuration: {json.dumps(config)}")
+        self._log_debug(
+           "OpenID4VP init",
+           f"loaded configuration: {json.dumps(config)}"
+        )
         
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
