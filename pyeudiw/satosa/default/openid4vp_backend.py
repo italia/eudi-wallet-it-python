@@ -100,14 +100,17 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "OpenID4VPBackend",
                 f"Exposing backend entity endpoint = {_endpoint}"
             )
-            if k == 'get_response':
-                self.registered_get_response_endpoint = _endpoint
-            elif k == 'response':
-                self.absolute_redirect_url = _endpoint
-            elif k == 'request':
-                self.absolute_request_url = _endpoint
-            elif k == "status":
-                self.absolute_status_url = _endpoint
+    match k:
+        case "get_response":
+             self.registered_get_response_endpoint = _endpoint
+        case "response":
+             self.absolute_redirect_url = _endpoint
+        case "request":
+             self.absolute_request_url = _endpoint
+        case "status":
+             self.absolute_status_url = _endpoint
+        case _:
+            pass
         return url_map
     
     def start_auth(self, context: Context, internal_request) -> Response:
