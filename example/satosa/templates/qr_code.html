@@ -16,12 +16,22 @@
                 </div>
                 <br>
                 <div id="content-qrcode" class="row">
-                   <span id="content-qrcode-payload" style="
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;">
-                   </span>
+                   <div id = "content-qrcode-payload">
+                    <qr-code
+                        contents="{{ qrcode_text }}"
+                        module-color="{{ qrcode_color }}"
+                        position-ring-color="{{ qrcode_color }}"
+                        position-center-color="{{ qrcode_color }}",
+                        style="
+                            width: {{ qrcode_size }}px;
+                            height: {{ qrcode_size }}px;
+                            margin: 2em auto;
+                            background-color: #fff;
+                        "
+                        >
+                        <img class="icon-qr-code" src="/static/wallet-it/wallet-icon-blue.svg" slot="icon" />
+                        </qr-code>
+                    </div>
                    <div id="content-qrcode-info">
                       <p id="content-qrcode-info-text" class="text-helper text-info">
                          Il codice è valido per <b id="timer"></b> secondi
@@ -46,15 +56,7 @@
        </div>
     </div>
  </div>
-<script>
-    let qrcode = document.getElementById("content-qrcode-payload")
-    qrcode.innerHTML = ''
-    new QRCode(qrcode, {
-        text: "{{ qrcode_text }}",    
-        colorDark : "{{ qrcode_color }}",
-        colorLight : "#ffffff"
-    });
-</script>
+
 <script>
     let failureTitle = "Autenticazione fallita.";
     let failureText = "Qualcosa non ha funzionato. Premi “Riprova” per autenticarti nuovamente oppure segui le istruzioni visibili sull’app IO.";
@@ -161,12 +163,13 @@
         $('#content-qrcode-info-text').html(str);
     }
     function changeQrCodeImg(str){
-        $('#content img').attr('src', str);
+        $('#content-qrcode-payload').html(`<img src="${str}" alt="qr-code" style="width: 10em; height: 10em;">`);
     }
     function blankQRcode(){
-        $('#content img').css({
+        $('#content-qrcode-payload').css({
             'opacity': '0.2'
         });
+
     }
 
     var countdown = setInterval(function() {
