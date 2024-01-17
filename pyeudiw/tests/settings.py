@@ -46,6 +46,7 @@ CONFIG = {
         "url_scheme": "eudiw",  # eudiw://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
+        "expiration_time": 5, #minutes
     },
     'user_attributes': {
         "unique_identifiers": ["tax_id_code", "unique_id"],

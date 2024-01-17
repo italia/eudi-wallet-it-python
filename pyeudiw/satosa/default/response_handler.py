@@ -47,8 +47,7 @@ class DefaultResponseHandler(ResponseHandlerInterface, BackendDPoP, BackendTrust
             "state": state,
             "iss": self.client_id,
             "iat": iat_now(),
-            # TODO: set an exp for the request in the general conf
-            "exp": exp_from_now(minutes=5)
+            "exp": exp_from_now(minutes=self.config['authorization']['expiration_time'])
         }
 
         try:
