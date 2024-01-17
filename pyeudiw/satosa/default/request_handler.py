@@ -25,6 +25,35 @@ from ..interfaces.request_handler import RequestHandlerInterface
 
 
 class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
+    def _handle_trustability(self, context: Context, vp: Vp) -> bool:
+        try:
+            # establish the trust with the issuer of the credential by checking it to the revocation
+            # inspect VP's iss or trust_chain if available or x5c if available
+            # TODO: X.509 as alternative to Federation
+
+            # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
+            # establish the trust to each credential issuer
+            tchelper = self._validate_trust(context, vp.payload['vp'])
+
+            if not tchelper.is_trusted:
+                return self._handle_400(context, f"Trust Evaluation failed for {tchelper.entity_id}")
+
+            # TODO: generalyze also for x509
+            credential_jwks = tchelper.get_trusted_jwks(
+                metadata_type='openid_credential_issuer'
+            )
+            vp.set_credential_jwks(credential_jwks)
+        except InvalidVPToken:
+            return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
+        except ValidationError as e:
+            return self._handle_400(context, f"Error validating schemas: {e}")
+        except KIDNotFound as e:
+            return self._handle_400(context, f"Kid error: {e}")
+        except NotTrustedFederationError as e:
+            return self._handle_400(context, f"Not trusted federation error: {e}")
+        except Exception as e:
+            return self._handle_400(context, f"VP parsing error: {e}")
+
     def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         self._log_function_debug("request_endpoint", context, "args", args)
 
@@ -99,33 +128,7 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
         attributes_by_issuers = {k: {} for k in cred_issuers}
 
         for vp in vps:
-            try:
-                # establish the trust with the issuer of the credential by checking it to the revocation
-                # inspect VP's iss or trust_chain if available or x5c if available
-                # TODO: X.509 as alternative to Federation
-
-                # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-                # establish the trust to each credential issuer
-                tchelper = self._validate_trust(context, vp.payload['vp'])
-
-                if not tchelper.is_trusted:
-                    return self._handle_400(context, f"Trust Evaluation failed for {tchelper.entity_id}")
-
-                # TODO: generalyze also for x509
-                credential_jwks = tchelper.get_trusted_jwks(
-                    metadata_type='openid_credential_issuer'
-                )
-                vp.set_credential_jwks(credential_jwks)
-            except InvalidVPToken:
-                return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
-            except ValidationError as e:
-                return self._handle_400(context, f"Error validating schemas: {e}")
-            except KIDNotFound as e:
-                return self._handle_400(context, f"Kid error: {e}")
-            except NotTrustedFederationError as e:
-                return self._handle_400(context, f"Not trusted federation error: {e}")
-            except Exception as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            self._handle_trustability(context, vp)
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
