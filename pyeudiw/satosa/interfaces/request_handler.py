@@ -3,6 +3,7 @@ from satosa.response import Redirect
 from ..impl.response import JsonResponse
 from .event_handler import EventHandlerInterface
 
+
 class RequestHandlerInterface(EventHandlerInterface):
     """
     Interface for request handlers.
