@@ -45,7 +45,6 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
 
         try:
             vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-
             debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
             self._log_debug(context, debug_message)
 
