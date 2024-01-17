@@ -29,7 +29,6 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
         self._log_function_debug("request_endpoint", context, "args", args)
 
         if context.request_method.lower() != 'post':
-            # raise BadRequestError("HTTP Method not supported")
             return self._handle_400(context, "HTTP Method not supported")
 
         _endpoint = f'{self.server_url}{context.request_uri}'
@@ -46,10 +45,8 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
 
         try:
             vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-
             debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
             self._log_debug(context, debug_message)
-
             ResponseSchema(**vpt.payload)
         except Exception as e:
             _msg = f"DirectPostResponse parse and validation error: {e}"
@@ -233,7 +230,8 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
 
         sub = ""
         pepper = self.config.get("user_attributes", {})[
-            'subject_id_random_value']
+            'subject_id_random_value'
+        ]
         for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
             if response.get(i):
                 _sub = response[i]

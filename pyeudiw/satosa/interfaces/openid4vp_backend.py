@@ -3,6 +3,7 @@ from satosa.response import Response
 from pyeudiw.satosa.utils.response import JsonResponse
 from .event_handler import EventHandlerInterface
 
+
 class OpenID4VPBackendInterface(EventHandlerInterface):
     def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
         """

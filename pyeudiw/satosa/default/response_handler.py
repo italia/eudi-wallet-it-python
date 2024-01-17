@@ -8,6 +8,7 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from ..interfaces.response_handler import ResponseHandlerInterface
 
+
 class DefaultResponseHandler(ResponseHandlerInterface, BackendDPoP, BackendTrust):
     def response_endpoint(self, context: Context, *args) -> JsonResponse:
         self._log_function_debug("response_endpoint", context, "args", args)
