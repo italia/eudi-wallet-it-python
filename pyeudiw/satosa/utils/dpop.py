@@ -1,15 +1,15 @@
 from typing import Union
+
+from pydantic import ValidationError
+from satosa.context import Context
+
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
-    WalletInstanceAttestationPayload,
-    WalletInstanceAttestationHeader
-)
+    WalletInstanceAttestationHeader, WalletInstanceAttestationPayload)
 from pyeudiw.satosa.utils.response import JsonResponse
-from satosa.context import Context
-from pydantic import ValidationError
-
 from pyeudiw.tools.base_logger import BaseLogger
+
 from .base_http_error_handler import BaseHTTPErrorHandler
 
 

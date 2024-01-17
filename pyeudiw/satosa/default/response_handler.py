@@ -1,11 +1,14 @@
 import uuid
-from pyeudiw.jwt import JWSHelper
-from ..exceptions import HTTPError
+
 from satosa.context import Context
+
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.satosa.utils.dpop import BackendDPoP
-from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.tools.utils import iat_now, exp_from_now
+from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.tools.utils import exp_from_now, iat_now
+
+from ..exceptions import HTTPError
 from ..interfaces.response_handler import ResponseHandlerInterface
 
 

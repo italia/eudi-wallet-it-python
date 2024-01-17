@@ -1,28 +1,28 @@
+import datetime
+import hashlib
 import json
 import logging
-import hashlib
-import datetime
-from ..exceptions import HTTPError
-from satosa.context import Context
-from pyeudiw.openid4vp.vp import Vp
+
 from pydantic import ValidationError
-from satosa.response import Redirect
-from pyeudiw.satosa.utils.trust import BackendTrust
-from pyeudiw.tools.utils import iat_now
-from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.storage.exceptions import StorageWriteError
-from pyeudiw.openid4vp.schemas.response import ResponseSchema
-from pyeudiw.satosa.exceptions import NotTrustedFederationError
-from ..interfaces.request_handler import RequestHandlerInterface
+from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
+from satosa.response import Redirect
+
 from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
-from pyeudiw.openid4vp.exceptions import (
-    KIDNotFound,
-    InvalidVPToken, 
-    VPNotFound, 
-    NoNonceInVPToken, 
-    VPInvalidNonce
-)
+from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
+                                          NoNonceInVPToken, VPInvalidNonce,
+                                          VPNotFound)
+from pyeudiw.openid4vp.schemas.response import ResponseSchema
+from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.satosa.exceptions import NotTrustedFederationError
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.tools.utils import iat_now
+
+from ..exceptions import HTTPError
+from ..interfaces.request_handler import RequestHandlerInterface
+
 
 class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
     def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:

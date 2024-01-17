@@ -1,22 +1,25 @@
-import uuid
 import json
+import uuid
 from typing import Callable
-from pyeudiw.jwk import JWK
-from satosa.context import Context
-from pydantic import ValidationError
-from pyeudiw.satosa.utils.trust import BackendTrust
-from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.tools.utils import iat_now
-from satosa.internal import InternalData
-from pyeudiw.storage.db_engine import DBEngine
-from satosa.response import Response, Redirect
-from pyeudiw.tools.mobile import is_smartphone
 from urllib.parse import quote_plus, urlencode
-from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
-from pyeudiw.storage.exceptions import StorageWriteError
+
+from pydantic import ValidationError
+from satosa.context import Context
+from satosa.internal import InternalData
+from satosa.response import Redirect, Response
+
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
+from pyeudiw.jwk import JWK
+from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.tools.mobile import is_smartphone
+from pyeudiw.tools.utils import iat_now
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
+
 
 class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def __init__(
