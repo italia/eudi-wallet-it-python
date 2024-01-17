@@ -12,7 +12,7 @@ config:
   
   endpoints:
       pre_request: '/pre-request'
-      redirect: '/redirect-uri'
+      response: '/response-uri'
       request: '/request-uri'
       entity_configuration: '/.well-known/openid-federation'
       status: '/status'
