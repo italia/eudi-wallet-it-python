@@ -53,6 +53,14 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
             return self._handle_400(context, f"Not trusted federation error: {e}")
         except Exception as e:
             return self._handle_400(context, f"VP parsing error: {e}")
+        
+    def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
+        # for all the valid credentials, take the payload and the disclosure and disclose user attributes
+        # returns the user attributes ...
+        all_user_attributes = dict()
+        for i in attributes_by_issuers.values():
+            all_user_attributes.update(**i)
+        return all_user_attributes
 
     def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         self._log_function_debug("request_endpoint", context, "args", args)
@@ -150,11 +158,8 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
             # TODO: check the revocation of the credential
             # ...
 
-        # for all the valid credentials, take the payload and the disclosure and disclose user attributes
-        # returns the user attributes ...
-        all_user_attributes = dict()
-        for i in attributes_by_issuers.values():
-            all_user_attributes.update(**i)
+        all_user_attributes = self._extract_all_user_attributes(
+            attributes_by_issuers)
 
         self._log_debug(context, f"Wallet disclosure: {all_user_attributes}")
 
