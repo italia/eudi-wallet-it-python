@@ -69,6 +69,12 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.absolute_status_url = None
         self.registered_get_response_endpoint = None
 
+        self._server_url = (
+            self.base_url[:-1]
+            if self.base_url[-1] == '/'
+            else self.base_url
+        )
+
         # resolve metadata pointers/placeholders
         self._render_metadata_conf_elements()
         self.init_trust_resources()
@@ -327,11 +333,7 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     @property
     def server_url(self):
         """Returns the server url"""
-        return (
-            self.base_url[:-1]
-            if self.base_url[-1] == '/'
-            else self.base_url
-        )
+        return self._server_url
 
     @property
     def client_id(self) -> str:
