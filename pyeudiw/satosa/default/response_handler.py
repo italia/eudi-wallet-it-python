@@ -11,21 +11,28 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from ..exceptions import HTTPError
 from ..interfaces.response_handler import ResponseHandlerInterface
 
+from pyeudiw.satosa.exceptions import DPOPValidationError
+
 
 class DefaultResponseHandler(ResponseHandlerInterface, BackendDPoP, BackendTrust):
+    def check_DPOP(self, context: Context):
+        try:
+            self._request_endpoint_dpop(context)
+        except DPOPValidationError as e:
+            _msg = f"[DPoP VALIDATION ERROR] WIA evalution error: {e}."
+            return self._handle_401(context, _msg, e)
+        except Exception as e:
+            _msg = f"[INTERNAL SERVER ERROR] {e}."
+            return self._handle_500(context, _msg, e)
+        return None
+
     def response_endpoint(self, context: Context, *args) -> JsonResponse:
         self._log_function_debug("response_endpoint", context, "args", args)
 
         # check DPOP for WIA if any
-        try:
-            dpop_validation_error: JsonResponse = self._request_endpoint_dpop(
-                context
-            )
-            if dpop_validation_error:
-                return dpop_validation_error
-        except Exception as e:
-            _msg = f"[DPoP VALIDATION ERROR] WIA evalution error: {e}."
-            return self._handle_401(context, _msg, e)
+        dpop_error = self.check_DPOP(context)
+        if dpop_error:
+            return dpop_error
 
         try:
             state = context.qs_params["id"]
