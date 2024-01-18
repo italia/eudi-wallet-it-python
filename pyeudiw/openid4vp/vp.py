@@ -1,10 +1,11 @@
+from typing import Dict
+from pyeudiw.openid4vp.exceptions import InvalidVPToken, VPFormatNotSupported
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
-from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_payload
 
-
-class Vp(VpSdJwt, BaseLogger):
-    "Class for SD-JWT Format"
+class Vp(BaseLogger):
+    """Class for Verifiable Presentation istance."""
 
     def __init__(self, jwt: str) -> None:
         """
@@ -15,9 +16,19 @@ class Vp(VpSdJwt, BaseLogger):
 
         :raises InvalidVPToken: if the jwt field's value is not a JWT.
         """
-        super().__init__(jwt)
+
+        if not is_jwt_format(jwt):
+            raise InvalidVPToken("VP is not in JWT format.")
+
+        self.headers = decode_jwt_header(jwt)
+        self.jwt = jwt
+        self.payload = decode_jwt_payload(jwt)
+
+        self.credential_headers: dict = {}
+        self.credential_payload: dict = {}
 
         self.parse_digital_credential()
+
         self.disclosed_user_attributes: dict = {}
         self._credential_jwks: list[dict] = []
 
@@ -40,22 +51,9 @@ class Vp(VpSdJwt, BaseLogger):
         if not self.credential_jwks:
             return {}
         return self.credential_jwks
-
+    
     def parse_digital_credential(self) -> None:
-        """
-        Parse the digital credential of VP.
-
-        :raises NotImplementedError: if VP Digital credentials type not implemented.
-        """
-        _typ = self._detect_vp_type()
-
-        if _typ != 'jwt':
-            raise NotImplementedError(
-                f"VP Digital credentials type not implemented yet: {_typ}"
-            )
-
-        self.credential_headers = decode_jwt_header(self.payload['vp'])
-        self.credential_payload = decode_jwt_payload(self.payload['vp'])
+        raise NotImplementedError
 
     def set_credential_jwks(self, credential_jwks: list[dict]) -> None:
         """
@@ -74,8 +72,13 @@ class Vp(VpSdJwt, BaseLogger):
         """
 
         # TODO: check the revocation of the credential
-
         self._log_warning("VP" ,"Revocation check not yet implemented")
+        
+    def verify(
+        self,
+        issuer_jwks_by_kid: Dict[str, dict] = {}
+    ) -> bool:
+        raise NotImplementedError
 
     @property
     def credential_jwks(self) -> list[dict]:

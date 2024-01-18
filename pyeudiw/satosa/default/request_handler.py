@@ -142,7 +142,7 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
 
             try:
-                vp.verify_sdjwt(
+                vp.verify(
                     issuer_jwks_by_kid={
                         i['kid']: i for i in vp.credential_jwks}
                 )
