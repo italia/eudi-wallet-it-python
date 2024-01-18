@@ -209,7 +209,7 @@ class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         session_id = context.state.get("SESSION_ID", None)
 
         if not state:
-            return self._handle_400(context, "No state found in query params")
+            return self._handle_400(context, "No session id found")
         
         finalized_session = None
 
