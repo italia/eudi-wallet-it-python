@@ -155,8 +155,7 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
             debug_message = f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
             self._log_debug(context, debug_message)
 
-            # TODO: check the revocation of the credential
-            # ...
+            vp.check_revocation()
 
         all_user_attributes = self._extract_all_user_attributes(
             attributes_by_issuers)

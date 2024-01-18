@@ -22,3 +22,8 @@ class InvalidVPToken(Exception):
     """
     Raised when a given VP is invalid
     """
+
+class RevokedVPToken(Exception):
+    """
+    Raised when a given VP is revoked
+    """

@@ -1,8 +1,9 @@
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
+from pyeudiw.tools.base_logger import BaseLogger
 
 
-class Vp(VpSdJwt):
+class Vp(VpSdJwt, BaseLogger):
     "Class for SD-JWT Format"
 
     def __init__(self, jwt: str) -> None:
@@ -64,6 +65,17 @@ class Vp(VpSdJwt):
         :type credential_jwks: list[dict]
         """
         self._credential_jwks = credential_jwks
+
+    def check_revocation(self):
+        """
+        Check if the VP is revoked.
+
+        :raises RevokedVPToken: if the VP is revoked.
+        """
+
+        # TODO: check the revocation of the credential
+
+        self._log_warning("VP" ,"Revocation check not yet implemented")
 
     @property
     def credential_jwks(self) -> list[dict]:
