@@ -4,7 +4,7 @@ from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.openid4vp.exceptions import VPFormatNotSupported
 
 
-def handle_VP(jwt: str) -> Vp:
+def vp_parser(jwt: str) -> Vp:
     """
     Handle the jwt returning the correct VP istance.
 

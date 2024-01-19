@@ -14,7 +14,7 @@ from pyeudiw.openid4vp.exceptions import (
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
 from pydantic import ValidationError
-from pyeudiw.openid4vp.utils import handle_VP
+from pyeudiw.openid4vp.utils import vp_parser
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class DirectPostResponse:
 
         for vp in vps:
             # TODO - add an exception handling here
-            _vp = handle_VP(vp)
+            _vp = vp_parser(vp)
             self._vps.append(_vp)
 
             cred_iss = _vp.credential_payload['iss']
