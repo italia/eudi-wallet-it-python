@@ -25,7 +25,7 @@ from ..interfaces.request_handler import RequestHandlerInterface
 
 
 class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
-    def _handle_trustability(self, context: Context, vp: Vp) -> bool:
+    def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
         try:
             # establish the trust with the issuer of the credential by checking it to the revocation
             # inspect VP's iss or trust_chain if available or x5c if available
@@ -136,7 +136,7 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
         attributes_by_issuers = {k: {} for k in cred_issuers}
 
         for vp in vps:
-            self._handle_trustability(context, vp)
+            self._handle_credential_trust(context, vp)
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
