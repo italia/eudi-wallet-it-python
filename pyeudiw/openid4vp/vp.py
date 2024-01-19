@@ -76,7 +76,7 @@ class Vp(BaseLogger):
         
     def verify(
         self,
-        issuer_jwks_by_kid: Dict[str, dict] = {}
+        **kwargs
     ) -> bool:
         raise NotImplementedError
 

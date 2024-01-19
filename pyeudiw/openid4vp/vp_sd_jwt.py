@@ -32,7 +32,7 @@ class VpSdJwt(Vp):
 
     def verify(
         self,
-        issuer_jwks_by_kid: Dict[str, dict] = {}
+        **kwargs
     ) -> bool:
         """
         Verifies a SDJWT.
@@ -46,6 +46,8 @@ class VpSdJwt(Vp):
 
         :returns: True if is valid, False otherwise.
         """
+        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get("issuer_jwks_by_kid", {})
+
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(
                 f"issuer jwks {issuer_jwks_by_kid} doesn't contain "

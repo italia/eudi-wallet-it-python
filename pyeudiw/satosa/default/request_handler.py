@@ -14,14 +14,15 @@ from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
                                           VPNotFound)
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
 from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.satosa.exceptions import NotTrustedFederationError
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 
-from ..exceptions import HTTPError
-from ..interfaces.request_handler import RequestHandlerInterface
+from pyeudiw.satosa.exceptions import HTTPError
+from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 
 
 class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
@@ -142,10 +143,13 @@ class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
             # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
 
             try:
-                vp.verify(
-                    issuer_jwks_by_kid={
-                        i['kid']: i for i in vp.credential_jwks}
-                )
+                if isinstance(vp, VpSdJwt):
+                    jwks_by_kid = {
+                        i['kid']: i for i in vp.credential_jwks
+                    }
+                    vp.verify(issuer_jwks_by_kid=jwks_by_kid)
+                else:
+                    vp.verify()
             except Exception as e:
                 return self._handle_400(context, f"VP SD-JWT validation error: {e}")
 
