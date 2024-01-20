@@ -22,7 +22,7 @@ config:
     size: 250 # px
     color: '#000000'  # hex
     expiration_time: 120 # seconds
-    logo_path: '/static/wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
+    logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
 
   jwt:
     default_sig_alg: ES256 # or RS256
