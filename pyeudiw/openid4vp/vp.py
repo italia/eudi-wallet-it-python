@@ -72,7 +72,7 @@ class Vp(BaseLogger):
         """
 
         # TODO: check the revocation of the credential
-        self._log_warning("VP" ,"Revocation check not yet implemented")
+        self._log_warning("VP" ,"Revocation check not implemented yet")
         
     def verify(
         self,
