@@ -28,15 +28,19 @@ class ResponseHandler(ResponseHandlerInterface):
 def test_dynamic_backend_creation():
     CONFIG["endpoints"]["request"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
-        "class": "RequestHandler"
+        "class": "RequestHandler",
+        "path": "/request"
     }
 
     CONFIG["endpoints"]["response"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
-        "class": "ResponseHandler"
+        "class": "ResponseHandler",
+        "path": "/response"
     }
 
     backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
+
+    backend.register_endpoints()
 
     context = Context()
     context.state = State()    

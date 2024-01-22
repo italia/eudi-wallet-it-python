@@ -98,9 +98,19 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         url_map = []
         for k, v in self.config['endpoints'].items():
+            endpoint_value = v
+            
+            if isinstance(endpoint_value, dict):
+                endpoint_value = v.get("path", None)
+
+            if not endpoint_value or not isinstance(endpoint_value, str):
+                raise ValueError(
+                    f"Invalid endpoint value for \"{k}\". Given value: {endpoint_value}"
+                )
+
             url_map.append(
                 (
-                    f"^{self.name}/{v.lstrip('/')}$",
+                    f"^{self.name}/{endpoint_value.lstrip('/')}$",
                     getattr(self, f"{k}_endpoint")
                 )
             )
