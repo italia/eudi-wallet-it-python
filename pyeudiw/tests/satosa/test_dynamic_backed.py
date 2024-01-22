@@ -9,15 +9,15 @@ def test_dynamic_backend_creation():
         "class_name": "TestDynamicBackend",
         "base_class": {
             "module": "pyeudiw.satosa.default.openid4vp_backend",
-            "class": "DefaultOpenID4VPBackend"
+            "class": "OpenID4VPBackend"
         },
         "response_handler": {
             "module": "pyeudiw.satosa.default.response_handler",
-            "class": "DefaultResponseHandler"
+            "class": "ResponseHandler"
         },
         "request_backend": {
             "module": "pyeudiw.satosa.default.request_handler",
-            "class": "DefaultRequestHandler"
+            "class": "RequestHandler"
         }
     }
 
