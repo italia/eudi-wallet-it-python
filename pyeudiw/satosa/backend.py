@@ -31,6 +31,7 @@ from pyeudiw.openid4vp.exceptions import (
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
+from pyeudiw.federation.schemas.qrcode import QRCode
 from pyeudiw.openid4vp.vp import Vp
 
 from typing import Callable
@@ -101,6 +102,14 @@ class OpenID4VPBackend(BackendModule, BackendTrust, BackendDPoP, BaseHTTPErrorHa
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
+
+        try:
+            QRCode(**config['qrcode'])
+        except ValidationError as e:
+            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
+            self._log_warning("OpenID4VPBackend", debug_message)
+            raise
+
         self._log_debug("OpenID4VP init",
                         f"Loaded configuration: {json.dumps(config)}")
 
