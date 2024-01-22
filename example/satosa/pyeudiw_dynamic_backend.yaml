@@ -16,7 +16,7 @@ config:
       class: DefaultRequestHandler
   
   ui:
-    static_storage_url: "https://localhost"
+    static_storage_url: "https://localhost/static"
     template_folder: "templates" # project root
     qrcode_template: "qr_code.html"
     error_template: "error.html"
