@@ -1,53 +1,50 @@
-from pyeudiw.satosa.dynamic_backend import DynamicBackend
+import json
+from pyeudiw.satosa.backend import OpenID4VPBackend
 from satosa.context import Context
 from satosa.state import State
 
-from pyeudiw.tests.settings import CONFIG
+from pyeudiw.tests.settings import (
+    CONFIG,
+    BASE_URL,
+    INTERNAL_ATTRIBUTES
+)
+
+from satosa.response import Redirect
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
+from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
+
+from unittest.mock import Mock
+
+class RequestHandler(RequestHandlerInterface):
+    def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
+        return self._handle_400(context, "Request endpoint not implemented.", NotImplementedError())
+    
+class ResponseHandler(ResponseHandlerInterface):
+    def response_endpoint(self, context: Context, *args) -> JsonResponse:
+        return self._handle_400(context, "Response endpoint not implemented.", NotImplementedError())
+    
 
 def test_dynamic_backend_creation():
-    CONFIG["dynamic_backend"] = {
-        "class_name": "TestDynamicBackend",
-        "base_class": {
-            "module": "pyeudiw.satosa.default.openid4vp_backend",
-            "class": "OpenID4VPBackend"
-        },
-        "response_handler": {
-            "module": "pyeudiw.satosa.default.response_handler",
-            "class": "ResponseHandler"
-        },
-        "request_backend": {
-            "module": "pyeudiw.satosa.default.request_handler",
-            "class": "RequestHandler"
-        }
+    CONFIG["endpoints"]["request"] = {
+        "module": "pyeudiw.tests.satosa.test_dynamic_backed",
+        "class": "RequestHandler"
     }
 
-    backend = DynamicBackend(None, None, CONFIG, None, None)
+    CONFIG["endpoints"]["response"] = {
+        "module": "pyeudiw.tests.satosa.test_dynamic_backed",
+        "class": "ResponseHandler"
+    }
+
+    backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
     context = Context()
     context.state = State()    
 
-    try:
-        backend.request_endpoint(context)
-    except NotImplementedError:
-        assert False
-    except Exception:
-        pass
+    response = backend.request_endpoint(context)
+    assert response.status == '400'
+    assert json.loads(response.message)['error_description'] == "Request endpoint not implemented."
 
-    try:
-        backend.get_response_endpoint(context)
-    except NotImplementedError:
-        assert False
-    except Exception:
-        pass
-
-    try:
-        backend.response_endpoint(context)
-    except NotImplementedError:
-        assert False
-    except Exception:
-        pass
-
-    assert backend._extract_all_user_attributes
-    assert backend.check_DPOP
-    assert backend._request_endpoint_dpop
-    assert backend._handle_400
+    response = backend.response_endpoint(context)
+    assert response.status == '400'
+    assert json.loads(response.message)['error_description'] == "Response endpoint not implemented."
