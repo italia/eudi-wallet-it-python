@@ -29,18 +29,23 @@ def test_dynamic_backend_creation():
     CONFIG["endpoints"]["request"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
         "class": "RequestHandler",
-        "path": "/request"
+        "path": "/request_test"
     }
 
     CONFIG["endpoints"]["response"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
         "class": "ResponseHandler",
-        "path": "/response"
+        "path": "/response_test"
     }
 
     backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
-    backend.register_endpoints()
+    endpoints = backend.register_endpoints()
+
+    assert endpoints[0][0] == "^name/.well-known/openid-federation$"
+    assert endpoints[2][0] == "^name/response_test$"
+    assert endpoints[3][0] == "^name/request_test$"
+
 
     context = Context()
     context.state = State()    
