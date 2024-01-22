@@ -14,7 +14,7 @@ from ..interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.exceptions import DPOPValidationError
 
 
-class DefaultResponseHandler(ResponseHandlerInterface, BackendDPoP, BackendTrust):
+class ResponseHandler(ResponseHandlerInterface, BackendDPoP, BackendTrust):
     def check_DPOP(self, context: Context):
         try:
             self._request_endpoint_dpop(context)

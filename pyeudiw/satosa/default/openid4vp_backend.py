@@ -21,7 +21,7 @@ from pyeudiw.tools.utils import iat_now
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
-class DefaultOpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
+class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def __init__(
         self,
         auth_callback_func: Callable[[Context, InternalData], Response],

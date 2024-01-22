@@ -25,7 +25,7 @@ from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 
 
-class DefaultRequestHandler(RequestHandlerInterface, BackendTrust):
+class RequestHandler(RequestHandlerInterface, BackendTrust):
     def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
         try:
             # establish the trust with the issuer of the credential by checking it to the revocation
