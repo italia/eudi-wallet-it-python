@@ -164,7 +164,7 @@ def import_pyca_pri_rsa(key: Any, **params) -> jwcrypto.jwk.JWK:
     :rtype: RSAKey
     """
 
-    if type(key).__name__ != "_RSAPrivateKey":
+    if type(key).__name__.find("RSAPrivateKey") == -1:
         raise ValueError("key must be a ssl RSAPrivateKey object")
 
     pn = key.private_numbers()
