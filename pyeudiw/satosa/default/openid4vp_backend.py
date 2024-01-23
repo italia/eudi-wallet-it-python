@@ -54,10 +54,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.config['metadata']['client_id'] = self.client_id
 
         self.config['metadata']['redirect_uris'] = []
-        self.config['metadata']['redirect_uris'].append(f"{self.client_id}/redirect-uris")
+        self.config['metadata']['redirect_uris'].append(f"{self.client_id}/redirect-uri")
 
         self.config['metadata']['request_uris'] = []
-        self.config['metadata']['request_uris'].append(f"{self.client_id}/request_uris")
+        self.config['metadata']['request_uris'].append(f"{self.client_id}/request-uri")
 
         self.default_exp = int(self.config['jwt']['default_exp'])
 
