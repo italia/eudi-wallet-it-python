@@ -84,8 +84,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             else self.base_url
         )
 
-        # resolve metadata pointers/placeholders
-        self._render_metadata_conf_elements()
         self.init_trust_resources()
         try:
             WalletRelyingParty(**config['metadata'])
@@ -313,21 +311,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 },
                 status="201"
             )
-        
-    def _render_metadata_conf_elements(self) -> None:
-        """Renders the elements of config's metadata"""
-        for k, v in self.config['metadata'].items():
-            if isinstance(v, (int, float, dict, list)):
-                continue
-            if not v or len(v) == 0:
-                continue
-            if all((
-                v[0] == '<',
-                v[-1] == '>',
-                '.' in v
-            )):
-                conf_section, conf_k = v[1:-1].split('.')
-                self.config['metadata'][k] = self.config[conf_section][conf_k]
 
     @property
     def db_engine(self) -> DBEngine:
