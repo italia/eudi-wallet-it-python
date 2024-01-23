@@ -353,8 +353,3 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def server_url(self):
         """Returns the server url"""
         return self._server_url
-
-    @property
-    def client_id(self) -> str:
-        """Returns the client id"""
-        return self._client_id

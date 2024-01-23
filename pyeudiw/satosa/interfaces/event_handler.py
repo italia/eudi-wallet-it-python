@@ -24,8 +24,3 @@ class EventHandlerInterface(BackendModule, BaseHTTPErrorHandler, BaseLogger):
     def server_url(self):
         """Returns the server url."""
         raise NotImplementedError
-    
-    @property
-    def client_id(self) -> str:
-        """Returns the client id."""
-        raise NotImplementedError
