@@ -37,6 +37,7 @@ CONFIG = {
         "size": 100,
         "color": "#2B4375",
         "expiration_time": 120,
+        "logo_path": "pyeudiw/tests/satosa/static/logo.png"
     },
     "jwt": {
         "default_sig_alg": "ES256",
