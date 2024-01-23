@@ -152,7 +152,7 @@ config:
     authorization_signed_response_alg: <jwt.sig_alg_supported>
 
     #Various informations of the client
-    client_id: "<base_url>/<name>"
+    client_id: # this field is autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     client_name: Name of an example organization
     contacts:
       - ops@verifier.example.org
@@ -191,10 +191,10 @@ config:
                   - "$.given_name"
 
 
-    redirect_uris:
-      - <base_url>/<name>/redirect-uri
-    request_uris:
-      - <base_url>/<name>/request-uri
+    redirect_uris: 
+      # This field is autopopulated using internal variables base_url and name using the following format: <base_url>/<name>/redirect-uri"
+    request_uris: 
+      # This field is autopopulated using internal variables base_url and name using the following format: <base_url>/<name>/request-uri"
 
     require_auth_time: true
     subject_type: pairwise

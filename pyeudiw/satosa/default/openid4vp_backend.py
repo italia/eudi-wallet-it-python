@@ -49,7 +49,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
         self.config = config
-        self._client_id = self.config['metadata']['client_id']
+        
+        self.client_id = f"{base_url}/{name}"
+        self.config['metadata']['client_id'] = self.client_id
+
+        self.config['metadata']['redirect_uris'] = []
+        self.config['metadata']['redirect_uris'].append(f"{self.client_id}/redirect-uris")
+
+        self.config['metadata']['request_uris'] = []
+        self.config['metadata']['request_uris'].append(f"{self.client_id}/request_uris")
+
         self.default_exp = int(self.config['jwt']['default_exp'])
 
         self.metadata_jwks_by_kids = {
