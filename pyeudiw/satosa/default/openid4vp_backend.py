@@ -17,6 +17,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.federation.schemas.qrcode import QRCode
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -90,6 +91,15 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
+
+
+        try:
+            QRCode(**config['qrcode'])
+        except ValidationError as e:
+            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
+            self._log_warning("OpenID4VPBackend", debug_message)
+            raise
+
         self._log_debug(
            "OpenID4VP init",
            f"loaded configuration: {json.dumps(config)}"
