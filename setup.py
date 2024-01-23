@@ -42,7 +42,8 @@ setup(
         "cryptojwt>=1.8.2,<1.9",
         "pydantic>=2.0,<2.2",
         "pyqrcode>=1.2,<1.3",
-        "pem>=23.1,<23.2"
+        "pem>=23.1,<23.2",
+        "cryptography<42.0.0"
     ],
     extra_require={
         "satosa": [
