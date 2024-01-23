@@ -173,8 +173,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
 
-        # TODO: do not init the session if the context is not linked to any
-        #       previous authn session (avoid to init sessions for users that has not requested an auth to a frontend)
+        self._log_warning(
+            context, 
+            "Preventing session creation if context is not linked to any previous authn session not implemented yet"
+        )
 
         # Init session
         try:
