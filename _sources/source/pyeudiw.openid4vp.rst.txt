@@ -1,0 +1,69 @@
+pyeudiw.openid4vp package
+=========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.openid4vp.schemas
+
+Submodules
+----------
+
+pyeudiw.openid4vp.direct\_post\_response module
+-----------------------------------------------
+
+.. automodule:: pyeudiw.openid4vp.direct_post_response
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.exceptions module
+-----------------------------------
+
+.. automodule:: pyeudiw.openid4vp.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.redirect module
+---------------------------------
+
+.. automodule:: pyeudiw.openid4vp.redirect
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.request module
+--------------------------------
+
+.. automodule:: pyeudiw.openid4vp.request
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.vp module
+---------------------------
+
+.. automodule:: pyeudiw.openid4vp.vp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.vp\_sd\_jwt module
+------------------------------------
+
+.. automodule:: pyeudiw.openid4vp.vp_sd_jwt
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.openid4vp
+   :members:
+   :undoc-members:
+   :show-inheritance:

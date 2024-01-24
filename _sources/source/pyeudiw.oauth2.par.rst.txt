@@ -1,0 +1,10 @@
+pyeudiw.oauth2.par package
+==========================
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.oauth2.par
+   :members:
+   :undoc-members:
+   :show-inheritance:

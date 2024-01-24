@@ -1,0 +1,21 @@
+pyeudiw.jwk.schemas package
+===========================
+
+Submodules
+----------
+
+pyeudiw.jwk.schemas.jwk module
+------------------------------
+
+.. automodule:: pyeudiw.jwk.schemas.jwk
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.jwk.schemas
+   :members:
+   :undoc-members:
+   :show-inheritance:

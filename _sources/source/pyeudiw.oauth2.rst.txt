@@ -1,0 +1,19 @@
+pyeudiw.oauth2 package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.oauth2.dpop
+   pyeudiw.oauth2.par
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.oauth2
+   :members:
+   :undoc-members:
+   :show-inheritance:

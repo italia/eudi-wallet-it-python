@@ -1,0 +1,69 @@
+pyeudiw.satosa package
+======================
+
+Submodules
+----------
+
+pyeudiw.satosa.backend module
+-----------------------------
+
+.. automodule:: pyeudiw.satosa.backend
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.base\_http\_error\_handler module
+------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.base_http_error_handler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.dpop module
+--------------------------
+
+.. automodule:: pyeudiw.satosa.dpop
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.exceptions module
+--------------------------------
+
+.. automodule:: pyeudiw.satosa.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.html\_template module
+------------------------------------
+
+.. automodule:: pyeudiw.satosa.html_template
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.response module
+------------------------------
+
+.. automodule:: pyeudiw.satosa.response
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.satosa.trust module
+---------------------------
+
+.. automodule:: pyeudiw.satosa.trust
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa
+   :members:
+   :undoc-members:
+   :show-inheritance:
