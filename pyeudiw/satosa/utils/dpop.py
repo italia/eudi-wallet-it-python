@@ -12,6 +12,7 @@ from pyeudiw.tools.base_logger import BaseLogger
 
 from pyeudiw.satosa.exceptions import DPOPValidationError
 
+
 class BackendDPoP(BaseLogger):
     """
     Backend DPoP class.
@@ -65,7 +66,7 @@ class BackendDPoP(BaseLogger):
 
             try:
                 self._validate_trust(context, dpop_jws)
-            except Exception as e:
+            except Exception:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
                 raise DPOPValidationError(_msg)
 
@@ -84,7 +85,7 @@ class BackendDPoP(BaseLogger):
 
             try:
                 dpop.validate()
-            except Exception as e:
+            except Exception:
                 _msg = "DPoP validation exception"
                 raise DPOPValidationError(_msg)
 

@@ -1,6 +1,5 @@
 import json
 
-import inspect
 from jwcrypto.common import base64url_encode
 
 from binascii import unhexlify
@@ -152,7 +151,7 @@ def pk_encode_int(i: str, bit_size: int = None) -> str:
         extend = hexl % 2
     return base64url_encode(unhexlify(extend * '0' + hexi))
 
-  
+
 def import_pyca_pri_rsa(key: RSAPrivateKey, **params) -> jwcrypto.jwk.JWK:
     """
     Import a private RSA key from a PyCA object.

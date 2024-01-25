@@ -21,5 +21,6 @@ def vp_parser(jwt: str) -> Vp:
 
     if headers["typ"].lower() == "jwt":
         return VpSdJwt(jwt)
-    
-    raise VPFormatNotSupported("VP Digital credentials type not implemented yet: {_typ}")
+
+    raise VPFormatNotSupported(
+        "VP Digital credentials type not implemented yet: {_typ}")

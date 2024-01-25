@@ -140,6 +140,7 @@ def random_token(n=254) -> str:
     """
     return token_hex(n)
 
+
 def get_dynamic_class(module_name: str, class_name: str) -> object:
     """
     Get a class instance dynamically.
@@ -157,6 +158,7 @@ def get_dynamic_class(module_name: str, class_name: str) -> object:
     instance_class = getattr(module, class_name)
     return instance_class
 
+
 def dynamic_class_loader(module_name: str, class_name: str, init_params: dict = {}) -> object:
     """
     Load a class dynamically.
@@ -172,5 +174,6 @@ def dynamic_class_loader(module_name: str, class_name: str, init_params: dict = 
     :rtype: object
     """
 
-    storage_instance = get_dynamic_class(module_name, class_name)(**init_params)
+    storage_instance = get_dynamic_class(
+        module_name, class_name)(**init_params)
     return storage_instance

@@ -1,8 +1,8 @@
-from typing import Dict
-from pyeudiw.openid4vp.exceptions import InvalidVPToken, VPFormatNotSupported
+from pyeudiw.openid4vp.exceptions import InvalidVPToken
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_payload
+
 
 class Vp(BaseLogger):
     """Class for Verifiable Presentation istance."""
@@ -51,7 +51,7 @@ class Vp(BaseLogger):
         if not self.credential_jwks:
             return {}
         return self.credential_jwks
-    
+
     def parse_digital_credential(self) -> None:
         raise NotImplementedError
 
@@ -72,8 +72,8 @@ class Vp(BaseLogger):
         """
 
         # TODO: check the revocation of the credential
-        self._log_warning("VP" ,"Revocation check not implemented yet")
-        
+        self._log_warning("VP", "Revocation check not implemented yet")
+
     def verify(
         self,
         **kwargs

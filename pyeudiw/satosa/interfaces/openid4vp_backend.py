@@ -21,7 +21,7 @@ class OpenID4VPBackendInterface(EventHandlerInterface):
         :rtype: satosa.response.Response
         """
         raise NotImplementedError
-    
+
     def request_endpoint(self, context: Context, *args) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance to retrieve the signed signed Request Object.
@@ -33,7 +33,7 @@ class OpenID4VPBackendInterface(EventHandlerInterface):
         :rtype: satosa.response.Response
         """
         raise NotImplementedError
-    
+
     def response_endpoint(self, context: Context, *args) -> JsonResponse:
         """
         This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
@@ -47,7 +47,7 @@ class OpenID4VPBackendInterface(EventHandlerInterface):
         :rtype: JsonResponse
         """
         raise NotImplementedError
-    
+
     def get_response_endpoint(self, context: Context) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance to retrieve the response of the authentication.
@@ -59,7 +59,7 @@ class OpenID4VPBackendInterface(EventHandlerInterface):
         :rtype: Response
         """
         raise NotImplementedError
-    
+
     def status_endpoint(self, context: Context) -> JsonResponse:
         """
         This endpoint is called by the User-Agent/Wallet Instance the url to the response endpoint to finalize the process.

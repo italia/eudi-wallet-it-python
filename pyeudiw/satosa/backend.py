@@ -10,17 +10,18 @@ from typing import Callable
 
 from pyeudiw.tools.utils import get_dynamic_class
 
+
 class OpenID4VPBackend(RequestHandler, ResponseHandler, OID4VP):
     """
     A backend module (acting as a OpenID4VP SP).
     """
     def __new__(cls,
-        auth_callback_func: Callable[[Context, InternalData], Response],
-        internal_attributes: dict[str, dict[str, str | list[str]]],
-        config: dict[str, dict[str, str] | list[str]],
-        base_url: str,
-        name: str
-    ):
+                auth_callback_func: Callable[[Context, InternalData], Response],
+                internal_attributes: dict[str, dict[str, str | list[str]]],
+                config: dict[str, dict[str, str] | list[str]],
+                base_url: str,
+                name: str
+                ):
         """
         Create a backend dynamically.
 
@@ -49,9 +50,9 @@ class OpenID4VPBackend(RequestHandler, ResponseHandler, OID4VP):
         tmp_bases = list(cls.__bases__)
 
         if isinstance(request_backend_conf, dict) \
-            and request_backend_conf.get("module", None) \
-            and request_backend_conf.get("class", None):
-        
+                and request_backend_conf.get("module", None) \
+                and request_backend_conf.get("class", None):
+
             request_backend = get_dynamic_class(
                 request_backend_conf["module"],
                 request_backend_conf["class"]
@@ -62,9 +63,9 @@ class OpenID4VPBackend(RequestHandler, ResponseHandler, OID4VP):
         response_handler_conf = dynamic_backend_conf.get("response", None)
 
         if isinstance(response_handler_conf, dict) \
-            and response_handler_conf.get("module", None) \
-            and response_handler_conf.get("class", None):
-        
+                and response_handler_conf.get("module", None) \
+                and response_handler_conf.get("class", None):
+
             response_handler = get_dynamic_class(
                 response_handler_conf["module"],
                 response_handler_conf["class"]

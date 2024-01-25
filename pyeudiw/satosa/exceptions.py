@@ -33,8 +33,8 @@ class EmptyHTTPError(HTTPError):
     Default HTTP empty error
     """
 
+
 class DPOPValidationError(Exception):
     """
     Raised when a DPoP validation error occurs
     """
-    pass

@@ -54,7 +54,7 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
             return self._handle_400(context, f"Not trusted federation error: {e}")
         except Exception as e:
             return self._handle_400(context, f"VP parsing error: {e}")
-        
+
     def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
         # returns the user attributes ...
@@ -201,7 +201,7 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
                 },
                 status="200"
             )
-        
+
     def _translate_response(self, response: dict, issuer: str, context: Context):
         """
         Translates wallet response to SATOSA internal response.

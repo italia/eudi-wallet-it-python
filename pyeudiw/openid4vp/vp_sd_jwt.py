@@ -1,11 +1,12 @@
 from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.openid4vp.vp import Vp
+
 
 class VpSdJwt(Vp):
     """Class for SD-JWT Format"""
@@ -46,7 +47,8 @@ class VpSdJwt(Vp):
 
         :returns: True if is valid, False otherwise.
         """
-        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get("issuer_jwks_by_kid", {})
+        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get(
+            "issuer_jwks_by_kid", {})
 
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(

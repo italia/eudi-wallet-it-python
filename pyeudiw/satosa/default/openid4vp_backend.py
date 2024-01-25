@@ -50,15 +50,17 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
         self.config = config
-        
+
         self.client_id = f"{base_url}/{name}"
         self.config['metadata']['client_id'] = self.client_id
 
         self.config['metadata']['redirect_uris'] = []
-        self.config['metadata']['redirect_uris'].append(f"{self.client_id}/redirect-uri")
+        self.config['metadata']['redirect_uris'].append(
+            f"{self.client_id}/redirect-uri")
 
         self.config['metadata']['request_uris'] = []
-        self.config['metadata']['request_uris'].append(f"{self.client_id}/request-uri")
+        self.config['metadata']['request_uris'].append(
+            f"{self.client_id}/request-uri")
 
         self.default_exp = int(self.config['jwt']['default_exp'])
 
@@ -92,7 +94,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
 
-
         try:
             QRCode(**config['qrcode'])
         except ValidationError as e:
@@ -101,10 +102,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             raise
 
         self._log_debug(
-           "OpenID4VP init",
-           f"loaded configuration: {json.dumps(config)}"
+            "OpenID4VP init",
+            f"loaded configuration: {json.dumps(config)}"
         )
-        
+
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
         Creates a list of all the endpoints this backend module needs to listen to. In this case
@@ -116,7 +117,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         url_map = []
         for k, v in self.config['endpoints'].items():
             endpoint_value = v
-            
+
             if isinstance(endpoint_value, dict):
                 endpoint_value = v.get("path", None)
 
@@ -148,7 +149,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 case _:
                     pass
         return url_map
-    
+
     def start_auth(self, context: Context, internal_request) -> Response:
         """
         This is the start up function of the backend authorization.
@@ -162,7 +163,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         :return: response
         """
         return self.pre_request_endpoint(context, internal_request)
-    
+
     def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance before calling the request endpoint.
@@ -184,7 +185,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         state = str(uuid.uuid4())
 
         self._log_warning(
-            context, 
+            context,
             "Preventing session creation if context is not linked to any previous authn session not implemented yet"
         )
 
@@ -239,7 +240,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         if not state:
             return self._handle_400(context, "No session id found")
-        
+
         finalized_session = None
 
         try:
@@ -274,9 +275,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             context,
             resp
         )
-    
+
     def status_endpoint(self, context: Context) -> JsonResponse:
-        
+
         self._log_function_debug("status_endpoint", context)
 
         session_id = context.state["SESSION_ID"]

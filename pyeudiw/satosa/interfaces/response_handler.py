@@ -9,6 +9,7 @@ class ResponseHandlerInterface(EventHandlerInterface):
     """
     Interface for response handlers.
     """
+
     def response_endpoint(self, context: Context, *args) -> JsonResponse:
         """
         This endpoint is called by the User-Agent/Wallet Instance after the user has been authenticated.
