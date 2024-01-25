@@ -56,15 +56,12 @@ The classes [`MongoStorage`](../pyeudiw/storage/mongo_storage.py) and
 ```json
 [
   {
-    "_id": `ObjectId`,
-    "document_id": `uuidv4`,
-    "creation_date": `datetime`,
-    "session_id": "urn:uuid:"`uuidv4`,
-    "finalized": `boolean`,
-    "internal_response": object
-  },
- 
-  ... 
- 
+    "_id": "`ObjectId`",
+    "document_id": "`uuidv4`",
+    "creation_date": "`datetime`",
+    "session_id": "urn:uuid:`uuidv4`",
+    "finalized": "`boolean`",
+    "internal_response": "object"
+  }
 ]
 ```
