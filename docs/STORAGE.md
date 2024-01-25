@@ -1,20 +1,22 @@
 # Storage
 
-pyeudiw allows us to use multiple storages with replication.
+`pyeudiw` allows us to use multiple storages with replication.
 
-It defines an abstract storage interface ... [doc TBD here]
+It defines an abstract storage interface, [`BaseDB`](../pyeudiw/storage/base_db.py), with the methods:
+- `_connect`
+- `close`.
 
-with the following methods ... [doc TDB here]
-
+This class is extended by both [`BaseStorage`](../pyeudiw/storage/base_storage.py) and 
+[`BaseCache`](../pyeudiw/storage/base_cache.py) which define the methods needed to query the database.
 
 ## MongoDB
 
-This storage backed is defined in ....
+The classes [`MongoStorage`](../pyeudiw/storage/mongo_storage.py) and 
+ [`MongoCache`](../pyeudiw/storage/mongo_cache.py) provide an implementation of the abstract base classes 
+`BaseStorage` and `BaseCache` respectively. 
 
-it has the following collections
 
-
-### Trust Anchors
+## Trust Anchors
 
 ````
     "trust_anchors": {
@@ -31,7 +33,7 @@ it has the following collections
 ````
 
 
-### Trust Attestations
+## Trust Attestations
 
 ````
     "trust_attestations": {
@@ -49,5 +51,20 @@ it has the following collections
   }
 ````
 
+## Sessions
 
-### Sessions
+```json
+[
+  {
+    "_id": `ObjectId`,
+    "document_id": `uuidv4`,
+    "creation_date": `datetime`,
+    "session_id": "urn:uuid:"`uuidv4`,
+    "finalized": `boolean`,
+    "internal_response": object
+  },
+ 
+  ... 
+ 
+]
+```
