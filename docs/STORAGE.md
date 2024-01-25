@@ -94,15 +94,12 @@ This classes can be used as references while providing a custom implementation f
 ```json
 [
   {
-    "_id": `ObjectId`,
-    "document_id": `uuidv4`,
-    "creation_date": `datetime`,
-    "session_id": "urn:uuid:"`uuidv4`,
-    "finalized": `boolean`,
-    "internal_response": object
-  },
- 
-  ... 
- 
+    "_id": "`ObjectId`",
+    "document_id": "`uuidv4`",
+    "creation_date": "`datetime`",
+    "session_id": "urn:uuid:`uuidv4`",
+    "finalized": "`boolean`",
+    "internal_response": "object"
+  }
 ]
 ```
