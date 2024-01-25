@@ -5,11 +5,9 @@ from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_paylo
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
+from pyeudiw.openid4vp.vp import Vp
 
-from .exceptions import InvalidVPToken
-
-
-class VpSdJwt:
+class VpSdJwt(Vp):
     """Class for SD-JWT Format"""
 
     def __init__(self, jwt: str):
@@ -22,19 +20,19 @@ class VpSdJwt:
         :raises InvalidVPToken: if the jwt field's value is not a JWT.
         """
 
-        if not is_jwt_format(jwt):
-            raise InvalidVPToken("VP is not in JWT format.")
+        super().__init__(jwt)
 
-        self.headers = decode_jwt_header(jwt)
-        self.jwt = jwt
-        self.payload = decode_jwt_payload(jwt)
+    def parse_digital_credential(self) -> None:
+        """
+        Parse the digital credential of VP.
+        """
 
-        self.credential_headers: dict = {}
-        self.credential_payload: dict = {}
+        self.credential_headers = decode_jwt_header(self.payload['vp'])
+        self.credential_payload = decode_jwt_payload(self.payload['vp'])
 
-    def verify_sdjwt(
+    def verify(
         self,
-        issuer_jwks_by_kid: Dict[str, dict] = {}
+        **kwargs
     ) -> bool:
         """
         Verifies a SDJWT.
@@ -48,6 +46,8 @@ class VpSdJwt:
 
         :returns: True if is valid, False otherwise.
         """
+        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get("issuer_jwks_by_kid", {})
+
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(
                 f"issuer jwks {issuer_jwks_by_kid} doesn't contain "
