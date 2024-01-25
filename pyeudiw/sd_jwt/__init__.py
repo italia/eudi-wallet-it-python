@@ -25,6 +25,8 @@ import jwcrypto
 from typing import Any
 from cryptojwt.jwk.rsa import RSAKey
 from cryptojwt.jwk.ec import ECKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+
 
 class TrustChainSDJWTIssuer(SDJWTIssuer):
     """
@@ -150,8 +152,8 @@ def pk_encode_int(i: str, bit_size: int = None) -> str:
         extend = hexl % 2
     return base64url_encode(unhexlify(extend * '0' + hexi))
 
-
-def import_pyca_pri_rsa(key: Any, **params) -> jwcrypto.jwk.JWK:
+  
+def import_pyca_pri_rsa(key: RSAPrivateKey, **params) -> jwcrypto.jwk.JWK:
     """
     Import a private RSA key from a PyCA object.
 
@@ -164,7 +166,7 @@ def import_pyca_pri_rsa(key: Any, **params) -> jwcrypto.jwk.JWK:
     :rtype: RSAKey
     """
 
-    if type(key).__name__.find("RSAPrivateKey") == -1:
+    if not isinstance(key, RSAPrivateKey):
         raise ValueError("key must be a ssl RSAPrivateKey object")
 
     pn = key.private_numbers()
