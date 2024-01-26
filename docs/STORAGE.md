@@ -1,60 +1,71 @@
 # Storage
 
-`pyeudiw` allows us to use multiple storages with replication.
+`pyeudiw` empowers developers to harness multiple storage solutions with replication capabilities.
 
-It defines an abstract storage interface, [`BaseDB`](../pyeudiw/storage/base_db.py), with the methods:
-- `_connect`
-- `close`.
+It establishes a versatile abstract storage interface, [`BaseDB`](../pyeudiw/storage/base_db.py), 
+featuring crucial methods:
+- `_connect`: establishes a connection to the storage
+- `close`: closes the connection.
 
-This class is extended by both [`BaseStorage`](../pyeudiw/storage/base_storage.py) and 
-[`BaseCache`](../pyeudiw/storage/base_cache.py) which define the methods needed to query the database.
+This foundational class serves as base for both [`BaseStorage`](../pyeudiw/storage/base_storage.py) and 
+[`BaseCache`](../pyeudiw/storage/base_cache.py), 
+extending its capabilities to include essential database querying methods.
 
 ### Base Storage
 
 The `BaseStorage` class can be extended by implementing the following methods:
 
-| Methods                          |
-|----------------------------------|
-| `__init__`                       |
-| `is_connected`                   |
-| `_connect`                       |
-| `close`                          |
-| `get_by_id`                      |
-| `get_by_nonce_state`             |
-| `get_by_session_id`              |
-| `get_by_state_and_session_id`    |
-| `init_session`                   |
-| `set_session_retention_ttl`      |
-| `has_session_retention_ttl`      |
-| `add_dpop_proof_and_attestation` |
-| `update_request_object`          |
-| `set_finalized`                  |
-| `update_response_object`         |
-| `_get_trust_attestation`         |
-| `get_trust_attestation`          |
-| `get_trust_anchor`               |
-| `_has_trust_attestation`         |
-| `has_trust_attestation`          |
-| `has_trust_anchor`               |
-| `_update_attestation_metadata`   |
-| `_update_anchor_metadata`        |
-| `add_trust_attestation`          |
-| `add_trust_attestation_metadata` |
-| `add_trust_anchor`               |
-| `_update_trust_attestation`      |
-| `update_trust_attestation`       |
-| `update_trust_anchor`            |
+-  `__init__`                       
+-  `is_connected`                   
+-  `_connect`                       
+-  `close`                          
+-  `get_by_id`                      
+-  `get_by_nonce_state`             
+-  `get_by_session_id`              
+-  `get_by_state_and_session_id`    
+-  `init_session`                   
+-  `set_session_retention_ttl`      
+-  `has_session_retention_ttl`      
+-  `add_dpop_proof_and_attestation` 
+-  `update_request_object`          
+-  `set_finalized`                  
+-  `update_response_object`         
+-  `_get_trust_attestation`         
+-  `get_trust_attestation`          
+-  `get_trust_anchor`               
+-  `_has_trust_attestation`         
+-  `has_trust_attestation`          
+-  `has_trust_anchor`               
+-  `_update_attestation_metadata`   
+-  `_update_anchor_metadata`        
+-  `add_trust_attestation`          
+-  `add_trust_attestation_metadata` 
+-  `add_trust_anchor`               
+-  `_update_trust_attestation`      
+-  `update_trust_attestation`       
+-  `update_trust_anchor`            
 
 Each method and its parameter is documented in the source file.
 
-## MongoDB
+## BaseCache
 
-The classes [`MongoStorage`](../pyeudiw/storage/mongo_storage.py) and 
- [`MongoCache`](../pyeudiw/storage/mongo_cache.py) provide an implementation of the abstract base classes 
-`BaseStorage` and `BaseCache` respectively. 
+The `BaseCache` class implements the following methods:
+ 
+- `try_retrieve`: return a tuple with the retrieved object and a status from cache by param name
+- `overwrite`: overrides the object value present in the cache.
+- `set`: sets the object value in the cache.
+
+## MongoDB
+In the realm of pyeudiw, seamless integration with MongoDB is facilitated through specialized classes, namely 
+[`MongoStorage`](../pyeudiw/storage/mongo_storage.py) and [`MongoCache`](../pyeudiw/storage/mongo_cache.py).  
+
+These classes not only offer a robust implementation but also serve as tangible representations of the abstract base 
+classes, `BaseStorage` and `BaseCache`.
 This classes can be used as references while providing a custom implementation for other databases.
 
-## Trust Anchors
+## Data Examples
+
+### Trust Anchors
 
 ````
     "trust_anchors": {
@@ -71,7 +82,7 @@ This classes can be used as references while providing a custom implementation f
 ````
 
 
-## Trust Attestations
+### Trust Attestations
 
 ````
     "trust_attestations": {
@@ -89,7 +100,7 @@ This classes can be used as references while providing a custom implementation f
   }
 ````
 
-## Sessions
+### Sessions
 
 ```json
 [
