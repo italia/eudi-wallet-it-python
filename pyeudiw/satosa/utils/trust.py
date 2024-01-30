@@ -1,19 +1,18 @@
 import json
+
 from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
-from pyeudiw.satosa.exceptions import (
-    NotTrustedFederationError, DiscoveryFailedError
-)
-from pyeudiw.tools.utils import iat_now, exp_from_now
+from pyeudiw.satosa.exceptions import (DiscoveryFailedError,
+                                       NotTrustedFederationError)
 from pyeudiw.storage.exceptions import EntryNotFound
+from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust import TrustEvaluationHelper
 from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
-
-from pyeudiw.tools.base_logger import BaseLogger
 
 
 class BackendTrust(BaseLogger):

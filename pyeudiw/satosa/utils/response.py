@@ -1,4 +1,5 @@
 import json
+
 from satosa.response import Response
 
 

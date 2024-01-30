@@ -1,5 +1,4 @@
 import uuid
-import importlib
 from datetime import datetime
 from typing import Callable, Union, Tuple
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
@@ -12,6 +11,8 @@ from pyeudiw.storage.exceptions import (
 from pyeudiw.tools.base_logger import BaseLogger
 
 from .base_db import BaseDB
+
+from pyeudiw.tools.utils import dynamic_class_loader
 
 
 class DBEngine(BaseStorage, BaseCache, BaseLogger):
@@ -308,7 +309,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
                 )
                 raise e
 
-    def _handle_instance(self, instance: dict) -> dict[BaseStorage | None, BaseCache | None]:
+    def _handle_instance(self, instance: dict) -> tuple[BaseStorage | None, BaseCache | None]:
         """
         Handle the initialization of a storage/cache instance.
 
@@ -323,15 +324,18 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
         storage_instance = None
         if storage_conf:
-            module = importlib.import_module(storage_conf["module"])
-            instance_class = getattr(module, storage_conf["class"])
-            storage_instance = instance_class(
-                **storage_conf.get("init_params", {}))
+            storage_instance = dynamic_class_loader(
+                storage_conf["module"],
+                storage_conf["class"],
+                storage_conf.get("init_params", {})
+            )
 
         cache_instance = None
         if cache_conf:
-            module = importlib.import_module(cache_conf["module"])
-            instance_class = getattr(module, cache_conf["class"])
-            cache_instance = instance_class(**cache_conf["init_params"])
+            cache_instance = dynamic_class_loader(
+                cache_conf["module"],
+                cache_conf["class"],
+                cache_conf.get("init_params", {})
+            )
 
         return storage_instance, cache_instance

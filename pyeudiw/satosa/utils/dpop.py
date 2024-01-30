@@ -1,19 +1,19 @@
 from typing import Union
+
+from pydantic import ValidationError
+from satosa.context import Context
+
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
-    WalletInstanceAttestationPayload,
-    WalletInstanceAttestationHeader
-)
-from pyeudiw.satosa.response import JsonResponse
-from satosa.context import Context
-from pydantic import ValidationError
-
+    WalletInstanceAttestationHeader, WalletInstanceAttestationPayload)
+from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
-from .base_http_error_handler import BaseHTTPErrorHandler
+
+from pyeudiw.satosa.exceptions import DPOPValidationError
 
 
-class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
+class BackendDPoP(BaseLogger):
     """
     Backend DPoP class.
     """
@@ -26,6 +26,8 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
         :type context: Context
         :param args: The current request arguments
         :type args: tuple
+
+        :raises DPOPValidationError: if the DPoP validation fails
 
         :return:
         :rtype: Union[JsonResponse, None]
@@ -64,9 +66,9 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
 
             try:
                 self._validate_trust(context, dpop_jws)
-            except Exception as e:
+            except Exception:
                 _msg = f"Trust Chain validation failed for dpop JWS {dpop_jws}"
-                return self._handle_401(context, _msg, e)
+                raise DPOPValidationError(_msg)
 
             try:
                 dpop = DPoPVerifier(
@@ -76,16 +78,16 @@ class BackendDPoP(BaseHTTPErrorHandler, BaseLogger):
                 )
             except ValidationError as e:
                 _msg = f"DPoP validation error: {e}"
-                return self._handle_401(context, _msg, e)
+                raise DPOPValidationError(_msg)
             except Exception as e:
                 _msg = f"DPoP verification error: {e}"
-                return self._handle_401(context, _msg, e)
+                raise DPOPValidationError(_msg)
 
             try:
                 dpop.validate()
-            except Exception as e:
+            except Exception:
                 _msg = "DPoP validation exception"
-                return self._handle_401(context, _msg, e)
+                raise DPOPValidationError(_msg)
 
             # TODO: assert and configure the wallet capabilities
             # TODO: assert and configure the wallet Attested Security Context
