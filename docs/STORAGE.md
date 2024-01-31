@@ -63,9 +63,9 @@ These classes not only offer a robust implementation but also serve as tangible 
 classes, `BaseStorage` and `BaseCache`.
 This classes can be used as references while providing a custom implementation for other databases.
 
-## Data Examples
+### Data Examples in MongoDB
 
-### Trust Anchors
+#### Trust Anchors
 
 ````
     "trust_anchors": {
@@ -100,7 +100,7 @@ This classes can be used as references while providing a custom implementation f
   }
 ````
 
-### Sessions
+#### Sessions
 
 ```json
 [
@@ -108,9 +108,20 @@ This classes can be used as references while providing a custom implementation f
     "_id": "`ObjectId`",
     "document_id": "`uuidv4`",
     "creation_date": "`datetime`",
+    "state": "`uuidv4`",
     "session_id": "urn:uuid:`uuidv4`",
     "finalized": "`boolean`",
     "internal_response": "object"
   }
 ]
 ```
+
+| Name                 | Description                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ | 
+| `_id`                | Unique identifier in MongoDB.                                                                                            |
+| `document_id`        | A unique identifier shared among each database.                                                                          |
+| `creation_date`      | Creation date of the session.                                                                                            |
+| `state`              | A unique identifier used to identify a session even among different devices.                                             |
+| `session_id`         | Session id. Used to identify cross device flows.                                                                         |
+| `finalized`          | A boolean value which indicates if the session is finilazed or not (user scanned the QR Code or used the redirect link). |
+| `internal_response`  | The object containing the personal data, `null` until login.                                                             |
