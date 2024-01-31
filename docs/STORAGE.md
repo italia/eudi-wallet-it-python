@@ -67,51 +67,69 @@ This classes can be used as references while providing a custom implementation f
 
 #### Trust Anchors
 
-````
-    "trust_anchors": {
-       "https://ta.example.org": {
-          "federation": {
-            "entity_configuration": "str(EC), -> EC contains the federation entity public keys,
-            "exp": datetime
-         },
-          "x509": {
-            "pem": str(PEM) -> contains public keys,
-            "exp": datetime
-       }
+```json
+[  
+  {
+    "_id": ObjectId,
+    "entity_id": string,
+    "federation": {
+      "entity_configuration": str(EC), -> EC contains the federation entity public keys,
+      "exp": datetime
+    },
+    "x509": {
+      "pem": str(PEM) -> contains public keys,
+      "exp": datetime
     }
-````
+  }
+]
+```
+
+| Name                 | Description                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ | 
+| `_id`                | Unique identifier in MongoDB.                                                                                            |
+| `entity_id`          | The string which uniquely identifies the entity.                                                                         |
+
 
 
 ### Trust Attestations
 
-````
-    "trust_attestations": {
-       "https://wallet_provider.example.org": {
-          "federation" : {
-            "chain": ARRAY[EC,ES,ES],
-            "exp": datetime,
-            "update": datetime
-          }
-          "x509": {
-            "x5c": ARRAY[bytestring(DER), bytestring(DER), bytestring(DER)] -> contains public keys,
-            "exp": datetime
-       }
+```json
+[
+  {
+    "_id": ObjectId,
+    "entity_id": string,
+    "federation" : {
+      "chain": ARRAY[EC,ES,ES],
+      "exp": datetime,
+      "update": datetime
     }
+    "x509": {
+      "x5c": ARRAY[bytestring(DER), bytestring(DER), bytestring(DER)] -> contains public keys,
+      "exp": datetime
+    }
+    "metadata": object
   }
-````
+]
+```
+
+| Name                 | Description                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ | 
+| `_id`                | Unique identifier in MongoDB.                                                                                            |
+| `entity_id`          | The string which uniquely identifies the entity.                                                                         |
+| `metadata`           | Object containing additional properties.                                                                                 |
 
 #### Sessions
 
 ```json
 [
   {
-    "_id": "`ObjectId`",
-    "document_id": "`uuidv4`",
-    "creation_date": "`datetime`",
-    "state": "`uuidv4`",
-    "session_id": "urn:uuid:`uuidv4`",
-    "finalized": "`boolean`",
-    "internal_response": "object"
+    "_id": ObjectId,
+    "document_id": uuidv4,
+    "creation_date": datetime,
+    "state": uuidv4,
+    "session_id": "urn:uuid:"uuidv4,
+    "finalized": boolean,
+    "internal_response": object
   }
 ]
 ```
