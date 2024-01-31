@@ -8,7 +8,7 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
-from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
+from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.response import JsonResponse
@@ -17,7 +17,6 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.federation.schemas.qrcode import QRCode
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -89,17 +88,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.init_trust_resources()
         try:
-            WalletRelyingParty(**config['metadata'])
+            PyeudiwBackendConfig(**config)
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
-
-        try:
-            QRCode(**config['qrcode'])
-        except ValidationError as e:
-            debug_message = f"""The backend configuration presents the following validation issues: {e}"""
-            self._log_warning("OpenID4VPBackend", debug_message)
-            raise
 
         self._log_debug(
             "OpenID4VP init",
