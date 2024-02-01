@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field
 
 
 class QRCode(BaseModel):
@@ -9,7 +9,7 @@ class QRCode(BaseModel):
     expiration_time: int = Field(..., gt=0)
     logo_path: str
 
-    @validator('logo_path')
+    @field_validator('logo_path')
     def must_start_with_slash(cls, v):
         if v.startswith('/'):
             raise ValueError(f'{v} must start without "/"')

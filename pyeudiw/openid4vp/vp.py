@@ -1,5 +1,4 @@
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.jwt.utils import is_jwt_format, decode_jwt_header, decode_jwt_payload
 

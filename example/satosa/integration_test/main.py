@@ -38,9 +38,9 @@ from saml2_sp import saml2_request, IDP_BASEURL
 from sd_jwt.holder import SDJWTHolder
 
 from settings import (
-    CONFIG_DB, 
-    RP_EID, 
-    WALLET_INSTANCE_ATTESTATION, 
+    CONFIG_DB,
+    RP_EID,
+    WALLET_INSTANCE_ATTESTATION,
     its_trust_chain
 )
 
@@ -51,8 +51,8 @@ db_engine_inst = DBEngine(CONFIG_DB)
 
 # STORAGE ####
 db_engine_inst.add_trust_anchor(
-    entity_id = ta_ec['iss'],
-    entity_configuration = ta_ec_signed,
+    entity_id=ta_ec['iss'],
+    entity_configuration=ta_ec_signed,
     exp=EXP
 )
 
