@@ -40,10 +40,11 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
                 return self._handle_400(context, f"Trust Evaluation failed for {tchelper.entity_id}")
 
             # TODO: generalyze also for x509
-            credential_jwks = tchelper.get_trusted_jwks(
-                metadata_type='openid_credential_issuer'
-            )
-            vp.set_credential_jwks(credential_jwks)
+            if isinstance(vp, VpSdJwt):
+                credential_jwks = tchelper.get_trusted_jwks(
+                    metadata_type='openid_credential_issuer'
+                )
+                vp.set_credential_jwks(credential_jwks)
         except InvalidVPToken:
             return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
         except ValidationError as e:
@@ -140,7 +141,6 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
             self._handle_credential_trust(context, vp)
 
             # the trust is established to the credential issuer, then we can get the disclosed user attributes
-            # TODO - what if the credential is different from sd-jwt? -> generalyze within Vp class
 
             try:
                 if isinstance(vp, VpSdJwt):
@@ -151,7 +151,7 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
                 else:
                     vp.verify()
             except Exception as e:
-                return self._handle_400(context, f"VP SD-JWT validation error: {e}")
+                return self._handle_400(context, f"VP validation error: {e}")
 
             # vp.result
             attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
