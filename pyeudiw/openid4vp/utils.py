@@ -1,4 +1,5 @@
 from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.openid4vp.exceptions import VPFormatNotSupported
@@ -21,6 +22,7 @@ def vp_parser(jwt: str) -> Vp:
 
     if headers["typ"].lower() == "jwt":
         return VpSdJwt(jwt)
-
-    raise VPFormatNotSupported(
-        "VP Digital credentials type not implemented yet: {_typ}")
+    elif headers["typ"].lower() == "mdoc_cbor":
+        return VpMDocCbor(jwt) 
+    
+    raise VPFormatNotSupported("VP Digital credentials type not implemented yet: {_typ}")

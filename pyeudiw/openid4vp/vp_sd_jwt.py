@@ -1,19 +1,19 @@
 from typing import Dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
 from pyeudiw.sd_jwt import verify_sd_jwt
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.openid4vp.vp import Vp
-
+from pyeudiw.openid4vp.exceptions import InvalidVPToken
 
 class VpSdJwt(Vp):
     """Class for SD-JWT Format"""
 
     def __init__(self, jwt: str):
         """
-        Generates a VpSdJwt istance
+        Generates a VP instance.
 
         :param jwt: a string that represents the jwt.
         :type jwt: str
@@ -21,7 +21,20 @@ class VpSdJwt(Vp):
         :raises InvalidVPToken: if the jwt field's value is not a JWT.
         """
 
-        super().__init__(jwt)
+        if not is_jwt_format(jwt):
+            raise InvalidVPToken("VP is not in JWT format.")
+
+        self.headers = decode_jwt_header(jwt)
+        self.jwt = jwt
+        self.payload = decode_jwt_payload(jwt)
+        self.data = jwt
+        self.credential_headers: dict = {}
+        self.credential_payload: dict = {}
+
+        self.parse_digital_credential()
+
+        self.disclosed_user_attributes: dict = {}
+        self._credential_jwks: list[dict] = []
 
     def parse_digital_credential(self) -> None:
         """
@@ -83,3 +96,42 @@ class VpSdJwt(Vp):
             result.update(result['verified_claims'].get('claims', {}))
 
         return True
+    
+    def get_credential_jwks(self) -> list[dict]:
+        """
+        Returns the credential JWKs.
+
+        :returns: the list containing credential's JWKs.
+        :rtype: list[dict]
+        """
+        return self.credential_jwks or {}
+    
+    def set_credential_jwks(self, credential_jwks: list[dict]) -> None:
+        """
+        Set the credential JWKs for the current istance.
+
+        :param credential_jwks: a list containing the credential's JWKs.
+        :type credential_jwks: list[dict]
+        """
+        self._credential_jwks = credential_jwks
+    
+    def _detect_vp_type(self) -> str:
+        """
+        Detects and return the type of verifiable presentation.
+
+        :returns: the type of VP.
+        :rtype: str
+        """
+        return self.headers.get("typ", "").lower()
+
+    @property
+    def credential_jwks(self) -> list[dict]:
+        """Returns the credential JWKs"""
+        return self._credential_jwks
+
+    @property
+    def credential_issuer(self) -> str:
+        """Returns the credential issuer"""
+        if not self.credential_payload.get('iss', None):
+            self.parse_digital_credential()
+        return self.credential_payload.get('iss', None)
