@@ -151,7 +151,7 @@ class RequestHandler(RequestHandlerInterface, BackendTrust):
                 else:
                     vp.verify()
             except Exception as e:
-                return self._handle_400(context, f"VP validation error: {e}")
+                return self._handle_400(context, f"VP validation error with {self.data}: {e}")
 
             # vp.result
             attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes

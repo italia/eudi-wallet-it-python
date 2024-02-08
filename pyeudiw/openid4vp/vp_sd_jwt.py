@@ -13,7 +13,7 @@ class VpSdJwt(Vp):
 
     def __init__(self, jwt: str):
         """
-        Generates a VP istance.
+        Generates a VP instance.
 
         :param jwt: a string that represents the jwt.
         :type jwt: str
@@ -27,7 +27,7 @@ class VpSdJwt(Vp):
         self.headers = decode_jwt_header(jwt)
         self.jwt = jwt
         self.payload = decode_jwt_payload(jwt)
-
+        self.data = jwt
         self.credential_headers: dict = {}
         self.credential_payload: dict = {}
 
@@ -104,9 +104,7 @@ class VpSdJwt(Vp):
         :returns: the list containing credential's JWKs.
         :rtype: list[dict]
         """
-        if not self.credential_jwks:
-            return {}
-        return self.credential_jwks
+        return self.credential_jwks or {}
     
     def set_credential_jwks(self, credential_jwks: list[dict]) -> None:
         """
@@ -124,7 +122,7 @@ class VpSdJwt(Vp):
         :returns: the type of VP.
         :rtype: str
         """
-        return self.headers["typ"].lower()
+        return self.headers.get("typ", "").lower()
 
     @property
     def credential_jwks(self) -> list[dict]:
