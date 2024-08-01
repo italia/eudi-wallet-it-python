@@ -49,7 +49,7 @@ WALLET_INSTANCE_ATTESTATION = {
     {
         "jwk": leaf_wallet_jwk.serialize()
     },
-    "authorization_endpoint": "eudiw:",
+    "authorization_endpoint": "haip:",
     "response_types_supported": [
         "vp_token"
     ],

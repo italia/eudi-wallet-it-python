@@ -25,7 +25,7 @@ WALLET_INSTANCE_ATTESTATION = {
     {
         "jwk": PUBLIC_JWK
     },
-    "authorization_endpoint": "eudiw:",
+    "authorization_endpoint": "haip:",
     "response_types_supported": [
         "vp_token"
     ],
