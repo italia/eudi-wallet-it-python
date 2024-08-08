@@ -63,10 +63,11 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
         self.additional_headers = additional_headers
         sign_alg = sign_alg if sign_alg else DEFAULT_SIG_KTY_MAP[issuer_key.kty]
+        issuer_keys = [issuer_key]
 
         super().__init__(
             user_claims,
-            issuer_key,
+            issuer_keys,
             holder_key,
             sign_alg,
             add_decoy_claims,
@@ -88,7 +89,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
 
         # _protected_headers['kid'] = self._issuer_key['kid']
         self.sd_jwt.add_signature(
-            self._issuer_key,
+            self._issuer_keys[0],
             alg=self._sign_alg,
             protected=dumps(_protected_headers),
         )
