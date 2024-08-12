@@ -1,273 +1,86 @@
-import datetime
-import hashlib
-import json
-import logging
+import uuid
 
-from pydantic import ValidationError
 from satosa.context import Context
-from satosa.internal import AuthenticationInformation, InternalData
-from satosa.response import Redirect
 
-from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
-from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
-                                          NoNonceInVPToken, VPInvalidNonce,
-                                          VPNotFound)
-from pyeudiw.openid4vp.schemas.response import ResponseSchema
-from pyeudiw.openid4vp.vp import Vp
-from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
-from pyeudiw.satosa.exceptions import NotTrustedFederationError
+from pyeudiw.jwt import JWSHelper
+from pyeudiw.satosa.exceptions import HTTPError, DPOPValidationError
+from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
+from pyeudiw.satosa.utils.dpop import BackendDPoP
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
-from pyeudiw.storage.exceptions import StorageWriteError
-from pyeudiw.tools.utils import iat_now
-
-from pyeudiw.satosa.exceptions import HTTPError
-from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
-class RequestHandler(RequestHandlerInterface, BackendTrust):
-    def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
+class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
+    def check_DPOP(self, context: Context):
         try:
-            # establish the trust with the issuer of the credential by checking it to the revocation
-            # inspect VP's iss or trust_chain if available or x5c if available
-            # TODO: X.509 as alternative to Federation
-
-            # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-            # establish the trust to each credential issuer
-            tchelper = self._validate_trust(context, vp.payload['vp'])
-
-            if not tchelper.is_trusted:
-                return self._handle_400(context, f"Trust Evaluation failed for {tchelper.entity_id}")
-
-            # TODO: generalyze also for x509
-            if isinstance(vp, VpSdJwt):
-                credential_jwks = tchelper.get_trusted_jwks(
-                    metadata_type='openid_credential_issuer'
-                )
-                vp.set_credential_jwks(credential_jwks)
-        except InvalidVPToken:
-            return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
-        except ValidationError as e:
-            return self._handle_400(context, f"Error validating schemas: {e}")
-        except KIDNotFound as e:
-            return self._handle_400(context, f"Kid error: {e}")
-        except NotTrustedFederationError as e:
-            return self._handle_400(context, f"Not trusted federation error: {e}")
+            self._request_endpoint_dpop(context)
+        except DPOPValidationError as e:
+            _msg = f"[DPoP VALIDATION ERROR] WIA evalution error: {e}."
+            return self._handle_401(context, _msg, e)
         except Exception as e:
-            return self._handle_400(context, f"VP parsing error: {e}")
+            _msg = f"[INTERNAL SERVER ERROR] {e}."
+            return self._handle_500(context, _msg, e)
+        return None
 
-    def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
-        # for all the valid credentials, take the payload and the disclosure and disclose user attributes
-        # returns the user attributes ...
-        all_user_attributes = dict()
-        for i in attributes_by_issuers.values():
-            all_user_attributes.update(**i)
-        return all_user_attributes
-
-    def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
-        self._log_function_debug("request_endpoint", context, "args", args)
-
-        if context.request_method.lower() != 'post':
-            return self._handle_400(context, "HTTP Method not supported")
-
-        _endpoint = f'{self.server_url}{context.request_uri}'
-        if self.config["metadata"].get('redirect_uris', None):
-            if _endpoint not in self.config["metadata"]['redirect_uris']:
-                return self._handle_400(context, "request_uri not valid")
-
-        # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request.get("response", None)
-        if not jwt:
-            _msg = "Response error, missing JWT"
-            self._log_error(context, _msg)
-            return self._handle_400(context, _msg)
+    def request_endpoint(self, context: Context, *args) -> JsonResponse:
+        self._log_function_debug("response_endpoint", context, "args", args)
 
         try:
-            vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-            debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
-            self._log_debug(context, debug_message)
-            ResponseSchema(**vpt.payload)
-        except Exception as e:
-            _msg = f"DirectPostResponse parse and validation error: {e}"
-            self._log_error(context, _msg)
-            return self._handle_400(context, _msg, HTTPError(f"Error:{e}, with JWT: {jwt}"))
-
-        # state MUST be present in the response since it was in the request
-        # then do lookup on the db -> if not -> exception
-        state = vpt.payload.get("state", None)
-        if not state:
-            return self._handle_400(context, _msg, HTTPError(f"{_msg} with: {vpt.payload}"))
-
-        try:
-            stored_session = self.db_engine.get_by_state(state=state)
-        except Exception as e:
-            _msg = "Session lookup by state value failed"
-            return self._handle_400(context, _msg, e)
-
-        if stored_session["finalized"]:
-            _msg = "Session already finalized"
-            return self._handle_400(context, _msg, HTTPError(_msg))
-
-        try:
-            vpt.load_nonce(stored_session['nonce'])
-            vps: list[Vp] = vpt.get_presentation_vps()
-            vpt.validate()
-
-        except VPNotFound as e:
-            _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
-            return self._handle_400(context, _msg, e)
-
-        except NoNonceInVPToken as e:
-            _msg = "Error while validating VP: vp has no nonce."
-            return self._handle_400(context, _msg, e)
-
-        except VPInvalidNonce as e:
-            _msg = "Error while validating VP: unexpected value."
-            return self._handle_400(context, _msg, e)
-
+            state = context.qs_params["id"]
         except Exception as e:
             _msg = (
-                "DirectPostResponse content parse and validation error. "
-                "Single VPs are faulty."
+                "Error while retrieving id from qs_params: "
+                f"{e.__class__.__name__}: {e}"
             )
-            return self._handle_400(context, _msg, e)
+            return self._handle_400(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
 
-        # evaluate the trust to each credential issuer found in the vps
-        # look for trust chain or x509 or do discovery!
-        cred_issuers = tuple(vpt.credentials_by_issuer.keys())
-        attributes_by_issuers = {k: {} for k in cred_issuers}
+        data = {
+            "scope": ' '.join(self.config['authorization']['scopes']),
+            "client_id_scheme": "entity_id",  # that's federation.
+            "client_id": self.client_id,
+            "response_mode": "direct_post.jwt",  # only HTTP POST is allowed.
+            "response_type": "vp_token",
+            "response_uri": self.absolute_response_url,
+            "nonce": str(uuid.uuid4()),
+            "state": state,
+            "iss": self.client_id,
+            "iat": iat_now(),
+            "exp": exp_from_now(minutes=self.config['authorization']['expiration_time'])
+        }
 
-        for vp in vps:
-            self._handle_credential_trust(context, vp)
+        # try:
+        #     dpop_proof = context.http_headers['HTTP_DPOP']
+        #     attestation = context.http_headers['HTTP_AUTHORIZATION']
+        # except KeyError as e:
+        #     _msg = f"Error while accessing http headers: {e}"
+        #     return self._handle_400(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
 
-            # the trust is established to the credential issuer, then we can get the disclosed user attributes
-
-            try:
-                if isinstance(vp, VpSdJwt):
-                    jwks_by_kid = {
-                        i['kid']: i for i in vp.credential_jwks
-                    }
-                    vp.verify(issuer_jwks_by_kid=jwks_by_kid)
-                else:
-                    vp.verify()
-            except Exception as e:
-                return self._handle_400(context, f"VP validation error with {self.data}: {e}")
-
-            # vp.result
-            attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
-
-            debug_message = f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
-            self._log_debug(context, debug_message)
-
-            vp.check_revocation()
-
-        all_user_attributes = self._extract_all_user_attributes(
-            attributes_by_issuers)
-
-        self._log_debug(context, f"Wallet disclosure: {all_user_attributes}")
-
-        # TODO: not sure that we want these issuers in the following form ... please recheck.
-        _info = {"issuer": ';'.join(cred_issuers)}
-        internal_resp = self._translate_response(
-            all_user_attributes, _info["issuer"], context
-        )
-
+        # take the session created in the pre-request authz endpoint
         try:
-            self.db_engine.update_response_object(
-                stored_session['nonce'], state, internal_resp
-            )
-            # authentication finalized!
-            self.db_engine.set_finalized(stored_session['document_id'])
-            if self.effective_log_level == logging.DEBUG:
-                stored_session = self.db_engine.get_by_state(state=state)
-                self._log_debug(
-                    context, f"Session update on storage: {stored_session}")
+            document = self.db_engine.get_by_state(state)
+            document_id = document["document_id"]
+            # self.db_engine.add_dpop_proof_and_attestation(
+            #     document_id, dpop_proof, attestation
+            # )
+            self.db_engine.update_request_object(document_id, data)
 
-        except StorageWriteError as e:
-            # TODO - do we have to block in the case the update cannot be done?
-            self._log_error(context, f"Session update on storage failed: {e}")
-            return self._handle_500(context, "Cannot update response object.", e)
+        except ValueError as e:
+            _msg = "Error while retrieving request object from database."
+            return self._handle_500(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
 
-        if stored_session['session_id'] == context.state["SESSION_ID"]:
-            # Same device flow
-            return Redirect(
-                self.registered_get_response_endpoint
-            )
-        else:
-            # Cross device flow
-            return JsonResponse(
-                {
-                    "status": "OK"
-                },
-                status="200"
-            )
+        except (Exception, BaseException) as e:
+            _msg = f"Error while updating request object: {e}"
+            return self._handle_500(context, _msg, e)
 
-    def _translate_response(self, response: dict, issuer: str, context: Context):
-        """
-        Translates wallet response to SATOSA internal response.
-        :type response: dict[str, str]
-        :type issuer: str
-        :type subject_type: str
-        :rtype: InternalData
-        :param response: Dictioary with attribute name as key.
-        :param issuer: The oidc op that gave the repsonse.
-        :param subject_type: public or pairwise according to oidc standard.
-        :return: A SATOSA internal response.
-        """
-        # it may depends by credential type and attested security context evaluated
-        # if WIA was previously submitted by the Wallet
+        helper = JWSHelper(self.default_metadata_private_jwk)
 
-        timestamp_epoch = (
-            response.get("auth_time")
-            or response.get("iat")
-            or iat_now()
+        jwt = helper.sign(
+            data,
+            protected={'trust_chain': self.get_backend_trust_chain()}
         )
-        timestamp_dt = datetime.datetime.fromtimestamp(
-            timestamp_epoch,
-            datetime.timezone.utc
+        response = {"response": jwt}
+        return JsonResponse(
+            response,
+            status="200"
         )
-        timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
-
-        auth_class_ref = (
-            response.get("acr") or
-            response.get("amr") or
-            self.config["authorization"]["default_acr_value"]
-        )
-        auth_info = AuthenticationInformation(
-            auth_class_ref, timestamp_iso, issuer)
-
-        # TODO - ACR values
-        internal_resp = InternalData(auth_info=auth_info)
-
-        sub = ""
-        pepper = self.config.get("user_attributes", {})[
-            'subject_id_random_value'
-        ]
-        for i in self.config.get("user_attributes", {}).get("unique_identifiers", []):
-            if response.get(i):
-                _sub = response[i]
-                sub = hashlib.sha256(
-                    f"{_sub}~{pepper}".encode(
-                    )
-                ).hexdigest()
-                break
-
-        if not sub:
-            self._log(
-                context,
-                level='warning',
-                message=(
-                    "[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation "
-                    "setting a random one for interop for internal frontends"
-                )
-            )
-            sub = hashlib.sha256(
-                f"{json.dumps(response).encode()}~{pepper}".encode()
-            ).hexdigest()
-
-        response["sub"] = [sub]
-        internal_resp.attributes = self.converter.to_internal(
-            "openid4vp", response
-        )
-        internal_resp.subject_id = sub
-        return internal_resp
