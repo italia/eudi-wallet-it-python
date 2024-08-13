@@ -236,27 +236,20 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         # (3) Questo metodo dovrebbe recuperare (dal code) il transaction-id
         # (4) Dal transaction-id si dovrebbero recuperare i dati di autenticazione dell'utente
         # è possibile che questa soluzione sia leggermente sopvraingegnerizzata perché pensata promossa da microsoft con tutto a microservizi
-        state = context.qs_params.get("id", None)
+        resp_code = context.qs_params.get("response_code", None)
         session_id = context.state.get("SESSION_ID", None)
 
-        if not state:
+        if not resp_code:
             return self._handle_400(context, "No session id found")
 
         finalized_session = None
 
         try:
-            if state:
-                # cross device
-                finalized_session = self.db_engine.get_by_state_and_session_id(
-                    state=state, session_id=session_id
-                )
-            else:
-                # same device
-                finalized_session = self.db_engine.get_by_session_id(
-                    session_id=session_id
-                )
+            finalized_session = self.db_engine.get_by_session_id(
+                session_id=session_id
+            )
         except Exception as e:
-            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
+            _msg = f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e}"
             return self._handle_401(context, _msg, e)
 
         if not finalized_session:
@@ -308,17 +301,13 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             if iat_now() > request_object["exp"]:
                 return self._handle_403("expired", "Request object expired")
 
-        if session["finalized"]:
-            #  return Redirect(
-            #      self.registered_get_response_endpoint
-            #  )
-            # TODO: rivedere il redirect URI, non mi è per nulla chiaro; inoltre va allineato con response_handler.py
-            #  https://relying.party/callback?response_code=<crypto secure random string with ≥ 128 bit entropy>
-            return JsonResponse(
-                {
-                    "redirect_uri": f"{self.registered_get_response_endpoint}?id={state}"
-                },
-                status="200"
+        if (session["finalized"] is True):
+            resp_code = session.get("response_code", None)
+            if resp_code is None:
+                return self._handle_500(context, "Unexpected state: finished response but no response code was found")
+            # TODO: chiarire se redirect o 200 + repsonse body
+            return Redirect(
+                f"{self.registered_get_response_endpoint}?response_code={resp_code}"
             )
         else:
             if request_object is not None:

@@ -110,8 +110,8 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def update_request_object(self, document_id: str, request_object: dict) -> int:
         return self.write("update_request_object", document_id, request_object)
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
-        return self.write("update_response_object", nonce, state, response_object)
+    def update_response_object(self, nonce: str, state: str, response_object: dict, response_code: str) -> int:
+        return self.write("update_response_object", nonce, state, response_object, response_code)
 
     def get(self, method: str, *args, **kwargs) -> Union[dict, None]:
         """
@@ -236,6 +236,9 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         return self.get("get_by_session_id", session_id)
+
+    def get_by_response_code_and_session_id(self, response_code: str, session_id: str) -> Union[dict, None]:
+        return self.get("get_by_response_code_and_session_id", response_code, session_id)
 
     @property
     def is_connected(self):

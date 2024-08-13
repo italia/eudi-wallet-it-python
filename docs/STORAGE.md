@@ -22,7 +22,8 @@ The `BaseStorage` class can be extended by implementing the following methods:
 -  `get_by_id`                      
 -  `get_by_nonce_state`             
 -  `get_by_session_id`              
--  `get_by_state_and_session_id`    
+-  `get_by_state_and_session_id`
+-  `get_by_response_code_and_session_id`    
 -  `init_session`                   
 -  `set_session_retention_ttl`      
 -  `has_session_retention_ttl`      
@@ -129,7 +130,8 @@ This classes can be used as references while providing a custom implementation f
     "state": uuidv4,
     "session_id": "urn:uuid:"uuidv4,
     "finalized": boolean,
-    "internal_response": object
+    "internal_response": object,
+    "response_code": str
   }
 ]
 ```
@@ -143,3 +145,4 @@ This classes can be used as references while providing a custom implementation f
 | `session_id`         | Session id. Used to identify cross device flows.                                                                         |
 | `finalized`          | A boolean value which indicates if the session is finilazed or not (user scanned the QR Code or used the redirect link). |
 | `internal_response`  | The object containing the personal data, `null` until login.                                                             |
+| `response_code`      | The response code in the finalized callback URI, emitted when authentication finishes                                    |
