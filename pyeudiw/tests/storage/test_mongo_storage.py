@@ -89,11 +89,11 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
 
         request_object = {"nonce": nonce, "state": state}
-
         self.storage.update_request_object(
             document_id, request_object)
+        response_code = "code1234"
         documentStatus = self.storage.update_response_object(
-            nonce, state, {"response": "test"})
+            nonce, state, {"response": "test"}, response_code)
         self.storage.add_dpop_proof_and_attestation(
             document_id, dpop_proof={"dpop": "test"}, attestation={"attestation": "test"})
         assert documentStatus
@@ -111,6 +111,7 @@ class TestMongoStorage:
         assert document["nonce"] == nonce
         assert document["request_object"] == request_object
         assert document["internal_response"] == {"response": "test"}
+        assert document["response_code"] == response_code
 
     def test_retention_ttl(self):
         self.storage.set_session_retention_ttl(5)
