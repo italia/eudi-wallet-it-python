@@ -219,6 +219,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "qrcode_size": self.config["qrcode"]["size"],
                 "qrcode_logo_path": self.config["qrcode"]["logo_path"],
                 "qrcode_expiration_time": self.config["qrcode"]["expiration_time"],
+                "qrcode_size": self.config["qrcode"]["size"],
+                "qrcode_logo_path": self.config["qrcode"]["logo_path"],
                 "state": state,
                 "status_endpoint": self.absolute_status_url
             }

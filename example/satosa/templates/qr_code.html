@@ -183,9 +183,7 @@
 
     function QRcodeScanCheck() {
       let endpointSatosa = "{{ status_endpoint }}";
-      let data = {
-        "id": "{{ state }}", 
-      };
+      let data = {"id": "{{ state }}"};
 
       let ajaxRequest = $.ajax({
         type: 'GET',
