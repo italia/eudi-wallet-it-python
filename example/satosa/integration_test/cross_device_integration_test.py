@@ -152,7 +152,7 @@ expected = {
     # https://oidref.com/2.5.4.4
     "urn:oid:2.5.4.4": ISSUER_CONF['sd_specification'].split('!sd family_name:')[1].split('"')[1]
 }
-breakpoint()
+
 for attribute in attributes:
     name = attribute["name"]
     value = attribute.contents[0].contents[0]
