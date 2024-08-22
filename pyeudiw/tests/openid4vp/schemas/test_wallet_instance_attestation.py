@@ -47,7 +47,7 @@ WALLET_INSTANCE_ATTESTATION = {
                 "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg"
             }
         },
-        "authorization_endpoint": "eudiw:",
+        "authorization_endpoint": "haip:",
         "response_types_supported": [
             "vp_token"
         ],

@@ -140,7 +140,7 @@ class TestOpenID4VPBackend:
             pre_request_endpoint.message, encoding='utf-8', errors='replace')
         parsed = urllib.parse.urlparse(unquoted)
 
-        assert parsed.scheme == "eudiw"
+        assert parsed.scheme == CONFIG['authorization']['url_scheme']
         assert parsed.netloc == "authorize"
         assert parsed.path == ""
         assert parsed.query
