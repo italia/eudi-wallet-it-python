@@ -50,17 +50,15 @@ class TestMongoDBEngine:
             return
 
     def test_update_response_object(self):
-        response_code = "code1234"
         response_object = {"response_object": "response_object"}
         self.engine.update_response_object(
-            self.nonce, self.state, response_object, response_code)
+            self.nonce, self.state, response_object)
 
     def test_update_response_object_unexistent_id_object(self):
-        response_code = "code1234"
         response_object = {"response_object": "response_object"}
         try:
             self.engine.update_response_object(
-                str(uuid.uuid4()), str(uuid.uuid4()), response_object, response_code)
+                str(uuid.uuid4()), str(uuid.uuid4()), response_object)
         except Exception:
             return
 

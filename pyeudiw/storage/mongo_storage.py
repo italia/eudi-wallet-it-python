@@ -110,18 +110,6 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def get_by_response_code_and_session_id(self, response_code: str, session_id: str) -> Union[dict, None]:
-        self._connect()
-        query = {"response_code": response_code, "session_id": session_id}
-        document = self.sessions.find_one(query)
-
-        if document is None:
-            raise ValueError(
-                f'Document with response code {response_code} and session id {session_id} not found.'
-            )
-
-        return document
-
     def init_session(self, document_id: str, session_id: str, state: str) -> str:
         entity = {
             "document_id": document_id,
@@ -207,16 +195,15 @@ class MongoStorage(BaseStorage):
             )
         return update_result
 
-    def update_response_object(self, nonce: str, state: str, internal_response: dict, response_code: str) -> UpdateResult:
+    def update_response_object(self, nonce: str, state: str, internal_response: dict) -> UpdateResult:
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
         document_status = self.sessions.update_one(
             {"_id": document_id},
             {"$set":
                 {
-                    "internal_response": internal_response,
-                    "response_code": response_code
-                }
+                    "internal_response": internal_response
+                },
              })
 
         return document_status

@@ -11,6 +11,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
+from pyeudiw.satosa.utils.respcode import validate_resp_code
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
@@ -254,6 +255,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         if not finalized_session:
             return self._handle_400(context, "session not found or invalid")
+
+        if not resp_code or not validate_resp_code(resp_code, finalized_session["state"], self.config["response"]["code_hmac_key"]):
+            self._handle_400(context, "Invalid response code")
 
         _now = iat_now()
         _exp = finalized_session['request_object']['exp']
