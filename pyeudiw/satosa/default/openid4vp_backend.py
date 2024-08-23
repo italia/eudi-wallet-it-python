@@ -305,9 +305,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             resp_code = session.get("response_code", None)
             if resp_code is None:
                 return self._handle_500(context, "Unexpected state: finished response but no response code was found")
-            # TODO: chiarire se redirect o 200 + repsonse body
-            return Redirect(
-                f"{self.registered_get_response_endpoint}?response_code={resp_code}"
+            return JsonResponse(
+                f"{self.registered_get_response_endpoint}?response_code={resp_code}",
+                status="200"
             )
         else:
             if request_object is not None:
