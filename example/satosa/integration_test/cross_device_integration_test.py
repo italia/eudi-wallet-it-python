@@ -2,6 +2,7 @@ import urllib.parse
 import requests
 import urllib
 from bs4 import BeautifulSoup
+import re
 
 from pyeudiw.jwt.utils import decode_jwt_payload
 
@@ -43,27 +44,12 @@ def _extract_request_uri(bs: BeautifulSoup) -> str:
 
 
 def _extract_status_uri(bs: BeautifulSoup) -> str:
-    # TODO: find a better approach
     qrcode_script_element: str = bs.find_all('script')[-1].string
-    pattern = 'endpointSatosa = "'
-    end_pattern = '";'
-    start = qrcode_script_element.find(pattern)
-    if start == -1:
-        raise ValueError(f"unable to find pattern '{pattern}'")
-    end = qrcode_script_element[start+len(pattern):].find(end_pattern)
-    if end == -1:
-        raise ValueError(f"unable to find pattern '{end}'")
-    status_path = qrcode_script_element[start+len(pattern):start+len(pattern)+end]
+    qrcode_script_element_formatted = [item.strip() for item in qrcode_script_element.splitlines()]
+    qrcode_script_element_formatted = str.join("", qrcode_script_element_formatted)
 
-    id_pattern = 'let data = {"id": "'
-    start = qrcode_script_element.find(id_pattern)
-    if start == -1:
-        raise ValueError(f"unable to find pattern '{id_pattern}'")
-    end_id_pattern = '"};'
-    end = qrcode_script_element[start+len(id_pattern):].find(end_id_pattern)
-    if end == -1:
-        raise ValueError(f"unable to find pattern '{end_id_pattern}'")
-    resource_id = qrcode_script_element[start+len(id_pattern):start+len(id_pattern)+end]
+    status_path = re.search(r'let endpointSatosa = \"(.*?)\"', qrcode_script_element_formatted).group(1)
+    resource_id = re.search(r'let data = {\"id\": \"(.*?)\"', qrcode_script_element_formatted).group(1)
 
     return f"{status_path}?id={resource_id}"
 
