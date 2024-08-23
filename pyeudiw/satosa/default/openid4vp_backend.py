@@ -321,7 +321,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 status="200"
             )
         else:
-            if session.get('dpop_proof', None):
+            if request_object is not None:
                 return JsonResponse(
                     {
                         "response": "Accepted"
