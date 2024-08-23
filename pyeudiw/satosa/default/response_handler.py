@@ -188,10 +188,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
         if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
-            # TODO: rivedere il redirect uri
-            #  https://relying.party/callback?response_code=<crypto secure random string with ≥ 128 bit entropy>
             cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
-            return JsonResponse({"redirect_url": cb_redirect_uri}, status="200")
+            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             # Cross device flow
             return JsonResponse({"status": "OK"}, status="200")

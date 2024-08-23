@@ -237,8 +237,8 @@ authz_response_ok = http_user_agent.post(
     data={'response': encrypted_response},
     timeout=TIMEOUT_S
 )
-assert 'redirect_url' in authz_response_ok.content.decode()
-callback_uri = json.loads(authz_response_ok.content.decode())['redirect_url']
+assert 'redirect_uri' in authz_response_ok.content.decode()
+callback_uri = json.loads(authz_response_ok.content.decode())['redirect_uri']
 satosa_authn_response = http_user_agent.get(
     callback_uri,
     verify=False,
