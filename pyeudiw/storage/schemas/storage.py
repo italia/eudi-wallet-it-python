@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, MongoDsn
 
 
 class InitParams(BaseModel):
-    url: HttpUrl
+    url: MongoDsn
     conf: dict
 
 
