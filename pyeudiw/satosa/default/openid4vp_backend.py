@@ -231,14 +231,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def get_response_endpoint(self, context: Context) -> Response:
 
         self._log_function_debug("get_response_endpoint", context)
-        # TODO: questa cosa si sfascia perché la funzione di callback non consuma id come query parameter.
-        # Vedi https://italia.github.io/eudi-wallet-it-docs/versione-corrente/en/relying-party-solution.html#redirect-uri
-        # Probabilmente quello che dovrebbe fare è:
-        # (1) Il response handler dovrebbe generare un code (crittograficamente sicuro con 128 bit o più di entropia)
-        # (2) Dovrebbe fare un binding tra il code e il transaction-id (usando la terminologia di openid4vp)
-        # (3) Questo metodo dovrebbe recuperare (dal code) il transaction-id
-        # (4) Dal transaction-id si dovrebbero recuperare i dati di autenticazione dell'utente
-        # è possibile che questa soluzione sia leggermente sopvraingegnerizzata perché pensata promossa da microsoft con tutto a microservizi
         resp_code = context.qs_params.get("response_code", None)
         session_id = context.state.get("SESSION_ID", None)
 
