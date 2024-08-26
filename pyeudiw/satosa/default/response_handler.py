@@ -17,7 +17,6 @@ from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.satosa.exceptions import NotTrustedFederationError, HTTPError
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
-from pyeudiw.satosa.utils.respcode import create_response_code
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.exceptions import StorageWriteError
@@ -169,7 +168,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         internal_resp = self._translate_response(
             all_user_attributes, _info["issuer"], context
         )
-        response_code = create_response_code(state, self.config["response"]["code_hmac_key"])
+        # response_code = create_response_code(state, self.config["response"]["code_hmac_key"])
+        response_code = self.response_code_helper.create_code(state)
 
         try:
             self.db_engine.update_response_object(
