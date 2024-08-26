@@ -124,7 +124,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                     getattr(self, f"{k}_endpoint")
                 )
             )
-            _endpoint = f"{self.client_id}{v}"
+            _endpoint = f"{self.client_id}/{endpoint_value.lstrip('/')}"
             self._log_debug(
                 "OpenID4VPBackend",
                 f"Exposing backend entity endpoint = {_endpoint}"
