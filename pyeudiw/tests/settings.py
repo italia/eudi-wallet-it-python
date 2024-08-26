@@ -33,8 +33,8 @@ CONFIG = {
         "status": "/status-uri",
         "get_response": "/get-response",
     },
-    "response": {
-        "code_hmac_key": "abc123ab"
+    "response_code": {
+        "hmac_key": "abc123ab"
     },
     "qrcode": {
         "size": 100,

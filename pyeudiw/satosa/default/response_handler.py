@@ -168,7 +168,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         internal_resp = self._translate_response(
             all_user_attributes, _info["issuer"], context
         )
-        # response_code = create_response_code(state, self.config["response"]["code_hmac_key"])
         response_code = self.response_code_helper.create_code(state)
 
         try:

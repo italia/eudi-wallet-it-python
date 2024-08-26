@@ -24,8 +24,8 @@ config:
     expiration_time: 120 # seconds
     logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
 
-  response:
-    code_hmac_key: ""
+  response_code:
+    hmac_key: ""
 
   jwt:
     default_sig_alg: ES256 # or RS256

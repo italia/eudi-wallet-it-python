@@ -20,7 +20,7 @@ class PyeudiwBackendConfig(BaseModel):
     ui: UiConfig
     endpoints: EndpointsConfig
     qrcode: QRCode
-    response: ResponseConfig
+    response_code: ResponseConfig
     jwt: JWTConfig
     authorization: AuthorizationConfig
     user_attributes: UserAttributesConfig
