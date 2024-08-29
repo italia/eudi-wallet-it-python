@@ -53,9 +53,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.client_id = f"{base_url}/{name}"
         self.config['metadata']['client_id'] = self.client_id
 
-        self.config['metadata']['redirect_uris'] = []
-        self.config['metadata']['redirect_uris'].append(
-            f"{self.client_id}/redirect-uri")
+        self.config['metadata']['response_uris_supported'] = []
+        self.config['metadata']['response_uris_supported'].append(
+            f"{self.client_id}/response-uri")
 
         self.config['metadata']['request_uris'] = []
         self.config['metadata']['request_uris'].append(
@@ -75,7 +75,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.template = Jinja2TemplateHandler(self.config["ui"])
 
         # it will be filled by .register_endpoints
-        self.absolute_redirect_url = None
+        self.absolute_response_url = None
         self.absolute_request_url = None
         self.absolute_status_url = None
         self.registered_get_response_endpoint = None
@@ -133,7 +133,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 case "get_response":
                     self.registered_get_response_endpoint = _endpoint
                 case "response":
-                    self.absolute_redirect_url = _endpoint
+                    self.absolute_response_url = _endpoint
                 case "request":
                     self.absolute_request_url = _endpoint
                 case "status":
@@ -228,7 +228,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def get_response_endpoint(self, context: Context) -> Response:
 
         self._log_function_debug("get_response_endpoint", context)
-
+        # TODO: questa cosa si sfascia perché la funzione di callback non consuma id come query parameter.
+        # Vedi https://italia.github.io/eudi-wallet-it-docs/versione-corrente/en/relying-party-solution.html#redirect-uri
+        # Probabilmente quello che dovrebbe fare è:
+        # (1) Il response handler dovrebbe generare un code (crittograficamente sicuro con 128 bit o più di entropia)
+        # (2) Dovrebbe fare un binding tra il code e il transaction-id (usando la terminologia di openid4vp)
+        # (3) Questo metodo dovrebbe recuperare (dal code) il transaction-id
+        # (4) Dal transaction-id si dovrebbero recuperare i dati di autenticazione dell'utente
+        # è possibile che questa soluzione sia leggermente sopvraingegnerizzata perché pensata promossa da microsoft con tutto a microservizi
         state = context.qs_params.get("id", None)
         session_id = context.state.get("SESSION_ID", None)
 
@@ -305,14 +312,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             #  return Redirect(
             #      self.registered_get_response_endpoint
             #  )
+            # TODO: rivedere il redirect URI, non mi è per nulla chiaro; inoltre va allineato con response_handler.py
+            #  https://relying.party/callback?response_code=<crypto secure random string with ≥ 128 bit entropy>
             return JsonResponse(
                 {
-                    "response_url": f"{self.registered_get_response_endpoint}?id={state}"
+                    "redirect_uri": f"{self.registered_get_response_endpoint}?id={state}"
                 },
                 status="200"
             )
         else:
-            if session.get('dpop_proof', None):
+            if request_object is not None:
                 return JsonResponse(
                     {
                         "response": "Accepted"

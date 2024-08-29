@@ -1,3 +1,4 @@
+import json
 import requests
 import uuid
 import urllib
@@ -15,7 +16,6 @@ from pyeudiw.tests.federation.base import (
     leaf_wallet,
     leaf_wallet_signed,
     trust_chain_issuer,
-    trust_chain_wallet,
     ta_ec,
     ta_ec_signed,
     leaf_cred_signed, leaf_cred_jwk_prot
@@ -23,7 +23,6 @@ from pyeudiw.tests.federation.base import (
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper, JWEHelper
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.sd_jwt import (
     load_specification_from_yaml_string,
     issue_sd_jwt,
@@ -40,9 +39,10 @@ from sd_jwt.holder import SDJWTHolder
 from settings import (
     CONFIG_DB,
     RP_EID,
-    WALLET_INSTANCE_ATTESTATION,
     its_trust_chain
 )
+
+TIMEOUT_S = 4
 
 # put a trust attestation related itself into the storage
 # this then is used as trust_chain header paramenter in the signed
@@ -78,7 +78,6 @@ req_url = f"{saml2_request['headers'][0][1]}&idp_hinting=wallet"
 headers_mobile = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'
 }
-
 request_uri = ''
 
 # initialize the user-agent
@@ -88,7 +87,8 @@ try:
     authn_response = http_user_agent.get(
         url=req_url,
         verify=False,
-        headers=headers_mobile
+        headers=headers_mobile,
+        timeout=TIMEOUT_S
     )
 except requests.exceptions.InvalidSchema as e:
     request_uri = urllib.parse.unquote_plus(
@@ -99,36 +99,14 @@ except requests.exceptions.InvalidSchema as e:
 WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
 WALLET_PUBLIC_JWK = JWK(leaf_wallet_jwk.serialize())
 jwshelper = JWSHelper(WALLET_PRIVATE_JWK)
-dpop_wia = jwshelper.sign(
-    WALLET_INSTANCE_ATTESTATION,
-    protected={
-        'trust_chain': trust_chain_wallet,
-        'typ': "va+jwt"
-    }
-)
-
-dpop_proof = DPoPIssuer(
-    htu=request_uri,
-    token=dpop_wia,
-    private_jwk=WALLET_PRIVATE_JWK
-).proof
-dpop_test = DPoPVerifier(
-    public_jwk=leaf_wallet_jwk.serialize(),
-    http_header_authz=f"DPoP {dpop_wia}",
-    http_header_dpop=dpop_proof
-)
-print(f"dpop is valid: {dpop_test.is_valid}")
-
-http_headers = {
-    "AUTHORIZATION": f"DPoP {dpop_wia}",
-    "DPOP": dpop_proof
-}
 
 sign_request_obj = http_user_agent.get(
-    request_uri, verify=False, headers=http_headers)
+    request_uri,
+    verify=False,
+    timeout=TIMEOUT_S)
 print(sign_request_obj.json())
 
-redirect_uri = decode_jwt_payload(sign_request_obj.json()['response'])[
+response_uri = decode_jwt_payload(sign_request_obj.json()['response'])[
     'response_uri']
 
 # create a SD-JWT signed by a trusted credential issuer
@@ -228,8 +206,7 @@ rp_ec = decode_jwt_payload(rp_ec_jwt)
 
 presentation_definition = rp_ec["metadata"]["wallet_relying_party"]["presentation_definition"]
 PresentationDefinition(**presentation_definition)
-
-assert redirect_uri == rp_ec["metadata"]['wallet_relying_party']["redirect_uris"][0]
+assert response_uri == rp_ec["metadata"]['wallet_relying_party']["response_uris_supported"][0]
 
 response = {
     "state": red_data['state'],
@@ -245,7 +222,7 @@ response = {
                 "format": "vc+sd-jwt"
             }
         ],
-        "aud": redirect_uri
+        "aud": response_uri
     }
 }
 encrypted_response = JWEHelper(
@@ -254,16 +231,24 @@ encrypted_response = JWEHelper(
 ).encrypt(response)
 
 
-sign_request_obj = http_user_agent.post(
-    redirect_uri,
+authz_response_ok = http_user_agent.post(
+    response_uri,
     verify=False,
-    data={'response': encrypted_response}
+    data={'response': encrypted_response},
+    timeout=TIMEOUT_S
+)
+assert 'redirect_url' in authz_response_ok.content.decode()
+callback_uri = json.loads(authz_response_ok.content.decode())['redirect_url']
+satosa_authn_response = http_user_agent.get(
+    callback_uri,
+    verify=False,
+    timeout=TIMEOUT_S
 )
 
-assert 'SAMLResponse' in sign_request_obj.content.decode()
-print(sign_request_obj.content.decode())
+assert 'SAMLResponse' in satosa_authn_response.content.decode()
+print(satosa_authn_response.content.decode())
 
-soup = BeautifulSoup(sign_request_obj.content.decode(), features="lxml")
+soup = BeautifulSoup(satosa_authn_response.content.decode(), features="lxml")
 form = soup.find("form")
 assert "/saml2" in form["action"]
 input_tag = soup.find("input")
@@ -288,3 +273,5 @@ for attribute in attributes:
     expected_value = expected.get(name, None)
     if expected_value:
         assert value == expected_value.lower()
+
+print('test passed')

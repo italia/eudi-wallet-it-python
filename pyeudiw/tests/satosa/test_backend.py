@@ -150,7 +150,7 @@ class TestOpenID4VPBackend:
         assert qs["request_uri"][0].startswith(
             CONFIG["metadata"]["request_uris"][0])
 
-    def test_vp_validation_in_redirect_endpoint(self, context):
+    def test_vp_validation_in_response_endpoint(self, context):
         self.backend.register_endpoints()
 
         issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
@@ -204,7 +204,7 @@ class TestOpenID4VPBackend:
         )
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["redirect_uris"][0].removeprefix(
+        context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
             CONFIG["base_url"])
 
         state = str(uuid.uuid4())
@@ -242,7 +242,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "400"
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
@@ -284,7 +284,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "400"
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
@@ -297,7 +297,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "400"
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
@@ -357,7 +357,7 @@ class TestOpenID4VPBackend:
         )
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["redirect_uris"][0].removeprefix(
+        context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
             CONFIG["base_url"])
 
         state = str(uuid.uuid4())
@@ -383,7 +383,7 @@ class TestOpenID4VPBackend:
         }
 
         # no nonce
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert "nonce" in msg["error_description"]
@@ -396,7 +396,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
@@ -408,7 +408,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "Session lookup by state value failed"
@@ -423,8 +423,8 @@ class TestOpenID4VPBackend:
         self.backend.db_engine.update_request_object(
             document_id=doc_id,
             request_object={"nonce": nonce, "state": state})
-        request_endpoint = self.backend.request_endpoint(context)
-        assert request_endpoint.status == "302 Found"
+        request_endpoint = self.backend.response_endpoint(context)
+        assert request_endpoint.status == "200"
 
     def test_request_endpoint(self, context):
         self.backend.register_endpoints()
@@ -509,12 +509,12 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG['metadata']['request_uris'][0]
         context.request_uri = request_uri
 
-        response_endpoint = self.backend.response_endpoint(context)
+        req_resp = self.backend.request_endpoint(context)
 
-        assert response_endpoint
-        assert response_endpoint.status == "200"
-        assert response_endpoint.message
-        msg = json.loads(response_endpoint.message)
+        assert req_resp
+        assert req_resp.status == "200"
+        assert req_resp.message
+        msg = json.loads(req_resp.message)
         assert msg["response"]
 
         header = decode_jwt_header(msg["response"])
@@ -523,7 +523,7 @@ class TestOpenID4VPBackend:
         assert header["kid"]
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
-        assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
+        assert payload["response_uri"] == CONFIG["metadata"]["response_uris_supported"][0]
 
         datetime_mock = Mock(wraps=datetime.datetime)
         datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
