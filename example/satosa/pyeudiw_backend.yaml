@@ -11,18 +11,18 @@ config:
     error_url: "https://localhost/error_page.html"
   
   endpoints:
-      pre_request: '/pre-request'
-      request:
-        module: pyeudiw.satosa.default.request_handler
-        class: RequestHandler
-        path: '/request-uri'
-      response:
-      	module: pyeudiw.satosa.default.response_handler
-        class: ResponseHandler
-        path: '/response-uri'
-      entity_configuration: '/.well-known/openid-federation'
-      status: '/status'
-      get_response: '/get-response'
+    pre_request: '/pre-request'
+    request:
+      module: pyeudiw.satosa.default.request_handler
+      class: RequestHandler
+      path: '/request-uri'
+    response:
+      module: pyeudiw.satosa.default.response_handler
+      class: ResponseHandler
+      path: '/response-uri'
+    entity_configuration: '/.well-known/openid-federation'
+    status: '/status'
+    get_response: '/get-response'
 
   qrcode:
     size: 250 # px
