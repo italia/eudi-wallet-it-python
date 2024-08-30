@@ -176,10 +176,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
 
-        self._log_warning(
-            context,
-            "Preventing session creation if context is not linked to any previous authn session not implemented yet"
-        )
+        if not context.target_frontend:
+            _msg = f"Preventing session creation. Context is not linked to any previous authn session."
+            self._log_info(context, _msg)
+            return self._handle_400(context, "valid previous authn session not found")
 
         # Init session
         try:
