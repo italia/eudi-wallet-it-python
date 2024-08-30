@@ -34,7 +34,7 @@ CONFIG = {
         "get_response": "/get-response",
     },
     "response_code": {
-        "hmac_key": "abc123ab"
+        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
     },
     "qrcode": {
         "size": 100,

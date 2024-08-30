@@ -11,7 +11,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
-from pyeudiw.satosa.utils.respcode import ResponseCodeHelper
+from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
@@ -94,7 +94,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
 
-        self.response_code_helper = ResponseCodeHelper(self.config["response_code"]["hmac_key"])
+        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
 
         self._log_debug(
             "OpenID4VP init",
@@ -234,13 +234,20 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         resp_code = context.qs_params.get("response_code", None)
         session_id = context.state.get("SESSION_ID", None)
 
-        if not resp_code:
-            return self._handle_400(context, "No session id found")
+        if not session_id:
+            return self._handle_400(context, "session id not found")
+
+        state = ""
+        try:
+            state = self.response_code_helper.recover_state(resp_code)
+        except Exception:
+            return self._handle_400(context, "missing or invalid parameter [response_code]")
 
         finalized_session = None
 
         try:
-            finalized_session = self.db_engine.get_by_session_id(
+            finalized_session = self.db_engine.get_by_state_and_session_id(
+                state=state,
                 session_id=session_id
             )
         except Exception as e:
@@ -249,9 +256,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         if not finalized_session:
             return self._handle_400(context, "session not found or invalid")
-
-        if not resp_code or not self.response_code_helper.validate_code(resp_code, finalized_session["state"]):
-            self._handle_400(context, "Invalid response code")
 
         _now = iat_now()
         _exp = finalized_session['request_object']['exp']

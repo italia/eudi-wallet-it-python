@@ -25,7 +25,7 @@ config:
     logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
 
   response_code:
-    hmac_key: ""
+    sym_key: "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" # hex string of 64 characters
 
   jwt:
     default_sig_alg: ES256 # or RS256
