@@ -22,7 +22,7 @@ The `BaseStorage` class can be extended by implementing the following methods:
 -  `get_by_id`                      
 -  `get_by_nonce_state`             
 -  `get_by_session_id`              
--  `get_by_state_and_session_id`
+-  `get_by_state_and_session_id`    
 -  `init_session`                   
 -  `set_session_retention_ttl`      
 -  `has_session_retention_ttl`      
