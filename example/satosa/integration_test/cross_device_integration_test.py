@@ -36,7 +36,7 @@ def _verify_status(status_uri: str, expected_code: int):
 
 
 def _extract_request_uri(bs: BeautifulSoup) -> str:
-    # TODO: find a better approach
+    # Request URI is extracted by parsing the QR code in the response page
     qrcode_element = list(bs.find(id="content-qrcode-payload").children)[1]
     qrcode_text = qrcode_element.get('contents')
     request_uri = urllib.parse.parse_qs(qrcode_text)['request_uri'][0]
@@ -44,6 +44,9 @@ def _extract_request_uri(bs: BeautifulSoup) -> str:
 
 
 def _extract_status_uri(bs: BeautifulSoup) -> str:
+    # Status uri is extracted by parsing a matching regexp in the <script> portion of the HTML.
+    # This funciton is somewhat unstable as it supposes that "qr_code.html" has certain properties
+    #  which might not be true.
     qrcode_script_element: str = bs.find_all('script')[-1].string
     qrcode_script_element_formatted = [item.strip() for item in qrcode_script_element.splitlines()]
     qrcode_script_element_formatted = str.join("", qrcode_script_element_formatted)
@@ -119,6 +122,7 @@ assert status_check.status_code == 200
 assert status_check.json().get("redirect_uri", None) is not None
 
 callback_uri = status_check.json().get("redirect_uri", None)
+# TODO: this test does not check that the login page is properly updated with a login button linkint to the redirect uri
 satosa_authn_response = http_user_agent.get(
     callback_uri,
     verify=False,
