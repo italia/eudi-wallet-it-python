@@ -304,11 +304,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 return self._handle_403("expired", "Request object expired")
 
         if (session["finalized"] is True):
-            resp_code = session.get("response_code", None)
-            if resp_code is None:
-                return self._handle_500(context, "Unexpected state: finished response but no response code was found")
+            resp_code = self.response_code_helper.create_code(state)
             return JsonResponse(
-                f"{self.registered_get_response_endpoint}?response_code={resp_code}",
+                {
+                    "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
+                },
                 status="200"
             )
         else:
