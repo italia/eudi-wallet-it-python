@@ -129,8 +129,7 @@ This classes can be used as references while providing a custom implementation f
     "state": uuidv4,
     "session_id": "urn:uuid:"uuidv4,
     "finalized": boolean,
-    "internal_response": object,
-    "response_code": str
+    "internal_response": object
   }
 ]
 ```
