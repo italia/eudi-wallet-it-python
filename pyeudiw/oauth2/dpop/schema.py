@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, HttpUrl
 
-from pyeudiw.jwk.schemas.jwk import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 
 
 class DPoPTokenHeaderSchema(BaseModel):

@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-from pyeudiw.jwk.schemas.jwk import JwksSchema
+from pyeudiw.jwk.schemas.public import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
 from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition

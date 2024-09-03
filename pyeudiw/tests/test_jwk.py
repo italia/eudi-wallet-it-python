@@ -2,7 +2,7 @@ import pytest
 from pydantic import TypeAdapter
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwk.schemas.jwk import JwkSchema, ECJwkSchema, RSAJwkSchema
+from pyeudiw.jwk.schemas.public import ECJwkSchema, RSAJwkSchema, _JwkSchema_T
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_export_public_pem():
 @pytest.mark.parametrize("key_type", ["EC", "RSA"])
 def test_dynamic_schema_validation(key_type):
     jwk = JWK(key_type=key_type)
-    model = TypeAdapter(JwkSchema).validate_python(jwk.as_dict())
+    model = TypeAdapter(_JwkSchema_T).validate_python(jwk.as_dict())
     match key_type:
         case "EC":
             assert isinstance(model, ECJwkSchema)
