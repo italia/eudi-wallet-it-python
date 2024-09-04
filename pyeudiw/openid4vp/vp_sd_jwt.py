@@ -8,6 +8,7 @@ from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
 
+
 class VpSdJwt(Vp):
     """Class for SD-JWT Format"""
 
@@ -96,7 +97,7 @@ class VpSdJwt(Vp):
             result.update(result['verified_claims'].get('claims', {}))
 
         return True
-    
+
     def get_credential_jwks(self) -> list[dict]:
         """
         Returns the credential JWKs.
@@ -105,7 +106,7 @@ class VpSdJwt(Vp):
         :rtype: list[dict]
         """
         return self.credential_jwks or {}
-    
+
     def set_credential_jwks(self, credential_jwks: list[dict]) -> None:
         """
         Set the credential JWKs for the current istance.
@@ -114,7 +115,7 @@ class VpSdJwt(Vp):
         :type credential_jwks: list[dict]
         """
         self._credential_jwks = credential_jwks
-    
+
     def _detect_vp_type(self) -> str:
         """
         Detects and return the type of verifiable presentation.

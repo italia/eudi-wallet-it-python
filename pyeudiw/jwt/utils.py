@@ -6,8 +6,8 @@ from typing import Dict
 from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
 from pyeudiw.jwk import find_jwk
 
-# JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
-JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
+# jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
+JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'
 
 
 def decode_jwt_element(jwt: str, position: int) -> dict:

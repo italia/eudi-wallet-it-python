@@ -5,7 +5,10 @@ from pydantic import BaseModel, HttpUrl
 
 from pyeudiw.jwk.schemas.public import JwkSchema
 
-SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)(~([-A-Za-z0-9\=_\.])*)*$"
+# this pattern matches sd-jwt and sd-jwt w/ kb
+SD_JWT_REGEXP = r"^([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)(~[-A-Za-z0-9_]+)*(~)([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)*$"
+# this pattern matches sd-jwt w/ kb
+SD_JWT_KB_REGEXP = r"^([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)(~[-A-Za-z0-9_]+)*(~)([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)$"
 
 
 def is_sd_jwt_format(sd_jwt: str) -> bool:
@@ -13,15 +16,9 @@ def is_sd_jwt_format(sd_jwt: str) -> bool:
     return bool(res)
 
 
-def is_sd_jwt_list_format(sd_jwt_list: list[str]) -> bool:
-    if len(sd_jwt_list) == 0:
-        return False
-
-    for sd_jwt in sd_jwt_list:
-        if not is_sd_jwt_format(sd_jwt):
-            return False
-
-    return True
+def is_sd_jwt_kb_format(sd_jwt_kb: str) -> bool:
+    res = re.match(SD_JWT_KB_REGEXP, sd_jwt_kb)
+    return bool(res)
 
 
 class SDJWTSchema(BaseModel):
