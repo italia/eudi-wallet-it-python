@@ -3,7 +3,7 @@ from typing import Dict, Literal
 
 from pydantic import BaseModel, HttpUrl
 
-from pyeudiw.jwk.schema import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 
 SD_JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)(~([-A-Za-z0-9\=_\.])*)*$"
 

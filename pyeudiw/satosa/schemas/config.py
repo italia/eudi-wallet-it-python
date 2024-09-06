@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from pyeudiw.jwk.schemas.jwk import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.satosa.schemas.endpoint import EndpointsConfig
 from pyeudiw.satosa.schemas.qrcode import QRCode
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig

@@ -5,7 +5,7 @@ from pydantic_core.core_schema import FieldValidationInfo
 
 from pyeudiw.federation.schemas.federation_entity import FederationEntity
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
-from pyeudiw.jwk.schema import JwksSchema
+from pyeudiw.jwk.schemas.public import JwksSchema
 from pyeudiw.tools.schema_utils import check_algorithm
 
 

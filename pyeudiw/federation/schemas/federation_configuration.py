@@ -1,6 +1,6 @@
 from pydantic import BaseModel, HttpUrl
 from pyeudiw.federation.schemas.wallet_relying_party import SigningAlgValuesSupported
-from pyeudiw.jwk.schemas.jwk import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 
 
 class FederationEntityMetadata(BaseModel):

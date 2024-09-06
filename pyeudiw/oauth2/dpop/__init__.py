@@ -3,7 +3,7 @@ import hashlib
 import logging
 import uuid
 
-from pyeudiw.jwk.schema import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.oauth2.dpop.exceptions import (
     InvalidDPoP,
     InvalidDPoPAth,
