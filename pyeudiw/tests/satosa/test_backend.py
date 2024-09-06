@@ -75,6 +75,7 @@ class TestOpenID4VPBackend:
     @pytest.fixture
     def context(self):
         context = Context()
+        context.target_frontend = 'someFrontend'
         context.state = State()
         return context
 
@@ -91,6 +92,18 @@ class TestOpenID4VPBackend:
         assert entity_config
         assert entity_config.status == "200"
         assert entity_config.message
+
+    def test_pre_request_without_frontend(self):
+        context = Context()
+        context.state = State()
+        self.backend.register_endpoints()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+        )
+        resp = self.backend.pre_request_endpoint(context, InternalData())
+        assert resp is not None
+        assert resp.status == "400"
+        assert resp.message is not None
 
     def test_pre_request_endpoint(self, context):
         self.backend.register_endpoints()
