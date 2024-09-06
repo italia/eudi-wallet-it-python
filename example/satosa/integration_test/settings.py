@@ -11,6 +11,7 @@ from pyeudiw.tests.federation.base import (
 
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
+TIMEOUT_S = 4
 
 RP_EID = "https://localhost/OpenID4VP"
 
