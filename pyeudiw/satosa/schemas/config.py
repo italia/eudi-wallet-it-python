@@ -8,14 +8,10 @@ from pyeudiw.federation.schemas.federation_configuration import FederationConfig
 from pyeudiw.federation.schemas.wallet_relying_party import WalletRelyingParty
 from pyeudiw.satosa.schemas.ui import UiConfig
 from pyeudiw.jwt.schemas.jwt import JWTConfig
-from pyeudiw.storage.schemas.storage import StorageConfig
+from pyeudiw.storage.schemas.storage import Storage
 
 
 class PyeudiwBackendConfig(BaseModel):
-    module: str
-    name: str
-    config: dict
-
     ui: UiConfig
     endpoints: EndpointsConfig
     qrcode: QRCode
@@ -25,5 +21,5 @@ class PyeudiwBackendConfig(BaseModel):
     network: dict
     federation: FederationConfig
     metadata_jwks: list[JwkSchema]
-    storage: StorageConfig
+    storage: Storage
     metadata: WalletRelyingParty
