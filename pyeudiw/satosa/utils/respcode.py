@@ -2,9 +2,9 @@ import base64
 from dataclasses import dataclass, field
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import secrets
+import string
 
 CODE_SYM_KEY_LEN = 32  # in bytes (256 bits)
-_HEX_ALPHABETH = '1234567890abcdef'
 
 
 @dataclass
@@ -36,7 +36,7 @@ class ResponseCodeSource:
 
 
 def decode_key(key: str) -> bytes:
-    if not set(key) <= set(_HEX_ALPHABETH):
+    if not set(key) <= set(string.hexdigits):
         raise ValueError("key in format different than hex currently not supported")
     key_len = len(key)
     if key_len != 2*CODE_SYM_KEY_LEN:
