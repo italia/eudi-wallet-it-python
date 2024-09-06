@@ -16,7 +16,6 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
     def request_endpoint(self, context: Context, *args) -> JsonResponse:
         self._log_function_debug("response_endpoint", context, "args", args)
 
-        # TODO: funzionalità per metodo POST
 
         try:
             state = context.qs_params["id"]
