@@ -16,6 +16,7 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
     def request_endpoint(self, context: Context, *args) -> JsonResponse:
         self._log_function_debug("response_endpoint", context, "args", args)
 
+
         try:
             state = context.qs_params["id"]
         except Exception as e:
@@ -38,7 +39,6 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             "iat": iat_now(),
             "exp": exp_from_now(minutes=self.config['authorization']['expiration_time'])
         }
-
         # take the session created in the pre-request authz endpoint
         try:
             document = self.db_engine.get_by_state(state)

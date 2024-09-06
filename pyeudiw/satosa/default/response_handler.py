@@ -168,6 +168,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         internal_resp = self._translate_response(
             all_user_attributes, _info["issuer"], context
         )
+        response_code = self.response_code_helper.create_code(state)
+
         try:
             self.db_engine.update_response_object(
                 stored_session['nonce'], state, internal_resp
@@ -186,15 +188,13 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
         if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
-            # TODO: rivedere il redirect uri
-            #  https://relying.party/callback?response_code=<crypto secure random string with ≥ 128 bit entropy>
-            cb_redirect_uri = f"{self.registered_get_response_endpoint}?id={state}"
-            return JsonResponse({"redirect_url": cb_redirect_uri}, status="200")
+            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             # Cross device flow
             return JsonResponse({"status": "OK"}, status="200")
 
-    def _translate_response(self, response: dict, issuer: str, context: Context):
+    def _translate_response(self, response: dict, issuer: str, context: Context) -> InternalData:
         """
         Translates wallet response to SATOSA internal response.
         :type response: dict[str, str]
@@ -231,6 +231,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         # TODO - ACR values
         internal_resp = InternalData(auth_info=auth_info)
 
+        # (re)define the response subject
         sub = ""
         pepper = self.config.get("user_attributes", {})[
             'subject_id_random_value'
@@ -256,8 +257,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             sub = hashlib.sha256(
                 f"{json.dumps(response).encode()}~{pepper}".encode()
             ).hexdigest()
-
         response["sub"] = [sub]
+
         internal_resp.attributes = self.converter.to_internal(
             "openid4vp", response
         )

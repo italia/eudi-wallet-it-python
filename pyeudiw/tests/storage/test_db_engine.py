@@ -56,7 +56,6 @@ class TestMongoDBEngine:
 
     def test_update_response_object_unexistent_id_object(self):
         response_object = {"response_object": "response_object"}
-
         try:
             self.engine.update_response_object(
                 str(uuid.uuid4()), str(uuid.uuid4()), response_object)

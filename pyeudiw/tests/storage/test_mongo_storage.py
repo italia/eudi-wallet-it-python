@@ -89,7 +89,6 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
 
         request_object = {"nonce": nonce, "state": state}
-
         self.storage.update_request_object(
             document_id, request_object)
         documentStatus = self.storage.update_response_object(

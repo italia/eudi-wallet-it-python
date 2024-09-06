@@ -33,6 +33,9 @@ CONFIG = {
         "status": "/status-uri",
         "get_response": "/get-response",
     },
+    "response_code": {
+        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
     "qrcode": {
         "size": 100,
         "color": "#2B4375",

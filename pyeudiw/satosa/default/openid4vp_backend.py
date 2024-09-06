@@ -11,6 +11,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
+from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
@@ -92,6 +93,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         except ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
+
+        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
 
         self._log_debug(
             "OpenID4VP init",
@@ -228,35 +231,27 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     def get_response_endpoint(self, context: Context) -> Response:
 
         self._log_function_debug("get_response_endpoint", context)
-        # TODO: questa cosa si sfascia perché la funzione di callback non consuma id come query parameter.
-        # Vedi https://italia.github.io/eudi-wallet-it-docs/versione-corrente/en/relying-party-solution.html#redirect-uri
-        # Probabilmente quello che dovrebbe fare è:
-        # (1) Il response handler dovrebbe generare un code (crittograficamente sicuro con 128 bit o più di entropia)
-        # (2) Dovrebbe fare un binding tra il code e il transaction-id (usando la terminologia di openid4vp)
-        # (3) Questo metodo dovrebbe recuperare (dal code) il transaction-id
-        # (4) Dal transaction-id si dovrebbero recuperare i dati di autenticazione dell'utente
-        # è possibile che questa soluzione sia leggermente sopvraingegnerizzata perché pensata promossa da microsoft con tutto a microservizi
-        state = context.qs_params.get("id", None)
+        resp_code = context.qs_params.get("response_code", None)
         session_id = context.state.get("SESSION_ID", None)
 
-        if not state:
-            return self._handle_400(context, "No session id found")
+        if not session_id:
+            return self._handle_400(context, "session id not found")
+
+        state = ""
+        try:
+            state = self.response_code_helper.recover_state(resp_code)
+        except Exception:
+            return self._handle_400(context, "missing or invalid parameter [response_code]")
 
         finalized_session = None
 
         try:
-            if state:
-                # cross device
-                finalized_session = self.db_engine.get_by_state_and_session_id(
-                    state=state, session_id=session_id
-                )
-            else:
-                # same device
-                finalized_session = self.db_engine.get_by_session_id(
-                    session_id=session_id
-                )
+            finalized_session = self.db_engine.get_by_state_and_session_id(
+                state=state,
+                session_id=session_id
+            )
         except Exception as e:
-            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
+            _msg = f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e}"
             return self._handle_401(context, _msg, e)
 
         if not finalized_session:
@@ -308,15 +303,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             if iat_now() > request_object["exp"]:
                 return self._handle_403("expired", "Request object expired")
 
-        if session["finalized"]:
-            #  return Redirect(
-            #      self.registered_get_response_endpoint
-            #  )
-            # TODO: rivedere il redirect URI, non mi è per nulla chiaro; inoltre va allineato con response_handler.py
-            #  https://relying.party/callback?response_code=<crypto secure random string with ≥ 128 bit entropy>
+        if (session["finalized"] is True):
+            resp_code = self.response_code_helper.create_code(state)
             return JsonResponse(
                 {
-                    "redirect_uri": f"{self.registered_get_response_endpoint}?id={state}"
+                    "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
                 },
                 status="200"
             )
