@@ -2,12 +2,14 @@ import datetime
 import hashlib
 import json
 import logging
+from typing import Callable
 
 from pydantic import ValidationError
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
+from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
 from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
 from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
                                           NoNonceInVPToken, VPInvalidNonce,
@@ -23,7 +25,13 @@ from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 
 
+# _CallbackErrorHandler_T = Callable[[], JsonResponse]
+
+
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
+    _SUPPORTED_RESPONSE_METHOD = "post"
+    _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
+
     def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
         try:
             # establish the trust with the issuer of the credential by checking it to the revocation
@@ -62,8 +70,90 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             all_user_attributes.update(**i)
         return all_user_attributes
 
+    def _parse_http_request(self, context: Context) -> tuple[dict, JsonResponse | None]:
+        """TODO: docs
+        """
+        if (http_method := context.request_method.lower()) != ResponseHandler._SUPPORTED_RESPONSE_METHOD:
+            return "", self._handle_400(context, f"HTTP method [{http_method}] not supported")
+
+        if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
+            return "", self._handle_400(context, f"HTTP content type [{content_type}] not supported")
+
+        _endpoint = f'{self.server_url}{context.request_uri}'
+        if self.config["metadata"].get('response_uris_supported', None):
+            if _endpoint not in self.config["metadata"]['response_uris_supported']:
+                return "", self._handle_400(context, "response_uri not valid")
+
+        return context.request, None
+        # jwt = context.request.get("response", None)
+        # if not jwt:
+        #     _msg = "response error: missing JWT"
+        #     self._log_error(context, _msg)
+        #     return "", self._handle_400(context, _msg)
+
+        # return jwt, None
+
+    def _retrieve_session_and_nonce_from_state(self, context: Context, state: str) -> tuple[dict, str, JsonResponse | None]:
+        """TODO: docs
+        """
+        request_session: dict = {}
+        try:
+            request_session = self.db_engine.get_by_state(state=state)
+        except Exception as err:
+            _msg = f"unable to find document-session associated to state {state}"
+            return {}, "", self._handle_400(context, _msg, err)
+
+        if request_session.get("finalized", True):
+            _msg = f"cannot accept response: session for state {state} corrupted or already finalized"
+            return {}, "", self._handle_400(context, _msg, HTTPError(_msg))
+
+        nonce = request_session.get("nonce", None)
+        if nonce is None:
+            _msg = f"unnable to find nonce in session associated to state {state}"
+            return {}, "", self._handle_500(context, _msg, HTTPError(_msg))
+        return request_session, nonce, None
+
     def response_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         self._log_function_debug("request_endpoint", context, "args", args)
+
+        # --- START HERE ---
+        request_dict, error_response = self._parse_http_request(context)
+        if error_response is not None:
+            return error_response
+
+        # parse and decrypt jwt in response
+        authz_response: None | AuthorizeResponseDirectPost = None
+        authz_payload: None | AuthorizeResponsePayload = None
+        try:
+            authz_response = AuthorizeResponseDirectPost(**request_dict)
+        except ValueError as e:
+            return self._handle_400(context, "response error: invalid schema or missing jwt", e)
+        try:
+            authz_payload = authz_response.decode_payload(self.metadata_jwks_by_kids)
+        except Exception as e:
+            _msg = f"authorization response parsing and/or validation error: {e}"
+            self._log_error(context, _msg)
+            return self._handle_400(context, _msg, HTTPError(f"error: {e}, with request: {request_dict}"))
+        self._log_debug(context, f"response URI endpoint response with payload {authz_payload}")
+
+        request_session, nonce, error_response = self._retrieve_session_and_nonce_from_state(context, authz_payload.state)
+        if error_response is not None:
+            return error_response
+
+        # the flow below is a simplified algorithm where:
+        # (1) we don't check that presentation submission matches definition
+        # (2) we don't check that vp tokens are aligned with information declared in the presentation submission
+        # (3) we use all disclosed claims in vp tokens to build the user identity
+        encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
+        for vp in encoded_vps:
+            # TODO:
+            # (a): verify that vp is vc+sd-jwt
+            # (b): verify that issuer jwt is valid (ok signature, not expired)
+            # (c): verify that binded key is valid (contains nonce above, ok signature, not expired)
+            # (d): extract claims for vp in order to build user identity
+            pass
+
+        # --- END HERE ---
 
         if context.request_method.lower() != 'post':
             return self._handle_400(context, "HTTP Method not supported")

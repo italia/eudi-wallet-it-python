@@ -1,11 +1,12 @@
 from pyeudiw.tools.base_logger import BaseLogger
 
+
 class Vp(BaseLogger):
     """Class for Verifiable Presentation istance."""
-    
+
     def parse_digital_credential(self) -> None:
         raise NotImplementedError
-    
+
     def _detect_vp_type(self) -> str:
         """
         Detects and return the type of verifiable presentation.
