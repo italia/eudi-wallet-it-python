@@ -117,7 +117,12 @@ Please consider the following branches:
 ## Authors
 
 - Giuseppe De Marco
+- Thomas Chiozzi
+- Elisa Nicolussi Paolaz
+
+
+## Acknowledgments
 - Pasquale De Rose
-- Alessio Murru
 - Salvatore Laiso
+- Alessio Murru
 - Nicola Saitto
