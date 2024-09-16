@@ -84,7 +84,7 @@ sign_request_obj = wallet_user_agent.get(
     verify=False,
     timeout=TIMEOUT_S)
 
-request_object_claims = decode_jwt_payload(sign_request_obj.json()['response'])
+request_object_claims = decode_jwt_payload(sign_request_obj.text)
 response_uri = request_object_claims['response_uri']
 
 # Wallet obtained the Request Object; verify that status is 202

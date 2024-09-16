@@ -6,16 +6,17 @@ from pyeudiw.jwt import JWSHelper
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP
-from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.satosa.utils.response import Response
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
 class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
 
-    def request_endpoint(self, context: Context, *args) -> JsonResponse:
-        self._log_function_debug("response_endpoint", context, "args", args)
+    _RESP_CONTENT_TYPE = "application/oauth-authz-req+jwt"
 
+    def request_endpoint(self, context: Context, *args) -> Response:
+        self._log_function_debug("response_endpoint", context, "args", args)
 
         try:
             state = context.qs_params["id"]
@@ -54,13 +55,12 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             return self._handle_500(context, _msg, e)
 
         helper = JWSHelper(self.default_metadata_private_jwk)
-
-        jwt = helper.sign(
+        request_object_jwt = helper.sign(
             data,
             protected={'trust_chain': self.get_backend_trust_chain()}
         )
-        response = {"response": jwt}
-        return JsonResponse(
-            response,
-            status="200"
+        return Response(
+            message=request_object_jwt,
+            status="200",
+            content=RequestHandler._RESP_CONTENT_TYPE
         )

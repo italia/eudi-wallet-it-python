@@ -104,9 +104,9 @@ sign_request_obj = http_user_agent.get(
     request_uri,
     verify=False,
     timeout=TIMEOUT_S)
-print(sign_request_obj.json())
+print(sign_request_obj.text)
 
-response_uri = decode_jwt_payload(sign_request_obj.json()['response'])[
+response_uri = decode_jwt_payload(sign_request_obj.text)[
     'response_uri']
 
 # create a SD-JWT signed by a trusted credential issuer
@@ -179,7 +179,7 @@ sdjwt_at_holder.create_presentation(
     )
 )
 
-red_data = decode_jwt_payload(sign_request_obj.json()['response'])
+red_data = decode_jwt_payload(sign_request_obj.text)
 req_nonce = red_data['nonce']
 
 data = {
