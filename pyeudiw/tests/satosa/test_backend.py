@@ -445,8 +445,8 @@ class TestOpenID4VPBackend:
         state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
-        requeest_object_jwt = json.loads(state_endpoint_response.message)
-        assert requeest_object_jwt["error"]
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"]
 
         internal_data = InternalData()
         context.http_headers = dict(
@@ -538,10 +538,10 @@ class TestOpenID4VPBackend:
         assert len(obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
         assert obtained_content_types[0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
         assert req_resp.message, f"invalid message in request object response {req_resp_str}"
-        requeest_object_jwt = req_resp.message
+        request_object_jwt = req_resp.message
 
-        header = decode_jwt_header(requeest_object_jwt)
-        payload = decode_jwt_payload(requeest_object_jwt)
+        header = decode_jwt_header(request_object_jwt)
+        payload = decode_jwt_payload(request_object_jwt)
         assert header["alg"]
         assert header["kid"]
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
