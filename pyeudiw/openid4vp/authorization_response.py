@@ -15,6 +15,9 @@ class AuthorizeResponsePayload:
     vp_token: str | list[str]
     presentation_submission: dict
 
+    def serialize_json(self) -> str:
+        return json.dumps(self.__dict__)
+
 
 def _get_jwk_kid_from_store(jwt: str, key_store: dict[str, dict]) -> dict:
     headers = decode_jwt_header(jwt)

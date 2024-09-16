@@ -1,5 +1,16 @@
 from pyeudiw.tools.base_logger import BaseLogger
 
+JWT_TYPE = "JWT"
+VC_SD_JWT_TYPE = "vc+sd-jwt"
+WALLET_ATTESTATION_TYPE = "wallet-attestation+jwt"
+MDOC_BCOR_TYPE = "mdoc_cbor"
+
+SUPPORTED_VC_TYPES = (
+    VC_SD_JWT_TYPE,
+    WALLET_ATTESTATION_TYPE,
+    MDOC_BCOR_TYPE
+)
+
 
 class Vp(BaseLogger):
     """Class for Verifiable Presentation istance."""

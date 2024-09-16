@@ -4,6 +4,10 @@ class KIDNotFound(Exception):
     """
 
 
+class VPSchemaException(Exception):
+    pass
+
+
 class VPNotFound(Exception):
     pass
 
@@ -21,6 +25,18 @@ class NoNonceInVPToken(Exception):
 class InvalidVPToken(Exception):
     """
     Raised when a given VP is invalid
+    """
+
+
+class InvalidVPKeyBinding(InvalidVPToken):
+    """Raised when a given VP contains a proof of possession key binding with
+    wrong parameters.
+    """
+
+
+class InvalidVPSignature(InvalidVPKeyBinding):
+    """Raised when a VP contains a proof of possession key binding and
+    its signature verification failed.
     """
 
 

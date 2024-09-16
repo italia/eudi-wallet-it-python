@@ -1,10 +1,13 @@
 import base64
 import json
 import re
-
 from typing import Dict
-from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
+
+from jwcrypto.common import base64url_decode, json_decode
+
 from pyeudiw.jwk import find_jwk
+from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
+from pyeudiw.jwt.schemas.jwt import UnverfiedJwt
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
 JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'
@@ -138,3 +141,21 @@ def is_jws_format(jwt: str):
         return False
 
     return not is_jwe_format(jwt)
+
+
+def _unsafe_decode_part(part: str) -> dict:
+    return json_decode(base64url_decode(part))
+
+
+def unsafe_parse_jws(jwt: str) -> UnverfiedJwt:
+    if not is_jwt_format(jwt):
+        raise ValueError(f"unable to parse {jwt}: not a jwt")
+    b64header, b64payload, signature, *_ = jwt.split(".")
+    head = {}
+    payload = {}
+    try:
+        head = _unsafe_decode_part(b64header)
+        payload = _unsafe_decode_part(b64payload)
+    except Exception as e:
+        raise ValueError(f"unable to decode JWS part: {e}")
+    return UnverfiedJwt(jwt, head, payload, signature=signature)

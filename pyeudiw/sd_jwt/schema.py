@@ -8,7 +8,8 @@ from pyeudiw.jwk.schemas.public import JwkSchema
 
 _OptionalDict_T = TypeVar('T', None, dict)
 
-_IDENTIFYING_TYP = "vc+sd-jwt"
+_IDENTIFYING_VC_TYP = "vc+sd-jwt"
+_IDENTIFYING_KB_TYP = "kb+jwt"
 
 # this pattern matches sd-jwt and sd-jwt w/ kb
 SD_JWT_REGEXP = r"^([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)(~[-A-Za-z0-9_]+)*(~)([-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+)*$"
@@ -27,7 +28,7 @@ def is_sd_jwt_kb_format(sd_jwt_kb: str) -> bool:
 
 
 class VcSdJwtHeaderSchema(BaseModel):
-    typ: str  # TODO: MUST be vc+sd-jwt
+    typ: str
     alg: str
     kid: str
     trust_chain: Optional[list[str]] = None
@@ -36,8 +37,8 @@ class VcSdJwtHeaderSchema(BaseModel):
 
     @field_validator("typ")
     def validate_typ(cls, v: str) -> str:
-        if v != _IDENTIFYING_TYP:
-            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_TYP}', found instead '{v}'")
+        if v != _IDENTIFYING_VC_TYP:
+            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'")
         return v
 
 
@@ -59,7 +60,7 @@ class _VerificationSchema(BaseModel):
     evidence: _EvidenceSchema
 
 
-class SDJWTPayloadSchema(BaseModel):
+class VcSdJwtPayloadSchema(BaseModel):
     iss: HttpUrl
     sub: str
     iat: int  # selectively disclosable
@@ -68,8 +69,9 @@ class SDJWTPayloadSchema(BaseModel):
     cnf: Dict[Literal["jwk"], JwkSchema]
     vct: str
     verification: dict
-
     _sd_alg: str
+
+    _sd: Optional[list[str]] = None
 
     @field_validator("status")
     def validate_status(cls, v: dict) -> dict:
@@ -88,9 +90,27 @@ class SDJWTPayloadSchema(BaseModel):
         return v
 
 
-class PidVcSdJwtPayloadSchema(SDJWTPayloadSchema):
+class PidVcSdJwtPayloadSchema(VcSdJwtPayloadSchema):
     given_name: Optional[str] = None
     family_name: Optional[str] = None
     birth_date: Optional[Any] = None  # TODO: date is dd-mm-yyyy but I'm not sure if libraries parses them as str or a native format
     unique_id: Optional[str] = None
     tax_id_code: Optional[str] = None
+
+
+class KeyBindingJwtHeader(BaseModel):
+    typ: str
+    alg: str
+
+    @field_validator("typ")
+    def validate_typ(cls, v: str) -> str:
+        if v != _IDENTIFYING_KB_TYP:
+            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_KB_TYP}', found instead '{v}'")
+        return v
+
+
+class KeyBindingJwtPayload(BaseModel):
+    iat: int
+    aud: str
+    nonce: str
+    sd_hash: str
