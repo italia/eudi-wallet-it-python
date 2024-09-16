@@ -25,7 +25,7 @@ def test_VpVcSdJwtKbVerifier():
     except VPSchemaException:
         # TODO: example that is actually aligned with italian specs
         pass
-    verifier.verify_vp()
+    verifier.verify()
     expected_credentials = {"address": {"street_address": "123 Main St", "locality": "Anytown", "region": "Anystate", "country": "US"}}
     credentials = verifier.parse_digital_credential()
     assert credentials == expected_credentials, f"failed to parse credentials: expected {expected_credentials}, obtained {credentials}"
