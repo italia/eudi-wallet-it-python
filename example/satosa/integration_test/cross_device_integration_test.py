@@ -94,7 +94,8 @@ _verify_status(status_uri, expected_code=202)
 verifiable_credential = create_issuer_test_data()
 verifiable_presentations = create_holder_test_data(
     verifiable_credential,
-    request_object_claims['nonce']
+    request_object_claims['nonce'],
+    request_object_claims['client_id']
 )
 wallet_response_data = create_authorize_response(
     verifiable_presentations,

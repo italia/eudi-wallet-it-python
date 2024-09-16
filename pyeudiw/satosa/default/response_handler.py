@@ -15,7 +15,7 @@ from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
                                           NoNonceInVPToken, VPInvalidNonce,
                                           VPNotFound)
 from pyeudiw.openid4vp.schemas.response import ResponseSchema
-from pyeudiw.openid4vp.utils import infer_vp_iss, infer_vp_typ
+from pyeudiw.openid4vp.utils import infer_vp_iss, infer_vp_typ, infer_vp_header_claim
 from pyeudiw.openid4vp.vp import SUPPORTED_VC_TYPES, Vp
 from pyeudiw.openid4vp.vp_mock import MockVpVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
@@ -35,6 +35,7 @@ from pyeudiw.trust import TrustEvaluationHelper
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
+    _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
     def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
         try:
@@ -107,6 +108,10 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             _msg = f"unable to find document-session associated to state {state}"
             return {}, "", self._handle_400(context, _msg, err)
 
+        if request_session is None:
+            _msg = f"unable to find document-session associated to state {state}"
+            return {}, "", self._handle_500(context, _msg, Exception("undefined mongo exception"))
+
         if request_session.get("finalized", True):
             _msg = f"cannot accept response: session for state {state} corrupted or already finalized"
             return {}, "", self._handle_400(context, _msg, HTTPError(_msg))
@@ -165,14 +170,16 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             typ = infer_vp_typ(vp_token)
             iss = infer_vp_iss(vp_token)
             credential_issuers.append(iss)
+            trust_chain = {"trust_chain": infer_vp_header_claim(vp_token, claim_name="trust_chain")}
             trust_chain_helper = TrustEvaluationHelper(
                 self.db_engine,
-                httpc_params=self.config['network']['httpc_params']
+                httpc_params=self.config['network']['httpc_params'],
+                **trust_chain
             )
-            issuers_jwks = trust_chain_helper.get_trusted_jwks("openid_credential_issuer")  # TODO: questo puzza
+            issuers_jwks = trust_chain_helper.get_trusted_jwks(ResponseHandler._ACCEPTED_ISSUER_METADATA_TYPE)
             trusted_jwks_by_kid: dict[str, dict] = {jwk["kid"]: jwk for jwk in issuers_jwks}
             if typ not in SUPPORTED_VC_TYPES:
-                self._log_warning(f"missing or unrecognized typ={typ}; skipping vp token={vp_token}")
+                self._log_warning(context, f"missing or unrecognized typ={typ}; skipping vp token={vp_token}")
                 continue
             verifier: VpVerifier | None = None
             match typ:
@@ -225,7 +232,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             self._log_error(context, f"Session update on storage failed: {e}")
             return self._handle_500(context, "Cannot update response object.", e)
 
-        if self._is_same_device_flow(request_session, context):
+        if ResponseHandler._is_same_device_flow(request_session, context):
             # Same device flow
             cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")

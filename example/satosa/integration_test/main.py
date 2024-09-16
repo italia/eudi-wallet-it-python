@@ -1,6 +1,5 @@
 import json
 import requests
-import uuid
 import urllib
 import datetime
 import base64
@@ -31,7 +30,6 @@ from pyeudiw.sd_jwt import (
 )
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw.tools.utils import iat_now, exp_from_now
 
 from saml2_sp import saml2_request, IDP_BASEURL
 from sd_jwt.holder import SDJWTHolder
@@ -123,9 +121,6 @@ ISSUER_CONF = {
                 locality: "Rome"
             !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
 
-        holder_disclosed_claims:
-            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"}, "tax_id_code": "TINIT-XXXXXXXXXXXXXXXX" }
-
         key_binding: True
     """,
     "issuer": leaf_cred['sub'],
@@ -160,42 +155,51 @@ sdjwt_at_holder = SDJWTHolder(
     issued_jwt["issuance"],
     serialization_format="compact",
 )
+
+red_data = decode_jwt_payload(sign_request_obj.text)
+req_nonce = red_data["nonce"]
+verifier_id = red_data["client_id"]
+
 sdjwt_at_holder.create_presentation(
     claims_to_disclose={
-        'tax_id_code': "TIN-that",
-        'given_name': 'Raffaello',
-        'family_name': 'Mascetti'
+        'tax_id_code': "TINIT-XXXXXXXXXXXXXXXX",
+        'given_name': 'Mario',
+        'family_name': 'Rossi'
     },
-    nonce=str(uuid.uuid4()),
-    aud=str(uuid.uuid4()),
+    nonce=req_nonce,
+    aud=verifier_id,
     sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
     holder_key=(
         import_ec(
             WALLET_PRIVATE_JWK.key.priv_key,
             kid=WALLET_PRIVATE_JWK.kid
         )
-        if sd_specification.get("key_binding", False)
+        if settings.get("key_binding", False)
         else None
     )
 )
 
-red_data = decode_jwt_payload(sign_request_obj.text)
-req_nonce = red_data['nonce']
+vp_token = sdjwt_at_holder.sd_jwt_presentation
 
-data = {
-    "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-    "jti": str(uuid.uuid4()),
-    "aud": "https://relying-party.example.org/callback",
-    "iat": iat_now(),
-    "exp": exp_from_now(minutes=5),
-    "nonce": req_nonce,
-    "vp": sdjwt_at_holder.sd_jwt_presentation,
-}
+# As it was with the VP envelope
+# red_data = decode_jwt_payload(sign_request_obj.text)
+# req_nonce = red_data['nonce']
 
-vp_token = JWSHelper(WALLET_PRIVATE_JWK).sign(
-    data,
-    protected={"typ": "JWT"}
-)
+# data = {
+#     "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
+#     "jti": str(uuid.uuid4()),
+#     "aud": "https://relying-party.example.org/callback",
+#     "iat": iat_now(),
+#     "exp": exp_from_now(minutes=5),
+#     "nonce": req_nonce,
+#     "vp": sdjwt_at_holder.sd_jwt_presentation,
+# }
+
+# vp_token = JWSHelper(WALLET_PRIVATE_JWK).sign(
+#     data,
+#     protected={"typ": "JWT"}
+# )
+# End deprecated footprint VP envelop
 
 # take relevant information from RP's EC
 rp_ec_jwt = http_user_agent.get(
@@ -210,7 +214,6 @@ assert response_uri == rp_ec["metadata"]['wallet_relying_party']["response_uris_
 
 response = {
     "state": red_data['state'],
-    "nonce": req_nonce,
     "vp_token": vp_token,
     "presentation_submission": {
         "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",

@@ -6,6 +6,7 @@ WALLET_ATTESTATION_TYPE = "wallet-attestation+jwt"
 MDOC_BCOR_TYPE = "mdoc_cbor"
 
 SUPPORTED_VC_TYPES = (
+    JWT_TYPE,
     VC_SD_JWT_TYPE,
     WALLET_ATTESTATION_TYPE,
     MDOC_BCOR_TYPE

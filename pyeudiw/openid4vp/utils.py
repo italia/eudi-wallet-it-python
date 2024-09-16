@@ -1,3 +1,4 @@
+from typing import Any
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
@@ -46,13 +47,21 @@ def vp_parser(jwt: str) -> Vp:
             raise VPFormatNotSupported(f"parsing of unsupported vp typ [{unsupported}]")
 
 
-def infer_vp_typ(jws: str) -> str:
+def infer_vp_header_claim(jws: str, claim_name: str) -> Any:
     headers = decode_jwt_header(jws)
-    typ: str = headers.get("typ", "")
-    return typ
+    claim_value = headers.get(claim_name, "")
+    return claim_value
+
+
+def infer_vp_payload_claim(jws: str, claim_name: str) -> Any:
+    headers = decode_jwt_payload(jws)
+    claim_value: str = headers.get(claim_name, "")
+    return claim_value
+
+
+def infer_vp_typ(jws: str) -> str:
+    return infer_vp_header_claim(jws, claim_name="typ")
 
 
 def infer_vp_iss(jws: str) -> str:
-    payload = decode_jwt_payload(jws)
-    iss: str = payload.get("iss", "")
-    return iss
+    return infer_vp_payload_claim(jws, claim_name="iss")
