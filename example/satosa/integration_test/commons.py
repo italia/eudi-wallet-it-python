@@ -1,13 +1,12 @@
 import base64
 import datetime
 import requests
-import uuid
 from typing import Any, Literal
 from bs4 import BeautifulSoup
 from sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper, JWSHelper
+from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 from pyeudiw.sd_jwt import (
@@ -30,7 +29,6 @@ from pyeudiw.tests.federation.base import (
     leaf_wallet_signed,
     trust_chain_issuer
 )
-from pyeudiw.tools.utils import iat_now, exp_from_now
 
 from saml2_sp import IDP_BASEURL
 from settings import (
@@ -42,20 +40,18 @@ from settings import (
 CREDENTIAL_ISSUER_JWK = JWK(leaf_cred_jwk_prot.serialize(private=True))
 ISSUER_CONF = {
     "sd_specification": """
-        user_claims:
-            !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            !sd given_name: "Mario"
-            !sd family_name: "Rossi"
-            !sd birthdate: "1980-01-10"
-            !sd place_of_birth:
-                country: "IT"
-                locality: "Rome"
-            !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
-
-        key_binding: True
+        !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        !sd given_name: "Mario"
+        !sd family_name: "Rossi"
+        !sd birthdate: "1980-01-10"
+        !sd place_of_birth:
+            country: "IT"
+            locality: "Rome"
+        !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
     """,
     "issuer": leaf_cred['sub'],
-    "default_exp": 1024
+    "default_exp": 1024,
+    "key_binding": True
 }
 ISSUER_PRIVATE_JWK = JWK(leaf_cred_jwk.serialize(private=True))
 WALLET_PRIVATE_JWK = JWK(leaf_wallet_jwk.serialize(private=True))
@@ -107,16 +103,14 @@ def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]
         settings,
         CREDENTIAL_ISSUER_JWK,
         WALLET_PUBLIC_JWK,
-        trust_chain=trust_chain_issuer
+        trust_chain=trust_chain_issuer,
+        additional_headers={"typ": "vc+sd-jwt"}
     )
     return issued_jwt
 
 
 def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"], str], request_nonce: str, verifier_id: str) -> str:
     settings = ISSUER_CONF
-    sd_specification = load_specification_from_yaml_string(
-        settings["sd_specification"]
-    )
 
     sdjwt_at_holder = SDJWTHolder(
         issued_jwt["issuance"],
@@ -124,9 +118,9 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
     )
     sdjwt_at_holder.create_presentation(
         claims_to_disclose={
-            'tax_id_code': "TIN-that",
-            'given_name': 'Raffaello',
-            'family_name': 'Mascetti'
+            'tax_id_code': "TINIT-XXXXXXXXXXXXXXXX",
+            'given_name': 'Mario',
+            'family_name': 'Rossi'
         },
         nonce=request_nonce,
         aud=verifier_id,
@@ -136,7 +130,7 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
                 WALLET_PRIVATE_JWK.key.priv_key,
                 kid=WALLET_PRIVATE_JWK.kid
             )
-            if sd_specification.get("key_binding", False)
+            if settings.get("key_binding", False)
             else None
         )
     )

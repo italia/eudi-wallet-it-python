@@ -4,7 +4,7 @@ from jwcrypto.common import base64url_encode
 
 from binascii import unhexlify
 from io import StringIO
-from typing import Dict
+from typing import Dict, Optional
 
 from sd_jwt.issuer import SDJWTIssuer
 from sd_jwt.utils.yaml_specification import _yaml_load_specification
@@ -71,7 +71,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
             holder_key,
             sign_alg,
             add_decoy_claims,
-            serialization_format
+            serialization_format,
         )
 
     def _create_signed_jws(self):
@@ -81,8 +81,8 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
         self.sd_jwt = JWS(payload=dumps(self.sd_jwt_payload))
 
         _protected_headers = {"alg": self._sign_alg}
-        if getattr(self, "SD_JWT_TYP_HEADER", None):
-            _protected_headers["typ"] = self.SD_JWT_TYP_HEADER
+        if getattr(self, "SD_JWT_HEADER", None):
+            _protected_headers["typ"] = self.SD_JWT_HEADER
 
         for k, v in self.additional_headers.items():
             _protected_headers[k] = v
@@ -262,7 +262,8 @@ def issue_sd_jwt(
     settings: dict,
     issuer_key: JWK,
     holder_key: JWK,
-    trust_chain: list[str] | None = None
+    trust_chain: list[str] | None = None,
+    additional_headers: Optional[dict] = None
 ) -> str:
     """
     Issue a SD-JWT.
@@ -277,6 +278,8 @@ def issue_sd_jwt(
     :type holder_key: JWK
     :param trust_chain: the trust chain.
     :type trust_chain: list[str] | None
+    :param additional_headers: use case specific header claims, such as 'typ'
+    :type additional_headers: dict
 
     :returns: the issued SD-JWT.
     :rtype: str
@@ -291,8 +294,11 @@ def issue_sd_jwt(
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
     adapted_keys = _adapt_keys(issuer_key, holder_key)
-    additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
-    additional_headers['kid'] = issuer_key.kid
+    if additional_headers is None:
+        additional_headers = {}
+    if trust_chain:
+        additional_headers["trust_chain"] = trust_chain
+    additional_headers["kid"] = issuer_key.kid
 
     sdjwt_at_issuer = TrustChainSDJWTIssuer(
         user_claims=specification,

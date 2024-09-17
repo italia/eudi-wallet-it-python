@@ -125,7 +125,6 @@ class VpVcSdJwtKbVerifier(VpVerifier):
         #  this assumes that an empy acceptance list means nothing, which is an invariant that might not hold in the future
         if len(self.accepted_claims) == 0:
             return payload_claims
-
         filtered_claims_result = {}
         for claim_name in self.accepted_claims:
             if claim_name in payload_claims.keys():

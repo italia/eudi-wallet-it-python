@@ -84,7 +84,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
             return "", self._handle_400(context, f"HTTP content type [{content_type}] not supported")
 
-        _endpoint = f'{self.server_url}{context.request_uri}'
+        _endpoint = f"{self.server_url}{context.request_uri}"
         if self.config["metadata"].get('response_uris_supported', None):
             if _endpoint not in self.config["metadata"]['response_uris_supported']:
                 return "", self._handle_400(context, "response_uri not valid")
@@ -97,6 +97,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         #     return "", self._handle_400(context, _msg)
 
         # return jwt, None
+
+    def _detect_typ_iss_vptoken(self, vp_token: str) -> tuple[str, str]:
+        typ = infer_vp_typ(vp_token)
+        iss = infer_vp_iss(vp_token)
+        return typ, iss
 
     def _retrieve_session_and_nonce_from_state(self, context: Context, state: str) -> tuple[dict, str, JsonResponse | None]:
         """TODO: docs
@@ -144,7 +149,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         authz_payload: None | AuthorizeResponsePayload = None
         try:
             authz_response = AuthorizeResponseDirectPost(**request_dict)
-        except ValueError as e:
+        except Exception as e:
             return self._handle_400(context, "response error: invalid schema or missing jwt", e)
         try:
             authz_payload = authz_response.decode_payload(self.metadata_jwks_by_kids)
@@ -166,9 +171,15 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         credential_issuers: list[str] = []
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
         for vp_token in encoded_vps:
+            try:
+                typ, iss = self._detect_typ_iss_vptoken(vp_token)
+            except Exception as e:
+                return self._handle_400(
+                    context,
+                    "DirectPostResponse content parse and validation error. Single VPs are faulty.",
+                    e
+                )
             # self._handle_credential_trust(context, vp)
-            typ = infer_vp_typ(vp_token)
-            iss = infer_vp_iss(vp_token)
             credential_issuers.append(iss)
             trust_chain = {"trust_chain": infer_vp_header_claim(vp_token, claim_name="trust_chain")}
             trust_chain_helper = TrustEvaluationHelper(
@@ -215,7 +226,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
         state = authz_payload.state
         response_code = self.response_code_helper.create_code(state)
-
         try:
             self.db_engine.update_response_object(
                 request_session['nonce'], state, internal_resp
@@ -385,7 +395,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         """
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
-
         timestamp_epoch = (
             response.get("auth_time")
             or response.get("iat")

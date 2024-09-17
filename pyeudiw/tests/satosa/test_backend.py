@@ -25,7 +25,6 @@ from pyeudiw.sd_jwt import (
     import_ec
 )
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.federation.base import (
     trust_chain_wallet,
     trust_chain_issuer,
@@ -181,7 +180,8 @@ class TestOpenID4VPBackend:
             settings,
             issuer_jwk,
             holder_jwk,
-            trust_chain=trust_chain_issuer
+            trust_chain=trust_chain_issuer,
+            additional_headers={"typ": "vc+sd-jwt"}
         )
 
         _adapt_keys(issuer_jwk, holder_jwk)
@@ -195,34 +195,19 @@ class TestOpenID4VPBackend:
         sdjwt_at_holder.create_presentation(
             {},
             nonce,
-            str(uuid.uuid4()),
+            self.backend.client_id,
             import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
 
-        data = {
-            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-            "jti": str(uuid.uuid4()),
-            "aud": "https://verifier.example.org/callback",
-            "iat": iat_now(),
-            "exp": exp_from_now(minutes=15),
-            "nonce": nonce,
-            "vp": sdjwt_at_holder.sd_jwt_presentation,
-        }
-
-        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
-            data,
-            protected={"typ": "JWT"}
-        )
-
+        vp_token = sdjwt_at_holder.sd_jwt_presentation
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
             CONFIG["base_url"])
 
         state = str(uuid.uuid4())
         response = {
-            "nonce": nonce,
             "state": state,
             "vp_token": vp_token,
             "presentation_submission": {
@@ -255,48 +240,7 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.response_endpoint(context)
-        assert request_endpoint.status == "400"
-        msg = json.loads(request_endpoint.message)
-        assert msg["error"] == "invalid_request"
-        assert msg["error_description"]
-
-        # Recreate data without nonce
-        # This will trigger a `NoNonceInVPToken` error
-        data = {
-            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-            "jti": str(uuid.uuid4()),
-            "aud": "https://verifier.example.org/callback",
-            "iat": iat_now(),
-            "exp": exp_from_now(minutes=15),
-            "vp": sdjwt_at_holder.sd_jwt_presentation,
-        }
-
-        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
-            data,
-            protected={"typ": "JWT"}
-        )
-        response = {
-            "nonce": nonce,
-            "state": state,
-            "vp_token": vp_token,
-            "presentation_submission": {
-                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-                "descriptor_map": [
-                    {
-                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
-                        "format": "vc+sd-jwt"
-                    }
-                ]
-            }
-        }
-        encrypted_response = JWEHelper(
-            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
         request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "400"
         msg = json.loads(request_endpoint.message)
@@ -334,7 +278,8 @@ class TestOpenID4VPBackend:
             settings,
             issuer_jwk,
             holder_jwk,
-            trust_chain=trust_chain_issuer
+            trust_chain=trust_chain_issuer,
+            additional_headers={"typ": "vc+sd-jwt"}
         )
 
         _adapt_keys(issuer_jwk, holder_jwk)
@@ -345,35 +290,158 @@ class TestOpenID4VPBackend:
         )
 
         nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+        aud = self.backend.client_id
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+
+        bad_nonce = str(uuid.uuid4())
+        bad_state = str(uuid.uuid4())
+        bad_aud = str(uuid.uuid4())
+
+        # case (1): bad nonce
         sdjwt_at_holder.create_presentation(
             {},
-            nonce,
-            str(uuid.uuid4()),
+            bad_nonce,
+            aud,
             import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
                 "key_binding", False) else None,
             sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
         )
 
-        data = {
-            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-            "jti": str(uuid.uuid4()),
-            "aud": "https://verifier.example.org/callback",
-            "iat": iat_now(),
-            "exp": exp_from_now(minutes=15),
-            "nonce": nonce,
-            "vp": sdjwt_at_holder.sd_jwt_presentation,
-        }
-
-        vp_token = JWSHelper(leaf_wallet_jwk.serialize(private=True)).sign(
-            data,
-            protected={"typ": "JWT"}
-        )
+        vp_token_bad_nonce = sdjwt_at_holder.sd_jwt_presentation
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
             CONFIG["base_url"])
 
-        state = str(uuid.uuid4())
+        response_with_bad_nonce = {
+            "state": state,
+            "vp_token": vp_token_bad_nonce,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_nonce)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        request_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(request_endpoint.message)
+        assert request_endpoint.status != "200"
+        assert msg["error"] == "invalid_request"
+
+        # case (2): bad state
+        sdjwt_at_holder.create_presentation(
+            {},
+            nonce,
+            aud,
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+                "key_binding", False) else None,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+        )
+
+        vp_token = sdjwt_at_holder.sd_jwt_presentation
+
+        response_with_bad_state = {
+            "state": bad_state,
+            "vp_token": vp_token,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_state)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        request_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(request_endpoint.message)
+        assert request_endpoint.status != "200"
+        assert msg["error"] == "invalid_request"
+
+        # case (3): bad aud
+        sdjwt_at_holder.create_presentation(
+            {},
+            nonce,
+            bad_aud,
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+                "key_binding", False) else None,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+        )
+
+        vp_token_bad_aud = sdjwt_at_holder.sd_jwt_presentation
+
+        response_with_bad_aud = {
+            "state": state,
+            "vp_token": vp_token_bad_aud,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+        encrypted_response = JWEHelper(
+            JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_aud)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        request_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(request_endpoint.message)
+        assert request_endpoint.status != "200"
+        assert msg["error"] == "invalid_request"
+
+        # case (4): good aud, nonce and state
+        sdjwt_at_holder.create_presentation(
+            {},
+            nonce,
+            aud,
+            import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+                "key_binding", False) else None,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+        )
+
+        vp_token = sdjwt_at_holder.sd_jwt_presentation
+
         response = {
             "state": state,
             "vp_token": vp_token,
@@ -389,53 +457,19 @@ class TestOpenID4VPBackend:
                 ]
             }
         }
+
         encrypted_response = JWEHelper(
             JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
         context.request = {
             "response": encrypted_response
         }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        # no nonce
-        request_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(request_endpoint.message)
-        assert msg["error"] == "invalid_request"
-        assert "nonce" in msg["error_description"]
-        assert "missing" in msg["error_description"]
-
-        # wrong nonce
-        response["nonce"] = str(uuid.uuid4())
         encrypted_response = JWEHelper(
             JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
         context.request = {
             "response": encrypted_response
         }
-        request_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(request_endpoint.message)
-        assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "Session lookup by state value failed"
-
-        # correct nonce but not the state
-        response["nonce"] = nonce
-        encrypted_response = JWEHelper(
-            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
-        request_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(request_endpoint.message)
-        assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "Session lookup by state value failed"
-
-        session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
-
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
         request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "200"
 

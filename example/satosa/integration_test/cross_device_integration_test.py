@@ -139,16 +139,20 @@ assert attributes
 
 expected = {
     # https://oidref.com/2.5.4.42
-    "urn:oid:2.5.4.42": ISSUER_CONF['sd_specification'].split('!sd given_name:')[1].split('"')[1],
+    "urn:oid:2.5.4.42": ISSUER_CONF['sd_specification'].split('!sd given_name:')[1].split('"')[1].lower(),
     # https://oidref.com/2.5.4.4
-    "urn:oid:2.5.4.4": ISSUER_CONF['sd_specification'].split('!sd family_name:')[1].split('"')[1]
+    "urn:oid:2.5.4.4": ISSUER_CONF['sd_specification'].split('!sd family_name:')[1].split('"')[1].lower()
 }
 
-for attribute in attributes:
-    name = attribute["name"]
-    value = attribute.contents[0].contents[0]
-    expected_value = expected.get(name, None)
-    if expected_value:
-        assert value == expected_value.lower()
+for exp_att_name, exp_att_value in expected.items():
+    result_index = -1
+    for i, attribute in enumerate(attributes):
+        if attribute["name"] == exp_att_name:
+            result_index = i
+            break
+    assert result_index != -1, f"missing attribute with name=[{exp_att_name}] in result set"
+    obt_att_value = attributes[result_index].contents[0].contents[0]
+    assert exp_att_value == obt_att_value, f"wrong attrirbute parsing expected {exp_att_value}, obtained {obt_att_value}"
+
 
 print('TEST PASSED')
