@@ -75,19 +75,27 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             all_user_attributes.update(**i)
         return all_user_attributes
 
-    def _parse_http_request(self, context: Context) -> tuple[dict, JsonResponse | None]:
-        """TODO: docs
+    def _parse_http_request(self, context: Context) -> dict:
+        """Parse the http layer of the request to extract the dictionary data.
+
+        :param context: the satosa context containing, among the others, the details of the HTTP request
+        :type context: satosa.Context
+
+        :return: a dictionary containing the request data
+        :rtype: dict
+
+        :raises: InvalidHttpRequestException of request exception is not expect; the expected handling is returning 400
         """
         if (http_method := context.request_method.lower()) != ResponseHandler._SUPPORTED_RESPONSE_METHOD:
-            return "", self._handle_400(context, f"HTTP method [{http_method}] not supported")
+            raise HTTPError(f"HTTP method [{http_method}] not supported")
 
         if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
-            return "", self._handle_400(context, f"HTTP content type [{content_type}] not supported")
+            raise HTTPError(f"HTTP content type [{content_type}] not supported")
 
         _endpoint = f"{self.server_url}{context.request_uri}"
         if self.config["metadata"].get('response_uris_supported', None):
             if _endpoint not in self.config["metadata"]['response_uris_supported']:
-                return "", self._handle_400(context, "response_uri not valid")
+                raise HTTPError("response_uri not valid")
 
         return context.request, None
         # jwt = context.request.get("response", None)
@@ -139,10 +147,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
     def response_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
         self._log_function_debug("request_endpoint", context, "args", args)
 
-        # --- START HERE ---
-        request_dict, error_response = self._parse_http_request(context)
-        if error_response is not None:
-            return error_response
+        request_dict = {}
+        try:
+            request_dict = self._parse_http_request(context)
+        except HTTPError as e:
+            return self._handle_400(context, e.args[0], e)
 
         # parse and decrypt jwt in response
         authz_response: None | AuthorizeResponseDirectPost = None
@@ -171,6 +180,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         credential_issuers: list[str] = []
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
         for vp_token in encoded_vps:
+            # simplified algorithm steps
+            # (a): verify that vp is vc+sd-jwt
+            # (b): verify that issuer jwt is valid (ok signature, not expired)
+            # (c): verify that binded key is valid (contains nonce above, ok signature, not expired)
+            # (d): extract claims for vp in order to build user identity
             try:
                 typ, iss = self._detect_typ_iss_vptoken(vp_token)
             except Exception as e:
@@ -214,11 +228,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             claims = verifier.parse_digital_credential()
             attributes_by_issuer[iss] = claims
             self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
-            # TODO:
-            # (a): verify that vp is vc+sd-jwt
-            # (b): verify that issuer jwt is valid (ok signature, not expired)
-            # (c): verify that binded key is valid (contains nonce above, ok signature, not expired)
-            # (d): extract claims for vp in order to build user identity
             pass
         all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
@@ -243,137 +252,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             return self._handle_500(context, "Cannot update response object.", e)
 
         if ResponseHandler._is_same_device_flow(request_session, context):
-            # Same device flow
-            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
-            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
-        else:
-            # Cross device flow
-            return JsonResponse({"status": "OK"}, status="200")
-
-        # --- END HERE ---
-
-        if context.request_method.lower() != 'post':
-            return self._handle_400(context, "HTTP Method not supported")
-        _endpoint = f'{self.server_url}{context.request_uri}'
-        if self.config["metadata"].get('response_uris_supported', None):
-            if _endpoint not in self.config["metadata"]['response_uris_supported']:
-                return self._handle_400(context, "response_uri not valid")
-
-        # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request.get("response", None)
-        if not jwt:
-            _msg = "Response error, missing JWT"
-            self._log_error(context, _msg)
-            return self._handle_400(context, _msg)
-
-        try:
-            vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-            debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
-            self._log_debug(context, debug_message)
-            ResponseSchema(**vpt.payload)
-        except Exception as e:
-            _msg = f"DirectPostResponse parse and validation error: {e}"
-            self._log_error(context, _msg)
-            return self._handle_400(context, _msg, HTTPError(f"Error:{e}, with JWT: {jwt}"))
-
-        # state MUST be present in the response since it was in the request
-        # then do lookup on the db -> if not -> exception
-        state = vpt.payload.get("state", None)
-        if not state:
-            return self._handle_400(context, _msg, HTTPError(f"{_msg} with: {vpt.payload}"))
-
-        try:
-            stored_session = self.db_engine.get_by_state(state=state)
-        except Exception as e:
-            _msg = "Session lookup by state value failed"
-            return self._handle_400(context, _msg, e)
-
-        if stored_session["finalized"]:
-            _msg = "Session already finalized"
-            return self._handle_400(context, _msg, HTTPError(_msg))
-
-        try:
-            vpt.load_nonce(stored_session['nonce'])
-            vps: list[Vp] = vpt.get_presentation_vps()
-            vpt.validate()
-
-        except VPNotFound as e:
-            _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
-            return self._handle_400(context, _msg, e)
-
-        except NoNonceInVPToken as e:
-            _msg = "Error while validating VP: vp has no nonce."
-            return self._handle_400(context, _msg, e)
-
-        except VPInvalidNonce as e:
-            _msg = "Error while validating VP: unexpected value."
-            return self._handle_400(context, _msg, e)
-
-        except Exception as e:
-            _msg = (
-                "DirectPostResponse content parse and validation error. "
-                "Single VPs are faulty."
-            )
-            return self._handle_400(context, _msg, e)
-
-        # evaluate the trust to each credential issuer found in the vps
-        # look for trust chain or x509 or do discovery!
-        cred_issuers = tuple(vpt.credentials_by_issuer.keys())
-        attributes_by_issuers = {k: {} for k in cred_issuers}
-
-        for vp in vps:
-            self._handle_credential_trust(context, vp)
-
-            # the trust is established to the credential issuer, then we can get the disclosed user attributes
-
-            try:
-                if isinstance(vp, VpSdJwt):
-                    jwks_by_kid = {
-                        i['kid']: i for i in vp.credential_jwks
-                    }
-                    vp.verify(issuer_jwks_by_kid=jwks_by_kid)
-                else:
-                    vp.verify()
-            except Exception as e:
-                return self._handle_400(context, f"VP validation error with {self.data}: {e}")
-
-            # vp.result
-            attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
-
-            debug_message = f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
-            self._log_debug(context, debug_message)
-
-            vp.check_revocation()
-
-        all_user_attributes = self._extract_all_user_attributes(
-            attributes_by_issuers)
-
-        self._log_debug(context, f"Wallet disclosure: {all_user_attributes}")
-
-        # TODO: not sure that we want these issuers in the following form ... please recheck.
-        _info = {"issuer": ';'.join(cred_issuers)}
-        internal_resp = self._translate_response(
-            all_user_attributes, _info["issuer"], context
-        )
-        response_code = self.response_code_helper.create_code(state)
-
-        try:
-            self.db_engine.update_response_object(
-                stored_session['nonce'], state, internal_resp
-            )
-            # authentication finalized!
-            self.db_engine.set_finalized(stored_session['document_id'])
-            if self.effective_log_level == logging.DEBUG:
-                stored_session = self.db_engine.get_by_state(state=state)
-                self._log_debug(
-                    context, f"Session update on storage: {stored_session}")
-
-        except StorageWriteError as e:
-            # TODO - do we have to block in the case the update cannot be done?
-            self._log_error(context, f"Session update on storage failed: {e}")
-            return self._handle_500(context, "Cannot update response object.", e)
-
-        if stored_session['session_id'] == context.state["SESSION_ID"]:
             # Same device flow
             cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")

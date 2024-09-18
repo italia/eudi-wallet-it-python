@@ -40,15 +40,19 @@ class VpVcSdJwtKbVerifier(VpVerifier):
     def __init__(self, sdjwtkb: str, verifier_id: str, verifier_nonce: str, jwk_by_kid: dict[str, dict], accepted_claims: Optional[list[str]] = None):
         """
         VpVcSdJwtKbVerifier is a utility class for parsing and verifying sd-jwt.
-        TODO: docs
 
         :param sdjwtkb: verifiable credential in sd-jwt with key binding format (raw encoded string)
         :type sdjwtkb: str
+        :param verifier_id: the entity id of the verifier (must be matched with key binding [aud] payload claim)
+        :type verifier_id: str
+        :param verifier_nonce: the challenge nonce proposed by the verifier (must be matched with the key binding [nonce] claim)
+        :type verifier_nonce: str
         :param jwks_by_kid: dictionary where the keys are kid(s) and the values are unmarshaled jwk
         :type jwks_by_kid: dict[str, dict]
+        :param accepted_claims: a dictionary of accepted claims fromt th sd-jwt
+            claims, use an empty list [] if all claims must be accepted, otherwise a safe minimal PID is used instead
+        :param accepted_claims: list[str] | None
 
-
-        :raise VPSchemaException: if the input cannot be sucessfully parsed as sd-jwt.
         """
         self.sdjwtkb = sdjwtkb
         if not is_sd_jwt_kb_format(sdjwtkb):
@@ -103,7 +107,6 @@ class VpVcSdJwtKbVerifier(VpVerifier):
         return JWK(key=jwk_d)
 
     def verify(self) -> None:
-        """TODO: docs"""
         cnf_jwk = self._get_confirmation_jwk()
         _verify_kb_jwt(self._kb_jwt, cnf_jwk, VerifierChallenge(self.verifier_id, self.verifier_nonce))
         _verify_jws_with_key(self._issuer_jwt.jwt, self._get_issuer_jwk())
