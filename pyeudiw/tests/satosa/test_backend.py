@@ -445,8 +445,8 @@ class TestOpenID4VPBackend:
         state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
-        msg = json.loads(state_endpoint_response.message)
-        assert msg["error"]
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"]
 
         internal_data = InternalData()
         context.http_headers = dict(
@@ -523,15 +523,25 @@ class TestOpenID4VPBackend:
         context.request_uri = request_uri
 
         req_resp = self.backend.request_endpoint(context)
-
+        req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers})"
+        obtained_content_types = list(
+            map(
+                lambda header_name_value_pair: header_name_value_pair[1],
+                filter(
+                    lambda header_name_value_pair: header_name_value_pair[0].lower() == "content-type",
+                    req_resp.headers
+                )
+            )
+        )
         assert req_resp
-        assert req_resp.status == "200"
-        assert req_resp.message
-        msg = json.loads(req_resp.message)
-        assert msg["response"]
+        assert req_resp.status == "200", f"invalid status in request object response {req_resp_str}"
+        assert len(obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
+        assert obtained_content_types[0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
+        assert req_resp.message, f"invalid message in request object response {req_resp_str}"
+        request_object_jwt = req_resp.message
 
-        header = decode_jwt_header(msg["response"])
-        payload = decode_jwt_payload(msg["response"])
+        header = decode_jwt_header(request_object_jwt)
+        payload = decode_jwt_payload(request_object_jwt)
         assert header["alg"]
         assert header["kid"]
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
