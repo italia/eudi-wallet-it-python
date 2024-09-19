@@ -102,7 +102,7 @@ This classes can be used as references while providing a custom implementation f
       "chain": ARRAY[EC,ES,ES],
       "exp": datetime,
       "update": datetime
-    }
+    },
     "x509": {
       "x5c": ARRAY[bytestring(DER), bytestring(DER), bytestring(DER)] -> contains public keys,
       "exp": datetime
