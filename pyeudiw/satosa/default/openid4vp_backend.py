@@ -182,7 +182,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         if not context.target_frontend:
             _msg = "Preventing session creation: context is not linked to any previous authn session."
             self._log_warning(context, _msg)
-            return self._handle_400(context, "previous authn session not found. It seems that the flow did not started with a valid authn request to one of the configured frontend.")
+            return self._handle_400(
+                context,
+                "previous authn session not found. It seems that the flow did not started with a valid authn request to one of the configured frontend."
+            )
 
         # Init session
         try:

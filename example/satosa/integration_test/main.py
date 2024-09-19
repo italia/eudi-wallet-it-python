@@ -109,23 +109,7 @@ response_uri = decode_jwt_payload(sign_request_obj.text)[
 
 # create a SD-JWT signed by a trusted credential issuer
 issuer_jwk = leaf_cred_jwk
-# ISSUER_CONF = {
-#     "sd_specification": """
-#         user_claims:
-#             !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-#             !sd given_name: "Mario"
-#             !sd family_name: "Rossi"
-#             !sd birthdate: "1980-01-10"
-#             !sd place_of_birth:
-#                 country: "IT"
-#                 locality: "Rome"
-#             !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
 
-#         key_binding: True
-#     """,
-#     "issuer": leaf_cred['sub'],
-#     "default_exp": 1024
-# }
 ISSUER_CONF = {
     "sd_specification": """
         !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

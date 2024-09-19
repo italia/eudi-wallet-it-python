@@ -10,26 +10,19 @@ from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
 from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
-from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
-from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
-                                          NoNonceInVPToken, VPInvalidNonce,
-                                          VPNotFound)
-from pyeudiw.openid4vp.schemas.response import ResponseSchema
+from pyeudiw.openid4vp.exceptions import InvalidVPToken, KIDNotFound
 from pyeudiw.openid4vp.utils import infer_vp_iss, infer_vp_typ, infer_vp_header_claim
 from pyeudiw.openid4vp.vp import SUPPORTED_VC_TYPES, Vp
 from pyeudiw.openid4vp.vp_mock import MockVpVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.openid4vp.vp_sd_jwt_kb import VpVcSdJwtKbVerifier, VpVerifier
-from pyeudiw.satosa.exceptions import NotTrustedFederationError, HTTPError
+from pyeudiw.satosa.exceptions import AuthorizeUnmatchedResponse, BadRequestError, FinalizedSessionError, InvalidInternalStateError, NotTrustedFederationError, HTTPError
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust import TrustEvaluationHelper
-
-
-# _CallbackErrorHandler_T = Callable[[], JsonResponse]
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -84,56 +77,57 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         :return: a dictionary containing the request data
         :rtype: dict
 
-        :raises: InvalidHttpRequestException of request exception is not expect; the expected handling is returning 400
+        :raises BadRequestError: when request paramets are in a not processable state; the expected handling is returning 400
         """
         if (http_method := context.request_method.lower()) != ResponseHandler._SUPPORTED_RESPONSE_METHOD:
-            raise HTTPError(f"HTTP method [{http_method}] not supported")
+            raise BadRequestError(f"HTTP method [{http_method}] not supported")
 
         if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
-            raise HTTPError(f"HTTP content type [{content_type}] not supported")
+            raise BadRequestError(f"HTTP content type [{content_type}] not supported")
 
         _endpoint = f"{self.server_url}{context.request_uri}"
         if self.config["metadata"].get('response_uris_supported', None):
             if _endpoint not in self.config["metadata"]['response_uris_supported']:
-                raise HTTPError("response_uri not valid")
+                raise BadRequestError("response_uri not valid")
 
-        return context.request, None
-        # jwt = context.request.get("response", None)
-        # if not jwt:
-        #     _msg = "response error: missing JWT"
-        #     self._log_error(context, _msg)
-        #     return "", self._handle_400(context, _msg)
-
-        # return jwt, None
+        return context.request
 
     def _detect_typ_iss_vptoken(self, vp_token: str) -> tuple[str, str]:
         typ = infer_vp_typ(vp_token)
         iss = infer_vp_iss(vp_token)
         return typ, iss
 
-    def _retrieve_session_and_nonce_from_state(self, context: Context, state: str) -> tuple[dict, str, JsonResponse | None]:
-        """TODO: docs
+    def _retrieve_session_and_nonce_from_state(self, state: str) -> tuple[dict, str]:
+        """_retrieve_session_and_nonce_from_state tries to recover an
+        authenticasion session by matching it with the state. Returns the whole
+        session data (if found) and the nonce proposed in the authentication
+        request that should be matched by the holder response.
+
+        :returns: the authentication session information and the nonce challenge
+            associated to that authentication request
+        :rtype: tuple[dict, str]
+
+        :raises AuthorizeUnmatchedResponse: if the state is not matched to any session
+        :raises FinalizedSessionError: if the state is matched to an already closed session
+        :raises InvalidInternalStateError: if the session contains invalid, corrupted or missing
+            data of known reason.
         """
         request_session: dict = {}
         try:
             request_session = self.db_engine.get_by_state(state=state)
         except Exception as err:
-            _msg = f"unable to find document-session associated to state {state}"
-            return {}, "", self._handle_400(context, _msg, err)
+            raise AuthorizeUnmatchedResponse(f"unable to find document-session associated to state {state}", err)
 
         if request_session is None:
-            _msg = f"unable to find document-session associated to state {state}"
-            return {}, "", self._handle_500(context, _msg, Exception("undefined mongo exception"))
+            raise InvalidInternalStateError(f"unable to find document-session associated to state {state}")
 
         if request_session.get("finalized", True):
-            _msg = f"cannot accept response: session for state {state} corrupted or already finalized"
-            return {}, "", self._handle_400(context, _msg, HTTPError(_msg))
+            raise FinalizedSessionError(f"cannot accept response: session for state {state} corrupted or already finalized")
 
         nonce = request_session.get("nonce", None)
         if nonce is None:
-            _msg = f"unnable to find nonce in session associated to state {state}"
-            return {}, "", self._handle_500(context, _msg, HTTPError(_msg))
-        return request_session, nonce, None
+            raise InvalidInternalStateError(f"unnable to find nonce in session associated to state {state}")
+        return request_session, nonce
 
     def _is_same_device_flow(request_session: dict, context: Context) -> bool:
         initiating_session_id: str | None = request_session.get("session_id", None)
@@ -150,7 +144,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         request_dict = {}
         try:
             request_dict = self._parse_http_request(context)
-        except HTTPError as e:
+        except BadRequestError as e:
             return self._handle_400(context, e.args[0], e)
 
         # parse and decrypt jwt in response
@@ -168,9 +162,15 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             return self._handle_400(context, _msg, HTTPError(f"error: {e}, with request: {request_dict}"))
         self._log_debug(context, f"response URI endpoint response with payload {authz_payload}")
 
-        request_session, nonce, error_response = self._retrieve_session_and_nonce_from_state(context, authz_payload.state)
-        if error_response is not None:
-            return error_response
+        request_session, nonce = {}, ""
+        try:
+            request_session, nonce = self._retrieve_session_and_nonce_from_state(authz_payload.state)
+        except AuthorizeUnmatchedResponse as e400:
+            self._handle_400(context, e400.args[0], e400.args[1])
+        except InvalidInternalStateError as e500:
+            self._handle_500(context, e500.args[0], "invalid state")
+        except FinalizedSessionError as e400:
+            self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
 
         # the flow below is a simplified algorithm of authentication response processing, where:
         # (1) we don't check that presentation submission matches definition
@@ -182,7 +182,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         for vp_token in encoded_vps:
             # simplified algorithm steps
             # (a): verify that vp is vc+sd-jwt
-            # (b): verify that issuer jwt is valid (ok signature, not expired)
+            # (b): verify that issuer jwt is valid (ok signature, not expired, etc.)
             # (c): verify that binded key is valid (contains nonce above, ok signature, not expired)
             # (d): extract claims for vp in order to build user identity
             try:
