@@ -15,11 +15,7 @@ def test_VpVcSdJwtKbVerifier():
             "y": "Xv5zWwuoaTgdS6hV43yI6gBwTnjukmFQQnJ_kCxzqk8"
         }
     }
-    claims = [
-        "address",  # discolsed
-        "family_name"  # NOT disclosed
-    ]
-    verifier = VpVcSdJwtKbVerifier(token, aud, nonce, jwk_d, claims)
+    verifier = VpVcSdJwtKbVerifier(token, aud, nonce, jwk_d)
     try:
         verifier.validate_schema()
     except VPSchemaException:
@@ -28,4 +24,4 @@ def test_VpVcSdJwtKbVerifier():
     verifier.verify()
     expected_credentials = {"address": {"street_address": "123 Main St", "locality": "Anytown", "region": "Anystate", "country": "US"}}
     credentials = verifier.parse_digital_credential()
-    assert credentials == expected_credentials, f"failed to parse credentials: expected {expected_credentials}, obtained {credentials}"
+    assert expected_credentials.items() <= credentials.items(), f"failed to parse credentials: expected {expected_credentials}, obtained {credentials}"

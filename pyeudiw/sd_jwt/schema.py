@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Literal, Optional, TypeVar
+from typing import Dict, Literal, Optional, TypeVar
 
 from pydantic import BaseModel, HttpUrl, field_validator
 
@@ -30,7 +30,7 @@ def is_sd_jwt_kb_format(sd_jwt_kb: str) -> bool:
 class VcSdJwtHeaderSchema(BaseModel):
     typ: str
     alg: str
-    kid: str
+    kid: Optional[str] = None
     trust_chain: Optional[list[str]] = None
     x5c: Optional[str] = None
     vctm: Optional[list[str]] = None
@@ -88,14 +88,6 @@ class VcSdJwtPayloadSchema(BaseModel):
         except ValueError as e:
             raise ValueError(f"parameter [verification] value '{v}' does not comply with schema {_VerificationSchema.model_fields}: {e}")
         return v
-
-
-class PidVcSdJwtPayloadSchema(VcSdJwtPayloadSchema):
-    given_name: Optional[str] = None
-    family_name: Optional[str] = None
-    birth_date: Optional[Any] = None  # TODO: date is dd-mm-yyyy but I'm not sure if libraries parses them as str or a native format
-    unique_id: Optional[str] = None
-    tax_id_code: Optional[str] = None
 
 
 class KeyBindingJwtHeader(BaseModel):

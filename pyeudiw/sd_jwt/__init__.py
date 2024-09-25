@@ -71,7 +71,7 @@ class TrustChainSDJWTIssuer(SDJWTIssuer):
             holder_key,
             sign_alg,
             add_decoy_claims,
-            serialization_format,
+            serialization_format
         )
 
     def _create_signed_jws(self):

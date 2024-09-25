@@ -1,10 +1,10 @@
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable, Optional, Union
+from typing import Callable, Union
 
 from cryptojwt.jws.exception import JWSException
 from jwcrypto.common import base64url_decode, json_decode
 import jwcrypto.jwk
+from sd_jwt.common import SDJWTCommon
 from sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
@@ -17,8 +17,6 @@ from pyeudiw.sd_jwt.schema import KeyBindingJwtHeader, KeyBindingJwtPayload, VcS
 from pyeudiw.tools.utils import iat_now
 
 
-_SD_JWT_DELIMITER = '~'
-
 _CLOCK_SKEW = 0
 
 
@@ -29,15 +27,8 @@ class VerifierChallenge:
 
 
 class VpVcSdJwtKbVerifier(VpVerifier):
-    _DEFAULT_DISCLOSABLE_CLAIMS = (
-        "given_name",
-        "family_name",
-        "birth_date",
-        "unique_id",
-        "tax_id_code"
-    )
 
-    def __init__(self, sdjwtkb: str, verifier_id: str, verifier_nonce: str, jwk_by_kid: dict[str, dict], accepted_claims: Optional[list[str]] = None):
+    def __init__(self, sdjwtkb: str, verifier_id: str, verifier_nonce: str, jwk_by_kid: dict[str, dict]):
         """
         VpVcSdJwtKbVerifier is a utility class for parsing and verifying sd-jwt.
 
@@ -60,7 +51,6 @@ class VpVcSdJwtKbVerifier(VpVerifier):
         self.verifier_id = verifier_id
         self.verifier_nonce = verifier_nonce
         self.jwk_by_kid = jwk_by_kid
-        self.accepted_claims: list[str] = accepted_claims if accepted_claims is not None else deepcopy(VpVcSdJwtKbVerifier._DEFAULT_DISCLOSABLE_CLAIMS)
         # precomputed values
         self._issuer_jwt: UnverfiedJwt = UnverfiedJwt("", "", "", "")
         self._encoded_disclosures: list[str] = []
@@ -69,7 +59,7 @@ class VpVcSdJwtKbVerifier(VpVerifier):
         self._post_init_evaluate_precomputed_values()
 
     def _post_init_evaluate_precomputed_values(self):
-        iss_jwt, *disclosures, kb_jwt = self.sdjwtkb.split(_SD_JWT_DELIMITER)
+        iss_jwt, *disclosures, kb_jwt = self.sdjwtkb.split(SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR)
         self._encoded_disclosures = disclosures
         self._disclosures = [json_decode(base64url_decode(disc)) for disc in disclosures]
         self._issuer_jwt = unsafe_parse_jws(iss_jwt)
@@ -124,27 +114,24 @@ class VpVcSdJwtKbVerifier(VpVerifier):
             serialization_format="compact"
         )
         payload_claims: dict = sdjwt_verifier.get_verified_payload()
-        # NOTE: if acceptance list is empty, accept everything
-        #  this assumes that an empy acceptance list means nothing, which is an invariant that might not hold in the future
-        if len(self.accepted_claims) == 0:
-            return payload_claims
-        filtered_claims_result = {}
-        for claim_name in self.accepted_claims:
-            if claim_name in payload_claims.keys():
-                filtered_claims_result.update({claim_name: payload_claims[claim_name]})
-        return filtered_claims_result
+        return payload_claims
 
     def __str__(self) -> str:
         return "VpVcSdJwtKb(" \
-            f"sdjwt={self.sdjwtkb}" \
+            f"sdjwt={self.sdjwtkb}, " \
+            f"verifier_id={self.verifier_id}, " \
+            f"verifier_nonce={self.verifier_nonce}, " \
+            f"jwk_by_kid={self.jwk_by_kid}" \
             ")"
 
 
 def _verify_jws_with_key(issuer_jwt: str, issuer_key: JWK):
-    verifier = JWSHelper(issuer_key)
-    verifier.verify(issuer_jwt)
+    try:    
+        verifier = JWSHelper(issuer_key)
+    except Exception as e:
+        raise InvalidVPSignature(f"failed signature verification of issuer-jwt: invalid issuer key due to cause: {e}")
     try:
-        pass
+        verifier.verify(issuer_jwt)
     except JWSException as e:
         raise InvalidVPSignature(f"failed signature verification of issuer-jwt: {e}")
     return
@@ -153,17 +140,17 @@ def _verify_jws_with_key(issuer_jwt: str, issuer_key: JWK):
 def _verify_kb_jwt(kbjwt: UnverfiedJwt, cnf_jwk: JWK, challenge: VerifierChallenge) -> None:
     _verify_kb_jwt_payload_challenge(kbjwt.payload, challenge)
     _verify_kb_jwt_payload_iat(kbjwt.payload)
+    # TODO: sd-jwt-python already does this check, however it would be space for us to have it more explicit in our code  
     # _verify_kb_jwt_payload_sd_hash(sdjwt)
     _verify_kb_jwt_signature(kbjwt.jwt, cnf_jwk)
 
-
-# def _verify_kb_jwt_payload_sd_hash(sdjwt: VpVcSdJwtKbVerifier):
+# def _verify_kb_jwt_payload_sd_hash(sdjwt):
 #     hash_alg: str | None = sdjwt._issuer_jwt.payload.get("_sd_alg", None)
 #     if hash_alg is None:
 #         raise ValueError("missing parameter [_sd_alg] in issuer signet JWT payload")
 #     *parts, _ = sdjwt.sdjwtkb.split(_SD_JWT_DELIMITER)
 #     iss_jwt_disclosed = ''.join(parts)
-#     # TODO
+#     TODO: go on
 #     pass
 
 
@@ -190,7 +177,10 @@ def _verify_kb_jwt_payload_iat(kb_jwt_payload: dict) -> None:
 
 
 def _verify_kb_jwt_signature(kbjwt: str, verification_jwk: JWK) -> None:
-    verifier = JWSHelper(verification_jwk)
+    try:
+        verifier = JWSHelper(verification_jwk)
+    except Exception as e:
+        raise InvalidVPKeyBinding(f"failed signature verification of kb-jwt: invalid cnf key to cause: {e}")
     try:
         verifier.verify(kbjwt)
     except JWSException as e:
