@@ -16,7 +16,8 @@ from pyeudiw.openid4vp.vp import SUPPORTED_VC_TYPES, Vp
 from pyeudiw.openid4vp.vp_mock import MockVpVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.openid4vp.vp_sd_jwt_kb import VpVcSdJwtKbVerifier, VpVerifier
-from pyeudiw.satosa.exceptions import AuthorizeUnmatchedResponse, BadRequestError, FinalizedSessionError, InvalidInternalStateError, NotTrustedFederationError, HTTPError
+from pyeudiw.satosa.exceptions import (AuthorizeUnmatchedResponse, BadRequestError, FinalizedSessionError,
+                                       InvalidInternalStateError, NotTrustedFederationError, HTTPError)
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
@@ -118,14 +119,14 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         except Exception as err:
             raise AuthorizeUnmatchedResponse(f"unable to find document-session associated to state {state}", err)
 
-        if request_session is None:
+        if not request_session:
             raise InvalidInternalStateError(f"unable to find document-session associated to state {state}")
 
         if request_session.get("finalized", True):
             raise FinalizedSessionError(f"cannot accept response: session for state {state} corrupted or already finalized")
 
         nonce = request_session.get("nonce", None)
-        if nonce is None:
+        if not nonce:
             raise InvalidInternalStateError(f"unnable to find nonce in session associated to state {state}")
         return request_session, nonce
 
@@ -220,6 +221,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                     return self._handle_400(context, f"unable to process vp token with typ={unrecognized_typ}")
             if verifier is None:
                 return self._handle_500(context, "invalid state", Exception("invalid state"))
+            # TODO: revocation check here
             # verifier.check_revocation_status()
             try:
                 verifier.verify()
@@ -228,7 +230,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             claims = verifier.parse_digital_credential()
             attributes_by_issuer[iss] = claims
             self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
-            pass
         all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
         internal_resp = self._translate_response(all_attributes, iss_list_serialized, context)
