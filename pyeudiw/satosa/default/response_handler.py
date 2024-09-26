@@ -11,6 +11,7 @@ from satosa.response import Redirect
 
 from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
 from pyeudiw.openid4vp.exceptions import InvalidVPToken, KIDNotFound
+from pyeudiw.openid4vp.nuovo_proposta import IdeaVpVerifier
 from pyeudiw.openid4vp.utils import infer_vp_iss, infer_vp_typ, infer_vp_header_claim
 from pyeudiw.openid4vp.vp import SUPPORTED_VC_TYPES, Vp
 from pyeudiw.openid4vp.vp_mock import MockVpVerifier
@@ -181,6 +182,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         credential_issuers: list[str] = []
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
         for vp_token in encoded_vps:
+            # -- START HERE --
+            nuovo_verifier: IdeaVpVerifier = self._vp_verifier_factory(authz_payload.presentation_submission)
+            verified_claims = nuovo_verifier.get_verified_credential()
+            _ = verified_claims  # consuma le credenziali
+            # -- END HERE --
             # simplified algorithm steps
             # (a): verify that vp is vc+sd-jwt
             # (b): verify that issuer jwt is valid (ok signature, not expired, etc.)
@@ -329,3 +335,9 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         )
         internal_resp.subject_id = sub
         return internal_resp
+
+    def _vp_verifier_factory(self, presentation_submission: dict) -> IdeaVpVerifier:
+        # Idea: se vc+sd-jwt → IdeaNuovoVpVerifier
+        # PROBLEM: come faccio a fare dependency injection (in questo caso, della challenge?)
+        # ci devo pensare con calma, non sono sicurissimo di saperlo ora
+        raise NotImplementedError

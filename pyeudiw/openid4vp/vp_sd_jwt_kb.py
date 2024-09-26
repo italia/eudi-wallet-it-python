@@ -140,7 +140,7 @@ def _verify_jws_with_key(issuer_jwt: str, issuer_key: JWK):
 def _verify_kb_jwt(kbjwt: UnverfiedJwt, cnf_jwk: JWK, challenge: VerifierChallenge) -> None:
     _verify_kb_jwt_payload_challenge(kbjwt.payload, challenge)
     _verify_kb_jwt_payload_iat(kbjwt.payload)
-    # TODO: sd-jwt-python already does this check, however it would be space for us to have it more explicit in our code  
+    # TODO: sd-jwt-python already does this check, however it would be space for us to have it more explicit in our code
     # _verify_kb_jwt_payload_sd_hash(sdjwt)
     _verify_kb_jwt_signature(kbjwt.jwt, cnf_jwk)
 

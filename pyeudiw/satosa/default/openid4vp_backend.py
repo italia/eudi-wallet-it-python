@@ -18,6 +18,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.trust.interface import IssuerTrustModel
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -95,11 +96,21 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning("OpenID4VPBackend", debug_message)
 
         self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
-
+        self.issuer_trust_model: IssuerTrustModel = self._trust_model_factory()
         self._log_debug(
             "OpenID4VP init",
             f"loaded configuration: {json.dumps(config)}"
         )
+
+    def _trust_model_factory(self) -> IssuerTrustModel:
+        """Questa funzione eroga uno (o più?) Issuer Trust Model basandosi sulle configurazioni dell'applicativo.
+        """
+        # TODO: leggi le configurationi trust e implementa una funzione di dynamic backend load.
+        # È aperto il problema su come fare dependancy injection verso queste classi: una idea
+        # semplice è standardizzare il costruttore. Ho l'impressione che sto abusando du un factory
+        # pattern senza avere un idoneo framework di dependency injection (tipo Spring Core, per dire)
+        # e questo potrebbe compromettere la leggibilità del codice.
+        raise NotImplementedError
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
