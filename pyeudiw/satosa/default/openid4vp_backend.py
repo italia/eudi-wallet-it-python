@@ -1,3 +1,4 @@
+import importlib
 import json
 import uuid
 from typing import Callable
@@ -110,7 +111,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         # semplice è standardizzare il costruttore. Ho l'impressione che sto abusando du un factory
         # pattern senza avere un idoneo framework di dependency injection (tipo Spring Core, per dire)
         # e questo potrebbe compromettere la leggibilità del codice.
-        raise NotImplementedError
+        first_pick_config = self.config["trust"][0]
+        module = importlib.import_module(first_pick_config["module"])
+        ClassType = getattr(module, first_pick_config["class"])
+        class_instance: IssuerTrustModel = ClassType(**first_pick_config["config"])  # NON VA BENE! Se devo fare injection di parametri non config (tipo storage), come faccio?
+        raise class_instance
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
