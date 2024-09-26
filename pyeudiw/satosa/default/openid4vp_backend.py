@@ -1,4 +1,3 @@
-import importlib
 import json
 import uuid
 from typing import Callable
@@ -19,7 +18,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.trust.interface import IssuerTrustModel
+from pyeudiw.trust.interface import IssuerTrustEvaluator
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -89,7 +88,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             else self.base_url
         )
 
-        self.init_trust_resources()
         try:
             PyeudiwBackendConfig(**config)
         except ValidationError as e:
@@ -97,13 +95,13 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning("OpenID4VPBackend", debug_message)
 
         self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
-        self.issuer_trust_model: IssuerTrustModel = self._trust_model_factory()
+        self.issuer_trust_model: IssuerTrustEvaluator = self._trust_model_factory()
         self._log_debug(
             "OpenID4VP init",
             f"loaded configuration: {json.dumps(config)}"
         )
 
-    def _trust_model_factory(self) -> IssuerTrustModel:
+    def _trust_model_factory(self) -> IssuerTrustEvaluator:
         """Questa funzione eroga uno (o più?) Issuer Trust Model basandosi sulle configurazioni dell'applicativo.
         """
         # TODO: leggi le configurationi trust e implementa una funzione di dynamic backend load.
@@ -111,11 +109,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         # semplice è standardizzare il costruttore. Ho l'impressione che sto abusando du un factory
         # pattern senza avere un idoneo framework di dependency injection (tipo Spring Core, per dire)
         # e questo potrebbe compromettere la leggibilità del codice.
-        first_pick_config = self.config["trust"][0]
-        module = importlib.import_module(first_pick_config["module"])
-        ClassType = getattr(module, first_pick_config["class"])
-        class_instance: IssuerTrustModel = ClassType(**first_pick_config["config"])  # NON VA BENE! Se devo fare injection di parametri non config (tipo storage), come faccio?
-        raise class_instance
+        trust_config: dict = self.config.get("trust", {})
+        trust_evaluator = IssuerTrustEvaluator(trust_config)
+        return trust_evaluator
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
