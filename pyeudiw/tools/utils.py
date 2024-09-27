@@ -177,3 +177,24 @@ def dynamic_class_loader(module_name: str, class_name: str, init_params: dict = 
     storage_instance = get_dynamic_class(
         module_name, class_name)(**init_params)
     return storage_instance
+
+
+def satisfy_interface(o: object, interface: type) -> bool:
+    """
+    Returns true if and only if an object satisfy an interface.
+
+    :param o: an object (instance of a class)
+    :type o: object
+    :param interface: an interface type
+    :type interface: type
+
+    :returns: True if the object satisfy the interface, otherwise False
+    """
+    for cls_attr in dir(interface):
+        if cls_attr.startswith('_'):
+            continue
+        if not hasattr(o, cls_attr):
+            return False
+        if callable(getattr(interface, cls_attr)) and not callable(getattr(o, cls_attr)):
+            return False
+    return True
