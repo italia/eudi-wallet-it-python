@@ -3,11 +3,8 @@ import json
 import re
 from typing import Dict
 
-from jwcrypto.common import base64url_decode, json_decode
-
 from pyeudiw.jwk import find_jwk
 from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
-from pyeudiw.jwt.schemas.jwt import UnverfiedJwt
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
 JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'
@@ -143,19 +140,21 @@ def is_jws_format(jwt: str):
     return not is_jwe_format(jwt)
 
 
-def _unsafe_decode_part(part: str) -> dict:
-    return json_decode(base64url_decode(part))
+def base64_urlencode(v: bytes) -> str:
+    """Urlsafe base64 encoding without padding symbols
+
+    :returns: the encooded data
+    :rtype: str
+    """
+    return base64.urlsafe_b64encode(v).decode("ascii").strip("=")
 
 
-def unsafe_parse_jws(jwt: str) -> UnverfiedJwt:
-    if not is_jwt_format(jwt):
-        raise ValueError(f"unable to parse {jwt}: not a jwt")
-    b64header, b64payload, signature, *_ = jwt.split(".")
-    head = {}
-    payload = {}
-    try:
-        head = _unsafe_decode_part(b64header)
-        payload = _unsafe_decode_part(b64payload)
-    except Exception as e:
-        raise ValueError(f"unable to decode JWS part: {e}")
-    return UnverfiedJwt(jwt, head, payload, signature=signature)
+def base64_urldecode(v: str) -> bytes:
+    """Urlsafe base64 decoding. This function will handle missing
+    padding symbols.
+
+    :returns: the decoded data in bytes, format, convert to str use method '.decode("utf-8")' on result
+    :rtype: bytes
+    """
+    padded = f"{v}{'=' * divmod(len(v), 4)[1]}"
+    return base64.urlsafe_b64decode(padded)

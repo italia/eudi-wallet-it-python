@@ -5,6 +5,8 @@ from datetime import datetime
 from ssl import DER_cert_to_PEM_cert
 from cryptography.x509 import load_der_x509_certificate
 
+from pyeudiw.jwk import JWK
+
 LOG_ERROR = "x509 verification failed: {}"
 
 logger = logging.getLogger(__name__)
@@ -161,3 +163,7 @@ def is_der_format(cert: bytes) -> str:
     except crypto.Error as e:
         logging.error(LOG_ERROR.format(e))
         return False
+
+
+def get_public_key_from_x509_chain(x5c: list[bytes]) -> JWK:
+    raise NotImplementedError("TODO")
