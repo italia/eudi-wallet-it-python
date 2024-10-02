@@ -137,7 +137,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         return initiating_session_id == current_session_id
 
     def response_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
-        self._log_function_debug("request_endpoint", context, "args", args)
+        self._log_function_debug("response_endpoint", context, "args", args)
 
         request_dict = {}
         try:
@@ -308,5 +308,6 @@ def _find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) 
         if len(pub_jwks) != 1:
             raise Exception(f"no unique valid trusted key with kid={kid} for issuer {issuer}")
         return JWK(pub_jwks[0])
-    else:
+    if isinstance(verification_key, dict):
         raise NotImplementedError("TODO: matching of public key (ex. from x5c) with keys from trust source")
+    raise Exception(f"invalid state: key with type {type(verification_key)}")

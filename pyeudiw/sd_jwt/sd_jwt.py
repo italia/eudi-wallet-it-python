@@ -8,10 +8,10 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt.parse import unsafe_parse_jws
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
-from pyeudiw.openid4vp.vp_sd_jwt_kb import VerifierChallenge
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
-from pyeudiw.sd_jwt.schema import is_sd_jwt_format, is_sd_jwt_kb_format
+from pyeudiw.sd_jwt.schema import is_sd_jwt_format, is_sd_jwt_kb_format, VerifierChallenge
 from pyeudiw.jwt.schemas.jwt import UnverfiedJwt
+from pyeudiw.tools.utils import iat_now
 
 
 _JsonTypes = dict | list | str | int | float | bool | None
@@ -126,10 +126,19 @@ def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: s
     if expected_digest != (obt_digest := hash_fn(token_without_hkb)):
         raise InvalidKeyBinding(f"sd-jwt digest {obt_digest} does not match expected digest {expected_digest}")
 
+def _verify_iat(payload: dict) -> None:
+    iat: int | None = payload.get("iat", None)
+    if not isinstance(iat, int):
+        raise ValueError("missing or invalid parameter [iat] in kbjwt")
+    now = iat_now()
+    if iat > now:
+        raise InvalidKeyBinding("invalid parameter [iat] in kbjwt: issuance after present time")
+    return
 
 def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: UnverfiedJwt, challenge: VerifierChallenge):
     _verify_challenge(hkb, challenge)
     _verify_sd_hash(token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", ""))
+    _verify_iat(hkb.payload)
 
 
 def _disclosures_to_hash_mappings(disclosures: list[str], sd_alg: Callable[[str], str]) -> tuple[dict[str, str], dict[str, Any]]:
