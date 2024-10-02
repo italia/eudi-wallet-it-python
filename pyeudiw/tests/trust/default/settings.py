@@ -1,3 +1,7 @@
+import json
+import requests
+
+
 issuer = "https://credential-issuer.example/vct/"
 issuer_jwk = {
     "kty": "EC",
@@ -14,3 +18,7 @@ issuer_vct_md = {
         ]
     }
 }
+jwt_vc_issuer_endpoint_response = requests.Response()
+jwt_vc_issuer_endpoint_response.status_code = 200
+jwt_vc_issuer_endpoint_response.headers.update({"Content-Type": "application/json"})
+jwt_vc_issuer_endpoint_response._content = json.dumps(issuer_vct_md).encode('utf-8')

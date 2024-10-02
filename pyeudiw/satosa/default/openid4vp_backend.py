@@ -18,7 +18,6 @@ from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator, dynamic_trust_evaluators_loader
-from pyeudiw.trust.interface import IssuerTrustEvaluator
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -97,18 +96,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator(dynamic_trust_evaluators_loader(trust_configuration))
-
-    def _trust_model_factory(self) -> IssuerTrustEvaluator:
-        """Questa funzione eroga uno (o più?) Issuer Trust Model basandosi sulle configurazioni dell'applicativo.
-        """
-        # TODO: leggi le configurationi trust e implementa una funzione di dynamic backend load.
-        # È aperto il problema su come fare dependancy injection verso queste classi: una idea
-        # semplice è standardizzare il costruttore. Ho l'impressione che sto abusando du un factory
-        # pattern senza avere un idoneo framework di dependency injection (tipo Spring Core, per dire)
-        # e questo potrebbe compromettere la leggibilità del codice.
-        trust_config: dict = self.config.get("trust", {})
-        trust_evaluator = IssuerTrustEvaluator(trust_config)
-        return trust_evaluator
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """

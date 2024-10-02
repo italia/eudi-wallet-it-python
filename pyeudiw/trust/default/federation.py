@@ -21,12 +21,12 @@ from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
 from pyeudiw.federation.policy import TrustChainPolicy
 from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw.trust.interface import IssuerTrustEvaluator
+from pyeudiw.trust.interface import TrustEvaluator
 
 logger = logging.getLogger(__name__)
 
 
-class FederationTrustModel(IssuerTrustEvaluator):
+class FederationTrustModel(TrustEvaluator):
     _ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
     def __init__(self, **kwargs):
@@ -89,11 +89,11 @@ class FederationTrustModel(IssuerTrustEvaluator):
     # TODO: sistema da qui in giù
     # ---------------------------
 
-    def __getattribute__(self, name: str) -> Any:
-        if hasattr(self, name):
-            return getattr(self, name)
-        logger.critical("se vedi questo messaggio: sei perduto")
-        return None
+    # def __getattribute__(self, name: str) -> Any:
+    #     if hasattr(self, name):
+    #         return getattr(self, name)
+    #     logger.critical("se vedi questo messaggio: sei perduto")
+    #     return None
 
     def init_trust_resources(self) -> None:
         """

@@ -5,12 +5,11 @@ import sd_jwt.common as sd_jwtcommon
 from sd_jwt.common import SDJWTCommon
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt.parse import unsafe_parse_jws
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import is_sd_jwt_format, is_sd_jwt_kb_format, VerifierChallenge
-from pyeudiw.jwt.schemas.jwt import UnverfiedJwt
+from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.tools.utils import iat_now
 
 
@@ -40,18 +39,18 @@ class SdJwt:
         self.token = token
         # precomputed values
         self.token_without_kb: str = ""
-        self.issuer_jwt: UnverfiedJwt = UnverfiedJwt("", "", "", "")
+        self.issuer_jwt: DecodedJwt = DecodedJwt("", "", "", "")
         self.disclosures: list[str] = []
-        self.holder_kb: UnverfiedJwt | None = None
+        self.holder_kb: DecodedJwt | None = None
         self._post_init_precomputed_values()
 
     def _post_init_precomputed_values(self):
         iss_jwt, *disclosures, kb_jwt = self.token.split(FORMAT_SEPARATOR)
         self.token_without_kb = iss_jwt + FORMAT_SEPARATOR + ''.join(disc + FORMAT_SEPARATOR for disc in disclosures)
-        self.issuer_jwt = unsafe_parse_jws(iss_jwt)
+        self.issuer_jwt = DecodedJwt.parse(iss_jwt)
         self.disclosures = disclosures
         if kb_jwt:
-            self.holder_kb = unsafe_parse_jws(kb_jwt)
+            self.holder_kb = DecodedJwt.parse(kb_jwt)
         # TODO: schema validations(?)
 
     def get_confirmation_key(self) -> dict:
@@ -112,7 +111,7 @@ class SdJwtKb(SdJwt):
             raise ValueError("missing key binding jwt")
 
 
-def _verify_challenge(hkb: UnverfiedJwt, challenge: VerifierChallenge):
+def _verify_challenge(hkb: DecodedJwt, challenge: VerifierChallenge):
     if (obt := hkb.payload.get("aud", None)) != (exp := challenge["aud"]):
         raise InvalidKeyBinding(f"challenge audience {exp} does not match obtained audience {obt}")
     if (obt := hkb.payload.get("nonce", None)) != (exp := challenge["nonce"]):
@@ -126,6 +125,7 @@ def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: s
     if expected_digest != (obt_digest := hash_fn(token_without_hkb)):
         raise InvalidKeyBinding(f"sd-jwt digest {obt_digest} does not match expected digest {expected_digest}")
 
+
 def _verify_iat(payload: dict) -> None:
     iat: int | None = payload.get("iat", None)
     if not isinstance(iat, int):
@@ -135,7 +135,8 @@ def _verify_iat(payload: dict) -> None:
         raise InvalidKeyBinding("invalid parameter [iat] in kbjwt: issuance after present time")
     return
 
-def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: UnverfiedJwt, challenge: VerifierChallenge):
+
+def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: DecodedJwt, challenge: VerifierChallenge):
     _verify_challenge(hkb, challenge)
     _verify_sd_hash(token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", ""))
     _verify_iat(hkb.payload)

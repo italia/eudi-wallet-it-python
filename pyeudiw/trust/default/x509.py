@@ -1,6 +1,6 @@
-from pyeudiw.trust.interface import IssuerTrustEvaluator
+from pyeudiw.trust.interface import TrustEvaluator
 
 
-class X509TrustModel(IssuerTrustEvaluator):
+class X509TrustModel(TrustEvaluator):
     def __init__(self, **kwargs):
         pass

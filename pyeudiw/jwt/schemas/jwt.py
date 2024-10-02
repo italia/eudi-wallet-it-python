@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pydantic import BaseModel, Field
 from pyeudiw.federation.schemas.wallet_relying_party import SigningAlgValuesSupported, EncryptionAlgValuesSupported, EncryptionEncValuesSupported
 
@@ -11,11 +10,3 @@ class JWTConfig(BaseModel):
     enc_alg_supported: list[EncryptionAlgValuesSupported]
     enc_enc_supported: list[EncryptionEncValuesSupported]
     sig_alg_supported: list[SigningAlgValuesSupported]
-
-
-@dataclass(frozen=True)
-class UnverfiedJwt:
-    jwt: str
-    header: dict
-    payload: dict
-    signature: str
