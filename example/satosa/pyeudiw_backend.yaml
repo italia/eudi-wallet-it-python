@@ -119,7 +119,7 @@ config:
       module: pyeudiw.trust.default.direct_trust
       class: DirectTrustSdJwtVc
       config:
-        endpoint: /.well-known/jwt-vc-issuer
+        jwk_endpoint: /.well-known/jwt-vc-issuer
         httpc_params:
           connection:
             ssl: true

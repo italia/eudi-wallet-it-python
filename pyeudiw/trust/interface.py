@@ -33,13 +33,3 @@ class TrustEvaluator:
 
     def get_policies(self, issuer: str) -> dict:
         raise NotImplementedError("reserved for future uses")
-
-
-DEFAULT_HTTPC_PARAMS = {
-    "connection": {
-        "ssl": True
-    },
-    "session": {
-        "timeout": 6
-    }
-}
