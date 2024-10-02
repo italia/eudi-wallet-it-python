@@ -47,11 +47,11 @@ class SdJwt:
 
     def _post_init_precomputed_values(self):
         iss_jwt, *disclosures, kb_jwt = self.token.split(FORMAT_SEPARATOR)
-        self.token_without_kb = iss_jwt = iss_jwt + FORMAT_SEPARATOR.join(disclosures)
+        self.token_without_kb = iss_jwt + FORMAT_SEPARATOR + ''.join(disc + FORMAT_SEPARATOR for disc in disclosures)
         self.issuer_jwt = unsafe_parse_jws(iss_jwt)
         self.disclosures = disclosures
         if kb_jwt:
-            self.holder_kb = unsafe_parse_jws(iss_jwt)
+            self.holder_kb = unsafe_parse_jws(kb_jwt)
         # TODO: schema validations(?)
 
     def get_confirmation_key(self) -> dict:
@@ -60,8 +60,17 @@ class SdJwt:
             raise ValueError("missing confermation (cnf) key from issuer payload claims")
         return cnf
 
+    def get_disclosures(self) -> list[str]:
+        return self.disclosures
+
     def get_disclosed_claims(self) -> dict:
         return _extract_claims_from_payload(self.issuer_jwt.payload, self.disclosures, SUPPORTED_SD_ALG_FN[self.get_sd_alg()])
+
+    def get_issuer_jwt(self) -> str:
+        return self.issuer_jwt.jwt
+
+    def get_holder_key_binding(self) -> str:
+        return self.holder_kb.jwt
 
     def get_sd_alg(self) -> str:
         return self.issuer_jwt.payload.get("_sd_alg", DEFAULT_SD_ALG)
@@ -104,10 +113,10 @@ class SdJwtKb(SdJwt):
 
 
 def _verify_challenge(hkb: UnverfiedJwt, challenge: VerifierChallenge):
-    if not (obt := hkb.payload.get("aud", None)) != (exp := challenge["aud"]):
-        raise InvalidKeyBinding(f"challene audience {exp} due not match obtained audience {obt}")
-    if not (obt := hkb.payload.get("nonce", None)) != (exp := challenge["nonce"]):
-        raise InvalidKeyBinding(f"challene nonce {exp} due not match obtained nonce {obt}")
+    if (obt := hkb.payload.get("aud", None)) != (exp := challenge["aud"]):
+        raise InvalidKeyBinding(f"challenge audience {exp} does not match obtained audience {obt}")
+    if (obt := hkb.payload.get("nonce", None)) != (exp := challenge["nonce"]):
+        raise InvalidKeyBinding(f"challenge nonce {exp} does not match obtained nonce {obt}")
 
 
 def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: str):
@@ -152,16 +161,16 @@ def _is_element_leaf(element: Any) -> bool:
             and type(element[SD_LIST_PREFIX]) is str)
 
 
-def _unpack_json_array(claims: list, decoded_disclosures_by_digest: dict[str, Any], sd_alg: Callable[[str], str], proceessed_digests: list[str]) -> list:
+def _unpack_json_array(claims: list, decoded_disclosures_by_digest: dict[str, Any], sd_alg: Callable[[str], str], processed_digests: list[str]) -> list:
     result = []
     for element in claims:
         if _is_element_leaf(element):
             digest: str = element[SD_LIST_PREFIX]
             if digest in decoded_disclosures_by_digest:
                 _, value = decoded_disclosures_by_digest[digest]
-                result.append(_unpack_claims(value, decoded_disclosures_by_digest, sd_alg, proceessed_digests))
+                result.append(_unpack_claims(value, decoded_disclosures_by_digest, sd_alg, processed_digests))
         else:
-            result.append(_unpack_claims(element, decoded_disclosures_by_digest, sd_alg, proceessed_digests))
+            result.append(_unpack_claims(element, decoded_disclosures_by_digest, sd_alg, processed_digests))
     return result
 
 
@@ -172,7 +181,7 @@ def _unpack_json_dict(claims: dict, decoded_disclosures_by_digest: dict[str, Any
     filtered_unpacked_claims = {}
     for k, v in claims.items():
         if k != SD_DIGESTS_KEY and k != DIGEST_ALG_KEY:
-            filtered_unpacked_claims[k] = _unpack_claims(v, decoded_disclosures_by_digest, sd_alg)
+            filtered_unpacked_claims[k] = _unpack_claims(v, decoded_disclosures_by_digest, sd_alg, proceessed_digests)
 
     for disclosed_digests in claims.get(SD_DIGESTS_KEY, []):
         if disclosed_digests in proceessed_digests:

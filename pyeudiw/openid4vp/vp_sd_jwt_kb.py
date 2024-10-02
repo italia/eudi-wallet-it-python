@@ -9,7 +9,7 @@ from sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
-from pyeudiw.jwt.utils import unsafe_parse_jws
+from pyeudiw.jwt.parse import unsafe_parse_jws
 from pyeudiw.jwt.schemas.jwt import UnverfiedJwt
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding, InvalidVPSignature, KIDNotFound, VPSchemaException
 from pyeudiw.openid4vp.verifier import VpVerifier
@@ -126,7 +126,7 @@ class VpVcSdJwtKbVerifier(VpVerifier):
 
 
 def _verify_jws_with_key(issuer_jwt: str, issuer_key: JWK):
-    try:    
+    try:
         verifier = JWSHelper(issuer_key)
     except Exception as e:
         raise InvalidVPSignature(f"failed signature verification of issuer-jwt: invalid issuer key due to cause: {e}")
