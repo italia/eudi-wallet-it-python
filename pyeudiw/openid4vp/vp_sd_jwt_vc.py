@@ -36,4 +36,4 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         return is_jwt_expired(self.sdjwt.issuer_jwt)
 
     def verify_signature(self, public_key: JWK) -> None:
-        return self.sdjwt.verify_issuer_jwt(public_key)
+        return self.sdjwt.verify_issuer_jwt_signature(public_key)

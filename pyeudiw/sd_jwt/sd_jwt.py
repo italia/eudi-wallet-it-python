@@ -30,7 +30,7 @@ SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
 
 class SdJwt:
     """
-    SdJwt is an utility class to easly [arse and verify sd jwt.
+    SdJwt is an utility class to easily parse and verify sd jwt.
     All class attributes are intended to be read only
     """
 
@@ -57,10 +57,10 @@ class SdJwt:
     def get_confirmation_key(self) -> dict:
         cnf: dict = self.issuer_jwt.payload.get("cnf", {}).get("jwk", {})
         if not cnf:
-            raise ValueError("missing confermation (cnf) key from issuer payload claims")
+            raise ValueError("missing confirmation (cnf) key from issuer payload claims")
         return cnf
 
-    def get_disclosures(self) -> list[str]:
+    def get_encoded_disclosures(self) -> list[str]:
         return self.disclosures
 
     def get_disclosed_claims(self) -> dict:
@@ -69,7 +69,7 @@ class SdJwt:
     def get_issuer_jwt(self) -> str:
         return self.issuer_jwt.jwt
 
-    def get_holder_key_binding(self) -> str:
+    def get_holder_key_binding_jwt(self) -> str:
         return self.holder_kb.jwt
 
     def get_sd_alg(self) -> str:
@@ -78,24 +78,24 @@ class SdJwt:
     def has_key_binding(self) -> bool:
         return self.holder_kb is not None
 
-    def verify_issuer_jwt(self, key: JWK) -> None:
+    def verify_issuer_jwt_signature(self, key: JWK) -> None:
         verify_jws_with_key(self.issuer_jwt.jwt, key)
 
-    def verify_holder_kb(self, challenge: VerifierChallenge) -> None:
+    def verify_holder_kb_jwt(self, challenge: VerifierChallenge) -> None:
         """
         Checks validity of holder key binding.
-        This procedurre always passes when no key binding is used
+        This procedure always passes when no key binding is used
 
-        :raises UnsupportedSdAlg: if verification fails due to an unkown _sd_alf
+        :raises UnsupportedSdAlg: if verification fails due to an unkown _sd_alg
         :raises InvalidKeyBinding: if the verification fails for a known reason
         """
         if not self.has_key_binding():
             return
         _verify_key_binding(self.token_without_kb, self.get_sd_alg(),
                             self.holder_kb, challenge)
-        self.verify_holder_kb_signature()
+        self.verify_holder_kb_jwt_signature()
 
-    def verify_holder_kb_signature(self) -> None:
+    def verify_holder_kb_jwt_signature(self) -> None:
         if not self.has_key_binding():
             return
         cnf = self.get_confirmation_key()

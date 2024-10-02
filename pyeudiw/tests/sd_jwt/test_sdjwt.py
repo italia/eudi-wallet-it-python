@@ -101,9 +101,9 @@ ISSUER_JWT = \
 
 DISCLOSURES = [
     "WyJlbHVWNU9nM2dTTklJOEVZbnN4QV9BIiwgImZhbWlseV9uYW1lIiwgIkRvZSJd",
-    "WyJBSngtMDk1VlBycFR0TjRRTU9xUk9BIiwgImFkZHJlc3MiLCB7InN0cmVldF9hZGRy"
-    "ZXNzIjogIjEyMyBNYWluIFN0IiwgImxvY2FsaXR5IjogIkFueXRvd24iLCAicmVnaW9u"
-    "IjogIkFueXN0YXRlIiwgImNvdW50cnkiOiAiVVMifV0",
+    "WyJBSngtMDk1VlBycFR0TjRRTU9xUk9BIiwgImFkZHJlc3MiLCB7InN0cmVldF9hZGRy" +
+        "ZXNzIjogIjEyMyBNYWluIFN0IiwgImxvY2FsaXR5IjogIkFueXRvd24iLCAicmVnaW9u" +
+        "IjogIkFueXN0YXRlIiwgImNvdW50cnkiOiAiVVMifV0",
     "WyIyR0xDNDJzS1F2ZUNmR2ZyeU5STjl3IiwgImdpdmVuX25hbWUiLCAiSm9obiJd",
     "WyJsa2x4RjVqTVlsR1RQVW92TU5JdkNBIiwgIlVTIl0",
 ]
@@ -135,8 +135,8 @@ DISCLOSED_CLAIMS = {
 def test_sdkwt_parts():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
     assert ISSUER_JWT == sdjwt.get_issuer_jwt()
-    assert DISCLOSURES == sdjwt.get_disclosures()
-    assert HOLDER_KB_JWT == sdjwt.get_holder_key_binding()
+    assert DISCLOSURES == sdjwt.get_encoded_disclosures()
+    assert HOLDER_KB_JWT == sdjwt.get_holder_key_binding_jwt()
 
 
 def test_sdjwt_hash_hey_binding():
@@ -149,12 +149,12 @@ def test_sdjwt_hash_hey_binding():
 
 def test_sd_jwt_verify_issuer_jwt():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
-    sdjwt.verify_issuer_jwt(JWK(ISSUER_JWK))
+    sdjwt.verify_issuer_jwt_signature(JWK(ISSUER_JWK))
 
 
 def test_sd_jwt_verify_holder_kb_signature():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
-    sdjwt.verify_holder_kb_signature()
+    sdjwt.verify_holder_kb_jwt_signature()
 
 
 def test_sd_jwt_verify_holder_kb():
@@ -192,7 +192,7 @@ def test_sd_jwt_verify_holder_kb():
     for i, case in enumerate(test_cases):
         try:
             # bad challenge: should fail
-            sdjwt.verify_holder_kb(case.challenge)
+            sdjwt.verify_holder_kb_jwt(case.challenge)
             if case.expected_result is False:
                 assert False, f"failed test {i} on holder key binding: test case: {case.explanation}: should have launched a verification exception"
             else:
@@ -207,7 +207,6 @@ def test_sd_jwt_verify_holder_kb():
 def test_sd_jwt_get_disclosed_claims():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
     obtained_claims = sdjwt.get_disclosed_claims()
-    breakpoint()
     for claim in DISCLOSED_CLAIMS:
         assert claim in obtained_claims, f"failed to disclose claim {claim}"
         exp_claim_value = DISCLOSED_CLAIMS[claim]
