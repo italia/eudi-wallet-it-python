@@ -3,7 +3,7 @@ import json
 import re
 from typing import Dict
 
-from pyeudiw.jwk import find_jwk
+from pyeudiw.jwk import find_jwk_by_kid
 from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
@@ -84,7 +84,7 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
     if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
         provider_jwks = provider_jwks['keys']
 
-    return find_jwk(kid, provider_jwks)
+    return find_jwk_by_kid(kid, provider_jwks)
 
 
 def is_jwt_format(jwt: str) -> bool:
