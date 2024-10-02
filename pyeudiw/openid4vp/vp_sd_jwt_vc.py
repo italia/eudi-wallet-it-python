@@ -22,6 +22,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         iss = self.sdjwt.issuer_jwt.payload.get("iss", None)
         if not iss:
             raise Exception("missing required information in token paylaod: [iss]")
+        return iss
 
     def get_credentials(self) -> dict:
         return self.sdjwt.get_disclosed_claims()

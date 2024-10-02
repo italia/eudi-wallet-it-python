@@ -30,18 +30,18 @@ class RemoteVciJwksSource(VciJwksSource):
             resp = get_http_url(uri, self.httpc_params)
             response: dict = resp[0].json()
             return response
-        except Exception:
-            # TODO: handle exception
-            pass
+        except Exception as e:
+            # TODO: handle meaningfully
+            raise e
 
     def _get_jwkset_from_jwkset_uri(self, jwkset_uri: str) -> list[dict]:
         try:
             resp = get_http_url(jwkset_uri, self.httpc_params)
             jwks: dict[Literal["keys"], list[dict]] = resp[0].json()
             return jwks.get("keys", [])
-        except Exception:
-            # TODO: handle exception
-            pass
+        except Exception as e:
+            # TODO; handle meaningfully
+            raise e
 
     def _obtain_jwkset_from_response_json(self, response: dict) -> list[dict]:
         jwks: dict[Literal["keys"], list[dict]] = response.get("jwks", None)

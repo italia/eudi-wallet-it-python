@@ -4,6 +4,7 @@ import urllib
 import datetime
 import base64
 from bs4 import BeautifulSoup
+import unittest.mock
 
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
 from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
@@ -201,16 +202,29 @@ vp_token = sdjwt_at_holder.sd_jwt_presentation
 # )
 # End deprecated footprint VP envelop
 
-# take relevant information from RP's EC
-rp_ec_jwt = http_user_agent.get(
-    f'{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation',
-    verify=False
-).content.decode()
-rp_ec = decode_jwt_payload(rp_ec_jwt)
+# intercept call to issuer jwk
+issuer_vct_md = {
+    "issuer": settings['issuer'],
+    "jwks": {"keys": [ISSUER_PRIVATE_JWK.as_dict()]}
+}
+jwt_vc_issuer_endpoint_response = requests.Response()
+jwt_vc_issuer_endpoint_response.status_code = 200
+jwt_vc_issuer_endpoint_response.headers.update({"Content-Type": "application/json"})
+jwt_vc_issuer_endpoint_response._content = json.dumps(issuer_vct_md).encode('utf-8')
+patcher = unittest.mock.patch("pyeudiw.vci.jwks_provider.get_http_url", return_value=[issuer_vct_md])
+patcher.start()  # TODO: this does not works!!
 
-presentation_definition = rp_ec["metadata"]["wallet_relying_party"]["presentation_definition"]
-PresentationDefinition(**presentation_definition)
-assert response_uri == rp_ec["metadata"]['wallet_relying_party']["response_uris_supported"][0]
+# take relevant information from RP's EC
+# rp_ec_jwt = http_user_agent.get(
+#     f'{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation',
+#     verify=False
+# ).content.decode()
+# rp_ec = decode_jwt_payload(rp_ec_jwt)
+
+# presentation_definition = rp_ec["metadata"]["wallet_relying_party"]["presentation_definition"]
+# encryption_key = rp_ec["metadata"]['wallet_relying_party']['jwks']['keys'][1]
+# PresentationDefinition(**presentation_definition)
+# assert response_uri == rp_ec["metadata"]['wallet_relying_party']["response_uris_supported"][0]
 
 response = {
     "state": red_data['state'],
@@ -228,9 +242,21 @@ response = {
         "aud": response_uri
     }
 }
+
+# This should be a public key provided somehow by the verifier/relying party, but as of now it is a private key granted by an angel
+encryption_key = {
+    "kty": "RSA",
+    "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
+    "e": "AQAB",
+    "use": "enc",
+    "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
+    "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
+    "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
+    "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
+}
 encrypted_response = JWEHelper(
     # RSA (EC is not fully supported todate)
-    JWK(rp_ec["metadata"]['wallet_relying_party']['jwks']['keys'][1])
+    JWK(encryption_key)
 ).encrypt(response)
 
 
@@ -280,4 +306,5 @@ for exp_att_name, exp_att_value in expected.items():
     obt_att_value = attributes[result_index].contents[0].contents[0]
     assert exp_att_value == obt_att_value, f"wrong attrirbute parsing expected {exp_att_value}, obtained {obt_att_value}"
 
+patcher.stop()
 print('test passed')

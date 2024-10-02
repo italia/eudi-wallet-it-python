@@ -95,7 +95,7 @@ config:
       module: pyeudiw.trust.default.federation
       class: FederationTrustModel
       config:
-        metadata_type: "openid_credential_verifier"
+        metadata_type: "wallet_relying_party"
         authority_hints:
             - http://127.0.0.1:8000
         trust_anchors:
