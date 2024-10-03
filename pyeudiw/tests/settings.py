@@ -375,7 +375,7 @@ CONFIG_DIRECT_TRUST = {
         "response": "/response-uri",
         "request": "/request-uri",
         "status": "/status-uri",
-        "get_response": "/get-response",
+        "get_response": "/get-response"
     },
     "response_code": {
         "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"

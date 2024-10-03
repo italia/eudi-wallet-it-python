@@ -179,6 +179,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
         for vp_token in encoded_vps:
             # verify vp token and extract user information
+            # TODO: specialized try/except for each call, from line 182 to line 187
             token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
             pub_jwk = _find_vp_token_key(token_parser, self.trust_evaluator)
             token_verifier.verify_signature(pub_jwk)

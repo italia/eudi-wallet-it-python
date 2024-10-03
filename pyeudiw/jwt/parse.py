@@ -47,6 +47,7 @@ def unsafe_parse_jws(token: str) -> DecodedJwt:
 
 
 def extract_key_identifier(token_header: dict) -> JWK | KeyIdentifier_T:
+    # TODO: the trust evaluation order might be mapped on the same configuration ordering
     if "trust_chain" in token_header.keys():
         return get_public_key_from_trust_chain(token_header["key"])
     if "x5c" in token_header.keys():

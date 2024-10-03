@@ -31,6 +31,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         return extract_key_identifier(self.sdjwt.issuer_jwt.header)
 
     def is_revoked(self) -> bool:
+        # TODO: implement revocation check
         return False
 
     def is_expired(self) -> bool:
