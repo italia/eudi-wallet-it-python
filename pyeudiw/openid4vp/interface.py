@@ -44,3 +44,5 @@ class VpTokenVerifier:
         :raises [InvalidSignatureException]:
         """
         raise NotImplementedError
+
+    # TODO: VP proof of possession verification method should be implemented
