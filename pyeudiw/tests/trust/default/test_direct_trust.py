@@ -1,7 +1,7 @@
 import unittest.mock
 
 from pyeudiw.trust.default import DEFAULT_DIRECT_TRUST_PARAMS
-from pyeudiw.trust.default.direct_trust import DirectTrustSdJwtVc
+from pyeudiw.trust.default.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 
 from pyeudiw.tests.trust.default.settings import issuer, jwt_vc_issuer_endpoint_response
 from pyeudiw.tests.trust.default.settings import issuer_jwk as expected_jwk

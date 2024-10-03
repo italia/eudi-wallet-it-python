@@ -1,6 +1,6 @@
 import os
 
-from pyeudiw.trust.default.direct_trust import DirectTrustSdJwtVc
+from pyeudiw.trust.default.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.interface import TrustEvaluator
 
 

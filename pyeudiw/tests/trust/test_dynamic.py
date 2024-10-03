@@ -1,5 +1,5 @@
 from pyeudiw.trust.default import DEFAULT_DIRECT_TRUST_PARAMS
-from pyeudiw.trust.default.direct_trust import DirectTrustSdJwtVc
+from pyeudiw.trust.default.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator, dynamic_trust_evaluators_loader
 from pyeudiw.trust.interface import TrustEvaluator
 
