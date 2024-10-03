@@ -27,7 +27,8 @@ class RemoteVciJwksSource(VciJwksSource):
 
     def _get_jwk_metadata(self, uri: str) -> dict:
         try:
-            resp = get_http_url(uri, self.httpc_params)
+            # TODO: sistemare httpc params
+            resp = get_http_url(uri, {"connection": {"ssl": False}, "session": {"timeout": 6}}, http_async=False)
             response: dict = resp[0].json()
             return response
         except Exception as e:
@@ -36,7 +37,8 @@ class RemoteVciJwksSource(VciJwksSource):
 
     def _get_jwkset_from_jwkset_uri(self, jwkset_uri: str) -> list[dict]:
         try:
-            resp = get_http_url(jwkset_uri, self.httpc_params)
+            # TODO: sistemare httpc params
+            resp = get_http_url(jwkset_uri, {"connection": {"ssl": False}, "session": {"timeout": 6}}, http_async=False)
             jwks: dict[Literal["keys"], list[dict]] = resp[0].json()
             return jwks.get("keys", [])
         except Exception as e:
