@@ -26,7 +26,7 @@ class MockTrustEvaluator(TrustEvaluator):
 
     def get_metadata(self, issuer: str) -> dict:
         return {
-            "jsono_key": "json_value"
+            "json_key": "json_value"
         }
 
     def is_revoked(self, issuer: str) -> bool:
