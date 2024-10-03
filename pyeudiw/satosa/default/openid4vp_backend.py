@@ -1,4 +1,3 @@
-import json
 import uuid
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
@@ -18,6 +17,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator, dynamic_trust_evaluators_loader
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
@@ -87,7 +87,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             else self.base_url
         )
 
-        self.init_trust_resources()
         try:
             PyeudiwBackendConfig(**config)
         except ValidationError as e:
@@ -95,11 +94,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning("OpenID4VPBackend", debug_message)
 
         self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
-
-        self._log_debug(
-            "OpenID4VP init",
-            f"loaded configuration: {json.dumps(config)}"
-        )
+        trust_configuration = self.config.get("trust", {})
+        self.trust_evaluator = CombinedTrustEvaluator(dynamic_trust_evaluators_loader(trust_configuration))
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """

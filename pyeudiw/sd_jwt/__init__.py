@@ -20,6 +20,7 @@ from jwcrypto.jws import JWS
 from json import dumps, loads
 
 import jwcrypto
+import jwcrypto.jwk
 
 from typing import Any
 from cryptojwt.jwk.rsa import RSAKey

@@ -1,7 +1,8 @@
 import re
-from typing import Dict, Literal, Optional, TypeVar
+from typing import Dict, Literal, Optional, TypeVar, TypedDict
+from typing_extensions import Self
 
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, HttpUrl, field_validator, model_validator
 
 from pyeudiw.jwk.schemas.public import JwkSchema
 
@@ -40,6 +41,12 @@ class VcSdJwtHeaderSchema(BaseModel):
         if v != _IDENTIFYING_VC_TYP:
             raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'")
         return v
+
+    @model_validator(mode="after")
+    def check_typ_when_not_x5c(self) -> Self:
+        if (not self.x5c) and (not self.kid):
+            raise ValueError("[kid] must be defined if [x5c] claim is not defined")
+        return self
 
 
 class _StatusAssertionSchema(BaseModel):
@@ -106,3 +113,8 @@ class KeyBindingJwtPayload(BaseModel):
     aud: str
     nonce: str
     sd_hash: str
+
+
+class VerifierChallenge(TypedDict):
+    aud: str
+    nonce: str

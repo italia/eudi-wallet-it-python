@@ -15,7 +15,7 @@ from pyeudiw.federation.exceptions import (
     InvalidEntityStatement
 )
 
-from pyeudiw.jwk import find_jwk
+from pyeudiw.jwk import find_jwk_by_kid
 from pyeudiw.jwk.exceptions import KidNotFoundError, InvalidKid
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ class StaticTrustChainValidator:
         es_header = decode_jwt_header(last_element)
         es_payload = decode_jwt_payload(last_element)
 
-        ta_jwk = find_jwk(
+        ta_jwk = find_jwk_by_kid(
             es_header.get("kid", None), self.trust_anchor_jwks
         )
 
@@ -165,7 +165,7 @@ class StaticTrustChainValidator:
             st_payload = decode_jwt_payload(st)
 
             try:
-                jwk = find_jwk(
+                jwk = find_jwk_by_kid(
                     st_header.get("kid", None), fed_jwks
                 )
             except (KidNotFoundError, InvalidKid):

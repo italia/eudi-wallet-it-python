@@ -38,8 +38,9 @@ from pyeudiw.tests.federation.base import (
 from pyeudiw.tests.settings import (
     BASE_URL,
     CONFIG,
+    CREDENTIAL_ISSUER_ENTITY_ID,
     INTERNAL_ATTRIBUTES,
-    ISSUER_CONF,
+    CREDENTIAL_ISSUER_CONF,
     PRIVATE_JWK,
     WALLET_INSTANCE_ATTESTATION
 )
@@ -168,8 +169,8 @@ class TestOpenID4VPBackend:
         issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
         holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
-        settings = ISSUER_CONF
-        settings['issuer'] = "https://issuer.example.com"
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
         settings['default_exp'] = CONFIG['jwt']['default_exp']
 
         sd_specification = load_specification_from_yaml_string(
@@ -260,14 +261,14 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "DirectPostResponse content parse and validation error. Single VPs are faulty."
 
-    def test_redirect_endpoint(self, context):
+    def test_response_endpoint(self, context):
         self.backend.register_endpoints()
 
         issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
         holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
-        settings = ISSUER_CONF
-        settings['issuer'] = "https://issuer.example.com"
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
         settings['default_exp'] = CONFIG['jwt']['default_exp']
 
         sd_specification = load_specification_from_yaml_string(
