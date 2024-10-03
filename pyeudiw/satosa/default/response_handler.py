@@ -288,8 +288,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         return internal_resp
 
     def _vp_verifier_factory(self, presentation_submission: dict, token: str, session_data: dict) -> tuple[VpTokenParser, VpTokenVerifier]:
-        # TODO: la funzione dovrebbe confumare la presentation submission per sapere quale token
-        # ritornare - per ora viene sieme ritornata l'unica implementazione possibile
+        # TODO: la funzione dovrebbe consumare la presentation submission per sapere quale token
+        # ritornare - per ora viene ritornata l'unica implementazione possibile
         challenge = self._get_verifier_challenge(session_data)
         token_processor = VpVcSdJwtParserVerifier(token, challenge["aud"], challenge["nonce"])
         return (token_processor, deepcopy(token_processor))
@@ -299,6 +299,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
 
 def _find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
+    # TODO: move somewhere appropriate: this doesn't HAVE to be in the response handler
     issuer = token_parser.get_issuer_name()
     trusted_pub_keys = key_source.get_public_keys(issuer)
     verification_key = token_parser.get_signing_key()

@@ -24,14 +24,15 @@ class BackendTrust(BaseLogger):
         """
         Initializes the trust resources.
         """
+        # TODO: adapt method to init ALL types of trust resources (if configured)
 
         # private keys by kid
         self.federations_jwks_by_kids = {
-            i['kid']: i for i in self.config['federation']['federation_jwks']
+            i['kid']: i for i in self.config['trust']['federation']['config']['federation_jwks']
         }
         # dumps public jwks
         self.federation_public_jwks = [
-            JWK(i).public_key for i in self.config['federation']['federation_jwks']
+            JWK(i).public_key for i in self.config['trust']['federation']['config']['federation_jwks']
         ]
         # we close the connection in this constructor since it must be fork safe and
         # get reinitialized later on, within each fork
@@ -77,7 +78,7 @@ class BackendTrust(BaseLogger):
         Updates the trust anchors of current instance.
         """
 
-        tas = self.config['federation']['trust_anchors']
+        tas = self.config['trust']['federation']['config']['trust_anchors']
         self._log_info("Trust Anchors updates", f"Trying to update: {tas}")
 
         for ta in tas:
@@ -188,10 +189,10 @@ class BackendTrust(BaseLogger):
                 "keys": self.federation_public_jwks
             },
             "metadata": {
-                self.config['federation']["metadata_type"]: self.config['metadata'],
-                "federation_entity": self.config['federation']['federation_entity_metadata']
+                self.config['trust']['federation']['config']["metadata_type"]: self.config['metadata'],
+                "federation_entity": self.config['trust']['federation']['config']['federation_entity_metadata']
             },
-            "authority_hints": self.config['federation']['authority_hints']
+            "authority_hints": self.config['trust']['federation']['config']['authority_hints']
         }
         return ec_payload
 
@@ -202,7 +203,7 @@ class BackendTrust(BaseLogger):
         jwshelper = JWSHelper(self.default_federation_private_jwk)
         return jwshelper.sign(
             protected={
-                "alg": self.config['federation']["default_sig_alg"],
+                "alg": self.config['trust']['federation']['config']["default_sig_alg"],
                 "kid": self.default_federation_private_jwk["kid"],
                 "typ": "entity-statement+jwt"
             },

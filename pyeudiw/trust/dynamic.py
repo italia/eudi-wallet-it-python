@@ -1,5 +1,6 @@
-from typing import TypedDict
+from typing import Any, Optional, TypedDict
 
+from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import get_dynamic_class, satisfy_interface
 from pyeudiw.trust.default import default_trust_evaluator
 from pyeudiw.trust.exceptions import TrustConfigurationError
@@ -40,18 +41,15 @@ def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfigura
     return trust_instances
 
 
-class CombinedTrustEvaluator(TrustEvaluator):
+class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
     """CombinedTrustEvaluator is a wrapper around multiple implementations of
     TrustEvaluator. It's primary purpose is to handle how multiple configured
     trust sources are queried when some metadata or key material is requested.
     """
 
-    def __init__(self, trust_evaluators: dict[str, TrustEvaluator]):
+    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], storage: Optional[Any] = None):
         self.trust_evaluators: dict[str, TrustEvaluator] = trust_evaluators
-
-    # def __iter__(self):
-    #     for eval_identifier, eval_instance in self.trust_evaluators.items():
-    #         yield (eval_identifier, eval_instance)
+        self.storage = storage
 
     def _get_trust_identifier_names(self) -> str:
         return '['+','.join(self.trust_evaluators.keys())+']'
@@ -65,11 +63,17 @@ class CombinedTrustEvaluator(TrustEvaluator):
         """
         pks: list[dict] = []
         for eval_identifier, eval_instance in self.trust_evaluators.items():
-            pks = eval_instance.get_public_keys(issuer)
-            if pks:
-                return pks
+            # TODO: search in storage if key for (issuer, eval_identifier) exists and is live
+            try:
+                new_pks = eval_instance.get_public_keys(issuer)
+            except Exception as e:
+                self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
+                continue
+            if new_pks:
+                pks += new_pks
         if not pks:
             raise Exception(f"no trust evaluator can provide cyptographic matrerial for {issuer}: searched among: {self._get_trust_identifier_names()}")
+        return pks
 
     def get_metadata(self, issuer: str) -> dict:
         """
