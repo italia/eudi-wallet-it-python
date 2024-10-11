@@ -95,7 +95,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
         trust_configuration = self.config.get("trust", {})
-        self.trust_evaluator = CombinedTrustEvaluator(dynamic_trust_evaluators_loader(trust_configuration))
+        self.trust_evaluator = CombinedTrustEvaluator(dynamic_trust_evaluators_loader(trust_configuration), self.db_engine)
         self.init_trust_resources()  # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:

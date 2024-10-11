@@ -60,9 +60,9 @@ CONFIG = {
         "httpc_params": httpc_params
     },
     "trust": {
-        "direct_trust": {
-            "module": "pyeudiw.trust.default.federation",
-            "class": "FederationTrustModel",
+        "direct_trust_sd_jwt_vc": {
+            "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
+            "class": "DirectTrustSdJwtVc",
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
                 "httpc_params": {
@@ -365,10 +365,10 @@ CONFIG = {
 CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"
 
 MODULE_DIRECT_TRUST_CONFIG = {
-    "module": "pyeudiw.trust.default.direct_trust",
+    "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
     "class": "DirectTrustSdJwtVc",
     "config": {
-        "endpoint": "/.well-known/jwt-vc-issuer",
+        "jwk_endpoint": "/.well-known/jwt-vc-issuer",
         "httpc_params": {
             "connection": {
                 "ssl": True
@@ -425,7 +425,7 @@ CONFIG_DIRECT_TRUST = {
         "httpc_params": httpc_params
     },
     "trust": {
-        "direct_trust": MODULE_DIRECT_TRUST_CONFIG
+        "direct_trust_sd_jwt_vc": MODULE_DIRECT_TRUST_CONFIG
     },
     "metadata_jwks": [
         {

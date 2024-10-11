@@ -3,8 +3,10 @@ from typing import Optional
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.parse import KeyIdentifier_T, extract_key_identifier
 from pyeudiw.jwt.verification import is_jwt_expired
+from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
-from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
+from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
+from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 
 
@@ -39,3 +41,12 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
 
     def verify_signature(self, public_key: JWK) -> None:
         return self.sdjwt.verify_issuer_jwt_signature(public_key)
+    
+    def verify_challenge(self) -> None:
+        challenge : VerifierChallenge = {}
+        challenge["aud"] = self.verifier_id
+        challenge["nonce"] = self.verifier_nonce
+        try:
+            self.sdjwt.verify_holder_kb_jwt(challenge)
+        except (UnsupportedSdAlg, InvalidKeyBinding):
+            raise InvalidVPKeyBinding

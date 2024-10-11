@@ -6,7 +6,7 @@ from pyeudiw.satosa.backend import OpenID4VPBackend
 
 from pyeudiw.tests.settings import (
     BASE_URL,
-    CONFIG_DIRECT_TRUST,
+    CONFIG,
     INTERNAL_ATTRIBUTES,
 )
 
@@ -18,7 +18,7 @@ class TestOpenID4VPBackend:
         self.backend = OpenID4VPBackend(
             Mock(),
             INTERNAL_ATTRIBUTES,
-            CONFIG_DIRECT_TRUST,
+            CONFIG,
             BASE_URL,
             "name"
         )

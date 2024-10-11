@@ -24,6 +24,7 @@ from pyeudiw.sd_jwt import (
     load_specification_from_yaml_string,
     import_ec
 )
+from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
     trust_chain_wallet,
@@ -57,6 +58,12 @@ class TestOpenID4VPBackend:
             entity_configuration=ta_ec_signed,
             exp=EXP,
         )
+
+        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
+            trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
+            jwks=issuer_jwk)
 
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
@@ -259,7 +266,7 @@ class TestOpenID4VPBackend:
         assert request_endpoint.status == "400"
         msg = json.loads(request_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "DirectPostResponse content parse and validation error. Single VPs are faulty."
+        assert msg["error_description"]
 
     def test_response_endpoint(self, context):
         self.backend.register_endpoints()

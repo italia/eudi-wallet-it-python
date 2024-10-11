@@ -44,5 +44,12 @@ class VpTokenVerifier:
         :raises [InvalidSignatureException]:
         """
         raise NotImplementedError
+    
+    def verify_challenge(self) -> None:
+        """
+        :raises []:
+        """
+        raise NotImplementedError
+
 
     # TODO: VP proof of possession verification method should be implemented

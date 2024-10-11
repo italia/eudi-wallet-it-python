@@ -7,7 +7,7 @@ from pyeudiw.tools.utils import get_http_url
 
 
 def final_issuer_endpoint(issuer: str, wk_endpoint: str) -> str:
-    """Prepend the wk_endpoint part tot he path of the issuer.
+    """Prepend the wk_endpoint part to the path of the issuer.
     For example, if the issuer is 'https://example.com/tenant/1234' and the
     well known endpoint is '/.well-known/jwt-vc-issuer', then the final
     endpoint will be
@@ -24,5 +24,6 @@ def cacheable_get_http_url(ttl_cache: int, urls: list[str] | str, httpc_params: 
     """
     wraps method 'get_http_url' around a ttl cache
     """
+    # explicitly delete dummy argument ttl_cache since it is only needed for caching
     del ttl_cache
     return get_http_url(urls, httpc_params, http_async)

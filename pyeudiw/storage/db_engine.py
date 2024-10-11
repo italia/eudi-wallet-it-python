@@ -156,8 +156,8 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self.get_trust_anchor(entity_id) is not None
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
-        return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
+    def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
+        return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
         return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
@@ -165,15 +165,15 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
-        return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type)
+    def update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
+        return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
-    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
         try:
             self.get_trust_attestation(entity_id)
-            return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type)
+            return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
         except (EntryNotFound, ChainNotExist):
-            return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type)
+            return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("update_trust_anchor", entity_id, entity_configuration, exp, trust_type)

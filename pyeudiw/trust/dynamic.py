@@ -1,5 +1,7 @@
 from typing import Any, Optional, TypedDict
 
+from pyeudiw.storage.base_storage import TrustType
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import get_dynamic_class, satisfy_interface
 from pyeudiw.trust.default import default_trust_evaluator
@@ -25,7 +27,7 @@ def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfigura
     trust_instances: dict[str, TrustEvaluator] = {}
     if not trust_config:
         _package_logger.warning("no configured trust model, using direct trust model")
-        trust_instances["direct_trust"] = default_trust_evaluator()
+        trust_instances["direct_trust_sd_jwt_vc"] = default_trust_evaluator()
         return trust_instances
 
     for trust_model_name, trust_module_config in trust_config.items():
@@ -47,12 +49,31 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
     trust sources are queried when some metadata or key material is requested.
     """
 
-    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], storage: Optional[Any] = None):
+    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], storage: Optional[DBEngine] = None):
         self.trust_evaluators: dict[str, TrustEvaluator] = trust_evaluators
-        self.storage = storage
+        self.storage: DBEngine | None = storage
 
     def _get_trust_identifier_names(self) -> str:
         return '['+','.join(self.trust_evaluators.keys())+']'
+    
+    def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> dict | None:
+        if trust_attestation := self.storage.get_trust_attestation(issuer):
+            if trust_entity := trust_attestation.get(eval_identifier, None):
+                if trust_entity_jwks := trust_entity.get("jwks", None):
+                    new_pks = trust_entity_jwks
+                    # TODO: check if cached key is still valid?
+                    return new_pks
+        return None
+    
+    def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> dict:
+        try:
+            new_pks = eval_instance.get_public_keys(issuer)
+            self.storage.add_or_update_trust_attestation(issuer, trust_type=TrustType(eval_identifier), jwks=new_pks)
+        except:
+            new_pks = self._get_public_keys_from_storage(eval_identifier, issuer)
+
+        if new_pks: return new_pks
+        else: raise Exception
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
@@ -63,16 +84,15 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         """
         pks: list[dict] = []
         for eval_identifier, eval_instance in self.trust_evaluators.items():
-            # TODO: search in storage if key for (issuer, eval_identifier) exists and is live
             try:
-                new_pks = eval_instance.get_public_keys(issuer)
+                new_pks = self._get_public_keys(eval_identifier, eval_instance, issuer)
             except Exception as e:
                 self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
                 continue
             if new_pks:
-                pks += new_pks
+                pks.append(new_pks)
         if not pks:
-            raise Exception(f"no trust evaluator can provide cyptographic matrerial for {issuer}: searched among: {self._get_trust_identifier_names()}")
+            raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self._get_trust_identifier_names()}")
         return pks
 
     def get_metadata(self, issuer: str) -> dict:

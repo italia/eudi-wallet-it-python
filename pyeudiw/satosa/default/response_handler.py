@@ -12,7 +12,7 @@ from satosa.response import Redirect
 
 from pyeudiw.jwk import JWK
 from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
-from pyeudiw.openid4vp.exceptions import InvalidVPToken, KIDNotFound
+from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
@@ -164,11 +164,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         try:
             request_session = self._retrieve_session_from_state(authz_payload.state)
         except AuthorizeUnmatchedResponse as e400:
-            self._handle_400(context, e400.args[0], e400.args[1])
+            return self._handle_400(context, e400.args[0], e400.args[1])
         except InvalidInternalStateError as e500:
-            self._handle_500(context, e500.args[0], "invalid state")
+            return self._handle_500(context, e500.args[0], "invalid state")
         except FinalizedSessionError as e400:
-            self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
+            return self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
 
         # the flow below is a simplified algorithm of authentication response processing, where:
         # (1) we don't check that presentation submission matches definition (yet)
@@ -180,13 +180,21 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         for vp_token in encoded_vps:
             # verify vp token and extract user information
             # TODO: specialized try/except for each call, from line 182 to line 187
-            token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
+            try:
+                token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
+            except ValueError as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
             pub_jwk = _find_vp_token_key(token_parser, self.trust_evaluator)
             token_verifier.verify_signature(pub_jwk)
+            try:
+                token_verifier.verify_challenge()
+            except InvalidVPKeyBinding as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
             attributes_by_issuer[iss] = claims
             self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
+          
         all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
         internal_resp = self._translate_response(all_attributes, iss_list_serialized, context)

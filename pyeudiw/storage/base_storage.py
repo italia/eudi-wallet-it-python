@@ -7,13 +7,15 @@ from .base_db import BaseDB
 
 
 class TrustType(Enum):
-    X509 = 0
-    FEDERATION = 1
+    X509 = "x509"
+    FEDERATION = "federation"
+    DIRECT_TRUST_SD_JWT_VC = "direct_trust_sd_jwt_vc"
 
 
 trust_type_map: dict = {
     TrustType.X509: "x509",
-    TrustType.FEDERATION: "federation"
+    TrustType.FEDERATION: "federation",
+    TrustType.DIRECT_TRUST_SD_JWT_VC: "direct_trust_sd_jwt_vc"
 }
 
 trust_attestation_field_map: dict = {
@@ -170,7 +172,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         """
         Add a trust attestation.
 
@@ -182,6 +184,8 @@ class BaseStorage(BaseDB):
         :type exp: datetime
         :param trust_type: the trust type.
         :type trust_type: TrustType
+        :param jwks: cached jwks
+        :type jwks: dict
 
         :returns: the document id.
         :rtype: str
@@ -220,7 +224,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         """
         Update a trust attestation.
 
@@ -232,6 +236,8 @@ class BaseStorage(BaseDB):
         :type exp: datetime
         :param trust_type: the trust type.
         :type trust_type: TrustType
+        :param jwks: cached jwks
+        :type jwks: dict
 
         :returns: the document id.
         :rtype: str

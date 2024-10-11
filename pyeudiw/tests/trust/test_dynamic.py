@@ -43,8 +43,8 @@ def test_trust_evaluators_loader():
             "class": "MockTrustEvaluator",
             "config": {}
         },
-        "direct_trust": {
-            "module": "pyeudiw.trust.default.direct_trust",
+        "direct_trust_sd_jwt_vc": {
+            "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
             "class": "DirectTrustSdJwtVc",
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
@@ -62,14 +62,14 @@ def test_trust_evaluators_loader():
     trust_sources = dynamic_trust_evaluators_loader(config)
     assert "mock" in trust_sources
     assert trust_sources["mock"].__class__.__name__ == "MockTrustEvaluator"
-    assert "direct_trust" in trust_sources
-    assert trust_sources["direct_trust"].__class__.__name__ == "DirectTrustSdJwtVc"
+    assert "direct_trust_sd_jwt_vc" in trust_sources
+    assert trust_sources["direct_trust_sd_jwt_vc"].__class__.__name__ == "DirectTrustSdJwtVc"
 
 
 def test_combined_trust_evaluator():
     evaluators = {
         "mock": MockTrustEvaluator(),
-        "direct_trust": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_PARAMS)
+        "direct_trust_sd_jwt_vc": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_PARAMS)
     }
     combined = CombinedTrustEvaluator(evaluators)
     assert MockTrustEvaluator.mock_jwk in combined.get_public_keys("mock_issuer")
