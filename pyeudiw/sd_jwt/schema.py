@@ -1,6 +1,12 @@
+import sys
 import re
-from typing import Dict, Literal, Optional, TypeVar, TypedDict
+from typing import Dict, Literal, Optional, TypeVar
 from typing_extensions import Self
+
+if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 from pydantic import BaseModel, HttpUrl, field_validator, model_validator
 

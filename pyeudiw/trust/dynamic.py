@@ -1,4 +1,10 @@
-from typing import Any, Optional, TypedDict
+import sys
+from typing import Any, Optional
+
+if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
@@ -12,8 +18,7 @@ from pyeudiw.trust._log import _package_logger
 
 TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
 
-
-def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfiguration_T]) -> dict[str, TrustEvaluator]:
+def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfiguration_T]) -> dict[str, TrustEvaluator]: # type: ignore
     """Load a dynamically importable/configurable set of TrustEvaluators,
     identified by the trust model they refer to.
     If not configurations a re given, a default is returned instead
@@ -54,14 +59,16 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         self.storage: DBEngine | None = storage
 
     def _get_trust_identifier_names(self) -> str:
-        return '['+','.join(self.trust_evaluators.keys())+']'
+        return f'[{",".join(self.trust_evaluators.keys())}]'
     
     def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> dict | None:
+        # note: keys are serialized as jwks
         if trust_attestation := self.storage.get_trust_attestation(issuer):
             if trust_entity := trust_attestation.get(eval_identifier, None):
                 if trust_entity_jwks := trust_entity.get("jwks", None):
                     new_pks = trust_entity_jwks
                     # TODO: check if cached key is still valid?
+                    # with mongodb we use ttl integrated in the engine
                     return new_pks
         return None
     

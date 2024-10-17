@@ -239,7 +239,7 @@ class MongoStorage(BaseStorage):
 
         meth_suffix = collection[:-1]
         if getattr(self, f"has_{meth_suffix}")(entity_id):
-            # TODO: controllare funzionamento
+            # TODO: bug detected. Commentato l'update e lasciato il raise dell'eccezione
             # l'attestation passata come parametro non è quello che si aspetta il metodo di update
             # bensì è l'intero oggetto trust_attestation
 
