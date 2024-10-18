@@ -153,7 +153,7 @@ def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
         return ECJWK(key, hash_func, ec_crv)
 
 
-def find_jwk(kid: str, jwks: list[dict], as_dict: bool = True) -> dict | JWK:
+def find_jwk_by_kid(kid: str, jwks: list[dict], as_dict: bool = True) -> dict | JWK:
     """
     Find the JWK with the indicated kid in the jwks list.
 

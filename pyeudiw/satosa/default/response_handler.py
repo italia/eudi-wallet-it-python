@@ -1,29 +1,38 @@
+from copy import deepcopy
 import datetime
 import hashlib
 import json
 import logging
+from typing import Any
 
 from pydantic import ValidationError
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
-from pyeudiw.openid4vp.direct_post_response import DirectPostResponse
-from pyeudiw.openid4vp.exceptions import (InvalidVPToken, KIDNotFound,
-                                          NoNonceInVPToken, VPInvalidNonce,
-                                          VPNotFound)
-from pyeudiw.openid4vp.schemas.response import ResponseSchema
+from pyeudiw.jwk import JWK
+from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
+from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
+from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
-from pyeudiw.satosa.exceptions import NotTrustedFederationError, HTTPError
+from pyeudiw.satosa.exceptions import (AuthorizeUnmatchedResponse, BadRequestError, FinalizedSessionError,
+                                       InvalidInternalStateError, NotTrustedFederationError, HTTPError)
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.trust.interface import TrustEvaluator
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
+    _SUPPORTED_RESPONSE_METHOD = "post"
+    _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
+    _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
+
     def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
         try:
             # establish the trust with the issuer of the credential by checking it to the revocation
@@ -62,131 +71,153 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             all_user_attributes.update(**i)
         return all_user_attributes
 
-    def response_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
-        self._log_function_debug("request_endpoint", context, "args", args)
+    def _parse_http_request(self, context: Context) -> dict:
+        """Parse the http layer of the request to extract the dictionary data.
 
-        if context.request_method.lower() != 'post':
-            return self._handle_400(context, "HTTP Method not supported")
-        _endpoint = f'{self.server_url}{context.request_uri}'
+        :param context: the satosa context containing, among the others, the details of the HTTP request
+        :type context: satosa.Context
+
+        :return: a dictionary containing the request data
+        :rtype: dict
+
+        :raises BadRequestError: when request paramets are in a not processable state; the expected handling is returning 400
+        """
+        if (http_method := context.request_method.lower()) != ResponseHandler._SUPPORTED_RESPONSE_METHOD:
+            raise BadRequestError(f"HTTP method [{http_method}] not supported")
+
+        if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
+            raise BadRequestError(f"HTTP content type [{content_type}] not supported")
+
+        _endpoint = f"{self.server_url}{context.request_uri}"
         if self.config["metadata"].get('response_uris_supported', None):
             if _endpoint not in self.config["metadata"]['response_uris_supported']:
-                return self._handle_400(context, "response_uri not valid")
+                raise BadRequestError("response_uri not valid")
 
-        # take the encrypted jwt, decrypt with my public key (one of the metadata) -> if not -> exception
-        jwt = context.request.get("response", None)
-        if not jwt:
-            _msg = "Response error, missing JWT"
+        return context.request
+
+    def _retrieve_session_from_state(self, state: str) -> dict:
+        """_retrieve_session_and_nonce_from_state tries to recover an
+        authenticasion session by matching it with the state. Returns the whole
+        session data (if found) and the nonce proposed in the authentication
+        request that should be matched by the holder response.
+
+        :returns: the authentication session information and the nonce challenge
+            associated to that authentication request
+        :rtype: tuple[dict, str]
+
+        :raises AuthorizeUnmatchedResponse: if the state is not matched to any session
+        :raises FinalizedSessionError: if the state is matched to an already closed session
+        :raises InvalidInternalStateError: if the session contains invalid, corrupted or missing
+            data of known reason.
+        """
+        request_session: dict = {}
+        try:
+            request_session = self.db_engine.get_by_state(state=state)
+        except Exception as err:
+            raise AuthorizeUnmatchedResponse(f"unable to find document-session associated to state {state}", err)
+
+        if not request_session:
+            raise InvalidInternalStateError(f"unable to find document-session associated to state {state}")
+
+        if request_session.get("finalized", True):
+            raise FinalizedSessionError(f"cannot accept response: session for state {state} corrupted or already finalized")
+
+        nonce = request_session.get("nonce", None)
+        if not nonce:
+            raise InvalidInternalStateError(f"unable to find nonce in session associated to state {state}: corrupted data")
+        return request_session
+
+    def _is_same_device_flow(request_session: dict, context: Context) -> bool:
+        initiating_session_id: str | None = request_session.get("session_id", None)
+        if initiating_session_id is None:
+            raise ValueError("invalid session storage information: missing [session_id]")
+        current_session_id: str | None = context.state.get("SESSION_ID", None)
+        if current_session_id is None:
+            raise ValueError("missing session id in wallet authorization response")
+        return initiating_session_id == current_session_id
+
+    def response_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
+        self._log_function_debug("response_endpoint", context, "args", args)
+
+        request_dict = {}
+        try:
+            request_dict = self._parse_http_request(context)
+        except BadRequestError as e:
+            return self._handle_400(context, e.args[0], e)
+
+        # parse and decrypt jwt in response
+        authz_response: None | AuthorizeResponseDirectPost = None
+        authz_payload: None | AuthorizeResponsePayload = None
+        try:
+            authz_response = AuthorizeResponseDirectPost(**request_dict)
+        except Exception as e:
+            return self._handle_400(context, "response error: invalid schema or missing jwt", e)
+        try:
+            authz_payload = authz_response.decode_payload(self.metadata_jwks_by_kids)
+        except Exception as e:
+            _msg = f"authorization response parsing and/or validation error: {e}"
             self._log_error(context, _msg)
-            return self._handle_400(context, _msg)
+            return self._handle_400(context, _msg, HTTPError(f"error: {e}, with request: {request_dict}"))
+        self._log_debug(context, f"response URI endpoint response with payload {authz_payload}")
 
+        request_session: dict = {}
         try:
-            vpt = DirectPostResponse(jwt, self.metadata_jwks_by_kids)
-            debug_message = f"Redirect uri endpoint Response using direct post contains: {vpt.payload}"
-            self._log_debug(context, debug_message)
-            ResponseSchema(**vpt.payload)
-        except Exception as e:
-            _msg = f"DirectPostResponse parse and validation error: {e}"
-            self._log_error(context, _msg)
-            return self._handle_400(context, _msg, HTTPError(f"Error:{e}, with JWT: {jwt}"))
+            request_session = self._retrieve_session_from_state(authz_payload.state)
+        except AuthorizeUnmatchedResponse as e400:
+            return self._handle_400(context, e400.args[0], e400.args[1])
+        except InvalidInternalStateError as e500:
+            return self._handle_500(context, e500.args[0], "invalid state")
+        except FinalizedSessionError as e400:
+            return self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
 
-        # state MUST be present in the response since it was in the request
-        # then do lookup on the db -> if not -> exception
-        state = vpt.payload.get("state", None)
-        if not state:
-            return self._handle_400(context, _msg, HTTPError(f"{_msg} with: {vpt.payload}"))
-
-        try:
-            stored_session = self.db_engine.get_by_state(state=state)
-        except Exception as e:
-            _msg = "Session lookup by state value failed"
-            return self._handle_400(context, _msg, e)
-
-        if stored_session["finalized"]:
-            _msg = "Session already finalized"
-            return self._handle_400(context, _msg, HTTPError(_msg))
-
-        try:
-            vpt.load_nonce(stored_session['nonce'])
-            vps: list[Vp] = vpt.get_presentation_vps()
-            vpt.validate()
-
-        except VPNotFound as e:
-            _msg = "Error while retrieving VP. Payload 'vp_token' is empty or has an unexpected value."
-            return self._handle_400(context, _msg, e)
-
-        except NoNonceInVPToken as e:
-            _msg = "Error while validating VP: vp has no nonce."
-            return self._handle_400(context, _msg, e)
-
-        except VPInvalidNonce as e:
-            _msg = "Error while validating VP: unexpected value."
-            return self._handle_400(context, _msg, e)
-
-        except Exception as e:
-            _msg = (
-                "DirectPostResponse content parse and validation error. "
-                "Single VPs are faulty."
-            )
-            return self._handle_400(context, _msg, e)
-
-        # evaluate the trust to each credential issuer found in the vps
-        # look for trust chain or x509 or do discovery!
-        cred_issuers = tuple(vpt.credentials_by_issuer.keys())
-        attributes_by_issuers = {k: {} for k in cred_issuers}
-
-        for vp in vps:
-            self._handle_credential_trust(context, vp)
-
-            # the trust is established to the credential issuer, then we can get the disclosed user attributes
-
+        # the flow below is a simplified algorithm of authentication response processing, where:
+        # (1) we don't check that presentation submission matches definition (yet)
+        # (2) we don't check that vp tokens are aligned with information declared in the presentation submission
+        # (3) we use all disclosed claims in vp tokens to build the user identity
+        attributes_by_issuer: dict[str, dict[str, Any]] = {}
+        credential_issuers: list[str] = []
+        encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
+        for vp_token in encoded_vps:
+            # verify vp token and extract user information
+            # TODO: specialized try/except for each call, from line 182 to line 187
             try:
-                if isinstance(vp, VpSdJwt):
-                    jwks_by_kid = {
-                        i['kid']: i for i in vp.credential_jwks
-                    }
-                    vp.verify(issuer_jwks_by_kid=jwks_by_kid)
-                else:
-                    vp.verify()
-            except Exception as e:
-                return self._handle_400(context, f"VP validation error with {self.data}: {e}")
+                token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
+            except ValueError as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            pub_jwk = _find_vp_token_key(token_parser, self.trust_evaluator)
+            token_verifier.verify_signature(pub_jwk)
+            try:
+                token_verifier.verify_challenge()
+            except InvalidVPKeyBinding as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            claims = token_parser.get_credentials()
+            iss = token_parser.get_issuer_name()
+            attributes_by_issuer[iss] = claims
+            self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
+          
+        all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
+        iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
+        internal_resp = self._translate_response(all_attributes, iss_list_serialized, context)
 
-            # vp.result
-            attributes_by_issuers[vp.credential_issuer] = vp.disclosed_user_attributes
-
-            debug_message = f"Disclosed user attributes from {vp.credential_issuer}: {vp.disclosed_user_attributes}"
-            self._log_debug(context, debug_message)
-
-            vp.check_revocation()
-
-        all_user_attributes = self._extract_all_user_attributes(
-            attributes_by_issuers)
-
-        self._log_debug(context, f"Wallet disclosure: {all_user_attributes}")
-
-        # TODO: not sure that we want these issuers in the following form ... please recheck.
-        _info = {"issuer": ';'.join(cred_issuers)}
-        internal_resp = self._translate_response(
-            all_user_attributes, _info["issuer"], context
-        )
+        state = authz_payload.state
         response_code = self.response_code_helper.create_code(state)
-
         try:
             self.db_engine.update_response_object(
-                stored_session['nonce'], state, internal_resp
+                request_session['nonce'], state, internal_resp
             )
             # authentication finalized!
-            self.db_engine.set_finalized(stored_session['document_id'])
+            self.db_engine.set_finalized(request_session['document_id'])
             if self.effective_log_level == logging.DEBUG:
-                stored_session = self.db_engine.get_by_state(state=state)
+                request_session = self.db_engine.get_by_state(state=state)
                 self._log_debug(
-                    context, f"Session update on storage: {stored_session}")
+                    context, f"Session update on storage: {request_session}")
 
         except StorageWriteError as e:
             # TODO - do we have to block in the case the update cannot be done?
             self._log_error(context, f"Session update on storage failed: {e}")
             return self._handle_500(context, "Cannot update response object.", e)
 
-        if stored_session['session_id'] == context.state["SESSION_ID"]:
+        if ResponseHandler._is_same_device_flow(request_session, context):
             # Same device flow
             cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
@@ -208,7 +239,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         """
         # it may depends by credential type and attested security context evaluated
         # if WIA was previously submitted by the Wallet
-
         timestamp_epoch = (
             response.get("auth_time")
             or response.get("iat")
@@ -264,3 +294,30 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         )
         internal_resp.subject_id = sub
         return internal_resp
+
+    def _vp_verifier_factory(self, presentation_submission: dict, token: str, session_data: dict) -> tuple[VpTokenParser, VpTokenVerifier]:
+        # TODO: la funzione dovrebbe consumare la presentation submission per sapere quale token
+        # ritornare - per ora viene ritornata l'unica implementazione possibile
+        challenge = self._get_verifier_challenge(session_data)
+        token_processor = VpVcSdJwtParserVerifier(token, challenge["aud"], challenge["nonce"])
+        return (token_processor, deepcopy(token_processor))
+
+    def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
+        return {"aud": self.client_id, "nonce": session_data["nonce"]}
+
+
+def _find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
+    # TODO: move somewhere appropriate: this doesn't HAVE to be in the response handler
+    issuer = token_parser.get_issuer_name()
+    trusted_pub_keys = key_source.get_public_keys(issuer)
+    verification_key = token_parser.get_signing_key()
+    if isinstance(verification_key, str):
+        # search by kid
+        kid = verification_key
+        pub_jwks = [key for key in trusted_pub_keys if key.get("kid", "") == kid]
+        if len(pub_jwks) != 1:
+            raise Exception(f"no unique valid trusted key with kid={kid} for issuer {issuer}")
+        return JWK(pub_jwks[0])
+    if isinstance(verification_key, dict):
+        raise NotImplementedError("TODO: matching of public key (ex. from x5c) with keys from trust source")
+    raise Exception(f"invalid state: key with type {type(verification_key)}")

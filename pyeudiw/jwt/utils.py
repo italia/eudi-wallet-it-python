@@ -1,13 +1,13 @@
 import base64
 import json
 import re
-
 from typing import Dict
-from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
-from pyeudiw.jwk import find_jwk
 
-# JWT_REGEXP = r"^(([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*\.([-A-Za-z0-9\=_])*)$"
-JWT_REGEXP = r'^[\w\-]+\.[\w\-]+\.[\w\-]+'
+from pyeudiw.jwk import find_jwk_by_kid
+from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
+
+# jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
+JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'
 
 
 def decode_jwt_element(jwt: str, position: int) -> dict:
@@ -84,7 +84,7 @@ def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
     if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
         provider_jwks = provider_jwks['keys']
 
-    return find_jwk(kid, provider_jwks)
+    return find_jwk_by_kid(kid, provider_jwks)
 
 
 def is_jwt_format(jwt: str) -> bool:
@@ -138,3 +138,23 @@ def is_jws_format(jwt: str):
         return False
 
     return not is_jwe_format(jwt)
+
+
+def base64_urlencode(v: bytes) -> str:
+    """Urlsafe base64 encoding without padding symbols
+
+    :returns: the encooded data
+    :rtype: str
+    """
+    return base64.urlsafe_b64encode(v).decode("ascii").strip("=")
+
+
+def base64_urldecode(v: str) -> bytes:
+    """Urlsafe base64 decoding. This function will handle missing
+    padding symbols.
+
+    :returns: the decoded data in bytes, format, convert to str use method '.decode("utf-8")' on result
+    :rtype: bytes
+    """
+    padded = f"{v}{'=' * divmod(len(v), 4)[1]}"
+    return base64.urlsafe_b64decode(padded)

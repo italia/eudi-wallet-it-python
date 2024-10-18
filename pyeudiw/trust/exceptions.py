@@ -20,3 +20,7 @@ class InvalidTrustType(Exception):
 
 class InvalidAnchor(Exception):
     pass
+
+
+class TrustConfigurationError(Exception):
+    pass

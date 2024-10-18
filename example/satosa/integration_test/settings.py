@@ -1,4 +1,3 @@
-
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.tests.federation.base import (
@@ -11,8 +10,8 @@ from pyeudiw.tests.federation.base import (
 
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
-TIMEOUT_S = 4
-
+TIMEOUT_S = 10
+IDP_BASEURL = "https://localhost"
 RP_EID = "https://localhost/OpenID4VP"
 
 CONFIG_DB = {
