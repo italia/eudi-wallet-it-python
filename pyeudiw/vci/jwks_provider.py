@@ -2,6 +2,7 @@ import time
 from typing import Literal
 
 from pyeudiw.tools.utils import get_http_url
+from pyeudiw.vci.exception import UnableToRetrieveJwks, UnableToRetrieveJwkSet
 from pyeudiw.vci.utils import cacheable_get_http_url, final_issuer_endpoint
 
 DEFAULT_ENDPOINT = "/.well-known/jwt-vc-issuer"
@@ -32,8 +33,7 @@ class RemoteVciJwksSource(VciJwksSource):
             response: dict = resp[0].json()
             return response
         except Exception as e:
-            # TODO: handle meaningfully
-            raise e
+            raise UnableToRetrieveJwks(f"error during jwks retrieval: {e}", e)
 
     def _get_jwkset_from_jwkset_uri(self, jwkset_uri: str) -> list[dict]:
         try:
@@ -42,8 +42,7 @@ class RemoteVciJwksSource(VciJwksSource):
             jwks: dict[Literal["keys"], list[dict]] = resp[0].json()
             return jwks.get("keys", [])
         except Exception as e:
-            # TODO; handle meaningfully
-            raise e
+            raise UnableToRetrieveJwkSet(f"error during jwkset retrieval: {e}", e)
 
     def _obtain_jwkset_from_response_json(self, response: dict) -> list[dict]:
         jwks: dict[Literal["keys"], list[dict]] = response.get("jwks", None)
@@ -73,19 +72,17 @@ class CachedVciJwksSource(RemoteVciJwksSource):
             resp = cacheable_get_http_url(ttl_timestamp, uri, self.httpc_params)
             response: dict = resp[0].json()
             return response
-        except Exception:
-            # TODO: handle exception
-            pass
+        except Exception as e:
+            raise UnableToRetrieveJwks(f"error during jwks retrieval: {e}", e)
 
     def _get_jwkset_from_jwkset_uri(self, jwkset_uri: str) -> list[dict]:
         ttl_timestamp = round(time.time() / self.ttl_cache)
         try:
-            resp = cacheable_get_http_url(ttl_timestamp. jwkset_uri, self.httpc_params)
+            resp = cacheable_get_http_url(ttl_timestamp, jwkset_uri, self.httpc_params)
             jwks: dict[Literal["keys"], list[dict]] = resp[0].json()
             return jwks.get("keys", [])
-        except Exception:
-            # TODO: handle exception
-            pass
+        except Exception as e:
+            raise UnableToRetrieveJwkSet(f"error during jwkset retrieval: {e}", e)
 
     def _obtain_jwkset_from_response_json(self, response: dict) -> list[dict]:
         jwks: dict[Literal["keys"], list[dict]] = response.get("jwks", None)
@@ -94,14 +91,7 @@ class CachedVciJwksSource(RemoteVciJwksSource):
             raise Exception("invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]")
         if jwks:
             return jwks.get("keys", [])
-        try:
-            ttl_timestamp = round(time.time() / self.ttl_cache)
-            resp = cacheable_get_http_url(ttl_timestamp, jwks_uri, self.httpc_params)
-            jwks = resp[0].json()
-            return jwks.get("keys", [])
-        except Exception:
-            # TODO: handle exception
-            pass
+        return self._get_jwkset_from_jwkset_uri(jwks_uri)
 
     def get_jwks(self, issuer: str) -> list[dict]:
         return super().get_jwks(issuer)
