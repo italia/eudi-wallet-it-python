@@ -12,6 +12,7 @@ from pyeudiw.storage.base_storage import (
     trust_anchor_field_map
 )
 from pyeudiw.storage.exceptions import (
+    ChainAlreadyExist,
     ChainNotExist,
     StorageEntryUpdateFailed
 )
@@ -238,25 +239,28 @@ class MongoStorage(BaseStorage):
 
         meth_suffix = collection[:-1]
         if getattr(self, f"has_{meth_suffix}")(entity_id):
-            # update it
-            getattr(self, f"update_{meth_suffix}")(entity_id, attestation, exp)
-            return entity_id
-            # raise ChainAlreadyExist(
-            # f"Chain with entity id {entity_id} already exist"
-            # )
+            # TODO: bug detected. Commentato l'update e lasciato il raise dell'eccezione
+            # l'attestation passata come parametro non è quello che si aspetta il metodo di update
+            # bensì è l'intero oggetto trust_attestation
+
+            # # update it
+            # getattr(self, f"update_{meth_suffix}")(entity_id, attestation, exp)
+            # return entity_id
+            raise ChainAlreadyExist(f"Chain with entity id {entity_id} already exists")
 
         db_collection = getattr(self, collection)
         db_collection.insert_one(attestation)
         return entity_id
 
-    def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
+    def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict):
         trust_name = trust_type_map[trust_type]
-        trust_field = trust_attestation_field_map[trust_type]
+        trust_field = trust_attestation_field_map.get(trust_type, None)
 
         trust_entity = entity.get(trust_name, {})
 
-        trust_entity[trust_field] = attestation
-        trust_entity["exp"] = exp
+        if trust_field and attestation: trust_entity[trust_field] = attestation
+        if exp: trust_entity["exp"] = exp
+        if jwks: trust_entity["jwks"] = jwks
 
         entity[trust_name] = trust_entity
 
@@ -264,27 +268,28 @@ class MongoStorage(BaseStorage):
 
     def _update_anchor_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType):
         trust_name = trust_type_map[trust_type]
-        trust_field = trust_anchor_field_map[trust_type]
+        trust_field = trust_anchor_field_map.get(trust_type, None)
 
         trust_entity = entity.get(trust_name, {})
 
-        trust_entity[trust_field] = attestation
+        if trust_field and attestation: trust_entity[trust_field] = attestation
         trust_entity["exp"] = exp
 
         entity[trust_name] = trust_entity
 
         return entity
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         entity = {
             "entity_id": entity_id,
             "federation": {},
             "x509": {},
+            "direct_trust_sd_jwt_vc": {},
             "metadata": {}
         }
 
         updated_entity = self._update_attestation_metadata(
-            entity, attestation, exp, trust_type)
+            entity, attestation, exp, trust_type, jwks)
 
         return self._add_entry(
             "trust_attestations", entity_id, updated_entity, exp
@@ -326,11 +331,11 @@ class MongoStorage(BaseStorage):
         )
         return documentStatus
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         old_entity = self._get_trust_attestation(
             "trust_attestations", entity_id) or {}
         upd_entity = self._update_attestation_metadata(
-            old_entity, attestation, exp, trust_type)
+            old_entity, attestation, exp, trust_type, jwks)
 
         return self._update_trust_attestation("trust_attestations", entity_id, upd_entity)
 

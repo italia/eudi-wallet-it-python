@@ -101,11 +101,22 @@ This classes can be used as references while providing a custom implementation f
     "federation" : {
       "chain": ARRAY[EC,ES,ES],
       "exp": datetime,
-      "update": datetime
+      "update": datetime,
+      "jwks": {
+        "keys": ARRAY[object]
+      },
     },
     "x509": {
       "x5c": ARRAY[bytestring(DER), bytestring(DER), bytestring(DER)] -> contains public keys,
-      "exp": datetime
+      "exp": datetime,
+      "jwks": {
+        "keys": ARRAY[object]
+      },
+    },
+    "direct_trust_sd_jwt_vc": {
+      "jwks": {
+        "keys": ARRAY[object]
+      }
     }
     "metadata": object
   }
