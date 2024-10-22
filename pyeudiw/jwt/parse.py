@@ -46,7 +46,7 @@ def extract_key_identifier(token_header: dict) -> JWK | KeyIdentifier_T:
     if "kid" in token_header.keys():
         return KeyIdentifier_T(token_header["kid"])
     if "trust_chain" in token_header.keys():
-        return get_public_key_from_trust_chain(token_header["kid"])
+        return get_public_key_from_trust_chain(token_header["trust_chain"])
     if "x5c" in token_header.keys():
         return get_public_key_from_x509_chain(token_header["x5c"])
     raise ValueError(f"unable to infer identifying key from token head: searched among keys {token_header.keys()}")
