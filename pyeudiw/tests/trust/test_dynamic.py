@@ -1,4 +1,4 @@
-from pyeudiw.trust.default import DEFAULT_DIRECT_TRUST_PARAMS
+from pyeudiw.trust.default import DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS
 from pyeudiw.trust.default.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator, dynamic_trust_evaluators_loader
 from pyeudiw.trust.interface import TrustEvaluator
@@ -69,7 +69,7 @@ def test_trust_evaluators_loader():
 def test_combined_trust_evaluator():
     evaluators = {
         "mock": MockTrustEvaluator(),
-        "direct_trust_sd_jwt_vc": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_PARAMS)
+        "direct_trust_sd_jwt_vc": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS)
     }
     combined = CombinedTrustEvaluator(evaluators)
     # TODO: re-enable when fixed

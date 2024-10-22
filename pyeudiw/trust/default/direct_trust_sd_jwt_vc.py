@@ -1,4 +1,6 @@
+import os
 import time
+from typing import Optional
 
 from pyeudiw.tools.utils import get_http_url
 from pyeudiw.trust.interface import TrustEvaluator
@@ -8,6 +10,16 @@ from pyeudiw.vci.utils import cacheable_get_http_url
 
 DEFAULT_ISSUER_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
 DEFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
+DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
+    "httpc_params": {
+        "connection": {
+            "ssl": os.getenv("PYEUDIW_HTTPC_SSL", True)
+        },
+        "session": {
+            "timeout": os.getenv("PYEUDIW_HTTPC_TIMEOUT", 6)
+        }
+    }
+}
 
 
 class DirectTrust(TrustEvaluator):
@@ -22,8 +34,10 @@ class DirectTrustSdJwtVc(DirectTrust):
     Such keys/metadata can always be fetched remotely and long as the issuer is
     available.
     """
-    def __init__(self, httpc_params: dict, cache_ttl: int = 0, jwk_endpoint: str = DEFAULT_ISSUER_JWK_ENDPOINT,
+    def __init__(self, httpc_params: Optional[dict] = None, cache_ttl: int = 0, jwk_endpoint: str = DEFAULT_ISSUER_JWK_ENDPOINT,
                  metadata_endpoint: str = DEFAULT_METADATA_ENDPOINT):
+        if httpc_params is None:
+            self.httpc_params = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS["httpc_params"]
         self.httpc_params = httpc_params
         self.cache_ttl = cache_ttl
         self.jwk_endpoint = jwk_endpoint
