@@ -252,15 +252,18 @@ class MongoStorage(BaseStorage):
         db_collection.insert_one(attestation)
         return entity_id
 
-    def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict):
+    def _update_attestation_metadata(self, entity: dict, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]):
         trust_name = trust_type_map[trust_type]
         trust_field = trust_attestation_field_map.get(trust_type, None)
 
         trust_entity = entity.get(trust_name, {})
 
-        if trust_field and attestation: trust_entity[trust_field] = attestation
-        if exp: trust_entity["exp"] = exp
-        if jwks: trust_entity["jwks"] = jwks
+        if trust_field and attestation:
+            trust_entity[trust_field] = attestation
+        if exp:
+            trust_entity["exp"] = exp
+        if jwks:
+            trust_entity["jwks"] = jwks
 
         entity[trust_name] = trust_entity
 
@@ -272,14 +275,15 @@ class MongoStorage(BaseStorage):
 
         trust_entity = entity.get(trust_name, {})
 
-        if trust_field and attestation: trust_entity[trust_field] = attestation
+        if trust_field and attestation:
+            trust_entity[trust_field] = attestation
         trust_entity["exp"] = exp
 
         entity[trust_name] = trust_entity
 
         return entity
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]) -> str:
         entity = {
             "entity_id": entity_id,
             "federation": {},
@@ -331,7 +335,7 @@ class MongoStorage(BaseStorage):
         )
         return documentStatus
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]) -> str:
         old_entity = self._get_trust_attestation(
             "trust_attestations", entity_id) or {}
         upd_entity = self._update_attestation_metadata(
