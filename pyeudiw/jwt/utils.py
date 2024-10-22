@@ -71,30 +71,6 @@ def decode_jwt_payload(jwt: str) -> dict:
     return decode_jwt_element(jwt, position=1)
 
 
-def get_jwk_from_jwt(jwt: str, provider_jwks: Dict[str, dict]) -> dict:
-    """
-    Find the JWK inside the provider JWKs with the kid
-    specified in jwt header.
-
-    :param jwt: a string that represents the jwt.
-    :type jwt: str
-    :param provider_jwks: a dictionary that contains one or more JWKs with the KID as the key.
-    :type provider_jwks: Dict[str, dict]
-
-    :raises InvalidKid: if kid is None.
-    :raises KidNotFoundError: if kid is not in jwks list.
-
-    :returns: the jwk as dict.
-    :rtype: dict
-    """
-    head = decode_jwt_header(jwt)
-    kid = head["kid"]
-    if isinstance(provider_jwks, dict) and provider_jwks.get('keys'):
-        provider_jwks = provider_jwks['keys']
-
-    return find_jwk_by_kid(kid, provider_jwks)
-
-
 def is_jwt_format(jwt: str) -> bool:
     """
     Check if a string is in JWT format.
@@ -130,22 +106,6 @@ def is_jwe_format(jwt: str):
         return False
 
     return True
-
-
-def is_jws_format(jwt: str):
-    """
-    Check if a string is in JWS format.
-
-    :param jwt: a string that represents the jwt.
-    :type jwt: str
-
-    :returns: True if the string is a JWS, False otherwise.
-    :rtype: bool
-    """
-    if not is_jwt_format(jwt):
-        return False
-
-    return not is_jwe_format(jwt)
 
 
 def base64_urlencode(v: bytes) -> str:
