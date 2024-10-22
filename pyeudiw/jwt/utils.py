@@ -27,6 +27,10 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
     if position < 0:
         raise JWTInvalidElementPosition(
             f"Cannot accept negative position {position}")
+    
+    if position > 2:
+        raise JWTInvalidElementPosition(
+            f"Cannot accept position greater than 2 {position}")
 
     splitted_jwt = jwt.split(".")
 
