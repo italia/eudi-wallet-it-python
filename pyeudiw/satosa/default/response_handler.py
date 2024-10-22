@@ -25,7 +25,7 @@ from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.trust.interface import TrustEvaluator
+from pyeudiw.tools.jwk_handling import find_vp_token_key
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -184,7 +184,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                 token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            pub_jwk = _find_vp_token_key(token_parser, self.trust_evaluator)
+            pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
             token_verifier.verify_signature(pub_jwk)
             try:
                 token_verifier.verify_challenge()
@@ -304,20 +304,3 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
         return {"aud": self.client_id, "nonce": session_data["nonce"]}
-
-
-def _find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
-    # TODO: move somewhere appropriate: this doesn't HAVE to be in the response handler
-    issuer = token_parser.get_issuer_name()
-    trusted_pub_keys = key_source.get_public_keys(issuer)
-    verification_key = token_parser.get_signing_key()
-    if isinstance(verification_key, str):
-        # search by kid
-        kid = verification_key
-        pub_jwks = [key for key in trusted_pub_keys if key.get("kid", "") == kid]
-        if len(pub_jwks) != 1:
-            raise Exception(f"no unique valid trusted key with kid={kid} for issuer {issuer}")
-        return JWK(pub_jwks[0])
-    if isinstance(verification_key, dict):
-        raise NotImplementedError("TODO: matching of public key (ex. from x5c) with keys from trust source")
-    raise Exception(f"invalid state: key with type {type(verification_key)}")
