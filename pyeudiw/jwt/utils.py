@@ -4,7 +4,7 @@ import re
 from typing import Dict
 
 from pyeudiw.jwk import find_jwk_by_kid
-from pyeudiw.jwt.exceptions import JWTInvalidElementPosition
+from pyeudiw.jwt.exceptions import JWTInvalidElementPosition, JWTDecodeError
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
 JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'
@@ -24,17 +24,25 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
     :returns: a dict with the content of the decoded section.
     :rtype: dict
     """
-    if position > 1 or position < 0:
+    if position < 0:
+        raise JWTInvalidElementPosition(
+            f"Cannot accept negative position {position}")
+
+    splitted_jwt = jwt.split(".")
+
+    if (len(splitted_jwt) - 1) < position:
         raise JWTInvalidElementPosition(
             f"JWT has no element in position {position}")
 
-    if isinstance(jwt, bytes):
-        jwt = jwt.decode()
+    try:
+        if isinstance(jwt, bytes):
+            jwt = jwt.decode()
 
-    b = jwt.split(".")[position]
-    padded = f"{b}{'=' * divmod(len(b), 4)[1]}"
-    data = json.loads(base64.urlsafe_b64decode(padded))
-    return data
+        b64_data = jwt.split(".")[position]
+        data = json.loads(base64_urldecode(b64_data))
+        return data
+    except Exception as e:
+        raise JWTDecodeError(f"Unable to decode JWT element: {e}")
 
 
 def decode_jwt_header(jwt: str) -> dict:
