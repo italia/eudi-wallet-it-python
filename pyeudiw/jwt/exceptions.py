@@ -12,3 +12,6 @@ class JWSVerificationError(Exception):
 
 class JWEEncryptionError(Exception):
     pass
+
+class JWTDecodeError(Exception):
+    pass
