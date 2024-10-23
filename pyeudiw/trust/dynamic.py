@@ -14,6 +14,7 @@ from pyeudiw.trust.default import default_trust_evaluator
 from pyeudiw.trust.exceptions import TrustConfigurationError
 from pyeudiw.trust.interface import TrustEvaluator
 from pyeudiw.trust._log import _package_logger
+from pyeudiw.tools.utils import dynamic_class_loader
 
 
 TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
@@ -37,50 +38,29 @@ def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfigura
 
     for trust_model_name, trust_module_config in trust_config.items():
         try:
-            uninstantiated_class: type[TrustEvaluator] = get_dynamic_class(trust_module_config["module"], trust_module_config["class"])
-            class_config: dict = trust_module_config["config"]
-            trust_evaluator_instance = uninstantiated_class(**class_config)
+            trust_evaluator_instance = dynamic_class_loader(trust_module_config["module"], trust_module_config["class"], trust_module_config["config"])
         except Exception as e:
             raise TrustConfigurationError(f"invalid configuration for {trust_model_name}: {e}", e)
+        
         if not satisfy_interface(trust_evaluator_instance, TrustEvaluator):
-            raise TrustConfigurationError(f"class {uninstantiated_class} does not satisfy the interface TrustEvaluator")
+            raise TrustConfigurationError(f"class {trust_evaluator_instance.__class__} does not satisfy the interface TrustEvaluator")
+        
         trust_instances[trust_model_name] = trust_evaluator_instance
     return trust_instances
 
 
 class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
-    """CombinedTrustEvaluator is a wrapper around multiple implementations of
+    """
+    CombinedTrustEvaluator is a wrapper around multiple implementations of
     TrustEvaluator. It's primary purpose is to handle how multiple configured
     trust sources are queried when some metadata or key material is requested.
     """
 
-    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], storage: Optional[DBEngine] = None):
+    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], client_id: str):
         self.trust_evaluators: dict[str, TrustEvaluator] = trust_evaluators
-        self.storage: DBEngine | None = storage
 
     def _get_trust_identifier_names(self) -> str:
         return f'[{",".join(self.trust_evaluators.keys())}]'
-    
-    def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> dict | None:
-        # note: keys are serialized as jwks
-        if trust_attestation := self.storage.get_trust_attestation(issuer):
-            if trust_entity := trust_attestation.get(eval_identifier, None):
-                if trust_entity_jwks := trust_entity.get("jwks", None):
-                    new_pks = trust_entity_jwks
-                    # TODO: check if cached key is still valid?
-                    # with mongodb we use ttl integrated in the engine
-                    return new_pks
-        return None
-    
-    def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> dict:
-        try:
-            new_pks = eval_instance.get_public_keys(issuer)
-            self.storage.add_or_update_trust_attestation(issuer, trust_type=TrustType(eval_identifier), jwks=new_pks)
-        except:
-            new_pks = self._get_public_keys_from_storage(eval_identifier, issuer)
-
-        if new_pks: return new_pks
-        else: raise Exception
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
@@ -92,7 +72,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         pks: list[dict] = []
         for eval_identifier, eval_instance in self.trust_evaluators.items():
             try:
-                new_pks = self._get_public_keys(eval_identifier, eval_instance, issuer)
+                new_pks = eval_instance.get_public_keys(issuer)
             except Exception as e:
                 self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
                 continue
@@ -108,8 +88,8 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust model.
         """
         md: dict = {}
-        for eval_identifier, eval_instance in self.trust_evaluators.items():
-            md = eval_instance.get_metadata(issuer)
+        for instance in self.trust_evaluators.values():
+            md = instance.get_metadata(issuer)
             if md:
                 return md
         if not md:

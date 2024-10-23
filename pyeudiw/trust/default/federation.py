@@ -13,8 +13,6 @@ from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.satosa.exceptions import (DiscoveryFailedError,
                                        NotTrustedFederationError)
 from pyeudiw.storage.exceptions import EntryNotFound
-from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust import TrustEvaluationHelper
 from pyeudiw.trust.trust_anchors import update_trust_anchors_ecs
 
@@ -32,7 +30,13 @@ class FederationTrustModel(TrustEvaluator):
     def __init__(self, **kwargs):
         # TODO; qui c'è dentro tutta la ciccia: trust chain verification, root of trust, etc
         self.metadata_policy_resolver = TrustChainPolicy()
+        self.federation_jwks = kwargs.get("federation_jwks", [])
         pass
+
+    def get_public_keys(self, issuer):
+        public_keys = [JWK(i).as_public_dict() for i in self.federation_jwks]
+
+        return public_keys
 
     def _verify_trust_chain(self, trust_chain: list[str]):
         # TODO: qui c'è tutta la ciccia, ma si può fare copia incolla da terze parti (specialmente di pyeudiw.trust.__init__)
@@ -245,41 +249,3 @@ class FederationTrustModel(TrustEvaluator):
             )
 
         return trust_eval
-
-    # @property
-    # def default_federation_private_jwk(self) -> dict:
-    #     """Returns the default federation private jwk."""
-    #     return tuple(self.federations_jwks_by_kids.values())[0]
-
-    # @property
-    # def entity_configuration_as_dict(self) -> dict:
-    #     """Returns the entity configuration as a dictionary."""
-    #     ec_payload = {
-    #         "exp": exp_from_now(minutes=self.default_exp),
-    #         "iat": iat_now(),
-    #         "iss": self.client_id,
-    #         "sub": self.client_id,
-    #         "jwks": {
-    #             "keys": self.federation_public_jwks
-    #         },
-    #         "metadata": {
-    #             self.config['trust']['federation']['config']["metadata_type"]: self.config['metadata'],
-    #             "federation_entity": self.config['trust']['federation']['config']['federation_entity_metadata']
-    #         },
-    #         "authority_hints": self.config['trust']['federation']['config']['authority_hints']
-    #     }
-    #     return ec_payload
-
-    # @property
-    # def entity_configuration(self) -> dict:
-    #     """Returns the entity configuration as a JWT."""
-    #     data = self.entity_configuration_as_dict
-    #     jwshelper = JWSHelper(self.default_federation_private_jwk)
-    #     return jwshelper.sign(
-    #         protected={
-    #             "alg": self.config['trust']['federation']['config']["default_sig_alg"],
-    #             "kid": self.default_federation_private_jwk["kid"],
-    #             "typ": "entity-statement+jwt"
-    #         },
-    #         plain_dict=data
-    #     )
