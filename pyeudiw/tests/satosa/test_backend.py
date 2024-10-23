@@ -63,7 +63,8 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
             trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
-            jwks=issuer_jwk)
+            jwks=[issuer_jwk]
+        )
 
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")

@@ -88,9 +88,10 @@ def apply_trust_settings(db_engine_inst: DBEngine) -> DBEngine:
 
     settings = ISSUER_CONF
     db_engine_inst.add_or_update_trust_attestation(
-            entity_id=settings["issuer"],
-            trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
-            jwks=leaf_cred_jwk_prot.serialize())
+        entity_id=settings["issuer"],
+        trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
+        jwks=[leaf_cred_jwk_prot.serialize()]
+    )
     return db_engine_inst
 
 def create_saml_auth_request() -> str:

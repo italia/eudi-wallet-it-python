@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Optional
+from typing import Optional
 
 if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
     from typing import TypedDict
@@ -17,6 +17,7 @@ from pyeudiw.trust._log import _package_logger
 
 
 TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
+
 
 def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfiguration_T]) -> dict[str, TrustEvaluator]: # type: ignore
     """Load a dynamically importable/configurable set of TrustEvaluators,
@@ -60,9 +61,19 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
 
     def _get_trust_identifier_names(self) -> str:
         return f'[{",".join(self.trust_evaluators.keys())}]'
-    
-    def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> dict | None:
-        # note: keys are serialized as jwks
+
+    def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> list[dict] | None:
+        """
+        Search public key for trust model 'eval_identifier' in the storage layer (if any). If the storage
+        layer fails or does not exists, None is returned.
+        Public keys are intended to be serialized as jwks (jwk set) in the storage layer.
+
+        :returns: a JWKS dictionary if the keys are found in the storage, or None if storage lookup fails
+        :rtype: dict | None
+        """
+        if not self.storage:
+            return None
+
         if trust_attestation := self.storage.get_trust_attestation(issuer):
             if trust_entity := trust_attestation.get(eval_identifier, None):
                 if trust_entity_jwks := trust_entity.get("jwks", None):
@@ -71,16 +82,19 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
                     # with mongodb we use ttl integrated in the engine
                     return new_pks
         return None
-    
-    def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> dict:
+
+    def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> list[dict]:
+        new_pks: list = []
         try:
             new_pks = eval_instance.get_public_keys(issuer)
-            self.storage.add_or_update_trust_attestation(issuer, trust_type=TrustType(eval_identifier), jwks=new_pks)
-        except:
+            if self.storage:
+                self.storage.add_or_update_trust_attestation(issuer, trust_type=TrustType(eval_identifier), jwks=new_pks)
+        except Exception:
             new_pks = self._get_public_keys_from_storage(eval_identifier, issuer)
 
-        if new_pks: return new_pks
-        else: raise Exception
+        if new_pks:
+            return new_pks
+        raise Exception(f"unable to find any public key with trust model {eval_identifier}")
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
@@ -97,7 +111,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
                 self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
                 continue
             if new_pks:
-                pks.append(new_pks)
+                pks.extend(new_pks)
         if not pks:
             raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self._get_trust_identifier_names()}")
         return pks
