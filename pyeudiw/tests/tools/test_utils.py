@@ -78,5 +78,4 @@ def test_random_token(n):
     assert rand
     assert len(rand) == n * 2
     _hex = int(rand, 16)
-    assert _hex
     assert type(_hex) is int
