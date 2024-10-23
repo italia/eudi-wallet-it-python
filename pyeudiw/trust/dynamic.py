@@ -84,7 +84,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         return None
 
     def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> list[dict]:
-        new_pks: dict | None = None
+        new_pks: list = []
         try:
             new_pks = eval_instance.get_public_keys(issuer)
             if self.storage:
@@ -111,7 +111,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
                 self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
                 continue
             if new_pks:
-                pks += new_pks
+                pks.extend(new_pks)
         if not pks:
             raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self._get_trust_identifier_names()}")
         return pks
