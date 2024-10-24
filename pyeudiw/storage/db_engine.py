@@ -243,7 +243,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         _cons = {}
         for db_name, storage in self.storages:
             try:
-                _connected = storage.is_connected()
+                _connected = storage.is_connected
                 _cons[db_name] = _connected
             except Exception as e:
                 self._log_debug(
