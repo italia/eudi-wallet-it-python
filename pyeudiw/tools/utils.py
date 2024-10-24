@@ -1,6 +1,8 @@
 import datetime
+from functools import lru_cache
 import logging
 import asyncio
+import time
 import requests
 import importlib
 
@@ -198,3 +200,26 @@ def satisfy_interface(o: object, interface: type) -> bool:
         if callable(getattr(interface, cls_attr)) and not callable(getattr(o, cls_attr)):
             return False
     return True
+
+
+def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
+    # TODO: unit test if cache actually works
+    ttl_timestamp = round(time.time() / cache_ttl)
+    resp = lru_cached_get_http_url(ttl_timestamp, url, httpc_params, http_async=http_async)
+    # TODO: check response status and invalidate cache if not 200
+    return resp
+
+
+@lru_cache
+def lru_cached_get_http_url(timestamp: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
+    """
+    Wraps method 'get_http_url' around a ttl cache.
+    This is done by including a timestamp in the function argument. The
+    timestamp is used ONLY by the cache.
+    Note that a negative or failing answere might be cached. It is caller
+    responsability to eventually clear the cache when it happens.
+    """
+    # explicitly delete dummy argument ttl_cache since it is only needed for caching
+    del timestamp
+    resp: list[requests.Response] = get_http_url([url], httpc_params, http_async)
+    return resp[0]
