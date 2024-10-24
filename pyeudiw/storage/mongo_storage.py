@@ -298,6 +298,14 @@ class MongoStorage(BaseStorage):
         return self._add_entry(
             "trust_attestations", entity_id, updated_entity, exp
         )
+    
+    def add_trust_source(self, entity_id: str, trust_source: dict) -> str:
+        return self._add_entry(
+            "trust_source", entity_id, trust_source, trust_source["exp"]
+        )
+    
+    def get_trust_source(self, entity_id: str) -> dict | None:
+        return self._get_trust_attestation("trust_source", entity_id)
 
     def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
         entity = self._get_trust_attestation("trust_attestations", entity_id)

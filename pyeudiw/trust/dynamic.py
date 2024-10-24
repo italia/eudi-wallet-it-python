@@ -6,14 +6,15 @@ if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
 else:
     from typing_extensions import TypedDict
 
-from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.tools.utils import get_dynamic_class, satisfy_interface
 from pyeudiw.trust.default import default_trust_evaluator
 from pyeudiw.trust.exceptions import TrustConfigurationError
 from pyeudiw.trust.interface import TrustEvaluator
 from pyeudiw.trust._log import _package_logger
+from pyeudiw.tools.utils import dynamic_class_loader, satisfy_interface
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
+from pyeudiw.trust.model.trust_source import TrustSourceData
 
 
 TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
@@ -38,63 +39,48 @@ def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfigura
 
     for trust_model_name, trust_module_config in trust_config.items():
         try:
-            uninstantiated_class: type[TrustEvaluator] = get_dynamic_class(trust_module_config["module"], trust_module_config["class"])
-            class_config: dict = trust_module_config["config"]
-            trust_evaluator_instance = uninstantiated_class(**class_config)
+            trust_evaluator_instance = dynamic_class_loader(trust_module_config["module"], trust_module_config["class"], trust_module_config["config"])
         except Exception as e:
             raise TrustConfigurationError(f"invalid configuration for {trust_model_name}: {e}", e)
+        
         if not satisfy_interface(trust_evaluator_instance, TrustEvaluator):
-            raise TrustConfigurationError(f"class {uninstantiated_class} does not satisfy the interface TrustEvaluator")
+            raise TrustConfigurationError(f"class {trust_evaluator_instance.__class__} does not satisfy the interface TrustEvaluator")
+        
         trust_instances[trust_model_name] = trust_evaluator_instance
     return trust_instances
 
 
 class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
-    """CombinedTrustEvaluator is a wrapper around multiple implementations of
-    TrustEvaluator. It's primary purpose is to handle how multiple configured
-    trust sources are queried when some metadata or key material is requested.
-    """
+    def __init__(
+            self, 
+            db_engine: DBEngine,
+            extracors: list[TrustHandlerInterface]
+        ) -> None:
+        self.db_engine: DBEngine = db_engine
+        self.extractors: list[TrustHandlerInterface] = extracors
+        self.extractors_names: list[str] = [e.name() for e in self.extractors]
+    
+    def _retrieve_trust_source(self, issuer: str) -> Optional[TrustSourceData]:
+        trust_source = self.db_engine.get_trust_source(issuer)
+        if trust_source:
+            return TrustSourceData.from_dict(trust_source)
+        return  None
+    
+    def _extract_trust_source(self, issuer: str) -> Optional[TrustSourceData]:
+        trust_source = TrustSourceData.empty()
 
-    def __init__(self, trust_evaluators: dict[str, TrustEvaluator], storage: Optional[DBEngine] = None):
-        self.trust_evaluators: dict[str, TrustEvaluator] = trust_evaluators
-        self.storage: DBEngine | None = storage
+        for extractor in self.extractors:
+            trust_source: TrustSourceData = extractor.extract(issuer, trust_source)
+        
+        self.db_engine.add_trust_source(issuer, trust_source.serialize())
 
-    def _get_trust_identifier_names(self) -> str:
-        return f'[{",".join(self.trust_evaluators.keys())}]'
-
-    def _get_public_keys_from_storage(self, eval_identifier: str, issuer: str) -> list[dict] | None:
-        """
-        Search public key for trust model 'eval_identifier' in the storage layer (if any). If the storage
-        layer fails or does not exists, None is returned.
-        Public keys are intended to be serialized as jwks (jwk set) in the storage layer.
-
-        :returns: a JWKS dictionary if the keys are found in the storage, or None if storage lookup fails
-        :rtype: dict | None
-        """
-        if not self.storage:
-            return None
-
-        if trust_attestation := self.storage.get_trust_attestation(issuer):
-            if trust_entity := trust_attestation.get(eval_identifier, None):
-                if trust_entity_jwks := trust_entity.get("jwks", None):
-                    new_pks = trust_entity_jwks
-                    # TODO: check if cached key is still valid?
-                    # with mongodb we use ttl integrated in the engine
-                    return new_pks
-        return None
-
-    def _get_public_keys(self, eval_identifier: str, eval_instance: TrustEvaluator, issuer: str) -> list[dict]:
-        new_pks: list = []
-        try:
-            new_pks = eval_instance.get_public_keys(issuer)
-            if self.storage:
-                self.storage.add_or_update_trust_attestation(issuer, trust_type=TrustType(eval_identifier), jwks=new_pks)
-        except Exception:
-            new_pks = self._get_public_keys_from_storage(eval_identifier, issuer)
-
-        if new_pks:
-            return new_pks
-        raise Exception(f"unable to find any public key with trust model {eval_identifier}")
+        return trust_source
+    
+    def _get_trust_source(self, issuer: str) -> TrustSourceData:
+        trust_source = self._retrieve_trust_source(issuer)
+        if not trust_source:
+            trust_source = self._extract_trust_source(issuer)
+        return trust_source
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
@@ -103,38 +89,46 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         :returns: a list of jwk(s); note that those key are _not_ necessarely
             identified by a kid claim
         """
-        pks: list[dict] = []
-        for eval_identifier, eval_instance in self.trust_evaluators.items():
-            try:
-                new_pks = self._get_public_keys(eval_identifier, eval_instance, issuer)
-            except Exception as e:
-                self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
-                continue
-            if new_pks:
-                pks.extend(new_pks)
-        if not pks:
-            raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self._get_trust_identifier_names()}")
-        return pks
+        trust_source = self._get_trust_source(issuer)
+
+        if not trust_source.keys:
+            raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self.extractors_names}")
+
+        return trust_source.public_keys
 
     def get_metadata(self, issuer: str) -> dict:
         """
         yields a dictionary of metadata about an issuer, according to some
         trust model.
         """
-        md: dict = {}
-        for eval_identifier, eval_instance in self.trust_evaluators.items():
-            md = eval_instance.get_metadata(issuer)
-            if md:
-                return md
-        if not md:
-            raise Exception(f"no trust evaluator can provide metadata for {issuer}: searched among: {self._get_trust_identifier_names()}")
+        trust_source = self._get_trust_source(issuer)
+
+        if not trust_source.metadata:
+            raise Exception(f"no trust evaluator can provide metadata for {issuer}: searched among: {self.extractors_names}")
+
+        return trust_source.metadata
 
     def is_revoked(self, issuer: str) -> bool:
         """
         yield if the trust toward the issuer was revoked according to some trust model;
         this asusmed that  the isser exists, is valid, but is not trusted.
         """
-        raise NotImplementedError("implementation details yet to be deifined for combined use")
+        trust_source = self._get_trust_source(issuer)
+        return trust_source.is_revoked
 
     def get_policies(self, issuer: str) -> dict:
-        raise NotImplementedError("reserved for future uses")
+        trust_source = self._get_trust_source(issuer)
+
+        if not trust_source.policies:
+            raise Exception(f"no trust evaluator can provide policies for {issuer}: searched among: {self.extractors_names}")
+        
+        return trust_source.policies
+    
+    def get_selfissued_jwt_header_trust_parameters(self, issuer: str) -> dict:
+        trust_source = self._get_trust_source(issuer)
+
+        if not trust_source.trust_params:
+            raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.extractors_names}")
+        
+        return trust_source.trust_params
+        

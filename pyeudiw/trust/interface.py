@@ -7,6 +7,12 @@ class TrustEvaluator:
     (2) obtain the meta information about an issuer that is defined
         according to some trust model
     """
+    def initialize_istance(self, issuer: str) -> None:
+        """
+        Initialize the cryptographic material of the issuer, according to some
+        trust model.
+        """
+        raise NotImplementedError
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
@@ -33,3 +39,6 @@ class TrustEvaluator:
 
     def get_policies(self, issuer: str) -> dict:
         raise NotImplementedError("reserved for future uses")
+    
+    def get_selfissued_jwt_header_trust_parameters(self) -> dict:
+        raise NotImplementedError

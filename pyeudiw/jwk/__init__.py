@@ -116,6 +116,15 @@ class JWK:
         :rtype: dict
         """
         return self.jwk
+    
+    def as_public_dict(self) -> dict:
+        """
+        Returns the public key in format of dict.
+
+        :returns: The public key in form of dict.
+        :rtype: dict
+        """
+        return self.public_key
 
     def __repr__(self):
         # private part!
@@ -173,8 +182,8 @@ def find_jwk_by_kid(kid: str, jwks: list[dict], as_dict: bool = True) -> dict | 
     if not kid:
         raise InvalidKid("Kid cannot be empty")
     for jwk in jwks:
-        valid_jwk = jwk.get("kid", None)
-        if valid_jwk and kid == valid_jwk:
+        jwk_kid = jwk.get("kid", None)
+        if jwk_kid and kid == jwk_kid:
             return jwk if as_dict else JWK(jwk)
 
     raise KidNotFoundError(f"Key with Kid {kid} not found")
