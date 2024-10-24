@@ -16,7 +16,7 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     }
 }
 
-class MetadataExtractor(TrustHandlerInterface, BaseLogger):
+class MetadataHandler(TrustHandlerInterface, BaseLogger):
     @staticmethod
     def extract(
         self, 
