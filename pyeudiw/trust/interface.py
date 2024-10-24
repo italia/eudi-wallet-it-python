@@ -40,5 +40,5 @@ class TrustEvaluator:
     def get_policies(self, issuer: str) -> dict:
         raise NotImplementedError("reserved for future uses")
     
-    def get_protected_header_resource(self):
+    def get_selfissued_jwt_header_trust_parameters(self) -> dict:
         raise NotImplementedError
