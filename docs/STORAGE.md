@@ -56,12 +56,14 @@ The `BaseCache` class implements the following methods:
 - `set`: sets the object value in the cache.
 
 ## MongoDB
+
 In the realm of pyeudiw, seamless integration with MongoDB is facilitated through specialized classes, namely 
 [`MongoStorage`](../pyeudiw/storage/mongo_storage.py) and [`MongoCache`](../pyeudiw/storage/mongo_cache.py).  
 
 These classes not only offer a robust implementation but also serve as tangible representations of the abstract base 
 classes, `BaseStorage` and `BaseCache`.
 This classes can be used as references while providing a custom implementation for other databases.
+For a complete list of the MongoDB configuration parameters, see [README.SATOSA.md](/README.SATOSA.md#storage)
 
 ### Data Examples in MongoDB
 

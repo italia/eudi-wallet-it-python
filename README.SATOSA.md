@@ -135,6 +135,7 @@ For more deatils on available trust implementations and their configurations, se
 | config.storage.mongo_db.storage.init_params.conf.db_sessions_collection           | The name of the collection to store sessions           | sessions                      |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_attestations_collection | The name of the collection to store trust attestations | trust_attestations            |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_anchors_collection      | The name of the collection to store trust anchors      | trust_anchors                 |
+| config.storage.mongo_db.storage.init_params.conf.data_ttl                         | The lifetime duration of data in the database          | 63072000                      |
 | config.storage.mongo_db.storage.connection_params.username                        | The username for authentication to the database        | satosa                        |
 | config.storage.mongo_db.storage.connection_params.password                        | The password for authentication to the database        | thatpassword                  |
 
