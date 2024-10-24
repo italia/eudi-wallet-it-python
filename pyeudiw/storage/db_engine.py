@@ -156,7 +156,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self.get_trust_anchor(entity_id) is not None
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
+    def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
@@ -165,10 +165,10 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
+    def update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
         return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
-    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: dict = None) -> str:
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
         try:
             self.get_trust_attestation(entity_id)
             return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
@@ -243,7 +243,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         _cons = {}
         for db_name, storage in self.storages:
             try:
-                _connected = storage.is_connected()
+                _connected = storage.is_connected
                 _cons[db_name] = _connected
             except Exception as e:
                 self._log_debug(

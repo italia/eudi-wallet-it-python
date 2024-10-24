@@ -109,5 +109,4 @@ def test_combined_trust_evaluator():
         "direct_trust_sd_jwt_vc": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS)
     }
     combined = CombinedTrustEvaluator(evaluators)
-    # TODO: re-enable when fixed
-    # assert MockTrustEvaluator.mock_jwk in combined.get_public_keys("mock_issuer")
+    assert MockTrustEvaluator.mock_jwk in combined.get_public_keys("mock_issuer")

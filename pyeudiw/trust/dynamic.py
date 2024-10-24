@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Optional
+from typing import Optional
 
 if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
     from typing import TypedDict
@@ -18,6 +18,7 @@ from pyeudiw.tools.utils import dynamic_class_loader
 
 
 TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
+
 
 def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfiguration_T]) -> dict[str, TrustEvaluator]: # type: ignore
     """Load a dynamically importable/configurable set of TrustEvaluators,
@@ -77,7 +78,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
                 self._log_warning(f"failed to find any key of issuer {issuer} with model {eval_identifier}: {eval_instance.__class__.__name__}", e)
                 continue
             if new_pks:
-                pks.append(new_pks)
+                pks.extend(new_pks)
         if not pks:
             raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self._get_trust_identifier_names()}")
         return pks
