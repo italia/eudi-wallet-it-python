@@ -43,6 +43,8 @@ class DirectTrustSdJwtVc(DirectTrust):
         self.jwk_endpoint = jwk_endpoint
         self.metadata_endpoint = metadata_endpoint
         self._vci_jwks_source: VciJwksSource = None
+
+        # TODO: remove the if statement below and integrate in an unique class that uses the cache and non-cache approach 
         if self.cache_ttl == 0:
             self._vci_jwks_source = RemoteVciJwksSource(httpc_params, jwk_endpoint)
         else:
@@ -68,6 +70,7 @@ class DirectTrustSdJwtVc(DirectTrust):
         """
         if not issuer:
             raise ValueError("invalid issuer: cannot be empty value")
+        
         issuer_normalized = [issuer if issuer[-1] != '/' else issuer[:-1]]
         url = issuer_normalized + self.metadata_endpoint
         if self.cache_ttl == 0:
