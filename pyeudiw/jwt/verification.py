@@ -30,7 +30,7 @@ def is_jwt_expired(token: str) -> bool:
     exp = token_payload.get("exp", None)
     if not exp:
         return True
-    if exp < iat_now():
+    elif exp < iat_now():
         return True
     return False
     
