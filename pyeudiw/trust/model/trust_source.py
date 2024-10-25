@@ -37,13 +37,16 @@ class TrustSourceData:
             metadata: dict = {},
             revoked: bool = False,
             keys: list[dict] = [],
-            trust_params: dict[str, dict[str, any]] = {}
+            trust_params: dict[str, dict[str, any]] = {},
+            **kwargs
         ) -> None:
         self.entity_id = entity_id
         self.policies = policies
         self.metadata = metadata
         self.revoked = revoked
         self.keys = keys
+
+        self.additional_data = kwargs
 
         self.trust_params = [TrustParameterData(**tp) for tp in trust_params]
     
