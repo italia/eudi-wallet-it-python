@@ -2,6 +2,7 @@ import datetime
 from functools import lru_cache
 import logging
 import asyncio
+import time
 from typing import NamedTuple
 import requests
 import importlib
@@ -234,10 +235,11 @@ def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_as
     timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
     if (ssl is None) or (timeout is None):
         raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session'].['timeout'] MUST be defined")
+    curr_time_s = time.time_ns() // 1_000_000_000
     if cache_ttl != 0:
-        ttl_timestamp = iat_now() // cache_ttl
+        ttl_timestamp = curr_time_s // cache_ttl
     else:
-        ttl_timestamp = iat_now()
+        ttl_timestamp = curr_time_s
     httpc_p_tuple = _HttpcParams_T(ssl, timeout)
     resp = _lru_cached_get_http_url(ttl_timestamp, url, httpc_p_tuple, http_async=http_async)
 
