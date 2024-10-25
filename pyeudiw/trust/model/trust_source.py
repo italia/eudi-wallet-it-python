@@ -4,7 +4,12 @@ from datetime import datetime
 
 @dataclass
 class TrustParameterData:
-    def __init__(self, type: str, trust_params: dict, expiration_date: datetime) -> None:
+    def __init__(
+            self, 
+            type: str, 
+            trust_params: dict, 
+            expiration_date: datetime,
+        ) -> None:
         self.type = type
         self.trust_params = trust_params
         self.expiration_date = expiration_date
@@ -27,36 +32,20 @@ class TrustParameterData:
 class TrustSourceData:
     def __init__(
             self, 
-            client_id: str,
+            entity_id: str,
             policies: dict = {},
             metadata: dict = {},
             revoked: bool = False,
             keys: list[dict] = [],
             trust_params: dict[str, dict[str, any]] = {}
         ) -> None:
-        self.client_id = client_id
+        self.entity_id = entity_id
         self.policies = policies
         self.metadata = metadata
         self.revoked = revoked
         self.keys = keys
 
         self.trust_params = [TrustParameterData(**tp) for tp in trust_params]
-
-    @property
-    def metadata(self) -> dict:
-        return self.metadata
-
-    @property
-    def is_revoked(self) -> bool:
-        return self.revoked
-
-    @property
-    def policies(self) -> dict:
-        return self.policies
-    
-    @property
-    def public_keys(self) -> list[dict]:
-        return [JWK(k).as_public_dict() for k in self.keys]
     
     def add_key(self, key: dict) -> None:
         self.keys.append(key)
@@ -75,7 +64,7 @@ class TrustSourceData:
     
     def serialize(self) -> dict:
         return {
-            "client_id": self.client_id,
+            "entity_id": self.entity_id,
             "policies": self.policies,
             "metadata": self.metadata,
             "revoked": self.revoked,
@@ -84,9 +73,13 @@ class TrustSourceData:
         }
     
     @staticmethod
-    def empty(client_id: str) -> 'TrustSourceData':
-        return TrustSourceData(client_id)
+    def empty(entity_id: str) -> 'TrustSourceData':
+        return TrustSourceData(entity_id)
     
     @staticmethod
     def from_dict(data: dict) -> 'TrustSourceData':
         return TrustSourceData(**data)
+    
+    @property
+    def public_keys(self) -> list[dict]:
+        return [JWK(k).as_public_dict() for k in self.keys]
