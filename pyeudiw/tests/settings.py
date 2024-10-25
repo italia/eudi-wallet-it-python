@@ -61,8 +61,8 @@ CONFIG = {
     },
     "trust": {
         "direct_trust_sd_jwt_vc": {
-            "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
-            "class": "DirectTrustSdJwtVc",
+            "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
+            "class": "DirectTrustJWTHandler",
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
                 "httpc_params": {
@@ -76,8 +76,8 @@ CONFIG = {
             }
         },
         "federation": {
-            "module": "pyeudiw.trust.default.federation",
-            "class": "FederationTrustModel",
+            "module": "pyeudiw.trust.handler.federation",
+            "class": "FederationHandler",
             "config": {
                 "metadata_type": "wallet_relying_party",
                 "authority_hints": [
@@ -173,7 +173,8 @@ CONFIG = {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
-                        "db_trust_anchors_collection": "trust_anchors"
+                        "db_trust_anchors_collection": "trust_anchors",
+                        "db_trust_sources_collection": "trust_sources"
                     },
                     "connection_params": {}
                 }
