@@ -13,7 +13,8 @@ class TestMongoStorage:
                 "db_name": "test-eudiw",
                 "db_sessions_collection": "sessions",
                 "db_trust_attestations_collection": "trust_attestations",
-                "db_trust_anchors_collection": "trust_anchors"
+                "db_trust_anchors_collection": "trust_anchors",
+                "db_trust_sources_collection": "trust_source"
             },
             "mongodb://localhost:27017/",
             {}
