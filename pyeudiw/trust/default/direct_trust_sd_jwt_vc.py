@@ -79,9 +79,11 @@ class DirectTrustSdJwtVc(DirectTrust):
         return cacheable_get_http_url(ttl_timestamp, url, self.httpc_params)[0].json()
 
     def __str__(self) -> str:
-        return f"DirectTrustSdJwtVc(" \
-            f"httpc_params={self.httpc_params}, " \
-            f"cache_ttl={self.cache_ttl}, " \
-            f"jwk_endpoint={self.jwk_endpoint}, " \
-            f"metadata_endpoint={self.metadata_endpoint}" \
+        return (
+            f"DirectTrustSdJwtVc("
+            f"httpc_params={self.httpc_params}, "
+            f"cache_ttl={self.cache_ttl}, "
+            f"jwk_endpoint={self.jwk_endpoint}, "
+            f"metadata_endpoint={self.metadata_endpoint}"
             ")"
+        )
