@@ -3,6 +3,7 @@ from functools import lru_cache
 import logging
 import asyncio
 import time
+from typing import NamedTuple
 import requests
 import importlib
 
@@ -202,24 +203,72 @@ def satisfy_interface(o: object, interface: type) -> bool:
     return True
 
 
+_HttpcParams_T = NamedTuple('_HttpcParams_T', [('ssl', bool), ('timeout', int)])
+
+
 def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
-    # TODO: unit test if cache actually works
-    ttl_timestamp = round(time.time() / cache_ttl)
-    resp = lru_cached_get_http_url(ttl_timestamp, url, httpc_params, http_async=http_async)
-    # TODO: check response status and invalidate cache if not 200
+    """
+    Make a cached http GET request.
+    The cache duration is UP TO cache_ttl. The actual duration is always
+    below that threshold.
+    The cache is realized with an lru_cache, which does not natively support a
+    time-based cache. To realize it, we exapand the call with a timestamp
+    rounded at the desired time.
+    For example, if the cache_ttl is 1 hour, and we make a request at 14:32,
+    the recorded timestamp will be 14:00 and the cache will be hit for all
+    subsequent requests (with the same parameters) until 14:59.
+    At 15:00, we reach a cache miss and a new value will be inserted.
+
+    The minimum supported time to live is 1 second.
+
+    When the response is not 200, the content of the cache is invalidated
+    in order to not pollute the cache whit 4xx and 5xx responses.
+
+    IMPORTANT: this function has limited support for httpc_params.
+    This is because python does not allow a lru_cache with a dictionary argument.
+    Currently, the only supported arguments are:
+        httpc_params.connection.ssl: bool
+        httpc_params.session.timeout: int
+    and they MUST be defined. When this is not the case, ValueError is raised.
+    """
+    ssl: bool | None = httpc_params.get("connection", {}).get("ssl", None)
+    timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
+    if (ssl is None) or (timeout is None):
+        raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session'].['timeout'] MUST be defined")
+    if cache_ttl != 0:
+        ttl_timestamp = round(time.time() / cache_ttl)
+    else:
+        ttl_timestamp = round(time.time())
+    httpc_p_tuple = _HttpcParams_T(ssl, timeout)
+    resp = _lru_cached_get_http_url(ttl_timestamp, url, httpc_p_tuple, http_async=http_async)
+
+    if resp.status_code != 200:
+        _lru_cached_get_http_url.cache_clear()
     return resp
 
 
-@lru_cache
-def lru_cached_get_http_url(timestamp: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
+@lru_cache(2048)
+def _lru_cached_get_http_url(timestamp: int, url: str, httpc_params_tuple: _HttpcParams_T, http_async: bool = True) -> requests.Response:
     """
     Wraps method 'get_http_url' around a ttl cache.
-    This is done by including a timestamp in the function argument. The
-    timestamp is used ONLY by the cache.
-    Note that a negative or failing answere might be cached. It is caller
+    This is done by including a timestamp in the function argument. For more,
+    see the documentation of cacheable_get_http_url.
+
+    Note that dictionary argument cannot be cached due to how lru_cache
+    works; hence they are converted to a tuple.
+
+    Moreover, a negative HTTP reponse might be cached. It is caller
     responsability to eventually clear the cache when it happens.
     """
-    # explicitly delete dummy argument ttl_cache since it is only needed for caching
+    # explicitly delete dummy argument timestamp since it is only needed for caching lifetime
     del timestamp
+    httpc_params = {
+        "connection": {
+            "ssl": httpc_params_tuple.ssl,
+        },
+        "session": {
+            "timeout": httpc_params_tuple.timeout
+        }
+    }
     resp: list[requests.Response] = get_http_url([url], httpc_params, http_async)
     return resp[0]
