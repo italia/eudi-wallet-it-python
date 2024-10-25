@@ -1,69 +1,34 @@
-import sys
+import logging
 from typing import Optional
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.trust.default import default_trust_evaluator
 from pyeudiw.trust.exceptions import TrustConfigurationError
 from pyeudiw.trust.interface import TrustEvaluator
-from pyeudiw.trust._log import _package_logger
-from pyeudiw.tools.utils import dynamic_class_loader, satisfy_interface
+from pyeudiw.tools.utils import dynamic_class_loader
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustJWTHandler
+from pyeudiw.storage.exceptions import EntryNotFound
 
-
-TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
-
-
-def dynamic_trust_evaluators_loader(trust_config: dict[str, TrustModuleConfiguration_T]) -> dict[str, TrustEvaluator]: # type: ignore
-    """Load a dynamically importable/configurable set of TrustEvaluators,
-    identified by the trust model they refer to.
-    If not configurations a re given, a default is returned instead
-    implementation of TrustEvaluator is returned instead.
-
-    :return: a dictionary where the keys are common name identifiers
-        for the trust mechanism ,a nd the keys are acqual class instances that satisfy
-        the TrustEvaluator interface
-    :rtype: dict[str, TrustEvaluator]
-    """
-    trust_instances: dict[str, TrustEvaluator] = {}
-    if not trust_config:
-        _package_logger.warning("no configured trust model, using direct trust model")
-        trust_instances["direct_trust_sd_jwt_vc"] = default_trust_evaluator()
-        return trust_instances
-
-    for trust_model_name, trust_module_config in trust_config.items():
-        try:
-            trust_evaluator_instance = dynamic_class_loader(trust_module_config["module"], trust_module_config["class"], trust_module_config["config"])
-        except Exception as e:
-            raise TrustConfigurationError(f"invalid configuration for {trust_model_name}: {e}", e)
-        
-        if not satisfy_interface(trust_evaluator_instance, TrustEvaluator):
-            raise TrustConfigurationError(f"class {trust_evaluator_instance.__class__} does not satisfy the interface TrustEvaluator")
-        
-        trust_instances[trust_model_name] = trust_evaluator_instance
-    return trust_instances
-
+logger = logging.getLogger(__name__)
 
 class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
-    def __init__(
-            self, 
-            db_engine: DBEngine,
-            extracors: list[TrustHandlerInterface]
-        ) -> None:
+    def __init__(self, handlers: list[TrustHandlerInterface], db_engine: DBEngine) -> None:
         self.db_engine: DBEngine = db_engine
-        self.extractors: list[TrustHandlerInterface] = extracors
-        self.extractors_names: list[str] = [e.name() for e in self.extractors]
+        self.handlers: list[TrustHandlerInterface] = handlers
+        self.handlers_names: list[str] = [e.name for e in self.handlers]
     
     def _retrieve_trust_source(self, issuer: str) -> Optional[TrustSourceData]:
-        trust_source = self.db_engine.get_trust_source(issuer)
-        if trust_source:
+        try:
+            trust_source = self.db_engine.get_trust_source(issuer)
             return TrustSourceData.from_dict(trust_source)
-        return  None
+        except EntryNotFound:
+            return None
     
     def _extract_trust_source(self, issuer: str) -> Optional[TrustSourceData]:
-        trust_source = TrustSourceData.empty()
+        trust_source = TrustSourceData.empty(issuer)
 
-        for extractor in self.extractors:
+        for extractor in self.handlers:
             trust_source: TrustSourceData = extractor.extract(issuer, trust_source)
         
         self.db_engine.add_trust_source(issuer, trust_source.serialize())
@@ -86,7 +51,9 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         if not trust_source.keys:
-            raise Exception(f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self.extractors_names}")
+            raise Exception(
+                f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self.handlers_names}"
+            )
 
         return trust_source.public_keys
 
@@ -98,7 +65,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         if not trust_source.metadata:
-            raise Exception(f"no trust evaluator can provide metadata for {issuer}: searched among: {self.extractors_names}")
+            raise Exception(f"no trust evaluator can provide metadata for {issuer}: searched among: {self.handlers_names}")
 
         return trust_source.metadata
 
@@ -114,7 +81,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         if not trust_source.policies:
-            raise Exception(f"no trust evaluator can provide policies for {issuer}: searched among: {self.extractors_names}")
+            raise Exception(f"no trust evaluator can provide policies for {issuer}: searched among: {self.handlers_names}")
         
         return trust_source.policies
     
@@ -122,7 +89,32 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         if not trust_source.trust_params:
-            raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.extractors_names}")
+            raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.handlers_names}")
         
         return trust_source.trust_params
+    
+    @staticmethod
+    def from_config(config: dict, db_engine: DBEngine) -> 'CombinedTrustEvaluator':
+        handlers = []
+
+        for handler_name, handler_config in config.items():
+            try:
+                trust_handler = dynamic_class_loader(
+                    handler_config["module"], 
+                    handler_config["class"], 
+                    handler_config["config"]
+                )
+            except Exception as e:
+                raise TrustConfigurationError(f"invalid configuration for {handler_name}: {e}", e)
+            
+            if not isinstance(trust_handler, TrustHandlerInterface):
+                raise TrustConfigurationError(f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator")
+            
+            handlers.append(trust_handler)
+
+        if not handlers:
+            logger.warning("No configured trust model, using direct trust model")
+            handlers.append(DirectTrustJWTHandler())
+
+        return CombinedTrustEvaluator(handlers, db_engine)
         
