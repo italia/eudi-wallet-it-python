@@ -1,11 +1,5 @@
 import sys
 from typing import Optional
-
-if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
-    from typing import TypedDict
-else:
-    from typing_extensions import TypedDict
-
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.trust.default import default_trust_evaluator
