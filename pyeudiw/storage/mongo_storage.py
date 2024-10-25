@@ -57,6 +57,9 @@ class MongoStorage(BaseStorage):
             self.trust_anchors = getattr(
                 self.db, self.storage_conf["db_trust_anchors_collection"]
             )
+            self.trust_sources = getattr(
+                self.db, self.storage_conf["db_trust_sources_collection"]
+            )
 
     def close(self):
         self._connect()
@@ -209,25 +212,48 @@ class MongoStorage(BaseStorage):
 
         return document_status
 
-    def _get_trust_attestation(self, collection: str, entity_id: str) -> dict | None:
+    def _get_db_entity(self, collection: str, entity_id: str) -> dict | None:
         self._connect()
         db_collection = getattr(self, collection)
         return db_collection.find_one({"entity_id": entity_id})
+    
+    def get_trust_source(self, entity_id: str) -> dict | None:
+        return self._get_db_entity(
+            self.storage_conf["db_trust_sources_collection"], entity_id
+        )
 
     def get_trust_attestation(self, entity_id: str) -> dict | None:
-        return self._get_trust_attestation("trust_attestations", entity_id)
+        return self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], 
+            entity_id
+        )
 
     def get_trust_anchor(self, entity_id: str) -> dict | None:
-        return self._get_trust_attestation("trust_anchors", entity_id)
+        return self._get_db_entity(
+            self.storage_conf["db_trust_anchors_collection"], 
+            entity_id
+        )
 
-    def _has_trust_attestation(self, collection: str, entity_id: str) -> bool:
-        return self._get_trust_attestation(collection, entity_id) is not None
+    def _has_db_entity(self, collection: str, entity_id: str) -> bool:
+        return self._get_db_entity(collection, entity_id) is not None
 
     def has_trust_attestation(self, entity_id: str) -> bool:
-        return self._has_trust_attestation("trust_attestations", entity_id)
+        return self._has_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], 
+            entity_id
+        )
 
     def has_trust_anchor(self, entity_id: str) -> bool:
-        return self._has_trust_attestation("trust_anchors", entity_id)
+        return self._has_db_entity(
+            self.storage_conf["db_trust_anchors_collection"], 
+            entity_id
+        )
+    
+    def has_trust_source(self, entity_id: str) -> bool:
+        return self._has_db_entity(
+            self.storage_conf["db_trust_sources_collection"], 
+            entity_id
+        )
 
     def _add_entry(
         self,
@@ -296,19 +322,16 @@ class MongoStorage(BaseStorage):
             entity, attestation, exp, trust_type, jwks)
 
         return self._add_entry(
-            "trust_attestations", entity_id, updated_entity, exp
+            self.storage_conf["db_trust_attestations_collection"], entity_id, updated_entity, exp
         )
     
     def add_trust_source(self, entity_id: str, trust_source: dict) -> str:
         return self._add_entry(
-            "trust_source", entity_id, trust_source, trust_source["exp"]
+            "trust_sources", entity_id, trust_source, trust_source.get("exp")
         )
-    
-    def get_trust_source(self, entity_id: str) -> dict | None:
-        return self._get_trust_attestation("trust_source", entity_id)
 
     def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
-        entity = self._get_trust_attestation("trust_attestations", entity_id)
+        entity = self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id)
 
         if entity is None:
             raise ValueError(
@@ -317,7 +340,7 @@ class MongoStorage(BaseStorage):
 
         entity["metadata"][metadata_type] = metadata
 
-        return self._update_trust_attestation("trust_attestations", entity_id, entity)
+        return self._update_trust_attestation(self.storage_conf["db_trust_attestations_collection"], entity_id, entity)
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
         if self.has_trust_anchor(entity_id):
@@ -331,10 +354,10 @@ class MongoStorage(BaseStorage):
 
             updated_entity = self._update_anchor_metadata(
                 entity, entity_configuration, exp, trust_type)
-            return self._add_entry("trust_anchors", entity_id, updated_entity, exp)
+            return self._add_entry(self.storage_conf["db_trust_anchors_collection"], entity_id, updated_entity, exp)
 
     def _update_trust_attestation(self, collection: str, entity_id: str, entity: dict) -> str:
-        if not self._has_trust_attestation(collection, entity_id):
+        if not self._has_db_entity(collection, entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
         documentStatus = self.trust_attestations.update_one(
@@ -344,16 +367,16 @@ class MongoStorage(BaseStorage):
         return documentStatus
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]) -> str:
-        old_entity = self._get_trust_attestation(
-            "trust_attestations", entity_id) or {}
+        old_entity = self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id) or {}
         upd_entity = self._update_attestation_metadata(
             old_entity, attestation, exp, trust_type, jwks)
 
-        return self._update_trust_attestation("trust_attestations", entity_id, upd_entity)
+        return self._update_trust_attestation(self.storage_conf["db_trust_attestations_collection"], entity_id, upd_entity)
 
     def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
-        old_entity = self._get_trust_attestation(
-            "trust_attestations", entity_id) or {}
+        old_entity = self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id) or {}
         upd_entity = self._update_anchor_metadata(
             old_entity, entity_configuration, exp, trust_type)
 

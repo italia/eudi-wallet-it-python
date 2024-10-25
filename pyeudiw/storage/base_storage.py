@@ -171,6 +171,9 @@ class BaseStorage(BaseDB):
         :rtype: bool
         """
         raise NotImplementedError()
+    
+    def has_trust_source(self, entity_id: str) -> bool:
+        raise NotImplementedError()
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         """

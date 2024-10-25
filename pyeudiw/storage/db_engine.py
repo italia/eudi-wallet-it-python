@@ -155,6 +155,9 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self.get_trust_anchor(entity_id) is not None
+    
+    def has_trust_source(self, entity_id: str) -> bool:
+        return self.get_trust_source(entity_id) is not None
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
