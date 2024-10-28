@@ -14,6 +14,7 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
 
     _RESP_CONTENT_TYPE = "application/oauth-authz-req+jwt"
+    _REQUEST_OBJECT_TYP = "oauth-authz-req+jwt"
 
     def request_endpoint(self, context: Context, *args) -> Response:
         self._log_function_debug("response_endpoint", context, "args", args)
@@ -57,7 +58,10 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
         helper = JWSHelper(self.default_metadata_private_jwk)
         request_object_jwt = helper.sign(
             data,
-            protected={'trust_chain': self.get_backend_trust_chain()}
+            protected={
+                'trust_chain': self.get_backend_trust_chain(),
+                'typ': RequestHandler._REQUEST_OBJECT_TYP
+            }
         )
         return Response(
             message=request_object_jwt,
