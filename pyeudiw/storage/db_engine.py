@@ -88,7 +88,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Error {_err_msg} on {db_name} {storage}: {str(e)}"
+                    f"Error {_err_msg} on {db_name}: {str(e)}"
                 )
 
         if not replica_count:
@@ -165,8 +165,8 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
         return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
     
-    def add_trust_source(self, entity_id: str, trust_source: dict) -> str:
-        return self.write("add_trust_source", entity_id, trust_source)    
+    def add_trust_source(self, trust_source: dict) -> str:
+        return self.write("add_trust_source", trust_source)    
 
     def get_trust_source(self, entity_id: str) -> dict:
         return self.get("get_trust_source", entity_id)
