@@ -31,7 +31,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         for extractor in self.handlers:
             trust_source: TrustSourceData = extractor.extract(issuer, trust_source)
         
-        self.db_engine.add_trust_source(issuer, trust_source.serialize())
+        self.db_engine.add_trust_source(trust_source.serialize())
 
         return trust_source
     

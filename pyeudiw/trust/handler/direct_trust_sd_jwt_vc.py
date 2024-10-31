@@ -43,7 +43,7 @@ class DirectTrustJWTHandler(TrustHandlerInterface, BaseLogger):
             return trust_source
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
-        issuer_normalized = [issuer if issuer[-1] != '/' else issuer[:-1]]
+        issuer_normalized = issuer if issuer[-1] != '/' else issuer[:-1]
         url = issuer_normalized + self.metadata_endpoint
 
         try:
