@@ -235,7 +235,7 @@ def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_as
     ssl: bool | None = httpc_params.get("connection", {}).get("ssl", None)
     timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
     if (ssl is None) or (timeout is None):
-        raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session'].['timeout'] MUST be defined")
+        raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session']['timeout'] MUST be defined")
     curr_time_s = time.time_ns() // 1_000_000_000
     if cache_ttl != 0:
         ttl_timestamp = curr_time_s // cache_ttl
