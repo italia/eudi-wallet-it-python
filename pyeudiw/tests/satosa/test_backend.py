@@ -587,6 +587,7 @@ class TestOpenID4VPBackend:
         payload = decode_jwt_payload(request_object_jwt)
         assert header["alg"]
         assert header["kid"]
+        assert header["typ"] == "oauth-authz-req+jwt"
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["response_uris_supported"][0]
