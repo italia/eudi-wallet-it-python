@@ -2,6 +2,7 @@ import datetime
 from functools import lru_cache
 import logging
 import asyncio
+import os
 import time
 from typing import NamedTuple
 import requests
@@ -248,7 +249,7 @@ def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_as
     return resp
 
 
-@lru_cache(2048)
+@lru_cache(os.getenv("PYEUDIW_LRU_CACHE_TTL", 2048))
 def _lru_cached_get_http_url(timestamp: int, url: str, httpc_params_tuple: _HttpcParams_T, http_async: bool = True) -> requests.Response:
     """
     Wraps method 'get_http_url' around a ttl cache.
