@@ -26,6 +26,7 @@ from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.tools.jwk_handling import find_vp_token_key
+from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -177,19 +178,29 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         attributes_by_issuer: dict[str, dict[str, Any]] = {}
         credential_issuers: list[str] = []
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
+
         for vp_token in encoded_vps:
             # verify vp token and extract user information
-            # TODO: specialized try/except for each call, from line 182 to line 187
             try:
                 token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
-            token_verifier.verify_signature(pub_jwk)
+            
+            try:
+                pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
+            except NoCriptographicMaterial as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            
+            try:
+                token_verifier.verify_signature(pub_jwk)
+            except Exception as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            
             try:
                 token_verifier.verify_challenge()
             except InvalidVPKeyBinding as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
+            
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
             attributes_by_issuer[iss] = claims
