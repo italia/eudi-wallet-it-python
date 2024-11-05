@@ -2,10 +2,10 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 
 class TrustHandlerInterface:
     def extract(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
-        NotImplementedError
+        return trust_source
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
-        NotImplementedError
+        return trust_source
     
     def verify() -> bool:
         NotImplementedError
