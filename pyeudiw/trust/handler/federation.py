@@ -6,10 +6,10 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         pass
 
     def extract(self, issuer, trust_source):
-        pass
+        return trust_source
 
     def get_metadata(self, issuer, trust_source):
-        pass
+        return trust_source
 
     def verify():
         pass
