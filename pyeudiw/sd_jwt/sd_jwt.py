@@ -1,8 +1,8 @@
 from hashlib import sha256
 import json
 from typing import Any, Callable, TypeVar
-import sd_jwt.common as sd_jwtcommon
-from sd_jwt.common import SDJWTCommon
+import pyeudiw.sd_jwt.common as sd_jwtcommon
+from pyeudiw.sd_jwt.common import SDJWTCommon
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode

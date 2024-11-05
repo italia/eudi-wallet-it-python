@@ -6,9 +6,9 @@ from binascii import unhexlify
 from io import StringIO
 from typing import Dict, Optional
 
-from sd_jwt.issuer import SDJWTIssuer
-from sd_jwt.utils.yaml_specification import _yaml_load_specification
-from sd_jwt.verifier import SDJWTVerifier
+from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
