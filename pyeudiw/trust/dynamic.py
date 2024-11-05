@@ -9,6 +9,7 @@ from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustJWTHandler
 from pyeudiw.storage.exceptions import EntryNotFound
+from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = TrustSourceData.empty(issuer)
 
         for extractor in self.handlers:
-            trust_source: TrustSourceData = extractor.extract(issuer, trust_source)
+            trust_source = extractor.extract(issuer, trust_source)
         
         self.db_engine.add_trust_source(trust_source.serialize())
 
@@ -51,7 +52,10 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         if not trust_source.keys:
-            raise Exception(
+            trust_source = self._extract_trust_source(issuer)
+
+        if not trust_source.keys:
+            raise NoCriptographicMaterial(
                 f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self.handlers_names}"
             )
 
