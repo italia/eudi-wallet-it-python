@@ -40,10 +40,12 @@ def test_public_key_and_metadata_retrive():
     trust_source = db_engine.get_trust_source(uuid_url)
 
     assert trust_source
-    assert trust_source["keys"][0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
+    assert trust_source["keys"][0]["kid"] == "MGaAh57cQghnevfWusalp0lNFXTzz2kHnkzO9wOjHq4"
+    assert trust_source["keys"][1]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
     assert trust_source["metadata"] == {"json_key": "json_value"}
 
-    assert pub_keys[0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
+    assert pub_keys[0]["kid"] == "MGaAh57cQghnevfWusalp0lNFXTzz2kHnkzO9wOjHq4"
+    assert pub_keys[1]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
 
     metadata = trust_ev.get_metadata(uuid_url)
 
