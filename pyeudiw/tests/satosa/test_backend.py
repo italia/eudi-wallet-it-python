@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
-from sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIG_KTY_MAP

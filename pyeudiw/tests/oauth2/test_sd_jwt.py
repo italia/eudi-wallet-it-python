@@ -1,6 +1,6 @@
 import uuid
 
-from sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.holder import SDJWTHolder
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP
