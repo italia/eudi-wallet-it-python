@@ -43,6 +43,7 @@ from pyeudiw.tests.satosa import (
     _generate_post_context,
     _initialize_session
 )
+from pyeudiw.trust.model.trust_source import TrustSourceData
 
 class TestOpenID4VPBackend:
 
@@ -61,6 +62,13 @@ class TestOpenID4VPBackend:
             entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
             trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
             jwks=[issuer_jwk]
+        )
+
+        tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
+        tsd.add_key(issuer_jwk)
+
+        db_engine_inst.add_trust_source(
+            tsd.serialize()
         )
 
         self.backend = OpenID4VPBackend(
@@ -218,9 +226,8 @@ class TestOpenID4VPBackend:
         _initialize_session(self.backend.db_engine, state, session_id, nonce)
 
         bad_nonce = str(uuid.uuid4())
-        vp_token_bad_nonce = _create_vp_token(bad_nonce, aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty])
 
-        response_with_bad_nonce = _generate_response(state, vp_token_bad_nonce)
+        response_with_bad_nonce = _generate_response(state, _create_vp_token(bad_nonce, aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty]))
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_nonce)
 
