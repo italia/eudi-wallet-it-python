@@ -1,9 +1,24 @@
 from typing import Any
+
+from satosa.context import Context
+
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.openid4vp.exceptions import VPFormatNotSupported
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.tools.mobile import is_smartphone
+
+
+def identify_flow_typ(context: Context) -> RemoteFlowType:
+    """
+    Identitfy or guess the remote flow type based on the context of the
+    user auhtnetication
+    """
+    if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
+        return RemoteFlowType.SAME_DEVICE
+    return RemoteFlowType.CROSS_DEVICE
 
 
 def vp_parser(jwt: str) -> Vp:

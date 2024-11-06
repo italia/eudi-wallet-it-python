@@ -114,12 +114,13 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, document_id: str, session_id: str, state: str) -> str:
+    def init_session(self, document_id: str, session_id: str, state: str, remote_flow_typ: str) -> str:
         entity = {
             "document_id": document_id,
             "creation_date": dt.datetime.now(tz=dt.timezone.utc),
             "state": state,
             "session_id": session_id,
+            "remote_flow_typ": remote_flow_typ,
             "finalized": False,
             "internal_response": None,
         }

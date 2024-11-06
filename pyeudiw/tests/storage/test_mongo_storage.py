@@ -37,7 +37,8 @@ class TestMongoStorage:
 
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            session_id=session_id, state=state,
+            remote_flow_typ="")
 
         assert document_id
 
@@ -60,7 +61,7 @@ class TestMongoStorage:
 
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            session_id=session_id, state=state, remote_flow_typ="")
 
         assert document_id
 
@@ -84,7 +85,7 @@ class TestMongoStorage:
 
         document_id = self.storage.init_session(
             str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            session_id=session_id, state=state, remote_flow_typ="")
 
         assert document_id
 

@@ -19,7 +19,7 @@ class TestMongoDBEngine:
         session_id = str(uuid.uuid4())
 
         document_id = self.engine.init_session(
-            session_id=session_id, state=state)
+            session_id=session_id, state=state, remote_flow_typ="")
 
         assert document_id
 

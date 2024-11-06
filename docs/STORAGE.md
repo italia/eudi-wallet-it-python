@@ -141,6 +141,7 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
     "creation_date": datetime,
     "state": uuidv4,
     "session_id": "urn:uuid:"uuidv4,
+    "remote_flow_typ": string,
     "finalized": boolean,
     "internal_response": object
   }
@@ -154,5 +155,6 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
 | `creation_date`      | Creation date of the session.                                                                                            |
 | `state`              | A unique identifier used to identify a session even among different devices.                                             |
 | `session_id`         | Session id. Used to identify cross device flows.                                                                         |
+| `remote_flow_typ`    | A string value that discriminates between different authentication flow                                                  |
 | `finalized`          | A boolean value which indicates if the session is finilazed or not (user scanned the QR Code or used the redirect link). |
 | `internal_response`  | The object containing the personal data, `null` until login.                                                             |
