@@ -77,7 +77,7 @@ class TrustSourceData:
     
     @staticmethod
     def empty(entity_id: str) -> 'TrustSourceData':
-        return TrustSourceData(entity_id)
+        return TrustSourceData(entity_id, policies={}, metadata={}, revoked=False, keys=[], trust_params={})
     
     @staticmethod
     def from_dict(data: dict) -> 'TrustSourceData':
