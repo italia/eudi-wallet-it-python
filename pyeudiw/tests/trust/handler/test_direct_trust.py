@@ -8,7 +8,8 @@ from dataclasses import dataclass
 import requests
 import json
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
-from pyeudiw.tests.trust.handler import jwt_vc_issuer_endpoint_response
+from pyeudiw.tests.trust.handler import jwt_vc_issuer_endpoint_response, _generate_response
+import uuid
 
 def test_direct_trust_build_issuer_jwk_endpoint():
     entity_id = "https://credential-issuer.example/vct"
@@ -101,14 +102,17 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
 def test_direct_trust_jwk():
     trust_handler = DirectTrustJWTHandler()
 
+    random_issuer = f"{uuid.uuid4()}.issuer.it"
+
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
         "pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url",
-        return_value=[jwt_vc_issuer_endpoint_response]
+        return_value=[_generate_response(random_issuer, expected_jwk)]
     )
+
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
-    trust_source = TrustSourceData.empty(issuer)
-    trust_source = trust_handler.extract(issuer, trust_source)
+    trust_source = TrustSourceData.empty(random_issuer)
+    trust_source = trust_handler.extract(random_issuer, trust_source)
 
     obtained_jwks = trust_source.keys
         
