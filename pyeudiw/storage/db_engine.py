@@ -88,7 +88,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Error {_err_msg} on {db_name}: {str(e)}"
+                    f"Error {_err_msg} on {db_name}: {e}"
                 )
 
         if not replica_count:
