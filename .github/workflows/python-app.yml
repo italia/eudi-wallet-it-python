@@ -81,7 +81,7 @@ jobs:
         coverage report -m --skip-covered
     - name: Integration Tests
       run: |
-        cd example/integration_test/
+        cd example/satosa/integration_test/
         python -m pip install -r requirements_test.txt
         python cross_device_integration_test.py
         python same_device_integration_test.py
