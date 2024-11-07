@@ -21,7 +21,7 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     }
 }
 
-class DirectTrustJWTHandler(TrustHandlerInterface, BaseLogger):
+class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
     def __init__(
             self, 
             httpc_params: dict = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS, 
@@ -39,7 +39,7 @@ class DirectTrustJWTHandler(TrustHandlerInterface, BaseLogger):
         """
         call the jwk metadata endpoint and return the whole document
         """
-        jwk_endpoint = DirectTrustJWTHandler.build_issuer_jwk_endpoint(issuer, self.jwk_endpoint)
+        jwk_endpoint = DirectTrustSdJwtVc.build_issuer_jwk_endpoint(issuer, self.jwk_endpoint)
         if self.cache_ttl:
             resp = cacheable_get_http_url(self.cache_ttl, jwk_endpoint, self.httpc_params, http_async=self.http_async_calls)
         else:
@@ -119,7 +119,7 @@ class DirectTrustJWTHandler(TrustHandlerInterface, BaseLogger):
 
         :returns: a dictionary of metadata information
         """
-        url = DirectTrustJWTHandler.build_issuer_metadata_endpoint(issuer, self.metadata_endpoint)
+        url = DirectTrustSdJwtVc.build_issuer_metadata_endpoint(issuer, self.metadata_endpoint)
 
         if self.cache_ttl == 0:
             trust_source.metadata = get_http_url(url, self.httpc_params, self.http_async_calls)[0].json()

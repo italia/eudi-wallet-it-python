@@ -6,7 +6,7 @@ correct_config = {
     },
     "direct_trust_sd_jwt_vc": {
         "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
-        "class": "DirectTrustJWTHandler",
+        "class": "DirectTrustSdJwtVc",
         "config": {
             "jwk_endpoint": "/.well-known/jwt-vc-issuer",
             "httpc_params": {

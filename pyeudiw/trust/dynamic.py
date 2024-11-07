@@ -7,7 +7,7 @@ from pyeudiw.trust.interface import TrustEvaluator
 from pyeudiw.tools.utils import dynamic_class_loader
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustJWTHandler
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
@@ -118,7 +118,7 @@ class CombinedTrustEvaluator(TrustEvaluator, BaseLogger):
 
         if not handlers:
             logger.warning("No configured trust model, using direct trust model")
-            handlers.append(DirectTrustJWTHandler())
+            handlers.append(DirectTrustSdJwtVc())
 
         return CombinedTrustEvaluator(handlers, db_engine)
         

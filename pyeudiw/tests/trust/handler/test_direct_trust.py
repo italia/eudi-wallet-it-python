@@ -1,6 +1,6 @@
 import unittest.mock
 
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustJWTHandler
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.tests.trust.handler import issuer
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
@@ -15,7 +15,7 @@ def test_direct_trust_build_issuer_jwk_endpoint():
     entity_id = "https://credential-issuer.example/vct"
     well_known_component = "/.well-known/jwt-vc-issuer"
     expected_url = "https://credential-issuer.example/.well-known/jwt-vc-issuer/vct"
-    obtained_url = DirectTrustJWTHandler.build_issuer_jwk_endpoint(entity_id, well_known_component)
+    obtained_url = DirectTrustSdJwtVc.build_issuer_jwk_endpoint(entity_id, well_known_component)
     assert expected_url == obtained_url
 
 def test_direct_trust_build_issuer_metadata_endpoint():
@@ -40,11 +40,11 @@ def test_direct_trust_build_issuer_metadata_endpoint():
 
     metadata_endpoint = "/.well-known/openid-credential-issuer"
     for i, case in enumerate(test_cases):
-        obtained = DirectTrustJWTHandler.build_issuer_metadata_endpoint(case.entity_id, metadata_endpoint)
+        obtained = DirectTrustSdJwtVc.build_issuer_metadata_endpoint(case.entity_id, metadata_endpoint)
         assert case.expected == obtained, f"failed case {i}: {case.explanation}"
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_by_value():
-    trust_source = DirectTrustJWTHandler()
+    trust_source = DirectTrustSdJwtVc()
     jwk_metadata = {
         "issuer": issuer,
         "jwks": {
@@ -62,7 +62,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_by_value():
     assert obt_jwks == exp_jwks
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
-    trust_source = DirectTrustJWTHandler()
+    trust_source = DirectTrustSdJwtVc()
     jwk_metadata = {
         "issuer": issuer,
         "jwks_uri": issuer + "jwks"
@@ -88,7 +88,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
     assert expected_jwks == obtained_jwks
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
-    trust_source = DirectTrustJWTHandler()
+    trust_source = DirectTrustSdJwtVc()
     jwk_metadata = {
         "issuer": issuer
     }
@@ -100,7 +100,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
 
 
 def test_direct_trust_jwk():
-    trust_handler = DirectTrustJWTHandler()
+    trust_handler = DirectTrustSdJwtVc()
 
     random_issuer = f"{uuid.uuid4()}.issuer.it"
 
