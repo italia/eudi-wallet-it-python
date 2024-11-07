@@ -81,6 +81,7 @@ jobs:
         coverage report -m --skip-covered
     - name: Integration Tests
       run: |
+        sudo apt-get install xmlsec1
         cd example/satosa/integration_test/
         python -m pip install -r requirements_test.txt
         python cross_device_integration_test.py
