@@ -50,4 +50,4 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         try:
             self.sdjwt.verify_holder_kb_jwt(challenge)
         except (UnsupportedSdAlg, InvalidKeyBinding) as e:
-            raise InvalidVPKeyBinding(str(e))
+            raise InvalidVPKeyBinding(f"{e}")
