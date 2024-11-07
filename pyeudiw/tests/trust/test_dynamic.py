@@ -34,7 +34,7 @@ def test_public_key_and_metadata_retrive():
 
     trust_ev = CombinedTrustEvaluator.from_config(correct_config, db_engine)
 
-    uuid_url = f"http://{str(uuid4())}.issuer.it"
+    uuid_url = f"http://{uuid4()}.issuer.it"
 
     pub_keys = trust_ev.get_public_keys(uuid_url)
     trust_source = db_engine.get_trust_source(uuid_url)
