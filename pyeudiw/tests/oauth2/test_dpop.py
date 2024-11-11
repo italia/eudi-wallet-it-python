@@ -2,14 +2,17 @@ import base64
 import hashlib
 import pytest
 
-from pyeudiw.jwk import JWK
+
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.oauth2.dpop.exceptions import InvalidDPoPKid
 from pyeudiw.tools.utils import iat_now
 
-PRIVATE_JWK = JWK()
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
+
+PRIVATE_JWK = new_ec_key('P-256')
 PUBLIC_JWK = PRIVATE_JWK.public_key
 
 
@@ -48,7 +51,7 @@ WALLET_INSTANCE_ATTESTATION = {
 
 @pytest.fixture
 def private_jwk():
-    return JWK()
+    return  new_ec_key('P-256')
 
 
 @pytest.fixture
@@ -105,7 +108,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK):
     )
     assert dpop.is_valid
 
-    other_jwk = JWK(key_type="RSA").public_key
+    other_jwk = new_rsa_key().public_key
     dpop = DPoPVerifier(
         public_jwk=other_jwk,
         http_header_authz=f"DPoP {wia_jws}",

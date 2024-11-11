@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import json
 
-from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jwt_format
@@ -30,12 +29,12 @@ def _get_jwk_kid_from_store(jwt: str, key_store: dict[str, dict]) -> dict:
     return jwk_dict
 
 
-def _decrypt_jwe(jwe: str, decrypting_jwk: JWK) -> dict:
+def _decrypt_jwe(jwe: str, decrypting_jwk: dict[str, any]) -> dict:
     decrypter = JWEHelper(decrypting_jwk)
     return decrypter.decrypt(jwe)
 
 
-def _verify_and_decode_jwt(jwt: str, verifying_jwk: JWK) -> dict:
+def _verify_and_decode_jwt(jwt: str, verifying_jwk: dict[str, any]) -> dict:
     verifier = JWSHelper(verifying_jwk)
     raw_payload: str = verifier.verify(jwt)["msg"]
     payload: dict = json.loads(raw_payload)
@@ -54,13 +53,12 @@ class AuthorizeResponseDirectPost:
     def decode_payload(self, key_store_by_kid: dict[str, dict]) -> AuthorizeResponsePayload:
         jwt = self.response
         jwk_dict = _get_jwk_kid_from_store(jwt, key_store_by_kid)
-        jwk = JWK(jwk_dict)
 
         payload = {}
         if is_jwe_format(jwt):
-            payload = _decrypt_jwe(jwt, jwk)
+            payload = _decrypt_jwe(jwt, jwk_dict)
         elif is_jwt_format(jwt):
-            payload = _verify_and_decode_jwt(jwt, jwk)
+            payload = _verify_and_decode_jwt(jwt, jwk_dict)
         else:
             raise ValueError(f"unexpected state: input jwt={jwt} is neither a jwt nor a jwe")
         return AuthorizeResponsePayload(**payload)

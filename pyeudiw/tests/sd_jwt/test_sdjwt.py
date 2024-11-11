@@ -149,7 +149,7 @@ def test_sdjwt_hash_hey_binding():
 
 def test_sd_jwt_verify_issuer_jwt():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
-    sdjwt.verify_issuer_jwt_signature(JWK(ISSUER_JWK))
+    sdjwt.verify_issuer_jwt_signature(ISSUER_JWK)
 
 
 def test_sd_jwt_verify_holder_kb_signature():
