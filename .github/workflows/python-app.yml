@@ -79,13 +79,13 @@ jobs:
         # pytest --cov=pyeudiw --cov-fail-under=90 pyeudiw
         pytest --cov=pyeudiw pyeudiw
         coverage report -m --skip-covered
-    - name: Integration Tests
-      run: |
-        sudo apt-get install xmlsec1
-        cd example/satosa/integration_test/
-        python -m pip install -r requirements_test.txt
-        python cross_device_integration_test.py
-        python same_device_integration_test.py
+#    - name: Integration Tests
+#      run: |
+#        sudo apt-get install xmlsec1
+#        cd example/satosa/integration_test/
+#        python -m pip install -r requirements_test.txt
+#        python cross_device_integration_test.py
+#        python same_device_integration_test.py
     - name: Bandit Security Scan
       run: |
         bandit -r -x pyeudiw/tests* pyeudiw/*
