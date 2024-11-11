@@ -83,7 +83,7 @@ class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
         return issuer_normalized + metadata_path_component
     
         
-    def extract(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Fetches the public key of the issuer by querying a given endpoint.
         Previous responses might or might not be cached based on the cache_ttl

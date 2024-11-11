@@ -5,11 +5,8 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def __init__(self, **kargs):
         pass
 
-    def extract(self, issuer, trust_source):
+    def extract_and_update_trust_materials(self, issuer, trust_source):
         return trust_source
 
     def get_metadata(self, issuer, trust_source):
         return trust_source
-
-    def verify():
-        pass

@@ -112,7 +112,7 @@ def test_direct_trust_jwk():
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(random_issuer)
-    trust_source = trust_handler.extract(random_issuer, trust_source)
+    trust_source = trust_handler.extract_and_update_trust_materials(random_issuer, trust_source)
 
     obtained_jwks = trust_source.keys
         

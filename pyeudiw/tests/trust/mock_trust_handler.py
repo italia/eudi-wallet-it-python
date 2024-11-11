@@ -20,7 +20,7 @@ class MockTrustHandler(TrustHandlerInterface):
         }
         return trust_source
 
-    def extract(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
         trust_source.keys.append(mock_jwk)
         return trust_source
