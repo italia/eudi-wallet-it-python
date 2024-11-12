@@ -9,6 +9,8 @@ def test_e2e(testcase, settings):
     seed = settings["random_seed"]
     demo_keys = get_jwk(settings["key_settings"], True, seed)
     use_decoys = testcase.get("add_decoy_claims", False)
+    
+    
     serialization_format = testcase.get("serialization_format", "compact")
 
     extra_header_parameters = {"typ": "testcase+sd-jwt"}
@@ -32,11 +34,11 @@ def test_e2e(testcase, settings):
     output_issuance = sdjwt_at_issuer.sd_jwt_issuance
 
     # Holder
-
     sdjwt_at_holder = SDJWTHolder(
         output_issuance,
         serialization_format=serialization_format,
     )
+    
     sdjwt_at_holder.create_presentation(
         testcase["holder_disclosed_claims"],
         settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
@@ -47,14 +49,14 @@ def test_e2e(testcase, settings):
         ),
         demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
     )
-
+    
     output_holder = sdjwt_at_holder.sd_jwt_presentation
 
     # Verifier
     sdjwt_header_parameters = {}
 
     def cb_get_issuer_key(issuer, header_parameters):
-        if type(header_parameters) == dict:
+        if isinstance(header_parameters, dict):
             sdjwt_header_parameters.update(header_parameters)
         return demo_keys["issuer_public_keys"]
 
@@ -79,16 +81,17 @@ def test_e2e(testcase, settings):
             "jwk": demo_keys["holder_key"].export_public(as_dict=True)
         }
 
-    assert verified == expected_claims
+    assert verified == expected_claims, f"Verified payload mismatch: {verified} != {expected_claims}"
 
     # We don't compare header parameters for JSON Serialization for now
-    if serialization_format != "compact":
-        return
+    if serialization_format == "compact":
+        expected_header_parameters = {
+            "alg": testcase.get("sign_alg", "ES256"),
+            "typ": "testcase+sd-jwt",
+        }
+        expected_header_parameters.update(extra_header_parameters)
 
-    expected_header_parameters = {
-        "alg": testcase.get("sign_alg", "ES256"),
-        "typ": "testcase+sd-jwt",
-    }
-    expected_header_parameters.update(extra_header_parameters)
-
-    assert sdjwt_header_parameters == expected_header_parameters
+        # Assert degli header JWS
+        assert sdjwt_header_parameters == expected_header_parameters, (
+            f"Header parameters mismatch: {sdjwt_header_parameters} != {expected_header_parameters}"
+        )

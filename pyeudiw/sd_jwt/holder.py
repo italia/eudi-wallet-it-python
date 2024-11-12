@@ -1,5 +1,6 @@
 import logging
 
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
     DEFAULT_SIGNING_ALG,
@@ -14,7 +15,8 @@ from time import time
 from typing import Dict, List, Optional
 from itertools import zip_longest
 
-from jwcrypto.jws import JWS
+# from jwcrypto.jws import JWS
+from cryptojwt.jws.jws import JWS
 
 logger = logging.getLogger(__name__)
 
@@ -240,13 +242,33 @@ class SDJWTHolder(SDJWTCommon):
         }
 
         # Sign the SD-JWT-Release using the holder's key
-        self.key_binding_jwt = JWS(
-            payload=dumps(self.key_binding_jwt_payload),
+        # self.key_binding_jwt = JWS(
+        #     payload=dumps(self.key_binding_jwt_payload),
+        # )
+        
+        # self.key_binding_jwt = JWS(
+        #     alg=_alg,
+        #     msg=dumps(self.key_binding_jwt_payload)
+        # )
+        
+        
+        # self.serialized_key_binding_jwt = self.key_binding_jwt.sign_compact(
+        #     [holder_key],
+        #     protected=self.key_binding_jwt_header)
+        
+        self.key_binding_jwt = JWSHelper(holder_key)
+        
+        self.serialized_key_binding_jwt = self.key_binding_jwt.sign(
+            self.key_binding_jwt_payload,
+            protected=self.key_binding_jwt_header
         )
+        
+        
 
-        self.key_binding_jwt.add_signature(
-            holder_key,
-            alg=_alg,
-            protected=dumps(self.key_binding_jwt_header),
-        )
-        self.serialized_key_binding_jwt = self.key_binding_jwt.serialize(compact=True)
+
+        # self.key_binding_jwt.add_signature(
+        #     holder_key,
+        #     alg=_alg,
+        #     protected=dumps(self.key_binding_jwt_header),
+        # )
+        # self.serialized_key_binding_jwt = self.key_binding_jwt.serialize(compact=True)
