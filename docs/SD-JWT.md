@@ -87,7 +87,6 @@ else:
 ```  
 
   
-<br> 
 
 **Note:** 
 For more specific implementation details read more on [SD-JWT](../pyeudiw/sd_jwt/SD-JWT.md).
