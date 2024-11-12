@@ -17,7 +17,7 @@ SD_LIST_PREFIX = "..."
 JSON_SER_DISCLOSURE_KEY = "disclosures"
 JSON_SER_KB_JWT_KEY = "kb_jwt"
 
-logger = logging.getLogger("sd_jwt")
+logger = logging.getLogger(__name__)
 
 
 @dataclass
