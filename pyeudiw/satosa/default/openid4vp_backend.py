@@ -206,17 +206,17 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             'request_uri': f"{self.absolute_request_url}?id={state}",
         }
 
-        respose_url = self._build_authz_request_url(payload)
+        response_url = self._build_authz_request_url(payload)
 
         if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
             # Same Device flow
-            return Redirect(respose_url)
+            return Redirect(response_url)
 
         # Cross Device flow
         result = self.template.qrcode_page.render(
             {
                 "qrcode_color": self.config["qrcode"]["color"],
-                "qrcode_text": respose_url,
+                "qrcode_text": response_url,
                 "qrcode_size": self.config["qrcode"]["size"],
                 "qrcode_logo_path": self.config["qrcode"]["logo_path"],
                 "qrcode_expiration_time": self.config["qrcode"]["expiration_time"],
@@ -342,12 +342,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
     def _build_authz_request_url(self, payload: dict) -> str:
         scheme = self.config["authorization"]["url_scheme"]
+        if "://" not in scheme:
+            scheme = scheme + "://"
         # NOTE: path component is currently unused by the protocol, but currently
         # we leave it there as 'authorize' to stress the fact that this is an
         # OAuth 2.0 request modified by JAR (RFC9101)
         path = "authorize"
         query_params = urlencode(payload, quote_via=quote_plus)
-        return f"{scheme}://{path}?{query_params}"
+        return f"{scheme}{path}?{query_params}"
 
     @property
     def default_metadata_private_jwk(self) -> tuple:
