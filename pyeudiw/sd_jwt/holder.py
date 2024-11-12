@@ -16,7 +16,7 @@ from itertools import zip_longest
 
 from jwcrypto.jws import JWS
 
-logger = logging.getLogger("sd_jwt")
+logger = logging.getLogger(__name__)
 
 
 class SDJWTHolder(SDJWTCommon):
