@@ -1,7 +1,6 @@
 import builtins
 from dataclasses import dataclass
 
-from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 

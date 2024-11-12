@@ -1,5 +1,4 @@
 from typing import Dict
-from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format

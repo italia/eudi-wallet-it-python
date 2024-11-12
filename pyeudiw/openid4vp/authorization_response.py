@@ -5,6 +5,12 @@ from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jwt_format
 
+
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.hmac import SYMKey
+
 _RESPONSE_KEY = "response"
 
 
@@ -34,7 +40,7 @@ def _decrypt_jwe(jwe: str, decrypting_jwk: dict[str, any]) -> dict:
     return decrypter.decrypt(jwe)
 
 
-def _verify_and_decode_jwt(jwt: str, verifying_jwk: dict[dict, JWK]) -> dict:
+def _verify_and_decode_jwt(jwt: str, verifying_jwk: dict[dict, ECKey | RSAKey | OKPKey | SYMKey | dict]) -> dict:
     verifier = JWSHelper(verifying_jwk)
     raw_payload: str = verifier.verify(jwt)["msg"]
     payload: dict = json.loads(raw_payload)
