@@ -344,6 +344,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         scheme = self.config["authorization"]["url_scheme"]
         if "://" not in scheme:
             scheme = scheme + "://"
+        if not scheme.endswith("/"):
+            scheme = scheme + "/"
         # NOTE: path component is currently unused by the protocol, but currently
         # we leave it there as 'authorize' to stress the fact that this is an
         # OAuth 2.0 request modified by JAR (RFC9101)
