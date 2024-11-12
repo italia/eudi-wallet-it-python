@@ -21,8 +21,9 @@ from settings import TIMEOUT_S
 db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
-def _extract_request_uri(e: requests.exceptions.InvalidSchema) -> str:
-    request_uri = re.search(r'request_uri=(.*?)(?:\'|$)', urllib.parse.unquote_plus(e.args[0])).group(1)
+def _extract_request_uri(e: Exception) -> str:
+    request_uri: str = re.search(r'request_uri=(.*?)(?:\'|\s|$)', urllib.parse.unquote_plus(e.args[0])).group(1)
+    request_uri = request_uri.rstrip()
     return request_uri
 
 
@@ -43,7 +44,11 @@ try:
         timeout=TIMEOUT_S
     )
 except requests.exceptions.InvalidSchema as e:
+    # custom url scheme such as 'haip' or 'eudiw' will raise this exception
     request_uri = _extract_request_uri(e)
+except requests.exceptions.ConnectionError as e:
+    # universal link such as 'https://wallet.example' will raise this exception
+    request_uri = _extract_request_uri(e.args[0])
 
 sign_request_obj = http_user_agent.get(
     request_uri,

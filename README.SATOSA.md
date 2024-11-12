@@ -77,7 +77,7 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 | Parameter                              | Description                                                                    | Example value                                 |
 | -------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------- |
-| config.authorization.url_scheme        | The URL scheme for the authorization                                           | eudiw                                         |
+| config.authorization.url_scheme        | Either a custom URL scheme for the authorization, or a universal link          | haip, https://wallet.example                                       |
 | config.authorization.scopes            | The list of scopes for the authorization                                       | [pid-sd-jwt:unique_id+given_name+family_name] |
 | config.authorization.default_acr_value | The default authentication context class reference value for the authorization | https://www.spid.gov.it/SpidL2                |
 
