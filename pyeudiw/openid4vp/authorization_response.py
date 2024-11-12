@@ -34,7 +34,7 @@ def _decrypt_jwe(jwe: str, decrypting_jwk: dict[str, any]) -> dict:
     return decrypter.decrypt(jwe)
 
 
-def _verify_and_decode_jwt(jwt: str, verifying_jwk: dict[str, any]) -> dict:
+def _verify_and_decode_jwt(jwt: str, verifying_jwk: dict[dict, JWK]) -> dict:
     verifier = JWSHelper(verifying_jwk)
     raw_payload: str = verifier.verify(jwt)["msg"]
     payload: dict = json.loads(raw_payload)
