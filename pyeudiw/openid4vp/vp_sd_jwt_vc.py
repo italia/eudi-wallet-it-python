@@ -49,7 +49,8 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         challenge : VerifierChallenge = {}
         challenge["aud"] = self.verifier_id
         challenge["nonce"] = self.verifier_nonce
+        
         try:
             self.sdjwt.verify_holder_kb_jwt(challenge)
-        except (UnsupportedSdAlg, InvalidKeyBinding):
-            raise InvalidVPKeyBinding
+        except (UnsupportedSdAlg, InvalidKeyBinding) as e:
+            raise InvalidVPKeyBinding(f"{e}")

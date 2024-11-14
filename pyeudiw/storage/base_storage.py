@@ -171,6 +171,9 @@ class BaseStorage(BaseDB):
         :rtype: bool
         """
         raise NotImplementedError()
+    
+    def has_trust_source(self, entity_id: str) -> bool:
+        raise NotImplementedError()
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
         """
@@ -203,6 +206,32 @@ class BaseStorage(BaseDB):
 
         :returns: the document id.
         :rtype: str
+        """
+        raise NotImplementedError()
+    
+    def add_trust_source(self, entity_id: str, trust_source: dict) -> str:
+        """
+        Add a trust source.
+
+        :param entity_id: the entity id.
+        :type entity_id: str
+        :param trust_source: the trust source.
+        :type trust_source: dict
+
+        :returns: the document id.
+        :rtype: str
+        """
+        raise NotImplementedError()
+    
+    def get_trust_source(self, entity_id: str) -> Union[dict, None]:
+        """
+        Get a trust source.
+
+        :param entity_id: the entity id.
+        :type entity_id: str
+
+        :returns: the trust source.
+        :rtype: Union[dict, None]
         """
         raise NotImplementedError()
 

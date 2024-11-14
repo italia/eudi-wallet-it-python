@@ -142,7 +142,11 @@ def _verify_iat(payload: dict) -> None:
 
 def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: DecodedJwt, challenge: VerifierChallenge):
     _verify_challenge(hkb, challenge)
-    _verify_sd_hash(token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", ""))
+    _verify_sd_hash(
+        token_without_hkb, 
+        sd_hash_alg, 
+        hkb.payload.get("sd_hash",  "sha-256")
+    )
     _verify_iat(hkb.payload)
 
 

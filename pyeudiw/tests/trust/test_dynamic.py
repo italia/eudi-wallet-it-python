@@ -1,75 +1,50 @@
-from pyeudiw.trust.default import DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS
-from pyeudiw.trust.default.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
-from pyeudiw.trust.dynamic import CombinedTrustEvaluator, dynamic_trust_evaluators_loader
-from pyeudiw.trust.interface import TrustEvaluator
+from uuid import uuid4
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.tests.trust import correct_config, not_conformant
+from pyeudiw.tests.settings import CONFIG
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tests.trust.mock_trust_handler import MockTrustHandler
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
+from pyeudiw.trust.exceptions import TrustConfigurationError
+
+def test_trust_CombinedTrusstEvaluation_handler_loading():    
+    trust_ev = CombinedTrustEvaluator.from_config(correct_config, DBEngine(CONFIG["storage"]))
+
+    assert trust_ev
+    assert len(trust_ev.handlers) == 2
+    assert isinstance(trust_ev.handlers[0], MockTrustHandler)
+    assert isinstance(trust_ev.handlers[1], DirectTrustSdJwtVc)
 
 
-class MockTrustEvaluator(TrustEvaluator):
-    """Mock realization of TrustEvaluator for testing purposes only
-    """
-    mock_jwk = {
-        "crv": "P-256",
-        "kid": "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs",
-        "kty": "EC",
-        "use": "sig",
-        "x": "xu0FC3OQLgsea27rL0-d2CpVyKijjwl8tF6HB-3zLUg",
-        "y": "fUEsB8IrX2DgzqABfVsCody1RypAXX54fXQ1keoPP5Y"
-    }
+def test_not_conformant_CombinedTrusstEvaluation_handler_loading():
+    try:
+        CombinedTrustEvaluator.from_config(not_conformant, DBEngine(CONFIG["storage"]))
+        assert False
+    except TrustConfigurationError:
+        assert True
 
-    def __init__(self):
-        pass
+def test_if_no_conf_default_handler_instanciated():
+    trust_ev = CombinedTrustEvaluator.from_config({}, DBEngine(CONFIG["storage"]))
 
-    def get_public_keys(self, issuer: str) -> list[dict]:
-        return [
-            MockTrustEvaluator.mock_jwk
-        ]
+    assert len(trust_ev.handlers) == 1
+    assert isinstance(trust_ev.handlers[0], DirectTrustSdJwtVc)
 
-    def get_metadata(self, issuer: str) -> dict:
-        return {
-            "json_key": "json_value"
-        }
+def test_public_key_and_metadata_retrive():
+    db_engine = DBEngine(CONFIG["storage"])
 
-    def is_revoked(self, issuer: str) -> bool:
-        return False
+    trust_ev = CombinedTrustEvaluator.from_config(correct_config, db_engine)
 
-    def get_policies(self, issuer: str) -> dict:
-        return {}
+    uuid_url = f"http://{uuid4()}.issuer.it"
 
+    pub_keys = trust_ev.get_public_keys(uuid_url)
+    trust_source = db_engine.get_trust_source(uuid_url)
 
-def test_trust_evaluators_loader():
-    config = {
-        "mock": {
-            "module": "pyeudiw.tests.trust.test_dynamic",
-            "class": "MockTrustEvaluator",
-            "config": {}
-        },
-        "direct_trust_sd_jwt_vc": {
-            "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
-            "class": "DirectTrustSdJwtVc",
-            "config": {
-                "jwk_endpoint": "/.well-known/jwt-vc-issuer",
-                "httpc_params": {
-                    "connection": {
-                        "ssl": True
-                    },
-                    "session": {
-                        "timeout": 6
-                    }
-                }
-            }
-        }
-    }
-    trust_sources = dynamic_trust_evaluators_loader(config)
-    assert "mock" in trust_sources
-    assert trust_sources["mock"].__class__.__name__ == "MockTrustEvaluator"
-    assert "direct_trust_sd_jwt_vc" in trust_sources
-    assert trust_sources["direct_trust_sd_jwt_vc"].__class__.__name__ == "DirectTrustSdJwtVc"
+    assert trust_source
+    assert trust_source["keys"][0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
+    assert trust_source["metadata"] == {"json_key": "json_value"}
 
+    assert pub_keys[0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
 
-def test_combined_trust_evaluator():
-    evaluators = {
-        "mock": MockTrustEvaluator(),
-        "direct_trust_sd_jwt_vc": DirectTrustSdJwtVc(**DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS)
-    }
-    combined = CombinedTrustEvaluator(evaluators)
-    assert MockTrustEvaluator.mock_jwk in combined.get_public_keys("mock_issuer")
+    metadata = trust_ev.get_metadata(uuid_url)
+
+    assert metadata == {"json_key": "json_value"}
