@@ -2,6 +2,7 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.demo_utils import get_jwk
 from pyeudiw.sd_jwt.verifier import SDJWTVerifier
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 
 def test_e2e(testcase, settings):
@@ -33,12 +34,14 @@ def test_e2e(testcase, settings):
 
     output_issuance = sdjwt_at_issuer.sd_jwt_issuance
 
+
     # Holder
     sdjwt_at_holder = SDJWTHolder(
         output_issuance,
         serialization_format=serialization_format,
     )
-    
+
+
     sdjwt_at_holder.create_presentation(
         testcase["holder_disclosed_claims"],
         settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
@@ -71,6 +74,7 @@ def test_e2e(testcase, settings):
         settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
         serialization_format=serialization_format,
     )
+    
     verified = sdjwt_at_verifier.get_verified_payload()
 
     expected_claims = testcase["expect_verified_user_claims"]
@@ -78,8 +82,9 @@ def test_e2e(testcase, settings):
 
     if testcase.get("key_binding", False):
         expected_claims["cnf"] = {
-            "jwk": demo_keys["holder_key"].export_public(as_dict=True)
+            "jwk": key_from_jwk_dict(demo_keys["holder_key"],private=False).serialize()
         }
+
 
     assert verified == expected_claims, f"Verified payload mismatch: {verified} != {expected_claims}"
 

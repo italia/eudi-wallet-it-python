@@ -133,9 +133,7 @@ class SDJWTCommon:
 
             # Extract only the body from SD-JWT without verifying the signature
             _, jwt_body, _ = self._unverified_input_sd_jwt.split(".")
-            self._unverified_input_sd_jwt_payload = loads(
-                self._base64url_decode(jwt_body)
-            )
+            self._unverified_input_sd_jwt_payload = self._base64url_decode(jwt_body)
             self._unverified_compact_serialized_input_sd_jwt = (
                 self._unverified_input_sd_jwt
             )

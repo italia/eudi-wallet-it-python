@@ -15,8 +15,8 @@ from time import time
 from typing import Dict, List, Optional
 from itertools import zip_longest
 
-# from jwcrypto.jws import JWS
 from cryptojwt.jws.jws import JWS
+from json import dumps, loads
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ class SDJWTHolder(SDJWTCommon):
     ):
         # Select the disclosures
         self.hs_disclosures = []
+        
         self._select_disclosures(self.sd_jwt_payload, claims_to_disclose)
 
         # Optional: Create a key binding JWT
@@ -95,6 +96,7 @@ class SDJWTHolder(SDJWTCommon):
                     ] = self.serialized_key_binding_jwt
 
             self.sd_jwt_presentation = dumps(presentation)
+            
 
     def _select_disclosures(self, sd_jwt_claims, claims_to_disclose):
         # Recursively process the claims in sd_jwt_claims. In each
@@ -102,6 +104,9 @@ class SDJWTHolder(SDJWTCommon):
         # contains hash digests for claims that should be disclosed,
         # then add the corresponding disclosures to the claims_to_disclose.
 
+    
+        if(type(sd_jwt_claims) is bytes):
+            return self._select_disclosures_dict(loads(self.sd_jwt_payload.decode('utf-8')), claims_to_disclose)
         if type(sd_jwt_claims) is list:
             return self._select_disclosures_list(sd_jwt_claims, claims_to_disclose)
         elif type(sd_jwt_claims) is dict:
@@ -240,35 +245,11 @@ class SDJWTHolder(SDJWTCommon):
             "iat": int(time()),
             KB_DIGEST_KEY: presentation_hash,
         }
-
-        # Sign the SD-JWT-Release using the holder's key
-        # self.key_binding_jwt = JWS(
-        #     payload=dumps(self.key_binding_jwt_payload),
-        # )
-        
-        # self.key_binding_jwt = JWS(
-        #     alg=_alg,
-        #     msg=dumps(self.key_binding_jwt_payload)
-        # )
-        
-        
-        # self.serialized_key_binding_jwt = self.key_binding_jwt.sign_compact(
-        #     [holder_key],
-        #     protected=self.key_binding_jwt_header)
-        
+    
         self.key_binding_jwt = JWSHelper(holder_key)
         
         self.serialized_key_binding_jwt = self.key_binding_jwt.sign(
             self.key_binding_jwt_payload,
             protected=self.key_binding_jwt_header
         )
-        
-        
-
-
-        # self.key_binding_jwt.add_signature(
-        #     holder_key,
-        #     alg=_alg,
-        #     protected=dumps(self.key_binding_jwt_header),
-        # )
-        # self.serialized_key_binding_jwt = self.key_binding_jwt.serialize(compact=True)
+    

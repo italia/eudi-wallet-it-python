@@ -1,3 +1,4 @@
+from pyeudiw.jwt import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
     DEFAULT_SIGNING_ALG,
@@ -10,8 +11,11 @@ from pyeudiw.sd_jwt.common import (
 from json import dumps, loads
 from typing import Dict, List, Union, Callable
 
-from jwcrypto.jwk import JWK
-from jwcrypto.jws import JWS
+from cryptojwt.jwk import JWK
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jws.jws import JWS
+
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 
 
 class SDJWTVerifier(SDJWTCommon):
@@ -54,17 +58,29 @@ class SDJWTVerifier(SDJWTCommon):
         cb_get_issuer_key,
         sign_alg: str = None,
     ):
-        parsed_input_sd_jwt = JWS()
-        parsed_input_sd_jwt.deserialize(self._unverified_input_sd_jwt)
-
-        unverified_issuer = self._unverified_input_sd_jwt_payload.get("iss", None)
-        unverified_header_parameters = parsed_input_sd_jwt.jose_header
+        unverified_header_parameters = decode_jwt_header(self._unverified_input_sd_jwt)
+        sign_alg = sign_alg or unverified_header_parameters.get("alg", DEFAULT_SIGNING_ALG)
+        
+        parsed_input_sd_jwt = JWS(alg=sign_alg)
+        
+        parsed_payload = decode_jwt_payload(self._unverified_input_sd_jwt)
+        
+        unverified_issuer = parsed_payload.get("iss", None)
+        
         issuer_public_key = cb_get_issuer_key(
             unverified_issuer, unverified_header_parameters
         )
-        parsed_input_sd_jwt.verify(issuer_public_key, alg=sign_alg)
 
-        self._sd_jwt_payload = loads(parsed_input_sd_jwt.payload.decode("utf-8"))
+        issuer_public_key = [key_from_jwk_dict(key) for key in issuer_public_key if isinstance(key, dict)]
+    
+            
+        self._sd_jwt_payload = parsed_input_sd_jwt.verify_compact(
+            jws=self._unverified_input_sd_jwt, 
+            keys=issuer_public_key, 
+            sigalg=sign_alg
+        )
+
+        # self._sd_jwt_payload = loads(parsed_input_sd_jwt.payload.decode("utf-8"))
         # TODO: Check exp/nbf/iat
 
         self._holder_public_key_payload = self._sd_jwt_payload.get("cnf", None)
@@ -78,14 +94,12 @@ class SDJWTVerifier(SDJWTCommon):
 
         # Deserialized the key binding JWT
         _alg = sign_alg or DEFAULT_SIGNING_ALG
-        parsed_input_key_binding_jwt = JWS()
-        parsed_input_key_binding_jwt.deserialize(self._unverified_input_key_binding_jwt)
 
         # Verify the key binding JWT using the holder public key
-        if not self._holder_public_key_payload:
-            raise ValueError("No holder public key in SD-JWT")
 
         holder_public_key_payload_jwk = self._holder_public_key_payload.get("jwk", None)
+        
+        
         if not holder_public_key_payload_jwk:
             raise ValueError(
                 "The holder_public_key_payload is malformed. "
@@ -93,18 +107,18 @@ class SDJWTVerifier(SDJWTCommon):
                 f"{self._holder_public_key_payload}"
             )
 
-        pubkey = JWK.from_json(dumps(holder_public_key_payload_jwk))
+        pubkey = key_from_jwk_dict(holder_public_key_payload_jwk)
 
-        parsed_input_key_binding_jwt.verify(pubkey, alg=_alg)
+        parsed_input_key_binding_jwt = JWSHelper(pubkey)
+        verified_payload = parsed_input_key_binding_jwt.verify(self._unverified_input_key_binding_jwt)
 
-        # Check header typ
-        key_binding_jwt_header = parsed_input_key_binding_jwt.jose_header
+        key_binding_jwt_header = decode_jwt_header(self._unverified_input_key_binding_jwt)
 
         if key_binding_jwt_header["typ"] != self.KB_JWT_TYP_HEADER:
             raise ValueError("Invalid header typ")
 
         # Check payload
-        key_binding_jwt_payload = loads(parsed_input_key_binding_jwt.payload)
+        key_binding_jwt_payload = verified_payload
 
         if key_binding_jwt_payload["aud"] != expected_aud:
             raise ValueError("Invalid audience in KB-JWT")

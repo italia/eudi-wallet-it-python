@@ -5,7 +5,8 @@ import random
 import yaml
 import sys
 
-from jwcrypto.jwk import JWK, JWKSet
+from cryptojwt.jwk.ec import  new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from typing import Union
 
 logger = logging.getLogger("sd_jwt")
@@ -59,25 +60,20 @@ def get_jwk(jwk_kwargs: dict = {}, no_randomness: bool = False, random_seed: int
 
     returns static or random JWK
     """
+    
     if no_randomness:
         random.seed(random_seed)
-        issuer_keys = [JWK.from_json(json.dumps(k)) for k in jwk_kwargs["issuer_keys"]]
-        holder_key = JWK.from_json(json.dumps(jwk_kwargs["holder_key"]))
-        logger.warning("Using fixed randomness for demo purposes")
+        issuer_keys = [key_from_jwk_dict(k) for k in jwk_kwargs["issuer_keys"]]
+        holder_key = key_from_jwk_dict(jwk_kwargs["holder_key"])
     else:
-        _kwargs = {"key_size": jwk_kwargs["key_size"], "kty": jwk_kwargs["kty"]}
-        issuer_keys = [JWK.generate(**_kwargs)]
-        holder_key = JWK.generate(**_kwargs)
+        issuer_keys = [new_ec_key('P-256')]
+        holder_key = new_ec_key('P-256')
 
-    if len(issuer_keys) > 1:
-        issuer_public_keys = JWKSet()
-        for k in issuer_keys:
-            issuer_public_keys.add(JWK.from_json(k.export_public()))
-    else:
-        issuer_public_keys = JWK.from_json(issuer_keys[0].export_public())
-
+    _issuer_public_keys = []
+    _issuer_public_keys.extend([k.serialize() for k in issuer_keys])
+    
     return dict(
-        issuer_keys=issuer_keys,
-        holder_key=holder_key,
-        issuer_public_keys=issuer_public_keys,
+        issuer_keys=[k.serialize(private=True) for k in issuer_keys],
+        holder_key=holder_key.serialize(private=True),
+        issuer_public_keys=_issuer_public_keys,
     )
