@@ -1,3 +1,5 @@
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.demo_utils import get_jwk
 from pyeudiw.sd_jwt.verifier import SDJWTVerifier
@@ -57,8 +59,9 @@ def test_e2e(testcase, settings):
     expected_claims["iss"] = settings["identifiers"]["issuer"]
 
     if testcase.get("key_binding", False):
+        demo_keys["holder_key"]
         expected_claims["cnf"] = {
-            "jwk": demo_keys["holder_key"].export_public(as_dict=True)
+            "jwk": key_from_jwk_dict(demo_keys["holder_key"],private=False).serialize()
         }
 
     assert verified == expected_claims

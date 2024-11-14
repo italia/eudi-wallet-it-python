@@ -57,7 +57,7 @@ class SDJWTIssuer(SDJWTCommon):
         if len(self._issuer_keys) > 1 and self._serialization_format != "json":
             raise ValueError(
                 f"Multiple issuer keys (here {len(self._issuer_keys)}) are only supported with JSON serialization."
-                f"\nKeys found: {self._issuer_keys}"
+                f"Keys found: {self._issuer_keys}"
             )
 
         self._check_for_sd_claim(self._user_claims)
@@ -99,7 +99,7 @@ class SDJWTIssuer(SDJWTCommon):
         # For other types, assume that the value can be disclosed.
         elif isinstance(user_claims, SDObj):
             raise ValueError(
-                f"SDObj found in illegal place.\nThe claim value '{user_claims}' should not be wrapped by SDObj."
+                f"SDObj found in illegal place. The claim value '{user_claims}' should not be wrapped by SDObj."
             )
         return user_claims
 
@@ -192,8 +192,6 @@ class SDJWTIssuer(SDJWTCommon):
             protected=_protected_headers,
             serialization_format=self._serialization_format
         )
-           
-            
 
     def _create_combined(self):
         if self._serialization_format == "compact":

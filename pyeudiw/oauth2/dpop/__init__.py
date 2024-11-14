@@ -136,8 +136,7 @@ class DPoPVerifier:
         :returns: True if the validation is correctly executed, False otherwise
         :rtype: bool
         """
-
-        jws_verifier = JWSHelper(self.public_jwk)
+        jws_verifier = JWSHelper(jwks=[self.public_jwk])
         try:
             dpop_valid = jws_verifier.verify(self.proof)
         except KidError as e:

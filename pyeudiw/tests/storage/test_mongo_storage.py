@@ -15,7 +15,7 @@ class TestMongoStorage:
                 "db_trust_attestations_collection": "trust_attestations",
                 "db_trust_anchors_collection": "trust_anchors"
             },
-            "mongodb://localhost:27017/",
+            "mongodb://satosa:thatpassword@localhost:27017/",
             {}
         )
 

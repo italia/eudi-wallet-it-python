@@ -20,7 +20,8 @@ CONFIG_DB = {
             "module": "pyeudiw.storage.mongo_storage",
             "class": "MongoStorage",
             "init_params": {
-                "url": "mongodb://localhost:27017/",
+                # according to Satosa-Saml2Spid demo
+                "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",

@@ -8,10 +8,10 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt import (
-    import_ec,
     issue_sd_jwt,
     load_specification_from_yaml_string
 )
+from cryptojwt.jwk.ec import import_ec
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
@@ -95,7 +95,7 @@ def apply_trust_settings(db_engine_inst: DBEngine) -> DBEngine:
     return db_engine_inst
 
 def create_saml_auth_request() -> str:
-    auth_req_url = f"{saml2_request["headers"][0][1]}&idp_hinting=wallet"
+    auth_req_url = f"{saml2_request['headers'][0][1]}&idp_hinting=wallet"
     return auth_req_url
 
 def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]:

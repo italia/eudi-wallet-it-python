@@ -10,7 +10,7 @@ class TestMongoCache:
     def create_storage_instance(self):
         self.cache = MongoCache(
             {"db_name": "eudiw"},
-            "mongodb://localhost:27017/",
+            "mongodb://satosa:thatpassword@localhost:27017/",
             {}
         )
 

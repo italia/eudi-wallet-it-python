@@ -19,7 +19,7 @@ CONFIG = {
 
     "ui": {
         "static_storage_url": BASE_URL,
-        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
+        "template_folder": f"{pathlib.Path().absolute().__str__()}/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
         "error_template": "error.html",
         "error_url": "https://localhost:9999/error_page.html"
@@ -156,7 +156,8 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    # according to Satosa-Saml2Spid demo
+                    "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -167,14 +168,16 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    # according to Satosa-Saml2Spid demo
+                    "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
-                        "db_trust_anchors_collection": "trust_anchors"
+                        "db_trust_anchors_collection": "trust_anchors",
                     },
-                    "connection_params": {}
+                    "connection_params": {
+                    }
                 }
             }
         }
@@ -458,7 +461,8 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    # according to Satosa-Saml2Spid demo
+                    "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -469,7 +473,8 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    # according to Satosa-Saml2Spid demo
+                    "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
