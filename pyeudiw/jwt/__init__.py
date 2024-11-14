@@ -9,12 +9,19 @@ from cryptojwt.jwe.jwe_rsa import JWE_RSA
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS as JWSec
 
-from pyeudiw.jwk import JWK
+
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.jwt.exceptions import JWEEncryptionError
 
 from .exceptions import JWEDecryptionError, JWSVerificationError
+
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.hmac import SYMKey
+
+from typing import Literal
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
@@ -38,23 +45,25 @@ DEFAULT_ENC_ENC_MAP = {
     "EC": "A256GCM"
 }
 
+type KeyLike = ECKey | RSAKey | OKPKey | SYMKey
+type SerializationFormat = Literal["compact", "json"]
 
-class JWEHelper():
-    """
-    The helper class for work with JWEs.
-    """
-
-    def __init__(self, jwk: Union[JWK, dict]):
+class JWHelperInterface:
+    def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict):
         """
         Creates an instance of JWEHelper.
 
-        :param jwk: The JWK used to crypt and encrypt the content of JWE.
-        :type jwk: JWK
+        :param jwks: The list of JWK used to crypt and encrypt the content of JWE.
+
         """
-        self.jwk = jwk
-        if isinstance(jwk, dict):
-            self.jwk = JWK(jwk)
-        self.alg = DEFAULT_SIG_KTY_MAP[self.jwk.key.kty]
+        if isinstance(jwks, dict):
+            self.jwks = [key_from_jwk_dict(jwks)]
+        elif isinstance (jwks, list):
+            self.jwks = [key_from_jwk_dict(j) for j in jwks if isinstance(j, dict)] 
+class JWEHelper(JWHelperInterface):
+    """
+    The helper class for work with JWEs.
+    """
 
     def encrypt(self, plain_dict: Union[dict, str, int, None], **kwargs) -> str:
         """
@@ -67,19 +76,10 @@ class JWEHelper():
         :returns: A string that represents the JWE.
         :rtype: str
         """
-        _key = key_from_jwk_dict(self.jwk.as_dict())
-
-        if isinstance(_key, cryptojwt.jwk.rsa.RSAKey):
-            JWE_CLASS = JWE_RSA
-        elif isinstance(_key, cryptojwt.jwk.ec.ECKey):
-            JWE_CLASS = JWE_EC
-        else:
-            raise JWEEncryptionError(
-                f"Error while encrypting: f{_key.__class__.__name__} not supported!")
-
-        _payload: str | int | bytes = ""
-
-        if isinstance(plain_dict, dict):
+        
+        jwe_strings =[]
+        
+        if isinstance(plain_dict,dict):
             _payload = json.dumps(plain_dict).encode()
         elif not plain_dict:
             _payload = ""
@@ -87,24 +87,35 @@ class JWEHelper():
             _payload = plain_dict
         else:
             _payload = ""
+            
+        for key in self.jwks:
+            if isinstance(self.jwk, cryptojwt.jwk.rsa.RSAKey):
+                JWE_CLASS = JWE_RSA
+            elif isinstance(self.jwk, cryptojwt.jwk.ec.ECKey):
+                JWE_CLASS = JWE_EC
+            else:
+                raise JWEEncryptionError(
+                    f"Error while encrypting: f{self.jwk.__class__.__name__} not supported!")
+            
+            _keyobj = JWE_CLASS(
+                _payload,
+                alg=DEFAULT_ENC_ALG_MAP[key.kty],
+                enc=DEFAULT_ENC_ENC_MAP[key.kty],
+                kid=self.key.kid,
+                **kwargs
+            )
 
-        _keyobj = JWE_CLASS(
-            _payload,
-            alg=DEFAULT_ENC_ALG_MAP[_key.kty],
-            enc=DEFAULT_ENC_ENC_MAP[_key.kty],
-            kid=_key.kid,
-            **kwargs
-        )
-
-        if _key.kty == 'EC':
-            _keyobj: JWE_EC
-            cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(
-                msg=_payload, key=_key)
-            kwargs = {"params": params, "cek": cek,
-                      "iv": iv, "encrypted_key": encrypted_key}
-            return _keyobj.encrypt(**kwargs)
-        else:
-            return _keyobj.encrypt(key=_key.public_key())
+            if key.kty == 'EC':
+                _keyobj: JWE_EC
+                cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(
+                    msg=_payload, key=key)
+                kwargs = {"params": params, "cek": cek,
+                        "iv": iv, "encrypted_key": encrypted_key}
+                return _keyobj.encrypt(**kwargs)
+            else:
+                return _keyobj.encrypt(key=key.public_key())
+            
+        return jwe_strings[0] if len(jwe_strings)==1 else jwe_strings
 
     def decrypt(self, jwe: str) -> dict:
         """
@@ -130,14 +141,12 @@ class JWEHelper():
 
         _decryptor = factory(jwe, alg=_alg, enc=_enc)
 
-        _dkey = key_from_jwk_dict(self.jwk.as_dict())
-
-        if isinstance(_dkey, cryptojwt.jwk.ec.ECKey):
+        if isinstance(self.jwk, cryptojwt.jwk.ec.ECKey):
             jwdec = JWE_EC()
-            jwdec.dec_setup(_decryptor.jwt, key=self.jwk.key.private_key())
+            jwdec.dec_setup(_decryptor.jwt, key=self.jwk.private_key())
             msg = jwdec.decrypt(_decryptor.jwt)
         else:
-            msg = _decryptor.decrypt(jwe, [_dkey])
+            msg = _decryptor.decrypt(jwe, [self.jwk])
 
         try:
             msg_dict = json.loads(msg)
@@ -146,27 +155,16 @@ class JWEHelper():
         return msg_dict
 
 
-class JWSHelper:
+class JWSHelper(JWHelperInterface):
     """
     The helper class for work with JWEs.
     """
-
-    def __init__(self, jwk: Union[JWK, dict]):
-        """
-        Creates an instance of JWSHelper.
-
-        :param jwk: The JWK used to sign and verify the content of JWS.
-        :type jwk: Union[JWK, dict]
-        """
-        self.jwk = jwk
-        if isinstance(jwk, dict):
-            self.jwk = JWK(jwk)
-        self.alg = DEFAULT_SIG_KTY_MAP[self.jwk.key.kty]
 
     def sign(
         self,
         plain_dict: Union[dict, str, int, None],
         protected: dict = {},
+        serialization_format: SerializationFormat = "compact",
         **kwargs
     ) -> str:
         """
@@ -182,7 +180,6 @@ class JWSHelper:
         :returns: A string that represents the JWS.
         :rtype: str
         """
-        _key = key_from_jwk_dict(self.jwk.as_dict())
 
         _payload: str | int | bytes = ""
 
@@ -194,8 +191,15 @@ class JWSHelper:
             _payload = plain_dict
         else:
             _payload = ""
-        _signer = JWSec(_payload, alg=self.alg, **kwargs)
-        return _signer.sign_compact([_key], protected=protected, **kwargs)
+        _signer = JWSec(_payload,**kwargs)
+        
+        
+
+        
+        if serialization_format=='compact':
+            return _signer.sign_compact(self.jwks, protected=protected, alg = self.jwks[0].kty)
+        
+        return _signer.sign_json(keys=self.jwks, headers= [(protected, {})])
 
     def verify(self, jws: str, **kwargs) -> (str | Any | bytes):
         """
@@ -210,8 +214,7 @@ class JWSHelper:
         :returns: A string that represents the payload of JWS.
         :rtype: str
         """
-        _key = key_from_jwk_dict(self.jwk.as_dict())
-        _jwk_dict = self.jwk.as_dict()
+        _jwk_dict = self.jwk.to_dict()
 
         try:
             _head = decode_jwt_header(jws)
@@ -225,12 +228,8 @@ class JWSHelper:
                     f"{_head.get('kid')} != {_jwk_dict['kid']}. Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
                 )
         # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y value using EC keys
-        # elif _head.get("jwk"):
-            # if _head["jwk"] != _jwk_dict:  # pragma: no cover
-                # raise JwkError(
-                # f"{_head['jwk']} != {_jwk_dict}"
-                # )
 
-        verifier = JWSec(alg=_head["alg"], **kwargs)
-        msg = verifier.verify_compact(jws, [_key])
+        verifier = JWSec(alg=self.alg, **kwargs)
+        msg = verifier.verify_compact(jws, self.jwk)
         return msg
+

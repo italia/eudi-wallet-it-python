@@ -56,7 +56,7 @@ class DPoPIssuer:
             data,
             protected={
                 'typ': "dpop+jwt",
-                'jwk': self.private_jwk.public_key
+                'jwk': self.private_jwk.serialize()
             }
         )
         return jwt

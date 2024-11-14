@@ -1,0 +1,20 @@
+user_claims:
+  recursive:
+    - boring
+    - foo: "bar"
+      baz:
+        qux: "quux"
+    - ["foo", "bar"]
+
+  test2: ["foo", "bar"]
+
+holder_disclosed_claims: {}
+
+expect_verified_user_claims:
+  recursive:
+    - boring
+    - foo: "bar"
+      baz:
+        qux: "quux"
+    - ["foo", "bar"]
+  test2: ["foo", "bar"]

@@ -1,8 +1,7 @@
 import pathlib
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
-
-from pyeudiw.jwk import JWK
+from cryptojwt.jwk.ec import new_ec_key
 
 
 BASE_URL = "https://example.com"
@@ -689,8 +688,9 @@ INTERNAL_ATTRIBUTES: dict = {
 }
 
 
-PRIVATE_JWK = JWK()
-PUBLIC_JWK = PRIVATE_JWK.public_key
+PRIVATE_JWK = new_ec_key('P-256')
+PUBLIC_JWK = PRIVATE_JWK.get_key()
+
 
 
 WALLET_INSTANCE_ATTESTATION = {

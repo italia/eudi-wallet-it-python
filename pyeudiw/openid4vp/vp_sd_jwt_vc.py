@@ -1,6 +1,5 @@
 from typing import Optional
 
-from pyeudiw.jwk import JWK
 from pyeudiw.jwt.parse import KeyIdentifier_T, extract_key_identifier
 from pyeudiw.jwt.verification import is_jwt_expired
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
@@ -9,6 +8,10 @@ from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.hmac import SYMKey
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     def __init__(self, token: str, verifier_id: Optional[str] = None, verifier_nonce: Optional[str] = None):
@@ -29,7 +32,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     def get_credentials(self) -> dict:
         return self.sdjwt.get_disclosed_claims()
 
-    def get_signing_key(self) -> JWK | KeyIdentifier_T:
+    def get_signing_key(self) -> ECKey | RSAKey | OKPKey | SYMKey | dict | KeyIdentifier_T:
         return extract_key_identifier(self.sdjwt.issuer_jwt.header)
 
     def is_revoked(self) -> bool:
@@ -39,7 +42,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     def is_expired(self) -> bool:
         return is_jwt_expired(self.sdjwt.issuer_jwt)
 
-    def verify_signature(self, public_key: JWK) -> None:
+    def verify_signature(self, public_key: ECKey | RSAKey | OKPKey | SYMKey | dict ) -> None:
         return self.sdjwt.verify_issuer_jwt_signature(public_key)
     
     def verify_challenge(self) -> None:

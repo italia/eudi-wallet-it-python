@@ -27,7 +27,7 @@ from pyeudiw.tests.federation.base import (
     leaf_wallet_signed,
     trust_chain_issuer
 )
-from sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.holder import SDJWTHolder
 from saml2_sp import saml2_request
 
 from settings import (

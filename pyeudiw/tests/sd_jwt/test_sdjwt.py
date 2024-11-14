@@ -1,7 +1,6 @@
 import builtins
 from dataclasses import dataclass
 
-from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 
@@ -149,7 +148,7 @@ def test_sdjwt_hash_hey_binding():
 
 def test_sd_jwt_verify_issuer_jwt():
     sdjwt = SdJwt(PRESENTATION_WITH_KB)
-    sdjwt.verify_issuer_jwt_signature(JWK(ISSUER_JWK))
+    sdjwt.verify_issuer_jwt_signature(ISSUER_JWK)
 
 
 def test_sd_jwt_verify_holder_kb_signature():

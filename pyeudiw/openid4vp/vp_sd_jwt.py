@@ -1,12 +1,14 @@
 from typing import Dict
-from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
-from pyeudiw.sd_jwt import verify_sd_jwt
+
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
+
+
 
 
 class VpSdJwt(Vp):
@@ -70,19 +72,15 @@ class VpSdJwt(Vp):
                 f"the KID {self.credential_headers['kid']}"
             )
 
-        issuer_jwk = JWK(issuer_jwks_by_kid[self.credential_headers["kid"]])
-        holder_jwk = JWK(self.credential_payload["cnf"]["jwk"])
+        issuer_jwk = issuer_jwks_by_kid[self.credential_headers["kid"]]
+        holder_jwk = self.credential_payload["cnf"]["jwk"]
 
         # verify PoP
         jws = JWSHelper(holder_jwk)
         if not jws.verify(self.jwt):
             return False
-
-        result = verify_sd_jwt(
-            sd_jwt_presentation=self.payload["vp"],
-            issuer_key=issuer_jwk,
-            holder_key=holder_jwk
-        )
+    
+        result = verify_jws_with_key(self.payload["vp"], issuer_jwk)
         self.result = result
 
         # TODO: with unit tests we have holder_disclosed_claims while in
