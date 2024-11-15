@@ -67,13 +67,22 @@ class SDJWTVerifier(SDJWTCommon):
         
         unverified_issuer = parsed_payload.get("iss", None)
         
-        issuer_public_key = cb_get_issuer_key(
+        issuer_public_key_input = cb_get_issuer_key(
             unverified_issuer, unverified_header_parameters
         )
+        
+        issuer_public_key=[]
+        for key in issuer_public_key_input:
+            if not isinstance(key, dict):
+                raise ValueError(
+                    "The issuer_public_key must be a list of JWKs. "
+                    f"Found: {type(key)} in {issuer_public_key}"
+                )
+            key = key_from_jwk_dict(key)
+            key.add_kid()
+            issuer_public_key.append(key)
 
-        issuer_public_key = [key_from_jwk_dict(key) for key in issuer_public_key if isinstance(key, dict)]
     
-            
         self._sd_jwt_payload = parsed_input_sd_jwt.verify_compact(
             jws=self._unverified_input_sd_jwt, 
             keys=issuer_public_key, 
@@ -108,8 +117,9 @@ class SDJWTVerifier(SDJWTCommon):
             )
 
         pubkey = key_from_jwk_dict(holder_public_key_payload_jwk)
+        
 
-        parsed_input_key_binding_jwt = JWSHelper(pubkey)
+        parsed_input_key_binding_jwt = JWSHelper(jwks=pubkey)
         verified_payload = parsed_input_key_binding_jwt.verify(self._unverified_input_key_binding_jwt)
 
         key_binding_jwt_header = decode_jwt_header(self._unverified_input_key_binding_jwt)
