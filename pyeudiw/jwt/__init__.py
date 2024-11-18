@@ -202,6 +202,7 @@ class JWSHelper(JWHelperInterface):
         self,
         plain_dict: Union[dict, str, int, None],
         protected: dict = {},
+        unprotected: dict = {},
         serialization_format: SerializationFormat = "compact",
         kid: str = "",
         **kwargs
@@ -238,7 +239,7 @@ class JWSHelper(JWHelperInterface):
         else:
             if isinstance(plain_dict, bytes):
                 plain_dict = plain_dict.decode()
-            return _signer.sign_json(keys=self.jwks, headers= [(protected, {})])
+            return _signer.sign_json(keys=self.jwks, headers= [(protected, unprotected)], flatten=True)
 
     def verify(self, jwt: str, **kwargs) -> (str | Any | bytes):
         """

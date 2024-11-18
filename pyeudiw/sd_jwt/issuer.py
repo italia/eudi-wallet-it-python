@@ -185,11 +185,18 @@ class SDJWTIssuer(SDJWTCommon):
         # override if any
         _protected_headers.update(self._extra_header_parameters)
         
+        _unprotected_headers = {}
+        for i, key in enumerate(self._issuer_keys):
+            _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
+            if self._serialization_format == "json" and i == 0:
+                _unprotected_headers = _unprotected_headers or {}
+                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [d.b64 for d in self.ii_disclosures]
 
         self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
         self.serialized_sd_jwt = self.sd_jwt.sign(
             self.sd_jwt_payload,
             protected=_protected_headers,
+            unprotected=_unprotected_headers,
             serialization_format=self._serialization_format
         )
 
