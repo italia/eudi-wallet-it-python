@@ -18,23 +18,25 @@ This project folder always provide up to date example of the pyeudiw plugin conf
 The MongoDB connection is configured dynamically using the environment variable `PYEUDIW_MONGO_TEST_AUTH_INLINE`.
 
 #### How It Works
-- The value of `PYEUDIW_MONGO_TEST_AUTH_INLINE` should be in the format `username:password`.
+- The value of `PYEUDIW_MONGO_TEST_AUTH_INLINE` should be in the format `username:password@`.
 - If the variable is not set, the configuration defaults to:
-  - **Authentication**: Defaults to `satosa:thatpassword`.
+  - **Authentication**: Defaults to `satosa:thatpassword@`.
   - **MongoDB URL**: `mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000`.
 
 #### Example Usage
 1. **With Authentication**:
    Set the environment variable:
    ```bash
-   export PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword"
+   export PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@"
    ```
+
+   or just using `.env` file
 
 #### Custom Behavior
 You can override the default credentials by setting the environment variable:
 
 ```bash
-export PYEUDIW_MONGO_TEST_AUTH_INLINE="customuser:custompassword"
+export PYEUDIW_MONGO_TEST_AUTH_INLINE="customuser:custompassword@"
 ```
 
 ### Dependencies

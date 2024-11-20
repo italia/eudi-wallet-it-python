@@ -158,7 +158,7 @@ CONFIG = {
                 "class": "MongoCache",
                 "init_params": {
                     # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -170,7 +170,7 @@ CONFIG = {
                 "class": "MongoStorage",
                 "init_params": {
                     # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
@@ -463,7 +463,7 @@ CONFIG_DIRECT_TRUST = {
                 "class": "MongoCache",
                 "init_params": {
                     # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -475,7 +475,7 @@ CONFIG_DIRECT_TRUST = {
                 "class": "MongoStorage",
                 "init_params": {
                     # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",

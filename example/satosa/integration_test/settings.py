@@ -22,17 +22,14 @@ CONFIG_DB = {
             "class": "MongoStorage",
             "init_params": {
                 # according to Satosa-Saml2Spid demo
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",
                     "db_trust_attestations_collection": "trust_attestations",
                     "db_trust_anchors_collection": "trust_anchors"
                 },
-                "connection_params": {
-                    "username": os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword').split(':')[0],
-                    "password": os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword').split(':')[1] if ':' in os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword') else ""
-                }
+                "connection_params": {}
             }
         }
     }

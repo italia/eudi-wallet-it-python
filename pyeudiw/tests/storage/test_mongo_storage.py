@@ -16,7 +16,7 @@ class TestMongoStorage:
                 "db_trust_attestations_collection": "trust_attestations",
                 "db_trust_anchors_collection": "trust_anchors"
             },
-            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword')}@localhost:27017/?timeoutMS=2000",
+            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
             {}
         )
 
