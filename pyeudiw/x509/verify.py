@@ -168,5 +168,5 @@ def is_der_format(cert: bytes) -> str:
         return False
 
 
-def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | OKPKey | SYMKey | dict:
+def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
     raise NotImplementedError("TODO")

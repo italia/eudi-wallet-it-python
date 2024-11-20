@@ -24,8 +24,6 @@ from pyeudiw.trust.interface import TrustEvaluator
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +40,7 @@ class FederationTrustModel(TrustEvaluator):
         # TODO: qui c'è tutta la ciccia, ma si può fare copia incolla da terze parti (specialmente di pyeudiw.trust.__init__)
         raise NotImplementedError
 
-    def get_verified_key(self, issuer: str, token_header: dict) -> ECKey | RSAKey | OKPKey | SYMKey | dict:
+    def get_verified_key(self, issuer: str, token_header: dict) -> ECKey | RSAKey | dict:
         # (1) verifica trust chain
         kid: str = token_header.get("kid", None)
         if not kid:

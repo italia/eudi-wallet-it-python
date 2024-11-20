@@ -13,8 +13,6 @@ from pyeudiw.tools.utils import iat_now
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
 
 
 _JsonTypes = dict | list | str | int | float | bool | None
@@ -81,7 +79,7 @@ class SdJwt:
     def has_key_binding(self) -> bool:
         return self.holder_kb is not None
 
-    def verify_issuer_jwt_signature(self, key:  ECKey | RSAKey | OKPKey | SYMKey | dict) -> None:
+    def verify_issuer_jwt_signature(self, key:  ECKey | RSAKey | dict) -> None:
         verify_jws_with_key(self.issuer_jwt.jwt, key)
 
     def verify_holder_kb_jwt(self, challenge: VerifierChallenge) -> None:

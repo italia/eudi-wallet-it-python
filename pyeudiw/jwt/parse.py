@@ -2,11 +2,9 @@ import json
 import base64
 from dataclasses import dataclass
 
-from cryptojwt.utils import b64d 
+
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
 from pyeudiw.federation.trust_chain.parse import get_public_key_from_trust_chain
 
 from pyeudiw.jwt.utils import is_jwt_format
@@ -60,7 +58,7 @@ def unsafe_parse_jws(token: str) -> DecodedJwt:
 
 
 
-def extract_key_identifier(token_header: dict) ->  ECKey | RSAKey | OKPKey | SYMKey | dict | KeyIdentifier_T:
+def extract_key_identifier(token_header: dict) ->  ECKey | RSAKey | dict | KeyIdentifier_T:
     """
     Extracts the key identifier from the JWT header.
     The trust evaluation order might be mapped on the same configuration ordering.

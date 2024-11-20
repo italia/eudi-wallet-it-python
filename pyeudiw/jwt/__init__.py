@@ -17,8 +17,6 @@ from .exceptions import JWEDecryptionError, JWSVerificationError
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
 
 from typing import Literal
 
@@ -46,7 +44,7 @@ DEFAULT_ENC_ENC_MAP = {
     "EC": "A256GCM"
 }
 
-KeyLike = ECKey | RSAKey | OKPKey | SYMKey
+KeyLike = ECKey | RSAKey
 SerializationFormat = Literal["compact", "json"]
 
 
