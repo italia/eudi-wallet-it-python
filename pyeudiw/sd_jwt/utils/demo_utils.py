@@ -66,8 +66,9 @@ def get_jwk(jwk_kwargs: dict = {}, no_randomness: bool = False, random_seed: int
         issuer_keys = [key_from_jwk_dict(k) for k in jwk_kwargs["issuer_keys"]]
         holder_key = key_from_jwk_dict(jwk_kwargs["holder_key"])
     else:
-        issuer_keys = [new_ec_key('P-256')]
-        holder_key = new_ec_key('P-256')
+        _kwargs = {"key_size": jwk_kwargs["key_size"], "kty": jwk_kwargs["kty"]}
+        issuer_keys = [key_from_jwk_dict(_kwargs)]
+        holder_key = key_from_jwk_dict(_kwargs)
 
     _issuer_public_keys = []
     _issuer_public_keys.extend([k.serialize() for k in issuer_keys])

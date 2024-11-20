@@ -17,6 +17,8 @@ from .exceptions import JWEDecryptionError, JWSVerificationError
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.hmac import SYMKey
 
 from typing import Literal
 
@@ -44,7 +46,7 @@ DEFAULT_ENC_ENC_MAP = {
     "EC": "A256GCM"
 }
 
-KeyLike = ECKey | RSAKey
+KeyLike = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
 
 
@@ -70,7 +72,7 @@ class JWHelperInterface:
                     j = key_from_jwk_dict(j)
                 j.add_kid()
                 self.jwks.append(j)
-        elif isinstance(jwks, (ECKey, RSAKey)):
+        elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
             jwks.add_kid()
             self.jwks = [jwks]
         else:
@@ -200,6 +202,7 @@ class JWSHelper(JWHelperInterface):
         self,
         plain_dict: Union[dict, str, int, None],
         protected: dict = {},
+        unprotected: dict = {},
         serialization_format: SerializationFormat = "compact",
         kid: str = "",
         **kwargs
@@ -236,7 +239,7 @@ class JWSHelper(JWHelperInterface):
         else:
             if isinstance(plain_dict, bytes):
                 plain_dict = plain_dict.decode()
-            return _signer.sign_json(keys=self.jwks, headers= [(protected, {})])
+            return _signer.sign_json(keys=self.jwks, headers= [(protected, unprotected)], flatten=True)
 
     def verify(self, jwt: str, **kwargs) -> (str | Any | bytes):
         """
@@ -288,4 +291,3 @@ class JWSHelper(JWHelperInterface):
         verifier = JWSec(alg=_head.get("alg"), **kwargs)
         msg = verifier.verify_compact(jwt, self.jwks)
         return msg
-
