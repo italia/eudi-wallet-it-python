@@ -1,3 +1,4 @@
+import logging
 from hashlib import sha256
 import json
 from typing import Any, Callable, TypeVar
@@ -28,7 +29,7 @@ SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
     "sha-256": lambda s: base64_urlencode(sha256(s.encode("ascii")).digest())
 }
 
-
+logger = logging.getLogger(__name__)
 class SdJwt:
     """
     SdJwt is an utility class to easily parse and verify sd jwt.

@@ -1,3 +1,4 @@
+import logging
 from pyeudiw.jwt import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
@@ -17,6 +18,7 @@ from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 
+logger = logging.getLogger(__name__)
 
 class SDJWTVerifier(SDJWTCommon):
     _input_disclosures: List

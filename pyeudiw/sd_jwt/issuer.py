@@ -1,3 +1,4 @@
+import logging
 import random
 from json import dumps
 from typing import Dict, List, Union
@@ -16,6 +17,8 @@ from pyeudiw.sd_jwt.disclosure import SDJWTDisclosure
 
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
+
+logger = logging.getLogger(__name__)
 
 class SDJWTIssuer(SDJWTCommon):
     DECOY_MIN_ELEMENTS = 2
