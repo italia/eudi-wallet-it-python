@@ -7,8 +7,6 @@ from cryptography.x509 import load_der_x509_certificate
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
 
 LOG_ERROR = "x509 verification failed: {}"
 

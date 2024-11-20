@@ -70,7 +70,7 @@ class JWHelperInterface:
                     j = key_from_jwk_dict(j)
                 j.add_kid()
                 self.jwks.append(j)
-        elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
+        elif isinstance(jwks, (ECKey, RSAKey)):
             jwks.add_kid()
             self.jwks = [jwks]
         else:
