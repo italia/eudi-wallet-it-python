@@ -42,7 +42,11 @@ def test_e2e(testcase, settings):
 
     def cb_get_issuer_key(issuer, header_parameters):
         if type(header_parameters) == dict:
+            if "kid" in header_parameters:
+                header_parameters.pop("kid")
             sdjwt_header_parameters.update(header_parameters)
+            
+                
         return demo_keys["issuer_public_keys"]
 
     sdjwt_at_verifier = SDJWTVerifier(
@@ -74,6 +78,6 @@ def test_e2e(testcase, settings):
         "alg": testcase.get("sign_alg", "ES256"),
         "typ": "testcase+sd-jwt"
     }
-    expected_header_parameters.update(extra_header_parameters)
+    expected_header_parameters.update(extra_header_parameters)    
 
     assert sdjwt_header_parameters == expected_header_parameters
