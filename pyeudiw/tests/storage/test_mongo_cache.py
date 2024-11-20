@@ -11,7 +11,7 @@ class TestMongoCache:
     def create_storage_instance(self):
         self.cache = MongoCache(
             {"db_name": "eudiw"},
-            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
+            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
             {}
         )
 

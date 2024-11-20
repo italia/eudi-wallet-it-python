@@ -22,7 +22,7 @@ CONFIG_DB = {
             "class": "MongoStorage",
             "init_params": {
                 # according to Satosa-Saml2Spid demo
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', 'satosa:thatpassword@')}localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",
