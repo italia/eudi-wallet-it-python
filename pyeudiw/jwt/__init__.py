@@ -278,7 +278,7 @@ class JWSHelper(JWHelperInterface):
                 )
             elif _head.get("jwk"):
                 raise NotImplementedError(
-                    f"{_head.get('kid')} != {_jwk_dict['kid']}. Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
+                    f"{_head.get('jwk') != {_jwk_dict}. Loaded/expected is {_jwk_dict}) while the verified JWT header is {_head}"
                 )
             else:
                 raise KidError(
@@ -286,7 +286,6 @@ class JWSHelper(JWHelperInterface):
                     f"Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
                 )
         
-        # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y value using EC keys
 
         verifier = JWSec(alg=_head.get("alg"), **kwargs)
         msg = verifier.verify_compact(jwt, self.jwks)

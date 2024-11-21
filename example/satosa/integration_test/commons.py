@@ -101,20 +101,20 @@ def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]
     settings = ISSUER_CONF
     settings["default_exp"] = 33
     
-    usrClaims = _yaml_load_specification(StringIO(settings["sd_specification"]))
+    user_claims = _yaml_load_specification(StringIO(settings["sd_specification"]))
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
         "exp": exp_from_now(settings["default_exp"])  # in seconds
     }
-    usrClaims.update(claims)
+    user_claims.update(claims)
     
     
     issued_jwt = SDJWTIssuer(
         issuer_keys=CREDENTIAL_ISSUER_JWK,
         holder_key= WALLET_PUBLIC_JWK,
         extra_header_parameters={
-            "typ": "vc+sd-jwt",
+            "typ": "dc+sd-jwt",
             "kid": CREDENTIAL_ISSUER_JWK.kid
         },
         user_claims=_yaml_load_specification(StringIO(settings["sd_specification"])),

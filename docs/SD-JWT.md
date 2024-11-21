@@ -2,12 +2,8 @@
 
 ## Introduction
 
-This module is a fork of the original [sd-jwt-python](https://github.com/openwallet-foundation-labs/sd-jwt-python) project. It has been adapted to use the [`cryptojwt`](https://github.com/IdentityPython/JWTConnect-Python-CryptoJWT) library as the core JWT implementation. 
+This module is a fork of [sd-jwt-python](https://github.com/openwallet-foundation-labs/sd-jwt-python) project. It has been adapted to use the [`cryptojwt`](https://github.com/IdentityPython/JWTConnect-Python-CryptoJWT) library as the core JWT implementation. 
 
-The purpose of this fork is to:
-1. Leverage the robustness and extended features provided by the `cryptojwt` library.
-2. Maintain compatibility with existing SD-JWT specifications.
-3. Provide a more modular and extensible codebase for advanced use cases.
 
 If you're familiar with the original `sd-jwt-python` library, this fork retains similar functionality with minimal API changes, if needed.
 
@@ -26,13 +22,13 @@ If you're familiar with the original `sd-jwt-python` library, this fork retains 
 
 ## Introduction
 
-This library provides an implementation of the SD-JWT (Selective Disclosure for JWT) standard. This document explains how to create and verify a Selected-Disclosure JWT (SD-JWT) using the EUDI Wallet IT Python library. It also covers how to validate proof of possession  enabling three key operations:
+This library provides an implementation of the SD-JWT (Selective Disclosure for JWT) standard. This document explains how to create and verify a Selected-Disclosure JWT (SD-JWT) using the EUDI Wallet IT Python library. It also covers how to validate proof of possession enabling three key operations:
 1. **Issuer**: Generate an SD-JWT with selective disclosure capabilities.
 2. **Holder**: Select claims to disclose and create a presentation.
 3. **Verifier**: Validate the SD-JWT and verify the disclosed claims.
 
 ### Requirements
-- Python 3.7 or later.
+- Python version as configured in the CI of this project.
 - Install the library via `pip`:
 ```bash
 pip install pyeudiw
@@ -121,15 +117,13 @@ sdjwt_holder.create_presentation(
 print("SD-JWT Presentation:", sdjwt_holder.sd_jwt_presentation)
 ```
 
----
-
 ## 3. Verifier: Verifying an SD-JWT
 
 The Verifier validates the SD-JWT and checks the disclosed claims.
 
 ### Example
 
-```bash
+```python
 from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 
 # Callback to retrieve Issuer's public key
@@ -150,22 +144,7 @@ verified_payload = sdjwt_verifier.get_verified_payload()
 print("Verified Claims:", verified_payload)
 ```
 
----
-
-## Key Considerations
-
-1. **JWK Format**: All keys (private and public) must conform to the JWK standard (RFC 7517).
-2. **Generating Keys**: Use a library like `cryptojwt` to generate or manage JWKs.
-3. **Custom Keys**: If you already have keys, ensure they are in the correct JWK format before use.
 
 ---
 
-## Conclusion
-
-This documentation demonstrates how to:
-- Create SD-JWTs with selective disclosure capabilities.
-- Allow Holders to share only necessary claims.
-- Validate SD-JWTs and verify disclosed claims securely.
-
-For further details, consult the library's source code and examples.
 ```

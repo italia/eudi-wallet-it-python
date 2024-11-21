@@ -21,7 +21,7 @@ The MongoDB connection is configured dynamically using the environment variable 
 - The value of `PYEUDIW_MONGO_TEST_AUTH_INLINE` should be in the format `username:password@`.
 - If the variable is not set, the configuration defaults to:
   - **Authentication**: Defaults to empty string.
-  - **MongoDB URL**: `mongodb://satosa:localhost:27017/?timeoutMS=2000`.
+  - **MongoDB URL**: `mongodb://localhost:27017/?timeoutMS=2000`.
 
 #### Example Usage
 1. **With Authentication**:
