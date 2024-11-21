@@ -155,8 +155,9 @@ class SDJWTIssuer(SDJWTCommon):
 
         # Add decoy claims if requested
         if self._add_decoy_claims:
+            sr = secrets.SystemRandom()
             for _ in range(
-                random.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
+                sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
             ):
                 sd_claims[SD_DIGESTS_KEY].append(self._create_decoy_claim_entry())
 
