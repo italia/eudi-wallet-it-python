@@ -1,4 +1,7 @@
+import logging
 import random
+import secrets
+
 from json import dumps
 from typing import Dict, List, Union
 
@@ -16,6 +19,8 @@ from pyeudiw.sd_jwt.disclosure import SDJWTDisclosure
 
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
+
+logger = logging.getLogger(__name__)
 
 class SDJWTIssuer(SDJWTCommon):
     DECOY_MIN_ELEMENTS = 2
@@ -152,8 +157,9 @@ class SDJWTIssuer(SDJWTCommon):
 
         # Add decoy claims if requested
         if self._add_decoy_claims:
+            sr = secrets.SystemRandom()
             for _ in range(
-                random.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
+                sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
             ):
                 sd_claims[SD_DIGESTS_KEY].append(self._create_decoy_claim_entry())
 
@@ -185,11 +191,18 @@ class SDJWTIssuer(SDJWTCommon):
         # override if any
         _protected_headers.update(self._extra_header_parameters)
         
+        _unprotected_headers = {}
+        for i, key in enumerate(self._issuer_keys):
+            _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
+            if self._serialization_format == "json" and i == 0:
+                _unprotected_headers = _unprotected_headers or {}
+                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [d.b64 for d in self.ii_disclosures]
 
         self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
         self.serialized_sd_jwt = self.sd_jwt.sign(
             self.sd_jwt_payload,
             protected=_protected_headers,
+            unprotected=_unprotected_headers,
             serialization_format=self._serialization_format
         )
 

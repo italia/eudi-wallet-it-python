@@ -51,7 +51,7 @@ def _get_browser_page(playwright: Playwright) -> Page:
     webkit = playwright.webkit
     rp_browser = webkit.launch(timeout=0)
     rp_context = rp_browser.new_context(
-        ignore_https_errors=True,  # required as otherwise self-sgined certificates are not accepted,
+        ignore_https_errors=True,  # required as otherwise self-signed certificates are not accepted,
         java_script_enabled=True,
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
     )
@@ -138,7 +138,7 @@ def run(playwright: Playwright):
                 break
         assert result_index != -1, f"missing attribute with name=[{exp_att_name}] in result set"
         obt_att_value = attributes[result_index].contents[0].contents[0]
-        assert exp_att_value == obt_att_value, f"wrong attrirbute parsing expected {exp_att_value}, obtained {obt_att_value}"
+        assert exp_att_value == obt_att_value, f"wrong attribute parsing expected {exp_att_value}, obtained {obt_att_value}"
 
     print("TEST PASSED")
 

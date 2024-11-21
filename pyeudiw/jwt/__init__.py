@@ -22,6 +22,8 @@ from cryptojwt.jwk.hmac import SYMKey
 
 from typing import Literal
 
+import logging
+
 DEFAULT_HASH_FUNC = "SHA-256"
 
 DEFAULT_SIG_KTY_MAP = {
@@ -48,6 +50,9 @@ KeyLike = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
 
 
+logger = logging.getLogger(__name__)
+
+
 class JWHelperInterface:
     def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict):
         """
@@ -57,12 +62,22 @@ class JWHelperInterface:
 
         """
         if isinstance(jwks, dict):
-            self.jwks = [key_from_jwk_dict(jwks)]
+            single_jwk = key_from_jwk_dict(jwks)
+            single_jwk.add_kid()
+            self.jwks = [single_jwk]
         elif isinstance(jwks, list):
-            self.jwks = [key_from_jwk_dict(j) for j in jwks if isinstance(j, dict)]
-        else:
-            # TODO: print a warning here for unhandled types
+            self.jwks = []
+            for j in jwks:
+                if isinstance(j, dict):
+                    j = key_from_jwk_dict(j)
+                j.add_kid()
+                self.jwks.append(j)
+        elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
+            jwks.add_kid()
             self.jwks = [jwks]
+        else:
+            logger.warning(f"Unhandled type {type(jwks)} for jwks")
+            self.jwks = []
         
     def get_jwk_by_kid(self, kid: str) -> dict | KeyLike | None:
         if not kid:
@@ -187,6 +202,7 @@ class JWSHelper(JWHelperInterface):
         self,
         plain_dict: Union[dict, str, int, None],
         protected: dict = {},
+        unprotected: dict = {},
         serialization_format: SerializationFormat = "compact",
         kid: str = "",
         **kwargs
@@ -223,7 +239,7 @@ class JWSHelper(JWHelperInterface):
         else:
             if isinstance(plain_dict, bytes):
                 plain_dict = plain_dict.decode()
-            return _signer.sign_json(keys=self.jwks, headers= [(protected, {})])
+            return _signer.sign_json(keys=self.jwks, headers= [(protected, unprotected)], flatten=True)
 
     def verify(self, jwt: str, **kwargs) -> (str | Any | bytes):
         """
@@ -262,7 +278,7 @@ class JWSHelper(JWHelperInterface):
                 )
             elif _head.get("jwk"):
                 raise NotImplementedError(
-                    f"{_head.get('kid')} != {_jwk_dict['kid']}. Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
+                    f"{_head.get('jwk')} != {_jwk_dict}. Loaded/expected is {_jwk_dict}) while the verified JWT header is {_head}"
                 )
             else:
                 raise KidError(
@@ -270,9 +286,7 @@ class JWSHelper(JWHelperInterface):
                     f"Loaded/expected is {_jwk_dict}) while the verified JWS header is {_head}"
                 )
         
-        # TODO: check why unfortunately obtaining a public key from a TEE may dump a different y value using EC keys
 
         verifier = JWSec(alg=_head.get("alg"), **kwargs)
         msg = verifier.verify_compact(jwt, self.jwks)
         return msg
-

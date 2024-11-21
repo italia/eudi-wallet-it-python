@@ -179,6 +179,7 @@ class TestOpenID4VPBackend:
 
 
     # def test_vp_validation_in_response_endpoint(self, context):
+    # TODO: re enable or delete the following commented
     #     self.backend.register_endpoints()
 
     #     issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))

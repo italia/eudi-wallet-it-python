@@ -52,7 +52,7 @@ WALLET_INSTANCE_ATTESTATION = {
 
 @pytest.fixture
 def private_jwk():
-    return  new_ec_key('P-256')
+    return new_ec_key('P-256')
 
 
 @pytest.fixture

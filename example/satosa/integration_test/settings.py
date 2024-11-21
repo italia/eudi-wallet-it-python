@@ -1,3 +1,4 @@
+import os
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.tests.federation.base import (
@@ -21,17 +22,14 @@ CONFIG_DB = {
             "class": "MongoStorage",
             "init_params": {
                 # according to Satosa-Saml2Spid demo
-                "url": "mongodb://satosa:thatpassword@localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",
                     "db_trust_attestations_collection": "trust_attestations",
                     "db_trust_anchors_collection": "trust_anchors"
                 },
-                "connection_params": {
-                    "username": "satosa",
-                    "password": "thatpassword"
-                }
+                "connection_params": {}
             }
         }
     }

@@ -58,7 +58,7 @@ def _yaml_load_specification(f):
                     )
                 )
             
-    return yaml.load(f, Loader=yaml.FullLoader)
+    return yaml.load(f, Loader=yaml.FullLoader) # nosec
 
 """
 Takes an object that has been parsed from a YAML file and removes the SDObj wrappers.
