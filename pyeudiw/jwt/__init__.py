@@ -278,7 +278,7 @@ class JWSHelper(JWHelperInterface):
                 )
             elif _head.get("jwk"):
                 raise NotImplementedError(
-                    f"{_head.get('jwk') != {_jwk_dict}. Loaded/expected is {_jwk_dict}) while the verified JWT header is {_head}"
+                    f"{_head.get('jwk')} != {_jwk_dict}. Loaded/expected is {_jwk_dict}) while the verified JWT header is {_head}"
                 )
             else:
                 raise KidError(
