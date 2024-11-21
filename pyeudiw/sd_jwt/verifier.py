@@ -113,8 +113,12 @@ class SDJWTVerifier(SDJWTCommon):
                 keys=issuer_public_key, 
                 sigalg=sign_alg
             )
-            # self._sd_jwt_payload = loads(parsed_input_sd_jwt.payload.decode("utf-8"))
-            # TODO: Check exp/nbf/iat
+
+            # TODO: Check exp/nbf/iat and if not valid log a warning
+            # this lib should evaluate the signature and the data schema
+            # it's up to the consumer of the jwt and according to its policies in use
+            # decide if accept or reject the jwt according to its datetimes
+
         else:
             raise ValueError(
                 f"Unsupported serialization format: {self._serialization_format}"

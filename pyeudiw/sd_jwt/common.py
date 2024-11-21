@@ -42,7 +42,7 @@ class SDJWTHasSDClaimException(Exception):
 
 class SDJWTCommon:
     SD_JWT_HEADER = os.getenv(
-        # TODO: dc is only for digital credential, while you might use another typ ...
+        # NOTE: dc is only for Digital Credential, while you might use another typ ...
         "SD_JWT_HEADER", "dc+sd-jwt"
     )  # overwriteable with extra_header_parameters = {"typ": "other-example+sd-jwt"}
     KB_JWT_TYP_HEADER = "kb+jwt"
