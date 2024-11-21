@@ -47,9 +47,9 @@ jobs:
           sudo apt install python3-dev python3-pip
       - name: Install MongoDB
         run: |
-          sudo apt-get install -y gnupg wget
-          sudo wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
-          sudo echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+          sudo apt-get install -y gnupg curl
+          sudo curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+          sudo echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
           sudo apt-get update
           sudo apt-get install -y mongodb-org
       - name: Start MongoDB
@@ -72,9 +72,10 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
       - name: Tests
+        working-directory: ./pyeudiw
         run: |
-          # pytest --cov=pyeudiw --cov-fail-under=90 pyeudiw
-          pytest --cov=pyeudiw pyeudiw
+          # pytest --cov=pyeudiw --cov-fail-under=90
+          pytest --cov=pyeudiw
           coverage report -m --skip-covered
       - name: Bandit Security Scan
         run: |
