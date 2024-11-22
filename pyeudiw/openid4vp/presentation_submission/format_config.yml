@@ -1,0 +1,13 @@
+formats:
+  - name: "vc+sd-jwt"
+    module: "pyeudiw.openid4vp.presentation_submission"
+    class: "VcSdJwt"
+  - name: "ldp_vp"
+    module: "pyeudiw.openid4vp.presentation_submission"
+    class: "LdpVp"
+  - name: "jwt_vp_json"
+    module: "pyeudiw.openid4vp.presentation_submission"
+    class: "JwtVpJson"
+  - name: "ac_vp"
+    module: "pyeudiw.openid4vp.presentation_submission"
+    class: "AcVp"
