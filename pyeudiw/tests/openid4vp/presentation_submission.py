@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from pyeudiw.openid4vp.presentation_submission import PresentationSubmission
+
+from pyeudiw.openid4vp.presentation_submission.presentation_submission import PresentationSubmission
+
 
 
 # Mock data for testing
@@ -32,7 +34,7 @@ def test_presentation_submission_initialization():
     setattr(mock_module, "MockLdpVpHandler", mock_ldp_vp_handler)
     setattr(mock_module, "MockJwtVpJsonHandler", mock_jwt_vp_json_handler)
 
-    with patch("pyeudiw.openid4vp.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config), \
+    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config), \
          patch("importlib.import_module", return_value=mock_module):
         
         # Initialize the class
@@ -55,7 +57,7 @@ def test_presentation_submission_invalid_format():
         ]
     }
 
-    with patch("pyeudiw.openid4vp.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
+    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
         # Expect a ValueError for unsupported format
         with pytest.raises(ValueError, match="Format 'unsupported_format' is not supported or not defined in the configuration."):
             PresentationSubmission(invalid_submission)
@@ -71,7 +73,7 @@ def test_presentation_submission_missing_format_key():
         ]
     }
 
-    with patch("pyeudiw.openid4vp.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
+    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
         # Expect a KeyError for missing 'format'
         with pytest.raises(KeyError, match="The 'format' key is missing in descriptor at index 0."):
             PresentationSubmission(missing_format_submission)
