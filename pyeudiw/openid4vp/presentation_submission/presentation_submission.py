@@ -74,6 +74,7 @@ class PresentationSubmission:
         except ValidationError as e:
             logger.error(f"Submission validation failed: {e}")
             raise
+
     def _initialize_handlers(self) -> Dict[int, object]:
         """
         Initialize handlers for each item in the 'descriptor_map' of the submission.
