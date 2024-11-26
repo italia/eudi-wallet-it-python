@@ -1,13 +1,23 @@
-from pydantic import BaseModel
+from typing import Any, Dict, List
+from pydantic import BaseModel, field_validator
 
 
 class DescriptorSchema(BaseModel):
     id: str
-    path: str
     format: str
+    path: str
+    path_nested: Dict[str, Any] = None
 
 
 class PresentationSubmissionSchema(BaseModel):
-    definition_id: str
     id: str
-    descriptor_map: list[DescriptorSchema]
+    definition_id: str
+    descriptor_map: List[DescriptorSchema]
+
+    @field_validator("descriptor_map")
+    @classmethod
+    def check_descriptor_map_size(cls, value):
+        max_descriptors = 100  # TODO: Define a reasonable limit
+        if len(value) > max_descriptors:
+            raise ValueError(f"descriptor_map exceeds maximum allowed size of {max_descriptors} items.")
+        return value

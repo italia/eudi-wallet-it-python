@@ -1,8 +1,11 @@
 import os
+from pydantic import ValidationError
 import yaml
 import importlib
 from typing import Dict, Any
 import logging
+
+from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +21,10 @@ class PresentationSubmission:
             KeyError: If the 'format' key is missing in the submission.
             ValueError: If the format is not supported or not defined in the configuration.
             ImportError: If the module or class cannot be loaded.
+            ValidationError: If the submission data is invalid or exceeds size limits.
         """
         self.config = self._load_config()
-        self.submission = submission
+        self.submission = self._validate_submission(submission)
         self.handlers = self._initialize_handlers()
 
     def _load_config(self) -> Dict[str, Any]:
@@ -33,13 +37,43 @@ class PresentationSubmission:
         Raises:
             FileNotFoundError: If the configuration file is not found.
         """
-        config_path = os.path.join(os.path.dirname(__file__), "format_config.yml")
+        config_path = os.path.join(os.path.dirname(__file__), "config.yml")
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
         with open(config_path, "r") as config_file:
             return yaml.safe_load(config_file)
+        
+    def _validate_submission(self, submission: Dict[str, Any]) -> PresentationSubmissionSchema:
+        """
+        Validate the submission data using Pydantic and check its total size.
 
+        Args:
+            submission (Dict[str, Any]): The presentation submission data.
+
+        Returns:
+            PresentationSubmissionSchema: Validated submission schema.
+
+        Raises:
+            ValidationError: If the submission data is invalid or exceeds size limits.
+        """
+        max_size = self.config.get("MAX_SUBMISSION_SIZE", 10 * 1024 * 1024)
+
+        # Check submission size
+        submission_size = len(str(submission).encode("utf-8"))
+        if submission_size > max_size:
+            logger.warning(
+                f"Rejected submission: size {submission_size} bytes exceeds limit {max_size} bytes."
+            )
+            raise ValueError(
+                f"Submission size exceeds maximum allowed limit of {max_size} bytes."
+            )
+
+        try:
+            return PresentationSubmissionSchema(**submission)
+        except ValidationError as e:
+            logger.error(f"Submission validation failed: {e}")
+            raise
     def _initialize_handlers(self) -> Dict[int, object]:
         """
         Initialize handlers for each item in the 'descriptor_map' of the submission.
@@ -55,12 +89,12 @@ class PresentationSubmission:
         handlers = {}
 
         try:
-            descriptor_map = self.submission.get("descriptor_map", [])
+            descriptor_map = self.submission.descriptor_map
         except KeyError:
             raise KeyError("The 'descriptor_map' key is missing in the submission.")
 
         for index, descriptor in enumerate(descriptor_map):
-            format_name = descriptor.get("format")
+            format_name = descriptor.format
             if not format_name:
                 raise KeyError(f"The 'format' key is missing in descriptor at index {index}.")
 

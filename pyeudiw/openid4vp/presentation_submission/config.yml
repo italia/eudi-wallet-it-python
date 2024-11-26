@@ -11,3 +11,5 @@ formats:
   - name: "ac_vp"
     module: "pyeudiw.openid4vp.presentation_submission"
     class: "AcVp"
+
+MAX_SUBMISSION_SIZE: 10 * 1024 * 1024
