@@ -42,10 +42,9 @@ class SDJWTIssuer(SDJWTCommon):
         holder_key=None,
         sign_alg=None,
         add_decoy_claims: bool = False,
-        serialization_format: str = "compact",
         extra_header_parameters: dict = {},
     ):
-        super().__init__(serialization_format=serialization_format)
+        super().__init__(serialization_format="compact")
 
         self._user_claims = user_claims
         if not isinstance(issuer_keys, list):
@@ -181,16 +180,15 @@ class SDJWTIssuer(SDJWTCommon):
         will be added in a separate "disclosures" property of the JSON.
         """
 
-        
         # Assemble protected headers starting with default
         _protected_headers = {"alg": self._sign_alg, "typ": self.SD_JWT_HEADER}
-        
+
         if len(self._issuer_keys) == 1 and "kid" in self._issuer_keys[0]:
             _protected_headers["kid"] = self._issuer_keys[0]["kid"]
 
         # override if any
         _protected_headers.update(self._extra_header_parameters)
-        
+
         _unprotected_headers = {}
         for i, key in enumerate(self._issuer_keys):
             _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
@@ -198,13 +196,15 @@ class SDJWTIssuer(SDJWTCommon):
                 _unprotected_headers = _unprotected_headers or {}
                 _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [d.b64 for d in self.ii_disclosures]
 
-        self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
-        self.serialized_sd_jwt = self.sd_jwt.sign(
-            self.sd_jwt_payload,
-            protected=_protected_headers,
-            unprotected=_unprotected_headers,
-            serialization_format=self._serialization_format
-        )
+        # self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
+        # self.serialized_sd_jwt = self.sd_jwt.sign(
+        #     self.sd_jwt_payload,
+        #     protected=_protected_headers,
+        #     unprotected=_unprotected_headers,
+        #     serialization_format=self._serialization_format
+        # )
+        signer = JWSHelper(jwks=self._issuer_keys)
+        self.serialized_sd_jwt = signer.sign(self.sd_jwt_payload, _protected_headers)
 
     def _create_combined(self):
         if self._serialization_format == "compact":

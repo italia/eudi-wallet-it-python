@@ -11,7 +11,6 @@ def test_e2e(testcase, settings):
     demo_keys = get_jwk(settings["key_settings"], True, seed)
     use_decoys = testcase.get("add_decoy_claims", False)
     
-    
     serialization_format = testcase.get("serialization_format", "compact")
 
     extra_header_parameters = {"typ": "testcase+sd-jwt"}
@@ -28,19 +27,16 @@ def test_e2e(testcase, settings):
         demo_keys["issuer_keys"],
         demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
         add_decoy_claims=use_decoys,
-        serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
     )
 
     output_issuance = sdjwt_at_issuer.sd_jwt_issuance
-
 
     # Holder
     sdjwt_at_holder = SDJWTHolder(
         output_issuance,
         serialization_format=serialization_format,
     )
-
 
     sdjwt_at_holder.create_presentation(
         testcase["holder_disclosed_claims"],
@@ -86,7 +82,6 @@ def test_e2e(testcase, settings):
         expected_claims["cnf"] = {
             "jwk": key_from_jwk_dict(demo_keys["holder_key"],private=False).serialize()
         }
-
 
     assert verified == expected_claims, f"Verified payload mismatch: {verified} != {expected_claims}"
 

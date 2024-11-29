@@ -105,7 +105,6 @@ class SDJWTVerifier(SDJWTCommon):
                         f"Found: {type(key)} in {issuer_public_key}"
                     )
                 key = key_from_jwk_dict(key)
-                key.add_kid()
                 issuer_public_key.append(key)
     
             self._sd_jwt_payload = parsed_input_sd_jwt.verify_compact(

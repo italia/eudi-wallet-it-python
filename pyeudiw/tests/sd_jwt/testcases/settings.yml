@@ -9,6 +9,7 @@ key_settings:
 
   issuer_keys:
     - kty: EC
+      kid: Q5yTSREAbvZL131ynDBhalXJcF9fL0foJlMN8u6ldiY
       d: Ur2bNKuBPOrAaxsRnbSH6hIhmNTxSGXshDSUD1a1y7g
       crv: P-256
       x: b28d4MwZMjw8-00CG4xfnn9SLMVMM19SlqZpVb_uNtQ
@@ -16,6 +17,7 @@ key_settings:
 
   holder_key:
     kty: EC
+    kid: aISfTcr9M_Zd09AXGAAeFxnLbFY6lBa87UN515wm5d4
     d: 5K5SCos8zf9zRemGGUl6yfok-_NiiryNZsvANWMhF-I
     crv: P-256
     x: TCAER19Zvu3OHF4j4W4vfSVoHIP1ILilDls7vCeGemc

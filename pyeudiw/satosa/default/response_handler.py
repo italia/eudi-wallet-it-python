@@ -27,6 +27,7 @@ from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.tools.jwk_handling import find_vp_token_key
 from pyeudiw.trust.exceptions import NoCriptographicMaterial
+from pyeudiw.trust.interface import TrustEvaluator
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -182,30 +183,35 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         for vp_token in encoded_vps:
             # verify vp token and extract user information
             try:
-                token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
+                token_parser, token_verifier = self._vp_verifier_factory(
+                    authz_payload.presentation_submission,
+                    vp_token,
+                    request_session,
+                    self.trust_evaluator
+                )
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            
+            # TODO: verifica come infilare qui dentro cose (jwt token verifier) senza diventare matto
             try:
                 pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
             except NoCriptographicMaterial as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            
+
             try:
                 token_verifier.verify_signature(pub_jwk)
             except Exception as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            
+
             try:
                 token_verifier.verify_challenge()
             except InvalidVPKeyBinding as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            
+
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
             attributes_by_issuer[iss] = claims
             self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
-          
+
         all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
         internal_resp = self._translate_response(all_attributes, iss_list_serialized, context)
@@ -306,11 +312,12 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _vp_verifier_factory(self, presentation_submission: dict, token: str, session_data: dict) -> tuple[VpTokenParser, VpTokenVerifier]:
-        # TODO: la funzione dovrebbe consumare la presentation submission per sapere quale token
+    def _vp_verifier_factory(self, presentation_submission: dict, token: str, session_data: dict,
+                             trust_source: TrustEvaluator) -> tuple[VpTokenParser, VpTokenVerifier]:
+        # TODO: la funzione dovrebbe consumare la presentation submission per sapere quale token verifier
         # ritornare - per ora viene ritornata l'unica implementazione possibile
         challenge = self._get_verifier_challenge(session_data)
-        token_processor = VpVcSdJwtParserVerifier(token, challenge["aud"], challenge["nonce"])
+        token_processor = VpVcSdJwtParserVerifier(token, trust_source, challenge["aud"], challenge["nonce"])
         return (token_processor, deepcopy(token_processor))
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:

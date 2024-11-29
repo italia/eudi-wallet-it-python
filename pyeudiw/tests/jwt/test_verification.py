@@ -3,11 +3,11 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt import JWSHelper
 
 def test_is_jwt_expired():
-    jwk = JWK(key_type="EC") 
+    private_signing_key = JWK(key_type="EC")
     payload = {"exp": 1516239022}
 
-    helper = JWSHelper(jwk)
-    jws = helper.sign(payload)
+    signer = JWSHelper(private_signing_key)
+    jws = signer.sign(payload)
 
     assert is_jwt_expired(jws) == True
 

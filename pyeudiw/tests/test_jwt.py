@@ -4,7 +4,7 @@ from cryptojwt.jwk.rsa import new_rsa_key
 from cryptojwt.jwk.ec import new_ec_key
 
 
-from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
+from pyeudiw.jwt import (DEFAULT_ENC_KTY_TO_ALG, DEFAULT_ENC_KTY_TO_ENC, JWEHelper,
                          JWSHelper)
 
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
@@ -31,8 +31,8 @@ def test_decode_jwt_header(jwk, payload):
     assert jwe
     header = decode_jwt_header(jwe)
     assert header
-    assert header["alg"] == DEFAULT_ENC_ALG_MAP[jwk.kty]
-    assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.kty]
+    assert header["alg"] == DEFAULT_ENC_KTY_TO_ALG[jwk.kty]
+    assert header["enc"] == DEFAULT_ENC_KTY_TO_ENC[jwk.kty]
     assert header["kid"] == jwk.kid
 
 @pytest.mark.parametrize("jwk, payload", JWKs)

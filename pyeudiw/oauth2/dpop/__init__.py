@@ -54,7 +54,7 @@ class DPoPIssuer:
         }
         jwt = self.signer.sign(
             data,
-            protected={
+            header={
                 'typ': "dpop+jwt",
                 'jwk': self.private_jwk.serialize()
             }

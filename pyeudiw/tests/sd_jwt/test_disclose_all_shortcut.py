@@ -1,3 +1,4 @@
+from copy import deepcopy
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
@@ -27,7 +28,6 @@ def test_e2e(testcase, settings):
         demo_keys["issuer_keys"],
         demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
         add_decoy_claims=use_decoys,
-        serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
     )
 
@@ -41,10 +41,11 @@ def test_e2e(testcase, settings):
     sdjwt_header_parameters = {}
 
     def cb_get_issuer_key(issuer, header_parameters):
-        if type(header_parameters) == dict:
-            if "kid" in header_parameters:
-                header_parameters.pop("kid")
-            sdjwt_header_parameters.update(header_parameters)
+        if isinstance(header_parameters, dict):
+            # do not include kid in parameters to be compared
+            received_header = deepcopy(header_parameters)
+            received_header.pop("kid")
+            sdjwt_header_parameters.update(received_header)
         return demo_keys["issuer_public_keys"]
 
     sdjwt_at_verifier = SDJWTVerifier(

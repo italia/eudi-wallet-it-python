@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from io import StringIO
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper
+from pyeudiw.jwt import DEFAULT_SIGN_KTY_TO_ALG, JWEHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
@@ -139,7 +139,7 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
         },
         nonce=request_nonce,
         aud=request_aud,
-        sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
+        sign_alg=DEFAULT_SIGN_KTY_TO_ALG[WALLET_PRIVATE_JWK.key.kty],
         holder_key=(
             key_from_jwk_dict(
                 WALLET_PRIVATE_JWK.key.priv_key,

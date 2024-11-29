@@ -64,7 +64,7 @@ def jwshelper(private_jwk):
 def wia_jws(jwshelper):
     wia = jwshelper.sign(
         WALLET_INSTANCE_ATTESTATION,
-        protected={'trust_chain': [], 'x5c': []}
+        header={'trust_chain': [], 'x5c': []}
     )
     return wia
 

@@ -9,8 +9,7 @@ from pyeudiw.tests.settings import (
     CREDENTIAL_ISSUER_ENTITY_ID,
     CREDENTIAL_ISSUER_CONF,
 )
-from pyeudiw.sd_jwt import (
-    _adapt_keys,
+from pyeudiw.sd_jwt.helpers import (
     issue_sd_jwt,
     load_specification_from_yaml_string,
     import_ec
@@ -36,8 +35,6 @@ issued_jwt = issue_sd_jwt(
     trust_chain=trust_chain_issuer,
     additional_headers={"typ": "dc+sd-jwt"}
 )
-
-_adapt_keys(issuer_jwk, holder_jwk)
 
 sdjwt_at_holder = SDJWTHolder(
     issued_jwt["issuance"],

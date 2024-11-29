@@ -30,6 +30,8 @@ SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
 }
 
 logger = logging.getLogger(__name__)
+
+
 class SdJwt:
     """
     SdJwt is an utility class to easily parse and verify sd jwt.
@@ -80,7 +82,7 @@ class SdJwt:
     def has_key_binding(self) -> bool:
         return self.holder_kb is not None
 
-    def verify_issuer_jwt_signature(self, key:  ECKey | RSAKey | dict) -> None:
+    def verify_issuer_jwt_signature(self, key: ECKey | RSAKey | dict) -> None:
         verify_jws_with_key(self.issuer_jwt.jwt, key)
 
     def verify_holder_kb_jwt(self, challenge: VerifierChallenge) -> None:

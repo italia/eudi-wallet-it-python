@@ -3,6 +3,7 @@ from pyeudiw.openid4vp.interface import VpTokenParser
 from pyeudiw.trust.interface import TrustEvaluator
 from pyeudiw.jwk import find_jwk_by_kid
 
+
 def find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
     """
     :param token_parser: the token parser instance.

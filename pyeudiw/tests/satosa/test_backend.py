@@ -15,7 +15,7 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIG_KTY_MAP
+from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIGN_KTY_TO_ALG
 from cryptojwt.jws.jws import JWS
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
@@ -215,7 +215,7 @@ class TestOpenID4VPBackend:
     #         self.backend.client_id,
     #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
     #             "key_binding", False) else None,
-    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #         sign_alg=DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty],
     #     )
 
     #     vp_token = sdjwt_at_holder.sd_jwt_presentation
@@ -332,7 +332,7 @@ class TestOpenID4VPBackend:
     #         aud,
     #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
     #             "key_binding", False) else None,
-    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #         sign_alg=DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty],
     #     )
 
     #     vp_token_bad_nonce = sdjwt_at_holder.sd_jwt_presentation
@@ -365,7 +365,7 @@ class TestOpenID4VPBackend:
 
     def test_invalid_nonce_in_request_endpoint(self, context):
         nonce = str(uuid.uuid4())
-        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty])
+        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
 
         state = str(uuid.uuid4())
         response = _generate_response(state, vp_token)
@@ -387,7 +387,7 @@ class TestOpenID4VPBackend:
 
     def test_vp_invalid_vp_token(self, context):
         nonce = str(uuid.uuid4())
-        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty])
+        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
 
         state = str(uuid.uuid4())
         response = _generate_response(state, vp_token)
@@ -418,7 +418,7 @@ class TestOpenID4VPBackend:
 
         bad_nonce = str(uuid.uuid4())
 
-        response_with_bad_nonce = _generate_response(state, _create_vp_token(bad_nonce, aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty]))
+        response_with_bad_nonce = _generate_response(state, _create_vp_token(bad_nonce, aud, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty]))
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_nonce)
 
@@ -440,7 +440,7 @@ class TestOpenID4VPBackend:
 
         bad_state = str(uuid.uuid4())
 
-        response_with_bad_state = _generate_response(bad_state, _create_vp_token(nonce, aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty]))
+        response_with_bad_state = _generate_response(bad_state, _create_vp_token(nonce, aud, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty]))
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_state)
 
@@ -461,7 +461,7 @@ class TestOpenID4VPBackend:
 
         bad_aud = str(uuid.uuid4())
 
-        response_with_bad_aud = _generate_response(state, _create_vp_token(nonce, bad_aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty]))
+        response_with_bad_aud = _generate_response(state, _create_vp_token(nonce, bad_aud, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty]))
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_aud)
 
@@ -480,7 +480,7 @@ class TestOpenID4VPBackend:
     #         aud,
     #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
     #             "key_binding", False) else None,
-    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #         sign_alg=DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty],
     #     )
 
     #     vp_token = sdjwt_at_holder.sd_jwt_presentation
@@ -520,7 +520,7 @@ class TestOpenID4VPBackend:
     #         bad_aud,
     #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
     #             "key_binding", False) else None,
-    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #         sign_alg=DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty],
     #     )
 
     #     vp_token_bad_aud = sdjwt_at_holder.sd_jwt_presentation
@@ -559,7 +559,7 @@ class TestOpenID4VPBackend:
     #         aud,
     #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
     #             "key_binding", False) else None,
-    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #         sign_alg=DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty],
     #     )
 
     #     vp_token = sdjwt_at_holder.sd_jwt_presentation
@@ -604,7 +604,7 @@ class TestOpenID4VPBackend:
         session_id = context.state["SESSION_ID"]
         _initialize_session(self.backend.db_engine, state, session_id, nonce)
 
-        response = _generate_response(state, _create_vp_token(nonce, aud, ec_key, DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty]))
+        response = _generate_response(state, _create_vp_token(nonce, aud, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty]))
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
 
@@ -636,8 +636,8 @@ class TestOpenID4VPBackend:
         jwshelper = JWSHelper(PRIVATE_JWK)
         
         wia = jwshelper.sign(
-            plain_dict=WALLET_INSTANCE_ATTESTATION,
-            protected={
+            payload=WALLET_INSTANCE_ATTESTATION,
+            header={
                 'trust_chain': trust_chain_wallet,
                 'x5c': [],
             }
