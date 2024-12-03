@@ -61,6 +61,7 @@ def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> st
     return sdjwt_at_holder.sd_jwt_presentation
 
 def _generate_response(state: str, vp_token: str) -> dict:
+    # TODO: fix the presentation submission
     return {
         "state": state,
         "vp_token": vp_token,

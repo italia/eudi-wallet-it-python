@@ -78,7 +78,7 @@ class TestOpenID4VPBackend:
 
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
-        
+
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 6
 
@@ -364,21 +364,19 @@ class TestOpenID4VPBackend:
     #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
     def test_invalid_nonce_in_request_endpoint(self, context):
-        nonce = str(uuid.uuid4())
-        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
-
+        correct_nonce = str(uuid.uuid4())
+        bad_nonce = str(uuid.uuid4())
+        vp_token = _create_vp_token(bad_nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
         state = str(uuid.uuid4())
         response = _generate_response(state, vp_token)
 
         session_id = context.state["SESSION_ID"]
-        _initialize_session(self.backend.db_engine, state, session_id, str(uuid.uuid4()))
+        _initialize_session(self.backend.db_engine, state, session_id, correct_nonce)
 
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
 
         context = _generate_post_context(context, CONFIG["metadata"]["response_uris_supported"][0].removeprefix(CONFIG["base_url"]), encrypted_response)
-
         request_endpoint = self.backend.response_endpoint(context)
-
         assert request_endpoint.status == "400"
 
         msg = json.loads(request_endpoint.message)
@@ -387,7 +385,7 @@ class TestOpenID4VPBackend:
 
     def test_vp_invalid_vp_token(self, context):
         nonce = str(uuid.uuid4())
-        vp_token =  _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
+        vp_token = _create_vp_token(nonce, self.backend.client_id, ec_key, DEFAULT_SIGN_KTY_TO_ALG[holder_jwk.key.kty])
 
         state = str(uuid.uuid4())
         response = _generate_response(state, vp_token)
@@ -609,7 +607,6 @@ class TestOpenID4VPBackend:
         encrypted_response = JWEHelper(JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
 
         context = _generate_post_context(context, CONFIG["metadata"]["response_uris_supported"][0].removeprefix(CONFIG["base_url"]), encrypted_response)
-
         request_endpoint = self.backend.response_endpoint(context)
         assert request_endpoint.status == "200"
 

@@ -24,7 +24,8 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         _issuer_keys: list[dict] = []
         if hasattr(verifying_keys, 'get_public_keys'):
             # this IF is duck typing check on TrustEvaluator / TrustedPublicKeySource
-            _issuer_keys = verifying_keys.get_public_keys(self.sdjwt.get_issuer_jwt())
+            # breakpoint()
+            _issuer_keys = verifying_keys.get_public_keys(self.get_issuer_name())
         elif isinstance(verifying_keys, list):
             _issuer_keys = verifying_keys
         else:
@@ -48,7 +49,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         return is_jwt_expired(self.sdjwt.issuer_jwt)
 
     def verify_signature(self) -> None:
-        self._sdjwt_issuer_jwt_verifier.verify(self.sdjwt.issuer_jwt)
+        self._sdjwt_issuer_jwt_verifier.verify(self.sdjwt.issuer_jwt.jwt)
 
     def verify_challenge(self) -> None:
         challenge: VerifierChallenge = {

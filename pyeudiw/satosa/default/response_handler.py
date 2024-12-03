@@ -192,13 +192,13 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
             # TODO: verifica come infilare qui dentro cose (jwt token verifier) senza diventare matto
-            try:
-                pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
-            except NoCriptographicMaterial as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            # try:
+            #     pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
+            # except NoCriptographicMaterial as e:
+            #     return self._handle_400(context, f"VP parsing error: {e}")
 
             try:
-                token_verifier.verify_signature(pub_jwk)
+                token_verifier.verify_signature()
             except Exception as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
 
@@ -318,7 +318,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         # ritornare - per ora viene ritornata l'unica implementazione possibile
         challenge = self._get_verifier_challenge(session_data)
         token_processor = VpVcSdJwtParserVerifier(token, trust_source, challenge["aud"], challenge["nonce"])
-        return (token_processor, deepcopy(token_processor))
+        return (token_processor, token_processor)
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
         return {"aud": self.client_id, "nonce": session_data["nonce"]}
