@@ -24,7 +24,6 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         _issuer_keys: list[dict] = []
         if hasattr(verifying_keys, 'get_public_keys'):
             # this IF is duck typing check on TrustEvaluator / TrustedPublicKeySource
-            # breakpoint()
             _issuer_keys = verifying_keys.get_public_keys(self.get_issuer_name())
         elif isinstance(verifying_keys, list):
             _issuer_keys = verifying_keys

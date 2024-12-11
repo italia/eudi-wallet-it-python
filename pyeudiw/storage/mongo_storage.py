@@ -273,9 +273,7 @@ class MongoStorage(BaseStorage):
         )
 
         if not document_status.acknowledged:
-            raise StorageEntryUpdateFailed(
-                "Trust Anchor matched count is ZERO"
-            )
+            raise StorageEntryUpdateFailed(f"Failed to update or insert document with label {key_label}")
 
         return document_status
 
@@ -310,7 +308,6 @@ class MongoStorage(BaseStorage):
         trust_entity["exp"] = exp
 
         entity[trust_name] = trust_entity
-
 
         return entity
 

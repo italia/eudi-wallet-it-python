@@ -143,9 +143,9 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.policies:
             raise Exception(f"no trust evaluator can provide policies for {issuer}: searched among: {self.handlers_names}")
-        
+
         return trust_source.policies
-    
+
     def get_selfissued_jwt_header_trust_parameters(self, issuer: str) -> list[dict]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
@@ -160,9 +160,9 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.trust_params:
             raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.handlers_names}")
-        
+
         return {type: param.trust_params for type, param in trust_source.trust_params.items()}
-    
+
     @staticmethod
     def from_config(config: dict, db_engine: DBEngine) -> 'CombinedTrustEvaluator':
         """
@@ -172,7 +172,7 @@ class CombinedTrustEvaluator(BaseLogger):
         :type config: dict
         :param db_engine: The database engine
         :type db_engine: DBEngine
-        
+
         :returns: The CombinedTrustEvaluator
         :rtype: CombinedTrustEvaluator
         """
@@ -181,16 +181,17 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler_name, handler_config in config.items():
             try:
                 trust_handler = dynamic_class_loader(
-                    handler_config["module"], 
-                    handler_config["class"], 
+                    handler_config["module"],
+                    handler_config["class"],
                     handler_config["config"]
                 )
             except Exception as e:
                 raise TrustConfigurationError(f"invalid configuration for {handler_name}: {e}", e)
-            
-            if not isinstance(trust_handler, TrustHandlerInterface):
-                raise TrustConfigurationError(f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator")
-            
+
+            # TODO: check if the imported class has attributes that satisfy given interface     
+            # if not isinstance(trust_handler, TrustHandlerInterface):
+            #     raise TrustConfigurationError(f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator")
+
             handlers.append(trust_handler)
 
         if not handlers:
@@ -198,4 +199,3 @@ class CombinedTrustEvaluator(BaseLogger):
             handlers.append(DirectTrustSdJwtVc())
 
         return CombinedTrustEvaluator(handlers, db_engine)
-        

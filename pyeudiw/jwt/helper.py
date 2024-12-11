@@ -355,7 +355,7 @@ class JWSHelper(JwsSigner, JwsVerifier):
         if unsupported_claims.intersection(header):
             raise JWSVerificationError(NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet"))
         # if only one key and there is no header claim that can identitfy any key, than that MUST
-        # be the only valid candidate key for signatuire verification
+        # be the only valid candidate key for signature verification
         if len(self.jwks) == 1:
             return self.jwks[0]
         return None

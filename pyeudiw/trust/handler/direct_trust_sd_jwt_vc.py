@@ -9,8 +9,8 @@ from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 
 
-DEAFAULT_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
-DEAFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
+DEFAULT_SDJWTVC_METADATA_ENDPOINT = "/.well-known/jwt-vc-issuer"
+DEFAULT_OPENID4VCI_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
 
 DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     "connection": {
@@ -21,14 +21,17 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     }
 }
 
+
 class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
     def __init__(
-            self, 
-            httpc_params: dict = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS, 
-            jwk_endpoint: str = DEAFAULT_JWK_ENDPOINT,
-            metadata_endpoint: str = DEAFAULT_METADATA_ENDPOINT,
+            self,
+            httpc_params: dict | None = None,
+            jwk_endpoint: str = DEFAULT_SDJWTVC_METADATA_ENDPOINT,
+            metadata_endpoint: str = DEFAULT_OPENID4VCI_METADATA_ENDPOINT,
             cache_ttl: int = 0,
         ) -> None:
+        if httpc_params is None:
+            httpc_params = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS
         self.httpc_params = httpc_params
         self.jwk_endpoint = jwk_endpoint
         self.metadata_endpoint = metadata_endpoint
@@ -81,8 +84,7 @@ class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
     def build_issuer_metadata_endpoint(issuer: str, metadata_path_component: str) -> str:
         issuer_normalized = issuer if issuer[-1] != '/' else issuer[:-1]
         return issuer_normalized + metadata_path_component
-    
-        
+
     def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Fetches the public key of the issuer by querying a given endpoint.
@@ -107,7 +109,7 @@ class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
             
             trust_source.add_keys(jwk_l)
         except Exception as e:
-            self._log_warning("Extracting JWK" ,f"Failed to extract jwks from issuer {issuer}: {e}")
+            self._log_warning("Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}")
     
         return trust_source
 

@@ -24,7 +24,7 @@ class MockTrustHandler(TrustHandlerInterface):
         trust_source = self.get_metadata(issuer, trust_source)
         trust_source.keys.append(mock_jwk)
         return trust_source
-    
+
 class NonConformatTrustHandler:
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
         return trust_source

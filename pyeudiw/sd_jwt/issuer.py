@@ -22,6 +22,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 logger = logging.getLogger(__name__)
 
+
 class SDJWTIssuer(SDJWTCommon):
     DECOY_MIN_ELEMENTS = 2
     DECOY_MAX_ELEMENTS = 5

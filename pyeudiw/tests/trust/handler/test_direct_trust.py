@@ -115,7 +115,7 @@ def test_direct_trust_jwk():
     trust_source = trust_handler.extract_and_update_trust_materials(random_issuer, trust_source)
 
     obtained_jwks = trust_source.keys
-        
+
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
 
     assert len(obtained_jwks) == 1, f"expected 1 jwk, obtained {len(obtained_jwks)}"
