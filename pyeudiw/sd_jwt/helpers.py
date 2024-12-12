@@ -6,8 +6,6 @@
 # See also: https://github.com/italia/eudi-wallet-it-python/pull/305#issuecomment-2506237664
 import json
 
-from jwcrypto.common import base64url_encode
-
 from binascii import unhexlify
 from io import StringIO
 from typing import Dict, Optional
@@ -22,11 +20,7 @@ from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt.exceptions import UnknownCurveNistName
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
-from jwcrypto.jws import JWS
 from json import dumps, loads
-
-import jwcrypto
-import jwcrypto.jwk
 
 from typing import Any
 from cryptojwt.jwk.rsa import RSAKey

@@ -36,6 +36,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
     def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
+        # TODO: remove, this function is unused
+        #   NOTE: before removing, check that all it's functionalities exists somewhere else and are used...
         try:
             # establish the trust with the issuer of the credential by checking it to the revocation
             # inspect VP's iss or trust_chain if available or x5c if available

@@ -48,6 +48,8 @@ class SdJwt:
         self.disclosures: list[str] = []
         self.holder_kb: DecodedJwt | None = None
         self._post_init_precomputed_values()
+        # pre-computable values
+        self._disclosed_claims: dict | None = {}
 
     def _post_init_precomputed_values(self):
         iss_jwt, *disclosures, kb_jwt = self.token.split(FORMAT_SEPARATOR)
@@ -68,7 +70,10 @@ class SdJwt:
         return self.disclosures
 
     def get_disclosed_claims(self) -> dict:
-        return _extract_claims_from_payload(self.issuer_jwt.payload, self.disclosures, SUPPORTED_SD_ALG_FN[self.get_sd_alg()])
+        # override a private property so that claims are not re-evaluated each time  the function is called (this is not stricly very safe, tho)
+        if self._disclosed_claims is None:
+            self._disclosed_claims = _extract_claims_from_payload(self.issuer_jwt.payload, self.disclosures, SUPPORTED_SD_ALG_FN[self.get_sd_alg()])
+        return self._disclosed_claims
 
     def get_issuer_jwt(self) -> str:
         return self.issuer_jwt.jwt
@@ -104,6 +109,23 @@ class SdJwt:
             return
         cnf = self.get_confirmation_key()
         verify_jws_with_key(self.holder_kb.jwt, cnf)
+
+    def is_lifetime_valid(self) -> bool:
+        """is_lifetime_valid verify that an sdjwt has a valid lifetime, that is,
+        checks that iat, exp and nbf claims are correct with the current time.
+        Note that each of those claims is OPTIONAL; moreorev it might be selectively
+        disclosable; however in SD-JWT for VC only iat is disclosable.
+        """
+        now = iat_now()
+        claims = self.get_disclosed_claims()
+        valid = True
+        if "iat" in claims:
+            valid &= (now > claims["iat"])
+        if "nbf" in claims:
+            valid &= (now > claims["nbf"])
+        if "exp" in claims:
+            valid &= (claims["exp"] > now)
+        return valid
 
 
 class SdJwtKb(SdJwt):

@@ -37,5 +37,3 @@ def is_jwt_expired(token: str) -> bool:
     elif exp < iat_now():
         return True
     return False
-    
-

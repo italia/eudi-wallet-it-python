@@ -106,10 +106,10 @@ class SDJWTVerifier(SDJWTCommon):
                     )
                 key = key_from_jwk_dict(key)
                 issuer_public_key.append(key)
-    
+
             self._sd_jwt_payload = parsed_input_sd_jwt.verify_compact(
-                jws=self._unverified_input_sd_jwt, 
-                keys=issuer_public_key, 
+                jws=self._unverified_input_sd_jwt,
+                keys=issuer_public_key,
                 sigalg=sign_alg
             )
 
@@ -122,7 +122,7 @@ class SDJWTVerifier(SDJWTCommon):
             raise ValueError(
                 f"Unsupported serialization format: {self._serialization_format}"
             )
-        
+
         self._holder_public_key_payload = self._sd_jwt_payload.get("cnf", None)
 
     def _verify_key_binding_jwt(

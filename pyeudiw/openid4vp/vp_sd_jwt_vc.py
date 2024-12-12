@@ -45,7 +45,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         return False
 
     def is_expired(self) -> bool:
-        return is_jwt_expired(self.sdjwt.issuer_jwt)
+        return self.sdjwt.is_lifetime_valid()
 
     def verify_signature(self) -> None:
         self._sdjwt_issuer_jwt_verifier.verify(self.sdjwt.issuer_jwt.jwt)
