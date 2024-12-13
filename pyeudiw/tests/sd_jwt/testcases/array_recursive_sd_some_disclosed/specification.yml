@@ -1,0 +1,27 @@
+user_claims:
+  array_with_recursive_sd:
+    - boring
+    - foo: "bar"
+      !sd baz:
+        qux: "quux"
+    - [!sd "foo", !sd "bar"]
+
+  test2: [!sd "foo", !sd "bar"]
+
+holder_disclosed_claims:
+  array_with_recursive_sd:
+    - None
+    - baz: True
+    - [False, True]
+
+  test2: [True, True]
+
+expect_verified_user_claims:
+  array_with_recursive_sd:
+    - boring
+    - foo: bar
+      baz:
+        qux: quux
+    - ["bar"]
+
+  test2: ["foo", "bar"]

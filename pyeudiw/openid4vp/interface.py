@@ -1,4 +1,6 @@
-from pyeudiw.jwk import JWK
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+
 from pyeudiw.jwt.parse import KeyIdentifier_T
 
 
@@ -39,7 +41,7 @@ class VpTokenVerifier:
     def is_active(self) -> bool:
         return (not self.is_expired()) and (not self.is_revoked())
 
-    def verify_signature(self, public_key: JWK) -> None:
+    def verify_signature(self, public_key: ECKey | RSAKey | dict) -> None:
         """
         :raises [InvalidSignatureException]:
         """

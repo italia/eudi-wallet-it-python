@@ -5,7 +5,8 @@ from datetime import datetime
 from ssl import DER_cert_to_PEM_cert
 from cryptography.x509 import load_der_x509_certificate
 
-from pyeudiw.jwk import JWK
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -165,5 +166,5 @@ def is_der_format(cert: bytes) -> str:
         return False
 
 
-def get_public_key_from_x509_chain(x5c: list[bytes]) -> JWK:
+def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
     raise NotImplementedError("TODO")

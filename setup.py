@@ -52,7 +52,6 @@ setup(
             "jinja2>=3.0,<4",
             "pymongo>=4.4.1,<4.5",
             "requests>=2.2,<2.4",
-            "sd-jwt",
             "pymdoccbor @ git+https://github.com/peppelinux/pyMDOC-CBOR.git"
         ],
         "federation": [

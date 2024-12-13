@@ -5,7 +5,6 @@ from pyeudiw.tests.settings import httpc_params
 from . base import ta_ec, leaf_wallet
 from . mocked_response import EntityResponseWithIntermediate
 
-
 from unittest.mock import patch
 
 

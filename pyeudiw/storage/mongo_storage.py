@@ -143,6 +143,9 @@ class MongoStorage(BaseStorage):
             self.sessions.create_index(
                 [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)
 
+    def get_session_retention_ttl(self) -> dict:
+        return self.sessions.index_information().get("creation_date_1")
+    
     def has_session_retention_ttl(self) -> bool:
         self._connect()
         return self.sessions.index_information().get("creation_date_1") is not None

@@ -1,17 +1,17 @@
 import base64
+from pyeudiw.tools.utils import exp_from_now, iat_now
 from bs4 import BeautifulSoup
 import datetime
 import requests
 from typing import Any, Literal
 
+from io import StringIO
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw.sd_jwt import (
-    import_ec,
-    issue_sd_jwt,
-    load_specification_from_yaml_string
-)
+from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
@@ -19,15 +19,13 @@ from pyeudiw.tests.federation.base import (
     ta_ec,
     ta_ec_signed,
     leaf_cred,
-    leaf_cred_jwk,
     leaf_cred_jwk_prot,
     leaf_cred_signed,
     leaf_wallet,
     leaf_wallet_jwk,
     leaf_wallet_signed,
-    trust_chain_issuer
 )
-from sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.holder import SDJWTHolder
 from saml2_sp import saml2_request
 
 from settings import (
@@ -102,18 +100,28 @@ def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]
     # create a SD-JWT signed by a trusted credential issuer
     settings = ISSUER_CONF
     settings["default_exp"] = 33
-    sd_specification = load_specification_from_yaml_string(
-        settings["sd_specification"]
+    
+    user_claims = _yaml_load_specification(StringIO(settings["sd_specification"]))
+    claims = {
+        "iss": settings["issuer"],
+        "iat": iat_now(),
+        "exp": exp_from_now(settings["default_exp"])  # in seconds
+    }
+    user_claims.update(claims)
+    
+    
+    issued_jwt = SDJWTIssuer(
+        issuer_keys=CREDENTIAL_ISSUER_JWK,
+        holder_key= WALLET_PUBLIC_JWK,
+        extra_header_parameters={
+            "typ": "dc+sd-jwt",
+            "kid": CREDENTIAL_ISSUER_JWK.kid
+        },
+        user_claims=_yaml_load_specification(StringIO(settings["sd_specification"])),
+        add_decoy_claims=claims.get("add_decoy_claims", True)
     )
-
-    issued_jwt = issue_sd_jwt(
-        sd_specification,
-        settings,
-        CREDENTIAL_ISSUER_JWK,
-        WALLET_PUBLIC_JWK,
-        additional_headers={"typ": "vc+sd-jwt"}
-    )
-    return issued_jwt
+    
+    return {"jws": issued_jwt.serialized_sd_jwt, "issuance": issued_jwt.sd_jwt_issuance}
 
 
 def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"], str], request_nonce: str, request_aud: str) -> str:
@@ -133,7 +141,7 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
         aud=request_aud,
         sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
         holder_key=(
-            import_ec(
+            key_from_jwk_dict(
                 WALLET_PRIVATE_JWK.key.priv_key,
                 kid=WALLET_PRIVATE_JWK.kid
             )
