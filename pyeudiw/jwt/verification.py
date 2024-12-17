@@ -17,24 +17,16 @@ def verify_jws_with_key(jws: str, key: JWK) -> None:
     except Exception as e:
         raise JWSVerificationError(f"error during signature verification: {e}", e)
 
-def is_jwt_expired(token: str) -> bool:
-    """
-    Check if a jwt is expired.
-    
-    :param token: a string that represents the jwt.
-    :type token: str
 
-    :returns: True if the token is expired, False otherwise.
-    :rtype: bool
-    """
-
-    token_payload = decode_jwt_payload(token)
-
+def is_payload_expired(token_payload: dict) -> bool:
     exp = token_payload.get("exp", None)
     if not exp:
         return True
-    elif exp < iat_now():
+    if exp < iat_now():
         return True
     return False
-    
 
+
+def is_jwt_expired(token: str) -> bool:
+    payalod = decode_jwt_payload(token)
+    return is_payload_expired(payalod)

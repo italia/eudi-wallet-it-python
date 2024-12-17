@@ -1,8 +1,9 @@
-import os
 import pathlib
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from cryptojwt.jwk.ec import new_ec_key
+
+from pyeudiw.jwk import JWK
 
 
 BASE_URL = "https://example.com"
@@ -20,7 +21,7 @@ CONFIG = {
 
     "ui": {
         "static_storage_url": BASE_URL,
-        "template_folder": f"{pathlib.Path().absolute().__str__()}/tests/satosa/templates",
+        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
         "error_template": "error.html",
         "error_url": "https://localhost:9999/error_page.html"
@@ -157,8 +158,7 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -169,8 +169,7 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
@@ -178,8 +177,7 @@ CONFIG = {
                         "db_trust_anchors_collection": "trust_anchors",
                         "db_trust_sources_collection": "trust_sources"
                     },
-                    "connection_params": {
-                    }
+                    "connection_params": {}
                 }
             }
         }
@@ -463,8 +461,7 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -475,8 +472,7 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    # according to Satosa-Saml2Spid demo
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
@@ -696,8 +692,7 @@ INTERNAL_ATTRIBUTES: dict = {
 
 
 PRIVATE_JWK = new_ec_key('P-256')
-PUBLIC_JWK = PRIVATE_JWK.get_key()
-
+PUBLIC_JWK = PRIVATE_JWK.serialize(private=False)
 
 
 WALLET_INSTANCE_ATTESTATION = {

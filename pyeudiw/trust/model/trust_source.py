@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pyeudiw.jwk import JWK
 from datetime import datetime
 from typing import Optional
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 @dataclass
 class TrustParameterData:
@@ -204,4 +205,4 @@ class TrustSourceData:
         :returns: The public keys of the trust source
         :rtype: list[dict[str, any]]
         """
-        return [JWK(k).as_public_dict() for k in self.keys]
+        return [key_from_jwk_dict(k,private=False).serialize() for k in self.keys]

@@ -9,42 +9,49 @@ from pyeudiw.tests.settings import (
     CREDENTIAL_ISSUER_ENTITY_ID,
     CREDENTIAL_ISSUER_CONF,
 )
-from pyeudiw.sd_jwt import (
-    _adapt_keys,
-    issue_sd_jwt,
-    load_specification_from_yaml_string,
-    import_ec
-)
-from sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.tools.utils import exp_from_now, iat_now
 from satosa.context import Context
 from pyeudiw.storage.db_engine import DBEngine
 
-issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
-holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
+from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from io import StringIO
+
+issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
 settings = CREDENTIAL_ISSUER_CONF
 settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
 settings['default_exp'] = CONFIG['jwt']['default_exp']
 
-sd_specification = load_specification_from_yaml_string(settings["sd_specification"])
+sd_specification = _yaml_load_specification(StringIO(settings["sd_specification"]))
 
-issued_jwt = issue_sd_jwt(
-    sd_specification,
-    settings,
+
+
+user_claims = {
+    "iss": settings["issuer"],
+    "iat": iat_now(),
+    "exp": exp_from_now(settings["default_exp"])  # in seconds
+}
+
+issued_jwt = SDJWTIssuer(
+    user_claims,
     issuer_jwk,
     holder_jwk,
-    trust_chain=trust_chain_issuer,
-    additional_headers={"typ": "vc+sd-jwt"}
+    add_decoy_claims = sd_specification.get("add_decoy_claims", True),
+    serialization_format=sd_specification.get("serialization_format", "compact"),
+    extra_header_parameters={"typ": "vc+sd-jwt"},
 )
 
-_adapt_keys(issuer_jwk, holder_jwk)
 
 sdjwt_at_holder = SDJWTHolder(
-    issued_jwt["issuance"],
+    issued_jwt.sd_jwt_issuance,
     serialization_format="compact",
 )
 
-ec_key = import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+ec_key = key_from_jwk_dict(holder_jwk) if sd_specification.get(
                 "key_binding", False) else None
 
 def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> str:
