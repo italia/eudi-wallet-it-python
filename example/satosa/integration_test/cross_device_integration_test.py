@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright, Playwright, Page
 
 from pyeudiw.jwt.utils import decode_jwt_payload
 
-from . commons import (
+from commons import (
     ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
