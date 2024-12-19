@@ -1,6 +1,6 @@
 import binascii
 import json
-from typing import Union, Any
+from typing import TypeAlias, Union, Any
 
 import cryptojwt
 from cryptojwt.jwe.jwe import factory
@@ -46,7 +46,7 @@ DEFAULT_ENC_ENC_MAP = {
     "EC": "A256GCM"
 }
 
-KeyLike = ECKey | RSAKey | OKPKey | SYMKey
+KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
 
 
@@ -61,6 +61,7 @@ class JWHelperInterface:
         :param jwks: The list of JWK used to crypt and encrypt the content of JWE.
 
         """
+        self.jwks: list[KeyLike] = []
         if isinstance(jwks, dict):
             single_jwk = key_from_jwk_dict(jwks)
             single_jwk.add_kid()
@@ -76,8 +77,7 @@ class JWHelperInterface:
             jwks.add_kid()
             self.jwks = [jwks]
         else:
-            logger.warning(f"Unhandled type {type(jwks)} for jwks")
-            self.jwks = []
+            raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
         
     def get_jwk_by_kid(self, kid: str) -> dict | KeyLike | None:
         if not kid:
