@@ -107,7 +107,7 @@ class JWEHelper(JWHelperInterface):
         :rtype: str
         """
         
-        jwe_strings =[]
+        jwe_strings=[]
         
         if isinstance(plain_dict,dict):
             _payload = json.dumps(plain_dict).encode()
@@ -286,8 +286,6 @@ class JWSHelper(JWHelperInterface):
                 return signed
             except Exception as e:
                 raise JWSSigningError("signing error: error in step", e)
-        if isinstance(plain_dict, bytes):
-            plain_dict = plain_dict.decode()
         return signer.sign_json(keys=[key_from_jwk_dict(signing_key)], headers=[(protected, unprotected)], flatten=True)
 
     def _select_signing_key(self, headers: tuple[dict, dict], signing_kid: str = "") -> dict:
