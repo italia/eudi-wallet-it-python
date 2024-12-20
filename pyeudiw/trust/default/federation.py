@@ -7,7 +7,7 @@ import json
 from satosa.context import Context
 from satosa.response import Response
 
-from pyeudiw.jwt import JWSHelper
+from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.satosa.exceptions import (DiscoveryFailedError,
                                        NotTrustedFederationError)
@@ -30,7 +30,6 @@ class FederationTrustModel(TrustEvaluator):
     _ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
     def __init__(self, **kwargs):
-        # TODO; qui c'è dentro tutta la ciccia: trust chain verification, root of trust, etc
         self.metadata_policy_resolver = TrustChainPolicy()
         self.federation_jwks = kwargs.get("federation_jwks", [])
         pass

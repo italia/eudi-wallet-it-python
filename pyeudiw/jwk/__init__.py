@@ -117,6 +117,14 @@ class JWK:
         """
         return self.jwk
 
+    def as_public_dict(self) -> dict:
+        """
+        Returns the public key in format of dict.
+        :returns: The public key in form of dict.
+        :rtype: dict
+        """
+        return self.public_key
+
     def __repr__(self):
         # private part!
         return self.as_json()
