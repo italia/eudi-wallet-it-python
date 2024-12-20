@@ -67,7 +67,7 @@ def test_jwe_helper_decrypt_fail(jwk, payload):
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
-    jws = helper.sign(payload)
+    jws = helper.sign(payload, signing_kid=jwk.kid)
     assert jws
 
 @pytest.mark.parametrize("jwk, payload", JWKs)

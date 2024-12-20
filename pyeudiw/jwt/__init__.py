@@ -80,13 +80,18 @@ class JWHelperInterface:
             self.jwks = [jwks]
         else:
             raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
+        # update keys with kid, but do not mutate existing kids if there
+        for key in self.jwks:
+            if not key.kid:
+                key.add_kid()
 
-    def get_jwk_by_kid(self, kid: str) -> dict | KeyLike | None:
+    def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
         if not kid:
-            return
+            return None
         for i in self.jwks:
             if i.kid == kid:
                 return i
+        return None
 
 
 class JWEHelper(JWHelperInterface):
@@ -206,19 +211,25 @@ class JWSHelper(JWHelperInterface):
         protected: dict | None = None,
         unprotected: dict | None = None,
         serialization_format: SerializationFormat = "compact",
-        with_kid: bool = True,
+        signing_kid: str = "",
+        force_kid_in_header: bool = True,
     ) -> str:
         """Generate a signed JWS with the given payload and header.
         This method provides no guarantee that the input header is fully preserved,
         not does it guarantee that some optional but usually found header such
         as 'typ' and 'kid' are present.
-        If the signing key has a kid claim, and the JWS header does not a have a kid claim,
+        If the signing jwk has a kid claim, and the JWS header does not a have a kid claim,
         a kid matching the signing key 'kid' can be injected in the protected header
-        by setting with_kid=True.
+        by setting force_kid_in_header=True.
         
         Header claim 'alg' is always added as it is mandated by RFC7515
         and, if present, will be overridden with the actual 'alg' used for singing.
         This is done to make sure that untrusted alg values, such as none, cannot be used.
+
+        The signing key is selected among the constructor jwks based on internal
+        heuristics. The user can force with key he can attempt to use by
+        setting signing_key, which will then be looked in the internal set
+        of available keys.
 
         If the header already contains indication of a key, such as 'kid',
         'trust_chain' and 'x5c', there is no guarantee that the signing
@@ -230,8 +241,11 @@ class JWSHelper(JWHelperInterface):
         :param protected: a dict containing all the values to include in the signed token header.
         :type protected: dict
         :param unprotected: a dict containing all the values to include in the unsigned token header when using json serializarion.
-        :param with_kid: is true, insert the siging key kid (if any) in the token header if and only if it is missing
-        :type with_kid: bool
+        :type unprotected: dict
+        :param signing_key: if set, force the signer to use the key with this kid in the available set
+        :type signing_key: str
+        :param force_kid_in_header: is true, insert the siging key kid (if any) in the token header if and only if it is missing
+        :type force_kid_in_header: bool
 
         :returns: A string that represents the signed token.
         :rtype: str
@@ -259,13 +273,13 @@ class JWSHelper(JWHelperInterface):
         # untyped JWT are JWT...
         if "typ" not in protected:
             protected["typ"] = "JWT"
-        if with_kid and signer_kid:
+        if force_kid_in_header and signer_kid:
             protected["kid"] = signer_kid  # note that is actually redundant as the underlying library auto-update the header with the kid
 
         # this is a hack: if the header to be signed does NOT have kid and we do
         # not want to include it, then we must remove it from the signing kid
         # otherwise the signing library will auto insert it
-        if not with_kid and not header_kid:
+        if not force_kid_in_header and not header_kid:
             signing_key = deepcopy(signing_key)
             signing_key.pop("kid", None)
 
@@ -280,9 +294,14 @@ class JWSHelper(JWHelperInterface):
             plain_dict = plain_dict.decode()
         return signer.sign_json(keys=[key_from_jwk_dict(signing_key)], headers=[(protected, unprotected)], flatten=True)
 
-    def _select_signing_key(self, headers: tuple[dict, dict]) -> dict:
+    def _select_signing_key(self, headers: tuple[dict, dict], signing_kid: str = "") -> dict:
         if len(self.jwks) == 0:
             raise JWEEncryptionError("signing error: no key available for signature; note that {'alg':'none'} is not supported")
+        # Case 0: key forced by the user
+        if signing_kid:
+            signing_key = self.get_jwk_by_kid(signing_kid)
+            if not signing_kid:
+                raise JWEEncryptionError(f"signing forced by using key with {signing_kid=}, but no such key is available")
         # Case 1: only one key
         if (signing_key := self._select_signing_key_by_uniqueness()):
             return signing_key

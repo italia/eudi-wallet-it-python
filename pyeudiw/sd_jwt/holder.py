@@ -251,6 +251,6 @@ class SDJWTHolder(SDJWTCommon):
         self.serialized_key_binding_jwt = signer.sign(
             self.key_binding_jwt_payload,
             protected=self.key_binding_jwt_header,
-            with_kid=False
+            force_kid_in_header=False
         )
     
