@@ -9,6 +9,7 @@ key_settings:
 
   issuer_keys:
     - kty: EC
+      kid: Q5yTSREAbvZL131ynDBhalXJcF9fL0foJlMN8u6ldiY
       d: Ur2bNKuBPOrAaxsRnbSH6hIhmNTxSGXshDSUD1a1y7g
       crv: P-256
       x: b28d4MwZMjw8-00CG4xfnn9SLMVMM19SlqZpVb_uNtQ

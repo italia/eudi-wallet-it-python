@@ -21,6 +21,7 @@ from settings import TIMEOUT_S
 db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
+
 def _extract_request_uri(e: Exception) -> str:
     request_uri: str = re.search(r'request_uri=(.*?)(?:\'|\s|$)', urllib.parse.unquote_plus(e.args[0])).group(1)
     request_uri = request_uri.rstrip()

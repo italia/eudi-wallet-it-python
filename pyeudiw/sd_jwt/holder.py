@@ -245,11 +245,12 @@ class SDJWTHolder(SDJWTCommon):
             "iat": int(time()),
             KB_DIGEST_KEY: presentation_hash,
         }
-    
-        self.key_binding_jwt = JWSHelper(holder_key)
-        
-        self.serialized_key_binding_jwt = self.key_binding_jwt.sign(
+
+        signer = JWSHelper(holder_key)
+        #self.key_binding_jwt = JWSHelper(holder_key)
+        self.serialized_key_binding_jwt = signer.sign(
             self.key_binding_jwt_payload,
-            protected=self.key_binding_jwt_header
+            protected=self.key_binding_jwt_header,
+            with_kid=False
         )
     

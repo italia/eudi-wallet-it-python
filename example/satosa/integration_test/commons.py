@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from bs4 import BeautifulSoup
 import datetime
@@ -125,10 +126,11 @@ def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]
         "exp": exp_from_now(settings["default_exp"])  # in seconds
     }
     user_claims.update(claims)
-    
+    public_holder_key = deepcopy(WALLET_PUBLIC_JWK.as_dict())
+    public_holder_key.pop("kid", None)  # condifmration key can be expressed without a kid
     issued_jwt = SDJWTIssuer(
         issuer_keys=CREDENTIAL_ISSUER_JWK.as_dict(),
-        holder_key=WALLET_PUBLIC_JWK.as_dict(),
+        holder_key=public_holder_key,
         extra_header_parameters={
             "typ": "dc+sd-jwt",
             "kid": CREDENTIAL_ISSUER_JWK.kid
@@ -149,7 +151,6 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
     )
 
     holder_private_key: dict | None = WALLET_PRIVATE_JWK.as_dict() if settings.get("key_binding", False) else None
-
     sdjwt_at_holder.create_presentation(
         claims_to_disclose={
             "tax_id_code": True,
@@ -161,7 +162,6 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
         sign_alg=DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
         holder_key=holder_private_key
     )
-
     vp_token = sdjwt_at_holder.sd_jwt_presentation
     return vp_token
 
