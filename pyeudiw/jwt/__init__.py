@@ -106,10 +106,7 @@ class JWEHelper(JWHelperInterface):
         :returns: A string that represents the JWE.
         :rtype: str
         """
-        
-        jwe_strings=[]
-        
-        if isinstance(plain_dict,dict):
+        if isinstance(plain_dict, dict):
             _payload = json.dumps(plain_dict).encode()
         elif not plain_dict:
             _payload = ""
@@ -117,23 +114,26 @@ class JWEHelper(JWHelperInterface):
             _payload = plain_dict
         else:
             _payload = ""
-            
+        
+        encryption_keys = [key for key in self.jwks if key.appropriate_for("encrypt")]
+
+        if len(encryption_keys) == 0:
+            raise JWEEncryptionError("unable to produce JWE: no available encryption key(s)")
+
         for key in self.jwks:
             if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
                 JWE_CLASS = JWE_RSA
             elif isinstance(key, cryptojwt.jwk.ec.ECKey):
                 JWE_CLASS = JWE_EC
             else:
-                raise JWEEncryptionError(
-                    f"Error while encrypting: "
-                    f"{self.jwk.__class__.__name__} not supported!"
-                )
+                # unsupported key: go to next one
+                continue
 
             _keyobj = JWE_CLASS(
                 _payload,
-                alg = DEFAULT_ENC_ALG_MAP[key.kty],
-                enc = DEFAULT_ENC_ENC_MAP[key.kty],
-                kid = key.kid,
+                alg=DEFAULT_ENC_ALG_MAP[key.kty],
+                enc=DEFAULT_ENC_ENC_MAP[key.kty],
+                kid=key.kid,
                 **kwargs
             )
 
@@ -151,11 +151,9 @@ class JWEHelper(JWHelperInterface):
                 }
                 return _keyobj.encrypt(**kwargs)
             else:
-                return _keyobj.encrypt(
-                    key=key.public_key()
-                )
+                return _keyobj.encrypt(key=key.public_key())
 
-        return jwe_strings[0] if len(jwe_strings)==1 else jwe_strings
+        raise JWEEncryptionError("unable to produce JWE: no supported encryption key(s)")
 
     def decrypt(self, jwe: str) -> dict:
         """
@@ -218,7 +216,7 @@ class JWSHelper(JWHelperInterface):
         If the signing jwk has a kid claim, and the JWS header does not a have a kid claim,
         a kid matching the signing key 'kid' can be injected in the protected header
         by setting kid_in_header=True.
-        
+
         Header claim 'alg' is always added as it is mandated by RFC7515
         and, if present, will be overridden with the actual 'alg' used for singing.
         This is done to make sure that untrusted alg values, such as none, cannot be used.
