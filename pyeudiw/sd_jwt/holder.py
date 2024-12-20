@@ -247,10 +247,8 @@ class SDJWTHolder(SDJWTCommon):
         }
 
         signer = JWSHelper(holder_key)
-        #self.key_binding_jwt = JWSHelper(holder_key)
         self.serialized_key_binding_jwt = signer.sign(
             self.key_binding_jwt_payload,
             protected=self.key_binding_jwt_header,
-            force_kid_in_header=False
+            kid_in_header=False
         )
-    

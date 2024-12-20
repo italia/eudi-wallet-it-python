@@ -80,10 +80,6 @@ class JWHelperInterface:
             self.jwks = [jwks]
         else:
             raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
-        # update keys with kid, but do not mutate existing kids if there
-        for key in self.jwks:
-            if not key.kid:
-                key.add_kid()
 
     def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
         if not kid:
@@ -212,7 +208,7 @@ class JWSHelper(JWHelperInterface):
         unprotected: dict | None = None,
         serialization_format: SerializationFormat = "compact",
         signing_kid: str = "",
-        force_kid_in_header: bool = True,
+        kid_in_header: bool = True,
     ) -> str:
         """Generate a signed JWS with the given payload and header.
         This method provides no guarantee that the input header is fully preserved,
@@ -220,7 +216,7 @@ class JWSHelper(JWHelperInterface):
         as 'typ' and 'kid' are present.
         If the signing jwk has a kid claim, and the JWS header does not a have a kid claim,
         a kid matching the signing key 'kid' can be injected in the protected header
-        by setting force_kid_in_header=True.
+        by setting kid_in_header=True.
         
         Header claim 'alg' is always added as it is mandated by RFC7515
         and, if present, will be overridden with the actual 'alg' used for singing.
@@ -244,8 +240,8 @@ class JWSHelper(JWHelperInterface):
         :type unprotected: dict
         :param signing_key: if set, force the signer to use the key with this kid in the available set
         :type signing_key: str
-        :param force_kid_in_header: is true, insert the siging key kid (if any) in the token header if and only if it is missing
-        :type force_kid_in_header: bool
+        :param kid_in_header: is true, insert the siging key kid (if any) in the token header if and only if it is missing
+        :type kid_in_header: bool
 
         :returns: A string that represents the signed token.
         :rtype: str
@@ -259,7 +255,7 @@ class JWSHelper(JWHelperInterface):
         if unprotected is None:
             unprotected = {}
 
-        signing_key = self._select_signing_key((protected, unprotected))  # TODO: check that singing key is either private or symmetric
+        signing_key = self._select_signing_key((protected, unprotected), signing_kid)  # TODO: check that singing key is either private or symmetric
         # sanity check: signing key matches what declared in header
         header_kid = protected.get("kid")
         signer_kid = signing_key.get("kid")
@@ -273,13 +269,13 @@ class JWSHelper(JWHelperInterface):
         # untyped JWT are JWT...
         if "typ" not in protected:
             protected["typ"] = "JWT"
-        if force_kid_in_header and signer_kid:
+        if kid_in_header and signer_kid:
             protected["kid"] = signer_kid  # note that is actually redundant as the underlying library auto-update the header with the kid
 
         # this is a hack: if the header to be signed does NOT have kid and we do
         # not want to include it, then we must remove it from the signing kid
         # otherwise the signing library will auto insert it
-        if not force_kid_in_header and not header_kid:
+        if not kid_in_header and not header_kid:
             signing_key = deepcopy(signing_key)
             signing_key.pop("kid", None)
 
