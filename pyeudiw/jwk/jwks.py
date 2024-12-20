@@ -1,4 +1,4 @@
-from cryptojwt.jwk.jwk import key_from_jwk_dict
+from pyeudiw.jwk import JWK
 
 
 def find_jwk_by_kid(jwks: list[dict], kid: str) -> dict | None:
@@ -20,19 +20,17 @@ def find_jwk_by_kid(jwks: list[dict], kid: str) -> dict | None:
         obtained_kid = jwk.get("kid", None)
         if kid == obtained_kid:
             return jwk
-
     return None
 
 
-def find_jwk_by_thumbprint(jwks: list[dict], thumbprint: bytes) -> dict:
+def find_jwk_by_thumbprint(jwks: list[dict], thumbprint: bytes) -> dict | None:
     """Find if a jwk with the given thumbprint is part of the given JWKS.
     Function can be used to select if a public key without a kid (such as
     a key that is part of a certificate chain) is part of a jwk set.
 
     We assume that SHA-256 is the hash function used to produce the thumbprint.
     """
-    # TODO: unit test this function (this is important)
     for key in jwks:
-        if key_from_jwk_dict(key).thumbprint == thumbprint:
+        if JWK(key).thumbprint == thumbprint:
             return key
     return None
