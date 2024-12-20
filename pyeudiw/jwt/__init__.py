@@ -296,6 +296,7 @@ class JWSHelper(JWHelperInterface):
             signing_key = self.get_jwk_by_kid(signing_kid)
             if not signing_kid:
                 raise JWEEncryptionError(f"signing forced by using key with {signing_kid=}, but no such key is available")
+            return signing_key.to_dict()
         # Case 1: only one key
         if (signing_key := self._select_signing_key_by_uniqueness()):
             return signing_key
@@ -323,6 +324,8 @@ class JWSHelper(JWHelperInterface):
         return None
 
     def _select_key_by_kid(self, headers: tuple[dict, dict]) -> dict | None:
+        if not headers:
+            return None
         if "kid" in headers[0]:
             kid = headers[0]["kid"]
         elif "kid" in headers[1]:
