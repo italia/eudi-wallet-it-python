@@ -209,6 +209,7 @@ class JWSHelper(JWHelperInterface):
         serialization_format: SerializationFormat = "compact",
         signing_kid: str = "",
         kid_in_header: bool = True,
+        **kwargs
     ) -> str:
         """Generate a signed JWS with the given payload and header.
         This method provides no guarantee that the input header is fully preserved,
@@ -242,6 +243,7 @@ class JWSHelper(JWHelperInterface):
         :type signing_key: str
         :param kid_in_header: is true, insert the siging key kid (if any) in the token header if and only if it is missing
         :type kid_in_header: bool
+        :param kwrags: further claims with fixed known value to the standard token header
 
         :returns: A string that represents the signed token.
         :rtype: str
@@ -282,7 +284,7 @@ class JWSHelper(JWHelperInterface):
         signer = JWS(payload, alg=signing_alg)
         if serialization_format == "compact":
             try:
-                signed = signer.sign_compact([key_from_jwk_dict(signing_key)], protected=protected)
+                signed = signer.sign_compact([key_from_jwk_dict(signing_key)], protected=protected, **kwargs)
                 return signed
             except Exception as e:
                 raise JWSSigningError("signing error: error in step", e)
