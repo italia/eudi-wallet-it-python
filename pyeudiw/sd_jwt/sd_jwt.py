@@ -101,7 +101,7 @@ class SdJwt:
     def verify_holder_kb_jwt_signature(self) -> None:
         if not self.has_key_binding():
             return
-        cnf = self.get_confirmation_key()
+        cnf: dict = self.get_confirmation_key()
         verify_jws_with_key(self.holder_kb.jwt, cnf)
 
 
