@@ -1,16 +1,23 @@
 import os
+from typing import Literal
+from urllib.parse import ParseResult, urlparse
+
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.tools.utils import get_http_url
-from urllib.parse import ParseResult, urlparse
-from typing import Literal
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 
 
-DEAFAULT_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
-DEAFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
+DEFAULT_SDJWTVC_METADATA_ENDPOINT = "/.well-known/jwt-vc-issuer"
+"""Default endpoint where issuer keys used for sd-jwt vc are exposed.
+For further reference, see https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-06.html#name-jwt-vc-issuer-metadata
+"""
+
+DEFAULT_OPENID4VCI_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
+"""Default endpoint where metadata issuer credential are exposed/
+For further reference, see https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-well-known-uri-registry
+"""
 
 DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     "connection": {
@@ -21,14 +28,26 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
     }
 }
 
+
 class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
+    """DirectTrustSdJwtVc is a trust handler that assumes that the key material
+    and metadata exposed in protocol-defined endpoints is trusted even when it
+    is not backed up by a proper trust attestation leading to a known and
+    recognized root of trust.
+    In practical terms, in direct trust we assume the the content exposed in
+    well-known endpoints of the issuing entities are always to be trusted.
+
+    DirectTrustSdJwtVc supports an simple in memory LRU (least recently used)
+    cache with expiration.
+    """
+
     def __init__(
-            self, 
-            httpc_params: dict = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS, 
-            jwk_endpoint: str = DEAFAULT_JWK_ENDPOINT,
-            metadata_endpoint: str = DEAFAULT_METADATA_ENDPOINT,
-            cache_ttl: int = 0,
-        ) -> None:
+        self,
+        httpc_params: dict = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS,
+        jwk_endpoint: str = DEFAULT_SDJWTVC_METADATA_ENDPOINT,
+        metadata_endpoint: str = DEFAULT_OPENID4VCI_METADATA_ENDPOINT,
+        cache_ttl: int = 0,
+    ) -> None:
         self.httpc_params = httpc_params
         self.jwk_endpoint = jwk_endpoint
         self.metadata_endpoint = metadata_endpoint
@@ -81,8 +100,7 @@ class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
     def build_issuer_metadata_endpoint(issuer: str, metadata_path_component: str) -> str:
         issuer_normalized = issuer if issuer[-1] != '/' else issuer[:-1]
         return issuer_normalized + metadata_path_component
-    
-        
+
     def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Fetches the public key of the issuer by querying a given endpoint.
@@ -107,7 +125,7 @@ class DirectTrustSdJwtVc(TrustHandlerInterface, BaseLogger):
             
             trust_source.add_keys(jwk_l)
         except Exception as e:
-            self._log_warning("Extracting JWK" ,f"Failed to extract jwks from issuer {issuer}: {e}")
+            self._log_warning("Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}")
     
         return trust_source
 
