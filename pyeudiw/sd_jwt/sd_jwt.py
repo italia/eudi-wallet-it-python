@@ -30,6 +30,7 @@ SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
 }
 
 logger = logging.getLogger(__name__)
+
 class SdJwt:
     """
     SdJwt is an utility class to easily parse and verify sd jwt.
