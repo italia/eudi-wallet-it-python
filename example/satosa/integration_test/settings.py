@@ -1,3 +1,4 @@
+import os
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.tests.federation.base import (
@@ -13,6 +14,8 @@ from pyeudiw.tools.utils import iat_now, exp_from_now
 TIMEOUT_S = 10
 IDP_BASEURL = "https://localhost"
 RP_EID = "https://localhost/OpenID4VP"
+MONGO_AUTH_INLINE = os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')
+MONGO_URL_CONNECTION = f"mongodb://{MONGO_AUTH_INLINE}localhost:27017/?timeoutMS=2000"
 
 CONFIG_DB = {
     "mongo_db": {
@@ -20,17 +23,16 @@ CONFIG_DB = {
             "module": "pyeudiw.storage.mongo_storage",
             "class": "MongoStorage",
             "init_params": {
-                "url": "mongodb://localhost:27017/",
+                # according to Satosa-Saml2Spid demo
+                "url": MONGO_URL_CONNECTION,
                 "conf": {
                     "db_name": "eudiw",
                     "db_sessions_collection": "sessions",
                     "db_trust_attestations_collection": "trust_attestations",
-                    "db_trust_anchors_collection": "trust_anchors"
+                    "db_trust_anchors_collection": "trust_anchors",
+                    "db_trust_sources_collection": "trust_sources"
                 },
-                "connection_params": {
-                    "username": "satosa",
-                    "password": "thatpassword"
-                }
+                "connection_params": {}
             }
         }
     }

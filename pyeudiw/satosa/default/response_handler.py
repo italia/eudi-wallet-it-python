@@ -25,7 +25,8 @@ from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.trust.interface import TrustEvaluator
+from pyeudiw.tools.jwk_handling import find_vp_token_key
+from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -177,19 +178,29 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         attributes_by_issuer: dict[str, dict[str, Any]] = {}
         credential_issuers: list[str] = []
         encoded_vps: list[str] = [authz_payload.vp_token] if isinstance(authz_payload.vp_token, str) else authz_payload.vp_token
+
         for vp_token in encoded_vps:
             # verify vp token and extract user information
-            # TODO: specialized try/except for each call, from line 182 to line 187
             try:
                 token_parser, token_verifier = self._vp_verifier_factory(authz_payload.presentation_submission, vp_token, request_session)
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            pub_jwk = _find_vp_token_key(token_parser, self.trust_evaluator)
-            token_verifier.verify_signature(pub_jwk)
+            
+            try:
+                pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
+            except NoCriptographicMaterial as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            
+            try:
+                token_verifier.verify_signature(pub_jwk)
+            except Exception as e:
+                return self._handle_400(context, f"VP parsing error: {e}")
+            
             try:
                 token_verifier.verify_challenge()
             except InvalidVPKeyBinding as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
+            
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
             attributes_by_issuer[iss] = claims
@@ -304,20 +315,3 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
         return {"aud": self.client_id, "nonce": session_data["nonce"]}
-
-
-def _find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
-    # TODO: move somewhere appropriate: this doesn't HAVE to be in the response handler
-    issuer = token_parser.get_issuer_name()
-    trusted_pub_keys = key_source.get_public_keys(issuer)
-    verification_key = token_parser.get_signing_key()
-    if isinstance(verification_key, str):
-        # search by kid
-        kid = verification_key
-        pub_jwks = [key for key in trusted_pub_keys if key.get("kid", "") == kid]
-        if len(pub_jwks) != 1:
-            raise Exception(f"no unique valid trusted key with kid={kid} for issuer {issuer}")
-        return JWK(pub_jwks[0])
-    if isinstance(verification_key, dict):
-        raise NotImplementedError("TODO: matching of public key (ex. from x5c) with keys from trust source")
-    raise Exception(f"invalid state: key with type {type(verification_key)}")

@@ -56,7 +56,7 @@ class DPoPIssuer:
             data,
             protected={
                 'typ': "dpop+jwt",
-                'jwk': self.private_jwk.public_key
+                'jwk': self.private_jwk.serialize()
             }
         )
         return jwt
@@ -136,8 +136,7 @@ class DPoPVerifier:
         :returns: True if the validation is correctly executed, False otherwise
         :rtype: bool
         """
-
-        jws_verifier = JWSHelper(self.public_jwk)
+        jws_verifier = JWSHelper(jwks=[self.public_jwk])
         try:
             dpop_valid = jws_verifier.verify(self.proof)
         except KidError as e:

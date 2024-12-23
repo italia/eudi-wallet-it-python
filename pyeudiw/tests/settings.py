@@ -1,6 +1,7 @@
 import pathlib
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
+from cryptojwt.jwk.ec import new_ec_key
 
 from pyeudiw.jwk import JWK
 
@@ -61,7 +62,7 @@ CONFIG = {
     },
     "trust": {
         "direct_trust_sd_jwt_vc": {
-            "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
+            "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
             "class": "DirectTrustSdJwtVc",
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
@@ -76,8 +77,8 @@ CONFIG = {
             }
         },
         "federation": {
-            "module": "pyeudiw.trust.default.federation",
-            "class": "FederationTrustModel",
+            "module": "pyeudiw.trust.handler.federation",
+            "class": "FederationHandler",
             "config": {
                 "metadata_type": "wallet_relying_party",
                 "authority_hints": [
@@ -173,7 +174,8 @@ CONFIG = {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
-                        "db_trust_anchors_collection": "trust_anchors"
+                        "db_trust_anchors_collection": "trust_anchors",
+                        "db_trust_sources_collection": "trust_sources"
                     },
                     "connection_params": {}
                 }
@@ -689,8 +691,8 @@ INTERNAL_ATTRIBUTES: dict = {
 }
 
 
-PRIVATE_JWK = JWK()
-PUBLIC_JWK = PRIVATE_JWK.public_key
+PRIVATE_JWK = new_ec_key('P-256')
+PUBLIC_JWK = PRIVATE_JWK.serialize(private=False)
 
 
 WALLET_INSTANCE_ATTESTATION = {

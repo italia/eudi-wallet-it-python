@@ -1,3 +1,4 @@
+import logging
 import sys
 import re
 from typing import Dict, Literal, Optional, TypeVar
@@ -33,6 +34,7 @@ def is_sd_jwt_kb_format(sd_jwt_kb: str) -> bool:
     res = re.match(SD_JWT_KB_REGEXP, sd_jwt_kb)
     return bool(res)
 
+logger = logging.getLogger(__name__)
 
 class VcSdJwtHeaderSchema(BaseModel):
     typ: str

@@ -88,7 +88,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Error {_err_msg} on {db_name} {storage}: {str(e)}"
+                    f"Error {_err_msg} on {db_name}: {e}"
                 )
 
         if not replica_count:
@@ -155,12 +155,21 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self.get_trust_anchor(entity_id) is not None
+    
+    def has_trust_source(self, entity_id: str) -> bool:
+        return self.get_trust_source(entity_id) is not None
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
         return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
 
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
         return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
+    
+    def add_trust_source(self, trust_source: dict) -> str:
+        return self.write("add_trust_source", trust_source)    
+
+    def get_trust_source(self, entity_id: str) -> dict:
+        return self.get("get_trust_source", entity_id)
 
     def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
         return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)

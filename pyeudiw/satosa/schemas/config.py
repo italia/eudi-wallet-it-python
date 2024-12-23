@@ -9,7 +9,7 @@ from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
 from pyeudiw.satosa.schemas.user_attributes import UserAttributesConfig
 from pyeudiw.satosa.schemas.ui import UiConfig
 from pyeudiw.storage.schemas.storage import Storage
-from pyeudiw.trust.dynamic import TrustModuleConfiguration_T
+from pyeudiw.trust.model import TrustModuleConfiguration_T
 
 
 class PyeudiwBackendConfig(BaseModel):
