@@ -13,6 +13,9 @@ from cryptojwt.jwk.okp import OKPKey
 from cryptojwt.jwk.hmac import SYMKey
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
+from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.tools.utils import iat_now
+
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
 
@@ -84,3 +87,16 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
     if unsupported_claims.intersection(header):
         raise NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
     return None
+
+def is_payload_expired(token_payload: dict) -> bool:
+    exp = token_payload.get("exp", None)
+    if not exp:
+        return True
+    if exp < iat_now():
+        return True
+    return False
+
+
+def is_jwt_expired(token: str) -> bool:
+    payload = decode_jwt_payload(token)
+    return is_payload_expired(payload)

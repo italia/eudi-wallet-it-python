@@ -10,7 +10,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError
-from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, serialize_payload
+from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, is_payload_expired, serialize_payload
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import decode_jwt_header
