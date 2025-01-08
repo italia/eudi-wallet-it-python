@@ -1,5 +1,6 @@
 import logging
-from pyeudiw.jwt import JWSHelper
+
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
     DEFAULT_SIGNING_ALG,

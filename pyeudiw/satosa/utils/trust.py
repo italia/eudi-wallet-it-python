@@ -4,7 +4,8 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWSHelper
+
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.satosa.exceptions import (DiscoveryFailedError,
                                        NotTrustedFederationError)

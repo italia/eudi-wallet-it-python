@@ -4,13 +4,14 @@ import logging
 import uuid
 
 from pyeudiw.jwk.schemas.public import JwkSchema
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.oauth2.dpop.exceptions import (
     InvalidDPoP,
     InvalidDPoPAth,
     InvalidDPoPKid
 )
 from pyeudiw.jwk.exceptions import KidError
-from pyeudiw.jwt import JWSHelper
+
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop.schema import (
     DPoPTokenHeaderSchema,

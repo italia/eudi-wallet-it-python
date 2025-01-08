@@ -1,6 +1,6 @@
 import logging
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.federation import is_es
 from pyeudiw.federation.policy import TrustChainPolicy
@@ -32,9 +32,9 @@ class StaticTrustChainValidator:
         **kwargs,
     ) -> None:
         """
-        Generates a new StaticTrustChainValidator istance
+        Generates a new StaticTrustChainValidator instance
 
-        :param static_trust_chain: the list of JWTs, containing the EC, componing the static tust chain
+        :param static_trust_chain: the list of JWTs, containing the EC, composing the static trust chain
         :type static_trust_chain: list[str]
         :param trust_anchor_jwks: the list of trust anchor jwks
         :type trust_anchor_jwks: list[dict]
@@ -61,7 +61,7 @@ class StaticTrustChainValidator:
         """
         Checks if exp value is expired.
 
-        :param exp: an integer that represent the timestemp to check
+        :param exp: an integer that represent the timestamp to check
         :type exp: int
         :returns: True if exp is expired and False otherwise
         :rtype: bool
@@ -73,7 +73,7 @@ class StaticTrustChainValidator:
         """
         Checks if exp value is expired.
 
-        :param exp: an integer that represent the timestemp to check
+        :param exp: an integer that represent the timestamp to check
         :type exp: int
 
         :raises TimeValidationError: if exp value is expired

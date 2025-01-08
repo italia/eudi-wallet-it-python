@@ -1,6 +1,6 @@
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.verification import is_jwt_expired, verify_jws_with_key
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWSHelper
 
 from cryptojwt.jwk.ec import new_ec_key
 

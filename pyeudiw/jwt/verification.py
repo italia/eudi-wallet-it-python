@@ -1,6 +1,6 @@
 
-from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 
@@ -28,5 +28,5 @@ def is_payload_expired(token_payload: dict) -> bool:
 
 
 def is_jwt_expired(token: str) -> bool:
-    payalod = decode_jwt_payload(token)
-    return is_payload_expired(payalod)
+    payload = decode_jwt_payload(token)
+    return is_payload_expired(payload)
