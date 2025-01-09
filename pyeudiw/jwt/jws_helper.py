@@ -1,5 +1,6 @@
 import binascii
 from copy import deepcopy
+import datetime
 import json
 import logging
 from typing import Any, Literal, Union
@@ -228,6 +229,13 @@ class JWSHelper(JWHelperInterface):
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
         msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
+
+        # Validate JWT claims
+        try:
+            self.validate_jwt_claims(msg)
+        except ValueError as e:
+            raise JWSVerificationError(f"Invalid JWT claims: {e}")
+
         return msg
 
     def _select_verifying_key(self, header: dict) -> dict | None:
@@ -273,3 +281,25 @@ class JWSHelper(JWHelperInterface):
             # Log or handle errors (optional)
             logger.warning(f"Unable to determine if token is SD-JWT: {e}")
             return False
+
+    def validate_jwt_claims(self, payload: dict) -> None:
+        """
+        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+
+        :param payload: The decoded JWT payload.
+        :type payload: dict
+        :raises ValueError: If any of the claims are invalid.
+        """
+        current_time = iat_now()
+
+        if 'iat' in payload:
+            if payload['iat'] > current_time:
+                raise ValueError("Future issue time, token is invalid.")
+
+        if 'exp' in payload:
+            if payload['exp'] <= current_time:
+                raise ValueError("The token has expired.")
+
+        if 'nbf' in payload:
+            if payload['nbf'] > current_time:
+                raise ValueError("The token is not yet valid.")

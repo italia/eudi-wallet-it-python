@@ -1,5 +1,6 @@
 import logging
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
@@ -18,6 +19,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
 
@@ -112,8 +114,12 @@ class SDJWTVerifier(SDJWTCommon):
                 keys=issuer_public_key, 
                 sigalg=sign_alg
             )
-            # self._sd_jwt_payload = loads(parsed_input_sd_jwt.payload.decode("utf-8"))
-            # TODO: Check exp/nbf/iat
+           
+            try:
+                self.validate_claims(self._sd_jwt_payload)
+            except ValueError as e:
+                raise JWSVerificationError(f"Invalid JWT claims: {e}")
+            
         else:
             raise ValueError(
                 f"Unsupported serialization format: {self._serialization_format}"
@@ -121,6 +127,28 @@ class SDJWTVerifier(SDJWTCommon):
         
         self._holder_public_key_payload = self._sd_jwt_payload.get("cnf", None)
 
+    def validate_claims(self, payload: dict) -> None:
+        """
+        Validates the 'iat', 'exp', and 'nbf' claims in a SD-JWT payload.
+
+        :param payload: The decoded JWT payload.
+        :type payload: dict
+        :raises ValueError: If any of the claims are invalid.
+        """
+        current_time = iat_now()
+
+        if 'iat' in payload:
+            if payload['iat'] > current_time:
+                raise ValueError("Future issue time, token is invalid.")
+
+        if 'exp' in payload:
+            if payload['exp'] <= current_time:
+                raise ValueError("The token has expired.")
+
+        if 'nbf' in payload:
+            if payload['nbf'] > current_time:
+                raise ValueError("The token is not yet valid.")
+    
     def _verify_key_binding_jwt(
         self,
         expected_aud: Union[str, None] = None,
