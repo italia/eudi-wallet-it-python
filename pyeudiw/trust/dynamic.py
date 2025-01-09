@@ -1,5 +1,8 @@
 import logging
-from typing import Optional
+from typing import Any, Callable, Optional
+import satosa.context
+import satosa.response
+
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.trust.exceptions import TrustConfigurationError
@@ -11,6 +14,7 @@ from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 logger = logging.getLogger(__name__)
+
 
 class CombinedTrustEvaluator(BaseLogger):
     """
@@ -162,7 +166,18 @@ class CombinedTrustEvaluator(BaseLogger):
             raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.handlers_names}")
         
         return {type: param.trust_params for type, param in trust_source.trust_params.items()}
-    
+
+    def build_metadata_endpoints(self, base_path: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+        endpoints = []
+        for handler in self.handlers:
+            endpoints += handler.build_metadata_endpoints(base_path)
+        # Partially check for collissions in managed paths: this might happen if multiple configured
+        # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
+        all_paths = [path for path, *_ in endpoints]
+        if len(all_paths) > set(all_paths):
+            self._log_warning("build_metadata_endpoints", f"found collision in metadata endpoint: {all_paths}")
+        return endpoints
+
     @staticmethod
     def from_config(config: dict, db_engine: DBEngine) -> 'CombinedTrustEvaluator':
         """
