@@ -10,12 +10,11 @@ from bs4 import BeautifulSoup
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 
-
-from pyeudiw.jwt import JWEHelper, JWSHelper, decode_jwt_header, DEFAULT_SIG_KTY_MAP
 from cryptojwt.jws.jws import JWS
-from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.storage.base_storage import TrustType
@@ -532,7 +531,7 @@ class TestOpenID4VPBackend:
         context.qs_params = {"id": state}
 
         # put a trust attestation related itself into the storage
-        # this then is used as trust_chain header paramenter in the signed
+        # this then is used as trust_chain header parameter in the signed
         # request object
         db_engine_inst = DBEngine(CONFIG['storage'])
 

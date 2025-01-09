@@ -2,7 +2,8 @@ import uuid
 
 from satosa.context import Context
 
-from pyeudiw.jwt import JWSHelper
+
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP

@@ -5,7 +5,8 @@ import secrets
 from json import dumps
 from typing import Dict, List, Union
 
-from pyeudiw.jwt import JWSHelper
+
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt.common import (
     DEFAULT_SIGNING_ALG,
     DIGEST_ALG_KEY,

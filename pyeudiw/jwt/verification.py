@@ -1,8 +1,6 @@
 
-from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwt.exceptions import JWSVerificationError
-from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw.tools.utils import iat_now
+from pyeudiw.jwt.jws_helper import JWSHelper
 
 from cryptojwt.jwk import JWK
 
@@ -16,17 +14,3 @@ def verify_jws_with_key(jws: str, key: JWK) -> None:
         verifier.verify(jws)
     except Exception as e:
         raise JWSVerificationError(f"error during signature verification: {e}", e)
-
-
-def is_payload_expired(token_payload: dict) -> bool:
-    exp = token_payload.get("exp", None)
-    if not exp:
-        return True
-    if exp < iat_now():
-        return True
-    return False
-
-
-def is_jwt_expired(token: str) -> bool:
-    payalod = decode_jwt_payload(token)
-    return is_payload_expired(payalod)

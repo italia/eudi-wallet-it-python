@@ -14,8 +14,8 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityStatementPayload
 )
 from pydantic import ValidationError
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
-from pyeudiw.jwt import JWSHelper
 from pyeudiw.jwk import find_jwk_by_kid
 from pyeudiw.tools.utils import get_http_url
 

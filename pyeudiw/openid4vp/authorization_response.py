@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import json
 
-from pyeudiw.jwt import JWEHelper, JWSHelper
 from pyeudiw.jwk.exceptions import KidNotFoundError
+from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jwt_format
 
 
