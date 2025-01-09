@@ -250,16 +250,6 @@ class JWSHelper(JWHelperInterface):
         if len(self.jwks) == 1:
             return self.jwks[0].to_dict()
         return None
-
-        """
-        Adds SD-JWT specific claims to the payload.
-
-        :param payload: The original payload.
-        :returns: The payload with added SD-JWT claims.
-        """
-        payload["iat"] = payload.get("iat", iat_now())
-        payload["typ"] = "sd-jwt"
-        return payload
     
     def is_sd_jwt(self, token: str) -> bool:
         """
