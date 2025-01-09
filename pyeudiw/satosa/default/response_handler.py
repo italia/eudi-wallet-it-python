@@ -190,9 +190,10 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                 pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
             except NoCriptographicMaterial as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
-            
+            token_issuer = token_parser.get_issuer_name()
+            whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
             try:
-                token_verifier.verify_signature(pub_jwk)
+                token_verifier.verify_signature(whitelisted_keys)
             except Exception as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
             

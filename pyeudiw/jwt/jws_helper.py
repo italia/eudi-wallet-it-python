@@ -27,6 +27,21 @@ DEFAULT_SIG_KTY_MAP = {
     "EC": "ES256"
 }
 
+DEFAULT_SIG_ALG_MAP = {
+    "RSA": "RS256",
+    "EC": "ES256"
+}
+
+DEFAULT_ENC_ALG_MAP = {
+    "RSA": "RSA-OAEP",
+    "EC": "ECDH-ES+A256KW"
+}
+
+DEFAULT_ENC_ENC_MAP = {
+    "RSA": "A256CBC-HS512",
+    "EC": "A256GCM"
+}
+
 class JWSHelper(JWHelperInterface):
     """
     Helper class for working with JWS, extended to support SD-JWT.
@@ -101,7 +116,7 @@ class JWSHelper(JWHelperInterface):
         
          # Add "typ" header if not present
         if "typ" not in protected:
-            protected["typ"] = "sd-jwt" if self._is_sd_jwt_payload(plain_dict) else "JWT"
+            protected["typ"] = "sd-jwt" if self.is_sd_jwt(plain_dict) else "JWT"
 
          # Include the signing key's kid in the header if required
         if kid_in_header and signer_kid:
@@ -245,3 +260,26 @@ class JWSHelper(JWHelperInterface):
         payload["iat"] = payload.get("iat", iat_now())
         payload["typ"] = "sd-jwt"
         return payload
+    
+    def is_sd_jwt(self, token: str) -> bool:
+        """
+        Determines if the provided JWT is an SD-JWT.
+
+        :param token: The JWT token to inspect.
+        :type token: str
+        :returns: True if the token is an SD-JWT, False otherwise.
+        :rtype: bool
+        """
+        if not token:
+            return False
+        
+        try:
+            # Decode the JWT header to inspect the 'typ' field
+            header = decode_jwt_header(token)
+
+            # Check if 'typ' field exists and is equal to 'sd-jwt'
+            return header.get("typ") == "sd-jwt"
+        except Exception as e:
+            # Log or handle errors (optional)
+            logger.warning(f"Unable to determine if token is SD-JWT: {e}")
+            return False
