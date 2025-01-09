@@ -223,9 +223,6 @@ class JWSHelper(JWHelperInterface):
                         "unexpected verification state: found a valid verifying key,"
                         f"but its kid {obtained_kid} does not match token header kid {expected_kid}")
                 )
-
-        verifier = JWS(alg=header["alg"])
-        msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
         
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
