@@ -155,6 +155,6 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
 | `creation_date`      | Creation date of the session.                                                                                            |
 | `state`              | A unique identifier used to identify a session even among different devices.                                             |
 | `session_id`         | Session id. Used to identify cross device flows.                                                                         |
-| `remote_flow_typ`    | A string value specifying the holder authentication flow, same device or cross device   |
+| `remote_flow_typ`| A string value specifying the holder authentication flow, same device or cross device             |
 | `finalized`          | A boolean value which indicates if the session is finilazed or not (user scanned the QR Code or used the redirect link). |
 | `internal_response`  | The object containing the personal data, `null` until login.                                                             |
