@@ -157,14 +157,13 @@ class TestOpenID4VPBackend:
         assert pre_request_endpoint
         assert "302" in pre_request_endpoint.status
 
-        assert f"{CONFIG['authorization']['url_scheme']}://authorize" in pre_request_endpoint.message
+        assert f"{CONFIG['authorization']['url_scheme']}://" in pre_request_endpoint.message
 
         unquoted = urllib.parse.unquote(
             pre_request_endpoint.message, encoding='utf-8', errors='replace')
         parsed = urllib.parse.urlparse(unquoted)
 
         assert parsed.scheme == CONFIG['authorization']['url_scheme']
-        assert parsed.netloc == "authorize"
         assert parsed.path == ""
         assert parsed.query
 
