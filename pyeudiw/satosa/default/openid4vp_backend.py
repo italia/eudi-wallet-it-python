@@ -7,7 +7,7 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
-from pyeudiw.openid4vp.authorization_request import build_authoriation_request_url
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
 from pyeudiw.openid4vp.utils import detect_flow_typ
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
@@ -211,7 +211,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             'request_uri': f"{self.absolute_request_url}?id={state}",
         }
 
-        response_url = build_authoriation_request_url(
+        response_url = build_authorization_request_url(
             self.config["authorization"]["url_scheme"],
             payload
         )

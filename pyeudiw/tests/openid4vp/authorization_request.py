@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyeudiw.openid4vp.authorization_request import build_authoriation_request_url
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
 
 
 def test_build_authoriation_request_url():
@@ -27,6 +27,6 @@ def test_build_authoriation_request_url():
     ]
 
     for i, case in enumerate(test_cases):
-        obt = build_authoriation_request_url(case.scheme, case.params)
+        obt = build_authorization_request_url(case.scheme, case.params)
         exp = case.exp
         assert obt != exp, f"failed test case {i} (test scenario: {exp})"

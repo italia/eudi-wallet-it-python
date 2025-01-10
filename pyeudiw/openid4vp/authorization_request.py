@@ -1,7 +1,7 @@
 from urllib.parse import quote_plus, urlencode
 
 
-def build_authoriation_request_url(scheme: str, params: dict) -> str:
+def build_authorization_request_url(scheme: str, params: dict) -> str:
     """
     Build authorization request URL that let the wallet download the request
     object. This is loosely realted to RFC9101 [JAR], section 5.2.1.
