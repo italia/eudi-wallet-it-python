@@ -8,11 +8,11 @@ from typing import Any, Literal
 
 from io import StringIO
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt import DEFAULT_SIG_KTY_MAP, JWEHelper
+from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
-from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
