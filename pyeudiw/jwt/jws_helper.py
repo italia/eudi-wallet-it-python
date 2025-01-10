@@ -230,7 +230,7 @@ class JWSHelper(JWHelperInterface):
         
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
-        msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
+        msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
 
         # Validate JWT claims
         try:
