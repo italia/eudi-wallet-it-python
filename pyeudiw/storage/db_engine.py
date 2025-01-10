@@ -39,12 +39,12 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             if cache_instance:
                 self.caches.append((db_name, cache_instance))
 
-    def init_session(self, session_id: str, state: str) -> str:
+    def init_session(self, session_id: str, state: str, remote_flow_typ: str) -> str:
         document_id = str(uuid.uuid4())
         for db_name, storage in self.storages:
             try:
                 storage.init_session(
-                    document_id, session_id=session_id, state=state
+                    document_id, session_id=session_id, state=state, remote_flow_typ=remote_flow_typ
                 )
             except StorageWriteError as e:
                 self._log_critical(

@@ -14,6 +14,7 @@ from pyeudiw.jwk import JWK
 from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
@@ -228,13 +229,22 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             self._log_error(context, f"Session update on storage failed: {e}")
             return self._handle_500(context, "Cannot update response object.", e)
 
-        if ResponseHandler._is_same_device_flow(request_session, context):
-            # Same device flow
-            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
-            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
-        else:
-            # Cross device flow
-            return JsonResponse({"status": "OK"}, status="200")
+        try:
+            flow_type = RemoteFlowType(request_session["remote_flow_typ"])
+        except ValueError as e:
+            self._log_error(context, f"unable to identify flow from stored session: {e}")
+            return self._handle_500(context, "error in authentication response processing", e)
+
+        match flow_type:
+            case RemoteFlowType.SAME_DEVICE:
+                cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+                return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")                
+            case RemoteFlowType.CROSS_DEVICE:
+                return JsonResponse({"status": "OK"}, status="200")    
+            case unsupported:
+                _msg = f"unrecognized remote flow type: {unsupported}"
+                self._log_error(context, _msg)
+                return self._handle_500(context, "error in authentication response processing", Exception(_msg))
 
     def _translate_response(self, response: dict, issuer: str, context: Context) -> InternalData:
         """

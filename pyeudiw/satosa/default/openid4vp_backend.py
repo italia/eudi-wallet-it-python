@@ -7,6 +7,9 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
+from pyeudiw.openid4vp.utils import detect_flow_typ
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
@@ -15,7 +18,6 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
-from pyeudiw.tools.mobile import is_smartphone
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -184,11 +186,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "previous authn session not found. It seems that the flow did not started with a valid authn request to one of the configured frontend."
             )
 
+        flow_typ = detect_flow_typ(context)
+
         # Init session
         try:
             self.db_engine.init_session(
                 state=state,
-                session_id=session_id
+                session_id=session_id,
+                remote_flow_typ=flow_typ.value
             )
         except (StorageWriteError) as e:
             _msg = f"Error while initializing session with state {state} and {session_id}."
@@ -206,13 +211,25 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             'request_uri': f"{self.absolute_request_url}?id={state}",
         }
 
-        response_url = self._build_authz_request_url(payload)
+        response_url = build_authorization_request_url(
+            self.config["authorization"]["url_scheme"],
+            payload
+        )
 
-        if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
-            # Same Device flow
-            return Redirect(response_url)
+        match flow_typ:
+            case RemoteFlowType.SAME_DEVICE:
+                return self._same_device_http_response(response_url)
+            case RemoteFlowType.CROSS_DEVICE:
+                return self._cross_device_http_response(response_url, state)
+            case unsupported:
+                _msg = f"unrecognized remote flow type: {unsupported}"
+                self._log_error(context, _msg)
+                return self._handle_500(context, "something went wrong when creating your authentication request", Exception(_msg))
 
-        # Cross Device flow
+    def _same_device_http_response(self, response_url: str) -> Response:
+        return Redirect(response_url)
+
+    def _cross_device_http_response(self, response_url: str, state: str) -> Response:
         result = self.template.qrcode_page.render(
             {
                 "qrcode_color": self.config["qrcode"]["color"],
@@ -224,7 +241,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "status_endpoint": self.absolute_status_url
             }
         )
-        return Response(result, content="text/html; charset=utf8", status="200")
+        return Response(result, content="text/html; charset=utf8", status="200")  
 
     def get_response_endpoint(self, context: Context) -> Response:
 

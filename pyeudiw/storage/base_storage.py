@@ -34,15 +34,17 @@ class BaseStorage(BaseDB):
     Interface class for storage.
     """
 
-    def init_session(self, document_id: str, dpop_proof: dict, attestation: dict) -> str:
+    def init_session(self, document_id: str, session_id: str, state: str, remote_flow_typ: str) -> str:
         """
         Initialize a session.
 
         :param document_id: the document id.
         :type document_id: str
-        :param dpop_proof: the dpop proof.
-        :type dpop_proof: dict
-        :param attestation: the attestation.
+        :param session_id: the satosa session id that initiated the authentication flow.
+        :type state: str
+        :param state: a unique identifier of the authentication flow
+        :type remote_flow_typ: str
+        :param remote_flow_typ: a value that discriminates between different authentication flow
         """
         raise NotImplementedError()
 
