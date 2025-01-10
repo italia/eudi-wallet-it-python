@@ -96,7 +96,28 @@ def is_payload_expired(token_payload: dict) -> bool:
         return True
     return False
 
-
 def is_jwt_expired(token: str) -> bool:
     payload = decode_jwt_payload(token)
     return is_payload_expired(payload)
+
+def validate_jwt_timestamps_claims(payload: dict) -> None:
+        """
+        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+
+        :param payload: The decoded JWT payload.
+        :type payload: dict
+        :raises ValueError: If any of the claims are invalid.
+        """
+        current_time = iat_now()
+
+        if 'iat' in payload:
+            if payload['iat'] > current_time:
+                raise ValueError("Future issue time, token is invalid.")
+
+        if 'exp' in payload:
+            if payload['exp'] <= current_time:
+                raise ValueError("The token has expired.")
+
+        if 'nbf' in payload:
+            if payload['nbf'] > current_time:
+                raise ValueError("The token is not yet valid.")

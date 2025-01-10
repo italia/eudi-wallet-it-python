@@ -11,7 +11,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError
-from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, is_payload_expired, serialize_payload
+from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, is_payload_expired, serialize_payload, validate_jwt_timestamps_claims
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import decode_jwt_header
@@ -234,7 +234,7 @@ class JWSHelper(JWHelperInterface):
 
         # Validate JWT claims
         try:
-            self.validate_jwt_claims(msg)
+            validate_jwt_timestamps_claims(msg)
         except ValueError as e:
             raise JWSVerificationError(f"Invalid JWT claims: {e}")
 
@@ -283,25 +283,3 @@ class JWSHelper(JWHelperInterface):
             # Log or handle errors (optional)
             logger.warning(f"Unable to determine if token is SD-JWT: {e}")
             return False
-
-    def validate_jwt_claims(self, payload: dict) -> None:
-        """
-        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
-
-        :param payload: The decoded JWT payload.
-        :type payload: dict
-        :raises ValueError: If any of the claims are invalid.
-        """
-        current_time = iat_now()
-
-        if 'iat' in payload:
-            if payload['iat'] > current_time:
-                raise ValueError("Future issue time, token is invalid.")
-
-        if 'exp' in payload:
-            if payload['exp'] <= current_time:
-                raise ValueError("The token has expired.")
-
-        if 'nbf' in payload:
-            if payload['nbf'] > current_time:
-                raise ValueError("The token is not yet valid.")
