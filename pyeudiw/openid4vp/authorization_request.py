@@ -11,4 +11,5 @@ def build_authorization_request_url(scheme: str, params: dict) -> str:
     if "://" not in scheme:
         scheme = scheme + "://"
     query_params = urlencode(params, quote_via=quote_plus)
-    return f"{scheme}?{query_params}"
+    _sep = "" if "?" in scheme else "?"
+    return f"{scheme}{_sep}{query_params}"
