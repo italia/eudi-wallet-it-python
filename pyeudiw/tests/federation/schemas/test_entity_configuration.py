@@ -69,41 +69,6 @@ ENTITY_CONFIGURATION = {
                         ]
                     }
                 },
-                "presentation_definition": {
-                    "id": "d76c51b7-ea90-49bb-8368-6b3d194fc131",
-                    "input_descriptors": [
-                        {
-                            "id": "IdentityCredential",
-                            "format": {
-                                "vc+sd-jwt": {}
-                            },
-                            "constraints": {
-                                "limit_disclosure": "required",
-                                "fields": [
-                                    {
-                                        "path": [
-                                            "$.vct"
-                                        ],
-                                        "filter": {
-                                            "type": "string",
-                                            "const": "IdentityCredential"
-                                        }
-                                    },
-                                    {
-                                        "path": [
-                                            "$.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "path": [
-                                            "$.given_name"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                },
 
                 "default_max_age": 1111,
 

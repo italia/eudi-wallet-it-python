@@ -3,7 +3,6 @@ from typing import List
 from pyeudiw.jwk.schemas.public import JwksSchema
 from pydantic import BaseModel, HttpUrl, PositiveInt
 from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
-from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import PresentationDefinition
 
 
 class AcrValuesSupported(str, Enum):
@@ -57,7 +56,6 @@ class WalletRelyingParty(BaseModel):
     request_uris: List[HttpUrl]
     redirect_uris: List[HttpUrl]
     default_acr_values: List[HttpUrl]
-    presentation_definition: PresentationDefinition
     authorization_signed_response_alg: List[AuthorizationSignedResponseAlg]
     authorization_encrypted_response_alg: List[EncryptionAlgValuesSupported]
     authorization_encrypted_response_enc: List[EncryptionEncValuesSupported]

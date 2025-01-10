@@ -67,6 +67,20 @@ config:
     default_acr_value: https://www.spid.gov.it/SpidL2
     aud: https://self-issued.me/v2
     expiration_time: 5 # minutes
+    presentation_definition:
+      id: unique-presentation-identifier
+      input_descriptors:
+      - id: unique-presentation-identifier
+        purpose: Request presentation holding Power of Representation attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          fields:
+          - path:
+            - "$.vct"
+            filter:
+              type: string
+              pattern: urn:eu.europa.ec.eudi:por:1
 
   user_attributes:
     unique_identifiers:
@@ -193,26 +207,6 @@ config:
 
     # loaded in the __init__
     # jwks:
-
-    #This section contains the details for presentation request
-    presentation_definition:
-      id: d76c51b7-ea90-49bb-8368-6b3d194fc131
-      input_descriptors:
-        - id: IdentityCredential
-          format:
-            vc+sd-jwt: { }
-          constraints:
-            limit_disclosure: required
-            fields:
-              - path:
-                  - "$.vct"
-                filter:
-                  type: string
-                  const: IdentityCredential
-              - path:
-                  - "$.family_name"
-              - path:
-                  - "$.given_name"
 
 
     redirect_uris: 
