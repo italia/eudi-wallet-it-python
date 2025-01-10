@@ -1,4 +1,6 @@
 import json
+
+from pydantic import ValidationError
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c
 
@@ -96,7 +98,32 @@ def is_payload_expired(token_payload: dict) -> bool:
         return True
     return False
 
-
 def is_jwt_expired(token: str) -> bool:
     payload = decode_jwt_payload(token)
     return is_payload_expired(payload)
+
+class LifetimeException(ValidationError):
+    """Exception raised for errors related to lifetime validation."""
+    pass
+
+def validate_jwt_timestamps_claims(payload: dict) -> None:
+        """
+        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+
+        :param payload: The decoded JWT payload.
+        :type payload: dict
+        :raises ValueError: If any of the claims are invalid.
+        """
+        current_time = iat_now()
+
+        if 'iat' in payload:
+            if payload['iat'] > current_time:
+                raise LifetimeException("Future issue time, token is invalid.")
+
+        if 'exp' in payload:
+            if payload['exp'] <= current_time:
+                 raise LifetimeException("Token has expired.")
+
+        if 'nbf' in payload:
+            if payload['nbf'] > current_time:
+                raise LifetimeException("Token not yet valid.")

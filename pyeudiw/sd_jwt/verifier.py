@@ -1,5 +1,7 @@
 import logging
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.jwt.helper import validate_jwt_timestamps_claims
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt.common import (
     SDJWTCommon,
@@ -10,10 +12,8 @@ from pyeudiw.sd_jwt.common import (
     KB_DIGEST_KEY,
 )
 
-from json import dumps, loads
 from typing import Dict, List, Union, Callable
 
-from cryptojwt.jwk import JWK
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS
 
@@ -112,15 +112,19 @@ class SDJWTVerifier(SDJWTCommon):
                 keys=issuer_public_key, 
                 sigalg=sign_alg
             )
-            # self._sd_jwt_payload = loads(parsed_input_sd_jwt.payload.decode("utf-8"))
-            # TODO: Check exp/nbf/iat
+           
+            try:
+                validate_jwt_timestamps_claims(self._sd_jwt_payload)
+            except ValueError as e:
+                raise JWSVerificationError(f"Invalid JWT claims: {e}")
+            
         else:
             raise ValueError(
                 f"Unsupported serialization format: {self._serialization_format}"
             )
         
         self._holder_public_key_payload = self._sd_jwt_payload.get("cnf", None)
-
+    
     def _verify_key_binding_jwt(
         self,
         expected_aud: Union[str, None] = None,

@@ -2,6 +2,7 @@ import logging
 from hashlib import sha256
 import json
 from typing import Any, Callable, TypeVar
+from pyeudiw.jwt.jws_helper import JWSHelper
 import pyeudiw.sd_jwt.common as sd_jwtcommon
 from pyeudiw.sd_jwt.common import SDJWTCommon
 
@@ -81,8 +82,9 @@ class SdJwt:
     def has_key_binding(self) -> bool:
         return self.holder_kb is not None
 
-    def verify_issuer_jwt_signature(self, key:  ECKey | RSAKey | dict) -> None:
-        verify_jws_with_key(self.issuer_jwt.jwt, key)
+    def verify_issuer_jwt_signature(self, keys: list[ECKey | RSAKey | dict] | ECKey | RSAKey | dict) -> None:
+        jws_verifier = JWSHelper(keys)
+        jws_verifier.verify(self.issuer_jwt.jwt)
 
     def verify_holder_kb_jwt(self, challenge: VerifierChallenge) -> None:
         """

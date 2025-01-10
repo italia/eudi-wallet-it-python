@@ -1,5 +1,6 @@
 import binascii
 from copy import deepcopy
+import datetime
 import json
 import logging
 from typing import Any, Literal, Union
@@ -10,7 +11,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError
-from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, is_payload_expired, serialize_payload
+from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, is_payload_expired, serialize_payload, validate_jwt_timestamps_claims
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import decode_jwt_header
@@ -98,10 +99,6 @@ class JWSHelper(JWHelperInterface):
             protected = {}
         if unprotected is None:
             unprotected = {}
-            
-        # Add SD-JWT claims if the payload matches the criteria
-        if isinstance(plain_dict, dict) and self._is_sd_jwt_payload(plain_dict):
-            plain_dict = self._add_sd_jwt_claims(plain_dict)
 
         # Select the signing key
         signing_key = self._select_signing_key((protected, unprotected), signing_kid)  # TODO: check that singing key is either private or symmetric
@@ -110,7 +107,7 @@ class JWSHelper(JWHelperInterface):
         header_kid = protected.get("kid")
         signer_kid = signing_key.get("kid")
         if header_kid and signer_kid and (header_kid != signer_kid):
-            raise JWSSigningError(f"Token header contains kid {header_kid}, which does not match the signing key kid {signer_kid}.")
+            raise JWSSigningError(f"token header contains a kid {header_kid} that does not match the signing key kid {signer_kid}")
 
         payload = serialize_payload(plain_dict)
         
@@ -120,7 +117,7 @@ class JWSHelper(JWHelperInterface):
         
          # Add "typ" header if not present
         if "typ" not in protected:
-            protected["typ"] = "sd-jwt" if self._is_sd_jwt_payload(plain_dict) else "JWT"
+            protected["typ"] = "sd-jwt" if self.is_sd_jwt(plain_dict) else "JWT"
 
          # Include the signing key's kid in the header if required
         if kid_in_header and signer_kid:
@@ -134,14 +131,21 @@ class JWSHelper(JWHelperInterface):
             signing_key.pop("kid", None)
 
         signer = JWS(payload, alg=signing_alg)
+        keys = [key_from_jwk_dict(signing_key)]
         
         if serialization_format == "compact":
             try:
-                signed = signer.sign_compact([key_from_jwk_dict(signing_key)], protected=protected, **kwargs)
+                signed = signer.sign_compact(
+                    keys, protected=protected, **kwargs
+                )
                 return signed
             except Exception as e:
                 raise JWSSigningError("Signing error: error in step", e)
-        return signer.sign_json(keys=[key_from_jwk_dict(signing_key)], headers=[(protected, unprotected)], flatten=True)
+        return signer.sign_json(
+            keys=keys,
+            headers=[(protected, unprotected)],
+            flatten=True,
+        )
 
     def _select_signing_key(self, headers: tuple[dict, dict], signing_kid: str = "") -> dict:
         if len(self.jwks) == 0:
@@ -223,32 +227,18 @@ class JWSHelper(JWHelperInterface):
                         "unexpected verification state: found a valid verifying key,"
                         f"but its kid {obtained_kid} does not match token header kid {expected_kid}")
                 )
-
-        verifier = JWS(alg=header["alg"])
-        msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
         
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
-        msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
-        
-        # Handle the payload
-        if isinstance(msg, (str, bytes)):
-            try:
-                # Try to interpret as JSON
-                decoded_payload = json.loads(msg)
-            except json.JSONDecodeError:
-                # If not JSON, assume it's a simple string (non-SD-JWT)
-                decoded_payload = msg
-        elif isinstance(msg, dict):
-            decoded_payload = msg
-        else:
-            raise JWSVerificationError("Unexpected type for the JWS payload.")
+        msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
 
-        # Perform SD-JWT specific validations if applicable
-        if self._is_sd_jwt_payload(decoded_payload):
-            self._validate_sd_jwt(decoded_payload)
+        # Validate JWT claims
+        try:
+            validate_jwt_timestamps_claims(msg)
+        except ValueError as e:
+            raise JWSVerificationError(f"Invalid JWT claims: {e}")
 
-        return decoded_payload
+        return msg
 
     def _select_verifying_key(self, header: dict) -> dict | None:
         available_keys = [key.to_dict() for key in self.jwks]
@@ -270,40 +260,26 @@ class JWSHelper(JWHelperInterface):
         if len(self.jwks) == 1:
             return self.jwks[0].to_dict()
         return None
-
-    def _is_sd_jwt_payload(self, payload: dict) -> bool:
+    
+    def is_sd_jwt(self, token: str) -> bool:
         """
-        Determines if the payload corresponds to an SD-JWT.
+        Determines if the provided JWT is an SD-JWT.
 
-        :param payload: The payload to inspect.
-        :returns: True if the payload contains SD-JWT-specific claims, False otherwise.
+        :param token: The JWT token to inspect.
+        :type token: str
+        :returns: True if the token is an SD-JWT, False otherwise.
+        :rtype: bool
         """
-        if not isinstance(payload, dict):
+        if not token:
             return False
-        return payload.get("typ") == "sd-jwt"
-    
-    def _add_sd_jwt_claims(self, payload: dict) -> dict:
-        """
-        Adds SD-JWT specific claims to the payload.
-
-        :param payload: The original payload.
-        :returns: The payload with added SD-JWT claims.
-        """
-        payload["iat"] = payload.get("iat", iat_now())
-        payload["typ"] = "sd-jwt"
-        return payload
-    
-    def _validate_sd_jwt(self, payload: dict) -> None:
-        """
-        Validates an SD-JWT payload.
-
-        :param payload: The payload to validate.
-
-        :raises JWSVerificationError: If the payload is invalid.
-        """
-        if payload.get("typ") != "sd-jwt":
-            raise JWSVerificationError("The token is not a valid SD-JWT.")
-        if is_payload_expired(payload):
-            raise JWSVerificationError("The SD-JWT token has expired.")
         
-    
+        try:
+            # Decode the JWT header to inspect the 'typ' field
+            header = decode_jwt_header(token)
+
+            # Check if 'typ' field exists and is equal to 'sd-jwt'
+            return header.get("typ") == "sd-jwt"
+        except Exception as e:
+            # Log or handle errors (optional)
+            logger.warning(f"Unable to determine if token is SD-JWT: {e}")
+            return False
