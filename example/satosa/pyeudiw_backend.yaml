@@ -62,9 +62,10 @@ config:
     
   authorization:
     url_scheme: haip
-    scopes: 
+    scopes: # deprecated
     - pid-sd-jwt:unique_id+given_name+family_name
     default_acr_value: https://www.spid.gov.it/SpidL2
+    aud: https://self-issued.me/v2
     expiration_time: 5 # minutes
 
   user_attributes:

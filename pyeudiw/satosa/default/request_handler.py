@@ -42,6 +42,9 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             "iat": iat_now(),
             "exp": exp_from_now(minutes=self.config['authorization']['expiration_time'])
         }
+
+        if (_aud := self.config["authorization"].get("aud")):
+            data["aud"] = _aud
         # take the session created in the pre-request authz endpoint
         try:
             document = self.db_engine.get_by_state(state)
