@@ -11,7 +11,7 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.mobile import is_smartphone
 
 
-def identify_flow_typ(context: Context) -> RemoteFlowType:
+def detect_flow_typ(context: Context) -> RemoteFlowType:
     """
     Identitfy or guess the remote flow type based on the context of the
     user auhtnetication
