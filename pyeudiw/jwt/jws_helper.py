@@ -131,16 +131,18 @@ class JWSHelper(JWHelperInterface):
             signing_key.pop("kid", None)
 
         signer = JWS(payload, alg=signing_alg)
+        keys = [key_from_jwk_dict(signing_key)]
+        
         if serialization_format == "compact":
             try:
                 signed = signer.sign_compact(
-                    [key_from_jwk_dict(signing_key)], protected=protected, **kwargs
+                    keys, protected=protected, **kwargs
                 )
                 return signed
             except Exception as e:
                 raise JWSSigningError("Signing error: error in step", e)
         return signer.sign_json(
-            keys=[key_from_jwk_dict(signing_key)],
+            keys=keys,
             headers=[(protected, unprotected)],
             flatten=True,
         )
