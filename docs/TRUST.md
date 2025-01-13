@@ -25,12 +25,7 @@ HTTPC parameters are optional and described below.
 | httpc_params.connection | dictionary that represents a `aiohttp._RequestOptions` used in GET requests |
 | httpc_params.session    | dictionary that represents the keyword arguments of `aiohttp.ClientSession` |
 
-Some HTTPC parameters are commonly used, have a default value and as an alternative can be optionally defined by an environment variable.
-
-| Parameter                    | Description                                                     | Default Value | Environment Variable  |
-| ---------------------------- | --------------------------------------------------------------- | ------------- | --------------------- |
-| httpc_params.connection.ssl  | The flag to indicate whether to use SSL for the HTTP connection | true          | PYEUDIW_HTTPC_SSL     |
-| httpc_params.session.timeout | The timeout value for the HTTP session                          | 6             | PYEUDIW_HTTPC_TIMEOUT |
+Some HTTPC parameters are commonly used, have a default value and as an alternative can be optionally defined by an  [environment variable](https://github.com/italia/eudi-wallet-it-python/blob/dev/README.SATOSA.md).
 
 ### Federation
 
