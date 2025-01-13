@@ -110,7 +110,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         url_map: list[tuple[str, Callable[[Context], Response]]] = []
         base_path = f"{self.name}"
-        url_map = self.trust_evaluator.build_metadata_endpoints(base_path)
+        url_map = self.trust_evaluator.build_metadata_endpoints(self.client_id)
         
         for k, v in self.config['endpoints'].items():
             endpoint_value = v

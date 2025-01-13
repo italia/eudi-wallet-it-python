@@ -35,7 +35,7 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def build_metadata_endpoints(self, base_path: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(self, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
         """
         Expose one or more metadata endpoint required to publish metadata
         information about *myself* and that are associated to a trust
@@ -51,7 +51,7 @@ class TrustHandlerInterface:
         2. the second argument is an http handler that can provide a response given \
             the information in the context.
 
-        The base_path is the base path component of the exposed satosa module.
+        The entity_uri is the full path component of the exposed satosa module.
         We assume that the module is exposed to the outside web according to
         the follwing pattern
             <scheme>://<host>/<base_path>

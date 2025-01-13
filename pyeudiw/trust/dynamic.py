@@ -164,13 +164,13 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.trust_params:
             raise Exception(f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.handlers_names}")
-        
+
         return {type: param.trust_params for type, param in trust_source.trust_params.items()}
 
-    def build_metadata_endpoints(self, base_path: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(self, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
         endpoints = []
         for handler in self.handlers:
-            endpoints += handler.build_metadata_endpoints(base_path)
+            endpoints += handler.build_metadata_endpoints(entity_uri)
         # Partially check for collissions in managed paths: this might happen if multiple configured
         # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
         all_paths = [path for path, *_ in endpoints]
