@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from pyeudiw.jwk import JWK
 import satosa.context
 import satosa.response
+from pyeudiw.satosa.utils.response import JsonResponse
 
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 
@@ -47,7 +48,7 @@ class DirectTrustJar(DirectTrustSdJwtVc):
             JWK(key).as_public_dict() for key in signing_keys
         ]
 
-    def _build_jar_issuer_metadata(self, entity_id: str) -> str:
+    def _build_jar_issuer_metadata(self, entity_id: str) -> dict:
         # This funciton assumed that the issuer is equal to the entity_uri; this
         #  is currently an implementation detail and might not hold in the future;
         # This could also be resolved by extrating the request uri from the satosa
@@ -58,7 +59,7 @@ class DirectTrustJar(DirectTrustSdJwtVc):
                 "keys": self._build_public_signing_jwks()
             }
         }
-        return json.dumps(md_dictionary)
+        return md_dictionary
 
     def _build_metadata_path(self, entity_uri: str) -> str:
         """
@@ -68,22 +69,18 @@ class DirectTrustJar(DirectTrustSdJwtVc):
 
         IMPORTANT: If the path that should be exposed MUST start with
         `/.well-known/`, then that issue must be solved at the wsgi-nginx
-        level as it breaks the assuptions of the internal satosa router.
+        level as it breaks the assuptions of the internal satosa router and
+        there is no way to solve that problem at the satosa backend level.
         """
         base_uri = urlparse(entity_uri)
         endpoint_component = '/' + self.jar_issuer_endpoint.strip("/")
         base_md_endpoint = base_uri._replace(path=base_uri.path + endpoint_component)
-        md_endpoint_path_regxp = '^' + base_md_endpoint.path.strip('/') + '$'
-        return md_endpoint_path_regxp
+        return base_md_endpoint.path.strip('/')
 
     def build_metadata_endpoints(self, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
-        metadata_path = self._build_metadata_path(entity_uri)
-        serialized_content = self._build_jar_issuer_metadata(entity_uri)
+        metadata_path = '^' + self._build_metadata_path(entity_uri) + '$'
+        response_json = self._build_jar_issuer_metadata(entity_uri)
 
-        def metadata_response_fn(ctx: satosa.context.Context) -> satosa.response.Response:
-            return satosa.response.Response(
-                message=serialized_content,
-                content="application/json",
-                status="200"
-            )
+        def metadata_response_fn(ctx: satosa.context.Context, *args) -> satosa.response.Response:
+            return JsonResponse(message=response_json)
         return [(metadata_path, metadata_response_fn)]
