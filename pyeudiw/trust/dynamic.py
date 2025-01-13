@@ -174,7 +174,7 @@ class CombinedTrustEvaluator(BaseLogger):
         # Partially check for collissions in managed paths: this might happen if multiple configured
         # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
         all_paths = [path for path, *_ in endpoints]
-        if len(all_paths) > set(all_paths):
+        if len(all_paths) > len(set(all_paths)):
             self._log_warning("build_metadata_endpoints", f"found collision in metadata endpoint: {all_paths}")
         return endpoints
 
