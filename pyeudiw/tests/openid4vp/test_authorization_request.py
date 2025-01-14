@@ -40,7 +40,7 @@ def test_build_authorization_request_claims():
 
     # case 0: minimal config
     config = {
-        "scope": ["family_name", "given_name"],
+        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "presentation_definition": {
             "id": "global-id",
@@ -73,15 +73,16 @@ def test_build_authorization_request_claims():
 
     assert "aud" not in claims
     assert "nonce" in claims
+    assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("familiy_name given_name", "given_name family_name")
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
 
     # case 1: config with aud
     config_aud = {
-        "scope": ["family_name", "given_name"],
+        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
         "presentation_definition": {
@@ -115,15 +116,16 @@ def test_build_authorization_request_claims():
 
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
+    assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("familiy_name given_name", "given_name family_name")
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
 
     # case 2: config with response mode
     config_rmode = {
-        "scope": ["family_name", "given_name"],
+        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "response_mode": "direct_post",
         "presentation_definition": {
@@ -157,8 +159,8 @@ def test_build_authorization_request_claims():
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
-    assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("familiy_name given_name", "given_name family_name")
+    assert "presentation_definition" in claims
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
