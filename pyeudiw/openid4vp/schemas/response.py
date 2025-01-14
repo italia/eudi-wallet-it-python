@@ -1,6 +1,7 @@
+from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Enum, field_validator
+from pydantic import BaseModel, field_validator
 
 from pyeudiw.jwt.utils import is_jwt_format
 

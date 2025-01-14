@@ -75,12 +75,28 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 ##### Authorization
 
-| Parameter                              | Description                                                                    | Example value                                 |
-| -------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------- |
-| config.authorization.url_scheme        | Either a custom URL scheme for the authorization, or a universal link          | haip, https://wallet.example                                       |
-| config.authorization.scopes            | The list of scopes for the authorization                                       | [pid-sd-jwt:unique_id+given_name+family_name] |
-| config.authorization.default_acr_value | The default authentication context class reference value for the authorization | https://www.spid.gov.it/SpidL2                |
-| config.authorization.aud | Optional audience of the Request Object jwt, statically configured in the form of a string or array |
+| Parameter                                    | Description                                                                                         | Example value                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
+| config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]       |
+| config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
+| config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                    |
+| config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
+| config.authorization.presentation_definition | The object that defines the presentation request                                                    | [Presentation definition](#presentation-definition) |
+
+###### Presentation definition
+
+| Parameter                                                                 | Description                                                                                           | Example value                                  |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| config.authorization.presentation_definition.id                           | The unique identifier of the presentation definition                                                  | d76c51b7-ea90-49bb-8368-6b3d194fc131           |
+| config.authorization.presentation_definition.input_descriptors            | The list of input descriptors that specify the verifiable credentials that the client requests        | See below                                      |
+| config.authorization.presentation_definition.id                           | The unique identifier of the input descriptor                                                         | IdentityCredential                             |
+| config.authorization.presentation_definition.format                       | The object that defines the verifiable credential format that the client requests                     | vc+sd-jwt: {}                                  |
+| config.authorization.presentation_definition.constraints                  | The object that defines the constraints on the verifiable credential                                  | See below                                      |
+| config.authorization.presentation_definition.constraints.limit_disclosure | The string that indicates whether the client requests minimal disclosure of the verifiable credential | required                                       |
+| config.authorization.presentation_definition.constraints.fields           | The list of objects that define the fields that the client requests in the verifiable credential      | See below                                      |
+| config.authorization.presentation_definition.constraints.fields.path      | The list of strings that define the JSON path to the field in the verifiable credential               | ["$.vct"], ["$.family_name"], ["$.given_name"] |
+| config.authorization.presentation_definition.constraints.fields.filter    | The object that defines the filter criteria for the field in the verifiable credential                | type: string, const: IdentityCredential        |
 
 ##### User Attributes
 
@@ -156,27 +172,12 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.id_token_encrypted_response_alg        | The algorithm used to encrypt the ID token response                                      | `<jwt.enc_alg_supported>`                                        |
 | config.metadata.id_token_encrypted_response_enc        | The encryption method used to encrypt the ID token response                              | `<jwt.enc_enc_supported>`                                        |
 | config.metadata.id_token_signed_response_alg           | The algorithm used to sign the ID token response                                         | `<jwt.sig_alg_supported>`                                        |
-| config.metadata.presentation_definition                | The object that defines the presentation request                                         | [Presentation definition](#presentation-definition)              |
 | config.metadata.redirect_uris                          | The list of URIs that the client can use to receive the authorization response           | https://example.org/verifier/redirect-uri                        |
 | config.metadata.request_uris                           | The list of URIs that the client can use to request the authorization                    | https://example.org/verifier/request-uri                         |
 | config.metadata.require_auth_time                      | The boolean value that indicates whether the auth_time claim is required in the ID token | true                                                             |
 | config.metadata.subject_type                           | The subject identifier type that the client requests                                     | pairwise                                                         |
 | config.metadata.vp_formats.vc+sd-jwt.sd-jwt_alg_values | VP formats specification algorithms for SD-JWT                                           | [ES256, ES384]                                                   |
 | config.metadata.vp_formats.vc+sd-jwt.kb-jwt_alg_values | VP formats specification algorithms for Key Binding JWT                                  | [ES256, ES384]                                                   |
-
-###### Presentation definition
-
-| Parameter                                                            | Description                                                                                           | Example value                                  |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| config.metadata.presentation_definition.id                           | The unique identifier of the presentation definition                                                  | d76c51b7-ea90-49bb-8368-6b3d194fc131           |
-| config.metadata.presentation_definition.input_descriptors            | The list of input descriptors that specify the verifiable credentials that the client requests        | See below                                      |
-| config.metadata.presentation_definition.id                           | The unique identifier of the input descriptor                                                         | IdentityCredential                             |
-| config.metadata.presentation_definition.format                       | The object that defines the verifiable credential format that the client requests                     | vc+sd-jwt: {}                                  |
-| config.metadata.presentation_definition.constraints                  | The object that defines the constraints on the verifiable credential                                  | See below                                      |
-| config.metadata.presentation_definition.constraints.limit_disclosure | The string that indicates whether the client requests minimal disclosure of the verifiable credential | required                                       |
-| config.metadata.presentation_definition.constraints.fields           | The list of objects that define the fields that the client requests in the verifiable credential      | See below                                      |
-| config.metadata.presentation_definition.constraints.fields.path      | The list of strings that define the JSON path to the field in the verifiable credential               | ["$.vct"], ["$.family_name"], ["$.given_name"] |
-| config.metadata.presentation_definition.constraints.fields.filter    | The object that defines the filter criteria for the field in the verifiable credential                | type: string, const: IdentityCredential        |
 
 
 ## NginX
