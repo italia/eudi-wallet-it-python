@@ -101,7 +101,7 @@ config:
   trust:
     direct_trust_jar:
       module: pyeudiw.trust.handler.direct_trust_jar
-      class: DirectTrustJar  # TODO: see https://github.com/italia/eudi-wallet-it-python/issues/296#issuecomment-2491417276
+      class: DirectTrustJar
       config:
         jwk_endpoint: /.well-known/jwt-vc-issuer
         jar_issuer_endpoint: /.well-known/jar-issuer
