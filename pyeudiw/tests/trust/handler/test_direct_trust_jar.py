@@ -43,30 +43,30 @@ def direct_trust_jar(all_private_keys):
 def test_direct_trust_jar_build_metadata_path(direct_trust_jar):
     @dataclass
     class TestCase:
-        entity_id: str
+        backend_name: str
         expected_path: str
         explanation: str
 
     test_cases: list[TestCase] = [
         TestCase(
-            entity_id="https://rp.example",
+            backend_name="",
             expected_path=".well-known/jar-issuer",
-            explanation="host without path component"
+            explanation="empty backend name"
         ),
         TestCase(
-            entity_id="https://rp.example/openid4vp",
+            backend_name="openid4vp",
             expected_path="openid4vp/.well-known/jar-issuer",
-            explanation="host with path component"
+            explanation="regular backend name"
         ),
         TestCase(
-            entity_id="http://localhost:8080/openid4vp",
+            backend_name="/openid4vp/",
             expected_path="openid4vp/.well-known/jar-issuer",
-            explanation="localhost with port"
+            explanation="backend name with usual slashes"
         )
     ]
 
     for i, case in enumerate(test_cases):
-        path_component = direct_trust_jar._build_metadata_path(case.entity_id)
+        path_component = direct_trust_jar._build_metadata_path(case.backend_name)
         assert path_component == case.expected_path, f"failed case {
             i+1}: test scenario: {case.explanation}"
 
@@ -75,20 +75,20 @@ def test_direct_trust_jat_custom_path(all_private_keys):
     @dataclass
     class TestCase:
         endpoint_component: str
-        entity_id: str
+        backend_name: str
         expected_path: str
         explanation: str
 
     test_cases: list[TestCase] = [
         TestCase(
             endpoint_component="custom",
-            entity_id="https://rp.example/openid4vp",
+            backend_name="openid4vp",
             expected_path="openid4vp/custom",
             explanation="custom path"
         ),
         TestCase(
             endpoint_component="/custom-with-slashes/",
-            entity_id="https://rp.example/openid4vp",
+            backend_name="openid4vp",
             expected_path="openid4vp/custom-with-slashes",
             explanation="custom path with prepending and appending forward slash"
         )
@@ -96,13 +96,14 @@ def test_direct_trust_jat_custom_path(all_private_keys):
     for i, case in enumerate(test_cases):
         dtj = DirectTrustJar(jwks=all_private_keys,
                              jar_issuer_endpoint=case.endpoint_component)
-        path_component = dtj._build_metadata_path(case.entity_id)
+        path_component = dtj._build_metadata_path(case.backend_name)
         assert path_component == case.expected_path, f"failed case {
             i+1}: test scenario: {case.explanation}"
 
 
 def test_direct_trust_jar_metadata(direct_trust_jar):
-    entity_id = "https://rp.example/openid4vp"
+    backend = "openid4vp"
+    entity_id = f"https://rp.example/{backend}"
     metadata = direct_trust_jar._build_jar_issuer_metadata(entity_id)
     assert metadata["iss"] == entity_id
     assert len(metadata["jwks"]["keys"]) == 1
@@ -112,8 +113,9 @@ def test_direct_trust_jar_metadata(direct_trust_jar):
 
 
 def test_direct_trust_metadata_handler(direct_trust_jar, signing_private_key):
-    entity_id = "https://rp.example/openid4vp"
-    registered_methods = direct_trust_jar.build_metadata_endpoints(entity_id)
+    backend = "openid4vp"
+    entity_id = f"https://rp.example/{backend}"
+    registered_methods = direct_trust_jar.build_metadata_endpoints(backend, entity_id)
     assert len(registered_methods) == 1
 
     endpoint_regexp = registered_methods[0][0]

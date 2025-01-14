@@ -167,10 +167,10 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return {type: param.trust_params for type, param in trust_source.trust_params.items()}
 
-    def build_metadata_endpoints(self, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
         endpoints = []
         for handler in self.handlers:
-            endpoints += handler.build_metadata_endpoints(entity_uri)
+            endpoints += handler.build_metadata_endpoints(backend_name, entity_uri)
         # Partially check for collissions in managed paths: this might happen if multiple configured
         # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
         all_paths = [path for path, *_ in endpoints]
