@@ -2,14 +2,13 @@ import uuid
 
 from satosa.context import Context
 
-
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.satosa.utils.trust import BackendTrust
-from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
 class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
@@ -29,19 +28,12 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             )
             return self._handle_400(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
 
-        data = {
-            "scope": ' '.join(self.config['authorization']['scopes']),
-            "client_id_scheme": "entity_id",  # that's federation.
-            "client_id": self.client_id,
-            "response_mode": "direct_post.jwt",  # only HTTP POST is allowed.
-            "response_type": "vp_token",
-            "response_uri": self.absolute_response_url,
-            "nonce": str(uuid.uuid4()),
-            "state": state,
-            "iss": self.client_id,
-            "iat": iat_now(),
-            "exp": exp_from_now(minutes=self.config['authorization']['expiration_time'])
-        }
+        data = build_authorization_request_claims(
+            self.client_id,
+            state,
+            self.absolute_response_url,
+            self.config["authorization"]
+        )
 
         if (_aud := self.config["authorization"].get("aud")):
             data["aud"] = _aud

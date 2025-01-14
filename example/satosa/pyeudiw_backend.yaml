@@ -65,12 +65,13 @@ config:
     scopes: # deprecated
     - pid-sd-jwt:unique_id+given_name+family_name
     default_acr_value: https://www.spid.gov.it/SpidL2
-    aud: https://self-issued.me/v2
     expiration_time: 5 # minutes
+    aud: https://self-issued.me/v2
+    response_mode: direct_post
     presentation_definition:
-      id: unique-presentation-identifier
+      id: global-presentation-definition-id
       input_descriptors:
-      - id: unique-presentation-identifier
+      - id: input-specific-id
         purpose: Request presentation holding Power of Representation attestation
         format:
           vc+sd-jwt: {}
@@ -79,8 +80,23 @@ config:
           - path:
             - "$.vct"
             filter:
+              const: urn:eu.europa.ec.eudi:por:1
+      - id: another-input-specific-id
+        purpose: Request first name and last name claims from PID attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          limit_disclosure: required
+          fields:
+            - path:
+              - "$.vct"
+              filter:
               type: string
               pattern: urn:eu.europa.ec.eudi:por:1
+            - path:
+              - "$.family_name"
+            - path:
+              - "$.given_name"
 
   user_attributes:
     unique_identifiers:

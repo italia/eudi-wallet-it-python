@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Enum, field_validator
 
 from pyeudiw.jwt.utils import is_jwt_format
 
@@ -15,6 +15,11 @@ class PresentationSubmissionSchema(BaseModel):
     definition_id: str
     id: str
     descriptor_map: list[DescriptorSchema]
+
+
+class ResponseMode(str, Enum):
+    direct_post = "direct_post"
+    direct_post_jwt = "direct_post.jwt"
 
 
 class ResponseSchema(BaseModel):
