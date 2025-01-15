@@ -184,3 +184,16 @@ Configure an httpd fronted such NginX, an example is available within the `uwsgi
 remember to customize and add any additional parameter to your preferred httpd configuration.
 
 
+## Environment Variables Configuration
+SATOSA supports the following environment variables to customize its behavior:
+| **Variable Name**                | **Description**                                                                  | **Default Value**   | **Allowed Values**         | **Context**               |
+| -------------------------------- | -------------------------------------------------------------------------------- | ------------------- | -------------------------- | ------------------------- |
+| `PYEUDIW_MONGO_TEST_AUTH_INLINE` | MongoDB connection string used for SATOSA integration tests.                     | `""` (empty string) | Valid MongoDB URI          | Integration Testing       |
+| `PYEUDIW_LRU_CACHE_MAXSIZE`          | Configures the maximum number of elements to store in the Least Recently Used (LRU) cache.            | `2048`                    | Integer                          | Cache Management               |
+| `PYEUDIW_HTTPC_SSL`              | Enables or disables SSL verification for HTTP client requests.                   | `True`              | `True`, `False`            | HTTP Client Configuration |
+| `PYEUDIW_HTTPC_TIMEOUT`          | Sets the timeout for HTTP client requests.                                       | `6` seconds        | Integer                    | HTTP Client Configuration |
+| `SD_JWT_HEADER`                  | Specifies the type of SD-JWT header to use when generating or verifying SD-JWTs. | `dc+sd-jwt`           | Custom values as per usage | SD-JWT Configuration      |
+
+### Notes:
+1. These variables are optional and, if not explicitly set, default values will be used.
+2. To define these variables, you can use export commands in shell scripts, or any environment variable management tool.
