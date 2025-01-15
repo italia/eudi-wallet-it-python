@@ -1,7 +1,35 @@
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
+import satosa.context
 
 from pyeudiw.jwt.parse import KeyIdentifier_T
+from pyeudiw.openid4vp.schemas.response import AuthorizeResponsePayload
+
+
+class AuthorizationResponseParser:
+    """
+    DirectPostParser is an interface intended to parse direct POST http responses
+    """
+
+    def parse_and_validate(self, context: satosa.context.Context) -> AuthorizeResponsePayload:
+        """
+        Parse (and optionally validate) a satosa http request, wrapped in its own context.
+        The validation step might include verification tasks; for example if the data is
+        reepresented as a jwt, the validation should perform a check on the jwt validity.
+
+        :param context: an http request wrapped in its own satosa context
+        :type context: satosa.context.Context
+
+        :raises pyeudiw.openid4vp.exceptions.AuthRespParsingException: raised \
+            when the http response is malformed.
+        :raises pyeudiw.openid4vp.exceptions.AuthRespValidationException: raised \
+            when the http response is syntactically correct, but not valid (for \
+            example, it might be an expired token).
+
+        :return: the plain openid4vp authorization response; DCQL is not supported yet
+        :rtype: AuthorizeResponsePayload
+        """
+        raise NotImplementedError
 
 
 class VpTokenParser:
