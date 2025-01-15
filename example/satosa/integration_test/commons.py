@@ -1,5 +1,7 @@
 import base64
 from copy import deepcopy
+import json
+from urllib.parse import urlparse
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from bs4 import BeautifulSoup
 import datetime
@@ -9,7 +11,7 @@ from typing import Any, Literal
 from io import StringIO
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
+from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
@@ -212,3 +214,11 @@ def extract_saml_attributes(saml_response: str) -> set[Any]:
     value = BeautifulSoup(lowered, features="xml")
     attributes = value.find_all("saml:attribute")
     return attributes
+
+
+def verify_request_object_jwt(ro: str, client: requests.Session):
+    well_known_endpoint = f"{IDP_BASEURL}/.well-known/jar-issuer/OpenID4VP"
+    metadata_raw = client.get(well_known_endpoint, verify=False).content.decode()
+    metadata = json.loads(metadata_raw)
+    verifier = JWSHelper(metadata["jwks"]["keys"])
+    verifier.verify(ro)
