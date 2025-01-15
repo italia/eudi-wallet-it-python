@@ -96,8 +96,7 @@ def test_direct_trust_jat_custom_path(all_private_keys):
         dtj = DirectTrustJar(jwks=all_private_keys,
                              jar_issuer_endpoint=case.endpoint_component)
         path_component = dtj._build_metadata_path(case.backend_name)
-        assert path_component == case.expected_path, f"failed case {
-            i+1}: test scenario: {case.explanation}"
+        assert path_component == case.expected_path, f"failed case {i+1}: test scenario: {case.explanation}"
 
 
 def test_direct_trust_jar_metadata(direct_trust_jar):
