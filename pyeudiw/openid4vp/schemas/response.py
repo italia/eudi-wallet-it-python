@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, field_validator
@@ -15,6 +16,11 @@ class PresentationSubmissionSchema(BaseModel):
     definition_id: str
     id: str
     descriptor_map: list[DescriptorSchema]
+
+
+class ResponseMode(str, Enum):
+    direct_post = "direct_post"
+    direct_post_jwt = "direct_post.jwt"
 
 
 class ResponseSchema(BaseModel):
