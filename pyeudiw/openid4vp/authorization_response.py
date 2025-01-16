@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import json
 import satosa.context
 
@@ -14,10 +13,26 @@ import cryptojwt.jwe.exception
 
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
 from pyeudiw.openid4vp.interface import AuthorizationResponseParser
-from pyeudiw.openid4vp.schemas.response import AuthorizeResponseDirectPostJwt, AuthorizeResponsePayload
+from pyeudiw.openid4vp.schemas.response import AuthorizeResponseDirectPostJwt, AuthorizeResponsePayload, ResponseMode
 
 
-def _check_http_post_headers(context: satosa.context.Context):
+def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
+    """
+    Try to make inference on which response mode type this is based on the
+    content of an http request body
+    """
+    if "response_uri" in context.request:
+        return ResponseMode.direct_post_jwt
+    if "vp_token" in context.request:
+        return ResponseMode.direct_post
+    raise AuthRespParsingException("HTTP POST request body does not contain a recognized openid4vp response mode")
+
+
+def _check_http_post_headers(context: satosa.context.Context) -> None:
+    """
+    :raises AuthRespParsingException: if the request in the context does not \
+        look like a POST request
+    """
     if (http_method := context.request_method.upper()) != "POST":
         raise AuthRespParsingException(f"HTTP method [{http_method}] not supported")
 

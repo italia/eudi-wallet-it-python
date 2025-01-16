@@ -1,6 +1,12 @@
 from dataclasses import dataclass
+from enum import Enum
 
 from pyeudiw.jwt.utils import is_jwe_format, is_jwt_format
+
+
+class ResponseMode(str, Enum):
+    direct_post = "direct_post"
+    direct_post_jwt = "direct_post.jwt"
 
 
 @dataclass
