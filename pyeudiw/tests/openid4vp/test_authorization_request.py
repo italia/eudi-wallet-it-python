@@ -164,3 +164,20 @@ def test_build_authorization_request_claims():
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
+
+    # case 3: no scope
+    config_noscope = {
+        "expiration_time": 1,
+        "aud": "https://self-issued.me/v2",
+        "presentation_definition": {
+            "id": "global-id",
+            "input_descriptors": []
+        }
+    }    
+
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope)
+    assert "scope" not in claims
+
+    # case 4: force nonce
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
+    assert claims["nonce"] == "predetermined-nonce"

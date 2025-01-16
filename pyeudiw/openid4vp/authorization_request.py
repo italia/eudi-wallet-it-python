@@ -19,7 +19,7 @@ def build_authorization_request_url(scheme: str, params: dict) -> str:
     return f"{scheme}{_sep}{query_params}"
 
 
-def build_authorization_request_claims(client_id: str, state: str, response_uri: str, authorization_config: dict) -> dict:
+def build_authorization_request_claims(client_id: str, state: str, response_uri: str, authorization_config: dict, nonce: str = "") -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
 
@@ -33,23 +33,36 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
         authorization request, should satisfy \
         pyeudiw.satosa.schemas.authorization.AuthorizationConfig
     :type authorization_config: dict
+    :param nonce: optional nonce to be inserted in the request object; if not \
+        set, a new cryptographically safe uuid v4 nonce is generated.
+    :type nonce: str
+
+    :raises KeyError: if authorization_config misses mandatory configuration options
+
     :returns: a dictionary with the *complete* set of jar jwt playload claims
     :rtype: dict
     """
+
+    if not nonce:
+        nonce = str(uuid.uuid4())
+
     claims = {
-        "scope": ' '.join(authorization_config["scopes"]),
-        "client_id_scheme": "entity_id",  # that's federation.
+        "client_id_scheme": "http",  # that's federation.
         "client_id": client_id,
-        "presentation_definition": authorization_config["presentation_definition"],
         "response_mode": authorization_config.get("response_mode", ResponseMode.direct_post_jwt),
         "response_type": "vp_token",
         "response_uri": response_uri,
-        "nonce": str(uuid.uuid4()),
+        "nonce": nonce,
         "state": state,
         "iss": client_id,
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"])
     }
+    if authorization_config.get("scopes"):
+        claims["scope"] = ' '.join(authorization_config["scopes"])
+    # backend configuration validation should check that at least PE or DCQL must be configured within the authz request conf
+    if authorization_config.get("presentation_definition"):
+        claims["presentation_definition"] = authorization_config["presentation_definition"]
 
     if (_aud := authorization_config.get("aud")):
         claims["aud"] = _aud
