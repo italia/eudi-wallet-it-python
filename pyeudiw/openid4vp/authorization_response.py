@@ -36,12 +36,18 @@ def _check_http_post_headers(context: satosa.context.Context) -> None:
     if (http_method := context.request_method.upper()) != "POST":
         raise AuthRespParsingException(f"HTTP method [{http_method}] not supported")
 
-    if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != "application/x-www-form-urlencoded":
-        raise AuthRespParsingException(f"HTTP content type [{content_type}] not supported")
+    # missing header is ok; but if it's there, it must be correct
+    if context.http_headers:
+        if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != "application/x-www-form-urlencoded":
+            raise AuthRespParsingException(f"HTTP content type [{content_type}] not supported")
 
 
 class DirectPostParser(AuthorizationResponseParser):
-    """TODO: docsting
+    """DirectPostParser parses authorization responses sent as body of an
+    http post request.
+
+    The reference specification is defined here
+        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters
     """
 
     def __init__(self):
@@ -57,8 +63,16 @@ class DirectPostParser(AuthorizationResponseParser):
             raise AuthRespParsingException("invalid data in direct_post request body", e)
 
 
-class DirectPostJwtParser(AuthorizationResponseParser):
-    """TODO: docstring
+class DirectPostJwtJweParser(AuthorizationResponseParser):
+    """DirectPostJwtJweParser parses authorization responses sent as body of an
+    http post request. The parser expectes a response wrapped in a jwt; more
+    precisely the managed response is x-www-form-urlencoded in the form of
+    response=<jwt> where <jwt> is an **encrypted but not signed** response.
+    As such, the class required a jwe helper with the correct key able to
+    decrypt the jwe.
+
+    The reference specification is defined here
+        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_postjw
     """
 
     def __init__(self, jwe_decryptor: JWEHelper):
@@ -79,7 +93,13 @@ class DirectPostJwtParser(AuthorizationResponseParser):
         except cryptojwt.jwe.exception.DecryptionFailed:
             raise AuthRespValidationException("invalid data in direct_post.jwt: unable to decrypt token")
         except Exception as e:
-            raise AuthRespParsingException("invalid data in direct_post.jwt request body", e)
+            # unfortunately library cryptojwt is not very exhaustive on why an operation failed...
+            raise AuthRespValidationException("invalid data in direct_post.jwt request body", e)
+
+        # iss, exp and aud MUST be OMITTED in the JWT Claims Set of the JWE
+        if ("iss" in payload) or ("exp" in payload):
+            raise AuthRespParsingException("response token contains an unexpected lifetime claims", Exception("wallet mishbeahiour: JWe with bad claims"))
+
         try:
             return AuthorizeResponsePayload(**payload)
         except Exception as e:

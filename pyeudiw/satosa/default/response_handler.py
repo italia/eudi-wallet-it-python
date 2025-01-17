@@ -10,7 +10,7 @@ from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
-from pyeudiw.openid4vp.authorization_response import AuthorizeResponsePayload, DirectPostJwtParser, DirectPostParser, DirectPostJwtParser, detect_response_mode
+from pyeudiw.openid4vp.authorization_response import AuthorizeResponsePayload, DirectPostJwtJweParser, DirectPostParser, DirectPostJwtJweParser, detect_response_mode
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException, InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier, AuthorizationResponseParser
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
@@ -143,12 +143,11 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
 
         # parse and eventually decrypt jwt in response
         try:
-            body_parser: AuthorizationResponseParser = self._build_authorization_parser(context)
-            authz_payload: AuthorizeResponsePayload = body_parser.parse_and_validate(context)
+            authz_payload: AuthorizeResponsePayload = self._parse_authorization_response(context)
         except AuthRespParsingException as e400:
             self._handle_400(context, e400.args[0], e400.args[1])
-        except AuthRespValidationException as e403:
-            self._handle_403(context, "invalid authentication method: token might be invalid or expired", e403)
+        except AuthRespValidationException as e401:
+            self._handle_401(context, "invalid authentication method: token might be invalid or expired", e401)
         self._log_debug(context, f"response URI endpoint response with payload {authz_payload}")
 
         request_session: dict = {}
@@ -306,13 +305,15 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _build_authorization_parser(self, context: Context) -> AuthorizeResponsePayload:
+    def _parse_authorization_response(self, context: Context) -> AuthorizeResponsePayload:
         response_mode = detect_response_mode(context)
         match response_mode:
             case ResponseMode.direct_post:
-                return DirectPostParser()
+                parser = DirectPostParser()
+                return parser.parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
-                return DirectPostJwtParser(self.config["metadata_jwks"])
+                parser = DirectPostJwtJweParser(self.config["metadata_jwks"])
+                return parser.parse_and_validate(context)
             case _:
                 raise AuthRespParsingException(
                     f"invalid or unrecognized response mode: {response_mode}",
