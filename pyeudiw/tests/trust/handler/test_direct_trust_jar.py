@@ -93,8 +93,7 @@ def test_direct_trust_jat_custom_path(all_private_keys):
         )
     ]
     for i, case in enumerate(test_cases):
-        dtj = DirectTrustJar(jwks=all_private_keys,
-                             jar_issuer_endpoint=case.endpoint_component)
+        dtj = DirectTrustJar(jwks=all_private_keys, jwk_endpoint=case.endpoint_component)
         path_component = dtj._build_metadata_path(case.backend_name)
         assert path_component == case.expected_path, f"failed case {i+1}: test scenario: {case.explanation}"
 
@@ -102,7 +101,7 @@ def test_direct_trust_jat_custom_path(all_private_keys):
 def test_direct_trust_jar_metadata(direct_trust_jar):
     backend = "openid4vp"
     entity_id = f"https://rp.example/{backend}"
-    metadata = direct_trust_jar._build_jar_issuer_metadata(entity_id)
+    metadata = direct_trust_jar._build_metadata_with_issuer_jwk(entity_id)
     assert metadata["iss"] == entity_id
     assert len(metadata["jwks"]["keys"]) == 1
     pub_key = metadata["jwks"]["keys"][0]

@@ -100,11 +100,14 @@ config:
 
   trust:
     direct_trust_jar:
+      module: pyeudiw.trust.default.direct_trust_sd_jwt_vc
+      class: DirectTrustSdJwtVc
+      config:
+        jwk_endpoint: /.well-known/jwt-vc-issuer
       module: pyeudiw.trust.handler.direct_trust_jar
       class: DirectTrustJar
       config:
-        jwk_endpoint: /.well-known/jwt-vc-issuer
-        jar_issuer_endpoint: /.well-known/jar-issuer
+        jwk_endpoint: /.well-known/jar-issuer
         jwks: *metadata_jwks
     federation:
       module: pyeudiw.trust.default.federation
