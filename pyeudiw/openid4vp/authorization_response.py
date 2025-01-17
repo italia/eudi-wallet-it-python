@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 import satosa.context
 
@@ -5,7 +6,7 @@ from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format, is_jwt_format
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
@@ -13,7 +14,33 @@ import cryptojwt.jwe.exception
 
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
 from pyeudiw.openid4vp.interface import AuthorizationResponseParser
-from pyeudiw.openid4vp.schemas.response import AuthorizeResponseDirectPostJwt, AuthorizeResponsePayload, ResponseMode
+from pyeudiw.openid4vp.schemas.response import ResponseMode
+
+
+@dataclass
+class AuthorizeResponseDirectPostJwt:
+    response: str  # jwt
+
+    def __post_init__(self):
+        jwt = self.response
+        if not is_jwe_format(jwt) and not is_jwt_format(jwt):
+            raise ValueError(f"input response={jwt} is neither jwt not jwe format")
+
+
+@dataclass
+class AuthorizeResponsePayload:
+    """
+    AuthorizeResponsePayload is a simple schema class for
+        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters
+    only for the case when presentation submission is used over DCQL.
+
+    This class is a weaker validation than pyeudiw.openid4vp.schema.ResponseSchema
+    as it is not meant to validate the _content_ of the response; just that the
+    representation lands with the proper expected claims
+    """
+    state: str
+    vp_token: str | list[str]
+    presentation_submission: dict
 
 
 def detect_response_mode(context: satosa.context.Context) -> ResponseMode:

@@ -74,33 +74,10 @@ wallet_response_data = create_authorize_response(
 
 authz_response = http_user_agent.post(
     response_uri,
-    data={
-        "vp_token": verifiable_presentations,
-        "state": request_object_claims["state"],
-        "presentation_submission": {
-            "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-            "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-            "descriptor_map": [
-                {
-                    "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                    "path": "$.vp_token.verified_claims.claims._sd[0]",
-                    "format": "vc+sd-jwt"
-                }
-            ],
-            "aud": response_uri
-        }
-    },
-    headers={
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    verify=False,
+    data={"response": wallet_response_data},
+    timeout=TIMEOUT_S
 )
-
-# authz_response = http_user_agent.post(
-#     response_uri,
-#     verify=False,
-#     data={"response": wallet_response_data},
-#     timeout=TIMEOUT_S
-# )
 
 assert authz_response.status_code == 200
 assert authz_response.json().get("redirect_uri", None) is not None
