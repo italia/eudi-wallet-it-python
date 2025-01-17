@@ -21,7 +21,7 @@ def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
     Try to make inference on which response mode type this is based on the
     content of an http request body
     """
-    if "response_uri" in context.request:
+    if "response" in context.request:
         return ResponseMode.direct_post_jwt
     if "vp_token" in context.request:
         return ResponseMode.direct_post
