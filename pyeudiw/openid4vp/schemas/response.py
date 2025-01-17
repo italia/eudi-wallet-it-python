@@ -1,12 +1,42 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, field_validator
 
 from pyeudiw.jwt.utils import is_jwe_format, is_jwt_format
+
+
+class DescriptorSchema(BaseModel):
+    id: str
+    path: str
+    format: str
+
+
+class PresentationSubmissionSchema(BaseModel):
+    definition_id: str
+    id: str
+    descriptor_map: list[DescriptorSchema]
 
 
 class ResponseMode(str, Enum):
     direct_post = "direct_post"
     direct_post_jwt = "direct_post.jwt"
+
+
+class ResponseSchema(BaseModel):
+    state: Optional[str]
+    nonce: str
+    vp_token: str
+    presentation_submission: PresentationSubmissionSchema
+
+    @field_validator("vp_token")
+    @classmethod
+    def _check_vp_token(cls, vp_token):
+        if is_jwt_format(vp_token):
+            return vp_token
+        else:
+            raise ValueError("vp_token is not in a JWT format.")
 
 
 @dataclass
@@ -17,19 +47,6 @@ class AuthorizeResponseDirectPostJwt:
         jwt = self.response
         if not is_jwe_format(jwt) and not is_jwt_format(jwt):
             raise ValueError(f"input response={jwt} is neither jwt not jwe format")
-
-    # def decode_payload(self, key_store_by_kid: dict[str, dict]) -> AuthorizeResponsePayload:
-    #     jwt = self.response
-    #     jwk_dict = _get_jwk_kid_from_store(jwt, key_store_by_kid)
-
-    #     payload = {}
-    #     if is_jwe_format(jwt):
-    #         payload = _decrypt_jwe(jwt, jwk_dict)
-    #     elif is_jwt_format(jwt):
-    #         payload = _verify_and_decode_jwt(jwt, jwk_dict)
-    #     else:
-    #         raise ValueError(f"unexpected state: input jwt={jwt} is neither a jwt nor a jwe")
-    #     return AuthorizeResponsePayload(**payload)
 
 
 @dataclass
