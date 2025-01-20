@@ -20,6 +20,14 @@ def _generate_response(issuer: str, issuer_jwk: dict) -> requests.Response:
     return jwt_vc_issuer_endpoint_response
 
 
+def _generate_empty_json_ok_response() -> requests.Response:
+    resp = requests.Response()
+    resp.status_code = 200
+    resp.headers.update({"Content-Type": "application/json"})
+    resp._content = json.dumps({}).encode('utf-8')
+    return resp
+
+
 issuer = "https://credential-issuer.example/vct/"
 issuer_jwk = {
     "kty": "EC",

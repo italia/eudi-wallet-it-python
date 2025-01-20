@@ -10,7 +10,6 @@ from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
-from pyeudiw.jwk import JWK
 from pyeudiw.openid4vp.authorization_response import AuthorizeResponseDirectPost, AuthorizeResponsePayload
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
