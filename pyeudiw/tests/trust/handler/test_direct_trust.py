@@ -1,21 +1,23 @@
 import unittest.mock
 
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
-from pyeudiw.tests.trust.handler import issuer
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc, build_metadata_issuer_endpoint
+from pyeudiw.tests.trust.handler import _generate_empty_json_ok_response, issuer
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
 from dataclasses import dataclass
 import requests
 import json
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
-from pyeudiw.tests.trust.handler import jwt_vc_issuer_endpoint_response, _generate_response
+from pyeudiw.tests.trust.handler import _generate_response
 import uuid
 
 def test_direct_trust_build_issuer_jwk_endpoint():
     entity_id = "https://credential-issuer.example/vct"
     well_known_component = "/.well-known/jwt-vc-issuer"
     expected_url = "https://credential-issuer.example/.well-known/jwt-vc-issuer/vct"
-    obtained_url = DirectTrustSdJwtVc.build_issuer_jwk_endpoint(entity_id, well_known_component)
+    obtained_url = build_jwk_issuer_endpoint(entity_id, well_known_component)
     assert expected_url == obtained_url
 
 def test_direct_trust_build_issuer_metadata_endpoint():
@@ -40,7 +42,7 @@ def test_direct_trust_build_issuer_metadata_endpoint():
 
     metadata_endpoint = "/.well-known/openid-credential-issuer"
     for i, case in enumerate(test_cases):
-        obtained = DirectTrustSdJwtVc.build_issuer_metadata_endpoint(case.entity_id, metadata_endpoint)
+        obtained = build_metadata_issuer_endpoint(case.entity_id, metadata_endpoint)
         assert case.expected == obtained, f"failed case {i}: {case.explanation}"
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_by_value():
@@ -78,7 +80,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
     jwks_uri_response._content = json.dumps(expected_jwks).encode('utf-8')
 
     mocked_jwks_document_endpoint = unittest.mock.patch(
-        "pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url",
+        "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
         return_value=[jwks_uri_response]
     )
     mocked_jwks_document_endpoint.start()
@@ -105,18 +107,25 @@ def test_direct_trust_jwk():
     random_issuer = f"{uuid.uuid4()}.issuer.it"
 
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
-        "pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url",
+        "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
         return_value=[_generate_response(random_issuer, expected_jwk)]
     )
 
+    mocked_metadata_endpoint = unittest.mock.patch(
+        "pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url",
+        return_value=[_generate_empty_json_ok_response()]
+    )
+
+    mocked_metadata_endpoint.start()
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(random_issuer)
     trust_source = trust_handler.extract_and_update_trust_materials(random_issuer, trust_source)
 
     obtained_jwks = trust_source.keys
-        
+
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
+    mocked_metadata_endpoint.stop()
 
     assert len(obtained_jwks) == 1, f"expected 1 jwk, obtained {len(obtained_jwks)}"
     assert expected_jwk == obtained_jwks[0]

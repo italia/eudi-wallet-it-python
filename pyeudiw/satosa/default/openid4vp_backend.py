@@ -108,7 +108,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         :rtype: Sequence[(str, Callable[[satosa.context.Context], satosa.response.Response]]
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
-        url_map = []
+        url_map = self.trust_evaluator.build_metadata_endpoints(
+            self.name,
+            self.client_id
+        )
+
         for k, v in self.config['endpoints'].items():
             endpoint_value = v
 
