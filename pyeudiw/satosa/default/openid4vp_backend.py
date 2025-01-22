@@ -211,7 +211,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         # PAR
         payload = {
-            'client_id': self.client_id,
+            'client_id': self.config["authorization"]["client_id"],
             'request_uri': f"{self.absolute_request_url}?id={state}",
         }
 
