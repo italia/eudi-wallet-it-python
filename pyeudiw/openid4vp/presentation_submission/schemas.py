@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from pydantic import BaseModel, field_validator
 
 
@@ -6,13 +6,13 @@ class DescriptorSchema(BaseModel):
     id: str
     format: str
     path: str
-    path_nested: Dict[str, Any] = None
+    path_nested: dict[str, Any] = None
 
 
 class PresentationSubmissionSchema(BaseModel):
     id: str
     definition_id: str
-    descriptor_map: List[DescriptorSchema]
+    descriptor_map: list[DescriptorSchema]
 
     @field_validator("descriptor_map")
     @classmethod

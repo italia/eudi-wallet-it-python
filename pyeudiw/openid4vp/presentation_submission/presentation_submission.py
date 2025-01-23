@@ -2,7 +2,7 @@ import os
 from pydantic import ValidationError
 import yaml
 import importlib
-from typing import Dict, Any
+from typing import Any
 import logging
 
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
@@ -10,12 +10,12 @@ from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmis
 logger = logging.getLogger(__name__)
 
 class PresentationSubmission:
-    def __init__(self, submission: Dict[str, Any]):
+    def __init__(self, submission: dict[str, Any]):
         """
         Initialize the PresentationSubmission handler with the submission data.
 
         Args:
-            submission (Dict[str, Any]): The presentation submission data.
+            submission (dict[str, Any]): The presentation submission data.
 
         Raises:
             KeyError: If the 'format' key is missing in the submission.
@@ -27,12 +27,12 @@ class PresentationSubmission:
         self.submission = self._validate_submission(submission)
         self.handlers = self._initialize_handlers()
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """
         Load the configuration from format_config.yml located in the same directory.
 
         Returns:
-            Dict[str, Any]: The configuration dictionary.
+            dict[str, Any]: The configuration dictionary.
 
         Raises:
             FileNotFoundError: If the configuration file is not found.
@@ -44,12 +44,12 @@ class PresentationSubmission:
         with open(config_path, "r") as config_file:
             return yaml.safe_load(config_file)
         
-    def _validate_submission(self, submission: Dict[str, Any]) -> PresentationSubmissionSchema:
+    def _validate_submission(self, submission: dict[str, Any]) -> PresentationSubmissionSchema:
         """
         Validate the submission data using Pydantic and check its total size.
 
         Args:
-            submission (Dict[str, Any]): The presentation submission data.
+            submission (dict[str, Any]): The presentation submission data.
 
         Returns:
             PresentationSubmissionSchema: Validated submission schema.
@@ -75,12 +75,12 @@ class PresentationSubmission:
             logger.error(f"Submission validation failed: {e}")
             raise
 
-    def _initialize_handlers(self) -> Dict[int, object]:
+    def _initialize_handlers(self) -> dict[int, object]:
         """
         Initialize handlers for each item in the 'descriptor_map' of the submission.
 
         Returns:
-            Dict[int, object]: A dictionary mapping indices to handler instances.
+            dict[int, object]: A dictionary mapping indices to handler instances.
 
         Raises:
             KeyError: If the 'format' key is missing in any descriptor.
