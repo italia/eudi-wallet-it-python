@@ -1,3 +1,4 @@
+import json
 import uuid
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
@@ -69,6 +70,20 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
+
+
+        federation_jwks = self.config['trust']['federation']['config']['federation_jwks']
+        if not isinstance(federation_jwks, list):
+            try:
+                self.config['trust']['federation']['config']['federation_jwks'] = json.loads(federation_jwks)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid federation_jwks JSON: {e}")
+        
+        
+
+        self.config['metadata']['jwks'] = {"keys": [
+            JWK(i).public_key for i in self.config['metadata_jwks']
+        ]}
 
         self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
