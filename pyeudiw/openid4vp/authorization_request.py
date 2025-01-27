@@ -51,7 +51,7 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
         "response_uri": response_uri,
         "nonce": nonce,
         "state": state,
-        "iss": self.config["authorization"].get("auth_iss_id", client_id),
+        "iss": authorization_config.get("auth_iss_id", client_id),
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"])
     }
