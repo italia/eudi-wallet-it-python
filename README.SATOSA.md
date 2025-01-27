@@ -77,10 +77,11 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 | Parameter                                    | Description                                                                                         | Example value                                       |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| config.authorization.client_id               | Optional client_id to be set only in the request object; if not set it is equal to the issuer       | IT-PYEUDIRP                                         |
 | config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
 | config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]       |
 | config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
-| config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                    |
+| config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                           |
 | config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
 | config.authorization.presentation_definition | The object that defines the presentation request                                                    | [Presentation definition](#presentation-definition) |
 
