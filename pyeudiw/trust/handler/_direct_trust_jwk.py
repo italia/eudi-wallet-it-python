@@ -67,7 +67,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         # This could also be resolved by extrating the request uri from the satosa
         #  context; but for not we will opt for the simple option.
         md_dictionary = {
-            "iss": entity_id,
+            "issuer": entity_id,
             "jwks": {
                 "keys": self._build_issuing_public_signing_jwks()
             }
