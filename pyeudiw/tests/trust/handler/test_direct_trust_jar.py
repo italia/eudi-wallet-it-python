@@ -102,7 +102,7 @@ def test_direct_trust_jar_metadata(direct_trust_jar):
     backend = "openid4vp"
     entity_id = f"https://rp.example/{backend}"
     metadata = direct_trust_jar._build_metadata_with_issuer_jwk(entity_id)
-    assert metadata["iss"] == entity_id
+    assert metadata["issuer"] == entity_id
     assert len(metadata["jwks"]["keys"]) == 1
     pub_key = metadata["jwks"]["keys"][0]
     assert "d" not in pub_key
@@ -129,7 +129,7 @@ def test_direct_trust_metadata_handler(direct_trust_jar, signing_private_key):
         assert True, f"unable to find application/json in repsonse content type: {e}"
 
     response_data = json.loads(response.message)
-    assert response_data["iss"] == entity_id
+    assert response_data["issuer"] == entity_id
     assert len(response_data["jwks"]["keys"]) == 1
 
     pub_key = response_data["jwks"]["keys"][0]
