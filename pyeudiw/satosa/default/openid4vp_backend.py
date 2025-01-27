@@ -53,7 +53,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.config = config
 
-        self.client_id = f"{base_url}/{name}"
+        self._client_id = f"{base_url}/{name}"
         self.config['metadata']['client_id'] = self.client_id
 
         self.config['metadata']['response_uris_supported'] = []
@@ -99,6 +99,15 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator.from_config(trust_configuration, self.db_engine)
         self.init_trust_resources()  # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+
+    @property
+    def client_id(self):
+        if ( _cid := self.config["authorization"].get("client_id")):
+            return _cid
+        elif ( _cid := self.config["metadata"].get("client_id")):
+            return _cid
+        else:
+            return self._client_id
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
