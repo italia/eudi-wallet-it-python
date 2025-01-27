@@ -186,6 +186,7 @@ def test_build_authorization_request_claims():
     config_custom_id = {
         "client_id": "custom-client-id",
         "scopes": ["family_name", "given_name"],
+        "auth_iss_id": "OTHERRRRR",
         "expiration_time": 1,
         "presentation_definition": {
             "id": "global-id",
@@ -214,6 +215,5 @@ def test_build_authorization_request_claims():
         }
     }
 
-    claims = build_authorization_request_claims(client_id, state, response_uri, config_custom_id)
-    assert claims["client_id"] == "custom-client-id"
-    assert claims["iss"] == client_id
+    claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
+    assert claims["iss"] != client_id

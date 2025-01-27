@@ -40,8 +40,7 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
     :rtype: dict
     """
 
-    if not nonce:
-        nonce = str(uuid.uuid4())
+    nonce = nonce or str(uuid.uuid4())
 
     claims = {
         "client_id_scheme": "http",  # that's federation.
