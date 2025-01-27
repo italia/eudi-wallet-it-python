@@ -79,12 +79,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid federation_jwks JSON: {e}")
         
-        
-
-        self.config['metadata']['jwks'] = {"keys": [
-            JWK(i).public_key for i in self.config['metadata_jwks']
-        ]}
-
         self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
         ]}
