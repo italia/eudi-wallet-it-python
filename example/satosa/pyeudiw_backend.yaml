@@ -61,7 +61,7 @@ config:
         - ES512
     
   authorization:
-    client_id: custom-client-id
+    client_id: # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     url_scheme: haip
     scopes:
     - pid-sd-jwt:unique_id+given_name+family_name
