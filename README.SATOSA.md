@@ -77,7 +77,7 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 | Parameter                                    | Description                                                                                         | Example value                                       |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| config.authorization.client_id               | Optional client_id to be set only in the request object; if not set it is equal to the issuer       | IT-PYEUDIRP                                         |
+| config.authorization.client_id               | client_id to be set only in the request object; if not set default to entity id value      | IT-PYEUDIRP (as requested by Potential LSP)   |
 | config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
 | config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]       |
 | config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
