@@ -19,12 +19,12 @@ def build_authorization_request_url(scheme: str, params: dict) -> str:
     return f"{scheme}{_sep}{query_params}"
 
 
-def build_authorization_request_claims(state: str, response_uri: str, authorization_config: dict, nonce: str = "") -> dict:
+def build_authorization_request_claims(token_iss: str, state: str, response_uri: str, authorization_config: dict, nonce: str = "") -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
 
-    :param client_id: the client identifier (woh issue the jar token)
-    :type client_id: str
+    :param token_iss: the client identifier (who issue the jar token)
+    :type token_iss: str
     :param state: request session identifier
     :type state: str
     :param response_uri: endpoint accepting authorization responses
@@ -46,15 +46,17 @@ def build_authorization_request_claims(state: str, response_uri: str, authorizat
     if not nonce:
         nonce = str(uuid.uuid4())
 
+    client_id = authorization_config.get("client_id", token_iss)
+
     claims = {
         "client_id_scheme": "http",  # that's federation.
-        "client_id": authorization_config.get("client_id"),
+        "client_id": client_id,
         "response_mode": authorization_config.get("response_mode", ResponseMode.direct_post_jwt),
         "response_type": "vp_token",
         "response_uri": response_uri,
         "nonce": nonce,
         "state": state,
-        "iss": authorization_config.get("client_id"),
+        "iss": token_iss,
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"])
     }

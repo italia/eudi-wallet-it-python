@@ -29,6 +29,7 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             return self._handle_400(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
 
         data = build_authorization_request_claims(
+            self.client_id,
             state,
             self.absolute_response_url,
             self.config["authorization"]
