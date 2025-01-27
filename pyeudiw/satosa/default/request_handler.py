@@ -17,7 +17,7 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
     _REQUEST_OBJECT_TYP = "oauth-authz-req+jwt"
 
     def request_endpoint(self, context: Context, *args) -> Response:
-        self._log_function_debug("response_endpoint", context, "args", args)
+        self._log_function_debug("request_endpoint", context, "args", args)
 
         try:
             state = context.qs_params["id"]
