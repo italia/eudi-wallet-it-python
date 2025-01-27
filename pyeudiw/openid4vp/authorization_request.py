@@ -46,17 +46,15 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
     if not nonce:
         nonce = str(uuid.uuid4())
 
-    custom_client_id = authorization_config.get("client_id", client_id)
-
     claims = {
         "client_id_scheme": "http",  # that's federation.
-        "client_id": custom_client_id,
+        "client_id": client_id,
         "response_mode": authorization_config.get("response_mode", ResponseMode.direct_post_jwt),
         "response_type": "vp_token",
         "response_uri": response_uri,
         "nonce": nonce,
         "state": state,
-        "iss": client_id,
+        "iss": self.config["authorization"].get("auth_iss_id", client_id),
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"])
     }
