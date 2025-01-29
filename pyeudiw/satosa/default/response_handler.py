@@ -27,8 +27,6 @@ from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.tools.jwk_handling import find_vp_token_key
-from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 
 class ResponseHandler(ResponseHandlerInterface, BackendTrust):
@@ -176,10 +174,6 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
             except ValueError as e:
                 return self._handle_400(context, f"VP parsing error: {e}")
             
-            try:
-                pub_jwk = find_vp_token_key(token_parser, self.trust_evaluator)
-            except NoCriptographicMaterial as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
             token_issuer = token_parser.get_issuer_name()
             whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
             try:

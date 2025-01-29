@@ -30,9 +30,6 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     def get_credentials(self) -> dict:
         return self.sdjwt.get_disclosed_claims()
 
-    def get_signing_key(self) -> ECKey | RSAKey | dict | KeyIdentifier_T:
-        return extract_key_identifier(self.sdjwt.issuer_jwt.header)
-
     def is_revoked(self) -> bool:
         # TODO: implement revocation check
         return False
