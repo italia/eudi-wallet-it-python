@@ -1,7 +1,6 @@
 from typing import Optional
 
 from pyeudiw.jwt.helper import is_jwt_expired
-from pyeudiw.jwt.parse import KeyIdentifier_T, extract_key_identifier
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
