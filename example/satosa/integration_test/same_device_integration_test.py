@@ -12,7 +12,8 @@ from commons import (
     create_authorize_response,
     create_holder_test_data,
     create_issuer_test_data,
-    extract_saml_attributes
+    extract_saml_attributes,
+    verify_request_object_jwt
 )
 from settings import TIMEOUT_S
 
@@ -55,6 +56,8 @@ sign_request_obj = http_user_agent.get(
     request_uri,
     verify=False,
     timeout=TIMEOUT_S)
+
+verify_request_object_jwt(sign_request_obj.text, http_user_agent)
 
 request_object_claims = decode_jwt_payload(sign_request_obj.text)
 response_uri = request_object_claims["response_uri"]

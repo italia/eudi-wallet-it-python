@@ -43,11 +43,11 @@ def test_dynamic_backend_creation():
     backend = OpenID4VPBackend(
         Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
-    endpoints = backend.register_endpoints()
-
-    assert endpoints[0][0] == "^name/.well-known/openid-federation$"
-    assert endpoints[2][0] == "^name/response_test$"
-    assert endpoints[3][0] == "^name/request_test$"
+    handlers = backend.register_endpoints()
+    published_endpoints = [handlers[i][0] for i in range(len(handlers))]
+    assert "^name/.well-known/openid-federation$" in published_endpoints
+    assert "^name/response_test$" in published_endpoints
+    assert "^name/request_test$" in published_endpoints
 
     context = Context()
     context.state = State()

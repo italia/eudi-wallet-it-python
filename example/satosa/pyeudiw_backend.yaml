@@ -62,10 +62,41 @@ config:
     
   authorization:
     url_scheme: haip
-    scopes: 
+    scopes:
     - pid-sd-jwt:unique_id+given_name+family_name
     default_acr_value: https://www.spid.gov.it/SpidL2
     expiration_time: 5 # minutes
+    aud: https://self-issued.me/v2
+    response_mode: direct_post
+    presentation_definition:
+      id: global-presentation-definition-id
+      input_descriptors:
+      - id: input-specific-id
+        purpose: Request presentation holding Power of Representation attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          fields:
+          - path:
+            - "$.vct"
+            filter:
+              const: urn:eu.europa.ec.eudi:por:1
+      - id: another-input-specific-id
+        purpose: Request first name and last name claims from PID attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          limit_disclosure: required
+          fields:
+            - path:
+              - "$.vct"
+              filter:
+                type: string
+                pattern: urn:eu.europa.ec.eudi:por:1
+            - path:
+              - "$.family_name"
+            - path:
+              - "$.given_name"
 
   user_attributes:
     unique_identifiers:
@@ -82,13 +113,19 @@ config:
 
   trust:
     direct_trust_sd_jwt_vc:
-      module: pyeudiw.trust.default.direct_trust_sd_jwt_vc
+      module: pyeudiw.trust.handler.direct_trust_sd_jwt_vc
       class: DirectTrustSdJwtVc
       config:
         jwk_endpoint: /.well-known/jwt-vc-issuer
+    direct_trust_jar:
+      module: pyeudiw.trust.handler.direct_trust_jar
+      class: DirectTrustJar
+      config:
+        jwk_endpoint: /.well-known/jar-issuer
+        jwks: *metadata_jwks
     federation:
-      module: pyeudiw.trust.default.federation
-      class: FederationTrustModel
+      module: pyeudiw.trust.handler.federation
+      class: FederationHandler
       config:
         metadata_type: "wallet_relying_party"
         authority_hints:
@@ -113,10 +150,6 @@ config:
             - "todo"
         trust_anchors_cn: # we might mix CN and SAN together
             - http://127.0.0.1:8000
-
-  # private jwk
-  metadata_jwks: ${PYEUDIW_METADATA_JWKS}
-
 
   # Mongodb database configuration
   storage:
@@ -143,6 +176,9 @@ config:
             data_ttl: 63072000 # 2 years
           # - connection_params:
 
+  # private jwk
+  metadata_jwks: ${PYEUDIW_METADATA_JWKS}
+  
   #This is the configuration for the relaying party metadata
   metadata:
     application_type: web
@@ -170,26 +206,6 @@ config:
 
     # loaded in the __init__
     # jwks:
-
-    #This section contains the details for presentation request
-    presentation_definition:
-      id: d76c51b7-ea90-49bb-8368-6b3d194fc131
-      input_descriptors:
-        - id: IdentityCredential
-          format:
-            vc+sd-jwt: { }
-          constraints:
-            limit_disclosure: required
-            fields:
-              - path:
-                  - "$.vct"
-                filter:
-                  type: string
-                  const: IdentityCredential
-              - path:
-                  - "$.family_name"
-              - path:
-                  - "$.given_name"
 
 
     redirect_uris: 

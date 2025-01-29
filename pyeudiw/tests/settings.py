@@ -52,6 +52,121 @@ CONFIG = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
+        "presentation_definition": [
+            {
+                "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                "input_descriptors": [
+                    {
+                        "format": {
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "filter": {
+                                            "const": "PersonIdentificationData",
+                                            "type": "string"
+                                        },
+                                        "path": [
+                                            "$.sd-jwt.type"
+                                        ]
+                                    },
+                                    {
+                                        "filter": {
+                                            "type": "object"
+                                        },
+                                        "path": [
+                                            "$.sd-jwt.cnf"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "true",
+                                        "path": [
+                                            "$.sd-jwt.family_name"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "true",
+                                        "path": [
+                                            "$.sd-jwt.given_name"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "true",
+                                        "path": [
+                                            "$.sd-jwt.unique_id"
+                                        ]
+                                    }
+                                ],
+                                "limit_disclosure": "required"
+                            },
+                            "jwt": {
+                                "alg": [
+                                    "EdDSA",
+                                    "ES256"
+                                ]
+                            }
+                        },
+                        "id": "sd-jwt"
+                    }
+                ]
+            },
+            {
+                "id": "mDL-sample-req",
+                "input_descriptors": [
+                    {
+                        "format": {
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "filter": {
+                                            "const": "org.iso.18013.5.1.mDL",
+                                            "type": "string"
+                                        },
+                                        "path": [
+                                            "$.mdoc.doctype"
+                                        ]
+                                    },
+                                    {
+                                        "filter": {
+                                            "const": "org.iso.18013.5.1",
+                                            "type": "string"
+                                        },
+                                        "path": [
+                                            "$.mdoc.namespace"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "false",
+                                        "path": [
+                                            "$.mdoc.family_name"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "false",
+                                        "path": [
+                                            "$.mdoc.portrait"
+                                        ]
+                                    },
+                                    {
+                                        "intent_to_retain": "false",
+                                        "path": [
+                                            "$.mdoc.driving_privileges"
+                                        ]
+                                    }
+                                ],
+                                "limit_disclosure": "required"
+                            },
+                            "mso_mdoc": {
+                                "alg": [
+                                    "EdDSA",
+                                    "ES256"
+                                ]
+                            }
+                        },
+                        "id": "mDL"
+                    }
+                ]
+            }
+        ],
     },
     'user_attributes': {
         "unique_identifiers": ["tax_id_code", "unique_id"],
@@ -226,7 +341,84 @@ CONFIG = {
             "RS256",
             "ES256"
         ],
-        "presentation_definitions": [
+        "response_uris_supported": [
+            f"{BASE_URL}/OpenID4VP/response-uri"
+        ],
+        "request_uris": [
+            f"{BASE_URL}/OpenID4VP/request-uri"
+        ],
+        "require_auth_time": True,
+        "subject_type": "pairwise",
+        "vp_formats": {
+            "vc+sd-jwt": {
+                "sd-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
+                ],
+                "kb-jwt_alg_values": [
+                    "ES256",
+                    "ES384"
+                ]
+            }
+        }
+    }
+}
+
+CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"
+
+MODULE_DIRECT_TRUST_CONFIG = {
+    "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
+    "class": "DirectTrustSdJwtVc",
+    "config": {
+        "jwk_endpoint": "/.well-known/jwt-vc-issuer",
+        "httpc_params": {
+            "connection": {
+                "ssl": True
+            },
+            "session": {
+                "timeout": 6
+            }
+        }
+    }
+}
+
+CONFIG_DIRECT_TRUST = {
+    "base_url": BASE_URL,
+
+    "ui": {
+        "static_storage_url": BASE_URL,
+        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
+        "qrcode_template": "qrcode.html",
+        "error_template": "error.html",
+        "error_url": "https://localhost:9999/error_page.html"
+    },
+    "endpoints": {
+        "entity_configuration": "/.well-known/openid-federation",
+        "pre_request": "/pre-request",
+        "response": "/response-uri",
+        "request": "/request-uri",
+        "status": "/status-uri",
+        "get_response": "/get-response"
+    },
+    "response_code": {
+        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
+    "qrcode": {
+        "size": 100,
+        "color": "#2B4375",
+        "expiration_time": 120,
+        "logo_path": "pyeudiw/tests/satosa/static/logo.png"
+    },
+    "jwt": {
+        "default_sig_alg": "ES256",
+        "default_exp": 6
+    },
+    "authorization": {
+        "url_scheme": "haip",  # haip://
+        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
+        "default_acr_value": "https://www.spid.gov.it/SpidL2",
+        "expiration_time": 5,  # minutes
+        "presentation_definition": [
             {
                 "id": "pid-sd-jwt:unique_id+given_name+family_name",
                 "input_descriptors": [
@@ -340,84 +532,7 @@ CONFIG = {
                     }
                 ]
             }
-        ],
-        "response_uris_supported": [
-            f"{BASE_URL}/OpenID4VP/response-uri"
-        ],
-        "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request-uri"
-        ],
-        "require_auth_time": True,
-        "subject_type": "pairwise",
-        "vp_formats": {
-            "vc+sd-jwt": {
-                "sd-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ],
-                "kb-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ]
-            }
-        }
-    }
-}
-
-CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"
-
-MODULE_DIRECT_TRUST_CONFIG = {
-    "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
-    "class": "DirectTrustSdJwtVc",
-    "config": {
-        "jwk_endpoint": "/.well-known/jwt-vc-issuer",
-        "httpc_params": {
-            "connection": {
-                "ssl": True
-            },
-            "session": {
-                "timeout": 6
-            }
-        }
-    }
-}
-
-CONFIG_DIRECT_TRUST = {
-    "base_url": BASE_URL,
-
-    "ui": {
-        "static_storage_url": BASE_URL,
-        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
-        "qrcode_template": "qrcode.html",
-        "error_template": "error.html",
-        "error_url": "https://localhost:9999/error_page.html"
-    },
-    "endpoints": {
-        "entity_configuration": "/.well-known/openid-federation",
-        "pre_request": "/pre-request",
-        "response": "/response-uri",
-        "request": "/request-uri",
-        "status": "/status-uri",
-        "get_response": "/get-response"
-    },
-    "response_code": {
-        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-    },
-    "qrcode": {
-        "size": 100,
-        "color": "#2B4375",
-        "expiration_time": 120,
-        "logo_path": "pyeudiw/tests/satosa/static/logo.png"
-    },
-    "jwt": {
-        "default_sig_alg": "ES256",
-        "default_exp": 6
-    },
-    "authorization": {
-        "url_scheme": "haip",  # haip://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
-        "default_acr_value": "https://www.spid.gov.it/SpidL2",
-        "expiration_time": 5,  # minutes
+        ]
     },
     'user_attributes': {
         "unique_identifiers": ["tax_id_code", "unique_id"],
@@ -527,121 +642,6 @@ CONFIG_DIRECT_TRUST = {
         "id_token_signed_response_alg": [
             "RS256",
             "ES256"
-        ],
-        "presentation_definitions": [
-            {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.type"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "type": "object"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.cnf"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.given_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.unique_id"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "jwt": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "sd-jwt"
-                    }
-                ]
-            },
-            {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.doctype"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.namespace"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.portrait"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.driving_privileges"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "mso_mdoc": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "mDL"
-                    }
-                ]
-            }
         ],
         "response_uris_supported": [
             f"{BASE_URL}/OpenID4VP/response-uri"
