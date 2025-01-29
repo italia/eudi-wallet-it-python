@@ -10,9 +10,10 @@ from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
-from pyeudiw.openid4vp.authorization_response import AuthorizeResponsePayload, DirectPostJwtJweParser, DirectPostParser, DirectPostJwtJweParser, detect_response_mode
+from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.openid4vp.authorization_response import AuthorizeResponsePayload, DirectPostJwtJweParser, DirectPostParser, detect_response_mode
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException, InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
-from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier, AuthorizationResponseParser
+from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.openid4vp.vp import Vp
@@ -312,7 +313,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                 parser = DirectPostParser()
                 return parser.parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
-                parser = DirectPostJwtJweParser(self.config["metadata_jwks"])
+                jew_decrypter = JWEHelper(self.config["metadata_jwks"])
+                parser = DirectPostJwtJweParser(jew_decrypter)
                 return parser.parse_and_validate(context)
             case _:
                 raise AuthRespParsingException(
