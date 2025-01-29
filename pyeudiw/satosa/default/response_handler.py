@@ -307,8 +307,8 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                 parser = DirectPostParser()
                 return parser.parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
-                jew_decrypter = JWEHelper(self.config["metadata_jwks"])
-                parser = DirectPostJwtJweParser(jew_decrypter)
+                jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
+                parser = DirectPostJwtJweParser(jwe_decrypter)
                 return parser.parse_and_validate(context)
             case _:
                 raise AuthRespParsingException(
