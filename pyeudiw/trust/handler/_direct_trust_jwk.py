@@ -153,7 +153,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         try:
             self.get_metadata(issuer, trust_source)
         except Exception as e:
-            self._log_warning("updating metadata", f"Exception encountered when updating metadata with {self.__name__} for issuer {issuer}: {e}")
+            self._log_warning("updating metadata", f"Exception encountered when updating metadata with {self.__clas__.__name__} for issuer {issuer}: {e}")
 
         try:
             md = self._get_jwk_metadata(issuer)
