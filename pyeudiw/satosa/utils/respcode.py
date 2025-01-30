@@ -22,7 +22,8 @@ class ResponseCodeSource:
     :type key: str
     """
 
-    key: str = field(repr=False)  # repr=False as we do not want to accidentally expose a secret key in a log file
+    # repr=False as we do not want to accidentally expose a secret key in a log file
+    key: str = field(repr=False)
 
     def __post_init__(self):
         # Validate input(s)
@@ -37,10 +38,12 @@ class ResponseCodeSource:
 
 def decode_key(key: str) -> bytes:
     if not set(key) <= set(string.hexdigits):
-        raise ValueError("key in format different than hex currently not supported")
+        raise ValueError(
+            "key in format different than hex currently not supported")
     key_len = len(key)
     if key_len != 2*CODE_SYM_KEY_LEN:
-        raise ValueError(f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}")
+        raise ValueError(
+            f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}")
     return bytes.fromhex(key)
 
 

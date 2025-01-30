@@ -1,4 +1,3 @@
-import uuid
 
 from satosa.context import Context
 

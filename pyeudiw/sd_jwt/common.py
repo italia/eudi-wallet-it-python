@@ -11,13 +11,11 @@ from typing import List
 
 from . exceptions import SDJWTHasSDClaimException
 
-DEFAULT_SIGNING_ALG = "ES256"
-SD_DIGESTS_KEY = "_sd"
-DIGEST_ALG_KEY = "_sd_alg"
-KB_DIGEST_KEY = "sd_hash"
-SD_LIST_PREFIX = "..."
-JSON_SER_DISCLOSURE_KEY = "disclosures"
-JSON_SER_KB_JWT_KEY = "kb_jwt"
+from . import (
+    SD_DIGESTS_KEY,
+    JSON_SER_DISCLOSURE_KEY,
+    JSON_SER_KB_JWT_KEY
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +45,8 @@ class SDJWTCommon:
 
     def __init__(self, serialization_format):
         if serialization_format not in ("compact", "json"):
-            raise ValueError(f"Unknown serialization format: {serialization_format}")
+            raise ValueError(
+                f"Unknown serialization format: {serialization_format}")
         self._serialization_format = serialization_format
 
     def _b64hash(self, raw):
@@ -127,7 +126,8 @@ class SDJWTCommon:
 
             # Extract only the body from SD-JWT without verifying the signature
             _, jwt_body, _ = self._unverified_input_sd_jwt.split(".")
-            self._unverified_input_sd_jwt_payload = self._base64url_decode(jwt_body)
+            self._unverified_input_sd_jwt_payload = self._base64url_decode(
+                jwt_body)
             self._unverified_compact_serialized_input_sd_jwt = (
                 self._unverified_input_sd_jwt
             )
@@ -138,7 +138,8 @@ class SDJWTCommon:
             self._unverified_input_sd_jwt_parsed = loads(sd_jwt)
 
             self._unverified_input_sd_jwt_payload = loads(
-                self._base64url_decode(self._unverified_input_sd_jwt_parsed["payload"])
+                self._base64url_decode(
+                    self._unverified_input_sd_jwt_parsed["payload"])
             )
 
             # distinguish between flattened and general JSON serialization (RFC7515)

@@ -45,7 +45,8 @@ class JWHelperInterface:
         elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
             self.jwks = [jwks]
         else:
-            raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
+            raise TypeError(
+                f"unable to handle input jwks with type {type(jwks)}")
 
     def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
         if not kid:
@@ -84,14 +85,16 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
         try:
             candidate_key = parse_key_from_x5c(header["x5c"])
         except Exception as e:
-            logger.debug(f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
+            logger.debug(
+                f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
         return set(["5xc"]), candidate_key
     if "jwk" in header:
         candidate_key = JWK(header["jwk"])
         return set(["jwk"]), candidate_key
     unsupported_claims = set(("trust_chain", "jku", "x5u", "x5t"))
     if unsupported_claims.intersection(header):
-        raise NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
+        raise NotImplementedError(
+            f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
     return None
 
 

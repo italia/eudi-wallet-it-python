@@ -204,7 +204,8 @@ def satisfy_interface(o: object, interface: type) -> bool:
     return True
 
 
-_HttpcParams_T = NamedTuple('_HttpcParams_T', [('ssl', bool), ('timeout', int)])
+_HttpcParams_T = NamedTuple(
+    '_HttpcParams_T', [('ssl', bool), ('timeout', int)])
 
 
 def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
@@ -235,14 +236,16 @@ def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_as
     ssl: bool | None = httpc_params.get("connection", {}).get("ssl", None)
     timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
     if (ssl is None) or (timeout is None):
-        raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session']['timeout'] MUST be defined")
+        raise ValueError(
+            f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session']['timeout'] MUST be defined")
     curr_time_s = time.time_ns() // 1_000_000_000
     if cache_ttl != 0:
         ttl_timestamp = curr_time_s // cache_ttl
     else:
         ttl_timestamp = curr_time_s
     httpc_p_tuple = _HttpcParams_T(ssl, timeout)
-    resp = _lru_cached_get_http_url(ttl_timestamp, url, httpc_p_tuple, http_async=http_async)
+    resp = _lru_cached_get_http_url(
+        ttl_timestamp, url, httpc_p_tuple, http_async=http_async)
 
     if resp.status_code != 200:
         _lru_cached_get_http_url.cache_clear()
@@ -272,5 +275,6 @@ def _lru_cached_get_http_url(timestamp: int, url: str, httpc_params_tuple: _Http
             "timeout": httpc_params_tuple.timeout
         }
     }
-    resp: list[requests.Response] = get_http_url([url], httpc_params, http_async)
+    resp: list[requests.Response] = get_http_url(
+        [url], httpc_params, http_async)
     return resp[0]

@@ -1,6 +1,7 @@
 from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.tests.jwt import VALID_KID_JWT, VALID_TC_JWT
 
+
 def test_kid_jwt():
     decoded_jwt = DecodedJwt.parse(VALID_KID_JWT)
 
@@ -17,6 +18,7 @@ def test_kid_jwt():
     }
     assert decoded_jwt.signature == "bjM57L1H4gB60_020lKBVvVEhiYCOeEWGzMVEt-XNjc"
 
+
 def test_tc_jwt():
     decoded_jwt = DecodedJwt.parse(VALID_TC_JWT)
 
@@ -31,6 +33,7 @@ def test_tc_jwt():
         "alg": "HS256",
         "typ": "JWT"
     }
+
 
 def test_invalid_jwt():
     invalid_jwt = "eyJ"

@@ -8,8 +8,10 @@ class TestJWSHeperSelectSigningKey:
     @pytest.fixture
     def sign_jwks(self):
         return [
-            {"crv":"P-256","d":"qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA","kid":"ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI","kty":"EC","use":"sig","x":"_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40","y":"CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv":"P-256","d":"SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA","kid":"35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas","kty":"EC","use":"sig","x":"RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk","y":"xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {"crv": "P-256", "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
+                "kty": "EC", "use": "sig", "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
+            {"crv": "P-256", "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
+                "kty": "EC", "use": "sig", "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
         ]
 
     def test_JWSHelper_select_signing_key_undefined(self, sign_jwks):
@@ -43,8 +45,10 @@ class TestJWSHelperSignerHeader():
     @pytest.fixture
     def sign_jwks(self):
         return [
-            {"crv":"P-256","d":"qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA","kid":"ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI","kty":"EC","use":"sig","x":"_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40","y":"CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv":"P-256","d":"SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA","kid":"35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas","kty":"EC","use":"sig","x":"RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk","y":"xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {"crv": "P-256", "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
+                "kty": "EC", "use": "sig", "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
+            {"crv": "P-256", "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
+                "kty": "EC", "use": "sig", "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
         ]
 
     def test_signed_header_add_kid(self, sign_jwks):
@@ -71,8 +75,10 @@ class TestJWSHelperSelectVerifyingKey():
     @pytest.fixture
     def verify_jwks(self):
         return [
-            {"crv":"P-256","kid":"ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI","kty":"EC","use":"sig","x":"_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40","y":"CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv":"P-256","kid":"35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas","kty":"EC","use":"sig","x":"RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk","y":"xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {"crv": "P-256", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI", "kty": "EC", "use": "sig",
+                "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
+            {"crv": "P-256", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas", "kty": "EC", "use": "sig",
+                "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
         ]
 
     def test_JWSHelper_select_verifying_key_undefined(self, verify_jwks):

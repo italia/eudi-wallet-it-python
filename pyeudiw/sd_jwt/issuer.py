@@ -1,27 +1,27 @@
 import logging
-import random
 import secrets
 
-from json import dumps
 from typing import Dict, List, Union
 
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt.common import (
+from pyeudiw.sd_jwt.common import SDJWTCommon, SDObj
+
+from pyeudiw.sd_jwt import (
     DEFAULT_SIGNING_ALG,
     DIGEST_ALG_KEY,
     SD_DIGESTS_KEY,
     SD_LIST_PREFIX,
     JSON_SER_DISCLOSURE_KEY,
-    SDJWTCommon,
-    SDObj,
 )
+
 from pyeudiw.sd_jwt.disclosure import SDJWTDisclosure
 
 from cryptojwt.jws.jws import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 logger = logging.getLogger(__name__)
+
 
 class SDJWTIssuer(SDJWTCommon):
     DECOY_MIN_ELEMENTS = 2
@@ -162,7 +162,8 @@ class SDJWTIssuer(SDJWTCommon):
             for _ in range(
                 sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
             ):
-                sd_claims[SD_DIGESTS_KEY].append(self._create_decoy_claim_entry())
+                sd_claims[SD_DIGESTS_KEY].append(
+                    self._create_decoy_claim_entry())
 
         # Delete the SD_DIGESTS_KEY if it is empty
         if len(sd_claims[SD_DIGESTS_KEY]) == 0:
@@ -182,22 +183,23 @@ class SDJWTIssuer(SDJWTCommon):
         will be added in a separate "disclosures" property of the JSON.
         """
 
-        
         # Assemble protected headers starting with default
         _protected_headers = {"alg": self._sign_alg, "typ": self.SD_JWT_HEADER}
-        
+
         if len(self._issuer_keys) == 1 and "kid" in self._issuer_keys[0]:
             _protected_headers["kid"] = self._issuer_keys[0]["kid"]
 
         # override if any
         _protected_headers.update(self._extra_header_parameters)
-        
+
         _unprotected_headers = {}
         for i, key in enumerate(self._issuer_keys):
-            _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
+            _unprotected_headers = {
+                "kid": key["kid"]} if "kid" in key else None
             if self._serialization_format == "json" and i == 0:
                 _unprotected_headers = _unprotected_headers or {}
-                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [d.b64 for d in self.ii_disclosures]
+                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [
+                    d.b64 for d in self.ii_disclosures]
 
         self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
         self.serialized_sd_jwt = self.sd_jwt.sign(

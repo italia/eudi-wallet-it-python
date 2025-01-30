@@ -4,8 +4,6 @@ import os
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from cryptojwt.jwk.ec import new_ec_key
 
-from pyeudiw.jwk import JWK
-
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"

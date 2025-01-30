@@ -34,7 +34,9 @@ def is_sd_jwt_kb_format(sd_jwt_kb: str) -> bool:
     res = re.match(SD_JWT_KB_REGEXP, sd_jwt_kb)
     return bool(res)
 
+
 logger = logging.getLogger(__name__)
+
 
 class VcSdJwtHeaderSchema(BaseModel):
     typ: str
@@ -47,13 +49,15 @@ class VcSdJwtHeaderSchema(BaseModel):
     @field_validator("typ")
     def validate_typ(cls, v: str) -> str:
         if v != _IDENTIFYING_VC_TYP:
-            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'")
+            raise ValueError(
+                f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'")
         return v
 
     @model_validator(mode="after")
     def check_typ_when_not_x5c(self) -> Self:
         if (not self.x5c) and (not self.kid):
-            raise ValueError("[kid] must be defined if [x5c] claim is not defined")
+            raise ValueError(
+                "[kid] must be defined if [x5c] claim is not defined")
         return self
 
 
@@ -93,7 +97,8 @@ class VcSdJwtPayloadSchema(BaseModel):
         try:
             _StatusSchema(**v)
         except ValueError as e:
-            raise ValueError(f"parameter [status] value '{v}' does not comply with schema {_StatusSchema.model_fields}: {e}")
+            raise ValueError(
+                f"parameter [status] value '{v}' does not comply with schema {_StatusSchema.model_fields}: {e}")
         return v
 
     @field_validator("verification")
@@ -101,7 +106,8 @@ class VcSdJwtPayloadSchema(BaseModel):
         try:
             _VerificationSchema(**v)
         except ValueError as e:
-            raise ValueError(f"parameter [verification] value '{v}' does not comply with schema {_VerificationSchema.model_fields}: {e}")
+            raise ValueError(
+                f"parameter [verification] value '{v}' does not comply with schema {_VerificationSchema.model_fields}: {e}")
         return v
 
 
@@ -112,7 +118,8 @@ class KeyBindingJwtHeader(BaseModel):
     @field_validator("typ")
     def validate_typ(cls, v: str) -> str:
         if v != _IDENTIFYING_KB_TYP:
-            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_KB_TYP}', found instead '{v}'")
+            raise ValueError(
+                f"header parameter [typ] must be '{_IDENTIFYING_KB_TYP}', found instead '{v}'")
         return v
 
 

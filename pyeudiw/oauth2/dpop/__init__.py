@@ -51,7 +51,7 @@ class DPoPIssuer:
         :returns: The DPoP proof as a JWT.
         :rtype: str
         """
-        
+
         # Define the payload for the DPoP proof
         data = {
             "jti": str(uuid.uuid4()),

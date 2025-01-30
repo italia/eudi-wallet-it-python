@@ -1,8 +1,9 @@
 import logging
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt.common import (
-    SDJWTCommon,
+from pyeudiw.sd_jwt.common import SDJWTCommon
+
+from pyeudiw.sd_jwt import (
     DEFAULT_SIGNING_ALG,
     SD_DIGESTS_KEY,
     SD_LIST_PREFIX,
@@ -52,12 +53,13 @@ class SDJWTHolder(SDJWTCommon):
     ):
         # Select the disclosures
         self.hs_disclosures = []
-        
+
         self._select_disclosures(self.sd_jwt_payload, claims_to_disclose)
 
         # Optional: Create a key binding JWT
         if nonce and aud and holder_key:
-            sd_jwt_presentation_hash = self._calculate_kb_hash(self.hs_disclosures)
+            sd_jwt_presentation_hash = self._calculate_kb_hash(
+                self.hs_disclosures)
             self._create_key_binding_jwt(
                 nonce, aud, sd_jwt_presentation_hash, holder_key, sign_alg
             )
@@ -96,7 +98,6 @@ class SDJWTHolder(SDJWTCommon):
                     ] = self.serialized_key_binding_jwt
 
             self.sd_jwt_presentation = dumps(presentation)
-            
 
     def _select_disclosures(self, sd_jwt_claims, claims_to_disclose):
         # Recursively process the claims in sd_jwt_claims. In each
@@ -104,8 +105,7 @@ class SDJWTHolder(SDJWTCommon):
         # contains hash digests for claims that should be disclosed,
         # then add the corresponding disclosures to the claims_to_disclose.
 
-    
-        if(type(sd_jwt_claims) is bytes):
+        if (type(sd_jwt_claims) is bytes):
             return self._select_disclosures_dict(loads(self.sd_jwt_payload.decode('utf-8')), claims_to_disclose)
         if type(sd_jwt_claims) is list:
             return self._select_disclosures_list(sd_jwt_claims, claims_to_disclose)
@@ -151,7 +151,8 @@ class SDJWTHolder(SDJWTCommon):
                 ):
                     continue
 
-                self.hs_disclosures.append(self._hash_to_disclosure[digest_to_check])
+                self.hs_disclosures.append(
+                    self._hash_to_disclosure[digest_to_check])
                 if isinstance(disclosure_value, dict):
                     if claims_to_disclose_element is True:
                         # Tolerate a "True" for a disclosure of an object
@@ -210,7 +211,8 @@ class SDJWTHolder(SDJWTCommon):
                             f"In _select_disclosures_dict: {key}, {value}, {claims_to_disclose}"
                         )
                         if key in claims_to_disclose and claims_to_disclose[key]:
-                            logger.debug(f"Adding disclosure for {digest_to_check}")
+                            logger.debug(
+                                f"Adding disclosure for {digest_to_check}")
                             self.hs_disclosures.append(
                                 self._hash_to_disclosure[digest_to_check]
                             )
@@ -225,9 +227,11 @@ class SDJWTHolder(SDJWTCommon):
                             f"Check claims_to_disclose for key: {key}, value: {value}"
                         ) from None
 
-                    self._select_disclosures(value, claims_to_disclose.get(key, None))
+                    self._select_disclosures(
+                        value, claims_to_disclose.get(key, None))
             else:
-                self._select_disclosures(value, claims_to_disclose.get(key, None))
+                self._select_disclosures(
+                    value, claims_to_disclose.get(key, None))
 
     def _create_key_binding_jwt(
         self, nonce, aud, presentation_hash, holder_key, sign_alg: Optional[str] = None

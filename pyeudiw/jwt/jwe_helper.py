@@ -7,7 +7,6 @@ import cryptojwt
 from cryptojwt.jwe.jwe import factory
 from cryptojwt.jwe.jwe_ec import JWE_EC
 from cryptojwt.jwe.jwe_rsa import JWE_RSA
-from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.exceptions import JWEDecryptionError, JWEEncryptionError
 from pyeudiw.jwt.helper import JWHelperInterface
@@ -15,6 +14,7 @@ from pyeudiw.jwt.jws_helper import DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP
 from pyeudiw.jwt.utils import decode_jwt_header
 
 logger = logging.getLogger(__name__)
+
 
 class JWEHelper(JWHelperInterface):
     """
@@ -40,11 +40,13 @@ class JWEHelper(JWHelperInterface):
             _payload = plain_dict
         else:
             _payload = ""
-        
-        encryption_keys = [key for key in self.jwks if key.appropriate_for("encrypt")]
+
+        encryption_keys = [
+            key for key in self.jwks if key.appropriate_for("encrypt")]
 
         if len(encryption_keys) == 0:
-            raise JWEEncryptionError("unable to produce JWE: no available encryption key(s)")
+            raise JWEEncryptionError(
+                "unable to produce JWE: no available encryption key(s)")
 
         for key in self.jwks:
             if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
@@ -79,7 +81,8 @@ class JWEHelper(JWHelperInterface):
             else:
                 return _keyobj.encrypt(key=key.public_key())
 
-        raise JWEEncryptionError("unable to produce JWE: no supported encryption key(s)")
+        raise JWEEncryptionError(
+            "unable to produce JWE: no supported encryption key(s)")
 
     def decrypt(self, jwe: str) -> dict:
         """

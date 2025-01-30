@@ -12,7 +12,6 @@ from pyeudiw.storage.base_storage import (
     trust_anchor_field_map
 )
 from pyeudiw.storage.exceptions import (
-    ChainAlreadyExist,
     ChainNotExist,
     StorageEntryUpdateFailed
 )
@@ -146,7 +145,7 @@ class MongoStorage(BaseStorage):
 
     def get_session_retention_ttl(self) -> dict:
         return self.sessions.index_information().get("creation_date_1")
-    
+
     def has_session_retention_ttl(self) -> bool:
         self._connect()
         return self.sessions.index_information().get("creation_date_1") is not None
@@ -220,7 +219,7 @@ class MongoStorage(BaseStorage):
         self._connect()
         db_collection = getattr(self, collection)
         return db_collection.find_one({"entity_id": entity_id})
-    
+
     def get_trust_source(self, entity_id: str) -> dict | None:
         return self._get_db_entity(
             self.storage_conf["db_trust_sources_collection"], entity_id
@@ -228,13 +227,13 @@ class MongoStorage(BaseStorage):
 
     def get_trust_attestation(self, entity_id: str) -> dict | None:
         return self._get_db_entity(
-            self.storage_conf["db_trust_attestations_collection"], 
+            self.storage_conf["db_trust_attestations_collection"],
             entity_id
         )
 
     def get_trust_anchor(self, entity_id: str) -> dict | None:
         return self._get_db_entity(
-            self.storage_conf["db_trust_anchors_collection"], 
+            self.storage_conf["db_trust_anchors_collection"],
             entity_id
         )
 
@@ -243,19 +242,19 @@ class MongoStorage(BaseStorage):
 
     def has_trust_attestation(self, entity_id: str) -> bool:
         return self._has_db_entity(
-            self.storage_conf["db_trust_attestations_collection"], 
+            self.storage_conf["db_trust_attestations_collection"],
             entity_id
         )
 
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self._has_db_entity(
-            self.storage_conf["db_trust_anchors_collection"], 
+            self.storage_conf["db_trust_anchors_collection"],
             entity_id
         )
-    
+
     def has_trust_source(self, entity_id: str) -> bool:
         return self._has_db_entity(
-            self.storage_conf["db_trust_sources_collection"], 
+            self.storage_conf["db_trust_sources_collection"],
             entity_id
         )
 
@@ -312,7 +311,6 @@ class MongoStorage(BaseStorage):
 
         entity[trust_name] = trust_entity
 
-
         return entity
 
     def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]) -> str:
@@ -326,20 +324,21 @@ class MongoStorage(BaseStorage):
 
         updated_entity = self._update_attestation_metadata(
             entity, attestation, exp, trust_type, jwks)
-        
+
         self._upsert_entry(
             "entity_id", self.storage_conf["db_trust_attestations_collection"], updated_entity
         )
 
         return entity_id
-    
+
     def add_trust_source(self, trust_source: dict) -> str:
         return self._upsert_entry(
             "entity_id", self.storage_conf["db_trust_sources_collection"], trust_source
         )
 
     def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
-        entity = self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id)
+        entity = self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id)
 
         if entity is None:
             raise ValueError(
@@ -368,11 +367,11 @@ class MongoStorage(BaseStorage):
 
         updated_entity = self._update_anchor_metadata(
             entity, entity_configuration, exp, trust_type, entity_id)
-        
-        self._upsert_entry("entity_id", self.storage_conf["db_trust_anchors_collection"], updated_entity)
+
+        self._upsert_entry(
+            "entity_id", self.storage_conf["db_trust_anchors_collection"], updated_entity)
 
         return entity_id
-            
 
     def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: list[dict]) -> str:
         old_entity = self._get_db_entity(
@@ -392,7 +391,7 @@ class MongoStorage(BaseStorage):
 
         if not self.has_trust_anchor(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
-        
+
         documentStatus = self._upsert_entry(
             "entity_id", self.storage_conf["db_trust_anchors_collection"], upd_entity
         )

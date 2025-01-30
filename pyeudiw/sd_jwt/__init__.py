@@ -1,0 +1,8 @@
+DEFAULT_SIGNING_ALG = "ES256"
+DEFAULT_SD_ALG = "sha-256"
+SD_DIGESTS_KEY = "_sd"
+DIGEST_ALG_KEY = "_sd_alg"
+KB_DIGEST_KEY = "sd_hash"
+SD_LIST_PREFIX = "..."
+JSON_SER_DISCLOSURE_KEY = "disclosures"
+JSON_SER_KB_JWT_KEY = "kb_jwt"

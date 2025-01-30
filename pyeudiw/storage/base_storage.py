@@ -173,7 +173,7 @@ class BaseStorage(BaseDB):
         :rtype: bool
         """
         raise NotImplementedError()
-    
+
     def has_trust_source(self, entity_id: str) -> bool:
         raise NotImplementedError()
 
@@ -210,7 +210,7 @@ class BaseStorage(BaseDB):
         :rtype: str
         """
         raise NotImplementedError()
-    
+
     def add_trust_source(self, entity_id: str, trust_source: dict) -> str:
         """
         Add a trust source.
@@ -224,7 +224,7 @@ class BaseStorage(BaseDB):
         :rtype: str
         """
         raise NotImplementedError()
-    
+
     def get_trust_source(self, entity_id: str) -> Union[dict, None]:
         """
         Get a trust source.

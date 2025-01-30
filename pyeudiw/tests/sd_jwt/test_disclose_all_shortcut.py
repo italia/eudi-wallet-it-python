@@ -25,7 +25,8 @@ def test_e2e(testcase, settings):
     sdjwt_at_issuer = SDJWTIssuer(
         user_claims,
         demo_keys["issuer_keys"],
-        demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
+        demo_keys["holder_key"] if testcase.get(
+            "key_binding", False) else None,
         add_decoy_claims=use_decoys,
         serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
@@ -63,7 +64,7 @@ def test_e2e(testcase, settings):
     if testcase.get("key_binding", False):
         demo_keys["holder_key"]
         expected_claims["cnf"] = {
-            "jwk": key_from_jwk_dict(demo_keys["holder_key"],private=False).serialize()
+            "jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()
         }
 
     assert verified == expected_claims
