@@ -5,6 +5,9 @@ from urllib.parse import ParseResult, urlparse
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.interface import TrustEvaluator
 
+from .. exceptions import InvalidJwkMetadataException
+
+
 DEFAULT_ISSUER_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
 DEFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
 DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
@@ -17,10 +20,6 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
         }
     }
 }
-
-
-class InvalidJwkMetadataException(Exception):
-    pass
 
 
 class DirectTrust(TrustEvaluator):

@@ -9,6 +9,8 @@ from hashlib import sha256
 from json import loads
 from typing import List
 
+from . exceptions import SDJWTHasSDClaimException
+
 DEFAULT_SIGNING_ALG = "ES256"
 SD_DIGESTS_KEY = "_sd"
 DIGEST_ALG_KEY = "_sd_alg"
@@ -29,15 +31,6 @@ class SDObj:
     # Make hashable
     def __hash__(self):
         return hash(self.value)
-
-
-class SDJWTHasSDClaimException(Exception):
-    """Exception raised when input data contains the special _sd claim reserved for SD-JWT internal data."""
-
-    def __init__(self, error_location: any):
-        super().__init__(
-            f"Input data contains the special claim '{SD_DIGESTS_KEY}' reserved for SD-JWT internal data. Location: {error_location!r}"
-        )
 
 
 class SDJWTCommon:

@@ -19,6 +19,7 @@ from pyeudiw.tools.utils import iat_now
 
 from . exceptions import LifetimeException
 
+
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
 
