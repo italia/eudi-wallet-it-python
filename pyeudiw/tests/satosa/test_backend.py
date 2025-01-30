@@ -46,6 +46,7 @@ from pyeudiw.tests.satosa import (
 )
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
+
 class TestOpenID4VPBackend:
 
     @pytest.fixture(autouse=True)

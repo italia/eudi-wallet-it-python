@@ -1,4 +1,5 @@
 import pathlib
+import os
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from cryptojwt.jwk.ec import new_ec_key
@@ -273,7 +274,7 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "eudiw"
                     },
@@ -284,7 +285,7 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
                     "conf": {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",

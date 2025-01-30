@@ -1,8 +1,9 @@
+import pydantic
 import uuid
+
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
 
-from pyeudiw.exceptions import ValidationError
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
@@ -92,7 +93,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         try:
             PyeudiwBackendConfig(**config)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
 
