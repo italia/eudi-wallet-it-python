@@ -35,12 +35,15 @@ def _check_http_post_headers(context: satosa.context.Context) -> None:
         look like a POST request
     """
     if (http_method := context.request_method.upper()) != "POST":
-        raise AuthRespParsingException(f"HTTP method [{http_method}] not supported")
+        err_msg = f"HTTP method [{http_method}] not supported"
+        raise AuthRespParsingException(err_msg, err_msg)
 
     # missing header is ok; but if it's there, it must be correct
     if context.http_headers:
-        if (content_type := context.http_headers['HTTP_CONTENT_TYPE']) != "application/x-www-form-urlencoded":
-            raise AuthRespParsingException(f"HTTP content type [{content_type}] not supported")
+        content_type = context.http_headers['HTTP_CONTENT_TYPE']
+        if "application/x-www-form-urlencoded" not in content_type:
+            err_msg = f"HTTP content type [{content_type}] not supported"
+            raise AuthRespParsingException(err_msg, err_msg)
 
 
 class DirectPostParser(AuthorizationResponseParser):

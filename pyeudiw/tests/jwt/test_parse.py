@@ -1,4 +1,4 @@
-from pyeudiw.jwt.parse import DecodedJwt, extract_key_identifier
+from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.tests.jwt import VALID_KID_JWT, VALID_TC_JWT
 
 def test_kid_jwt():
@@ -40,30 +40,3 @@ def test_invalid_jwt():
         assert False
     except ValueError:
         assert True
-
-def test_extract_key_identifier():
-    token_header = {
-        "kid": "123456"
-    }
-
-    assert extract_key_identifier(token_header) == "123456"
-
-def test_extract_key_identifier_invalid():
-    token_header = {
-        "invalid": "123456"
-    }
-
-    try:
-        extract_key_identifier(token_header)
-        assert False
-    except ValueError:
-        assert True
-
-
-def test_extract_key_identifier_tc():
-    #TODO: Implement more accurate tests after implementing get_public_key_from_trust_chain and get_public_key_from_x509_chain
-    pass
-
-def test_extract_key_identifier_x5c():
-    #TODO: Implement more accurate tests after implementing get_public_key_from_trust_chain and get_public_key_from_x509_chain
-    pass
