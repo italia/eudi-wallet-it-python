@@ -1,6 +1,6 @@
 from typing import Union
 
-from pydantic import ValidationError
+from pyeudi.exceptions import ValidationError
 from satosa.context import Context
 
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload

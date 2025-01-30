@@ -5,7 +5,7 @@ import json
 import logging
 from typing import Any
 
-from pydantic import ValidationError
+from pyeudi.exceptions import ValidationError
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect

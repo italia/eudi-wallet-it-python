@@ -2,7 +2,7 @@ import uuid
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
 
-from pydantic import ValidationError
+from pyeudi.exceptions import ValidationError
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
