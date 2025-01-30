@@ -3,9 +3,9 @@ import datetime
 import hashlib
 import json
 import logging
-from typing import Any
+import pydantic
 
-from pyeudiw.exceptions import ValidationError
+from typing import Any
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
@@ -55,7 +55,7 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
                 vp.set_credential_jwks(credential_jwks)
         except InvalidVPToken:
             return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             return self._handle_400(context, f"Error validating schemas: {e}")
         except KIDNotFound as e:
             return self._handle_400(context, f"Kid error: {e}")

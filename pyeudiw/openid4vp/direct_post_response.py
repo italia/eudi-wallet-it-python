@@ -1,4 +1,5 @@
 import logging
+import pydantic
 
 from typing import Dict
 from pyeudiw.jwk import JWK
@@ -15,7 +16,6 @@ from pyeudiw.openid4vp.exceptions import (
 )
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
-from pyeudiw.exceptions import ValidationError
 from pyeudiw.openid4vp.utils import vp_parser
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class DirectPostResponse:
                     )
             VPTokenPayload(**vp.payload)
             VPTokenHeader(**vp.headers)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             raise InvalidVPToken(
                 f"VP is not valid, {e}: {vp.headers}.{vp.payload}"
             )

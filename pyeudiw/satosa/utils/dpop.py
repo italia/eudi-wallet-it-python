@@ -1,6 +1,6 @@
-from typing import Union
+import pydantic
 
-from pyeudiw.exceptions import ValidationError
+from typing import Union
 from satosa.context import Context
 
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
@@ -46,7 +46,7 @@ class BackendDPoP(BaseLogger):
 
             try:
                 WalletInstanceAttestationHeader(**_head)
-            except ValidationError as e:
+            except pydantic.ValidationError as e:
                 self._log_warning(
                     context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
             except Exception as e:
@@ -55,7 +55,7 @@ class BackendDPoP(BaseLogger):
 
             try:
                 WalletInstanceAttestationPayload(**wia)
-            except ValidationError as e:
+            except pydantic.ValidationError as e:
                 _msg = f"[FOUND WIA] Invalid WIA: {wia}. Validation error: {e}"
                 self._log_warning(context, message=_msg)
                 #  return self._handle_401(context, _msg, e)
@@ -76,7 +76,7 @@ class BackendDPoP(BaseLogger):
                     http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
                     http_header_dpop=context.http_headers['HTTP_DPOP']
                 )
-            except ValidationError as e:
+            except pydantic.ValidationError as e:
                 _msg = f"DPoP validation error: {e}"
                 raise DPOPValidationError(_msg)
             except Exception as e:
