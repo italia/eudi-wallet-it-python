@@ -324,4 +324,5 @@ class ResponseHandler(ResponseHandlerInterface, BackendTrust):
         return (token_processor, deepcopy(token_processor))
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
+        # TODO: check aud according to the LSP Potential singularities ...
         return {"aud": self.client_id, "nonce": session_data["nonce"]}
