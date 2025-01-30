@@ -141,7 +141,7 @@ config:
             policy_uri: https://developers.italia.it
             tos_uri: https://developers.italia.it
             logo_uri: https://developers.italia.it/assets/icons/logo-it.svg
-        federation_jwks: ${PYEUDIW_FEDERATION_JWKS}
+        federation_jwks: !ENV PYEUDIW_FEDERATION_JWKS
     x509:
       module: pyeudiw.trust.default.x509
       class: X509TrustModel
