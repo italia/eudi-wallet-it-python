@@ -58,14 +58,6 @@ class VpTokenParser:
     def get_issuer_name(self) -> str:
         raise NotImplementedError
 
-    def get_signing_key(self) -> dict | KeyIdentifier_T:
-        """
-        :returns: a public key either as a dictionary or as an identifier
-            (kid string) of a public key as seen in header
-        :rtype: dict | str
-        """
-        raise NotImplementedError
-
 
 class VpTokenVerifier:
     """VpTokenVerifier is an interface that specify that an object is able to

@@ -152,6 +152,10 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
 
         try:
             self.get_metadata(issuer, trust_source)
+        except Exception as e:
+            self._log_warning("updating metadata", f"Exception encountered when updating metadata with {self.__class__.__name__} for issuer {issuer}: {e}")
+
+        try:
             md = self._get_jwk_metadata(issuer)
             if not issuer == (obt_issuer := md.get("issuer", None)):
                 raise InvalidJwkMetadataException(f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}")
