@@ -181,3 +181,39 @@ def test_build_authorization_request_claims():
     # case 4: force nonce
     claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
     assert claims["nonce"] == "predetermined-nonce"
+
+    # case 5: custom client_id
+    config_custom_id = {
+        "client_id": "custom-client-id",
+        "scopes": ["family_name", "given_name"],
+        "auth_iss_id": "OTHERRRRR",
+        "expiration_time": 1,
+        "presentation_definition": {
+            "id": "global-id",
+            "input_descriptors": [
+                {
+                    "id": "specific-id",
+                    "purpose": "Request presentation holding Power of Representation attestation",
+                    "format": {
+                        "vc+sd-jwt": {}
+                    },
+                    "constraints": {
+                        "fields": [
+                            {
+                                "path": [
+                                    "$.vct"
+                                ],
+                                "filter": {
+                                    "type": "string",
+                                    "pattern": "urn:eu.europa.ec.eudi:por:1"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
+    assert claims["iss"] != client_id

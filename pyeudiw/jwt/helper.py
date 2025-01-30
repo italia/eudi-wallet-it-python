@@ -107,24 +107,25 @@ class LifetimeException(ValidationError):
     """Exception raised for errors related to lifetime validation."""
     pass
 
+
 def validate_jwt_timestamps_claims(payload: dict) -> None:
-        """
-        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+    """
+    Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
 
-        :param payload: The decoded JWT payload.
-        :type payload: dict
-        :raises ValueError: If any of the claims are invalid.
-        """
-        current_time = iat_now()
+    :param payload: The decoded JWT payload.
+    :type payload: dict
+    :raises ValueError: If any of the claims are invalid.
+    """
+    current_time = iat_now()
 
-        if 'iat' in payload:
-            if payload['iat'] > current_time:
-                raise LifetimeException("Future issue time, token is invalid.")
+    if 'iat' in payload:
+        if payload['iat'] > current_time:
+            raise LifetimeException("Future issue time, token is invalid.")
 
-        if 'exp' in payload:
-            if payload['exp'] <= current_time:
-                 raise LifetimeException("Token has expired.")
+    if 'exp' in payload:
+        if payload['exp'] <= current_time:
+            raise LifetimeException("Token has expired.")
 
-        if 'nbf' in payload:
-            if payload['nbf'] > current_time:
-                raise LifetimeException("Token not yet valid.")
+    if 'nbf' in payload:
+        if payload['nbf'] > current_time:
+            raise LifetimeException("Token not yet valid.")

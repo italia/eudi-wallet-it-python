@@ -22,8 +22,7 @@ def build_authorization_request_url(scheme: str, params: dict) -> str:
 def build_authorization_request_claims(client_id: str, state: str, response_uri: str, authorization_config: dict, nonce: str = "") -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
-
-    :param client_id: the client identifier (woh issue the jar token)
+    :param client_id: the client identifier (who issue the jar token)
     :type client_id: str
     :param state: request session identifier
     :type state: str
@@ -36,15 +35,12 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
     :param nonce: optional nonce to be inserted in the request object; if not \
         set, a new cryptographically safe uuid v4 nonce is generated.
     :type nonce: str
-
     :raises KeyError: if authorization_config misses mandatory configuration options
-
     :returns: a dictionary with the *complete* set of jar jwt playload claims
     :rtype: dict
     """
 
-    if not nonce:
-        nonce = str(uuid.uuid4())
+    nonce = nonce or str(uuid.uuid4())
 
     claims = {
         "client_id_scheme": "http",  # that's federation.
@@ -54,7 +50,7 @@ def build_authorization_request_claims(client_id: str, state: str, response_uri:
         "response_uri": response_uri,
         "nonce": nonce,
         "state": state,
-        "iss": client_id,
+        "iss": authorization_config.get("auth_iss_id", client_id),
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"])
     }
