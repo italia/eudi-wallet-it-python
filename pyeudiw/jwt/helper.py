@@ -1,7 +1,5 @@
 import json
 
-from pyeudiw.exceptions import ValidationError
-
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c
 
@@ -19,8 +17,11 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 
+from . exceptions import LifetimeException
+
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
+
 
 class JWHelperInterface:
     def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict):
@@ -61,6 +62,7 @@ def serialize_payload(payload: dict | str | int | None) -> bytes | str | int:
         return payload
     return ""
 
+
 def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
     """Function find_self_contained_key evaluates a token header and attempts
     at finding a self contained key (a self contained contained header is a
@@ -91,6 +93,7 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
         raise NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
     return None
 
+
 def is_payload_expired(token_payload: dict) -> bool:
     exp = token_payload.get("exp", None)
     if not exp:
@@ -99,13 +102,10 @@ def is_payload_expired(token_payload: dict) -> bool:
         return True
     return False
 
+
 def is_jwt_expired(token: str) -> bool:
     payload = decode_jwt_payload(token)
     return is_payload_expired(payload)
-
-class LifetimeException(ValidationError):
-    """Exception raised for errors related to lifetime validation."""
-    pass
 
 
 def validate_jwt_timestamps_claims(payload: dict) -> None:
