@@ -1,6 +1,6 @@
 import pytest
 
-from pyeudi.exceptions import ValidationError
+from pyeudiw.exceptions import ValidationError
 
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import WalletInstanceAttestationHeader, \
     WalletInstanceAttestationPayload

@@ -1,6 +1,6 @@
 import json
 
-from pyeudi.exceptions import ValidationError
+from pyeudiw.exceptions import ValidationError
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c

@@ -15,7 +15,7 @@ from pyeudiw.openid4vp.exceptions import (
 )
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
 from pyeudiw.openid4vp.vp import Vp
-from pyeudi.exceptions import ValidationError
+from pyeudiw.exceptions import ValidationError
 from pyeudiw.openid4vp.utils import vp_parser
 
 logger = logging.getLogger(__name__)

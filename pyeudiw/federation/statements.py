@@ -13,7 +13,7 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader,
     EntityStatementPayload
 )
-from pyeudi.exceptions import ValidationError
+from pyeudiw.exceptions import ValidationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.jwk import find_jwk_by_kid
