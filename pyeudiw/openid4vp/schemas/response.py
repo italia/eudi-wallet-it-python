@@ -38,6 +38,7 @@ class ResponseSchema(BaseModel):
         else:
             raise ValueError("vp_token is not in a JWT format.")
 
+
 @dataclass
 class AuthorizeResponseDirectPostJwt:
     response: str  # jwt
@@ -45,7 +46,8 @@ class AuthorizeResponseDirectPostJwt:
     def __post_init__(self):
         jwt = self.response
         if not is_jwe_format(jwt) and not is_jwt_format(jwt):
-            raise ValueError(f"input response={jwt} is neither jwt not jwe format")
+            raise ValueError(
+                f"input response={jwt} is neither jwt not jwe format")
 
 
 @dataclass

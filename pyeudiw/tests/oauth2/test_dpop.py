@@ -3,11 +3,9 @@ import hashlib
 import pytest
 
 
-
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
-from pyeudiw.oauth2.dpop.exceptions import InvalidDPoPKid
 from pyeudiw.tools.utils import iat_now
 
 from cryptojwt.jwk.ec import new_ec_key

@@ -116,6 +116,21 @@ Please consider the following branches:
  - __dev__: where we push our code during development.
  - __other-custom-name__: where a new feature/contribution/bugfix will be handled, revisioned and then merged to dev branch.
 
+### Executing Unit Tests
+
+Once you have activate the virtualenv, unit tests can be executed as show below.
+
+````
+pytest pyeudiw -x
+````
+
+If you test pyeudiw on a development machine where also iam-proxy-italia is running with its mongodb and the same collection names,
+you can run the test by passing the mon user and password in this way
+
+````
+PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
+````
+
 
 ## Authors
 

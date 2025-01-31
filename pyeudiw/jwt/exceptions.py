@@ -1,3 +1,6 @@
+from pyeudiw.exceptions import ValidationError
+
+
 class JWEDecryptionError(Exception):
     pass
 
@@ -20,3 +23,7 @@ class JWEEncryptionError(Exception):
 
 class JWTDecodeError(Exception):
     pass
+
+
+class LifetimeException(ValidationError):
+    """Exception raised for errors related to lifetime validation."""

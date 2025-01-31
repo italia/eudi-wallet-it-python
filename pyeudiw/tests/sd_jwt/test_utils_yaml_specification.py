@@ -12,7 +12,7 @@ user_claims:
     !sd "18": False
     !sd "21": False
 """,
-"""
+    """
 yaml_parsing: |
     Multiline text
     is also supported

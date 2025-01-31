@@ -2,7 +2,6 @@ from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 import satosa.context
 
-from pyeudiw.jwt.parse import KeyIdentifier_T
 from pyeudiw.openid4vp.schemas.response import AuthorizeResponsePayload
 
 
@@ -52,6 +51,7 @@ class VpTokenParser:
     """VpTokenParser is an interface that specify that an object is able to
     extract verifiable credentials from a VP token.
     """
+
     def get_credentials(self) -> dict:
         raise NotImplementedError
 
@@ -65,6 +65,7 @@ class VpTokenVerifier:
     The interface supposes that the verification process requires a public
     key (os the token issuer)
     """
+
     def is_expired(self) -> bool:
         raise NotImplementedError
 
@@ -82,12 +83,11 @@ class VpTokenVerifier:
         :raises [InvalidSignatureException]:
         """
         raise NotImplementedError
-    
+
     def verify_challenge(self) -> None:
         """
         :raises []:
         """
         raise NotImplementedError
-
 
     # TODO: VP proof of possession verification method should be implemented

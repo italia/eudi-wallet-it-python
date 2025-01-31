@@ -1,5 +1,4 @@
 from pyeudiw.tests.federation.base import (
-    trust_chain_issuer,
     leaf_wallet_jwk,
     leaf_cred_jwk_prot
 )
@@ -26,8 +25,8 @@ settings = CREDENTIAL_ISSUER_CONF
 settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
 settings['default_exp'] = CONFIG['jwt']['default_exp']
 
-sd_specification = _yaml_load_specification(StringIO(settings["sd_specification"]))
-
+sd_specification = _yaml_load_specification(
+    StringIO(settings["sd_specification"]))
 
 
 user_claims = {
@@ -40,8 +39,9 @@ issued_jwt = SDJWTIssuer(
     user_claims,
     issuer_jwk,
     holder_jwk,
-    add_decoy_claims = sd_specification.get("add_decoy_claims", True),
-    serialization_format=sd_specification.get("serialization_format", "compact"),
+    add_decoy_claims=sd_specification.get("add_decoy_claims", True),
+    serialization_format=sd_specification.get(
+        "serialization_format", "compact"),
     extra_header_parameters={"typ": "vc+sd-jwt"},
 )
 
@@ -52,7 +52,8 @@ sdjwt_at_holder = SDJWTHolder(
 )
 
 ec_key = key_from_jwk_dict(holder_jwk) if sd_specification.get(
-                "key_binding", False) else None
+    "key_binding", False) else None
+
 
 def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> str:
     sdjwt_at_holder = SDJWTHolder(
@@ -69,6 +70,7 @@ def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> st
     )
 
     return sdjwt_at_holder.sd_jwt_presentation
+
 
 def _generate_response(state: str, vp_token: str) -> dict:
     return {
@@ -87,13 +89,16 @@ def _generate_response(state: str, vp_token: str) -> dict:
         }
     }
 
+
 def _generate_post_context(context: Context, request_uri: str, encrypted_response: str) -> Context:
     context.request_method = "POST"
     context.request_uri = request_uri
     context.request = {"response": encrypted_response}
-    context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+    context.http_headers = {
+        "HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
     return context
+
 
 def _initialize_session(db_engine: DBEngine, state: str, session_id: str, nonce: str) -> None:
     db_engine.init_session(

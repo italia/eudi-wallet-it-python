@@ -1,4 +1,5 @@
 import pytest
+
 from pydantic import ValidationError
 
 from pyeudiw.federation.schemas.entity_configuration import EntityConfigurationHeader, EntityConfigurationPayload

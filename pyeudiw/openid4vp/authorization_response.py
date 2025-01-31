@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import json
 import satosa.context
 
@@ -26,7 +25,8 @@ def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
         return ResponseMode.direct_post_jwt
     if "vp_token" in context.request:
         return ResponseMode.direct_post
-    raise AuthRespParsingException("HTTP POST request body does not contain a recognized openid4vp response mode")
+    raise AuthRespParsingException(
+        "HTTP POST request body does not contain a recognized openid4vp response mode")
 
 
 def _check_http_post_headers(context: satosa.context.Context) -> None:
@@ -64,7 +64,8 @@ class DirectPostParser(AuthorizationResponseParser):
         try:
             return AuthorizeResponsePayload(**resp_data)
         except Exception as e:
-            raise AuthRespParsingException("invalid data in direct_post request body", e)
+            raise AuthRespParsingException(
+                "invalid data in direct_post request body", e)
 
 
 class DirectPostJwtJweParser(AuthorizationResponseParser):
@@ -81,7 +82,6 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
 
     def __init__(self, jwe_decryptor: JWEHelper):
         self.jwe_decryptor = jwe_decryptor
-        pass
 
     def parse_and_validate(self, context: satosa.context.Context) -> AuthorizeResponsePayload:
         _check_http_post_headers(context)
@@ -89,35 +89,43 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
         try:
             resp_data = AuthorizeResponseDirectPostJwt(**resp_data_raw)
         except Exception as e:
-            raise AuthRespParsingException("invalid data in direct_post.jwt request body", e)
+            raise AuthRespParsingException(
+                "invalid data in direct_post.jwt request body", e)
         try:
             payload = self.jwe_decryptor.decrypt(resp_data.response)
         except JWEDecryptionError as e:
-            raise AuthRespParsingException("invalid data in direct_post.jwt request body: not a jwe", e)
+            raise AuthRespParsingException(
+                "invalid data in direct_post.jwt request body: not a jwe", e)
         except cryptojwt.jwe.exception.DecryptionFailed:
-            raise AuthRespValidationException("invalid data in direct_post.jwt: unable to decrypt token")
+            raise AuthRespValidationException(
+                "invalid data in direct_post.jwt: unable to decrypt token")
         except Exception as e:
             # unfortunately library cryptojwt is not very exhaustive on why an operation failed...
-            raise AuthRespValidationException("invalid data in direct_post.jwt request body", e)
+            raise AuthRespValidationException(
+                "invalid data in direct_post.jwt request body", e)
 
         # iss, exp and aud MUST be OMITTED in the JWT Claims Set of the JWE
         if ("iss" in payload) or ("exp" in payload):
-            raise AuthRespParsingException("response token contains an unexpected lifetime claims", Exception("wallet mishbeahiour: JWe with bad claims"))
+            raise AuthRespParsingException("response token contains an unexpected lifetime claims", Exception(
+                "wallet mishbeahiour: JWe with bad claims"))
 
         try:
             return AuthorizeResponsePayload(**payload)
         except Exception as e:
-            raise AuthRespParsingException("invalid data in the direct_post.jwt: token payload does not have the expected claims", e)
+            raise AuthRespParsingException(
+                "invalid data in the direct_post.jwt: token payload does not have the expected claims", e)
 
 
 def _get_jwk_kid_from_store(jwt: str, key_store: dict[str, dict]) -> dict:
     headers = decode_jwt_header(jwt)
     kid: str | None = headers.get("kid", None)
     if kid is None:
-        raise KidNotFoundError("authorization response is missing mandatory parameter [kid] in header section")
+        raise KidNotFoundError(
+            "authorization response is missing mandatory parameter [kid] in header section")
     jwk_dict = key_store.get(kid, None)
     if jwk_dict is None:
-        raise KidNotFoundError(f"authorization response is encrypted with jwk with kid='{kid}' not found in store")
+        raise KidNotFoundError(
+            f"authorization response is encrypted with jwk with kid='{kid}' not found in store")
     return jwk_dict
 
 

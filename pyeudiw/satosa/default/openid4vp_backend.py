@@ -1,8 +1,9 @@
+import pydantic
 import uuid
+
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
 
-from pydantic import ValidationError
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
@@ -53,7 +54,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.config = config
 
-        self._backend_url = f"{base_url}/{name}" 
+        self._backend_url = f"{base_url}/{name}"
         self._client_id = self._backend_url
         self.config['metadata']['client_id'] = self.client_id
 
@@ -92,20 +93,23 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         try:
             PyeudiwBackendConfig(**config)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
 
-        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
+        self.response_code_helper = ResponseCodeSource(
+            self.config["response_code"]["sym_key"])
         trust_configuration = self.config.get("trust", {})
-        self.trust_evaluator = CombinedTrustEvaluator.from_config(trust_configuration, self.db_engine)
-        self.init_trust_resources()  # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+        self.trust_evaluator = CombinedTrustEvaluator.from_config(
+            trust_configuration, self.db_engine)
+        # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+        self.init_trust_resources()
 
     @property
     def client_id(self):
-        if ( _cid := self.config["authorization"].get("client_id")):
+        if (_cid := self.config["authorization"].get("client_id")):
             return _cid
-        elif ( _cid := self.config["metadata"].get("client_id")):
+        elif (_cid := self.config["metadata"].get("client_id")):
             return _cid
         else:
             return self._client_id
@@ -255,7 +259,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "status_endpoint": self.absolute_status_url
             }
         )
-        return Response(result, content="text/html; charset=utf8", status="200")  
+        return Response(result, content="text/html; charset=utf8", status="200")
 
     def get_response_endpoint(self, context: Context) -> Response:
 

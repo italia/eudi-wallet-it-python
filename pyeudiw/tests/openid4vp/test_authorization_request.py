@@ -14,13 +14,15 @@ def test_build_authoriation_request_url():
     test_cases: list[TestCase] = [
         TestCase(
             scheme="haip",
-            params={"client_id": "https://rp.example", "request_uri": "https://rp.example/resource_location.jwt"},
+            params={"client_id": "https://rp.example",
+                    "request_uri": "https://rp.example/resource_location.jwt"},
             exp="haip://?client_id=https%3A%2F%2Frp.example&https%3A%2F%2Frp.example%2Fresource_location.jwt",
             explanation="base scheme like haip or eudiw"
         ),
         TestCase(
             scheme="https://walletsolution.example",
-            params={"client_id": "https://rp.example", "request_uri": "https://rp.example/resource_location.jwt"},
+            params={"client_id": "https://rp.example",
+                    "request_uri": "https://rp.example/resource_location.jwt"},
             exp="https://walletsolution.example?client_id=https%3A%2F%2Frp.example.org&https%3A%2F%2Frp.example.org%2Fresource_location.jwt",
             explanation="base scheme is a complete URI location"
         )
@@ -69,13 +71,15 @@ def test_build_authorization_request_claims():
         }
     }
 
-    claims = build_authorization_request_claims(client_id, state, response_uri, config)
+    claims = build_authorization_request_claims(
+        client_id, state, response_uri, config)
 
     assert "aud" not in claims
     assert "nonce" in claims
     assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
+    assert claims["scope"] in (
+        "family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -112,13 +116,15 @@ def test_build_authorization_request_claims():
         }
     }
 
-    claims = build_authorization_request_claims(client_id, state, response_uri, config_aud)
+    claims = build_authorization_request_claims(
+        client_id, state, response_uri, config_aud)
 
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
     assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
+    assert claims["scope"] in (
+        "family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -155,12 +161,14 @@ def test_build_authorization_request_claims():
         }
     }
 
-    claims = build_authorization_request_claims(client_id, state, response_uri, config_rmode)
+    claims = build_authorization_request_claims(
+        client_id, state, response_uri, config_rmode)
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
     assert "presentation_definition" in claims
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
+    assert claims["scope"] in (
+        "family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -173,13 +181,15 @@ def test_build_authorization_request_claims():
             "id": "global-id",
             "input_descriptors": []
         }
-    }    
+    }
 
-    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope)
+    claims = build_authorization_request_claims(
+        client_id, state, response_uri, config_noscope)
     assert "scope" not in claims
 
     # case 4: force nonce
-    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
+    claims = build_authorization_request_claims(
+        client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
     assert claims["nonce"] == "predetermined-nonce"
 
     # case 5: custom client_id
@@ -215,5 +225,6 @@ def test_build_authorization_request_claims():
         }
     }
 
-    claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
+    claims = build_authorization_request_claims(
+        "custom-client-id", state, response_uri, config_custom_id)
     assert claims["iss"] != client_id

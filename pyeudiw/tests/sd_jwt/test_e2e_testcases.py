@@ -10,8 +10,7 @@ def test_e2e(testcase, settings):
     seed = settings["random_seed"]
     demo_keys = get_jwk(settings["key_settings"], True, seed)
     use_decoys = testcase.get("add_decoy_claims", False)
-    
-    
+
     serialization_format = testcase.get("serialization_format", "compact")
 
     extra_header_parameters = {"typ": "testcase+sd-jwt"}
@@ -26,7 +25,8 @@ def test_e2e(testcase, settings):
     sdjwt_at_issuer = SDJWTIssuer(
         user_claims,
         demo_keys["issuer_keys"],
-        demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
+        demo_keys["holder_key"] if testcase.get(
+            "key_binding", False) else None,
         add_decoy_claims=use_decoys,
         serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
@@ -34,25 +34,25 @@ def test_e2e(testcase, settings):
 
     output_issuance = sdjwt_at_issuer.sd_jwt_issuance
 
-
     # Holder
     sdjwt_at_holder = SDJWTHolder(
         output_issuance,
         serialization_format=serialization_format,
     )
 
-
     sdjwt_at_holder.create_presentation(
         testcase["holder_disclosed_claims"],
-        settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
+        settings["key_binding_nonce"] if testcase.get(
+            "key_binding", False) else None,
         (
             settings["identifiers"]["verifier"]
             if testcase.get("key_binding", False)
             else None
         ),
-        demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
+        demo_keys["holder_key"] if testcase.get(
+            "key_binding", False) else None,
     )
-    
+
     output_holder = sdjwt_at_holder.sd_jwt_presentation
 
     # Verifier
@@ -73,10 +73,11 @@ def test_e2e(testcase, settings):
             if testcase.get("key_binding", False)
             else None
         ),
-        settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
+        settings["key_binding_nonce"] if testcase.get(
+            "key_binding", False) else None,
         serialization_format=serialization_format,
     )
-    
+
     verified = sdjwt_at_verifier.get_verified_payload()
 
     expected_claims = testcase["expect_verified_user_claims"]
@@ -84,9 +85,8 @@ def test_e2e(testcase, settings):
 
     if testcase.get("key_binding", False):
         expected_claims["cnf"] = {
-            "jwk": key_from_jwk_dict(demo_keys["holder_key"],private=False).serialize()
+            "jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()
         }
-
 
     assert verified == expected_claims, f"Verified payload mismatch: {verified} != {expected_claims}"
 

@@ -6,6 +6,7 @@ from pyeudiw.sd_jwt.utils.demo_utils import load_yaml_settings
 
 tc_basedir = Path(__file__).parent / "testcases"
 
+
 def pytest_generate_tests(metafunc):
     # load all test cases from the subdirectory "testcases" below the current file's directory
     # and generate a test case for each one
@@ -14,6 +15,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize(
             "testcase", [load_yaml_specification(t) for t in testcases], ids=[t.parent.name for t in testcases]
         )
+
 
 @pytest.fixture
 def settings():

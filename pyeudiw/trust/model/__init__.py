@@ -4,4 +4,5 @@ if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
 else:
     from typing_extensions import TypedDict
 
-TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {"module": str, "class": str, "config": dict})
+TrustModuleConfiguration_T = TypedDict("_DynamicTrustConfiguration", {
+                                       "module": str, "class": str, "config": dict})

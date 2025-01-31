@@ -1,7 +1,8 @@
 from typing import Union
 from pydantic import BaseModel, field_validator
 
-_CONFIG_ENDPOINT_KEYS=["module", "class", "path"]
+_CONFIG_ENDPOINT_KEYS = ["module", "class", "path"]
+
 
 class EndpointsConfig(BaseModel):
     pre_request: str
@@ -16,20 +17,21 @@ class EndpointsConfig(BaseModel):
         if not v.startswith('/'):
             raise ValueError(f"{v} must start with '/'")
         return v
-    
+
     @field_validator("response", "request")
     def must_start_with_slash_path(cls, v):
         endpoint_value = v
         if isinstance(v, dict):
             endpoint_value = v.get("path", None)
-        
+
         if not endpoint_value or not isinstance(endpoint_value, str):
-            raise ValueError(f"Invalid config endpoint structure for {endpoint_value}")
+            raise ValueError(
+                f"Invalid config endpoint structure for {endpoint_value}")
 
         if not endpoint_value.startswith('/'):
             raise ValueError(f"{endpoint_value} must start with '/'")
         return v
-    
+
     @field_validator("response", "request")
     def validate_dict_keys(cls, v):
         if isinstance(v, dict):

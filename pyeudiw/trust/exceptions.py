@@ -2,6 +2,10 @@ class NoTrustChainProvided(Exception):
     pass
 
 
+class InvalidJwkMetadataException(Exception):
+    pass
+
+
 class UnknownTrustAnchor(Exception):
     pass
 
@@ -24,6 +28,7 @@ class InvalidAnchor(Exception):
 
 class TrustConfigurationError(Exception):
     pass
+
 
 class NoCriptographicMaterial(Exception):
     pass

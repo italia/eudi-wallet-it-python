@@ -155,7 +155,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def has_trust_anchor(self, entity_id: str) -> bool:
         return self.get_trust_anchor(entity_id) is not None
-    
+
     def has_trust_source(self, entity_id: str) -> bool:
         return self.get_trust_source(entity_id) is not None
 
@@ -164,9 +164,9 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
         return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
-    
+
     def add_trust_source(self, trust_source: dict) -> str:
-        return self.write("add_trust_source", trust_source)    
+        return self.write("add_trust_source", trust_source)
 
     def get_trust_source(self, entity_id: str) -> dict:
         return self.get("get_trust_source", entity_id)
