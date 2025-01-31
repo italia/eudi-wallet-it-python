@@ -102,7 +102,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
             trust_configuration, self.db_engine)
-        # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+        # This loads metadata endpoint (using the pattern *_endpoint), anticipating the method register endpoints
         self.init_trust_resources()
 
     @property
@@ -135,7 +135,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
             if not endpoint_value or not isinstance(endpoint_value, str):
                 raise ValueError(
-                    f"Invalid endpoint value for \"{k}\". Given value: {endpoint_value}"
+                    f"Invalid endpoint value for '{k}'. Given value: {endpoint_value}"
                 )
 
             url_map.append(

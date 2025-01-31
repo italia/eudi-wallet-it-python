@@ -20,7 +20,6 @@ config:
       module: pyeudiw.satosa.default.response_handler
       class: ResponseHandler
       path: '/response-uri'
-    entity_configuration: '/.well-known/openid-federation'
     status: '/status'
     get_response: '/get-response'
 
@@ -147,16 +146,15 @@ config:
       module: pyeudiw.trust.handler.federation
       class: FederationHandler
       config:
-        metadata_type: "wallet_relying_party"
+        metadata_type: "openid_credential_verifier"
         authority_hints:
             - http://127.0.0.1:8000
         trust_anchors:
-            - public_keys: []
-            - http://127.0.0.1:8000
+            - http://127.0.0.1:8000: [] # array of public keys
         default_sig_alg: "RS256"
         trust_marks: [] 
         federation_entity_metadata:
-            organization_name: Developers Italia SATOSA OpenID4VP backend
+            organization_name: IAM Proxy Italia OpenID4VP backend
             homepage_uri: https://developers.italia.it
             policy_uri: https://developers.italia.it
             tos_uri: https://developers.italia.it
