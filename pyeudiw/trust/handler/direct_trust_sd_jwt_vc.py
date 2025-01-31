@@ -56,9 +56,11 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
         """
         url = build_metadata_issuer_endpoint(issuer, self.metadata_endpoint)
         if self.cache_ttl == 0:
-            trust_source.metadata = get_http_url(url, self.httpc_params, self.http_async_calls)[0].json()
+            trust_source.metadata = get_http_url(
+                url, self.httpc_params, self.http_async_calls)[0].json()
         else:
-            trust_source.metadata = cacheable_get_http_url(self.cache_ttl, url, self.httpc_params, self.http_async_calls).json()
+            trust_source.metadata = cacheable_get_http_url(
+                self.cache_ttl, url, self.httpc_params, self.http_async_calls).json()
 
         return trust_source
 

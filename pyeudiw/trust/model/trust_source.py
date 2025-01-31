@@ -1,20 +1,21 @@
 from dataclasses import dataclass
-from pyeudiw.jwk import JWK
 from datetime import datetime
 from typing import Optional
 from cryptojwt.jwk.jwk import key_from_jwk_dict
+
 
 @dataclass
 class TrustParameterData:
     """
     TrustParameterData is a dataclass that holds one of the trust parameters for a trust source.
     """
+
     def __init__(
-            self, 
-            type: str,
-            trust_params: dict, 
-            expiration_date: datetime,
-        ) -> None:
+        self,
+        type: str,
+        trust_params: dict,
+        expiration_date: datetime,
+    ) -> None:
         """
         Initialize the trust parameter data.
 
@@ -38,7 +39,7 @@ class TrustParameterData:
         :rtype: dict[str, any]
         """
         return {self.type: self.trust_params}
-    
+
     def serialize(self) -> dict[str, any]:
         """
         Serialize the trust parameter data.
@@ -51,7 +52,7 @@ class TrustParameterData:
             "trust_params": self.trust_params,
             "expiration_date": self.expiration_date
         }
-    
+
     @property
     def expired(self) -> bool:
         """
@@ -62,6 +63,7 @@ class TrustParameterData:
         """
         return datetime.now() > self.expiration_date
 
+
 @dataclass
 class TrustSourceData:
     """
@@ -69,15 +71,15 @@ class TrustSourceData:
     """
 
     def __init__(
-            self, 
-            entity_id: str,
-            policies: dict = {},
-            metadata: dict = {},
-            revoked: bool = False,
-            keys: list[dict] = [],
-            trust_params: dict[str, dict[str, any]] = {},
-            **kwargs
-        ) -> None:
+        self,
+        entity_id: str,
+        policies: dict = {},
+        metadata: dict = {},
+        revoked: bool = False,
+        keys: list[dict] = [],
+        trust_params: dict[str, dict[str, any]] = {},
+        **kwargs
+    ) -> None:
         """
         Initialize the trust source data.
 
@@ -102,8 +104,9 @@ class TrustSourceData:
 
         self.additional_data = kwargs
 
-        self.trust_params = {type: TrustParameterData(**tp) for type, tp in trust_params.items()}
-    
+        self.trust_params = {type: TrustParameterData(
+            **tp) for type, tp in trust_params.items()}
+
     def add_key(self, key: dict) -> None:
         """
         Add a key to the trust source.
@@ -132,7 +135,7 @@ class TrustSourceData:
         :type trust_params: TrustParameterData
         """
         self.trust_params[type] = trust_params
-    
+
     def has_trust_param(self, type: str) -> bool:
         """
         Return whether the trust source has a trust source of the given type.
@@ -143,7 +146,7 @@ class TrustSourceData:
         :rtype: bool
         """
         return type in self.trust_params
-    
+
     def get_trust_param(self, type: str) -> Optional[TrustParameterData]:
         """
         Return the trust source of the given type.
@@ -156,7 +159,7 @@ class TrustSourceData:
         if not self.has_trust_param(type):
             return None
         return TrustParameterData(type, self.trust_params[type])
-    
+
     def serialize(self) -> dict[str, any]:
         """
         Serialize the trust source data.
@@ -172,7 +175,7 @@ class TrustSourceData:
             "keys": self.keys,
             "trust_params": {type: param.serialize() for type, param in self.trust_params.items()}
         }
-    
+
     @staticmethod
     def empty(entity_id: str) -> 'TrustSourceData':
         """
@@ -184,7 +187,7 @@ class TrustSourceData:
         :rtype: TrustSourceData
         """
         return TrustSourceData(entity_id, policies={}, metadata={}, revoked=False, keys=[], trust_params={})
-    
+
     @staticmethod
     def from_dict(data: dict) -> 'TrustSourceData':
         """
@@ -196,7 +199,7 @@ class TrustSourceData:
         :rtype: TrustSourceData
         """
         return TrustSourceData(**data)
-    
+
     @property
     def public_keys(self) -> list[dict[str, any]]:
         """
@@ -205,4 +208,4 @@ class TrustSourceData:
         :returns: The public keys of the trust source
         :rtype: list[dict[str, any]]
         """
-        return [key_from_jwk_dict(k,private=False).serialize() for k in self.keys]
+        return [key_from_jwk_dict(k, private=False).serialize() for k in self.keys]

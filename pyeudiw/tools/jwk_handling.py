@@ -3,6 +3,7 @@ from pyeudiw.openid4vp.interface import VpTokenParser
 from pyeudiw.trust.interface import TrustEvaluator
 from pyeudiw.jwk import find_jwk_by_kid
 
+
 def find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -> JWK:
     """
     :param token_parser: the token parser instance.
@@ -23,8 +24,9 @@ def find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -
 
     if isinstance(verification_key, str):
         return find_jwk_by_kid(verification_key, trusted_pub_keys)
-    
+
     if isinstance(verification_key, dict):
-        raise NotImplementedError("TODO: matching of public key (ex. from x5c) with keys from trust source")
-    
+        raise NotImplementedError(
+            "TODO: matching of public key (ex. from x5c) with keys from trust source")
+
     raise Exception(f"invalid state: key with type {type(verification_key)}")

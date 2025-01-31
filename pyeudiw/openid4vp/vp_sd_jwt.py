@@ -10,8 +10,6 @@ from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
 
 
-
-
 class VpSdJwt(Vp):
     """Class for SD-JWT Format"""
 
@@ -80,7 +78,7 @@ class VpSdJwt(Vp):
         jws = JWSHelper(holder_jwk)
         if not jws.verify(self.jwt):
             return False
-    
+
         result = verify_jws_with_key(self.payload["vp"], issuer_jwk)
         self.result = result
 

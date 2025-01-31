@@ -2,7 +2,6 @@ import base64
 import datetime
 import json
 import urllib.parse
-import uuid
 from unittest.mock import Mock, patch
 
 import pytest
@@ -11,7 +10,6 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt.holder import SDJWTHolder
 
 from cryptojwt.jws.jws import JWS
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
@@ -36,15 +34,8 @@ from pyeudiw.tests.settings import (
     WALLET_INSTANCE_ATTESTATION
 )
 
-from pyeudiw.tests.satosa import (
-    holder_jwk,
-    ec_key,
-    _create_vp_token,
-    _generate_response,
-    _generate_post_context,
-    _initialize_session
-)
 from pyeudiw.trust.model.trust_source import TrustSourceData
+
 
 class TestOpenID4VPBackend:
 
@@ -74,7 +65,7 @@ class TestOpenID4VPBackend:
 
         self.backend = OpenID4VPBackend(
             Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
-        
+
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 7
 
@@ -484,7 +475,6 @@ class TestOpenID4VPBackend:
     #     request_endpoint = self.backend.response_endpoint(context)
     #     assert request_endpoint.status == "200"
 
-
     def test_request_endpoint(self, context):
         # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
@@ -502,10 +492,9 @@ class TestOpenID4VPBackend:
         )
         state = urllib.parse.unquote(
             pre_request_endpoint.message).split("=")[-1]
-        
 
         jwshelper = JWSHelper(PRIVATE_JWK)
-        
+
         wia = jwshelper.sign(
             plain_dict=WALLET_INSTANCE_ATTESTATION,
             protected={
@@ -515,7 +504,7 @@ class TestOpenID4VPBackend:
         )
 
         dpop_wia = wia
-        
+
         dpop_proof = DPoPIssuer(
             htu=CONFIG['metadata']['request_uris'][0],
             token=dpop_wia,
@@ -576,15 +565,18 @@ class TestOpenID4VPBackend:
             map(
                 lambda header_name_value_pair: header_name_value_pair[1],
                 filter(
-                    lambda header_name_value_pair: header_name_value_pair[0].lower() == "content-type",
+                    lambda header_name_value_pair: header_name_value_pair[0].lower(
+                    ) == "content-type",
                     req_resp.headers
                 )
             )
         )
         assert req_resp
         assert req_resp.status == "200", f"invalid status in request object response {req_resp_str}"
-        assert len(obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
-        assert obtained_content_types[0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
+        assert len(
+            obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
+        assert obtained_content_types[
+            0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
         assert req_resp.message, f"invalid message in request object response {req_resp_str}"
         request_object_jwt = req_resp.message
 

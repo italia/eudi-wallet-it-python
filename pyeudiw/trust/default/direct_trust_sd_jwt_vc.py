@@ -5,6 +5,9 @@ from urllib.parse import ParseResult, urlparse
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.interface import TrustEvaluator
 
+from .. exceptions import InvalidJwkMetadataException
+
+
 DEFAULT_ISSUER_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
 DEFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
 DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
@@ -19,10 +22,6 @@ DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS = {
 }
 
 
-class InvalidJwkMetadataException(Exception):
-    pass
-
-
 class DirectTrust(TrustEvaluator):
     pass
 
@@ -35,6 +34,7 @@ class DirectTrustSdJwtVc(DirectTrust):
     Such keys/metadata can always be fetched remotely and long as the issuer is
     available.
     """
+
     def __init__(self, httpc_params: Optional[dict] = None, cache_ttl: int = 0, jwk_endpoint: str = DEFAULT_ISSUER_JWK_ENDPOINT,
                  metadata_endpoint: str = DEFAULT_METADATA_ENDPOINT):
         if httpc_params is None:
@@ -55,24 +55,30 @@ class DirectTrustSdJwtVc(DirectTrust):
         """
         md = self._get_jwk_metadata(issuer)
         if not issuer == (obt_issuer := md.get("issuer", None)):
-            raise InvalidJwkMetadataException(f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}")
+            raise InvalidJwkMetadataException(
+                f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}")
         jwks = self._extract_jwks_from_jwk_metadata(md)
         jwk_l: list[dict] = jwks.get("keys", [])
         if not jwk_l:
-            raise InvalidJwkMetadataException("unable to find jwks in issuer jwk metadata")
+            raise InvalidJwkMetadataException(
+                "unable to find jwks in issuer jwk metadata")
         return jwk_l
 
     def _get_jwk_metadata(self, issuer: str) -> dict:
         """
         call the jwk metadata endpoint and return the whole document
         """
-        jwk_endpoint = DirectTrustSdJwtVc.build_issuer_jwk_endpoint(issuer, self.jwk_endpoint)
+        jwk_endpoint = DirectTrustSdJwtVc.build_issuer_jwk_endpoint(
+            issuer, self.jwk_endpoint)
         if self.cache_ttl:
-            resp = cacheable_get_http_url(self.cache_ttl, jwk_endpoint, self.httpc_params, http_async=self.http_async_calls)
+            resp = cacheable_get_http_url(
+                self.cache_ttl, jwk_endpoint, self.httpc_params, http_async=self.http_async_calls)
         else:
-            resp = get_http_url([jwk_endpoint], self.httpc_params, http_async=self.http_async_calls)[0]
+            resp = get_http_url([jwk_endpoint], self.httpc_params,
+                                http_async=self.http_async_calls)[0]
         if (not resp) or (resp.status_code != 200):
-            raise InvalidJwkMetadataException(f"failed to fetch valid jwk metadata: obtained {resp}")
+            raise InvalidJwkMetadataException(
+                f"failed to fetch valid jwk metadata: obtained {resp}")
         return resp.json()
 
     def _get_jwks_by_reference(self, jwks_reference_uri: str) -> dict:
@@ -80,9 +86,11 @@ class DirectTrustSdJwtVc(DirectTrust):
         call the jwks endpoint if jwks is defined by reference
         """
         if self.cache_ttl:
-            resp = cacheable_get_http_url(self.cache_ttl, jwks_reference_uri, self.httpc_params, http_async=self.http_async_calls)
+            resp = cacheable_get_http_url(
+                self.cache_ttl, jwks_reference_uri, self.httpc_params, http_async=self.http_async_calls)
         else:
-            resp = get_http_url([jwks_reference_uri], self.httpc_params, http_async=self.http_async_calls)[0]
+            resp = get_http_url(
+                [jwks_reference_uri], self.httpc_params, http_async=self.http_async_calls)[0]
         return resp.json()
 
     def _extract_jwks_from_jwk_metadata(self, metadata: dict) -> dict:
@@ -90,10 +98,12 @@ class DirectTrustSdJwtVc(DirectTrust):
         parse the jwk metadata document and return the jwks
         NOTE: jwks might be in the document by value or by reference
         """
-        jwks: dict[Literal["keys"], list[dict]] | None = metadata.get("jwks", None)
+        jwks: dict[Literal["keys"], list[dict]
+                   ] | None = metadata.get("jwks", None)
         jwks_uri: str | None = metadata.get("jwks_uri", None)
         if (not jwks) and (not jwks_uri):
-            raise InvalidJwkMetadataException("invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]")
+            raise InvalidJwkMetadataException(
+                "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]")
         if jwks:
             # get jwks by value
             return jwks
@@ -109,7 +119,8 @@ class DirectTrustSdJwtVc(DirectTrust):
         """
         if not issuer:
             raise ValueError("invalid issuer: cannot be empty value")
-        url = DirectTrustSdJwtVc.build_issuer_metadata_endpoint(issuer, self.metadata_endpoint)
+        url = DirectTrustSdJwtVc.build_issuer_metadata_endpoint(
+            issuer, self.metadata_endpoint)
         if self.cache_ttl == 0:
             return get_http_url(url, self.httpc_params, self.http_async_calls)[0].json()
         return cacheable_get_http_url(self.cache_ttl, url, self.httpc_params, self.http_async_calls).json()
@@ -117,7 +128,8 @@ class DirectTrustSdJwtVc(DirectTrust):
     def build_issuer_jwk_endpoint(issuer_id: str, well_known_path_component: str) -> str:
         baseurl = urlparse(issuer_id)
         well_known_path = well_known_path_component + baseurl.path
-        well_known_url: str = ParseResult(baseurl.scheme, baseurl.netloc, well_known_path, baseurl.params, baseurl.query, baseurl.fragment).geturl()
+        well_known_url: str = ParseResult(
+            baseurl.scheme, baseurl.netloc, well_known_path, baseurl.params, baseurl.query, baseurl.fragment).geturl()
         return well_known_url
 
     def build_issuer_metadata_endpoint(issuer: str, metadata_path_component: str) -> str:

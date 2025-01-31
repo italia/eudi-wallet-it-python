@@ -14,6 +14,7 @@ def load_yaml_specification(file):
 
     return example
 
+
 def _yaml_load_specification(f):
     resolver = yaml.resolver.Resolver()
 
@@ -31,13 +32,14 @@ def _yaml_load_specification(f):
                 if node.style == '"':
                     mp = loader.construct_yaml_str(node)
                 else:
-                    resolved_type = resolver.resolve(yaml.ScalarNode, node.value, (True, False))
+                    resolved_type = resolver.resolve(
+                        yaml.ScalarNode, node.value, (True, False))
                     if resolved_type == "tag:yaml.org,2002:str":
                         mp = loader.construct_yaml_str(node)
                     elif resolved_type == "tag:yaml.org,2002:int":
                         mp = loader.construct_yaml_int(node)
                     elif resolved_type == "tag:yaml.org,2002:float":
-                        mp =  loader.construct_yaml_float(node)
+                        mp = loader.construct_yaml_float(node)
                     elif resolved_type == "tag:yaml.org,2002:bool":
                         mp = loader.construct_yaml_bool(node)
                     elif resolved_type == "tag:yaml.org,2002:null":
@@ -57,12 +59,15 @@ def _yaml_load_specification(f):
                         node
                     )
                 )
-            
-    return yaml.load(f, Loader=yaml.FullLoader) # nosec
+
+    return yaml.load(f, Loader=yaml.FullLoader)  # nosec
+
 
 """
 Takes an object that has been parsed from a YAML file and removes the SDObj wrappers.
 """
+
+
 def remove_sdobj_wrappers(data):
     if isinstance(data, SDObj):
         return remove_sdobj_wrappers(data.value)

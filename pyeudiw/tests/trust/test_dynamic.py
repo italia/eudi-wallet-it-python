@@ -7,8 +7,10 @@ from pyeudiw.tests.trust.mock_trust_handler import MockTrustHandler
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.exceptions import TrustConfigurationError
 
-def test_trust_CombinedTrusstEvaluation_handler_loading():    
-    trust_ev = CombinedTrustEvaluator.from_config(correct_config, DBEngine(CONFIG["storage"]))
+
+def test_trust_CombinedTrusstEvaluation_handler_loading():
+    trust_ev = CombinedTrustEvaluator.from_config(
+        correct_config, DBEngine(CONFIG["storage"]))
 
     assert trust_ev
     assert len(trust_ev.handlers) == 2
@@ -18,16 +20,20 @@ def test_trust_CombinedTrusstEvaluation_handler_loading():
 
 def test_not_conformant_CombinedTrusstEvaluation_handler_loading():
     try:
-        CombinedTrustEvaluator.from_config(not_conformant, DBEngine(CONFIG["storage"]))
+        CombinedTrustEvaluator.from_config(
+            not_conformant, DBEngine(CONFIG["storage"]))
         assert False
     except TrustConfigurationError:
         assert True
 
+
 def test_if_no_conf_default_handler_instanciated():
-    trust_ev = CombinedTrustEvaluator.from_config({}, DBEngine(CONFIG["storage"]))
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {}, DBEngine(CONFIG["storage"]))
 
     assert len(trust_ev.handlers) == 1
     assert isinstance(trust_ev.handlers[0], DirectTrustSdJwtVc)
+
 
 def test_public_key_and_metadata_retrive():
     db_engine = DBEngine(CONFIG["storage"])

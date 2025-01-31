@@ -1,4 +1,5 @@
 import pytest
+
 from pydantic import ValidationError
 
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation_request import WalletInstanceAttestationRequestHeader, \

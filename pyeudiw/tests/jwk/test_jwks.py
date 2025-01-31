@@ -11,9 +11,12 @@ def test_find_jwk_by_kid():
         expected: dict | None
         explanation: str
 
-    raw_key_1 = {"crv": "P-256", "d": "eTEvyBCxriRg6juv_H4bLRgRkdMaCF91k4bLEsdB2yI", "kid": "adeyyLKVrJyu3CLC9ewDHrobulXBZNOfPYM_4bERHqk", "kty": "EC", "use": "sig", "x": "--7isDCDQZF7cZL-UrvRCLV5Rfo2Di1gaPX6_5uGalA", "y": "e2svMtnHH4s5dOPg8YhuHw2lEPlnVpkKJO7PGQeMTFw"}
-    raw_key_2 = {"crv": "P-256", "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw", "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y", "kty": "EC", "use": "sig", "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ", "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark"}
-    raw_key_no_kid = {"crv": "P-256", "d": "Sz4XNTXk0JaUs6hoyMMUxCSqe9Jx_ciXyVGQj7JSW50", "kty": "EC", "use": "sig", "x": "qojguJYLuM7ZtGspBfZ2SSrGgTnCgCUzjwUkOyOjGMk", "y": "uRUCqLQjngS0iBZlhHLEGMqpUAe4AMpmMMr6BUkRD50"}
+    raw_key_1 = {"crv": "P-256", "d": "eTEvyBCxriRg6juv_H4bLRgRkdMaCF91k4bLEsdB2yI", "kid": "adeyyLKVrJyu3CLC9ewDHrobulXBZNOfPYM_4bERHqk",
+                 "kty": "EC", "use": "sig", "x": "--7isDCDQZF7cZL-UrvRCLV5Rfo2Di1gaPX6_5uGalA", "y": "e2svMtnHH4s5dOPg8YhuHw2lEPlnVpkKJO7PGQeMTFw"}
+    raw_key_2 = {"crv": "P-256", "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw", "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y",
+                 "kty": "EC", "use": "sig", "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ", "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark"}
+    raw_key_no_kid = {"crv": "P-256", "d": "Sz4XNTXk0JaUs6hoyMMUxCSqe9Jx_ciXyVGQj7JSW50", "kty": "EC", "use": "sig",
+                      "x": "qojguJYLuM7ZtGspBfZ2SSrGgTnCgCUzjwUkOyOjGMk", "y": "uRUCqLQjngS0iBZlhHLEGMqpUAe4AMpmMMr6BUkRD50"}
 
     test_cases: list[TestCase] = [
         TestCase(
@@ -60,8 +63,10 @@ def test_find_jwk_by_thumbprint():
         expected: dict | None
         explanation: str
 
-    raw_key_1 = {"crv": "P-256", "d": "eTEvyBCxriRg6juv_H4bLRgRkdMaCF91k4bLEsdB2yI", "kid": "adeyyLKVrJyu3CLC9ewDHrobulXBZNOfPYM_4bERHqk", "kty": "EC", "use": "sig", "x": "--7isDCDQZF7cZL-UrvRCLV5Rfo2Di1gaPX6_5uGalA", "y": "e2svMtnHH4s5dOPg8YhuHw2lEPlnVpkKJO7PGQeMTFw"}
-    raw_key_2 = {"crv": "P-256", "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw", "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y", "kty": "EC", "use": "sig", "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ", "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark"}
+    raw_key_1 = {"crv": "P-256", "d": "eTEvyBCxriRg6juv_H4bLRgRkdMaCF91k4bLEsdB2yI", "kid": "adeyyLKVrJyu3CLC9ewDHrobulXBZNOfPYM_4bERHqk",
+                 "kty": "EC", "use": "sig", "x": "--7isDCDQZF7cZL-UrvRCLV5Rfo2Di1gaPX6_5uGalA", "y": "e2svMtnHH4s5dOPg8YhuHw2lEPlnVpkKJO7PGQeMTFw"}
+    raw_key_2 = {"crv": "P-256", "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw", "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y",
+                 "kty": "EC", "use": "sig", "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ", "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark"}
     # expected values obtained using an online calculator
     raw_thumprint_1 = b"adeyyLKVrJyu3CLC9ewDHrobulXBZNOfPYM_4bERHqk"
     raw_thumprint_2 = b"m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y"

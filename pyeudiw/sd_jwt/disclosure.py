@@ -5,6 +5,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SDJWTDisclosure:
     """This class represents a disclosure of a claim."""

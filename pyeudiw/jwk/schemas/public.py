@@ -54,13 +54,20 @@ class RSAJwkSchema(JwkBaseModel):
 class JwkSchema(BaseModel):
     kid: str  # Base64url-encoded thumbprint string
     kty: _SUPPORTED_KTY
-    alg: Annotated[Union[_SUPPORTED_ALGS, None], Field(validate_default=True)] = None
-    use: Annotated[Union[Literal["sig", "enc"], None], Field(validate_default=True)] = None
-    n: Annotated[Union[str, None], Field(validate_default=True)] = None  # Base64urlUInt-encoded
-    e: Annotated[Union[str, None], Field(validate_default=True)] = None  # Base64urlUInt-encoded
-    x: Annotated[Union[str, None], Field(validate_default=True)] = None  # Base64urlUInt-encoded
-    y: Annotated[Union[str, None], Field(validate_default=True)] = None  # Base64urlUInt-encoded
-    crv: Annotated[Union[_SUPPORTED_CRVS, None], Field(validate_default=True)] = None
+    alg: Annotated[Union[_SUPPORTED_ALGS, None],
+                   Field(validate_default=True)] = None
+    use: Annotated[Union[Literal["sig", "enc"], None],
+                   Field(validate_default=True)] = None
+    n: Annotated[Union[str, None], Field(
+        validate_default=True)] = None  # Base64urlUInt-encoded
+    e: Annotated[Union[str, None], Field(
+        validate_default=True)] = None  # Base64urlUInt-encoded
+    x: Annotated[Union[str, None], Field(
+        validate_default=True)] = None  # Base64urlUInt-encoded
+    y: Annotated[Union[str, None], Field(
+        validate_default=True)] = None  # Base64urlUInt-encoded
+    crv: Annotated[Union[_SUPPORTED_CRVS, None],
+                   Field(validate_default=True)] = None
 
     def _must_specific_kty_only(v, exp_kty: _SUPPORTED_ALGS, v_name: str, values: dict):
         """validate a jwk parameter by that it is (1) defined and (2) mandatory
@@ -88,7 +95,8 @@ class JwkSchema(BaseModel):
             return
         kty = values.data.get("kty")
         if v not in _SUPPORTED_ALG_BY_KTY[kty]:
-            raise ValueError(f"alg value {v} is not compatible or not supported with kty {kty}")
+            raise ValueError(
+                f"alg value {v} is not compatible or not supported with kty {kty}")
         return
 
     @field_validator("n")

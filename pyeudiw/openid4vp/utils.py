@@ -44,11 +44,13 @@ def vp_parser(jwt: str) -> Vp:
         case "jwt":
             return VpSdJwt(jwt)
         case "vc+sd-jwt":
-            raise NotImplementedError("parsing of vp tokens with typ vc+sd-jwt not supported yet")
+            raise NotImplementedError(
+                "parsing of vp tokens with typ vc+sd-jwt not supported yet")
         case "mcdoc_cbor":
             return VpMDocCbor(jwt)
         case unsupported:
-            raise VPFormatNotSupported(f"parsing of unsupported vp typ [{unsupported}]")
+            raise VPFormatNotSupported(
+                f"parsing of unsupported vp typ [{unsupported}]")
 
 
 def infer_vp_header_claim(jws: str, claim_name: str) -> Any:

@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 import json
@@ -32,7 +31,6 @@ class FederationTrustModel(TrustEvaluator):
     def __init__(self, **kwargs):
         self.metadata_policy_resolver = TrustChainPolicy()
         self.federation_jwks = kwargs.get("federation_jwks", [])
-        pass
 
     def get_public_keys(self, issuer):
         public_keys = [JWK(i).as_public_dict() for i in self.federation_jwks]
@@ -53,7 +51,8 @@ class FederationTrustModel(TrustEvaluator):
             raise ValueError("missing trust chain in federation token")
         if not isinstance(trust_chain, list):
             raise ValueError*("invalid format of header claim [trust_claim]")
-        self._verify_trust_chain(trust_chain)  # TODO: check whick exceptions this might raise
+        # TODO: check whick exceptions this might raise
+        self._verify_trust_chain(trust_chain)
 
         # (2) metadata parsing ed estrazione Jwk set
         # TODO: wrap in something that implements VciJwksSource
@@ -63,19 +62,26 @@ class FederationTrustModel(TrustEvaluator):
         issuer_payload: dict = decode_jwt_payload(issuer_entity_configuration)
         anchor_payload = decode_jwt_payload(anchor_entity_configuration)
         trust_anchor_policy = anchor_payload.get("metadata_policy", {})
-        final_issuer_metadata = self.metadata_policy_resolver.apply_policy(issuer_payload, trust_anchor_policy)
+        final_issuer_metadata = self.metadata_policy_resolver.apply_policy(
+            issuer_payload, trust_anchor_policy)
         metadata: dict = final_issuer_metadata.get("metadata", None)
         if not metadata:
-            raise ValueError("missing or invalid claim [metadata] in entity configuration")
-        issuer_metadata: dict = metadata.get(FederationTrustModel._ISSUER_METADATA_TYPE, None)
+            raise ValueError(
+                "missing or invalid claim [metadata] in entity configuration")
+        issuer_metadata: dict = metadata.get(
+            FederationTrustModel._ISSUER_METADATA_TYPE, None)
         if not issuer_metadata:
-            raise ValueError(f"missing or invalid claim [metadata.{FederationTrustModel._ISSUER_METADATA_TYPE}] in entity configuration")
-        issuer_keys: list[dict] = issuer_metadata.get("jwks", {}).get("keys", [])
+            raise ValueError(
+                f"missing or invalid claim [metadata.{FederationTrustModel._ISSUER_METADATA_TYPE}] in entity configuration")
+        issuer_keys: list[dict] = issuer_metadata.get(
+            "jwks", {}).get("keys", [])
         if not issuer_keys:
-            raise ValueError(f"missing or invalid claim [metadata.{FederationTrustModel._ISSUER_METADATA_TYPE}.jwks.keys] in entity configuration")
+            raise ValueError(
+                f"missing or invalid claim [metadata.{FederationTrustModel._ISSUER_METADATA_TYPE}.jwks.keys] in entity configuration")
         # check issuer = entity_id
         if issuer != (obt_iss := final_issuer_metadata.get("iss", "")):
-            raise ValueError(f"invalid issuer metadata: expected '{issuer}', obtained '{obt_iss}'")
+            raise ValueError(
+                f"invalid issuer metadata: expected '{issuer}', obtained '{obt_iss}'")
 
         # (3) dato il set completo, fa il match per kid tra l'header e il jwk set
         found_jwks: list[dict] = []
@@ -84,7 +90,8 @@ class FederationTrustModel(TrustEvaluator):
             if kid == obt_kid:
                 found_jwks.append(key)
         if len(found_jwks) != 1:
-            raise ValueError(f"unable to uniquely identify a key with kid {kid} in appropriate section of issuer entity configuration")
+            raise ValueError(
+                f"unable to uniquely identify a key with kid {kid} in appropriate section of issuer entity configuration")
         try:
             return key_from_jwk_dict(**found_jwks[0])
         except Exception as e:

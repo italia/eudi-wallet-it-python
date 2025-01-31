@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pydantic
+
 from copy import deepcopy
 from pyeudiw.federation.exceptions import (
     UnknownKid,
@@ -13,7 +15,6 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader,
     EntityStatementPayload
 )
-from pydantic import ValidationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.jwk import find_jwk_by_kid
@@ -156,7 +157,7 @@ class TrustMark:
         """
         try:
             EntityConfigurationHeader(**self.header)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             raise InvalidEntityHeader(
                 # pragma: no cover
                 f"Trust Mark validation failed: "
@@ -300,7 +301,7 @@ class EntityStatement:
         """
         try:
             EntityConfigurationHeader(**self.header)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             raise InvalidEntityHeader(
                 # pragma: no cover
                 f"Trust Mark validation failed: "
@@ -518,7 +519,7 @@ class EntityStatement:
 
         try:
             EntityConfigurationHeader(**header)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             raise InvalidEntityHeader(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{e}"
@@ -526,7 +527,7 @@ class EntityStatement:
 
         try:
             EntityStatementPayload(**payload)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             raise InvalidEntityStatementPayload(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{e}"

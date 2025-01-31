@@ -1,9 +1,7 @@
 import base64
 import json
 import re
-from typing import Dict
 
-from pyeudiw.jwk import find_jwk_by_kid
 from pyeudiw.jwt.exceptions import JWTInvalidElementPosition, JWTDecodeError
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
@@ -27,7 +25,7 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
     if position < 0:
         raise JWTInvalidElementPosition(
             f"Cannot accept negative position {position}")
-    
+
     if position > 2:
         raise JWTInvalidElementPosition(
             f"Cannot accept position greater than 2 {position}")

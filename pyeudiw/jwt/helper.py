@@ -1,6 +1,5 @@
 import json
 
-from pydantic import ValidationError
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c
 
@@ -18,8 +17,12 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 
+from . exceptions import LifetimeException
+
+
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
+
 
 class JWHelperInterface:
     def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict):
@@ -42,7 +45,8 @@ class JWHelperInterface:
         elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
             self.jwks = [jwks]
         else:
-            raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
+            raise TypeError(
+                f"unable to handle input jwks with type {type(jwks)}")
 
     def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
         if not kid:
@@ -59,6 +63,7 @@ def serialize_payload(payload: dict | str | int | None) -> bytes | str | int:
     if isinstance(payload, (str, int)):
         return payload
     return ""
+
 
 def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
     """Function find_self_contained_key evaluates a token header and attempts
@@ -80,15 +85,18 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
         try:
             candidate_key = parse_key_from_x5c(header["x5c"])
         except Exception as e:
-            logger.debug(f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
+            logger.debug(
+                f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
         return set(["5xc"]), candidate_key
     if "jwk" in header:
         candidate_key = JWK(header["jwk"])
         return set(["jwk"]), candidate_key
     unsupported_claims = set(("trust_chain", "jku", "x5u", "x5t"))
     if unsupported_claims.intersection(header):
-        raise NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
+        raise NotImplementedError(
+            f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
     return None
+
 
 def is_payload_expired(token_payload: dict) -> bool:
     exp = token_payload.get("exp", None)
@@ -98,32 +106,30 @@ def is_payload_expired(token_payload: dict) -> bool:
         return True
     return False
 
+
 def is_jwt_expired(token: str) -> bool:
     payload = decode_jwt_payload(token)
     return is_payload_expired(payload)
 
-class LifetimeException(ValidationError):
-    """Exception raised for errors related to lifetime validation."""
-    pass
 
 def validate_jwt_timestamps_claims(payload: dict) -> None:
-        """
-        Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+    """
+    Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
 
-        :param payload: The decoded JWT payload.
-        :type payload: dict
-        :raises ValueError: If any of the claims are invalid.
-        """
-        current_time = iat_now()
+    :param payload: The decoded JWT payload.
+    :type payload: dict
+    :raises ValueError: If any of the claims are invalid.
+    """
+    current_time = iat_now()
 
-        if 'iat' in payload:
-            if payload['iat'] > current_time:
-                raise LifetimeException("Future issue time, token is invalid.")
+    if 'iat' in payload:
+        if payload['iat'] > current_time:
+            raise LifetimeException("Future issue time, token is invalid.")
 
-        if 'exp' in payload:
-            if payload['exp'] <= current_time:
-                 raise LifetimeException("Token has expired.")
+    if 'exp' in payload:
+        if payload['exp'] <= current_time:
+            raise LifetimeException("Token has expired.")
 
-        if 'nbf' in payload:
-            if payload['nbf'] > current_time:
-                raise LifetimeException("Token not yet valid.")
+    if 'nbf' in payload:
+        if payload['nbf'] > current_time:
+            raise LifetimeException("Token not yet valid.")

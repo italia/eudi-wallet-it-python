@@ -1,9 +1,10 @@
 import json
+import pydantic
 import uuid
+
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
 
-from pydantic import ValidationError
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
@@ -54,16 +55,17 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.config = config
 
-        self.client_id = f"{base_url}/{name}"
+        self._backend_url = f"{base_url}/{name}"
+        self._client_id = self._backend_url
         self.config['metadata']['client_id'] = self.client_id
 
         self.config['metadata']['response_uris_supported'] = []
         self.config['metadata']['response_uris_supported'].append(
-            f"{self.client_id}/response-uri")
+            f"{self._backend_url}/response-uri")
 
         self.config['metadata']['request_uris'] = []
         self.config['metadata']['request_uris'].append(
-            f"{self.client_id}/request-uri")
+            f"{self._backend_url}/request-uri")
 
         self.default_exp = int(self.config['jwt']['default_exp'])
 
@@ -109,14 +111,26 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         try:
             PyeudiwBackendConfig(**config)
-        except ValidationError as e:
+        except pydantic.ValidationError as e:
             debug_message = f"""The backend configuration presents the following validation issues: {e}"""
             self._log_warning("OpenID4VPBackend", debug_message)
 
-        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
+        self.response_code_helper = ResponseCodeSource(
+            self.config["response_code"]["sym_key"])
         trust_configuration = self.config.get("trust", {})
-        self.trust_evaluator = CombinedTrustEvaluator.from_config(trust_configuration, self.db_engine)
-        self.init_trust_resources()  # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+        self.trust_evaluator = CombinedTrustEvaluator.from_config(
+            trust_configuration, self.db_engine)
+        # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
+        self.init_trust_resources()
+
+    @property
+    def client_id(self):
+        if (_cid := self.config["authorization"].get("client_id")):
+            return _cid
+        elif (_cid := self.config["metadata"].get("client_id")):
+            return _cid
+        else:
+            return self._client_id
 
     def register_endpoints(self) -> list[tuple[str, Callable[[Context], Response]]]:
         """
@@ -128,7 +142,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         url_map = self.trust_evaluator.build_metadata_endpoints(
             self.name,
-            self.client_id
+            self._backend_url
         )
 
         for k, v in self.config['endpoints'].items():
@@ -148,7 +162,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                     getattr(self, f"{k}_endpoint")
                 )
             )
-            _endpoint = f"{self.client_id}/{endpoint_value.lstrip('/')}"
+            _endpoint = f"{self._backend_url}/{endpoint_value.lstrip('/')}"
             self._log_debug(
                 "OpenID4VPBackend",
                 f"Exposing backend entity endpoint = {_endpoint}"
@@ -263,7 +277,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "status_endpoint": self.absolute_status_url
             }
         )
-        return Response(result, content="text/html; charset=utf8", status="200")  
+        return Response(result, content="text/html; charset=utf8", status="200")
 
     def get_response_endpoint(self, context: Context) -> Response:
 

@@ -33,6 +33,7 @@ def test_decode_jwt_header(jwk, payload):
     assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.kty]
     assert header["kid"] == jwk.kid
 
+
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_encrypt(jwk, payload):
     helper = JWEHelper(jwk)
@@ -67,6 +68,7 @@ def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
     jws = helper.sign(payload, signing_kid=jwk.kid)
     assert jws
+
 
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_verify(jwk, payload):

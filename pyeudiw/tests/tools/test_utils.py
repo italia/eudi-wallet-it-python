@@ -105,10 +105,12 @@ def test_cacheable_get_http_url():
         }
     }
 
-    _lru_cached_get_http_url.cache_clear()  # clear cache so that it is not polluted from prev tests
+    # clear cache so that it is not polluted from prev tests
+    _lru_cached_get_http_url.cache_clear()
     mocked_endpoint.start()
     for _ in range(tries):
-        resp = cacheable_get_http_url(cache_ttl, "http://location.example", httpc_p, http_async=False)
+        resp = cacheable_get_http_url(
+            cache_ttl, "http://location.example", httpc_p, http_async=False)
         assert resp.status_code == 200
         assert resp._content == b'Hello automated test'
     mocked_endpoint.stop()
