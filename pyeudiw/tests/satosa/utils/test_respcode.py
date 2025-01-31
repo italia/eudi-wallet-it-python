@@ -1,6 +1,7 @@
 import pytest
 
-from pyeudiw.satosa.utils.respcode import ResponseCodeSource, create_code, recover_state
+from pyeudiw.satosa.utils.respcode import (ResponseCodeSource, create_code,
+                                           recover_state)
 
 
 def test_valid_resp_code():

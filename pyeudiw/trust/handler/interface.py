@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 import satosa.context
 import satosa.response
 
@@ -6,6 +7,9 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 
 
 class TrustHandlerInterface:
+    def __init__(self, *args, **kwargs):
+        pass
+
     def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer using a trust handler implementation.

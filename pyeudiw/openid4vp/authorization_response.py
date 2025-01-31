@@ -1,19 +1,21 @@
 import json
+
+import cryptojwt.jwe.exception
 import satosa.context
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
-
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-import cryptojwt.jwe.exception
-
-from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
+from pyeudiw.openid4vp.exceptions import (AuthRespParsingException,
+                                          AuthRespValidationException)
 from pyeudiw.openid4vp.interface import AuthorizationResponseParser
-from pyeudiw.openid4vp.schemas.response import AuthorizeResponseDirectPostJwt, AuthorizeResponsePayload, ResponseMode
+from pyeudiw.openid4vp.schemas.response import (AuthorizeResponseDirectPostJwt,
+                                                AuthorizeResponsePayload,
+                                                ResponseMode)
 
 
 def detect_response_mode(context: satosa.context.Context) -> ResponseMode:

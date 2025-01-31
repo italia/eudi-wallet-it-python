@@ -1,24 +1,17 @@
 import logging
-
-from pyeudiw.jwt.exceptions import JWSVerificationError
-from pyeudiw.jwt.helper import validate_jwt_timestamps_claims
-from pyeudiw.jwt.jws_helper import JWSHelper
-
-from . import (
-    DEFAULT_SIGNING_ALG,
-    DIGEST_ALG_KEY,
-    SD_DIGESTS_KEY,
-    SD_LIST_PREFIX,
-    KB_DIGEST_KEY
-)
-from pyeudiw.sd_jwt.common import SDJWTCommon
-
-from typing import Dict, List, Union, Callable
+from typing import Callable, Dict, List, Union
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS
 
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
+from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.jwt.helper import validate_jwt_timestamps_claims
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.sd_jwt.common import SDJWTCommon
+
+from . import (DEFAULT_SIGNING_ALG, DIGEST_ALG_KEY, KB_DIGEST_KEY,
+               SD_DIGESTS_KEY, SD_LIST_PREFIX)
 
 logger = logging.getLogger(__name__)
 

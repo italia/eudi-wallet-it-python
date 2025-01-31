@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Callable
 
 import pymongo
+from pymongo.collection import Collection
+from pymongo.database import Database
+from pymongo.mongo_client import MongoClient
 
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
-from pymongo.collection import Collection
-from pymongo.mongo_client import MongoClient
-from pymongo.database import Database
 
 
 class MongoCache(BaseCache):

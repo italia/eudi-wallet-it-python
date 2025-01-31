@@ -1,4 +1,4 @@
-from pyeudiw.jwk.schemas.public import JwkSchema, ECJwkSchema, RSAJwkSchema
+from pyeudiw.jwk.schemas.public import ECJwkSchema, JwkSchema, RSAJwkSchema
 
 
 def test_valid_rsa_jwk():

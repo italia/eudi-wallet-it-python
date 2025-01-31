@@ -1,11 +1,11 @@
 import base64
 import logging
 import random
-import yaml
 import sys
-
-from cryptojwt.jwk.jwk import key_from_jwk_dict
 from typing import Union
+
+import yaml
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 logger = logging.getLogger("sd_jwt")
 

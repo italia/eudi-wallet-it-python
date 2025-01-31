@@ -1,5 +1,5 @@
-from urllib.parse import quote_plus, urlencode
 import uuid
+from urllib.parse import quote_plus, urlencode
 
 from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.tools.utils import exp_from_now, iat_now

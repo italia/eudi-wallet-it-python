@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 import satosa.context
 import satosa.response
 

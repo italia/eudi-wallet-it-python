@@ -1,22 +1,17 @@
-from pyeudiw.tests.federation.base import (
-    leaf_wallet_jwk,
-    leaf_cred_jwk_prot
-)
+from io import StringIO
+
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from satosa.context import Context
+
 from pyeudiw.jwk import JWK
-from pyeudiw.tests.settings import (
-    CONFIG,
-    CREDENTIAL_ISSUER_ENTITY_ID,
-    CREDENTIAL_ISSUER_CONF,
-)
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
-from pyeudiw.tools.utils import exp_from_now, iat_now
-from satosa.context import Context
-from pyeudiw.storage.db_engine import DBEngine
-
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-from io import StringIO
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tests.federation.base import leaf_cred_jwk_prot, leaf_wallet_jwk
+from pyeudiw.tests.settings import (CONFIG, CREDENTIAL_ISSUER_CONF,
+                                    CREDENTIAL_ISSUER_ENTITY_ID)
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
 holder_jwk = leaf_wallet_jwk.serialize(private=True)

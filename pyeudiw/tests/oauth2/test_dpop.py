@@ -1,15 +1,14 @@
 import base64
 import hashlib
-import pytest
 
+import pytest
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.tools.utils import iat_now
-
-from cryptojwt.jwk.ec import new_ec_key
-from cryptojwt.jwk.rsa import new_rsa_key
 
 PRIVATE_JWK_EC = new_ec_key('P-256')
 PRIVATE_JWK = PRIVATE_JWK_EC.serialize(private=True)

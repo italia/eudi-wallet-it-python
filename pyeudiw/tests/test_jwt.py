@@ -1,10 +1,10 @@
 import pytest
-
-from cryptojwt.jwk.rsa import new_rsa_key
 from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.jwt.jws_helper import DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWSHelper
+from pyeudiw.jwt.jws_helper import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP,
+                                    JWSHelper)
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 
 JWKs_EC = [

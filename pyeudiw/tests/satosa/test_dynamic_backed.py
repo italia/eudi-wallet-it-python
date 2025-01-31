@@ -1,20 +1,15 @@
 import json
-from pyeudiw.satosa.backend import OpenID4VPBackend
+from unittest.mock import Mock
+
 from satosa.context import Context
+from satosa.response import Redirect
 from satosa.state import State
 
-from pyeudiw.tests.settings import (
-    CONFIG,
-    BASE_URL,
-    INTERNAL_ATTRIBUTES
-)
-
-from satosa.response import Redirect
-from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
-
-from unittest.mock import Mock
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES
 
 
 class RequestHandler(RequestHandlerInterface):

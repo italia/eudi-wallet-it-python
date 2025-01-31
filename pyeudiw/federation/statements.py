@@ -1,26 +1,20 @@
 from __future__ import annotations
 
+import logging
+from copy import deepcopy
+
 import pydantic
 
-from copy import deepcopy
-from pyeudiw.federation.exceptions import (
-    UnknownKid,
-    MissingJwksClaim,
-    MissingTrustMark,
-    TrustAnchorNeeded,
-    InvalidEntityHeader,
-    InvalidEntityStatementPayload
-)
+from pyeudiw.federation.exceptions import (InvalidEntityHeader,
+                                           InvalidEntityStatementPayload,
+                                           MissingJwksClaim, MissingTrustMark,
+                                           TrustAnchorNeeded, UnknownKid)
 from pyeudiw.federation.schemas.entity_configuration import (
-    EntityConfigurationHeader,
-    EntityStatementPayload
-)
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
+    EntityConfigurationHeader, EntityStatementPayload)
 from pyeudiw.jwk import find_jwk_by_kid
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.utils import get_http_url
-
-import logging
 
 OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
 logger = logging.getLogger(__name__)

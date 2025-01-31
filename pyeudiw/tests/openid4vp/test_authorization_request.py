@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims, build_authorization_request_url
+from pyeudiw.openid4vp.authorization_request import (
+    build_authorization_request_claims, build_authorization_request_url)
 
 
 def test_build_authoriation_request_url():

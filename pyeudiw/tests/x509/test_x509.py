@@ -1,11 +1,15 @@
+from datetime import datetime, timedelta
+from ssl import DER_cert_to_PEM_cert
+
 from cryptography import x509
-from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
-from datetime import datetime, timedelta
-from ssl import DER_cert_to_PEM_cert
-from pyeudiw.x509.verify import verify_x509_attestation_chain, verify_x509_anchor, get_issuer_from_x5c, is_der_format
+from cryptography.x509.oid import NameOID
+
+from pyeudiw.x509.verify import (get_issuer_from_x5c, is_der_format,
+                                 verify_x509_anchor,
+                                 verify_x509_attestation_chain)
 
 
 def gen_chain() -> list[bytes]:

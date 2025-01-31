@@ -1,8 +1,9 @@
 import base64
-from dataclasses import dataclass, field
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import secrets
 import string
+from dataclasses import dataclass, field
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 CODE_SYM_KEY_LEN = 32  # in bytes (256 bits)
 

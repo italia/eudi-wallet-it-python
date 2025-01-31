@@ -1,17 +1,19 @@
 import binascii
-from copy import deepcopy
 import logging
+from copy import deepcopy
 from typing import Any, Literal, Union
 
 from cryptojwt import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
+from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
-from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError
-from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, serialize_payload, validate_jwt_timestamps_claims
-
-from pyeudiw.jwk import JWK
+from pyeudiw.jwt.exceptions import (JWEEncryptionError, JWSSigningError,
+                                    JWSVerificationError)
+from pyeudiw.jwt.helper import (JWHelperInterface, find_self_contained_key,
+                                serialize_payload,
+                                validate_jwt_timestamps_claims)
 from pyeudiw.jwt.utils import decode_jwt_header
 
 SerializationFormat = Literal["compact", "json"]

@@ -2,12 +2,12 @@ from typing import Any
 
 from satosa.context import Context
 
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.openid4vp.exceptions import VPFormatNotSupported
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.vp import Vp
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
-from pyeudiw.openid4vp.exceptions import VPFormatNotSupported
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.mobile import is_smartphone
 
 

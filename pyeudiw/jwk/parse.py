@@ -1,6 +1,6 @@
 import cryptojwt
 import cryptojwt.jwk
-from cryptojwt.jwk.rsa import import_rsa_key, RSAKey
+from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 
 from pyeudiw.jwk import JWK
 

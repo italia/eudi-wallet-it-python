@@ -1,16 +1,15 @@
-import pydantic
-
 from typing import Union
+
+import pydantic
 from satosa.context import Context
 
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
     WalletInstanceAttestationHeader, WalletInstanceAttestationPayload)
+from pyeudiw.satosa.exceptions import DPOPValidationError
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
-
-from pyeudiw.satosa.exceptions import DPOPValidationError
 
 
 class BackendDPoP(BaseLogger):

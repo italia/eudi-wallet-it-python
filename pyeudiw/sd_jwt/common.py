@@ -2,20 +2,14 @@ import logging
 import os
 import random
 import secrets
-
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from dataclasses import dataclass
 from hashlib import sha256
 from json import loads
 from typing import List
 
-from . exceptions import SDJWTHasSDClaimException
-
-from . import (
-    SD_DIGESTS_KEY,
-    JSON_SER_DISCLOSURE_KEY,
-    JSON_SER_KB_JWT_KEY
-)
+from . import JSON_SER_DISCLOSURE_KEY, JSON_SER_KB_JWT_KEY, SD_DIGESTS_KEY
+from .exceptions import SDJWTHasSDClaimException
 
 logger = logging.getLogger(__name__)
 

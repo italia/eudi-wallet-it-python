@@ -1,4 +1,5 @@
 import logging
+
 import satosa.logging_util as lu
 from satosa.context import Context
 

@@ -1,24 +1,19 @@
 import json
+from typing import Literal, TypeAlias
+
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.hmac import SYMKey
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c
-
 from pyeudiw.jwt.log import logger
-
-
-from typing import TypeAlias, Literal
-
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 
-from . exceptions import LifetimeException
-
+from .exceptions import LifetimeException
 
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]

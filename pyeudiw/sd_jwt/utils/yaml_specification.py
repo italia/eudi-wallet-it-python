@@ -1,6 +1,8 @@
-from pyeudiw.sd_jwt.common import SDObj
-import yaml
 import sys
+
+import yaml
+
+from pyeudiw.sd_jwt.common import SDObj
 
 
 def load_yaml_specification(file):

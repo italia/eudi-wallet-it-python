@@ -1,21 +1,15 @@
-import pymongo
 import datetime as dt
 from datetime import datetime
+from typing import Union
 
+import pymongo
 from pymongo.results import UpdateResult
 
-from pyeudiw.storage.base_storage import (
-    BaseStorage,
-    TrustType,
-    trust_type_map,
-    trust_attestation_field_map,
-    trust_anchor_field_map
-)
-from pyeudiw.storage.exceptions import (
-    ChainNotExist,
-    StorageEntryUpdateFailed
-)
-from typing import Union
+from pyeudiw.storage.base_storage import (BaseStorage, TrustType,
+                                          trust_anchor_field_map,
+                                          trust_attestation_field_map,
+                                          trust_type_map)
+from pyeudiw.storage.exceptions import ChainNotExist, StorageEntryUpdateFailed
 
 
 class MongoStorage(BaseStorage):

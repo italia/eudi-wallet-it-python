@@ -1,9 +1,10 @@
 import uuid
+from datetime import datetime
+
 import pytest
 
-from datetime import datetime
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.base_storage import TrustType
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tests.settings import CONFIG
 

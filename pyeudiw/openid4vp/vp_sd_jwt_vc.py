@@ -1,14 +1,14 @@
 from typing import Optional
 
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
-
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
 
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):

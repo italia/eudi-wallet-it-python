@@ -1,22 +1,18 @@
 import logging
+from typing import Dict
+
 import pydantic
 
-from typing import Dict
 from pyeudiw.jwk import JWK
-
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
-from pyeudiw.openid4vp.exceptions import (
-    InvalidVPToken,
-    VPNotFound,
-    VPInvalidNonce,
-    NoNonceInVPToken
-)
-from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
-from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.exceptions import (InvalidVPToken, NoNonceInVPToken,
+                                          VPInvalidNonce, VPNotFound)
+from pyeudiw.openid4vp.schemas.vp_token import VPTokenHeader, VPTokenPayload
 from pyeudiw.openid4vp.utils import vp_parser
+from pyeudiw.openid4vp.vp import Vp
 
 logger = logging.getLogger(__name__)
 

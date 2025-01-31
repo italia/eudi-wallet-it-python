@@ -1,15 +1,16 @@
-import datetime
-from functools import lru_cache
-import logging
 import asyncio
+import datetime
+import importlib
+import logging
 import os
 import time
-from typing import NamedTuple
-import requests
-import importlib
-
+from functools import lru_cache
 from secrets import token_hex
-from pyeudiw.federation.http_client import http_get_sync, http_get_async
+from typing import NamedTuple
+
+import requests
+
+from pyeudiw.federation.http_client import http_get_async, http_get_sync
 
 logger = logging.getLogger(__name__)
 

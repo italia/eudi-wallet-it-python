@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, HttpUrl, field_validator
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.openid4vp.schemas.cnf_schema import CNFSchema
 from pyeudiw.tools.schema_utils import check_algorithm
@@ -32,7 +32,7 @@ class WalletInstanceAttestationHeader(BaseModel):
 
     @field_validator("alg")
     @classmethod
-    def _check_alg(cls, alg, info: FieldValidationInfo):
+    def _check_alg(cls, alg, info: ValidationInfo):
         return check_algorithm(alg, info)
 
 

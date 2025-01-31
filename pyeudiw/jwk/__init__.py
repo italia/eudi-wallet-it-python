@@ -8,7 +8,7 @@ from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import new_rsa_key
 
-from .exceptions import InvalidKid, KidNotFoundError, InvalidJwk
+from .exceptions import InvalidJwk, InvalidKid, KidNotFoundError
 
 KEY_TYPES_FUNC = dict(
     EC=new_ec_key,

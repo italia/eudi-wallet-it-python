@@ -1,13 +1,12 @@
 from typing import Dict
 
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.jwt.verification import verify_jws_with_key
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
-
-
 from pyeudiw.jwk.exceptions import KidNotFoundError
-from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import (decode_jwt_header, decode_jwt_payload,
+                               is_jwt_format)
+from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
+from pyeudiw.openid4vp.vp import Vp
 
 
 class VpSdJwt(Vp):

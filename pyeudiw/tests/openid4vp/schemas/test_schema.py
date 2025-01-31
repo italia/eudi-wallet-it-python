@@ -1,5 +1,4 @@
 import pytest
-
 from pydantic import ValidationError
 
 from pyeudiw.federation.schemas.entity_configuration import (
@@ -122,7 +121,7 @@ def test_entity_config_payload():
             ]
         },
         "metadata": {
-            "wallet_relying_party": {
+            "openid_credential_verifier": {
                 "application_type": "web",
                 "client_id": "https://rp.example.it",
                 "client_name": "Name of an example organization",

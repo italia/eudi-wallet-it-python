@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
-from pyeudiw.federation.schemas.wallet_relying_party import SigningAlgValuesSupported, EncryptionAlgValuesSupported, EncryptionEncValuesSupported
+
+from pyeudiw.federation.schemas.openid_credential_verifier import (
+    EncryptionAlgValuesSupported, EncryptionEncValuesSupported,
+    SigningAlgValuesSupported)
 
 
 class JWTConfig(BaseModel):

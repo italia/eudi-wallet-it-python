@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 

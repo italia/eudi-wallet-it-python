@@ -1,11 +1,11 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 
-from pyeudiw.jwk import JWK
 import pytest
 import satosa.context
 import satosa.response
 
+from pyeudiw.jwk import JWK
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
 
 
@@ -115,7 +115,8 @@ def test_direct_trust_metadata_handler(direct_trust_jar, signing_private_key):
     backend = "openid4vp"
     entity_id = f"https://rp.example/{backend}"
     registered_methods = direct_trust_jar.build_metadata_endpoints(
-        backend, entity_id)
+        backend, entity_id
+    )
     assert len(registered_methods) == 1
 
     endpoint_regexp = registered_methods[0][0]
@@ -129,7 +130,7 @@ def test_direct_trust_metadata_handler(direct_trust_jar, signing_private_key):
     try:
         response.headers.index(("Content-Type", "application/json"))
     except Exception as e:
-        assert True, f"unable to find application/json in repsonse content type: {e}"
+        assert True, f"unable to find application/json in response content type: {e}"
 
     response_data = json.loads(response.message)
     assert response_data["issuer"] == entity_id

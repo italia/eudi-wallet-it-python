@@ -1,6 +1,6 @@
+import satosa.context
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-import satosa.context
 
 from pyeudiw.openid4vp.schemas.response import AuthorizeResponsePayload
 

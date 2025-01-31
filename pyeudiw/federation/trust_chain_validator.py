@@ -1,22 +1,18 @@
 import logging
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.tools.utils import iat_now
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
-from pyeudiw.federation import is_es
-from pyeudiw.federation.policy import TrustChainPolicy
-from pyeudiw.federation.statements import (
-    get_entity_configurations,
-    get_entity_statements
-)
-from pyeudiw.federation.exceptions import (
-    MissingTrustAnchorPublicKey,
-    TimeValidationError,
-    KeyValidationError,
-    InvalidEntityStatement
-)
 
+from pyeudiw.federation.exceptions import (InvalidEntityStatement,
+                                           KeyValidationError,
+                                           MissingTrustAnchorPublicKey,
+                                           TimeValidationError)
+from pyeudiw.federation.policy import TrustChainPolicy
+from pyeudiw.federation.statements import (get_entity_configurations,
+                                           get_entity_statements)
+from pyeudiw.federation.utils import is_es
 from pyeudiw.jwk import find_jwk_by_kid
-from pyeudiw.jwk.exceptions import KidNotFoundError, InvalidKid
+from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
 

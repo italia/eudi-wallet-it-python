@@ -1,8 +1,9 @@
-import pytest
 import io
 
-from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+import pytest
+
 from pyeudiw.sd_jwt.common import SDObj
+from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
 
 YAML_TESTCASES = [
     """

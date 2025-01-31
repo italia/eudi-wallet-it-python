@@ -1,7 +1,8 @@
 import logging
-import sys
 import re
+import sys
 from typing import Dict, Literal, Optional, TypeVar
+
 from typing_extensions import Self
 
 if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
@@ -12,7 +13,6 @@ else:
 from pydantic import BaseModel, HttpUrl, field_validator, model_validator
 
 from pyeudiw.jwk.schemas.public import JwkSchema
-
 
 _OptionalDict_T = TypeVar('T', None, dict)
 

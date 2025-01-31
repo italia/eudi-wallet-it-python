@@ -2,8 +2,10 @@ import pytest
 import satosa.context
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.openid4vp.authorization_response import DirectPostJwtJweParser, DirectPostParser
-from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
+from pyeudiw.openid4vp.authorization_response import (DirectPostJwtJweParser,
+                                                      DirectPostParser)
+from pyeudiw.openid4vp.exceptions import (AuthRespParsingException,
+                                          AuthRespValidationException)
 
 
 @pytest.fixture

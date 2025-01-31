@@ -1,16 +1,18 @@
-import unittest.mock
-
-from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc, build_metadata_issuer_endpoint
-from pyeudiw.tests.trust.handler import _generate_empty_json_ok_response, issuer
-from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
-from dataclasses import dataclass
-import requests
 import json
-from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
-from pyeudiw.tests.trust.handler import _generate_response
+import unittest.mock
 import uuid
+from dataclasses import dataclass
+
+import requests
+
+from pyeudiw.tests.trust.handler import (_generate_empty_json_ok_response,
+                                         _generate_response, issuer)
+from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
+from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import (
+    DirectTrustSdJwtVc, build_metadata_issuer_endpoint)
+from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
+from pyeudiw.trust.model.trust_source import TrustSourceData
 
 
 def test_direct_trust_build_issuer_jwk_endpoint():

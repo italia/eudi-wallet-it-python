@@ -2,7 +2,7 @@ import base64
 import json
 import re
 
-from pyeudiw.jwt.exceptions import JWTInvalidElementPosition, JWTDecodeError
+from pyeudiw.jwt.exceptions import JWTDecodeError, JWTInvalidElementPosition
 
 # jwt regexp pattern is non terminating, hence it match jwt, sd-jwt and sd-jwt with kb
 JWT_REGEXP = r'^[_\w\-]+\.[_\w\-]+\.[_\w\-]+'

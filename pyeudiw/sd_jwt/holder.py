@@ -1,23 +1,16 @@
 import logging
-
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt.common import SDJWTCommon
-
-from pyeudiw.sd_jwt import (
-    DEFAULT_SIGNING_ALG,
-    SD_DIGESTS_KEY,
-    SD_LIST_PREFIX,
-    KB_DIGEST_KEY,
-    JSON_SER_DISCLOSURE_KEY,
-    JSON_SER_KB_JWT_KEY,
-)
-from json import dumps
+from itertools import zip_longest
+from json import dumps, loads
 from time import time
 from typing import Dict, List, Optional
-from itertools import zip_longest
 
 from cryptojwt.jws.jws import JWS
-from json import dumps, loads
+
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.sd_jwt import (DEFAULT_SIGNING_ALG, JSON_SER_DISCLOSURE_KEY,
+                            JSON_SER_KB_JWT_KEY, KB_DIGEST_KEY, SD_DIGESTS_KEY,
+                            SD_LIST_PREFIX)
+from pyeudiw.sd_jwt.common import SDJWTCommon
 
 logger = logging.getLogger(__name__)
 

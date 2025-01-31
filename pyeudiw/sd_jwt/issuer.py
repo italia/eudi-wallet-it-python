@@ -1,24 +1,16 @@
 import logging
 import secrets
-
 from typing import Dict, List, Union
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.sd_jwt import (DEFAULT_SIGNING_ALG, DIGEST_ALG_KEY,
+                            JSON_SER_DISCLOSURE_KEY, SD_DIGESTS_KEY,
+                            SD_LIST_PREFIX)
 from pyeudiw.sd_jwt.common import SDJWTCommon, SDObj
-
-from pyeudiw.sd_jwt import (
-    DEFAULT_SIGNING_ALG,
-    DIGEST_ALG_KEY,
-    SD_DIGESTS_KEY,
-    SD_LIST_PREFIX,
-    JSON_SER_DISCLOSURE_KEY,
-)
-
 from pyeudiw.sd_jwt.disclosure import SDJWTDisclosure
-
-from cryptojwt.jws.jws import JWS
-from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 logger = logging.getLogger(__name__)
 

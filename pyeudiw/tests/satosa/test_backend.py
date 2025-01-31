@@ -6,34 +6,25 @@ from unittest.mock import Mock, patch
 
 import pytest
 from bs4 import BeautifulSoup
+from cryptojwt.jws.jws import JWS
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
-from pyeudiw.jwt.jws_helper import JWSHelper
 
-from cryptojwt.jws.jws import JWS
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.tests.federation.base import (
-    trust_chain_wallet,
-    ta_ec,
-    EXP,
-    NOW,
-    ta_jwk,
-    ta_ec_signed, leaf_cred_jwk_prot
-)
-from pyeudiw.tests.settings import (
-    BASE_URL,
-    CONFIG,
-    CREDENTIAL_ISSUER_ENTITY_ID,
-    INTERNAL_ATTRIBUTES,
-    PRIVATE_JWK,
-    WALLET_INSTANCE_ATTESTATION
-)
-
+from pyeudiw.tests.federation.base import (EXP, NOW, leaf_cred_jwk_prot, ta_ec,
+                                           ta_ec_signed, ta_jwk,
+                                           trust_chain_wallet)
+from pyeudiw.tests.settings import (BASE_URL, CONFIG,
+                                    CREDENTIAL_ISSUER_ENTITY_ID,
+                                    INTERNAL_ATTRIBUTES, PRIVATE_JWK,
+                                    WALLET_INSTANCE_ATTESTATION)
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
 
@@ -90,12 +81,20 @@ class TestOpenID4VPBackend:
     def test_backend_init(self):
         assert self.backend.name == "name"
 
+    # TODO: Move to trust evaluation handlers tests
     def test_entity_configuration(self, context):
         context.qs_params = {}
-        entity_config = self.backend.entity_configuration_endpoint(context)
+
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler")
+        assert _fedback
+
+        entity_config = _fedback.entity_configuration_endpoint(context)
         assert entity_config
         assert entity_config.status == "200"
         assert entity_config.message
+
+        # TODO: decode EC jwt, validate signature and both header and payload schema validation
 
     def test_pre_request_without_frontend(self):
         context = Context()
@@ -523,18 +522,22 @@ class TestOpenID4VPBackend:
         # request object
         db_engine_inst = DBEngine(CONFIG['storage'])
 
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler")
+        assert _fedback
+
         _es = {
             "exp": EXP,
             "iat": NOW,
             "iss": "https://trust-anchor.example.org",
             "sub": self.backend.client_id,
-            'jwks': self.backend.entity_configuration_as_dict['jwks']
+            'jwks': _fedback.entity_configuration_as_dict['jwks']
         }
         ta_signer = JWS(_es, alg="ES256",
                         typ="application/entity-statement+jwt")
 
         its_trust_chain = [
-            self.backend.entity_configuration,
+            _fedback.entity_configuration,
             ta_signer.sign_compact([ta_jwk])
         ]
         db_engine_inst.add_or_update_trust_attestation(

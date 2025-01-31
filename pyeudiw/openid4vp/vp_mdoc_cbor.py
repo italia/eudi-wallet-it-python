@@ -1,5 +1,6 @@
-from pyeudiw.openid4vp.vp import Vp
 from pymdoccbor.mdoc.verifier import MdocCbor
+
+from pyeudiw.openid4vp.vp import Vp
 
 
 class VpMDocCbor(Vp):

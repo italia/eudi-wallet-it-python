@@ -1,9 +1,9 @@
-import pathlib
 import os
+import pathlib
 
-from pyeudiw.tools.utils import exp_from_now, iat_now
 from cryptojwt.jwk.ec import new_ec_key
 
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -13,6 +13,72 @@ CLIENT_ID = "client_id"
 httpc_params = {
     "connection": {"ssl": True},
     "session": {"timeout": 1},
+}
+
+_METADATA = {
+    "application_type": "web",
+    "authorization_encrypted_response_alg": [
+        "RSA-OAEP",
+        "RSA-OAEP-256"
+    ],
+    "authorization_encrypted_response_enc": [
+        "A128CBC-HS256",
+        "A192CBC-HS384",
+        "A256CBC-HS512",
+        "A128GCM",
+        "A192GCM",
+        "A256GCM"
+    ],
+    "authorization_signed_response_alg": [
+        "RS256",
+        "ES256"
+    ],
+    "client_id": f"{BASE_URL}/OpenID4VP",
+    "client_name": "Name of an example organization",
+    "contacts": [
+        "ops@verifier.example.org"
+    ],
+    "default_acr_values": [
+        "https://www.spid.gov.it/SpidL2",
+        "https://www.spid.gov.it/SpidL3"
+    ],
+    "default_max_age": 1111,
+    "id_token_encrypted_response_alg": [
+        "RSA-OAEP",
+        "RSA-OAEP-256"
+    ],
+    "id_token_encrypted_response_enc": [
+        "A128CBC-HS256",
+        "A192CBC-HS384",
+        "A256CBC-HS512",
+        "A128GCM",
+        "A192GCM",
+        "A256GCM"
+    ],
+    "id_token_signed_response_alg": [
+        "RS256",
+        "ES256"
+    ],
+    "response_uris_supported": [
+        f"{BASE_URL}/OpenID4VP/response-uri"
+    ],
+    "request_uris": [
+        f"{BASE_URL}/OpenID4VP/request-uri"
+    ],
+    "require_auth_time": True,
+    "subject_type": "pairwise",
+    "vp_formats": {
+        "vc+sd-jwt": {
+            "sd-jwt_alg_values": [
+                "ES256",
+                "ES384"
+            ],
+            "kb-jwt_alg_values": [
+                "ES256",
+                "ES384"
+            ]
+        }
+    }
 }
 
 CONFIG = {
@@ -26,7 +92,6 @@ CONFIG = {
         "error_url": "https://localhost:9999/error_page.html"
     },
     "endpoints": {
-        "entity_configuration": "/.well-known/openid-federation",
         "pre_request": "/pre-request",
         "response": "/response-uri",
         "request": "/request-uri",
@@ -194,7 +259,9 @@ CONFIG = {
             "module": "pyeudiw.trust.handler.federation",
             "class": "FederationHandler",
             "config": {
-                "metadata_type": "wallet_relying_party",
+                "entity_configuration_exp": 600,
+                "metadata": _METADATA,
+                "metadata_type": "openid_credential_verifier",
                 "authority_hints": [
                     "https://trust-anchor.example.org"
                 ],
@@ -296,71 +363,7 @@ CONFIG = {
             }
         }
     },
-    "metadata": {
-        "application_type": "web",
-        "authorization_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "authorization_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "authorization_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "client_id": f"{BASE_URL}/OpenID4VP",
-        "client_name": "Name of an example organization",
-        "contacts": [
-            "ops@verifier.example.org"
-        ],
-        "default_acr_values": [
-            "https://www.spid.gov.it/SpidL2",
-            "https://www.spid.gov.it/SpidL3"
-        ],
-        "default_max_age": 1111,
-        "id_token_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "id_token_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "id_token_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "response_uris_supported": [
-            f"{BASE_URL}/OpenID4VP/response-uri"
-        ],
-        "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request-uri"
-        ],
-        "require_auth_time": True,
-        "subject_type": "pairwise",
-        "vp_formats": {
-            "vc+sd-jwt": {
-                "sd-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ],
-                "kb-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ]
-            }
-        }
-    }
+    "metadata": _METADATA
 }
 
 CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"

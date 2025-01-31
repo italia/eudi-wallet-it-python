@@ -1,4 +1,4 @@
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_core.core_schema import ValidationInfo
 
 _default_supported_algorithms = [
     "RS256",
@@ -13,14 +13,14 @@ _default_supported_algorithms = [
 ]
 
 
-def check_algorithm(alg: str, info: FieldValidationInfo) -> None:
+def check_algorithm(alg: str, info: ValidationInfo) -> None:
     """
     Check if the algorithm is supported by the relaying party.
 
     :param alg: The algorithm to check
     :type alg: str
     :param info: The field validation info
-    :type info: FieldValidationInfo
+    :type info: ValidationInfo
 
     :raises ValueError: If the algorithm is not supported
     """

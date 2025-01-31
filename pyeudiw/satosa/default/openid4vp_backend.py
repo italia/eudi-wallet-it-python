@@ -1,31 +1,32 @@
-import pydantic
+import json
 import uuid
-
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
 
+import pydantic
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
-from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
-from pyeudiw.openid4vp.utils import detect_flow_typ
-from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
-from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
+from pyeudiw.openid4vp.authorization_request import \
+    build_authorization_request_url
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
+from pyeudiw.openid4vp.utils import detect_flow_typ
+from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
-class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
+class OpenID4VPBackend(OpenID4VPBackendInterface):
     def __init__(
         self,
         auth_callback_func: Callable[[Context, InternalData], Response],
@@ -52,6 +53,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
+        # to be inizialized by .db_engine() property
+        self._db_engine = None
+
         self.config = config
 
         self._backend_url = f"{base_url}/{name}"
@@ -68,10 +72,32 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
         self.default_exp = int(self.config['jwt']['default_exp'])
 
+        federation_jwks = self.config['trust']['federation']['config']['federation_jwks']
+        if isinstance(federation_jwks, str):
+            try:
+                self.config['trust']['federation']['config']['federation_jwks'] = json.loads(
+                    federation_jwks)
+            except json.JSONDecodeError as e:
+                raise ValueError(
+                    f"Invalid federation_jwks {self.config['trust']['federation']['config']['federation_jwks']} JSON: {e}")
+
+        if isinstance(self.config['trust']['federation']['config']['federation_jwks'], dict):
+            self.config['trust']['federation']['config']['federation_jwks'] = [
+                self.config['trust']['federation']['config']['federation_jwks']]
+
+        if isinstance(self.config['metadata_jwks'], str):
+            try:
+                self.config['metadata_jwks'] = json.loads(
+                    self.config['metadata_jwks'])
+            except json.JSONDecodeError as e:
+                raise ValueError(
+                    f"Invalid metadata_jwks {self.config['metadata_jwks']} JSON: {e}")
+
+        if isinstance(self.config['metadata_jwks'], dict):
+            self.config['metadata_jwks'] = [self.config['metadata_jwks']]
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
         }
-
         self.config['metadata']['jwks'] = {"keys": [
             JWK(i).public_key for i in self.config['metadata_jwks']
         ]}
@@ -98,12 +124,20 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning("OpenID4VPBackend", debug_message)
 
         self.response_code_helper = ResponseCodeSource(
-            self.config["response_code"]["sym_key"])
+            self.config["response_code"]["sym_key"]
+        )
+
+        # This loads all the configured trust evaluation mechanisms
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, self.db_engine)
-        # This loads metadata endpoint (using the pattern *_endpoint), anticipating the method register endpoints
-        self.init_trust_resources()
+            trust_configuration, self.db_engine, default_client_id=self.client_id
+        )
+
+    def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:
+
+        for i in self.trust_evaluator.handlers:
+            if i.__class__.__name__ == class_name:
+                return i
 
     @property
     def client_id(self):
@@ -122,6 +156,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         :rtype: Sequence[(str, Callable[[satosa.context.Context], satosa.response.Response]]
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
+        # This loads the metadata endpoints required by the supported/configured trust evaluation methods
         url_map = self.trust_evaluator.build_metadata_endpoints(
             self.name,
             self._backend_url
@@ -242,7 +277,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             case unsupported:
                 _msg = f"unrecognized remote flow type: {unsupported}"
                 self._log_error(context, _msg)
-                return self._handle_500(context, "something went wrong when creating your authentication request", Exception(_msg))
+                return self._handle_500(
+                    context,
+                    "something went wrong when creating your authentication request",
+                    Exception(_msg)
+                )
 
     def _same_device_http_response(self, response_url: str) -> Response:
         return Redirect(response_url)
@@ -274,7 +313,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         try:
             state = self.response_code_helper.recover_state(resp_code)
         except Exception:
-            return self._handle_400(context, "missing or invalid parameter [response_code]")
+            return self._handle_400(
+                context, "missing or invalid parameter [response_code]"
+            )
 
         finalized_session = None
 
@@ -363,6 +404,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
     @property
     def db_engine(self) -> DBEngine:
         """Returns the DBEngine instance used by the class"""
+        if not self._db_engine:
+            self._db_engine = DBEngine(self.config["storage"])
+
         try:
             self._db_engine.is_connected
         except Exception as e:
@@ -380,7 +424,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         if "://" not in scheme:
             scheme = scheme + "://"
         if not scheme.endswith("/"):
-            scheme = scheme + "/"
+            scheme = f"{scheme}/"
         # NOTE: path component is currently unused by the protocol, but currently
         # we leave it there as 'authorize' to stress the fact that this is an
         # OAuth 2.0 request modified by JAR (RFC9101)

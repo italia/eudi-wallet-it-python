@@ -1,14 +1,15 @@
 
 import datetime
-import requests
 import sys
 import unittest.mock
 
 import freezegun
 import pytest
+import requests
 
-from pyeudiw.tools.utils import exp_from_now, iat_now, make_timezone_aware, random_token
-from pyeudiw.tools.utils import cacheable_get_http_url, _lru_cached_get_http_url
+from pyeudiw.tools.utils import (_lru_cached_get_http_url,
+                                 cacheable_get_http_url, exp_from_now, iat_now,
+                                 make_timezone_aware, random_token)
 
 
 def test_make_timezone_aware():

@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Callable
+
 from .base_db import BaseDB
 
 

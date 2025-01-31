@@ -1,9 +1,10 @@
+import json
+
 from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jws.jws import JWS
 
-import json
 import pyeudiw.federation.trust_chain_validator as tcv_test
-from pyeudiw.tools.utils import iat_now, exp_from_now
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 httpc_params = {
     "connection": {"ssl": True},

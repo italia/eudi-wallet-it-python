@@ -9,6 +9,8 @@ autoflake -r --in-place  --remove-unused-variables --expand-star-imports --remov
 flake8 $SRC --count --select=E9,F63,F7,F82 --show-source --statistics
 flake8 $SRC --max-line-length 120 --count --statistics
 
+isort --atomic pyeudiw
+
 bandit -r -x $SRC/test* $SRC/*
 
 echo -e '\nHTML linting:'
@@ -27,3 +29,4 @@ done
 
 echo -e "\nHTML errors: $errors"
 if [ "$errors" -gt 0 ]; then exit 1; fi;
+

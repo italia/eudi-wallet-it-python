@@ -1,12 +1,12 @@
-import pem
 import logging
-from OpenSSL import crypto
 from datetime import datetime
 from ssl import DER_cert_to_PEM_cert
-from cryptography.x509 import load_der_x509_certificate
 
+import pem
+from cryptography.x509 import load_der_x509_certificate
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
+from OpenSSL import crypto
 
 LOG_ERROR = "x509 verification failed: {}"
 

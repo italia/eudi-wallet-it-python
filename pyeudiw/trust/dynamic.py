@@ -1,17 +1,19 @@
 import logging
 from typing import Any, Callable, Optional
+
 import satosa.context
 import satosa.response
 
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.trust.exceptions import TrustConfigurationError
 from pyeudiw.tools.utils import dynamic_class_loader
+from pyeudiw.trust.exceptions import (NoCriptographicMaterial,
+                                      TrustConfigurationError)
+from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
-from pyeudiw.storage.exceptions import EntryNotFound
-from pyeudiw.trust.exceptions import NoCriptographicMaterial
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +89,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source:
             trust_source = self._upsert_source_trust_materials(
-                issuer, trust_source)
+                issuer, trust_source
+            )
 
         return trust_source
 
@@ -105,7 +108,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.keys:
             raise NoCriptographicMaterial(
-                f"no trust evaluator can provide cyptographic material for {issuer}: searched among: {self.handlers_names}"
+                f"no trust evaluator can provide cyptographic material "
+                f"for {issuer}: searched among: {self.handlers_names}"
             )
 
         return trust_source.public_keys
@@ -118,7 +122,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.metadata:
             raise Exception(
-                f"no trust evaluator can provide metadata for {issuer}: searched among: {self.handlers_names}")
+                f"no trust evaluator can provide metadata for {issuer}: "
+                f"searched among: {self.handlers_names}")
 
         return trust_source.metadata
 
@@ -150,7 +155,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.policies:
             raise Exception(
-                f"no trust evaluator can provide policies for {issuer}: searched among: {self.handlers_names}")
+                f"no trust evaluator can provide policies for {issuer}: "
+                f"searched among: {self.handlers_names}")
 
         return trust_source.policies
 
@@ -168,7 +174,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not trust_source.trust_params:
             raise Exception(
-                f"no trust evaluator can provide trust parameters for {issuer}: searched among: {self.handlers_names}")
+                f"no trust evaluator can provide trust parameters for {issuer}: "
+                f"searched among: {self.handlers_names}")
 
         return {type: param.trust_params for type, param in trust_source.trust_params.items()}
 
@@ -176,17 +183,20 @@ class CombinedTrustEvaluator(BaseLogger):
         endpoints = []
         for handler in self.handlers:
             endpoints += handler.build_metadata_endpoints(
-                backend_name, entity_uri)
+                backend_name, entity_uri
+            )
         # Partially check for collissions in managed paths: this might happen if multiple configured
         # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
         all_paths = [path for path, *_ in endpoints]
         if len(all_paths) > len(set(all_paths)):
-            self._log_warning("build_metadata_endpoints",
-                              f"found collision in metadata endpoint: {all_paths}")
+            self._log_warning(
+                "build_metadata_endpoints",
+                f"found collision in metadata endpoint: {all_paths}"
+            )
         return endpoints
 
     @staticmethod
-    def from_config(config: dict, db_engine: DBEngine) -> 'CombinedTrustEvaluator':
+    def from_config(config: dict, db_engine: DBEngine, default_client_id: str) -> 'CombinedTrustEvaluator':
         """
         Create a CombinedTrustEvaluator from a configuration.
 
@@ -202,6 +212,11 @@ class CombinedTrustEvaluator(BaseLogger):
 
         for handler_name, handler_config in config.items():
             try:
+                # every trust evaluation method might use their own client id
+                # but a default one always therefore required
+                if not (client_id := handler_config["config"].get("client_id")):
+                    handler_config["config"]["client_id"] = default_client_id
+
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],
                     handler_config["class"],
@@ -213,13 +228,16 @@ class CombinedTrustEvaluator(BaseLogger):
 
             if not isinstance(trust_handler, TrustHandlerInterface):
                 raise TrustConfigurationError(
-                    f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator")
+                    f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator"
+                )
 
             handlers.append(trust_handler)
 
         if not handlers:
             logger.warning(
-                "No configured trust model, using direct trust model")
+                "No configured trust model, using direct trust model"
+            )
             handlers.append(DirectTrustSdJwtVc())
+            handlers.append(DirectTrustJar())
 
         return CombinedTrustEvaluator(handlers, db_engine)

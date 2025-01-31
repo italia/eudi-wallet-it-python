@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+
 from .exceptions import PolicyError
 
 __author__ = "Roland Hedberg"

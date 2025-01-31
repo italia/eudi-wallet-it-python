@@ -1,7 +1,8 @@
-from pyeudiw.tests.jwt import VALID_TC_JWT, VALID_JWE
-from pyeudiw.jwt.exceptions import JWTInvalidElementPosition, JWTDecodeError
-
-from pyeudiw.jwt.utils import decode_jwt_element, decode_jwt_header, decode_jwt_payload, is_jwt_format, is_jwe_format
+from pyeudiw.jwt.exceptions import JWTDecodeError, JWTInvalidElementPosition
+from pyeudiw.jwt.utils import (decode_jwt_element, decode_jwt_header,
+                               decode_jwt_payload, is_jwe_format,
+                               is_jwt_format)
+from pyeudiw.tests.jwt import VALID_JWE, VALID_TC_JWT
 
 
 def test_decode_jwt_element():

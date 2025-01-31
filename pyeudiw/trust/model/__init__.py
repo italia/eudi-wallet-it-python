@@ -1,4 +1,5 @@
 import sys
+
 if float(f"{sys.version_info.major}.{sys.version_info.minor}") >= 3.12:
     from typing import TypedDict
 else:

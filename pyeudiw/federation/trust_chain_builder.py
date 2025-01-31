@@ -1,24 +1,15 @@
 import datetime
 import json
 import logging
-
 from collections import OrderedDict
 from typing import Union
 
-from .policy import TrustChainPolicy
-
-from .exceptions import (
-    InvalidEntityStatement,
-    InvalidRequiredTrustMark,
-    MetadataDiscoveryException
-)
-
-from .statements import (
-    get_entity_configurations,
-    EntityStatement,
-)
 from pyeudiw.tools.utils import datetime_from_timestamp
 
+from .exceptions import (InvalidEntityStatement, InvalidRequiredTrustMark,
+                         MetadataDiscoveryException)
+from .policy import TrustChainPolicy
+from .statements import EntityStatement, get_entity_configurations
 
 logger = logging.getLogger(__name__)
 

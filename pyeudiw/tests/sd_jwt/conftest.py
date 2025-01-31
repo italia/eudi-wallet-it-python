@@ -1,8 +1,9 @@
 from pathlib import Path
+
 import pytest
 
-from pyeudiw.sd_jwt.utils.yaml_specification import load_yaml_specification
 from pyeudiw.sd_jwt.utils.demo_utils import load_yaml_settings
+from pyeudiw.sd_jwt.utils.yaml_specification import load_yaml_specification
 
 tc_basedir = Path(__file__).parent / "testcases"
 

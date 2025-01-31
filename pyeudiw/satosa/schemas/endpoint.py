@@ -1,4 +1,5 @@
 from typing import Union
+
 from pydantic import BaseModel, field_validator
 
 _CONFIG_ENDPOINT_KEYS = ["module", "class", "path"]
@@ -17,7 +18,7 @@ class EndpointsConfig(BaseModel):
             raise ValueError(f"Endpoints: {v} must start with '/'")
         elif isinstance(v, dict):
             if not v['path'].startswith('/'):
-              raise ValueError(f"Endpoints: {v['path']} must start with '/'")  
+                raise ValueError(f"Endpoints: {v['path']} must start with '/'")
         return v
 
     @field_validator("response", "request")

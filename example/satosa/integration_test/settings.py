@@ -103,7 +103,7 @@ rp_ec = {
     "sub": RP_EID,
     'jwks': {"keys": rp_jwks},
     "metadata": {
-        "wallet_relying_party": {
+        "openid_credential_verifier": {
             'jwks': {"keys": []}
         },
         "federation_entity": {

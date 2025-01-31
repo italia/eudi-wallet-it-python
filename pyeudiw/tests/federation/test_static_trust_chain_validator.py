@@ -1,29 +1,17 @@
 import copy
-import uuid
 import unittest.mock as mock
+import uuid
 from unittest.mock import Mock
-from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
+
 import pyeudiw.federation.trust_chain_validator as tcv
 from pyeudiw.federation.exceptions import HttpError
-
+from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.tests.settings import httpc_params
 
-
-from . base import (
-    EXP,
-    JWS,
-    NOW,
-    intermediate_es_wallet,
-    intermediate_es_wallet_signed,
-    intermediate_jwk,
-    leaf_wallet_signed,
-    leaf_wallet_jwk,
-    ta_es,
-    ta_es_signed,
-    ta_jwk,
-    trust_chain_wallet
-)
-
+from .base import (EXP, JWS, NOW, intermediate_es_wallet,
+                   intermediate_es_wallet_signed, intermediate_jwk,
+                   leaf_wallet_jwk, leaf_wallet_signed, ta_es, ta_es_signed,
+                   ta_jwk, trust_chain_wallet)
 
 trust_anchor_example = "https://trust-anchor.example.org"
 intermediate_example = "https://intermediate.eidas.example.org"

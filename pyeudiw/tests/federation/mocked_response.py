@@ -1,7 +1,8 @@
 
-from . base import intermediate_ec_signed, intermediate_es_wallet_signed, leaf_wallet_signed, ta_ec_signed, ta_es_signed
-
 import logging
+
+from .base import (intermediate_ec_signed, intermediate_es_wallet_signed,
+                   leaf_wallet_signed, ta_ec_signed, ta_es_signed)
 
 logger = logging.getLogger(__name__)
 

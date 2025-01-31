@@ -1,5 +1,4 @@
 import pytest
-
 from pydantic import ValidationError
 
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenHeader, VPTokenPayload

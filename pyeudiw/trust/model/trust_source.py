@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 

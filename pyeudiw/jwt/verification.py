@@ -1,8 +1,8 @@
 
+from cryptojwt.jwk import JWK
+
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
-
-from cryptojwt.jwk import JWK
 
 
 def verify_jws_with_key(jws: str, key: JWK) -> None:

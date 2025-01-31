@@ -1,18 +1,15 @@
 import uuid
 from datetime import datetime
-from typing import Callable, Union, Tuple
+from typing import Callable, Tuple, Union
+
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage, TrustType
-from pyeudiw.storage.exceptions import (
-    ChainNotExist,
-    StorageWriteError,
-    EntryNotFound
-)
+from pyeudiw.storage.exceptions import (ChainNotExist, EntryNotFound,
+                                        StorageWriteError)
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.tools.utils import dynamic_class_loader
 
 from .base_db import BaseDB
-
-from pyeudiw.tools.utils import dynamic_class_loader
 
 
 class DBEngine(BaseStorage, BaseCache, BaseLogger):

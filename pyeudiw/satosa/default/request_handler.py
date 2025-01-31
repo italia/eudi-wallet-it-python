@@ -2,18 +2,19 @@
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
+from pyeudiw.openid4vp.authorization_request import \
+    build_authorization_request_claims
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP
 from pyeudiw.satosa.utils.response import Response
-from pyeudiw.satosa.utils.trust import BackendTrust
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 
-class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
+class RequestHandler(RequestHandlerInterface, BackendDPoP):
 
-    _RESP_CONTENT_TYPE = "application/oauth-authz-req+jwt"
     _REQUEST_OBJECT_TYP = "oauth-authz-req+jwt"
+    _RESP_CONTENT_TYPE = f"application/{_REQUEST_OBJECT_TYP}"
 
     def request_endpoint(self, context: Context, *args) -> Response:
         self._log_function_debug("request_endpoint", context, "args", args)
@@ -25,7 +26,9 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
                 "Error while retrieving id from qs_params: "
                 f"{e.__class__.__name__}: {e}"
             )
-            return self._handle_400(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
+            return self._handle_400(
+                context, _msg, HTTPError(f"{e} with {context.__dict__}")
+            )
 
         data = build_authorization_request_claims(
             self.client_id,
@@ -51,10 +54,14 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
             return self._handle_500(context, _msg, e)
 
         helper = JWSHelper(self.default_metadata_private_jwk)
+
+        federation_trust_handler_backend: TrustHandlerInterface = \
+            self.get_trust_backend_by_class_name("FederationHandler")
+
         request_object_jwt = helper.sign(
             data,
             protected={
-                'trust_chain': self.get_backend_trust_chain(),
+                'trust_chain': federation_trust_handler_backend.get_backend_trust_chain(),
                 'typ': RequestHandler._REQUEST_OBJECT_TYP
             }
         )

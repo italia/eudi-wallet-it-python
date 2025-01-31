@@ -1,35 +1,42 @@
-from copy import deepcopy
 import datetime
 import hashlib
 import json
 import logging
-import pydantic
-
+from copy import deepcopy
 from typing import Any
+
+import pydantic
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.openid4vp.authorization_response import AuthorizeResponsePayload, DirectPostJwtJweParser, DirectPostParser, detect_response_mode
-from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException, InvalidVPKeyBinding, InvalidVPToken, KIDNotFound
+from pyeudiw.openid4vp.authorization_response import (AuthorizeResponsePayload,
+                                                      DirectPostJwtJweParser,
+                                                      DirectPostParser,
+                                                      detect_response_mode)
+from pyeudiw.openid4vp.exceptions import (AuthRespParsingException,
+                                          AuthRespValidationException,
+                                          InvalidVPKeyBinding, InvalidVPToken,
+                                          KIDNotFound)
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.openid4vp.vp import Vp
-from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
-from pyeudiw.satosa.exceptions import (AuthorizeUnmatchedResponse, BadRequestError, FinalizedSessionError,
-                                       InvalidInternalStateError, NotTrustedFederationError, HTTPError)
+from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
+from pyeudiw.satosa.exceptions import (AuthorizeUnmatchedResponse,
+                                       BadRequestError, FinalizedSessionError,
+                                       HTTPError, InvalidInternalStateError,
+                                       NotTrustedFederationError)
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 
 
-class ResponseHandler(ResponseHandlerInterface, BackendTrust):
+class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"

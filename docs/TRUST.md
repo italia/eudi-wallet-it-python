@@ -29,18 +29,18 @@ Some HTTPC parameters are commonly used, have a default value and as an alternat
 
 ### Federation
 
-Module `pyeudiw.trust.default.federation` provides a source of trusted entities and metadata based on [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html) that is intended to be applicable to Issuer, Holders and Verifiers. In the specific case of the Verifier (this application), the module can expose verifier metadata at the `.well-known/openid-federation` endpoint.
+Module `pyeudiw.trust.handler.federation` provides a source of trusted entities and metadata based on [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html) that is intended to be applicable to Issuer, Holders and Verifiers. In the specific case of the Verifier (this application), the module can expose verifier metadata at the `.well-known/openid-federation` endpoint.
 
 The configuration parameters of the module are the following.
 
 
 | Parameter                                                      | Description                                               | Example Value                                                            |
 | -------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
-| config.federation.metadata_type                                | The type of metadata to use for the federation            | wallet_relying_party                                                     |
+| config.federation.metadata_type                                | The type of metadata to use for the federation            | openid_credential_verifier                                                     |
 | config.federation.authority_hints                              | The list of authority hints to use for the federation     | [http://127.0.0.1:10000]                                                 |
 | config.federation.trust_anchors                                | The list of trust anchors to use for the federation       | [http://127.0.0.1:10000]                                                 |
 | config.federation.default_sig_alg                              | The default signature algorithm to use for the federation | RS256                                                                    |
-| config.federation.federation_entity_metadata.organization_name | The organization name                                     | Developers Italia SATOSA OpenID4VP backend policy_uri, tos_uri, logo_uri |
+| config.federation.federation_entity_metadata.organization_name | The organization name                                     | IAM Proxy Italia OpenID4VP backend policy_uri, tos_uri, logo_uri |
 | config.federation.federation_entity_metadata.homepage_uri      | The URI of the homepage                                   | https://developers.italia.it                                             |
 | config.federation.federation_entity_metadata.policy_uri        | The URI of the policy                                     | https://developers.italia.it/policy.html                                 |
 | config.federation.federation_entity_metadata.tos_uri           | The URI of the TOS                                        | https://developers.italia.it/tos.html                                    |

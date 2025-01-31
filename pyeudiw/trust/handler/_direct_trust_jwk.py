@@ -1,5 +1,6 @@
 from typing import Any, Callable, Literal
 from urllib.parse import urlparse
+
 import satosa.context
 import satosa.response
 
@@ -7,7 +8,6 @@ from pyeudiw.jwk import JWK
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
-
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
@@ -41,12 +41,14 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         httpc_params: dict,
         jwk_endpoint: str,
         cache_ttl: int,
-        jwks: list[dict] | None
+        jwks: list[dict] | None,
+        client_id: str = None
     ):
         self.httpc_params = httpc_params
         self.jwk_endpoint = jwk_endpoint
         self.cache_ttl = cache_ttl
         self.http_async_calls = False
+        self.client_id = client_id
         # input validation
         self.jwks = jwks if jwks else []
         try:
@@ -85,7 +87,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         level as it breaks an assuptions of the internal satosa router and
         there is no way to solve that problem at the satosa backend level.
         """
-        endpoint = backend_name.strip('/') + '/' + self.jwk_endpoint.strip("/")
+        endpoint = f"{backend_name.strip('/')}/{self.jwk_endpoint.strip('/')}"
         return endpoint.strip('/')
 
     def _extract_jwks_from_jwk_metadata(self, metadata: dict) -> dict:
@@ -98,7 +100,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         jwks_uri: str | None = metadata.get("jwks_uri", None)
         if (not jwks) and (not jwks_uri):
             raise InvalidJwkMetadataException(
-                "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]")
+                "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]"
+            )
         if jwks:
             # get jwks by value
             return jwks
@@ -157,13 +160,15 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             self.get_metadata(issuer, trust_source)
         except Exception as e:
             self._log_warning(
-                "updating metadata", f"Exception encountered when updating metadata with {self.__class__.__name__} for issuer {issuer}: {e}")
+                "updating metadata", f"Exception encountered when updating metadata with {self.__class__.__name__} for issuer {issuer}: {e}"
+            )
 
         try:
             md = self._get_jwk_metadata(issuer)
             if not issuer == (obt_issuer := md.get("issuer", None)):
                 raise InvalidJwkMetadataException(
-                    f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}")
+                    f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}"
+                )
             jwks = self._extract_jwks_from_jwk_metadata(md)
             jwk_l: list[dict] = jwks.get("keys", [])
             if not jwk_l:
@@ -186,5 +191,5 @@ def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
     if not endpoint_component:
         return issuer_id
     baseurl = urlparse(issuer_id)
-    full_endpoint_path = '/' + endpoint_component.strip('/') + baseurl.path
+    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}"
     return baseurl._replace(path=full_endpoint_path).geturl()

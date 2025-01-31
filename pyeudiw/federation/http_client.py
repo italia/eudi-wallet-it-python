@@ -1,5 +1,6 @@
-import aiohttp
 import asyncio
+
+import aiohttp
 import requests
 
 from .exceptions import HttpError

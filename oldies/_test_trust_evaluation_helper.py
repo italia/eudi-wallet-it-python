@@ -1,10 +1,12 @@
-import pytest
 from datetime import datetime
-from pyeudiw.tests.settings import CONFIG
-from pyeudiw.trust import TrustEvaluationHelper
+
+import pytest
+
 from pyeudiw.storage.db_engine import DBEngine, TrustType
 from pyeudiw.tests.federation.base import trust_chain_issuer
-from pyeudiw.tests.x509.test_x509 import gen_chain, chain_to_pem
+from pyeudiw.tests.settings import CONFIG
+from pyeudiw.tests.x509.test_x509 import chain_to_pem, gen_chain
+from pyeudiw.trust import TrustEvaluationHelper
 
 
 class TestTrustEvaluationHelper:

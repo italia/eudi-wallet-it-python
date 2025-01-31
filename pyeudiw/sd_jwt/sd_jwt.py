@@ -1,28 +1,22 @@
+import json
 import logging
 from hashlib import sha256
-import json
 from typing import Any, Callable, TypeVar
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt.common import SDJWTCommon
-
-from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
-from pyeudiw.jwt.verification import verify_jws_with_key
-from pyeudiw.sd_jwt.common import SDJWTCommon
-from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
-from pyeudiw.sd_jwt.schema import is_sd_jwt_format, is_sd_jwt_kb_format, VerifierChallenge
-from pyeudiw.jwt.parse import DecodedJwt
-from pyeudiw.tools.utils import iat_now
-
 
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 
-from . import (
-    DEFAULT_SD_ALG,
-    DIGEST_ALG_KEY,
-    SD_DIGESTS_KEY,
-    SD_LIST_PREFIX
-)
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.parse import DecodedJwt
+from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
+from pyeudiw.jwt.verification import verify_jws_with_key
+from pyeudiw.sd_jwt.common import SDJWTCommon
+from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
+from pyeudiw.sd_jwt.schema import (VerifierChallenge, is_sd_jwt_format,
+                                   is_sd_jwt_kb_format)
+from pyeudiw.tools.utils import iat_now
+
+from . import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
 
 _JsonTypes = dict | list | str | int | float | bool | None
 _JsonTypes_T = TypeVar('_JsonTypes_T', bound=_JsonTypes)

@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from typing import Union
+
 from pymongo.results import UpdateResult
 
 from .base_db import BaseDB

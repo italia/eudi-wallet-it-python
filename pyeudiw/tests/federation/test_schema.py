@@ -1,7 +1,8 @@
 
-from pyeudiw.tools.utils import iat_now, exp_from_now
-from pyeudiw.federation import is_es, is_ec
-from pyeudiw.federation.exceptions import InvalidEntityStatement, InvalidEntityConfiguration
+from pyeudiw.federation.exceptions import (InvalidEntityConfiguration,
+                                           InvalidEntityStatement)
+from pyeudiw.federation.utils import is_ec, is_es
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 NOW = iat_now()
 EXP = exp_from_now(5)
@@ -22,7 +23,7 @@ ta_ec = {
     'sub': 'https://registry.eidas.trust-anchor.example.eu/',
     'jwks': {"keys": []},
     'metadata': {
-        'wallet_relying_party': {
+        'openid_credential_verifier': {
             "application_type": "web",
             "client_id": "https://rp.example.it",
             "client_name": "Name of an example organization",

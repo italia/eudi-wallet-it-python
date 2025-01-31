@@ -2,8 +2,8 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.demo_utils import get_jwk
-from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 from pyeudiw.sd_jwt.utils.yaml_specification import remove_sdobj_wrappers
+from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 
 
 def test_e2e(testcase, settings):
