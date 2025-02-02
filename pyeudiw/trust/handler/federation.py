@@ -70,10 +70,10 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.authority_hints: List[str] = authority_hints
         self.trust_anchors: List[str] = trust_anchors
         self.default_sig_alg: str = default_sig_alg
-        self.federation_jwks: List[Dict[str,
+        self.federation_jwks: List[dict[str,
                                         Union[str, List[str]]]] = federation_jwks
         self.trust_marks: List[dict] = trust_marks
-        self.federation_entity_metadata: Dict[str,
+        self.federation_entity_metadata: dict[str,
                                               str] = federation_entity_metadata
         self.client_id: str = federation_entity_metadata
         self.entity_configuration_exp = entity_configuration_exp
