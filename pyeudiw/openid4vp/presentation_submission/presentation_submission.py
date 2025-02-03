@@ -10,12 +10,13 @@ from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmis
 logger = logging.getLogger(__name__)
 
 class PresentationSubmission:
-    def __init__(self, submission: dict[str, Any]):
+    def __init__(self, submission: dict[str, Any], config: dict[str, Any]):
         """
         Initialize the PresentationSubmission handler with the submission data.
 
         Args:
             submission (dict[str, Any]): The presentation submission data.
+            config (dict[str, Any], optional): Configuration dictionary. If not provided, uses the default file.
 
         Raises:
             KeyError: If the 'format' key is missing in the submission.
@@ -23,7 +24,7 @@ class PresentationSubmission:
             ImportError: If the module or class cannot be loaded.
             ValidationError: If the submission data is invalid or exceeds size limits.
         """
-        self.config = self._load_config()
+        self.config = config if config else self._load_config()
         self.submission = self._validate_submission(submission)
         self.handlers = self._initialize_handlers()
 

@@ -43,11 +43,9 @@ def test_presentation_submission_initialization_with_schema_validation():
     setattr(mock_module, "MockLdpVpHandler", mock_ldp_vp_handler)
     setattr(mock_module, "MockJwtVpJsonHandler", mock_jwt_vp_json_handler)
 
-    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config), \
-         patch("importlib.import_module", return_value=mock_module):
-        
-        # Initialize the class
-        ps = PresentationSubmission(valid_submission)
+    with patch("importlib.import_module", return_value=mock_module):
+        # Initialize the class with inline config
+        ps = PresentationSubmission(valid_submission, config=mock_format_config)
 
         # Assert that handlers were created for all formats in descriptor_map
         assert len(ps.handlers) == len(valid_submission["descriptor_map"]), "Not all handlers were created."
@@ -62,10 +60,9 @@ def test_presentation_submission_large_submission_with_schema():
     Test that the PresentationSubmission class raises a ValidationError
     when the submission exceeds the descriptor_map size limit.
     """
-    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
-        # Expect a ValidationError for exceeding descriptor_map size limit
-        with raises(ValidationError, match="descriptor_map exceeds maximum allowed size of 100 items"):
-            PresentationSubmission(large_submission)
+    # Expect a ValidationError for exceeding descriptor_map size limit
+    with raises(ValidationError, match="descriptor_map exceeds maximum allowed size of 100 items"):
+        PresentationSubmission(large_submission, config=mock_format_config)
 
 
 def test_presentation_submission_missing_descriptor_key():
@@ -81,10 +78,9 @@ def test_presentation_submission_missing_descriptor_key():
         ]
     }
 
-    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
+    with raises(ValidationError, match=r"Field required"):
+        PresentationSubmission(invalid_submission, config=mock_format_config)
 
-        with raises(ValidationError, match=r"Field required"):
-            PresentationSubmission(invalid_submission)
 
 def test_presentation_submission_invalid_format():
     """
@@ -99,9 +95,9 @@ def test_presentation_submission_invalid_format():
         ]
     }
 
-    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
-        with raises(ValueError, match="Format 'unsupported_format' is not supported or not defined in the configuration."):
-            PresentationSubmission(invalid_submission)
+    with raises(ValueError, match="Format 'unsupported_format' is not supported or not defined in the configuration."):
+        PresentationSubmission(invalid_submission, config=mock_format_config)
+
 
 def test_presentation_submission_missing_format_key():
     """
@@ -116,6 +112,5 @@ def test_presentation_submission_missing_format_key():
         ]
     }
 
-    with patch("pyeudiw.openid4vp.presentation_submission.presentation_submission.PresentationSubmission._load_config", return_value=mock_format_config):
-         with raises(ValidationError, match=r"descriptor_map\.0\.format\s+Field required"):
-            PresentationSubmission(missing_format_key_submission)
+    with raises(ValidationError, match=r"descriptor_map\.0\.format\s+Field required"):
+        PresentationSubmission(missing_format_key_submission, config=mock_format_config)
