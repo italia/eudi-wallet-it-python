@@ -5,6 +5,7 @@ import importlib
 from typing import Any
 import logging
 
+from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,10 @@ class PresentationSubmission:
                 # Dynamically load the module and class
                 module = importlib.import_module(module_name)
                 cls = getattr(module, class_name)
+                
+                if not issubclass(cls, BaseVPParser):
+                     raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
+                     
                 handlers[index] = cls()  # Instantiate the class
             except ModuleNotFoundError:
                 logger.warning(f"Module '{module_name}' not found for format '{format_name}'. Skipping index {index}.")
