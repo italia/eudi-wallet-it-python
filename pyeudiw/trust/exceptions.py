@@ -24,3 +24,7 @@ class InvalidAnchor(Exception):
 
 class TrustConfigurationError(Exception):
     pass
+
+
+class NoCriptographicMaterial(Exception):
+    pass

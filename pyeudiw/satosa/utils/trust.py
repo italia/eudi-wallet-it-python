@@ -202,10 +202,10 @@ class BackendTrust(BaseLogger):
         data = self.entity_configuration_as_dict
         jwshelper = JWSHelper(self.default_federation_private_jwk)
         return jwshelper.sign(
-            protected={
+            header={
                 "alg": self.config['trust']['federation']['config']["default_sig_alg"],
                 "kid": self.default_federation_private_jwk["kid"],
                 "typ": "entity-statement+jwt"
             },
-            plain_dict=data
+            payload=data
         )

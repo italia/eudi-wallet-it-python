@@ -14,3 +14,4 @@ freezegun
 html-linter
 sphinx
 sphinx_rtd_theme
+playwright

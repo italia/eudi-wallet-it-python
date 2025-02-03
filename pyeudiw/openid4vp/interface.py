@@ -1,7 +1,3 @@
-from pyeudiw.jwk import JWK
-from pyeudiw.jwt.parse import KeyIdentifier_T
-
-
 class VpTokenParser:
     """VpTokenParser is an interface that specify that an object is able to
     extract verifiable credentials from a VP token.
@@ -10,14 +6,6 @@ class VpTokenParser:
         raise NotImplementedError
 
     def get_issuer_name(self) -> str:
-        raise NotImplementedError
-
-    def get_signing_key(self) -> dict | KeyIdentifier_T:
-        """
-        :returns: a public key either as a dictionary or as an identifier
-            (kid string) of a public key as seen in header
-        :rtype: dict | str
-        """
         raise NotImplementedError
 
 
@@ -39,17 +27,17 @@ class VpTokenVerifier:
     def is_active(self) -> bool:
         return (not self.is_expired()) and (not self.is_revoked())
 
-    def verify_signature(self, public_key: JWK) -> None:
+    def verify_signature(self) -> None:
         """
-        :raises [InvalidSignatureException]:
+        Verify a token signature
+
+        :raises InvalidSignatureException: if signature is invalid`
         """
         raise NotImplementedError
-    
+
     def verify_challenge(self) -> None:
         """
+
         :raises []:
         """
         raise NotImplementedError
-
-
-    # TODO: VP proof of possession verification method should be implemented

@@ -58,7 +58,7 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP, BackendTrust):
         helper = JWSHelper(self.default_metadata_private_jwk)
         request_object_jwt = helper.sign(
             data,
-            protected={
+            header={
                 'trust_chain': self.get_backend_trust_chain(),
                 'typ': RequestHandler._REQUEST_OBJECT_TYP
             }

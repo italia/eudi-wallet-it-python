@@ -1,16 +1,19 @@
+import logging
 from hashlib import sha256
 import json
 from typing import Any, Callable, TypeVar
-import sd_jwt.common as sd_jwtcommon
-from sd_jwt.common import SDJWTCommon
+import pyeudiw.sd_jwt.common as sd_jwtcommon
+from pyeudiw.sd_jwt.common import SDJWTCommon
 
-from pyeudiw.jwk import JWK
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import is_sd_jwt_format, is_sd_jwt_kb_format, VerifierChallenge
 from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.tools.utils import iat_now
+
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
 
 
 _JsonTypes = dict | list | str | int | float | bool | None
@@ -25,6 +28,8 @@ SD_LIST_PREFIX = sd_jwtcommon.SD_LIST_PREFIX
 SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
     "sha-256": lambda s: base64_urlencode(sha256(s.encode("ascii")).digest())
 }
+
+logger = logging.getLogger(__name__)
 
 
 class SdJwt:
@@ -43,6 +48,8 @@ class SdJwt:
         self.disclosures: list[str] = []
         self.holder_kb: DecodedJwt | None = None
         self._post_init_precomputed_values()
+        # pre-computable values
+        self._disclosed_claims: dict | None = {}
 
     def _post_init_precomputed_values(self):
         iss_jwt, *disclosures, kb_jwt = self.token.split(FORMAT_SEPARATOR)
@@ -63,7 +70,10 @@ class SdJwt:
         return self.disclosures
 
     def get_disclosed_claims(self) -> dict:
-        return _extract_claims_from_payload(self.issuer_jwt.payload, self.disclosures, SUPPORTED_SD_ALG_FN[self.get_sd_alg()])
+        # override a private property so that claims are not re-evaluated each time  the function is called (this is not stricly very safe, tho)
+        if self._disclosed_claims is None:
+            self._disclosed_claims = _extract_claims_from_payload(self.issuer_jwt.payload, self.disclosures, SUPPORTED_SD_ALG_FN[self.get_sd_alg()])
+        return self._disclosed_claims
 
     def get_issuer_jwt(self) -> str:
         return self.issuer_jwt.jwt
@@ -77,7 +87,7 @@ class SdJwt:
     def has_key_binding(self) -> bool:
         return self.holder_kb is not None
 
-    def verify_issuer_jwt_signature(self, key: JWK) -> None:
+    def verify_issuer_jwt_signature(self, key: ECKey | RSAKey | dict) -> None:
         verify_jws_with_key(self.issuer_jwt.jwt, key)
 
     def verify_holder_kb_jwt(self, challenge: VerifierChallenge) -> None:
@@ -98,7 +108,24 @@ class SdJwt:
         if not self.has_key_binding():
             return
         cnf = self.get_confirmation_key()
-        verify_jws_with_key(self.holder_kb.jwt, JWK(cnf))
+        verify_jws_with_key(self.holder_kb.jwt, cnf)
+
+    def is_lifetime_valid(self) -> bool:
+        """is_lifetime_valid verify that an sdjwt has a valid lifetime, that is,
+        checks that iat, exp and nbf claims are correct with the current time.
+        Note that each of those claims is OPTIONAL; moreorev it might be selectively
+        disclosable; however in SD-JWT for VC only iat is disclosable.
+        """
+        now = iat_now()
+        claims = self.get_disclosed_claims()
+        valid = True
+        if "iat" in claims:
+            valid &= (now > claims["iat"])
+        if "nbf" in claims:
+            valid &= (now > claims["nbf"])
+        if "exp" in claims:
+            valid &= (claims["exp"] > now)
+        return valid
 
 
 class SdJwtKb(SdJwt):
@@ -138,7 +165,11 @@ def _verify_iat(payload: dict) -> None:
 
 def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: DecodedJwt, challenge: VerifierChallenge):
     _verify_challenge(hkb, challenge)
-    _verify_sd_hash(token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", ""))
+    _verify_sd_hash(
+        token_without_hkb, 
+        sd_hash_alg, 
+        hkb.payload.get("sd_hash",  "sha-256")
+    )
     _verify_iat(hkb.payload)
 
 

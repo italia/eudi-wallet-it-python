@@ -1,20 +1,24 @@
 import pytest
 
-from pyeudiw.jwk import JWK
-from pyeudiw.jwt import (DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWEHelper,
+from cryptojwt.jwk.rsa import new_rsa_key
+from cryptojwt.jwk.ec import new_ec_key
+
+
+from pyeudiw.jwt import (DEFAULT_ENC_KTY_TO_ALG, DEFAULT_ENC_KTY_TO_ENC, JWEHelper,
                          JWSHelper)
+
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 
 JWKs_EC = [
-    (JWK(key_type="EC"), {"key": "value"}),
-    (JWK(key_type="EC"), "simple string"),
-    (JWK(key_type="EC"), None),
+    (new_ec_key('P-256'), {"key": "value"}),
+    (new_ec_key('P-256'), "simple string"),
+    (new_ec_key('P-256'), None),
 ]
 
 JWKs_RSA = [
-    (JWK(key_type="RSA"), {"key": "value"}),
-    (JWK(key_type="RSA"), "simple string"),
-    (JWK(key_type="RSA"), None),
+    (new_rsa_key(), {"key": "value"}),
+    (new_rsa_key(), "simple string"),
+    (new_rsa_key(), None),
 ]
 
 JWKs = JWKs_EC + JWKs_RSA
@@ -27,17 +31,9 @@ def test_decode_jwt_header(jwk, payload):
     assert jwe
     header = decode_jwt_header(jwe)
     assert header
-    assert header["alg"] == DEFAULT_ENC_ALG_MAP[jwk.jwk["kty"]]
-    assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.jwk["kty"]]
-    assert header["kid"] == jwk.jwk["kid"]
-
-
-@pytest.mark.parametrize("key_type", ["RSA", "EC"])
-def test_jwe_helper_init(key_type):
-    jwk = JWK(key_type=key_type)
-    helper = JWEHelper(jwk)
-    assert helper.jwk == jwk
-
+    assert header["alg"] == DEFAULT_ENC_KTY_TO_ALG[jwk.kty]
+    assert header["enc"] == DEFAULT_ENC_KTY_TO_ENC[jwk.kty]
+    assert header["kid"] == jwk.kid
 
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_encrypt(jwk, payload):
@@ -68,19 +64,11 @@ def test_jwe_helper_decrypt_fail(jwk, payload):
         helper.decrypt(jwe)
 
 
-@pytest.mark.parametrize("key_type", ["RSA", "EC"])
-def test_jws_helper_init(key_type):
-    jwk = JWK(key_type=key_type)
-    helper = JWSHelper(jwk)
-    assert helper.jwk == jwk
-
-
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
-    jws = helper.sign(payload)
+    jws = helper.sign(payload, kid=jwk.kid)
     assert jws
-
 
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_verify(jwk, payload):

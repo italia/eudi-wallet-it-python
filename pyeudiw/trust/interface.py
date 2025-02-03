@@ -1,3 +1,9 @@
+class TrustedPublicKeySource:
+
+    def get_public_keys(self, issuer: str) -> list[dict]:
+        raise NotImplementedError
+
+
 class TrustEvaluator:
     """
     TrustEvaluator is an interface that defined the expected behaviour of a
@@ -7,13 +13,23 @@ class TrustEvaluator:
     (2) obtain the meta information about an issuer that is defined
         according to some trust model
     """
+    def initialize_istance(self, issuer: str) -> None:
+        """
+        Initialize the cryptographic material of the issuer, according to some
+        trust model.
+        """
+        # TODO: rimuovere? A cosa serve questa cosa? Perché c'è in input un issuer?
+        # Ci sono cose che DOBBIAMO fare in maniera eager e non possono essere lazy?
+        raise NotImplementedError
 
     def get_public_keys(self, issuer: str) -> list[dict]:
         """
         yields the public cryptographic material of the issuer
 
         :returns: a list of jwk(s); note that those key are _not_ necessarely
-            identified by a kid claim
+            identified by a kid claim; moreover there is no guarantee that the
+            returned set of keys does not contain duplicated elements, which might
+            be possible bassed on the issuer behaviour.
         """
         raise NotImplementedError
 
@@ -33,3 +49,12 @@ class TrustEvaluator:
 
     def get_policies(self, issuer: str) -> dict:
         raise NotImplementedError("reserved for future uses")
+
+    def get_selfissued_jwt_header_trust_parameters(self) -> dict:
+        """Generate a jwt header that contains trust attestation and/or key identifier
+        that are valid for the given issuer.
+        """
+        # TODO: questo palesemente non funziona e va riviso
+        # opinabilmente, si potrebbe delegare ad una seconda interfaccia
+        # che ha come dipendenza un trust evaluator
+        raise NotImplementedError
