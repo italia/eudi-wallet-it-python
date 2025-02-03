@@ -11,13 +11,16 @@ from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmis
 logger = logging.getLogger(__name__)
 
 class PresentationSubmission:
-    def __init__(self, submission: dict[str, Any], config: dict[str, Any]):
+    def __init__(self, submission: dict[str, Any], *args, config: dict[str, Any] = None, **kwargs):
+
         """
         Initialize the PresentationSubmission handler with the submission data.
 
         Args:
             submission (dict[str, Any]): The presentation submission data.
             config (dict[str, Any], optional): Configuration dictionary. If not provided, uses the default file.
+            *args: Additional arguments to be passed to handlers.
+            **kwargs: Additional keyword arguments to be passed to handlers.
 
         Raises:
             KeyError: If the 'format' key is missing in the submission.
@@ -27,7 +30,7 @@ class PresentationSubmission:
         """
         self.config = config if config else self._load_config()
         self.submission = self._validate_submission(submission)
-        self.handlers = self._initialize_handlers()
+        self.handlers = self._initialize_handlers(*args, **kwargs)
 
     def _load_config(self) -> dict[str, Any]:
         """
@@ -77,9 +80,13 @@ class PresentationSubmission:
             logger.error(f"Submission validation failed: {e}")
             raise
 
-    def _initialize_handlers(self) -> dict[int, object]:
+    def _initialize_handlers(self, *args, **kwargs) -> dict[int, object]:
         """
         Initialize handlers for each item in the 'descriptor_map' of the submission.
+
+        Args:
+            *args: Positional arguments to be passed to the handler classes.
+            **kwargs: Keyword arguments to be passed to the handler classes.
 
         Returns:
             dict[int, object]: A dictionary mapping indices to handler instances.
@@ -88,6 +95,7 @@ class PresentationSubmission:
             KeyError: If the 'format' key is missing in any descriptor.
             ValueError: If a format is not supported or not defined in the configuration.
             ImportError: If a module or class cannot be loaded.
+            TypeError: If the dynamically loaded class does not inherit from BaseVPParser.
         """
         handlers = {}
 
@@ -117,12 +125,12 @@ class PresentationSubmission:
                 if not issubclass(cls, BaseVPParser):
                      raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
                      
-                handlers[index] = cls()  # Instantiate the class
+                handlers[index] = cls(*args, config=self.config, **kwargs)
             except ModuleNotFoundError:
-                logger.warning(f"Module '{module_name}' not found for format '{format_name}'. Skipping index {index}.")
+                raise ImportError(f"Module '{module_name}' not found for format '{format_name}'.")
             except AttributeError:
-                logger.warning(f"Class '{class_name}' not found in module '{module_name}' for format '{format_name}'. Skipping index {index}.")
+                raise ImportError(f"Class '{class_name}' not found in module '{module_name}' for format '{format_name}'.")
             except Exception as e:
-                logger.warning(f"Error loading format '{format_name}' for index {index}: {e}")
+                raise ImportError(f"Error loading class '{class_name}' from module '{module_name}': {e}")
 
         return handlers
