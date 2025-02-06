@@ -120,7 +120,7 @@ def validate_jwt_timestamps_claims(payload: dict, tolerance_s: int = 0) -> None:
     seconds since the epoch, as required by rfc 7519.
     To account for a clock skew between the token issuer and the token
     verifier, the optional argument tolerance_s can be used. As suggested by
-    rfc 7519, it is recommended to keep the tolerance windows to no more than
+    rfc 7519, it is recommended to keep the tolerance window to no more than
     a few minutes.
 
     :param payload: The decoded JWT payload.

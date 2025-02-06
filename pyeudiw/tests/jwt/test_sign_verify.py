@@ -139,7 +139,7 @@ class TestJWSHelperSignVerify():
         try:
             helper.verify(token, tolerance_s=60)
         except Exception as e:
-            assert False, f"unpected verification error: {e}"
+            assert False, f"unexpected verification error: {e}"
 
         # case 1: using global configured tolerance
         DEFAULT_TOKEN_TIME_TOLERANCE
@@ -153,4 +153,4 @@ class TestJWSHelperSignVerify():
         try:
             helper.verify(token)
         except Exception as e:
-            assert False, f"unpected verification error: {e}"
+            assert False, f"unexpected verification error: {e}"
