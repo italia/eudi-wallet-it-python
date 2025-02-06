@@ -1,6 +1,7 @@
 import binascii
 from copy import deepcopy
 import logging
+import os
 from typing import Any, Literal, Union
 
 from cryptojwt import JWS
@@ -8,7 +9,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
-from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError
+from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError, LifetimeException
 from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, serialize_payload, validate_jwt_timestamps_claims
 
 from pyeudiw.jwk import JWK
@@ -39,6 +40,8 @@ DEFAULT_ENC_ENC_MAP = {
     "RSA": "A256CBC-HS512",
     "EC": "A256GCM"
 }
+
+DEFAULT_TOKEN_TIME_TOLERANCE = int(os.getenv("PYEUDIW_TOKEN_TIME_TOLERANCE", "60"), base=10)
 
 
 class JWSHelper(JWHelperInterface):
@@ -121,7 +124,7 @@ class JWSHelper(JWHelperInterface):
             protected["typ"] = "sd-jwt" if self.is_sd_jwt(
                 plain_dict) else "JWT"
 
-         # Include the signing key's kid in the header if required
+        # Include the signing key's kid in the header if required
         if kid_in_header and signer_kid:
             # note that is actually redundant as the underlying library auto-update the header with the kid
             protected["kid"] = signer_kid
@@ -199,12 +202,17 @@ class JWSHelper(JWHelperInterface):
             return None
         return find_jwk_by_kid([key.to_dict() for key in self.jwks], kid)
 
-    def verify(self, jwt: str) -> (str | Any | bytes):
-        """Verify a JWS with one of the initialized keys.
+    def verify(self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE) -> (str | Any | bytes):
+        """Verify a JWS with one of the initialized keys and validate standard
+        standard claims if possible, such as 'iat' and 'exp'.
         Verification of tokens in JSON serialization format is not supported.
 
         :param jwt: The JWS token to be verified.
         :type jws: str
+        :param tolerance_s: optional tolerance window, in seconds, which can be \
+            used to account for some clock skew between the token issuer and the \
+            token verifier when validating lifetime claims.
+        :type tolerance_s: int
 
         :raises JWSVerificationError: if jws field is not in compact jws
             format or if the signature is invalid
@@ -242,8 +250,8 @@ class JWSHelper(JWHelperInterface):
 
         # Validate JWT claims
         try:
-            validate_jwt_timestamps_claims(msg)
-        except ValueError as e:
+            validate_jwt_timestamps_claims(msg, tolerance_s)
+        except LifetimeException as e:
             raise JWSVerificationError(f"Invalid JWT claims: {e}")
 
         return msg
