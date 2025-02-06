@@ -6,7 +6,6 @@ from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP
 from pyeudiw.satosa.utils.response import Response
-from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 
 class RequestHandler(RequestHandlerInterface, BackendDPoP):
@@ -53,18 +52,22 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP):
             _msg = f"Error while updating request object: {e}"
             return self._handle_500(context, _msg, e)
 
+        _protected_jwt_headers = {
+            "typ": RequestHandler._REQUEST_OBJECT_TYP,
+        }
+
+        # load all the trust handlers request jwt header parameters, if any
+        self.trust_evaluator.get_selfissued_jwt_header_trust_parameters(issuer=self.client_id)
+
+
+        #  federation_trust_handler_backend_class: TrustHandlerInterface = (
+        #  self.get_trust_backend_by_class_name("FederationHandler")
+        #  )
+
         helper = JWSHelper(self.default_metadata_private_jwk)
-
-        federation_trust_handler_backend: TrustHandlerInterface = (
-            self.get_trust_backend_by_class_name("FederationHandler")
-        )
-
         request_object_jwt = helper.sign(
             data,
-            protected={
-                "trust_chain": federation_trust_handler_backend.get_backend_trust_chain(),
-                "typ": RequestHandler._REQUEST_OBJECT_TYP,
-            },
+            protected=_protected_jwt_headers,
         )
         return Response(
             message=request_object_jwt,

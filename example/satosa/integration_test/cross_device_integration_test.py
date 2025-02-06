@@ -92,6 +92,7 @@ def run(playwright: Playwright):
         request_object_claims["nonce"],
         request_object_claims["client_id"]
     )
+    
     wallet_response_data = create_authorize_response(
         verifiable_presentations,
         request_object_claims["state"],

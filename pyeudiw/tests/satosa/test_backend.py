@@ -44,6 +44,8 @@ class TestOpenID4VPBackend:
     def create_backend(self):
 
         db_engine_inst = DBEngine(CONFIG["storage"])
+
+        # TODO - not necessary if federation is not tested
         db_engine_inst.add_trust_anchor(
             entity_id=ta_ec["iss"],
             entity_configuration=ta_ec_signed,
@@ -51,6 +53,7 @@ class TestOpenID4VPBackend:
         )
 
         issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
             trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
@@ -217,7 +220,7 @@ class TestOpenID4VPBackend:
 
     #     vp_token = sdjwt_at_holder.sd_jwt_presentation
     #     context.request_method = "POST"
-    #     context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
+    #     context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
     #         CONFIG["base_url"])
 
     #     state = str(uuid.uuid4())
@@ -335,7 +338,7 @@ class TestOpenID4VPBackend:
     #     vp_token_bad_nonce = sdjwt_at_holder.sd_jwt_presentation
 
     #     context.request_method = "POST"
-    #     context.request_uri = CONFIG["metadata"]["response_uris_supported"][0].removeprefix(
+    #     context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
     #         CONFIG["base_url"])
 
     #     response_with_bad_nonce = {
@@ -606,7 +609,7 @@ class TestOpenID4VPBackend:
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert (
-            payload["response_uri"] == CONFIG["metadata"]["response_uris_supported"][0]
+            payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         )
 
         datetime_mock = Mock(wraps=datetime.datetime)

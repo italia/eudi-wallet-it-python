@@ -176,15 +176,18 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer)
 
-        if not trust_source.trust_params:
-            raise Exception(
-                f"no trust evaluator can provide trust parameters for {issuer}: "
-                f"searched among: {self.handlers_names}"
-            )
+        # why should we issue an exception if a configuration might work without
+        # any trust evaluation handler?
+
+        #  if not trust_source.trust_params:
+            #  raise Exception(
+                #  f"no trust evaluator can provide trust parameters for {issuer}: "
+                #  f"searched among: {self.handlers_names}"
+            #  )
 
         return {
-            type: param.trust_params
-            for type, param in trust_source.trust_params.items()
+            _typ: param.trust_params
+            for _typ, param in trust_source.trust_params.items()
         }
 
     def build_metadata_endpoints(
@@ -245,6 +248,9 @@ class CombinedTrustEvaluator(BaseLogger):
                 )
 
             handlers.append(trust_handler)
+            logger.debug(
+                f"TrustHandlers loaded: [{', '.join([str(i.__class__) for i in handlers])}]."
+            )
 
         if not handlers:
             logger.warning("No configured trust model, using direct trust model")

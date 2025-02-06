@@ -12,6 +12,7 @@ from pyeudiw.jwk import JWK
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.utils import detect_flow_typ
+from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
@@ -25,7 +26,7 @@ from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
-class OpenID4VPBackend(OpenID4VPBackendInterface):
+class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
     def __init__(
         self,
         auth_callback_func: Callable[[Context, InternalData], Response],
@@ -61,8 +62,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface):
         self._client_id = self._backend_url
         self.config["metadata"]["client_id"] = self.client_id
 
-        self.config["metadata"]["response_uris_supported"] = []
-        self.config["metadata"]["response_uris_supported"].append(
+        self.config["metadata"]["response_uris"] = []
+        self.config["metadata"]["response_uris"].append(
             f"{self._backend_url}/response-uri"
         )
 
@@ -135,7 +136,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface):
         # This loads all the configured trust evaluation mechanisms
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, self.db_engine, default_client_id=self.client_id
+            trust_configuration, self.db_engine, default_client_id = self.client_id
         )
 
     def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:
@@ -242,7 +243,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface):
             self._log_warning(context, _msg)
             return self._handle_400(
                 context,
-                "previous authn session not found. It seems that the flow did not started with a valid authn request to one of the configured frontend.",
+                "previous authn session not found. It seems that the flow did "
+                "not started with a valid authn request to one of the configured frontend.",
             )
 
         flow_typ = detect_flow_typ(context)

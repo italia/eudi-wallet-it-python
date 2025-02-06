@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Callable, List, Union
 
 import satosa
+from copy import deepcopy
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import RSAKey
@@ -73,8 +74,16 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
             JWK(i).as_public_dict() for i in self.federation_jwks
         ]
 
-        self.metadata_policy_resolver = TrustChainPolicy()
+        if isinstance(self.metadata["jwks"], dict) and self.metadata["jwks"].get('keys'):
+            self.metadata["jwks"] = self.metadata["jwks"].pop("keys")
 
+        self.metadata_jwks = [JWK(i) for i in self.metadata["jwks"]]
+        self.metadata["jwks"] = {"keys": [
+            i.as_public_dict() for i in self.metadata_jwks
+        ]}
+        
+        self.metadata_policy_resolver = TrustChainPolicy()
+        
         for k, v in kwargs.items():
             if not hasattr(self, k):
                 logger.warning(
@@ -138,12 +147,12 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 status="200",
                 content="application/json",
             )
-
-        return satosa.response.Response(
-            self.entity_configuration,
-            status="200",
-            content="application/entity-statement+jwt",
-        )
+        else:
+            return satosa.response.Response(
+                self.entity_configuration,
+                status="200",
+                content="application/entity-statement+jwt",
+            )
 
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
@@ -152,12 +161,12 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     ]:
 
         metadata_path = f'^{backend_name.strip("/")}/.well-known/openid-federation$'
-        response_json = self.entity_configuration_as_dict
+        response = self.entity_configuration
 
         def metadata_response_fn(
             ctx: satosa.context.Context, *args
         ) -> satosa.response.Response:
-            return JsonResponse(message=response_json)
+            return JsonResponse(message=response)
 
         return [(metadata_path, metadata_response_fn)]
 
@@ -171,12 +180,14 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         """
 
         try:
+            breakpoint()
             trust_evaluation_helper = self.build_trust_chain_for_entity_id(
                 storage=self.db_engine,
                 entity_id=self.client_id,
                 entity_configuration=self.entity_configuration,
                 httpc_params=self.httpc_params,
             )
+
             self.db_engine.add_or_update_trust_attestation(
                 entity_id=self.client_id,
                 attestation=trust_evaluation_helper.trust_chain,
@@ -275,12 +286,12 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         # private keys by kid
         self.federations_jwks_by_kids = {
             i["kid"]: i
-            for i in self.config["trust"]["federation"]["config"]["federation_jwks"]
+            for i in self.config["federation_jwks"]
         }
         # dumps public jwks
         self.federation_public_jwks = [
             key_from_jwk_dict(i).serialize()
-            for i in self.config["trust"]["federation"]["config"]["federation_jwks"]
+            for i in self.config["federation_jwks"]
         ]
         # we close the connection in this constructor since it must be fork safe and
         # get reinitialized later on, within each fork
@@ -301,7 +312,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         Updates the trust anchors of current instance.
         """
 
-        tas = self.config["trust"]["federation"]["config"]["trust_anchors"]
+        tas = self.config["trust_anchors"]
         self._log_info("Trust Anchors updates", f"Trying to update: {tas}")
 
         for ta in tas:
@@ -309,7 +320,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 self.update_trust_anchors_ecs(
                     db=self.db_engine,
                     trust_anchors=[ta],
-                    httpc_params=self.config["network"]["httpc_params"],
+                    httpc_params=self.config["httpc_params"],
                 )
             except Exception as e:
                 self._log_warning("Trust Anchor updates", f"{ta} update failed: {e}")

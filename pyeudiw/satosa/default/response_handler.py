@@ -66,8 +66,9 @@ class ResponseHandler(ResponseHandlerInterface):
             raise BadRequestError(f"HTTP content type [{content_type}] not supported")
 
         _endpoint = f"{self.server_url}{context.request_uri}"
-        if self.config["metadata"].get("response_uris_supported", None):
-            if _endpoint not in self.config["metadata"]["response_uris_supported"]:
+        
+        if self.config["metadata"].get("response_uris", None):
+            if _endpoint not in self.config["metadata"]["response_uris"]:
                 raise BadRequestError("response_uri not valid")
 
         return context.request

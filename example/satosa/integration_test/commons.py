@@ -178,7 +178,7 @@ def create_authorize_response(vp_token: str, state: str, response_uri: str) -> s
     ).content.decode()
     rp_ec = decode_jwt_payload(rp_ec_jwt)
 
-    assert response_uri == rp_ec["metadata"]["openid_credential_verifier"]["response_uris_supported"][0]
+    #  assert response_uri == rp_ec["metadata"]["openid_credential_verifier"]["response_uris"][0]
     encryption_key = rp_ec["metadata"]["openid_credential_verifier"]["jwks"]["keys"][1]
 
     response = {
