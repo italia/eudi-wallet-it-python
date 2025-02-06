@@ -1,9 +1,7 @@
-
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vp.authorization_request import \
-    build_authorization_request_claims
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.dpop import BackendDPoP
@@ -34,10 +32,10 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP):
             self.client_id,
             state,
             self.absolute_response_url,
-            self.config["authorization"]
+            self.config["authorization"],
         )
 
-        if (_aud := self.config["authorization"].get("aud")):
+        if _aud := self.config["authorization"].get("aud"):
             data["aud"] = _aud
         # take the session created in the pre-request authz endpoint
         try:
@@ -47,7 +45,9 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP):
 
         except ValueError as e:
             _msg = "Error while retrieving request object from database."
-            return self._handle_500(context, _msg, HTTPError(f"{e} with {context.__dict__}"))
+            return self._handle_500(
+                context, _msg, HTTPError(f"{e} with {context.__dict__}")
+            )
 
         except (Exception, BaseException) as e:
             _msg = f"Error while updating request object: {e}"
@@ -55,18 +55,19 @@ class RequestHandler(RequestHandlerInterface, BackendDPoP):
 
         helper = JWSHelper(self.default_metadata_private_jwk)
 
-        federation_trust_handler_backend: TrustHandlerInterface = \
+        federation_trust_handler_backend: TrustHandlerInterface = (
             self.get_trust_backend_by_class_name("FederationHandler")
+        )
 
         request_object_jwt = helper.sign(
             data,
             protected={
-                'trust_chain': federation_trust_handler_backend.get_backend_trust_chain(),
-                'typ': RequestHandler._REQUEST_OBJECT_TYP
-            }
+                "trust_chain": federation_trust_handler_backend.get_backend_trust_chain(),
+                "typ": RequestHandler._REQUEST_OBJECT_TYP,
+            },
         )
         return Response(
             message=request_object_jwt,
             status="200",
-            content=RequestHandler._RESP_CONTENT_TYPE
+            content=RequestHandler._RESP_CONTENT_TYPE,
         )

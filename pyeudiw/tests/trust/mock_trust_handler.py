@@ -7,7 +7,7 @@ mock_jwk = {
     "kty": "EC",
     "use": "sig",
     "x": "xu0FC3OQLgsea27rL0-d2CpVyKijjwl8tF6HB-3zLUg",
-    "y": "fUEsB8IrX2DgzqABfVsCody1RypAXX54fXQ1keoPP5Y"
+    "y": "fUEsB8IrX2DgzqABfVsCody1RypAXX54fXQ1keoPP5Y",
 }
 
 
@@ -17,12 +17,12 @@ class MockTrustHandler(TrustHandlerInterface):
     """
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
-        trust_source.metadata = {
-            "json_key": "json_value"
-        }
+        trust_source.metadata = {"json_key": "json_value"}
         return trust_source
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
         trust_source.keys.append(mock_jwk)
         return trust_source

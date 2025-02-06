@@ -13,30 +13,35 @@ from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES
 
 
 class RequestHandler(RequestHandlerInterface):
-    def request_endpoint(self, context: Context, *args: tuple) -> Redirect | JsonResponse:
-        return self._handle_400(context, "Request endpoint not implemented.", NotImplementedError())
+    def request_endpoint(
+        self, context: Context, *args: tuple
+    ) -> Redirect | JsonResponse:
+        return self._handle_400(
+            context, "Request endpoint not implemented.", NotImplementedError()
+        )
 
 
 class ResponseHandler(ResponseHandlerInterface):
     def response_endpoint(self, context: Context, *args) -> JsonResponse:
-        return self._handle_400(context, "Response endpoint not implemented.", NotImplementedError())
+        return self._handle_400(
+            context, "Response endpoint not implemented.", NotImplementedError()
+        )
 
 
 def test_dynamic_backend_creation():
     CONFIG["endpoints"]["request"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
         "class": "RequestHandler",
-        "path": "/request_test"
+        "path": "/request_test",
     }
 
     CONFIG["endpoints"]["response"] = {
         "module": "pyeudiw.tests.satosa.test_dynamic_backed",
         "class": "ResponseHandler",
-        "path": "/response_test"
+        "path": "/response_test",
     }
 
-    backend = OpenID4VPBackend(
-        Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
+    backend = OpenID4VPBackend(Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
 
     handlers = backend.register_endpoints()
     published_endpoints = [handlers[i][0] for i in range(len(handlers))]
@@ -48,11 +53,15 @@ def test_dynamic_backend_creation():
     context.state = State()
 
     response = backend.request_endpoint(context)
-    assert response.status == '400'
-    assert json.loads(response.message)[
-        'error_description'] == "Request endpoint not implemented."
+    assert response.status == "400"
+    assert (
+        json.loads(response.message)["error_description"]
+        == "Request endpoint not implemented."
+    )
 
     response = backend.response_endpoint(context)
-    assert response.status == '400'
-    assert json.loads(response.message)[
-        'error_description'] == "Response endpoint not implemented."
+    assert response.status == "400"
+    assert (
+        json.loads(response.message)["error_description"]
+        == "Response endpoint not implemented."
+    )

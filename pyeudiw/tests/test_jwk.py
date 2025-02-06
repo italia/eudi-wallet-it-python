@@ -7,14 +7,10 @@ from pyeudiw.jwk.schemas.public import ECJwkSchema, RSAJwkSchema, _JwkSchema_T
 
 @pytest.mark.parametrize(
     "key, key_type, hash_func",
-    [
-        (None, None, None),
-        (None, "EC", None),
-        (None, "RSA", None)
-    ]
+    [(None, None, None), (None, "EC", None), (None, "RSA", None)],
 )
 def test_jwk(key, key_type, hash_func):
-    jwk = JWK(key, key_type, hash_func if hash_func else 'SHA-256')
+    jwk = JWK(key, key_type, hash_func if hash_func else "SHA-256")
     assert jwk.key
     assert jwk.thumbprint
     assert jwk.jwk
@@ -22,7 +18,7 @@ def test_jwk(key, key_type, hash_func):
 
 
 def test_export_public__pem():
-    jwk = JWK(key_type='RSA')
+    jwk = JWK(key_type="RSA")
     assert jwk.public_key
     assert jwk.public_key["e"]
     assert jwk.public_key["n"]

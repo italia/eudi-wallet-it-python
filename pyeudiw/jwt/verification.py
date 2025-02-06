@@ -1,4 +1,3 @@
-
 from cryptojwt.jwk import JWK
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
@@ -13,5 +12,4 @@ def verify_jws_with_key(jws: str, key: JWK) -> None:
         verifier = JWSHelper(key)
         verifier.verify(jws)
     except Exception as e:
-        raise JWSVerificationError(
-            f"error during signature verification: {e}", e)
+        raise JWSVerificationError(f"error during signature verification: {e}", e)

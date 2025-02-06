@@ -1,7 +1,6 @@
 import pytest
 
-from pyeudiw.satosa.utils.respcode import (ResponseCodeSource, create_code,
-                                           recover_state)
+from pyeudiw.satosa.utils.respcode import ResponseCodeSource, create_code, recover_state
 
 
 def test_valid_resp_code():
@@ -43,8 +42,7 @@ class TestResponseCodeHelper:
 
     def test_invalid_code(self):
         try:
-            self.respose_code_helper.create_code(
-                "this_is_an_invalid_response_code")
+            self.respose_code_helper.create_code("this_is_an_invalid_response_code")
             assert False
         except Exception:
             assert True

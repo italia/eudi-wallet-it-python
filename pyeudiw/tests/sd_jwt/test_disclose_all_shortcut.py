@@ -25,8 +25,7 @@ def test_e2e(testcase, settings):
     sdjwt_at_issuer = SDJWTIssuer(
         user_claims,
         demo_keys["issuer_keys"],
-        demo_keys["holder_key"] if testcase.get(
-            "key_binding", False) else None,
+        demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
         add_decoy_claims=use_decoys,
         serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
@@ -75,7 +74,7 @@ def test_e2e(testcase, settings):
 
     expected_header_parameters = {
         "alg": testcase.get("sign_alg", "ES256"),
-        "typ": "testcase+sd-jwt"
+        "typ": "testcase+sd-jwt",
     }
     expected_header_parameters.update(extra_header_parameters)
 

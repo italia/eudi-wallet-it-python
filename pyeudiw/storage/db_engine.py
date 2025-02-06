@@ -4,8 +4,7 @@ from typing import Callable, Tuple, Union
 
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
 from pyeudiw.storage.base_storage import BaseStorage, TrustType
-from pyeudiw.storage.exceptions import (ChainNotExist, EntryNotFound,
-                                        StorageWriteError)
+from pyeudiw.storage.exceptions import ChainNotExist, EntryNotFound, StorageWriteError
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
 
@@ -41,7 +40,10 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         for db_name, storage in self.storages:
             try:
                 storage.init_session(
-                    document_id, session_id=session_id, state=state, remote_flow_typ=remote_flow_typ
+                    document_id,
+                    session_id=session_id,
+                    state=state,
+                    remote_flow_typ=remote_flow_typ,
                 )
             except StorageWriteError as e:
                 self._log_critical(
@@ -49,7 +51,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
                     (
                         f"Error while initializing session with document_id {document_id}. "
                         f"Cannot write document with id {document_id} on {db_name}: {e}"
-                    )
+                    ),
                 )
                 raise e
 
@@ -84,8 +86,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
                 replica_count += 1
             except Exception as e:
                 self._log_critical(
-                    e.__class__.__name__,
-                    f"Error {_err_msg} on {db_name}: {e}"
+                    e.__class__.__name__, f"Error {_err_msg} on {db_name}: {e}"
                 )
 
         if not replica_count:
@@ -93,12 +94,14 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
         return replica_count
 
-    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict):
+    def add_dpop_proof_and_attestation(
+        self, document_id, dpop_proof: dict, attestation: dict
+    ):
         return self.write(
             "add_dpop_proof_and_attestation",
             document_id,
             dpop_proof=dpop_proof,
-            attestation=attestation
+            attestation=attestation,
         )
 
     def set_finalized(self, document_id: str):
@@ -107,7 +110,9 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def update_request_object(self, document_id: str, request_object: dict) -> int:
         return self.write("update_request_object", document_id, request_object)
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict) -> int:
+    def update_response_object(
+        self, nonce: str, state: str, response_object: dict
+    ) -> int:
         return self.write("update_response_object", nonce, state, response_object)
 
     def get(self, method: str, *args, **kwargs) -> Union[dict, None]:
@@ -136,7 +141,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except EntryNotFound as e:
                 self._log_debug(
                     e.__class__.__name__,
-                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}: {str(e)}"
+                    f"Cannot find result by method {method} on {db_name} with {args} {kwargs}: {str(e)}",
                 )
 
         raise EntryNotFound(f"Cannot find any result by method {method}")
@@ -156,11 +161,24 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def has_trust_source(self, entity_id: str) -> bool:
         return self.get_trust_source(entity_id) is not None
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
-        return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
+    def add_trust_attestation(
+        self,
+        entity_id: str,
+        attestation: list[str] = [],
+        exp: datetime = None,
+        trust_type: TrustType = TrustType.FEDERATION,
+        jwks: list[dict] = [],
+    ) -> str:
+        return self.write(
+            "add_trust_attestation", entity_id, attestation, exp, trust_type, jwks
+        )
 
-    def add_trust_attestation_metadata(self, entity_id: str, metadat_type: str, metadata: dict) -> str:
-        return self.write("add_trust_attestation_metadata", entity_id, metadat_type, metadata)
+    def add_trust_attestation_metadata(
+        self, entity_id: str, metadat_type: str, metadata: dict
+    ) -> str:
+        return self.write(
+            "add_trust_attestation_metadata", entity_id, metadat_type, metadata
+        )
 
     def add_trust_source(self, trust_source: dict) -> str:
         return self.write("add_trust_source", trust_source)
@@ -168,21 +186,62 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def get_trust_source(self, entity_id: str) -> dict:
         return self.get("get_trust_source", entity_id)
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
-        return self.write("add_trust_anchor", entity_id, entity_configuration, exp, trust_type)
+    def add_trust_anchor(
+        self,
+        entity_id: str,
+        entity_configuration: str,
+        exp: datetime,
+        trust_type: TrustType = TrustType.FEDERATION,
+    ) -> str:
+        return self.write(
+            "add_trust_anchor", entity_id, entity_configuration, exp, trust_type
+        )
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
-        return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
+    def update_trust_attestation(
+        self,
+        entity_id: str,
+        attestation: list[str] = [],
+        exp: datetime = None,
+        trust_type: TrustType = TrustType.FEDERATION,
+        jwks: list[dict] = [],
+    ) -> str:
+        return self.write(
+            "update_trust_attestation", entity_id, attestation, exp, trust_type, jwks
+        )
 
-    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str] = [], exp: datetime = None, trust_type: TrustType = TrustType.FEDERATION, jwks: list[dict] = []) -> str:
+    def add_or_update_trust_attestation(
+        self,
+        entity_id: str,
+        attestation: list[str] = [],
+        exp: datetime = None,
+        trust_type: TrustType = TrustType.FEDERATION,
+        jwks: list[dict] = [],
+    ) -> str:
         try:
             self.get_trust_attestation(entity_id)
-            return self.write("update_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
+            return self.write(
+                "update_trust_attestation",
+                entity_id,
+                attestation,
+                exp,
+                trust_type,
+                jwks,
+            )
         except (EntryNotFound, ChainNotExist):
-            return self.write("add_trust_attestation", entity_id, attestation, exp, trust_type, jwks)
+            return self.write(
+                "add_trust_attestation", entity_id, attestation, exp, trust_type, jwks
+            )
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: dict, exp: datetime, trust_type: TrustType = TrustType.FEDERATION) -> str:
-        return self.write("update_trust_anchor", entity_id, entity_configuration, exp, trust_type)
+    def update_trust_anchor(
+        self,
+        entity_id: str,
+        entity_configuration: dict,
+        exp: datetime,
+        trust_type: TrustType = TrustType.FEDERATION,
+    ) -> str:
+        return self.write(
+            "update_trust_anchor", entity_id, entity_configuration, exp, trust_type
+        )
 
     def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> dict:
         # if no cache instance exist return the object
@@ -190,15 +249,14 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             return on_not_found()
 
         # if almost one cache instance exist try to retrieve
-        cache_object, status, idx = self._cache_try_retrieve(
-            object_name, on_not_found)
+        cache_object, status, idx = self._cache_try_retrieve(object_name, on_not_found)
 
         # if the status is retrieved return the object
         if status == RetrieveStatus.RETRIEVED:
             return cache_object
 
         # else try replicate the data on all the other istances
-        replica_instances = self.caches[:idx] + self.caches[idx + 1:]
+        replica_instances = self.caches[:idx] + self.caches[idx + 1 :]
 
         for cache_name, cache in replica_instances:
             try:
@@ -206,7 +264,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Cannot replicate cache object with identifier {object_name} on cache {cache_name}"
+                    f"Cannot replicate cache object with identifier {object_name} on cache {cache_name}",
                 )
 
         return cache_object
@@ -219,14 +277,15 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Cannot overwrite cache object with identifier {object_name} on cache {cache_name}"
+                    f"Cannot overwrite cache object with identifier {object_name} on cache {cache_name}",
                 )
             return cache_object
 
     def exists_by_state_and_session_id(self, state: str, session_id: str = "") -> bool:
         for db_name, storage in self.storages:
             found = storage.exists_by_state_and_session_id(
-                state=state, session_id=session_id)
+                state=state, session_id=session_id
+            )
             if found:
                 return True
         return False
@@ -235,9 +294,11 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         return self.get_by_state_and_session_id(state=state)
 
     def get_by_nonce_state(self, state: str, nonce: str) -> Union[dict, None]:
-        return self.get('get_by_nonce_state', state=state, nonce=nonce)
+        return self.get("get_by_nonce_state", state=state, nonce=nonce)
 
-    def get_by_state_and_session_id(self, state: str, session_id: str = "") -> Union[dict, None]:
+    def get_by_state_and_session_id(
+        self, state: str, session_id: str = ""
+    ) -> Union[dict, None]:
         return self.get("get_by_state_and_session_id", state, session_id)
 
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
@@ -254,19 +315,21 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_debug(
                     e.__class__.__name__,
-                    f"Error while checking db engine connection on {db_name}: {e} "
+                    f"Error while checking db engine connection on {db_name}: {e} ",
                 )
 
         if True in _cons.values() and not all(_cons.values()):
             self._log_warning(
                 "DB Engine",
                 f"Not all the storage are found available, storages misalignment: "
-                f"{_cons}"
+                f"{_cons}",
             )
 
         return _connected
 
-    def _cache_try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus, int]:
+    def _cache_try_retrieve(
+        self, object_name: str, on_not_found: Callable[[], str]
+    ) -> tuple[dict, RetrieveStatus, int]:
         """
         Try to retrieve an object from the cache. If the object is not found, call the on_not_found function.
 
@@ -284,16 +347,15 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         for i, (cache_name, cache_istance) in enumerate(self.caches):
             try:
                 cache_object, status = cache_istance.try_retrieve(
-                    object_name, on_not_found)
+                    object_name, on_not_found
+                )
                 return cache_object, status, i
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Cannot retrieve cache object with identifier {object_name} on cache database {cache_name}"
+                    f"Cannot retrieve cache object with identifier {object_name} on cache database {cache_name}",
                 )
-        raise ConnectionRefusedError(
-            "Cannot write cache object on any instance"
-        )
+        raise ConnectionRefusedError("Cannot write cache object on any instance")
 
     def _close_list(self, db_list: list[Tuple[str, BaseDB]]) -> None:
         """
@@ -311,11 +373,13 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             except Exception as e:
                 self._log_critical(
                     e.__class__.__name__,
-                    f"Error while closing db engine {db_name}: {e}"
+                    f"Error while closing db engine {db_name}: {e}",
                 )
                 raise e
 
-    def _handle_instance(self, instance: dict) -> tuple[BaseStorage | None, BaseCache | None]:
+    def _handle_instance(
+        self, instance: dict
+    ) -> tuple[BaseStorage | None, BaseCache | None]:
         """
         Handle the initialization of a storage/cache instance.
 
@@ -333,7 +397,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             storage_instance = dynamic_class_loader(
                 storage_conf["module"],
                 storage_conf["class"],
-                storage_conf.get("init_params", {})
+                storage_conf.get("init_params", {}),
             )
 
         cache_instance = None
@@ -341,7 +405,7 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             cache_instance = dynamic_class_loader(
                 cache_conf["module"],
                 cache_conf["class"],
-                cache_conf.get("init_params", {})
+                cache_conf.get("init_params", {}),
             )
 
         return storage_instance, cache_instance

@@ -32,9 +32,7 @@ class Jinja2TemplateHandler:
             }
         )
 
-        self.qrcode_page = self.loader.get_template(
-            config["qrcode_template"]
-        )
+        self.qrcode_page = self.loader.get_template(config["qrcode_template"])
 
         # TODO - for rendering custom errors
         # self.error_page = self.loader.get_template(

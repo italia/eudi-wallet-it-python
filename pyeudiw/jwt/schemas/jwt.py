@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
 
 from pyeudiw.federation.schemas.openid_credential_verifier import (
-    EncryptionAlgValuesSupported, EncryptionEncValuesSupported,
-    SigningAlgValuesSupported)
+    EncryptionAlgValuesSupported,
+    EncryptionEncValuesSupported,
+    SigningAlgValuesSupported,
+)
 
 
 class JWTConfig(BaseModel):

@@ -11,13 +11,13 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel, conint
 
 
 class LimitDisclosure(Enum):
-    required = 'required'
-    preferred = 'preferred'
+    required = "required"
+    preferred = "preferred"
 
 
 class Constraints(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     limit_disclosure: Optional[LimitDisclosure] = None
     fields: Optional[List[Any]] = None
@@ -25,21 +25,21 @@ class Constraints(BaseModel):
 
 class PresentationDefinitionClaimFormatDesignations1(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     alg: Optional[List[str]] = Field(None, min_length=1)
 
 
 class PresentationDefinitionClaimFormatDesignations2(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     proof_type: Optional[List[str]] = Field(None, min_length=1)
 
 
 class PresentationDefinitionClaimFormatDesignations3(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
 
 
@@ -47,48 +47,48 @@ class PresentationDefinitionClaimFormatDesignations(
     RootModel[
         Union[
             Dict[
-                Annotated[str, Field(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$')],
+                Annotated[str, Field(pattern=r"^jwt$|^jwt_vc$|^jwt_vp$")],
                 PresentationDefinitionClaimFormatDesignations1,
             ],
             Dict[
-                Annotated[str, Field(pattern=r'^ldp_vc$|^ldp_vp$|^ldp$')],
+                Annotated[str, Field(pattern=r"^ldp_vc$|^ldp_vp$|^ldp$")],
                 PresentationDefinitionClaimFormatDesignations2,
             ],
             Dict[
-                Annotated[str, Field(pattern=r'^vc\+sd-jwt$')],
+                Annotated[str, Field(pattern=r"^vc\+sd-jwt$")],
                 PresentationDefinitionClaimFormatDesignations3,
-            ]
+            ],
         ]
     ]
 ):
     root: Union[
         Dict[
-            Annotated[str, Field(pattern=r'^jwt$|^jwt_vc$|^jwt_vp$')],
+            Annotated[str, Field(pattern=r"^jwt$|^jwt_vc$|^jwt_vp$")],
             PresentationDefinitionClaimFormatDesignations1,
         ],
         Dict[
-            Annotated[str, Field(pattern=r'^ldp_vc$|^ldp_vp$|^ldp$')],
+            Annotated[str, Field(pattern=r"^ldp_vc$|^ldp_vp$|^ldp$")],
             PresentationDefinitionClaimFormatDesignations2,
         ],
         Dict[
-            Annotated[str, Field(pattern=r'^vc\+sd-jwt$')],
+            Annotated[str, Field(pattern=r"^vc\+sd-jwt$")],
             PresentationDefinitionClaimFormatDesignations2,
-        ]
-    ] = Field(..., title='Presentation Definition Claim Format Designations')
+        ],
+    ] = Field(..., title="Presentation Definition Claim Format Designations")
 
 
 class Rule(Enum):
-    pick = 'pick'
+    pick = "pick"
 
 
 class SubmissionRequirement1(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     name: Optional[str] = None
     rule: Rule
     count: Optional[conint(ge=1)] = None
-    from_: str = Field(..., alias='from')
+    from_: str = Field(..., alias="from")
 
 
 class SubmissionRequirement(RootModel[SubmissionRequirement1]):
@@ -97,7 +97,7 @@ class SubmissionRequirement(RootModel[SubmissionRequirement1]):
 
 class InputDescriptor(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     id: str
     name: Optional[str] = None
@@ -109,7 +109,7 @@ class InputDescriptor(BaseModel):
 
 class PresentationDefinition(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
     )
     id: str
     input_descriptors: List[InputDescriptor]

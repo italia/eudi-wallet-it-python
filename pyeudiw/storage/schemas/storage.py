@@ -8,7 +8,7 @@ class InitParams(BaseModel):
 
 class StorageConfig(BaseModel):
     module: str
-    class_: str = Field(..., alias='class')
+    class_: str = Field(..., alias="class")
     init_params: InitParams
 
 

@@ -37,7 +37,7 @@ class QRCode:
         :return: The svg data for html, base64 encoded
         :rtype: str
         """
-        return base64.b64encode(self.svg.encode()).decode('utf-8')
+        return base64.b64encode(self.svg.encode()).decode("utf-8")
 
     def to_html(self) -> str:
         """

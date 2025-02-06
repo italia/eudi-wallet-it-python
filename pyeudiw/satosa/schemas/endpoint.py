@@ -14,10 +14,10 @@ class EndpointsConfig(BaseModel):
 
     @field_validator("pre_request", "response", "request", "status", "get_response")
     def must_start_with_slash(cls, v):
-        if isinstance(v, str) and not v.startswith('/'):
+        if isinstance(v, str) and not v.startswith("/"):
             raise ValueError(f"Endpoints: {v} must start with '/'")
         elif isinstance(v, dict):
-            if not v['path'].startswith('/'):
+            if not v["path"].startswith("/"):
                 raise ValueError(f"Endpoints: {v['path']} must start with '/'")
         return v
 
@@ -28,10 +28,9 @@ class EndpointsConfig(BaseModel):
             endpoint_value = v.get("path", None)
 
         if not endpoint_value or not isinstance(endpoint_value, str):
-            raise ValueError(
-                f"Invalid config endpoint structure for {endpoint_value}")
+            raise ValueError(f"Invalid config endpoint structure for {endpoint_value}")
 
-        if not endpoint_value.startswith('/'):
+        if not endpoint_value.startswith("/"):
             raise ValueError(f"{endpoint_value} must start with '/'")
         return v
 

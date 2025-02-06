@@ -7,13 +7,13 @@ from pyeudiw.tools.base_logger import BaseLogger
 
 class BaseHTTPErrorHandler(BaseLogger):
     def _serialize_error(
-            self,
-            context: Context,
-            message: str,
-            troubleshoot: str,
-            err: str,
-            err_code: str,
-            level: str
+        self,
+        context: Context,
+        message: str,
+        troubleshoot: str,
+        err: str,
+        err_code: str,
+        level: str,
     ) -> JsonResponse:
         """
         Serializes an error.
@@ -38,16 +38,10 @@ class BaseHTTPErrorHandler(BaseLogger):
         _msg = f"{message}:"
         if err:
             _msg += f" {err}."
-        self._log(
-            context, level=level,
-            message=f"{_msg} {troubleshoot}"
-        )
+        self._log(context, level=level, message=f"{_msg} {troubleshoot}")
 
-        return JsonResponse({
-            "error": message,
-            "error_description": troubleshoot
-        },
-            status=err_code
+        return JsonResponse(
+            {"error": message, "error_description": troubleshoot}, status=err_code
         )
 
     def _handle_500(self, context: Context, msg: str, err: Exception) -> JsonResponse:
@@ -71,10 +65,17 @@ class BaseHTTPErrorHandler(BaseLogger):
             f"{msg}",
             f"{msg}. {err.__class__.__name__}: {err}",
             "500",
-            "error"
+            "error",
         )
 
-    def _handle_40X(self, code_number: str, message: str, context: Context, troubleshoot: str, err: Exception) -> JsonResponse:
+    def _handle_40X(
+        self,
+        code_number: str,
+        message: str,
+        context: Context,
+        troubleshoot: str,
+        err: Exception,
+    ) -> JsonResponse:
         """
         Handles a 40X error.
 
@@ -99,10 +100,12 @@ class BaseHTTPErrorHandler(BaseLogger):
             troubleshoot,
             f"{err.__class__.__name__}: {err}",
             f"40{code_number}",
-            "error"
+            "error",
         )
 
-    def _handle_400(self, context: Context, troubleshoot: str, err: Exception = EmptyHTTPError("")) -> JsonResponse:
+    def _handle_400(
+        self, context: Context, troubleshoot: str, err: Exception = EmptyHTTPError("")
+    ) -> JsonResponse:
         """
         Handles a 400 error.
 
@@ -118,7 +121,9 @@ class BaseHTTPErrorHandler(BaseLogger):
         """
         return self._handle_40X("0", "invalid_request", context, troubleshoot, err)
 
-    def _handle_401(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
+    def _handle_401(
+        self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")
+    ):
         """
         Handles a 401 error.
 
@@ -135,7 +140,9 @@ class BaseHTTPErrorHandler(BaseLogger):
 
         return self._handle_40X("1", "invalid_client", context, troubleshoot, err)
 
-    def _handle_403(self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")):
+    def _handle_403(
+        self, context, troubleshoot: str, err: EmptyHTTPError = EmptyHTTPError("")
+    ):
         """
         Handles a 403 error.
 

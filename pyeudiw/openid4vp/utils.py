@@ -16,7 +16,7 @@ def detect_flow_typ(context: Context) -> RemoteFlowType:
     Identitfy or guess the remote flow type based on the context of the
     user auhtnetication
     """
-    if is_smartphone(context.http_headers.get('HTTP_USER_AGENT')):
+    if is_smartphone(context.http_headers.get("HTTP_USER_AGENT")):
         return RemoteFlowType.SAME_DEVICE
     return RemoteFlowType.CROSS_DEVICE
 
@@ -45,12 +45,12 @@ def vp_parser(jwt: str) -> Vp:
             return VpSdJwt(jwt)
         case "vc+sd-jwt":
             raise NotImplementedError(
-                "parsing of vp tokens with typ vc+sd-jwt not supported yet")
+                "parsing of vp tokens with typ vc+sd-jwt not supported yet"
+            )
         case "mcdoc_cbor":
             return VpMDocCbor(jwt)
         case unsupported:
-            raise VPFormatNotSupported(
-                f"parsing of unsupported vp typ [{unsupported}]")
+            raise VPFormatNotSupported(f"parsing of unsupported vp typ [{unsupported}]")
 
 
 def infer_vp_header_claim(jws: str, claim_name: str) -> Any:

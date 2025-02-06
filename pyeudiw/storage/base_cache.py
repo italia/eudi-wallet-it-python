@@ -14,7 +14,9 @@ class BaseCache(BaseDB):
     Interface class for cache storage.
     """
 
-    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
+    def try_retrieve(
+        self, object_name: str, on_not_found: Callable[[], str]
+    ) -> tuple[dict, RetrieveStatus]:
         """
         Try to retrieve an object from the cache. If the object is not found, call the on_not_found function.
 

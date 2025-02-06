@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field, HttpUrl
 
 from pyeudiw.openid4vp.schemas.response import ResponseMode
-from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import \
-    PresentationDefinition
+from pyeudiw.presentation_exchange.schemas.oid4vc_presentation_definition import (
+    PresentationDefinition,
+)
 
 
 class AuthorizationConfig(BaseModel):

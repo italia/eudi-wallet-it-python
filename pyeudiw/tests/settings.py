@@ -17,79 +17,54 @@ httpc_params = {
 
 _METADATA = {
     "application_type": "web",
-    "authorization_encrypted_response_alg": [
-        "RSA-OAEP",
-        "RSA-OAEP-256"
-    ],
+    "authorization_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
     "authorization_encrypted_response_enc": [
         "A128CBC-HS256",
         "A192CBC-HS384",
         "A256CBC-HS512",
         "A128GCM",
         "A192GCM",
-        "A256GCM"
+        "A256GCM",
     ],
-    "authorization_signed_response_alg": [
-        "RS256",
-        "ES256"
-    ],
+    "authorization_signed_response_alg": ["RS256", "ES256"],
     "client_id": f"{BASE_URL}/OpenID4VP",
     "client_name": "Name of an example organization",
-    "contacts": [
-        "ops@verifier.example.org"
-    ],
+    "contacts": ["ops@verifier.example.org"],
     "default_acr_values": [
         "https://www.spid.gov.it/SpidL2",
-        "https://www.spid.gov.it/SpidL3"
+        "https://www.spid.gov.it/SpidL3",
     ],
     "default_max_age": 1111,
-    "id_token_encrypted_response_alg": [
-        "RSA-OAEP",
-        "RSA-OAEP-256"
-    ],
+    "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
     "id_token_encrypted_response_enc": [
         "A128CBC-HS256",
         "A192CBC-HS384",
         "A256CBC-HS512",
         "A128GCM",
         "A192GCM",
-        "A256GCM"
+        "A256GCM",
     ],
-    "id_token_signed_response_alg": [
-        "RS256",
-        "ES256"
-    ],
-    "response_uris_supported": [
-        f"{BASE_URL}/OpenID4VP/response-uri"
-    ],
-    "request_uris": [
-        f"{BASE_URL}/OpenID4VP/request-uri"
-    ],
+    "id_token_signed_response_alg": ["RS256", "ES256"],
+    "response_uris_supported": [f"{BASE_URL}/OpenID4VP/response-uri"],
+    "request_uris": [f"{BASE_URL}/OpenID4VP/request-uri"],
     "require_auth_time": True,
     "subject_type": "pairwise",
     "vp_formats": {
         "vc+sd-jwt": {
-            "sd-jwt_alg_values": [
-                "ES256",
-                "ES384"
-            ],
-            "kb-jwt_alg_values": [
-                "ES256",
-                "ES384"
-            ]
+            "sd-jwt_alg_values": ["ES256", "ES384"],
+            "kb-jwt_alg_values": ["ES256", "ES384"],
         }
-    }
+    },
 }
 
 CONFIG = {
     "base_url": BASE_URL,
-
     "ui": {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
         "error_template": "error.html",
-        "error_url": "https://localhost:9999/error_page.html"
+        "error_url": "https://localhost:9999/error_page.html",
     },
     "endpoints": {
         "pre_request": "/pre-request",
@@ -105,12 +80,9 @@ CONFIG = {
         "size": 100,
         "color": "#2B4375",
         "expiration_time": 120,
-        "logo_path": "pyeudiw/tests/satosa/static/logo.png"
+        "logo_path": "pyeudiw/tests/satosa/static/logo.png",
     },
-    "jwt": {
-        "default_sig_alg": "ES256",
-        "default_exp": 6
-    },
+    "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
     "authorization": {
         "url_scheme": "haip",  # haip://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
@@ -127,51 +99,34 @@ CONFIG = {
                                     {
                                         "filter": {
                                             "const": "PersonIdentificationData",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.sd-jwt.type"
-                                        ]
+                                        "path": ["$.sd-jwt.type"],
                                     },
                                     {
-                                        "filter": {
-                                            "type": "object"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.cnf"
-                                        ]
+                                        "filter": {"type": "object"},
+                                        "path": ["$.sd-jwt.cnf"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.family_name"
-                                        ]
+                                        "path": ["$.sd-jwt.family_name"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.given_name"
-                                        ]
+                                        "path": ["$.sd-jwt.given_name"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.unique_id"
-                                        ]
-                                    }
+                                        "path": ["$.sd-jwt.unique_id"],
+                                    },
                                 ],
-                                "limit_disclosure": "required"
+                                "limit_disclosure": "required",
                             },
-                            "jwt": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
+                            "jwt": {"alg": ["EdDSA", "ES256"]},
                         },
-                        "id": "sd-jwt"
+                        "id": "sd-jwt",
                     }
-                ]
+                ],
             },
             {
                 "id": "mDL-sample-req",
@@ -183,62 +138,45 @@ CONFIG = {
                                     {
                                         "filter": {
                                             "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.mdoc.doctype"
-                                        ]
+                                        "path": ["$.mdoc.doctype"],
                                     },
                                     {
                                         "filter": {
                                             "const": "org.iso.18013.5.1",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.mdoc.namespace"
-                                        ]
+                                        "path": ["$.mdoc.namespace"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.family_name"
-                                        ]
+                                        "path": ["$.mdoc.family_name"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.portrait"
-                                        ]
+                                        "path": ["$.mdoc.portrait"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.driving_privileges"
-                                        ]
-                                    }
+                                        "path": ["$.mdoc.driving_privileges"],
+                                    },
                                 ],
-                                "limit_disclosure": "required"
+                                "limit_disclosure": "required",
                             },
-                            "mso_mdoc": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
+                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
                         },
-                        "id": "mDL"
+                        "id": "mDL",
                     }
-                ]
-            }
+                ],
+            },
         ],
     },
-    'user_attributes': {
+    "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
-        "subject_id_random_value": "CHANGEME!"
+        "subject_id_random_value": "CHANGEME!",
     },
-    'network': {
-        "httpc_params": httpc_params
-    },
+    "network": {"httpc_params": httpc_params},
     "trust": {
         "direct_trust_sd_jwt_vc": {
             "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
@@ -246,14 +184,10 @@ CONFIG = {
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
                 "httpc_params": {
-                    "connection": {
-                        "ssl": True
-                    },
-                    "session": {
-                        "timeout": 6
-                    }
-                }
-            }
+                    "connection": {"ssl": True},
+                    "session": {"timeout": 6},
+                },
+            },
         },
         "federation": {
             "module": "pyeudiw.trust.handler.federation",
@@ -262,12 +196,8 @@ CONFIG = {
                 "entity_configuration_exp": 600,
                 "metadata": _METADATA,
                 "metadata_type": "openid_credential_verifier",
-                "authority_hints": [
-                    "https://trust-anchor.example.org"
-                ],
-                "trust_anchors": [
-                    "https://trust-anchor.example.org"
-                ],
+                "authority_hints": ["https://trust-anchor.example.org"],
+                "trust_anchors": ["https://trust-anchor.example.org"],
                 "default_sig_alg": "RS256",
                 "federation_jwks": [
                     {
@@ -283,28 +213,26 @@ CONFIG = {
                         "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG6"
                         "8XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
                         "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPvi"
-                        "H5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
+                        "H5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
                     },
                     {
-                        'kty': 'EC',
-                        'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg',
-                        'crv': 'P-256',
-                        'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo',
-                        'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU',
-                        'd': 'oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0'
-                    }
+                        "kty": "EC",
+                        "kid": "xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg",
+                        "crv": "P-256",
+                        "x": "EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo",
+                        "y": "VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU",
+                        "d": "oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0",
+                    },
                 ],
-                "trust_marks": [
-                    "..."
-                ],
+                "trust_marks": ["..."],
                 "federation_entity_metadata": {
                     "organization_name": "Example RP",
                     "homepage_uri": "https://developers.italia.it",
                     "policy_uri": "https://developers.italia.it/privacy-policy",
                     "tos_uri": "https://developers.italia.it/privacy-policy",
-                    "logo_uri": "https://developers.italia.it/assets/img/io-it-logo-white.svg"
-                }
-            }
+                    "logo_uri": "https://developers.italia.it/assets/img/io-it-logo-white.svg",
+                },
+            },
         },
     },
     "metadata_jwks": [
@@ -314,7 +242,7 @@ CONFIG = {
             "kid": "dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s",
             "kty": "EC",
             "x": "TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk",
-            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7"
+            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7",
         },
         {
             "kty": "RSA",
@@ -330,8 +258,8 @@ CONFIG = {
             "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT"
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
-            "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-        }
+            "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
+        },
     ],
     "storage": {
         "mongo_db": {
@@ -340,11 +268,9 @@ CONFIG = {
                 "class": "MongoCache",
                 "init_params": {
                     "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
-                    "conf": {
-                        "db_name": "eudiw"
-                    },
-                    "connection_params": {}
-                }
+                    "conf": {"db_name": "eudiw"},
+                    "connection_params": {},
+                },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
@@ -356,14 +282,14 @@ CONFIG = {
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors",
-                        "db_trust_sources_collection": "trust_sources"
+                        "db_trust_sources_collection": "trust_sources",
                     },
-                    "connection_params": {}
-                }
-            }
+                    "connection_params": {},
+                },
+            },
         }
     },
-    "metadata": _METADATA
+    "metadata": _METADATA,
 }
 
 CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"
@@ -373,26 +299,18 @@ MODULE_DIRECT_TRUST_CONFIG = {
     "class": "DirectTrustSdJwtVc",
     "config": {
         "jwk_endpoint": "/.well-known/jwt-vc-issuer",
-        "httpc_params": {
-            "connection": {
-                "ssl": True
-            },
-            "session": {
-                "timeout": 6
-            }
-        }
-    }
+        "httpc_params": {"connection": {"ssl": True}, "session": {"timeout": 6}},
+    },
 }
 
 CONFIG_DIRECT_TRUST = {
     "base_url": BASE_URL,
-
     "ui": {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
         "error_template": "error.html",
-        "error_url": "https://localhost:9999/error_page.html"
+        "error_url": "https://localhost:9999/error_page.html",
     },
     "endpoints": {
         "entity_configuration": "/.well-known/openid-federation",
@@ -400,7 +318,7 @@ CONFIG_DIRECT_TRUST = {
         "response": "/response-uri",
         "request": "/request-uri",
         "status": "/status-uri",
-        "get_response": "/get-response"
+        "get_response": "/get-response",
     },
     "response_code": {
         "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
@@ -409,12 +327,9 @@ CONFIG_DIRECT_TRUST = {
         "size": 100,
         "color": "#2B4375",
         "expiration_time": 120,
-        "logo_path": "pyeudiw/tests/satosa/static/logo.png"
+        "logo_path": "pyeudiw/tests/satosa/static/logo.png",
     },
-    "jwt": {
-        "default_sig_alg": "ES256",
-        "default_exp": 6
-    },
+    "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
     "authorization": {
         "url_scheme": "haip",  # haip://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
@@ -431,51 +346,34 @@ CONFIG_DIRECT_TRUST = {
                                     {
                                         "filter": {
                                             "const": "PersonIdentificationData",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.sd-jwt.type"
-                                        ]
+                                        "path": ["$.sd-jwt.type"],
                                     },
                                     {
-                                        "filter": {
-                                            "type": "object"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.cnf"
-                                        ]
+                                        "filter": {"type": "object"},
+                                        "path": ["$.sd-jwt.cnf"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.family_name"
-                                        ]
+                                        "path": ["$.sd-jwt.family_name"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.given_name"
-                                        ]
+                                        "path": ["$.sd-jwt.given_name"],
                                     },
                                     {
                                         "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.unique_id"
-                                        ]
-                                    }
+                                        "path": ["$.sd-jwt.unique_id"],
+                                    },
                                 ],
-                                "limit_disclosure": "required"
+                                "limit_disclosure": "required",
                             },
-                            "jwt": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
+                            "jwt": {"alg": ["EdDSA", "ES256"]},
                         },
-                        "id": "sd-jwt"
+                        "id": "sd-jwt",
                     }
-                ]
+                ],
             },
             {
                 "id": "mDL-sample-req",
@@ -487,65 +385,46 @@ CONFIG_DIRECT_TRUST = {
                                     {
                                         "filter": {
                                             "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.mdoc.doctype"
-                                        ]
+                                        "path": ["$.mdoc.doctype"],
                                     },
                                     {
                                         "filter": {
                                             "const": "org.iso.18013.5.1",
-                                            "type": "string"
+                                            "type": "string",
                                         },
-                                        "path": [
-                                            "$.mdoc.namespace"
-                                        ]
+                                        "path": ["$.mdoc.namespace"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.family_name"
-                                        ]
+                                        "path": ["$.mdoc.family_name"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.portrait"
-                                        ]
+                                        "path": ["$.mdoc.portrait"],
                                     },
                                     {
                                         "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.driving_privileges"
-                                        ]
-                                    }
+                                        "path": ["$.mdoc.driving_privileges"],
+                                    },
                                 ],
-                                "limit_disclosure": "required"
+                                "limit_disclosure": "required",
                             },
-                            "mso_mdoc": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
+                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
                         },
-                        "id": "mDL"
+                        "id": "mDL",
                     }
-                ]
-            }
-        ]
+                ],
+            },
+        ],
     },
-    'user_attributes': {
+    "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
-        "subject_id_random_value": "CHANGEME!"
+        "subject_id_random_value": "CHANGEME!",
     },
-    'network': {
-        "httpc_params": httpc_params
-    },
-    "trust": {
-        "direct_trust_sd_jwt_vc": MODULE_DIRECT_TRUST_CONFIG
-    },
+    "network": {"httpc_params": httpc_params},
+    "trust": {"direct_trust_sd_jwt_vc": MODULE_DIRECT_TRUST_CONFIG},
     "metadata_jwks": [
         {
             "crv": "P-256",
@@ -553,7 +432,7 @@ CONFIG_DIRECT_TRUST = {
             "kid": "dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s",
             "kty": "EC",
             "x": "TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk",
-            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7"
+            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7",
         },
         {
             "kty": "RSA",
@@ -569,8 +448,8 @@ CONFIG_DIRECT_TRUST = {
             "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT"
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
-            "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-        }
+            "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
+        },
     ],
     "storage": {
         "mongo_db": {
@@ -579,11 +458,9 @@ CONFIG_DIRECT_TRUST = {
                 "class": "MongoCache",
                 "init_params": {
                     "url": "mongodb://localhost:27017/?timeoutMS=2000",
-                    "conf": {
-                        "db_name": "eudiw"
-                    },
-                    "connection_params": {}
-                }
+                    "conf": {"db_name": "eudiw"},
+                    "connection_params": {},
+                },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
@@ -594,78 +471,54 @@ CONFIG_DIRECT_TRUST = {
                         "db_name": "test-eudiw",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
-                        "db_trust_anchors_collection": "trust_anchors"
+                        "db_trust_anchors_collection": "trust_anchors",
                     },
-                    "connection_params": {}
-                }
-            }
+                    "connection_params": {},
+                },
+            },
         }
     },
     "metadata": {
         "application_type": "web",
-        "authorization_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
+        "authorization_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
         "authorization_encrypted_response_enc": [
             "A128CBC-HS256",
             "A192CBC-HS384",
             "A256CBC-HS512",
             "A128GCM",
             "A192GCM",
-            "A256GCM"
+            "A256GCM",
         ],
-        "authorization_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
+        "authorization_signed_response_alg": ["RS256", "ES256"],
         "client_id": f"{BASE_URL}/OpenID4VP",
         "client_name": "Name of an example organization",
-        "contacts": [
-            "ops@verifier.example.org"
-        ],
+        "contacts": ["ops@verifier.example.org"],
         "default_acr_values": [
             "https://www.spid.gov.it/SpidL2",
-            "https://www.spid.gov.it/SpidL3"
+            "https://www.spid.gov.it/SpidL3",
         ],
         "default_max_age": 1111,
-        "id_token_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
+        "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
         "id_token_encrypted_response_enc": [
             "A128CBC-HS256",
             "A192CBC-HS384",
             "A256CBC-HS512",
             "A128GCM",
             "A192GCM",
-            "A256GCM"
+            "A256GCM",
         ],
-        "id_token_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "response_uris_supported": [
-            f"{BASE_URL}/OpenID4VP/response-uri"
-        ],
-        "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request-uri"
-        ],
+        "id_token_signed_response_alg": ["RS256", "ES256"],
+        "response_uris_supported": [f"{BASE_URL}/OpenID4VP/response-uri"],
+        "request_uris": [f"{BASE_URL}/OpenID4VP/request-uri"],
         "require_auth_time": True,
         "subject_type": "pairwise",
         "vp_formats": {
             "vc+sd-jwt": {
-                "sd-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ],
-                "kb-jwt_alg_values": [
-                    "ES256",
-                    "ES384"
-                ]
+                "sd-jwt_alg_values": ["ES256", "ES384"],
+                "kb-jwt_alg_values": ["ES256", "ES384"],
             }
-        }
-    }
+        },
+    },
 }
 
 CREDENTIAL_ISSUER_CONF = {
@@ -688,12 +541,10 @@ CREDENTIAL_ISSUER_CONF = {
 }
 
 
-INTERNAL_ATTRIBUTES: dict = {
-    'attributes': {}
-}
+INTERNAL_ATTRIBUTES: dict = {"attributes": {}}
 
 
-PRIVATE_JWK = new_ec_key('P-256')
+PRIVATE_JWK = new_ec_key("P-256")
 PUBLIC_JWK = PRIVATE_JWK.serialize(private=False)
 
 
@@ -705,26 +556,15 @@ WALLET_INSTANCE_ATTESTATION = {
     "tos_uri": "https://wallet-provider.example.org/info_policy",
     "logo_uri": "https://wallet-provider.example.org/logo.svg",
     "aal": "https://wallet-provider.example.org/LoA/basic",
-    "cnf":
-    {
-        "jwk": PUBLIC_JWK
-    },
+    "cnf": {"jwk": PUBLIC_JWK},
     "authorization_endpoint": "haip:",
-    "response_types_supported": [
-        "vp_token"
-    ],
+    "response_types_supported": ["vp_token"],
     "vp_formats_supported": {
-        "jwt_vp_json": {
-            "alg_values_supported": ["ES256"]
-        },
-        "jwt_vc_json": {
-            "alg_values_supported": ["ES256"]
-        }
+        "jwt_vp_json": {"alg_values_supported": ["ES256"]},
+        "jwt_vc_json": {"alg_values_supported": ["ES256"]},
     },
-    "request_object_signing_alg_values_supported": [
-        "ES256"
-    ],
+    "request_object_signing_alg_values_supported": ["ES256"],
     "presentation_definition_uri_supported": False,
     "iat": iat_now(),
-    "exp": exp_from_now()
+    "exp": exp_from_now(),
 }

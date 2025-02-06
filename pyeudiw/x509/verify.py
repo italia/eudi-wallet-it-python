@@ -26,8 +26,7 @@ def _verify_x509_certificate_chain(pems: list[str]):
     try:
         store = crypto.X509Store()
         x509_certs = [
-            crypto.load_certificate(crypto.FILETYPE_PEM, str(pem))
-            for pem in pems
+            crypto.load_certificate(crypto.FILETYPE_PEM, str(pem)) for pem in pems
         ]
 
         for cert in x509_certs[:-1]:
@@ -87,7 +86,9 @@ def _check_datetime(exp: datetime | None):
     return True
 
 
-def verify_x509_attestation_chain(x5c: list[bytes], exp: datetime | None = None) -> bool:
+def verify_x509_attestation_chain(
+    x5c: list[bytes], exp: datetime | None = None
+) -> bool:
     """
     Verify the x509 attestation certificate chain.
 

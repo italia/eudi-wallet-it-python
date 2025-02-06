@@ -1,5 +1,7 @@
 from pyeudiw.federation.schemas.entity_configuration import (
-    EntityConfigurationPayload, EntityStatementPayload)
+    EntityConfigurationPayload,
+    EntityStatementPayload,
+)
 
 from .exceptions import InvalidEntityConfiguration, InvalidEntityStatement
 

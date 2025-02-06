@@ -4,8 +4,9 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.federation.schemas.federation_entity import FederationEntity
-from pyeudiw.federation.schemas.openid_credential_verifier import \
-    OpenIDCredentialVerifier
+from pyeudiw.federation.schemas.openid_credential_verifier import (
+    OpenIDCredentialVerifier,
+)
 from pyeudiw.jwk.schemas.public import JwksSchema
 from pyeudiw.tools.schema_utils import check_algorithm
 
@@ -36,7 +37,7 @@ class EntityConfigurationPayload(BaseModel):
     authority_hints: List[HttpUrl]
 
 
-class EntityStatementPayload(BaseModel, extra='forbid'):
+class EntityStatementPayload(BaseModel, extra="forbid"):
     exp: int
     iat: int
     iss: HttpUrl

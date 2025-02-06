@@ -14,7 +14,9 @@ def pytest_generate_tests(metafunc):
     if "testcase" in metafunc.fixturenames:
         testcases = list(tc_basedir.glob("*/specification.yml"))
         metafunc.parametrize(
-            "testcase", [load_yaml_specification(t) for t in testcases], ids=[t.parent.name for t in testcases]
+            "testcase",
+            [load_yaml_specification(t) for t in testcases],
+            ids=[t.parent.name for t in testcases],
         )
 
 

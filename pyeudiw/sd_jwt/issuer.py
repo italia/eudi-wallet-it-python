@@ -6,9 +6,13 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.sd_jwt import (DEFAULT_SIGNING_ALG, DIGEST_ALG_KEY,
-                            JSON_SER_DISCLOSURE_KEY, SD_DIGESTS_KEY,
-                            SD_LIST_PREFIX)
+from pyeudiw.sd_jwt import (
+    DEFAULT_SIGNING_ALG,
+    DIGEST_ALG_KEY,
+    JSON_SER_DISCLOSURE_KEY,
+    SD_DIGESTS_KEY,
+    SD_LIST_PREFIX,
+)
 from pyeudiw.sd_jwt.common import SDJWTCommon, SDObj
 from pyeudiw.sd_jwt.disclosure import SDJWTDisclosure
 
@@ -154,8 +158,7 @@ class SDJWTIssuer(SDJWTCommon):
             for _ in range(
                 sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
             ):
-                sd_claims[SD_DIGESTS_KEY].append(
-                    self._create_decoy_claim_entry())
+                sd_claims[SD_DIGESTS_KEY].append(self._create_decoy_claim_entry())
 
         # Delete the SD_DIGESTS_KEY if it is empty
         if len(sd_claims[SD_DIGESTS_KEY]) == 0:
@@ -186,19 +189,19 @@ class SDJWTIssuer(SDJWTCommon):
 
         _unprotected_headers = {}
         for i, key in enumerate(self._issuer_keys):
-            _unprotected_headers = {
-                "kid": key["kid"]} if "kid" in key else None
+            _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
             if self._serialization_format == "json" and i == 0:
                 _unprotected_headers = _unprotected_headers or {}
                 _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [
-                    d.b64 for d in self.ii_disclosures]
+                    d.b64 for d in self.ii_disclosures
+                ]
 
         self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
         self.serialized_sd_jwt = self.sd_jwt.sign(
             self.sd_jwt_payload,
             protected=_protected_headers,
             unprotected=_unprotected_headers,
-            serialization_format=self._serialization_format
+            serialization_format=self._serialization_format,
         )
 
     def _create_combined(self):

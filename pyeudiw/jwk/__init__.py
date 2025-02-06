@@ -10,10 +10,7 @@ from cryptojwt.jwk.rsa import new_rsa_key
 
 from .exceptions import InvalidJwk, InvalidKid, KidNotFoundError
 
-KEY_TYPES_FUNC = dict(
-    EC=new_ec_key,
-    RSA=new_rsa_key
-)
+KEY_TYPES_FUNC = dict(EC=new_ec_key, RSA=new_rsa_key)
 
 
 class JWK:
@@ -25,8 +22,8 @@ class JWK:
         self,
         key: Union[dict, None] = None,
         key_type: str = "EC",
-        hash_func: str = 'SHA-256',
-        ec_crv: str = "P-256"
+        hash_func: str = "SHA-256",
+        ec_crv: str = "P-256",
     ) -> None:
         """
         Creates an instance of JWK.
@@ -52,21 +49,21 @@ class JWK:
         if key:
             if isinstance(key, dict):
                 self.key = key_from_jwk_dict(key)
-                key_type = key.get('kty', key_type)
-                self.kid = key.get('kid', "")
+                key_type = key.get("kty", key_type)
+                self.kid = key.get("kid", "")
             else:
                 self.key = key
         else:
             # create new one
-            if key_type in ['EC', None]:
-                kwargs['crv'] = ec_crv
-            self.key = KEY_TYPES_FUNC[key_type or 'EC'](**kwargs)
+            if key_type in ["EC", None]:
+                kwargs["crv"] = ec_crv
+            self.key = KEY_TYPES_FUNC[key_type or "EC"](**kwargs)
 
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
         self.jwk = self.key.to_dict()
         self.jwk["kid"] = self.kid or self.thumbprint.decode()
         self.public_key = self.key.serialize()
-        self.public_key['kid'] = self.jwk["kid"]
+        self.public_key["kid"] = self.jwk["kid"]
 
     def as_json(self) -> str:
         """
@@ -136,7 +133,9 @@ class RSAJWK(JWK):
 
 
 class ECJWK(JWK):
-    def __init__(self, key: dict | None = None, hash_func: str = "SHA-256", ec_crv: str = "P-256") -> None:
+    def __init__(
+        self, key: dict | None = None, hash_func: str = "SHA-256", ec_crv: str = "P-256"
+    ) -> None:
         super().__init__(key, "EC", hash_func, ec_crv)
 
 
@@ -150,14 +149,14 @@ def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
     :returns: a JWK instance.
     :rtype: JWK
     """
-    _kty = key.get('kty', None)
+    _kty = key.get("kty", None)
 
-    if _kty is None or _kty not in ['EC', 'RSA']:
+    if _kty is None or _kty not in ["EC", "RSA"]:
         raise InvalidJwk("Invalid JWK")
     elif _kty == "RSA":
         return RSAJWK(key, hash_func)
     else:
-        ec_crv = key.get('crv', "P-256")
+        ec_crv = key.get("crv", "P-256")
         return ECJWK(key, hash_func, ec_crv)
 
 

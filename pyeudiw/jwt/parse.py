@@ -2,8 +2,7 @@ import base64
 import json
 from dataclasses import dataclass
 
-from pyeudiw.jwt.utils import (decode_jwt_header, decode_jwt_payload,
-                               is_jwt_format)
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
 
 KeyIdentifier_T = str
 
@@ -15,13 +14,14 @@ class DecodedJwt:
     This class is not meant to be instantiated directly. Use instead
     the static method parse(str) -> DecodedJwt.
     """
+
     jwt: str
     header: dict
     payload: dict
     signature: str
 
     @staticmethod
-    def parse(jws: str) -> 'DecodedJwt':
+    def parse(jws: str) -> "DecodedJwt":
         return unsafe_parse_jws(jws)
 
 

@@ -10,7 +10,9 @@ class TrustHandlerInterface:
     def __init__(self, *args, **kwargs):
         pass
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer using a trust handler implementation.
 
@@ -24,7 +26,9 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Get the metadata of a certain issuer if is needed by the specifics.
 
@@ -39,7 +43,11 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> list[
+        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+    ]:
         """
         Expose one or more metadata endpoint required to publish metadata
         information about *myself* and that are associated to a trust

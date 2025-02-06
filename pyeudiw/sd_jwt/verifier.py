@@ -10,8 +10,13 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.sd_jwt.common import SDJWTCommon
 
-from . import (DEFAULT_SIGNING_ALG, DIGEST_ALG_KEY, KB_DIGEST_KEY,
-               SD_DIGESTS_KEY, SD_LIST_PREFIX)
+from . import (
+    DEFAULT_SIGNING_ALG,
+    DIGEST_ALG_KEY,
+    KB_DIGEST_KEY,
+    SD_DIGESTS_KEY,
+    SD_LIST_PREFIX,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +68,12 @@ class SDJWTVerifier(SDJWTCommon):
                 self._unverified_input_sd_jwt_parsed["payload"]
             )
             unverified_issuer = _deserialize_sd_jwt_payload.get("iss", None)
-            unverified_header_parameters = self._unverified_input_sd_jwt_parsed['header']
+            unverified_header_parameters = self._unverified_input_sd_jwt_parsed[
+                "header"
+            ]
             issuer_public_key_input = cb_get_issuer_key(
-                unverified_issuer, unverified_header_parameters)
+                unverified_issuer, unverified_header_parameters
+            )
 
             issuer_public_key = []
             for key in issuer_public_key_input:
@@ -78,15 +86,16 @@ class SDJWTVerifier(SDJWTCommon):
                 issuer_public_key.append(key)
 
             self._sd_jwt_payload = parsed_input_sd_jwt.verify_json(
-                jws=self._unverified_input_sd_jwt,
-                keys=issuer_public_key
+                jws=self._unverified_input_sd_jwt, keys=issuer_public_key
             )
 
         elif self._serialization_format == "compact":
             unverified_header_parameters = decode_jwt_header(
-                self._unverified_input_sd_jwt)
+                self._unverified_input_sd_jwt
+            )
             sign_alg = sign_alg or unverified_header_parameters.get(
-                "alg", DEFAULT_SIGNING_ALG)
+                "alg", DEFAULT_SIGNING_ALG
+            )
 
             parsed_input_sd_jwt = JWS(alg=sign_alg)
             parsed_payload = decode_jwt_payload(self._unverified_input_sd_jwt)
@@ -110,7 +119,7 @@ class SDJWTVerifier(SDJWTCommon):
             self._sd_jwt_payload = parsed_input_sd_jwt.verify_compact(
                 jws=self._unverified_input_sd_jwt,
                 keys=issuer_public_key,
-                sigalg=sign_alg
+                sigalg=sign_alg,
             )
 
             try:
@@ -137,12 +146,9 @@ class SDJWTVerifier(SDJWTCommon):
 
         # Verify the key binding JWT using the holder public key
         if self._serialization_format == "json":
-            decode_jwt_header(
-                self._unverified_input_sd_jwt_parsed["payload"]
-            )
+            decode_jwt_header(self._unverified_input_sd_jwt_parsed["payload"])
 
-        holder_public_key_payload_jwk = self._holder_public_key_payload.get(
-            "jwk", None)
+        holder_public_key_payload_jwk = self._holder_public_key_payload.get("jwk", None)
 
         if not holder_public_key_payload_jwk:
             raise ValueError(
@@ -155,10 +161,12 @@ class SDJWTVerifier(SDJWTCommon):
 
         parsed_input_key_binding_jwt = JWSHelper(jwks=pubkey)
         verified_payload = parsed_input_key_binding_jwt.verify(
-            self._unverified_input_key_binding_jwt)
+            self._unverified_input_key_binding_jwt
+        )
 
         key_binding_jwt_header = decode_jwt_header(
-            self._unverified_input_key_binding_jwt)
+            self._unverified_input_key_binding_jwt
+        )
 
         if key_binding_jwt_header["typ"] != self.KB_JWT_TYP_HEADER:
             raise ValueError("Invalid header typ")
@@ -224,8 +232,7 @@ class SDJWTVerifier(SDJWTCommon):
 
             for digest in sd_jwt_claims.get(SD_DIGESTS_KEY, []):
                 if digest in self._duplicate_hash_check:
-                    raise ValueError(
-                        f"Duplicate hash found in SD-JWT: {digest}")
+                    raise ValueError(f"Duplicate hash found in SD-JWT: {digest}")
                 self._duplicate_hash_check.append(digest)
 
                 if digest in self._hash_to_decoded_disclosure:

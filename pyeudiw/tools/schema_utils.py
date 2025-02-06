@@ -29,7 +29,8 @@ def check_algorithm(alg: str, info: ValidationInfo) -> None:
         supported_algorithms = _default_supported_algorithms
     else:
         supported_algorithms = info.context.get(
-            "supported_algorithms", _default_supported_algorithms)
+            "supported_algorithms", _default_supported_algorithms
+        )
     if not isinstance(supported_algorithms, list):
         supported_algorithms = []
     if alg not in supported_algorithms:

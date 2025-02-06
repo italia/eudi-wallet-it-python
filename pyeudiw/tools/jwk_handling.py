@@ -26,6 +26,7 @@ def find_vp_token_key(token_parser: VpTokenParser, key_source: TrustEvaluator) -
 
     if isinstance(verification_key, dict):
         raise NotImplementedError(
-            "TODO: matching of public key (ex. from x5c) with keys from trust source")
+            "TODO: matching of public key (ex. from x5c) with keys from trust source"
+        )
 
     raise Exception(f"invalid state: key with type {type(verification_key)}")

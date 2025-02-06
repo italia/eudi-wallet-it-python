@@ -6,7 +6,9 @@ import requests
 from .exceptions import HttpError
 
 
-async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict) -> requests.Response:
+async def fetch(
+    session: aiohttp.ClientSession, url: str, httpc_params: dict
+) -> requests.Response:
     """
     Fetches the content of a URL.
 
@@ -27,7 +29,9 @@ async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict) ->
         return await response
 
 
-async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_params: dict) -> list[requests.Response]:
+async def fetch_all(
+    session: aiohttp.ClientSession, urls: list[str], httpc_params: dict
+) -> list[requests.Response]:
     """
     Fetches the content of a list of URL.
 
@@ -78,14 +82,11 @@ def http_get_sync(urls, httpc_params: dict) -> list[requests.Response]:
     :rtype: list[requests.Response]
     """
     _conf = {
-        'verify': httpc_params['connection']['ssl'],
-        'timeout': httpc_params['session']['timeout']
+        "verify": httpc_params["connection"]["ssl"],
+        "timeout": httpc_params["session"]["timeout"],
     }
     try:
-        res = [
-            requests.get(url, **_conf)  # nosec - B113
-            for url in urls
-        ]
+        res = [requests.get(url, **_conf) for url in urls]  # nosec - B113
     except requests.exceptions.ConnectionError as e:
         raise HttpError(f"Connection error: {e}")
 
@@ -112,9 +113,9 @@ async def http_get_async(urls, httpc_params: dict) -> list[requests.Response]:
     :returns: the list of responses
     :rtype: list[requests.Response]
     """
-    if not isinstance(httpc_params['session']['timeout'], aiohttp.ClientTimeout):
-        httpc_params['session']['timeout'] = aiohttp.ClientTimeout(
-            total=httpc_params['session']['timeout']
+    if not isinstance(httpc_params["session"]["timeout"], aiohttp.ClientTimeout):
+        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(
+            total=httpc_params["session"]["timeout"]
         )
 
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:

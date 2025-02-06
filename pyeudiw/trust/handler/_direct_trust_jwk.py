@@ -42,7 +42,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         jwk_endpoint: str,
         cache_ttl: int,
         jwks: list[dict] | None,
-        client_id: str = None
+        client_id: str = None,
     ):
         self.httpc_params = httpc_params
         self.jwk_endpoint = jwk_endpoint
@@ -57,11 +57,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             raise ValueError("invalid argument: dictionary is not a jwk", e)
 
     def _build_issuing_public_signing_jwks(self) -> list[dict]:
-        signing_keys = [
-            key for key in self.jwks if key.get("use", "") != "enc"]
-        return [
-            JWK(key).as_public_dict() for key in signing_keys
-        ]
+        signing_keys = [key for key in self.jwks if key.get("use", "") != "enc"]
+        return [JWK(key).as_public_dict() for key in signing_keys]
 
     def _build_metadata_with_issuer_jwk(self, entity_id: str) -> dict:
         # This funciton assumed that the issuer is equal to the entity_uri; this
@@ -70,9 +67,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         #  context; but for not we will opt for the simple option.
         md_dictionary = {
             "issuer": entity_id,
-            "jwks": {
-                "keys": self._build_issuing_public_signing_jwks()
-            }
+            "jwks": {"keys": self._build_issuing_public_signing_jwks()},
         }
         return md_dictionary
 
@@ -88,15 +83,14 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         there is no way to solve that problem at the satosa backend level.
         """
         endpoint = f"{backend_name.strip('/')}/{self.jwk_endpoint.strip('/')}"
-        return endpoint.strip('/')
+        return endpoint.strip("/")
 
     def _extract_jwks_from_jwk_metadata(self, metadata: dict) -> dict:
         """
         parse the jwk metadata document and return the jwks
         NOTE: jwks might be in the document by value or by reference
         """
-        jwks: dict[Literal["keys"], list[dict]
-                   ] | None = metadata.get("jwks", None)
+        jwks: dict[Literal["keys"], list[dict]] | None = metadata.get("jwks", None)
         jwks_uri: str | None = metadata.get("jwks_uri", None)
         if (not jwks) and (not jwks_uri):
             raise InvalidJwkMetadataException(
@@ -113,13 +107,19 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         endpoint = build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint)
         if self.cache_ttl:
             resp = cacheable_get_http_url(
-                self.cache_ttl, endpoint, self.httpc_params, http_async=self.http_async_calls)
+                self.cache_ttl,
+                endpoint,
+                self.httpc_params,
+                http_async=self.http_async_calls,
+            )
         else:
-            resp = get_http_url([endpoint], self.httpc_params,
-                                http_async=self.http_async_calls)[0]
+            resp = get_http_url(
+                [endpoint], self.httpc_params, http_async=self.http_async_calls
+            )[0]
         if (not resp) or (resp.status_code != 200):
             raise InvalidJwkMetadataException(
-                f"failed to fetch valid jwk metadata: obtained {resp}")
+                f"failed to fetch valid jwk metadata: obtained {resp}"
+            )
         return resp.json()
 
     def _get_jwks_by_reference(self, jwks_reference_uri: str) -> dict:
@@ -128,24 +128,40 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         if self.cache_ttl:
             resp = cacheable_get_http_url(
-                self.cache_ttl, jwks_reference_uri, self.httpc_params, http_async=self.http_async_calls)
+                self.cache_ttl,
+                jwks_reference_uri,
+                self.httpc_params,
+                http_async=self.http_async_calls,
+            )
         else:
             resp = get_http_url(
-                [jwks_reference_uri], self.httpc_params, http_async=self.http_async_calls)[0]
+                [jwks_reference_uri],
+                self.httpc_params,
+                http_async=self.http_async_calls,
+            )[0]
         return resp.json()
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> list[
+        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+    ]:
         if not self.jwk_endpoint:
             return []
 
-        metadata_path = '^' + self._build_metadata_path(backend_name) + '$'
+        metadata_path = "^" + self._build_metadata_path(backend_name) + "$"
         response_json = self._build_metadata_with_issuer_jwk(entity_uri)
 
-        def metadata_response_fn(ctx: satosa.context.Context, *args) -> satosa.response.Response:
+        def metadata_response_fn(
+            ctx: satosa.context.Context, *args
+        ) -> satosa.response.Response:
             return JsonResponse(message=response_json)
+
         return [(metadata_path, metadata_response_fn)]
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Fetches the public key of the issuer by querying a given endpoint.
         Previous responses might or might not be cached based on the cache_ttl
@@ -160,7 +176,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             self.get_metadata(issuer, trust_source)
         except Exception as e:
             self._log_warning(
-                "updating metadata", f"Exception encountered when updating metadata with {self.__class__.__name__} for issuer {issuer}: {e}"
+                "updating metadata",
+                f"Exception encountered when updating metadata with {self.__class__.__name__} for issuer {issuer}: {e}",
             )
 
         try:
@@ -173,16 +190,20 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             jwk_l: list[dict] = jwks.get("keys", [])
             if not jwk_l:
                 raise InvalidJwkMetadataException(
-                    "unable to find jwks in issuer jwk metadata")
+                    "unable to find jwks in issuer jwk metadata"
+                )
 
             trust_source.add_keys(jwk_l)
         except Exception as e:
             self._log_warning(
-                "Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}")
+                "Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}"
+            )
 
         return trust_source
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         # this class does not handle generic metadata information: it fetches and exposes cryptographic material only
         return trust_source
 

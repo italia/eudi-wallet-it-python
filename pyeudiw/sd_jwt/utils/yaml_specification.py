@@ -35,7 +35,8 @@ def _yaml_load_specification(f):
                     mp = loader.construct_yaml_str(node)
                 else:
                     resolved_type = resolver.resolve(
-                        yaml.ScalarNode, node.value, (True, False))
+                        yaml.ScalarNode, node.value, (True, False)
+                    )
                     if resolved_type == "tag:yaml.org,2002:str":
                         mp = loader.construct_yaml_str(node)
                     elif resolved_type == "tag:yaml.org,2002:int":
@@ -74,7 +75,10 @@ def remove_sdobj_wrappers(data):
     if isinstance(data, SDObj):
         return remove_sdobj_wrappers(data.value)
     elif isinstance(data, dict):
-        return {remove_sdobj_wrappers(key): remove_sdobj_wrappers(value) for key, value in data.items()}
+        return {
+            remove_sdobj_wrappers(key): remove_sdobj_wrappers(value)
+            for key, value in data.items()
+        }
     elif isinstance(data, list):
         return [remove_sdobj_wrappers(value) for value in data]
     else:

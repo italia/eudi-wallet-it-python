@@ -11,11 +11,7 @@ class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def setup_direct_trust(self):
         self.backend = OpenID4VPBackend(
-            Mock(),
-            INTERNAL_ATTRIBUTES,
-            CONFIG,
-            BASE_URL,
-            "name"
+            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name"
         )
 
     def test_response_endpoint(self):

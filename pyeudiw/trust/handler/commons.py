@@ -1,12 +1,8 @@
 import os
 
 DEFAULT_HTTPC_PARAMS = {
-    "connection": {
-        "ssl": os.getenv("PYEUDIW_HTTPC_SSL", True)
-    },
-    "session": {
-        "timeout": os.getenv("PYEUDIW_HTTPC_TIMEOUT", 6)
-    }
+    "connection": {"ssl": os.getenv("PYEUDIW_HTTPC_SSL", True)},
+    "session": {"timeout": os.getenv("PYEUDIW_HTTPC_TIMEOUT", 6)},
 }
 
 DEFAULT_OPENID4VCI_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"

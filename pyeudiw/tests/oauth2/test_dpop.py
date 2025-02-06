@@ -10,7 +10,7 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
 from pyeudiw.tools.utils import iat_now
 
-PRIVATE_JWK_EC = new_ec_key('P-256')
+PRIVATE_JWK_EC = new_ec_key("P-256")
 PRIVATE_JWK = PRIVATE_JWK_EC.serialize(private=True)
 PUBLIC_JWK = PRIVATE_JWK_EC.serialize()
 
@@ -23,34 +23,23 @@ WALLET_INSTANCE_ATTESTATION = {
     "tos_uri": "https://wallet-provider.example.org/info_policy",
     "logo_uri": "https://wallet-provider.example.org/logo.svg",
     "aal": "https://wallet-provider.example.org/LoA/basic",
-    "cnf":
-    {
-        "jwk": PUBLIC_JWK
-    },
+    "cnf": {"jwk": PUBLIC_JWK},
     "authorization_endpoint": "haip:",
-    "response_types_supported": [
-        "vp_token"
-    ],
+    "response_types_supported": ["vp_token"],
     "vp_formats_supported": {
-        "jwt_vp_json": {
-            "alg_values_supported": ["ES256"]
-        },
-        "jwt_vc_json": {
-            "alg_values_supported": ["ES256"]
-        }
+        "jwt_vp_json": {"alg_values_supported": ["ES256"]},
+        "jwt_vc_json": {"alg_values_supported": ["ES256"]},
     },
-    "request_object_signing_alg_values_supported": [
-        "ES256"
-    ],
+    "request_object_signing_alg_values_supported": ["ES256"],
     "presentation_definition_uri_supported": False,
     "iat": iat_now(),
-    "exp": iat_now() + 1024
+    "exp": iat_now() + 1024,
 }
 
 
 @pytest.fixture
 def private_jwk():
-    return new_ec_key('P-256')
+    return new_ec_key("P-256")
 
 
 @pytest.fixture
@@ -61,8 +50,7 @@ def jwshelper(private_jwk):
 @pytest.fixture
 def wia_jws(jwshelper):
     wia = jwshelper.sign(
-        WALLET_INSTANCE_ATTESTATION,
-        protected={'trust_chain': [], 'x5c': []}
+        WALLET_INSTANCE_ATTESTATION, protected={"trust_chain": [], "x5c": []}
     )
     return wia
 
@@ -76,9 +64,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert header["alg"]
 
     new_dpop = DPoPIssuer(
-        htu='https://example.org/redirect',
-        token=wia_jws,
-        private_jwk=private_jwk
+        htu="https://example.org/redirect", token=wia_jws, private_jwk=private_jwk
     )
     proof = new_dpop.proof
     assert proof
@@ -90,9 +76,12 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert "d" not in header["jwk"]
 
     payload = decode_jwt_payload(proof)
-    assert payload["ath"] == base64.urlsafe_b64encode(
-        hashlib.sha256(wia_jws.encode()
-                       ).digest()).rstrip(b'=').decode()
+    assert (
+        payload["ath"]
+        == base64.urlsafe_b64encode(hashlib.sha256(wia_jws.encode()).digest())
+        .rstrip(b"=")
+        .decode()
+    )
     assert payload["htm"] in ["GET", "POST", "get", "post"]
     assert payload["htu"] == "https://example.org/redirect"
     assert payload["jti"]
@@ -102,7 +91,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     dpop = DPoPVerifier(
         public_jwk=PUBLIC_JWK,
         http_header_authz=f"DPoP {wia_jws}",
-        http_header_dpop=proof
+        http_header_dpop=proof,
     )
     assert dpop.is_valid
 
@@ -110,7 +99,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     dpop = DPoPVerifier(
         public_jwk=other_jwk,
         http_header_authz=f"DPoP {wia_jws}",
-        http_header_dpop=proof
+        http_header_dpop=proof,
     )
     with pytest.raises(Exception):
         dpop.validate()
@@ -119,7 +108,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
         dpop = DPoPVerifier(
             public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
-            http_header_dpop="aaa"
+            http_header_dpop="aaa",
         )
         assert dpop.is_valid is False
 
@@ -127,5 +116,5 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
         dpop = DPoPVerifier(
             public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
-            http_header_dpop="aaa" + proof[3:]
+            http_header_dpop="aaa" + proof[3:],
         )

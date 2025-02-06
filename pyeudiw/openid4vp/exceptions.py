@@ -1,6 +1,5 @@
 class AuthRespParsingException(Exception):
-    """Raised when the http request corresponding to an authorization response is malformed.
-    """
+    """Raised when the http request corresponding to an authorization response is malformed."""
 
 
 class AuthRespValidationException(Exception):

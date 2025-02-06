@@ -17,7 +17,7 @@ user_claims:
 yaml_parsing: |
     Multiline text
     is also supported
-"""
+""",
 ]
 
 YAML_TESTCASES_EXPECTED = [
@@ -30,9 +30,7 @@ YAML_TESTCASES_EXPECTED = [
             }
         }
     },
-    {
-        "yaml_parsing": "Multiline text\nis also supported\n"
-    }
+    {"yaml_parsing": "Multiline text\nis also supported\n"},
 ]
 
 

@@ -51,7 +51,7 @@ class TrustParameterData:
         return {
             "type": self.type,
             "trust_params": self.trust_params,
-            "expiration_date": self.expiration_date
+            "expiration_date": self.expiration_date,
         }
 
     @property
@@ -105,8 +105,9 @@ class TrustSourceData:
 
         self.additional_data = kwargs
 
-        self.trust_params = {type: TrustParameterData(
-            **tp) for type, tp in trust_params.items()}
+        self.trust_params = {
+            type: TrustParameterData(**tp) for type, tp in trust_params.items()
+        }
 
     def add_key(self, key: dict) -> None:
         """
@@ -174,11 +175,13 @@ class TrustSourceData:
             "metadata": self.metadata,
             "revoked": self.revoked,
             "keys": self.keys,
-            "trust_params": {type: param.serialize() for type, param in self.trust_params.items()}
+            "trust_params": {
+                type: param.serialize() for type, param in self.trust_params.items()
+            },
         }
 
     @staticmethod
-    def empty(entity_id: str) -> 'TrustSourceData':
+    def empty(entity_id: str) -> "TrustSourceData":
         """
         Return the empty trust source data.
 
@@ -187,10 +190,12 @@ class TrustSourceData:
         :returns: The empty trust source data
         :rtype: TrustSourceData
         """
-        return TrustSourceData(entity_id, policies={}, metadata={}, revoked=False, keys=[], trust_params={})
+        return TrustSourceData(
+            entity_id, policies={}, metadata={}, revoked=False, keys=[], trust_params={}
+        )
 
     @staticmethod
-    def from_dict(data: dict) -> 'TrustSourceData':
+    def from_dict(data: dict) -> "TrustSourceData":
         """
         Return the trust source data from the given dictionary.
 

@@ -8,8 +8,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
-from pyeudiw.trust.exceptions import (NoCriptographicMaterial,
-                                      TrustConfigurationError)
+from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
@@ -23,7 +22,9 @@ class CombinedTrustEvaluator(BaseLogger):
     A trust evaluator that combines multiple trust models.
     """
 
-    def __init__(self, handlers: list[TrustHandlerInterface], db_engine: DBEngine) -> None:
+    def __init__(
+        self, handlers: list[TrustHandlerInterface], db_engine: DBEngine
+    ) -> None:
         """
         Initialize the CombinedTrustEvaluator.
 
@@ -52,7 +53,9 @@ class CombinedTrustEvaluator(BaseLogger):
         except EntryNotFound:
             return None
 
-    def _upsert_source_trust_materials(self, issuer: str, trust_source: Optional[TrustSourceData]) -> TrustSourceData:
+    def _upsert_source_trust_materials(
+        self, issuer: str, trust_source: Optional[TrustSourceData]
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers.
         If the trust material is not found for a certain issuer the structure remain unchanged.
@@ -69,7 +72,8 @@ class CombinedTrustEvaluator(BaseLogger):
 
         for handler in self.handlers:
             trust_source = handler.extract_and_update_trust_materials(
-                issuer, trust_source)
+                issuer, trust_source
+            )
 
         self.db_engine.add_trust_source(trust_source.serialize())
 
@@ -88,9 +92,7 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._retrieve_trust_source(issuer)
 
         if not trust_source:
-            trust_source = self._upsert_source_trust_materials(
-                issuer, trust_source
-            )
+            trust_source = self._upsert_source_trust_materials(issuer, trust_source)
 
         return trust_source
 
@@ -123,7 +125,8 @@ class CombinedTrustEvaluator(BaseLogger):
         if not trust_source.metadata:
             raise Exception(
                 f"no trust evaluator can provide metadata for {issuer}: "
-                f"searched among: {self.handlers_names}")
+                f"searched among: {self.handlers_names}"
+            )
 
         return trust_source.metadata
 
@@ -156,7 +159,8 @@ class CombinedTrustEvaluator(BaseLogger):
         if not trust_source.policies:
             raise Exception(
                 f"no trust evaluator can provide policies for {issuer}: "
-                f"searched among: {self.handlers_names}")
+                f"searched among: {self.handlers_names}"
+            )
 
         return trust_source.policies
 
@@ -175,28 +179,36 @@ class CombinedTrustEvaluator(BaseLogger):
         if not trust_source.trust_params:
             raise Exception(
                 f"no trust evaluator can provide trust parameters for {issuer}: "
-                f"searched among: {self.handlers_names}")
+                f"searched among: {self.handlers_names}"
+            )
 
-        return {type: param.trust_params for type, param in trust_source.trust_params.items()}
+        return {
+            type: param.trust_params
+            for type, param in trust_source.trust_params.items()
+        }
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> list[
+        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+    ]:
         endpoints = []
         for handler in self.handlers:
-            endpoints += handler.build_metadata_endpoints(
-                backend_name, entity_uri
-            )
+            endpoints += handler.build_metadata_endpoints(backend_name, entity_uri)
         # Partially check for collissions in managed paths: this might happen if multiple configured
         # trust frameworks want to handle the same endpoints (check is not 100% exhaustive as paths are actually regexps)
         all_paths = [path for path, *_ in endpoints]
         if len(all_paths) > len(set(all_paths)):
             self._log_warning(
                 "build_metadata_endpoints",
-                f"found collision in metadata endpoint: {all_paths}"
+                f"found collision in metadata endpoint: {all_paths}",
             )
         return endpoints
 
     @staticmethod
-    def from_config(config: dict, db_engine: DBEngine, default_client_id: str) -> 'CombinedTrustEvaluator':
+    def from_config(
+        config: dict, db_engine: DBEngine, default_client_id: str
+    ) -> "CombinedTrustEvaluator":
         """
         Create a CombinedTrustEvaluator from a configuration.
 
@@ -220,11 +232,12 @@ class CombinedTrustEvaluator(BaseLogger):
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],
                     handler_config["class"],
-                    handler_config["config"]
+                    handler_config["config"],
                 )
             except Exception as e:
                 raise TrustConfigurationError(
-                    f"invalid configuration for {handler_name}: {e}", e)
+                    f"invalid configuration for {handler_name}: {e}", e
+                )
 
             if not isinstance(trust_handler, TrustHandlerInterface):
                 raise TrustConfigurationError(
@@ -234,9 +247,7 @@ class CombinedTrustEvaluator(BaseLogger):
             handlers.append(trust_handler)
 
         if not handlers:
-            logger.warning(
-                "No configured trust model, using direct trust model"
-            )
+            logger.warning("No configured trust model, using direct trust model")
             handlers.append(DirectTrustSdJwtVc())
             handlers.append(DirectTrustJar())
 

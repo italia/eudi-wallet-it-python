@@ -13,7 +13,7 @@ def test_trust_CombinedTrusstEvaluation_handler_loading():
     trust_ev = CombinedTrustEvaluator.from_config(
         correct_config,
         DBEngine(CONFIG["storage"]),
-        default_client_id="default-client-id"
+        default_client_id="default-client-id",
     )
 
     assert trust_ev
@@ -27,7 +27,7 @@ def test_not_conformant_CombinedTrusstEvaluation_handler_loading():
         CombinedTrustEvaluator.from_config(
             not_conformant,
             DBEngine(CONFIG["storage"]),
-            default_client_id="default-client-id"
+            default_client_id="default-client-id",
         )
         assert False
     except TrustConfigurationError:
@@ -47,9 +47,7 @@ def test_public_key_and_metadata_retrive():
     db_engine = DBEngine(CONFIG["storage"])
 
     trust_ev = CombinedTrustEvaluator.from_config(
-        correct_config,
-        db_engine,
-        default_client_id="default-client-id"
+        correct_config, db_engine, default_client_id="default-client-id"
     )
 
     uuid_url = f"http://{uuid4()}.issuer.it"
@@ -58,7 +56,9 @@ def test_public_key_and_metadata_retrive():
     trust_source = db_engine.get_trust_source(uuid_url)
 
     assert trust_source
-    assert trust_source["keys"][0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
+    assert (
+        trust_source["keys"][0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
+    )
     assert trust_source["metadata"] == {"json_key": "json_value"}
 
     assert pub_keys[0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"

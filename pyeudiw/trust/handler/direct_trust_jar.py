@@ -1,4 +1,3 @@
-
 from pyeudiw.trust.handler._direct_trust_jwk import _DirectTrustJwkHandler
 
 from .commons import DEFAULT_HTTPC_PARAMS
@@ -20,12 +19,12 @@ class DirectTrustJar(_DirectTrustJwkHandler):
         jwk_endpoint: str = DEFAULT_JARISSUER_METADATA_ENDPOINT,
         cache_ttl: int = 0,
         jwks: list[dict] | None = None,
-        client_id: str = None
+        client_id: str = None,
     ):
         super().__init__(
             httpc_params=httpc_params,
             jwk_endpoint=jwk_endpoint,
             cache_ttl=cache_ttl,
             jwks=jwks,
-            client_id=client_id
+            client_id=client_id,
         )

@@ -11,6 +11,6 @@ def is_smartphone(useragent: str) -> bool:
     """
 
     device = DeviceDetector(useragent).parse()
-    if device.device_type() == 'smartphone':
+    if device.device_type() == "smartphone":
         return True
     return False

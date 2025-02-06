@@ -9,8 +9,8 @@ class QRCode(BaseModel):
     expiration_time: int = Field(..., gt=0)
     logo_path: str
 
-    @field_validator('logo_path')
+    @field_validator("logo_path")
     def must_start_with_slash(cls, v):
-        if v.startswith('/'):
+        if v.startswith("/"):
             raise ValueError(f'{v} must start without "/"')
         return v

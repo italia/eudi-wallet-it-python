@@ -28,7 +28,8 @@ class SDObj:
 class SDJWTCommon:
     SD_JWT_HEADER = os.getenv(
         # TODO: dc is only for digital credential, while you might use another typ ...
-        "SD_JWT_HEADER", "dc+sd-jwt"
+        "SD_JWT_HEADER",
+        "dc+sd-jwt",
     )  # overwriteable with extra_header_parameters = {"typ": "other-example+sd-jwt"}
     KB_JWT_TYP_HEADER = "kb+jwt"
     HASH_ALG = {"name": "sha-256", "fn": sha256}
@@ -39,8 +40,7 @@ class SDJWTCommon:
 
     def __init__(self, serialization_format):
         if serialization_format not in ("compact", "json"):
-            raise ValueError(
-                f"Unknown serialization format: {serialization_format}")
+            raise ValueError(f"Unknown serialization format: {serialization_format}")
         self._serialization_format = serialization_format
 
     def _b64hash(self, raw):
@@ -115,13 +115,12 @@ class SDJWTCommon:
             (
                 self._unverified_input_sd_jwt,
                 *self._input_disclosures,
-                self._unverified_input_key_binding_jwt
+                self._unverified_input_key_binding_jwt,
             ) = self._split(sd_jwt)
 
             # Extract only the body from SD-JWT without verifying the signature
             _, jwt_body, _ = self._unverified_input_sd_jwt.split(".")
-            self._unverified_input_sd_jwt_payload = self._base64url_decode(
-                jwt_body)
+            self._unverified_input_sd_jwt_payload = self._base64url_decode(jwt_body)
             self._unverified_compact_serialized_input_sd_jwt = (
                 self._unverified_input_sd_jwt
             )
@@ -132,8 +131,7 @@ class SDJWTCommon:
             self._unverified_input_sd_jwt_parsed = loads(sd_jwt)
 
             self._unverified_input_sd_jwt_payload = loads(
-                self._base64url_decode(
-                    self._unverified_input_sd_jwt_parsed["payload"])
+                self._base64url_decode(self._unverified_input_sd_jwt_parsed["payload"])
             )
 
             # distinguish between flattened and general JSON serialization (RFC7515)
@@ -151,7 +149,7 @@ class SDJWTCommon:
                     [
                         self._unverified_input_sd_jwt_parsed["protected"],
                         self._unverified_input_sd_jwt_parsed["payload"],
-                        self._unverified_input_sd_jwt_parsed["signature"]
+                        self._unverified_input_sd_jwt_parsed["signature"],
                     ]
                 )
 
@@ -184,8 +182,6 @@ class SDJWTCommon:
         # Temporarily create the combined presentation in order to create the hash over it
         # Note: For JSON Serialization, the compact representation of the SD-JWT is restored from the parsed JSON (see common.py)
         string_to_hash = self._combine(
-            self._unverified_compact_serialized_input_sd_jwt,
-            *disclosures,
-            ""
+            self._unverified_compact_serialized_input_sd_jwt, *disclosures, ""
         )
         return self._b64hash(string_to_hash.encode("ascii"))

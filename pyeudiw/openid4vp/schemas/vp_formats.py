@@ -14,9 +14,9 @@ class Algorithms(Enum):
 
 
 class VcSdJwt(BaseModel):
-    sd_jwt_alg_values: List[Algorithms] = Field([], alias='sd-jwt_alg_values')
-    kb_jwt_alg_values: List[Algorithms] = Field([], alias='kb-jwt_alg_values')
+    sd_jwt_alg_values: List[Algorithms] = Field([], alias="sd-jwt_alg_values")
+    kb_jwt_alg_values: List[Algorithms] = Field([], alias="kb-jwt_alg_values")
 
 
 class VpFormats(BaseModel):
-    vc_sd_jwt: VcSdJwt = Field(..., alias='vc+sd-jwt')
+    vc_sd_jwt: VcSdJwt = Field(..., alias="vc+sd-jwt")

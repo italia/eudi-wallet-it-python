@@ -12,11 +12,17 @@ from pyeudiw.sd_jwt.sd_jwt import SdJwt
 
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
-    def __init__(self, token: str, verifier_id: Optional[str] = None, verifier_nonce: Optional[str] = None):
+    def __init__(
+        self,
+        token: str,
+        verifier_id: Optional[str] = None,
+        verifier_nonce: Optional[str] = None,
+    ):
         self.token = token
         if not is_sd_jwt_kb_format(token):
             raise ValueError(
-                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?")
+                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?"
+            )
         self.verifier_id = verifier_id
         self.verifier_nonce = verifier_nonce
         # precomputed values
@@ -25,8 +31,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     def get_issuer_name(self) -> str:
         iss = self.sdjwt.issuer_jwt.payload.get("iss", None)
         if not iss:
-            raise Exception(
-                "missing required information in token paylaod: [iss]")
+            raise Exception("missing required information in token paylaod: [iss]")
         return iss
 
     def get_credentials(self) -> dict:

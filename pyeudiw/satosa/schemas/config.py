@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 
-from pyeudiw.federation.schemas.openid_credential_verifier import \
-    OpenIDCredentialVerifier
+from pyeudiw.federation.schemas.openid_credential_verifier import (
+    OpenIDCredentialVerifier,
+)
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
