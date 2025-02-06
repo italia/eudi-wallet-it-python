@@ -1,5 +1,6 @@
 import json
 import logging
+
 from hashlib import sha256
 from typing import Any, Callable, TypeVar
 
@@ -11,10 +12,13 @@ from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.sd_jwt.common import SDJWTCommon
+
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
-from pyeudiw.sd_jwt.schema import (VerifierChallenge, is_sd_jwt_format,
-                                   is_sd_jwt_kb_format)
-from pyeudiw.tools.utils import iat_now
+from pyeudiw.sd_jwt.schema import (
+    VerifierChallenge,
+    is_sd_jwt_format,
+    is_sd_jwt_kb_format
+)
 
 from . import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
 

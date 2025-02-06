@@ -12,8 +12,12 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 
-from pyeudiw.jwt.exceptions import (JWEEncryptionError, JWSSigningError,
-                                    JWSVerificationError)
+from pyeudiw.jwt.exceptions import (
+    JWEEncryptionError,
+    JWSSigningError,
+    JWSVerificationError,
+    LifetimeException
+)
 from pyeudiw.jwt.helper import (JWHelperInterface, find_self_contained_key,
                                 serialize_payload,
                                 validate_jwt_timestamps_claims)
