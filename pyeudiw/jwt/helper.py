@@ -107,24 +107,36 @@ def is_jwt_expired(token: str) -> bool:
     return is_payload_expired(payload)
 
 
-def validate_jwt_timestamps_claims(payload: dict) -> None:
+def validate_jwt_timestamps_claims(payload: dict, tolerance_s: int = 0) -> None:
     """
-    Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload.
+    Validates the 'iat', 'exp', and 'nbf' claims in a JWT payload, comparing
+    them with the current time.
+    The function assumes that the time in the payload claims is expressed as
+    seconds since the epoch, as required by rfc 7519.
+    To account for a clock skew between the token issuer and the token
+    verifier, the optional argument tolerance_s can be used. As suggested by
+    rfc 7519, it is recommended to keep the tolerance window to no more than
+    a few minutes.
 
     :param payload: The decoded JWT payload.
     :type payload: dict
-    :raises ValueError: If any of the claims are invalid.
+    :param tolerance_s: optional tolerance window, in seconds, which can be \
+        used to account for some clock skew between the token issuer and the \
+        token verifier.
+    :type tolerance_s: int
+
+    :raises LifetimeException: If any of the claims are invalid.
     """
     current_time = iat_now()
 
     if 'iat' in payload:
-        if payload['iat'] > current_time:
+        if payload['iat'] - tolerance_s > current_time:
             raise LifetimeException("Future issue time, token is invalid.")
 
     if 'exp' in payload:
-        if payload['exp'] <= current_time:
+        if payload['exp'] + tolerance_s <= current_time:
             raise LifetimeException("Token has expired.")
 
     if 'nbf' in payload:
-        if payload['nbf'] > current_time:
+        if payload['nbf'] - tolerance_s > current_time:
             raise LifetimeException("Token not yet valid.")

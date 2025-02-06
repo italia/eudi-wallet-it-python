@@ -139,14 +139,12 @@ def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: s
 
 
 def _verify_iat(payload: dict) -> None:
+    # we check that 'iat' claim exists, according to sd-jwt specs, but since its a standard claim,
+    # its value is validated by the general purpose token verification tool JWSHelper accordidng to
+    # its own rules
     iat: int | None = payload.get("iat", None)
     if not isinstance(iat, int):
         raise ValueError("missing or invalid parameter [iat] in kbjwt")
-    now = iat_now()
-    if iat > now:
-        raise InvalidKeyBinding(
-            "invalid parameter [iat] in kbjwt: issuance after present time")
-    return
 
 
 def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: DecodedJwt, challenge: VerifierChallenge):
