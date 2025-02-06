@@ -125,7 +125,7 @@ def validate_jwt_timestamps_claims(payload: dict, tolerance_s: int = 0) -> None:
 
     :param payload: The decoded JWT payload.
     :type payload: dict
-    :param tolerance_s: optional tolerance windows, in seconds, which can be \
+    :param tolerance_s: optional tolerance window, in seconds, which can be \
         used to account for some clock skew between the token issuer and the \
         token verifier.
     :type tolerance_s: int

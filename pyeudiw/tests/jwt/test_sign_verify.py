@@ -1,7 +1,8 @@
 import pytest
 
-from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.jws_helper import DEFAULT_TOKEN_TIME_TOLERANCE, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.tools.utils import iat_now
 
 
 class TestJWSHeperSelectSigningKey:
@@ -97,3 +98,59 @@ class TestJWSHelperSelectVerifyingKey():
         verifier = JWSHelper(exp_k)
         k = verifier._select_verifying_key({})
         assert k == exp_k
+
+
+class TestJWSHelperSignVerify():
+    @pytest.fixture
+    def signing_key(self):
+        return {"crv": "P-256", "d": "1Fpynl9yQN88xI_AIkna0PiO0-5y5vUtNwC7rbg-BHE", "kid": "lfnXwtreAr8zgUE9CUFr9rGZsS5f52I7whhfiPr5I1o",
+                "kty": "EC", "use": "sig", "x": "2I-JeMD_JgNw95NORslAFUElmwMHWbT4uOdDCy99mac", "y": "Oy7Cyg2O_4GsLt475BbD5m71-snr52uMneUUHRiodBY"}
+
+    def test_JWSHelper_sign_then_verify(self, signing_key):
+        helper = JWSHelper(signing_key)
+        claims = {
+            "iat": iat_now(),
+            "exp": iat_now() + 999,
+            "iss": "token-issuer",
+            "sub": "token-subject",
+            "aud": "token-audience"
+        }
+        token = helper.sign(claims, kid_in_header=True)
+        assert "alg" in decode_jwt_header(token)
+        assert "kid" in decode_jwt_header(token)
+
+        observed_claims = helper.verify(token)
+        # check that library did not include any extra claim when not required
+        assert claims == observed_claims, "verified claims do not match signed claims"
+
+    def test_JWSHelper_sign_then_verify_clock_skewed(self, signing_key):
+        helper = JWSHelper(signing_key)
+
+        # case 0: forced tolerance
+        claims = {
+            "iat": iat_now() + 15,  # oops, issuer clock is slightly skewed!
+            "exp": iat_now() + 999,
+            "iss": "token-issuer",
+            "sub": "token-subject",
+            "aud": "token-audience"
+        }
+        token = helper.sign(claims, kid_in_header=True)
+
+        try:
+            helper.verify(token, tolerance_s=60)
+        except Exception as e:
+            assert False, f"unpected verification error: {e}"
+
+        # case 1: using global configured tolerance
+        DEFAULT_TOKEN_TIME_TOLERANCE
+        claims = {
+            "iat": iat_now() + DEFAULT_TOKEN_TIME_TOLERANCE//2,  # oops, issuer clock is slightly skewed!
+            "exp": iat_now() + 999,
+            "iss": "token-issuer",
+            "sub": "token-subject",
+            "aud": "token-audience"
+        }
+        try:
+            helper.verify(token)
+        except Exception as e:
+            assert False, f"unpected verification error: {e}"
