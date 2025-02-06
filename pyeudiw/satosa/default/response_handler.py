@@ -5,7 +5,6 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-import pydantic
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
@@ -17,18 +16,14 @@ from pyeudiw.openid4vp.authorization_response import (AuthorizeResponsePayload,
                                                       detect_response_mode)
 from pyeudiw.openid4vp.exceptions import (AuthRespParsingException,
                                           AuthRespValidationException,
-                                          InvalidVPKeyBinding, InvalidVPToken,
-                                          KIDNotFound)
+                                          InvalidVPKeyBinding)
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
-from pyeudiw.openid4vp.vp import Vp
-from pyeudiw.openid4vp.vp_sd_jwt import VpSdJwt
 from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.satosa.exceptions import (AuthorizeUnmatchedResponse,
                                        BadRequestError, FinalizedSessionError,
-                                       HTTPError, InvalidInternalStateError,
-                                       NotTrustedFederationError)
+                                       HTTPError, InvalidInternalStateError)
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
@@ -40,44 +35,6 @@ class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
-
-    def _handle_credential_trust(self, context: Context, vp: Vp) -> bool:
-        try:
-            # establish the trust with the issuer of the credential by checking it to the revocation
-            # inspect VP's iss or trust_chain if available or x5c if available
-            # TODO: X.509 as alternative to Federation
-
-            # for each single vp token, take the credential within it, use cnf.jwk to validate the vp token signature -> if not exception
-            # establish the trust to each credential issuer
-            tchelper = self._validate_trust(context, vp.payload['vp'])
-
-            if not tchelper.is_trusted:
-                return self._handle_400(context, f"Trust Evaluation failed for {tchelper.entity_id}")
-
-            # TODO: generalyze also for x509
-            if isinstance(vp, VpSdJwt):
-                credential_jwks = tchelper.get_trusted_jwks(
-                    metadata_type='openid_credential_issuer'
-                )
-                vp.set_credential_jwks(credential_jwks)
-        except InvalidVPToken:
-            return self._handle_400(context, f"Cannot validate VP: {vp.jwt}")
-        except pydantic.ValidationError as e:
-            return self._handle_400(context, f"Error validating schemas: {e}")
-        except KIDNotFound as e:
-            return self._handle_400(context, f"Kid error: {e}")
-        except NotTrustedFederationError as e:
-            return self._handle_400(context, f"Not trusted federation error: {e}")
-        except Exception as e:
-            return self._handle_400(context, f"VP parsing error: {e}")
-
-    def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
-        # for all the valid credentials, take the payload and the disclosure and disclose user attributes
-        # returns the user attributes ...
-        all_user_attributes = dict()
-        for i in attributes_by_issuers.values():
-            all_user_attributes.update(**i)
-        return all_user_attributes
 
     def _parse_http_request(self, context: Context) -> dict:
         """Parse the http layer of the request to extract the dictionary data.
@@ -103,6 +60,14 @@ class ResponseHandler(ResponseHandlerInterface):
                 raise BadRequestError("response_uri not valid")
 
         return context.request
+
+    def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
+        # for all the valid credentials, take the payload and the disclosure and disclose user attributes
+        # returns the user attributes ...
+        all_user_attributes = dict()
+        for i in attributes_by_issuers.values():
+            all_user_attributes.update(**i)
+        return all_user_attributes
 
     def _retrieve_session_from_state(self, state: str) -> dict:
         """_retrieve_session_and_nonce_from_state tries to recover an
@@ -348,7 +313,10 @@ class ResponseHandler(ResponseHandlerInterface):
         # ritornare - per ora viene ritornata l'unica implementazione possibile
         challenge = self._get_verifier_challenge(session_data)
         token_processor = VpVcSdJwtParserVerifier(
-            token, challenge["aud"], challenge["nonce"])
+            token,
+            challenge["aud"],
+            challenge["nonce"]
+        )
         return (token_processor, deepcopy(token_processor))
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:

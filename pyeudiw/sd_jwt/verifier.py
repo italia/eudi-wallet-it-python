@@ -59,8 +59,9 @@ class SDJWTVerifier(SDJWTCommon):
         parsed_input_sd_jwt = JWS(alg=sign_alg)
 
         if self._serialization_format == "json":
-            _deserialize_sd_jwt_payload = decode_jwt_header(
-                self._unverified_input_sd_jwt_parsed["payload"])
+            _deserialize_sd_jwt_payload: dict = decode_jwt_header(
+                self._unverified_input_sd_jwt_parsed["payload"]
+            )
             unverified_issuer = _deserialize_sd_jwt_payload.get("iss", None)
             unverified_header_parameters = self._unverified_input_sd_jwt_parsed['header']
             issuer_public_key_input = cb_get_issuer_key(
@@ -136,8 +137,9 @@ class SDJWTVerifier(SDJWTCommon):
 
         # Verify the key binding JWT using the holder public key
         if self._serialization_format == "json":
-            _deserialize_sd_jwt_payload = decode_jwt_header(
-                self._unverified_input_sd_jwt_parsed["payload"])
+            decode_jwt_header(
+                self._unverified_input_sd_jwt_parsed["payload"]
+            )
 
         holder_public_key_payload_jwk = self._holder_public_key_payload.get(
             "jwk", None)
@@ -230,7 +232,8 @@ class SDJWTVerifier(SDJWTCommon):
                     _, key, value = self._hash_to_decoded_disclosure[digest]
                     if key in pre_output:
                         raise ValueError(
-                            f"Duplicate key found when unpacking disclosed claim: '{key}' in {pre_output}. This is not allowed."
+                            "Duplicate key found when unpacking disclosed claim: "
+                            f"'{key}' in {pre_output}. This is not allowed."
                         )
                     unpacked_value = self._unpack_disclosed_claims(value)
                     pre_output[key] = unpacked_value

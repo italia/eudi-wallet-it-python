@@ -154,7 +154,7 @@ def _verify_key_binding(token_without_hkb: str, sd_hash_alg: str, hkb: DecodedJw
     _verify_sd_hash(
         token_without_hkb,
         sd_hash_alg,
-        hkb.payload.get("sd_hash",  "sha-256")
+        hkb.payload.get("sd_hash", "sha-256")
     )
     _verify_iat(hkb.payload)
 

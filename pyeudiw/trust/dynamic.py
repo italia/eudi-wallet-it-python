@@ -214,7 +214,7 @@ class CombinedTrustEvaluator(BaseLogger):
             try:
                 # every trust evaluation method might use their own client id
                 # but a default one always therefore required
-                if not (client_id := handler_config["config"].get("client_id")):
+                if not handler_config["config"].get("client_id"):
                     handler_config["config"]["client_id"] = default_client_id
 
                 trust_handler = dynamic_class_loader(

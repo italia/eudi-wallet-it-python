@@ -42,7 +42,7 @@ def decode_key(key: str) -> bytes:
         raise ValueError(
             "key in format different than hex currently not supported")
     key_len = len(key)
-    if key_len != 2*CODE_SYM_KEY_LEN:
+    if key_len != 2 * CODE_SYM_KEY_LEN:
         raise ValueError(
             f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}")
     return bytes.fromhex(key)
@@ -53,7 +53,7 @@ def _base64_encode_no_pad(b: bytes) -> str:
 
 
 def _base64_decode_no_pad(s: str) -> bytes:
-    padded = s + "="*((4 - len(s) % 4) % 4)
+    padded = s + "=" * ((4 - len(s) % 4) % 4)
     return base64.urlsafe_b64decode(padded)
 
 

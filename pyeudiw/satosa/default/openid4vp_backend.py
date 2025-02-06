@@ -1,5 +1,4 @@
 import json
-import pydantic
 import uuid
 from typing import Callable
 from urllib.parse import quote_plus, urlencode
@@ -76,21 +75,26 @@ class OpenID4VPBackend(OpenID4VPBackendInterface):
         federation_jwks = self.config['trust']['federation']['config']['federation_jwks']
         if isinstance(federation_jwks, str):
             try:
-                self.config['trust']['federation']['config']['federation_jwks'] = json.loads(federation_jwks)
+                self.config['trust']['federation']['config']['federation_jwks'] = json.loads(
+                    federation_jwks)
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid federation_jwks {self.config['trust']['federation']['config']['federation_jwks']} JSON: {e}")
-        
-        if isinstance(self.config['trust']['federation']['config']['federation_jwks'] , dict):
-            self.config['trust']['federation']['config']['federation_jwks']  = [self.config['trust']['federation']['config']['federation_jwks']]
-        
+                raise ValueError(
+                    f"Invalid federation_jwks {self.config['trust']['federation']['config']['federation_jwks']} JSON: {e}")
+
+        if isinstance(self.config['trust']['federation']['config']['federation_jwks'], dict):
+            self.config['trust']['federation']['config']['federation_jwks'] = [
+                self.config['trust']['federation']['config']['federation_jwks']]
+
         if isinstance(self.config['metadata_jwks'], str):
             try:
-                self.config['metadata_jwks'] = json.loads(self.config['metadata_jwks'])
+                self.config['metadata_jwks'] = json.loads(
+                    self.config['metadata_jwks'])
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid metadata_jwks {self.config['metadata_jwks']} JSON: {e}")
-                
+                raise ValueError(
+                    f"Invalid metadata_jwks {self.config['metadata_jwks']} JSON: {e}")
+
         if isinstance(self.config['metadata_jwks'], dict):
-            self.config['metadata_jwks']  = [self.config['metadata_jwks']]
+            self.config['metadata_jwks'] = [self.config['metadata_jwks']]
 
         self.metadata_jwks_by_kids = {
             i['kid']: i for i in self.config['metadata_jwks']
