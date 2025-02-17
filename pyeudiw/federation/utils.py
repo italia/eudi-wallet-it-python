@@ -1,9 +1,8 @@
 from pyeudiw.federation.schemas.entity_configuration import (
-    EntityConfigurationPayload,
     EntityStatementPayload,
 )
 
-from .exceptions import InvalidEntityConfiguration, InvalidEntityStatement
+from .exceptions import InvalidEntityStatement
 
 
 def is_es(payload: dict) -> None:
@@ -22,18 +21,3 @@ def is_es(payload: dict) -> None:
     except ValueError as e:
         _msg = f"Invalid Entity Statement: {e}"
         raise InvalidEntityStatement(_msg)
-
-
-def is_ec(payload: dict) -> None:
-    """
-    Determines if payload dict is an Entity Configuration
-
-    :param payload: the object to determine if is an Entity Configuration
-    :type payload: dict
-    """
-
-    try:
-        EntityConfigurationPayload(**payload)
-    except ValueError as e:
-        _msg = f"Invalid Entity Configuration: {e}"
-        raise InvalidEntityConfiguration(_msg)
