@@ -1,4 +1,5 @@
-from pyeudiw.jwk import JWK, find_jwk_by_kid
+from pyeudiw.jwk import JWK 
+from pyeudiw.jwk.jwks import find_jwk_by_kid
 from pyeudiw.openid4vp.interface import VpTokenParser
 from pyeudiw.trust.interface import TrustEvaluator
 

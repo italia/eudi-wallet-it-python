@@ -12,7 +12,7 @@ from pyeudiw.federation.statements import (
     get_entity_statements,
 )
 from pyeudiw.federation.utils import is_es
-from pyeudiw.jwk import find_jwk_by_kid
+from pyeudiw.jwk.jwks import find_jwk_by_kid
 from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
@@ -123,7 +123,7 @@ class StaticTrustChainValidator:
         es_header = decode_jwt_header(last_element)
         es_payload = decode_jwt_payload(last_element)
 
-        ta_jwk = find_jwk_by_kid(es_header.get("kid", None), self.trust_anchor_jwks)
+        ta_jwk = find_jwk_by_kid(self.trust_anchor_jwks, es_header.get("kid", None))
 
         if not ta_jwk:
             logger.error("Trust chain validation error: TA jwks not found.")
@@ -157,7 +157,7 @@ class StaticTrustChainValidator:
             st_payload = decode_jwt_payload(st)
 
             try:
-                jwk = find_jwk_by_kid(st_header.get("kid", None), fed_jwks)
+                jwk = find_jwk_by_kid(fed_jwks, st_header.get("kid", None))
             except (KidNotFoundError, InvalidKid):
                 logger.error(
                     f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}"

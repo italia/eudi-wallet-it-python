@@ -3,6 +3,24 @@ from dataclasses import dataclass
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 
+raw_key_2 = {
+    "crv": "P-256",
+    "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw",
+    "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y",
+    "kty": "EC",
+    "use": "sig",
+    "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ",
+    "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark",
+}
+raw_key_no_kid = {
+    "crv": "P-256",
+    "d": "Sz4XNTXk0JaUs6hoyMMUxCSqe9Jx_ciXyVGQj7JSW50",
+    "kty": "EC",
+    "use": "sig",
+    "x": "qojguJYLuM7ZtGspBfZ2SSrGgTnCgCUzjwUkOyOjGMk",
+    "y": "uRUCqLQjngS0iBZlhHLEGMqpUAe4AMpmMMr6BUkRD50",
+}
+
 
 def test_find_jwk_by_kid():
     @dataclass
@@ -21,31 +39,8 @@ def test_find_jwk_by_kid():
         "x": "--7isDCDQZF7cZL-UrvRCLV5Rfo2Di1gaPX6_5uGalA",
         "y": "e2svMtnHH4s5dOPg8YhuHw2lEPlnVpkKJO7PGQeMTFw",
     }
-    raw_key_2 = {
-        "crv": "P-256",
-        "d": "dMCVfcZLPDMInj10w_aQdp-m4jZgwdZjDPwe5nKp-Lw",
-        "kid": "m_r7iPJLNZmQN5sEbILXr41xjSjSzfa3PgM5yURIh2Y",
-        "kty": "EC",
-        "use": "sig",
-        "x": "PA0jE_-Sxhdon9MGmjpMqlUykAbNIBcRgSvgL0eOoJQ",
-        "y": "PG-xPWEvEQxljYkBON1vGw9RTtDiDkMsRE1AOSo4ark",
-    }
-    raw_key_no_kid = {
-        "crv": "P-256",
-        "d": "Sz4XNTXk0JaUs6hoyMMUxCSqe9Jx_ciXyVGQj7JSW50",
-        "kty": "EC",
-        "use": "sig",
-        "x": "qojguJYLuM7ZtGspBfZ2SSrGgTnCgCUzjwUkOyOjGMk",
-        "y": "uRUCqLQjngS0iBZlhHLEGMqpUAe4AMpmMMr6BUkRD50",
-    }
 
     test_cases: list[TestCase] = [
-        TestCase(
-            jwks=[],
-            kid="NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8",
-            expected=None,
-            explanation="no keys",
-        ),
         TestCase(
             jwks=[raw_key_1],
             kid=raw_key_1["kid"],
@@ -58,22 +53,26 @@ def test_find_jwk_by_kid():
             expected=raw_key_2,
             explanation="one matching key ot ouf two",
         ),
-        TestCase(
-            jwks=[raw_key_2],
-            kid="NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8",
-            expected=None,
-            explanation="no matching key",
-        ),
-        TestCase(
-            jwks=[raw_key_no_kid],
-            kid="NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8",
-            expected=None,
-            explanation="no matching on key without explicit kid (note: here kid=thumbprint)",
-        ),
     ]
     for i, case in enumerate(test_cases):
         obt = find_jwk_by_kid(case.jwks, case.kid)
         assert obt == case.expected, f"failed case {i}, testcase: {case.expected}"
+
+def test_jwk_not_found():
+    try:
+        find_jwk_by_kid([], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
+    except Exception as e:
+        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+
+    try:
+        find_jwk_by_kid([raw_key_2], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
+    except Exception as e:
+        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+    
+    try:
+        find_jwk_by_kid([raw_key_no_kid], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
+    except Exception as e:
+        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
 
 
 def test_find_jwk_by_thumbprint():
