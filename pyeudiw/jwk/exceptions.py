@@ -8,11 +8,3 @@ class KidNotFoundError(Exception):
 
 class InvalidKid(Exception):
     pass
-
-
-class JwkError(Exception):
-    pass
-
-
-class InvalidJwk(Exception):
-    pass
