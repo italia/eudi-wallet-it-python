@@ -1,7 +1,6 @@
 import json
 import uuid
 from typing import Callable
-from urllib.parse import quote_plus, urlencode
 
 import pydantic
 from satosa.context import Context
