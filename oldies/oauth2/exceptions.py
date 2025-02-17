@@ -1,0 +1,2 @@
+class InvalidDPoPJwk(Exception):
+    pass
