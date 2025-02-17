@@ -17,7 +17,7 @@ from pyeudiw.federation.schemas.entity_configuration import (
     EntityConfigurationHeader,
     EntityStatementPayload,
 )
-from pyeudiw.jwk import find_jwk_by_kid
+from pyeudiw.jwk.jwks import find_jwk_by_kid
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.utils import get_http_url
@@ -149,7 +149,7 @@ class TrustMark:
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
 
-        _jwk = find_jwk_by_kid(_kid, ec.jwks)
+        _jwk = find_jwk_by_kid(ec.jwks, _kid)
 
         # verify signature
         jwsh = JWSHelper(_jwk)
@@ -187,7 +187,7 @@ class TrustMark:
             return False
 
         # verify signature
-        _jwk = find_jwk_by_kid(_kid, ec.jwks)
+        _jwk = find_jwk_by_kid(ec.jwks, _kid)
         jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
@@ -290,7 +290,7 @@ class EntityStatement:
             raise UnknownKid(f"{_kid} not found in {self.jwks}")  # pragma: no cover
 
         # verify signature
-        _jwk = find_jwk_by_kid(_kid, self.jwks)
+        _jwk = find_jwk_by_kid(self.jwks, _kid)
         jwsh = JWSHelper(_jwk)
         jwsh.verify(self.jwt)
         self.is_valid = True
@@ -511,7 +511,7 @@ class EntityStatement:
             raise UnknownKid(f"{_kid} not found in {self.jwks}")
 
         # verify signature
-        _jwk = find_jwk_by_kid(_kid, self.jwks)
+        _jwk = find_jwk_by_kid(self.jwks, _kid)
         jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(jwt)
 
@@ -537,7 +537,7 @@ class EntityStatement:
             ec.validate_by_itself()
             ec.validate_descendant_statement(jwt)
             _jwks = get_federation_jwks(payload)
-            _jwk = find_jwk_by_kid(self.header["kid"], _jwks)
+            _jwk = find_jwk_by_kid(_jwks, self.header["kid"])
 
             jwsh = JWSHelper(_jwk)
             payload = jwsh.verify(self.jwt)
