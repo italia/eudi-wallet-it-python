@@ -67,7 +67,7 @@ class JWEHelper(JWHelperInterface):
 
             if key.kty == "EC":
                 _keyobj: JWE_EC
-                cek, encrypted_key, iv, params, epk = _keyobj.enc_setup(
+                cek, encrypted_key, iv, params = _keyobj.enc_setup(
                     msg=_payload, key=key
                 )
                 kwargs = {

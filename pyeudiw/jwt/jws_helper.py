@@ -271,7 +271,7 @@ class JWSHelper(JWHelperInterface):
         # case 2: the token is self contained, and the verification key matches one of the key in the whitelist
         if self_contained_claims_key_pair := find_self_contained_key(header):
             # check if the self contained key matches a trusted jwk
-            used_claims, candidate_key = self_contained_claims_key_pair
+            _, candidate_key = self_contained_claims_key_pair
             if hasattr(candidate_key, "thumbprint"):
                 if verifying_key := find_jwk_by_thumbprint(
                     available_keys, candidate_key.thumbprint
