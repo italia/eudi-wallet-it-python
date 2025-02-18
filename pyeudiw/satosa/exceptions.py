@@ -53,13 +53,6 @@ class EmptyHTTPError(HTTPError):
     pass
 
 
-class DPOPValidationError(Exception):
-    """
-    Raised when a DPoP validation error occurs
-    """
-    pass
-
-
 class AuthorizeUnmatchedResponse(Exception):
     """
     Raised when an authorization response cannot be matched to an authentication request
