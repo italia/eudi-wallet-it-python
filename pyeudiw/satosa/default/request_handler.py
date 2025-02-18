@@ -4,11 +4,11 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
-from pyeudiw.satosa.utils.dpop import BackendDPoP
 from pyeudiw.satosa.utils.response import Response
+from pyeudiw.tools.base_logger import BaseLogger
 
 
-class RequestHandler(RequestHandlerInterface, BackendDPoP):
+class RequestHandler(RequestHandlerInterface, BaseLogger):
 
     _REQUEST_OBJECT_TYP = "oauth-authz-req+jwt"
     _RESP_CONTENT_TYPE = f"application/{_REQUEST_OBJECT_TYP}"

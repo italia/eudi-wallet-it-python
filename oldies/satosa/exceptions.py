@@ -6,3 +6,9 @@ class NoBoundEndpointError(Exception):
 
 class NotTrustedFederationError(Exception):
     pass
+
+class DPOPValidationError(Exception):
+    """
+    Raised when a DPoP validation error occurs
+    """
+    pass
