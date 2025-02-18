@@ -15,7 +15,6 @@ from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import (
     VerifierChallenge,
     is_sd_jwt_format,
-    is_sd_jwt_kb_format,
 )
 
 from . import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
@@ -73,9 +72,6 @@ class SdJwt:
             )
         return cnf
 
-    def get_encoded_disclosures(self) -> list[str]:
-        return self.disclosures
-
     def get_disclosed_claims(self) -> dict:
         return _extract_claims_from_payload(
             self.issuer_jwt.payload,
@@ -83,8 +79,8 @@ class SdJwt:
             SUPPORTED_SD_ALG_FN[self.get_sd_alg()],
         )
 
-    def get_issuer_jwt(self) -> str:
-        return self.issuer_jwt.jwt
+    def get_issuer_jwt(self) -> DecodedJwt:
+        return self.issuer_jwt
 
     def get_holder_key_binding_jwt(self) -> str:
         return self.holder_kb.jwt
@@ -121,18 +117,6 @@ class SdJwt:
             return
         cnf: dict = self.get_confirmation_key()
         verify_jws_with_key(self.holder_kb.jwt, cnf)
-
-
-class SdJwtKb(SdJwt):
-
-    def __init__(self, token: str):
-        if not is_sd_jwt_kb_format(token):
-            raise ValueError(
-                f"input [token]={token} is not an sd-jwt with key binding with: maybe it is a regular jwt?"
-            )
-        super().__init__(token)
-        if not self.holder_kb:
-            raise ValueError("missing key binding jwt")
 
 
 def _verify_challenge(hkb: DecodedJwt, challenge: VerifierChallenge):
