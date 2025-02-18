@@ -29,7 +29,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         self.sdjwt = SdJwt(self.token)
 
     def get_issuer_name(self) -> str:
-        iss = self.sdjwt.issuer_jwt.payload.get("iss", None)
+        iss = self.sdjwt.get_issuer_jwt().payload.get("iss", None)
         if not iss:
             raise Exception("missing required information in token paylaod: [iss]")
         return iss
