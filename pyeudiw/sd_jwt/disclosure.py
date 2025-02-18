@@ -17,7 +17,15 @@ class SDJWTDisclosure:
     def __post_init__(self):
         self._hash()
 
-    def _hash(self):
+    def _hash(self) -> None:
+        """
+        Hash the claim.
+
+        This method hashes the claim using the issuer's hashing algorithm. The hashed claim is stored in the
+        `hash` attribute.
+
+        :return: None
+        """
         salt = self.issuer._generate_salt()
         if self.key is None:
             data = [salt, self.value]

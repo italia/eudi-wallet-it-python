@@ -2,7 +2,8 @@ import logging
 from itertools import zip_longest
 from json import dumps, loads
 from time import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
+from pyeudiw.jwt.helper import KeyLike
 
 from cryptojwt.jws.jws import JWS
 
@@ -19,12 +20,14 @@ from pyeudiw.sd_jwt.common import SDJWTCommon
 
 logger = logging.getLogger(__name__)
 
-
 class SDJWTHolder(SDJWTCommon):
+    """
+    SDJWTHolder is a class to create a holder presentation from a SD-JWT.
+    """
+
     hs_disclosures: List
     key_binding_jwt_header: Dict
     key_binding_jwt_payload: Dict
-    key_binding_jwt: JWS
     serialized_key_binding_jwt: str = ""
     sd_jwt_presentation: str
 
@@ -32,7 +35,19 @@ class SDJWTHolder(SDJWTCommon):
     _hash_to_decoded_disclosure: Dict
     _hash_to_disclosure: Dict
 
-    def __init__(self, sd_jwt_issuance: str, serialization_format: str = "compact"):
+    def __init__(
+            self, 
+            sd_jwt_issuance: str, 
+            serialization_format: str = "compact") -> None:
+        """
+        Creates an instance of SDJWTHolder.
+
+        :param sd_jwt_issuance: The SD-JWT to create a presentation from.
+        :param serialization_format: The serialization format of the SD-JWT.
+
+        :param serialization_format: The serialization format of the SD-JWT.
+        :type serialization_format: str
+        """
         super().__init__(serialization_format=serialization_format)
 
         self._parse_sd_jwt(sd_jwt_issuance)
@@ -47,8 +62,23 @@ class SDJWTHolder(SDJWTCommon):
         self._create_hash_mappings(self._input_disclosures)
 
     def create_presentation(
-        self, claims_to_disclose, nonce=None, aud=None, holder_key=None, sign_alg=None
-    ):
+        self, 
+        claims_to_disclose: Union[dict, True, None],
+        nonce: Union[str, None] = None, 
+        aud: Union[str, None] = None, 
+        holder_key: Union[KeyLike, None] = None, 
+        sign_alg: Union[str, None] = None
+    ) -> None:
+        """
+        Create a holder presentation from the SD-JWT.
+
+        :param claims_to_disclose: The claims to disclose. If True, all claims are disclosed.
+        :param nonce: The nonce to include in the key binding JWT.
+        :param aud: The audience to include in the key binding JWT.
+        :param holder_key: The key to sign the key binding JWT with.
+        :param sign_alg: The signing algorithm to use for the key binding JWT.
+        """
+
         # Select the disclosures
         self.hs_disclosures = []
 
@@ -96,11 +126,26 @@ class SDJWTHolder(SDJWTCommon):
 
             self.sd_jwt_presentation = dumps(presentation)
 
-    def _select_disclosures(self, sd_jwt_claims, claims_to_disclose):
-        # Recursively process the claims in sd_jwt_claims. In each
-        # object found therein, look at the SD_DIGESTS_KEY. If it
-        # contains hash digests for claims that should be disclosed,
-        # then add the corresponding disclosures to the claims_to_disclose.
+    def _select_disclosures(
+            self, 
+            sd_jwt_claims: Union[bytes, list, dict], 
+            claims_to_disclose: Union[dict, True, None]) -> Union[dict, list, None]:
+        """
+        Recursively process the claims in sd_jwt_claims. In each
+        object found therein, look at the SD_DIGESTS_KEY. If it
+        contains hash digests for claims that should be disclosed,
+        then add the corresponding disclosures to the claims_to_disclose.
+
+        :param sd_jwt_claims: The claims to process.
+        :param claims_to_disclose: The claims to disclose.
+
+        :type sd_jwt_claims: bytes | list | dict
+        :type claims_to_disclose: dict | True | None
+
+
+        :returns: The claims to disclose.
+        :rtype: dict | list | None
+        """
 
         if type(sd_jwt_claims) is bytes:
             return self._select_disclosures_dict(
@@ -113,7 +158,26 @@ class SDJWTHolder(SDJWTCommon):
         else:
             pass
 
-    def _select_disclosures_list(self, sd_jwt_claims, claims_to_disclose):
+    def _select_disclosures_list(
+            self, 
+            sd_jwt_claims: list, 
+            claims_to_disclose: Union[list, True, None]) -> list:
+        
+        """
+        Process the claims in a list.
+
+        :param sd_jwt_claims: The claims to process.
+        :param claims_to_disclose: The claims to disclose.
+
+        :type sd_jwt_claims: list
+        :type claims_to_disclose: list | True | None
+
+        :raises ValueError: If the disclosure information is not an array.
+
+        :returns: The claims to disclose.
+        :rtype: list
+        """
+
         if claims_to_disclose is None:
             return []
         if claims_to_disclose is True:
@@ -184,7 +248,25 @@ class SDJWTHolder(SDJWTCommon):
             else:
                 self._select_disclosures(element, claims_to_disclose_element)
 
-    def _select_disclosures_dict(self, sd_jwt_claims, claims_to_disclose):
+    def _select_disclosures_dict(
+            self, 
+            sd_jwt_claims: dict, 
+            claims_to_disclose: Union[dict, True, None]):
+        """
+        Process the claims in a dictionary.
+
+        :param sd_jwt_claims: The claims to process.
+        :param claims_to_disclose: The claims to disclose.
+
+        :type sd_jwt_claims: dict
+        :type claims_to_disclose: dict | True | None
+
+        :raises ValueError: If the disclosure information is not a dictionary.
+
+        :returns: The claims to disclose.
+        :rtype: dict
+        """
+
         if claims_to_disclose is None:
             return {}
         if claims_to_disclose is True:
@@ -229,8 +311,23 @@ class SDJWTHolder(SDJWTCommon):
                 self._select_disclosures(value, claims_to_disclose.get(key, None))
 
     def _create_key_binding_jwt(
-        self, nonce, aud, presentation_hash, holder_key, sign_alg: Optional[str] = None
-    ):
+        self, 
+        nonce: Union[str, None], 
+        aud: Union[str, None], 
+        presentation_hash, 
+        holder_key: Union[KeyLike | list[KeyLike | dict] | dict], 
+        sign_alg: Optional[str] = None
+    ) -> None:
+        """
+        Create a key binding JWT.
+
+        :param nonce: The nonce to include in the key binding JWT.
+        :param aud: The audience to include in the key binding JWT.
+        :param presentation_hash: The hash of the presentation.
+        :param holder_key: The key to sign the key binding JWT with.
+        :param sign_alg: The signing algorithm to use for the key binding JWT.
+        """
+
         _alg = sign_alg or DEFAULT_SIGNING_ALG
 
         self.key_binding_jwt_header = {
