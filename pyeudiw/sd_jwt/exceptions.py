@@ -1,10 +1,5 @@
 from . import SD_DIGESTS_KEY
 
-
-class UnknownCurveNistName(Exception):
-    pass
-
-
 class InvalidKeyBinding(Exception):
     pass
 
