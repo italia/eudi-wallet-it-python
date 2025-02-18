@@ -7,8 +7,7 @@ from pyeudiw.storage.base_storage import BaseStorage, TrustType
 from pyeudiw.storage.exceptions import ChainNotExist, EntryNotFound, StorageWriteError
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
-
-from .base_db import BaseDB
+from pyeudiw.storage.base_db import BaseDB
 
 
 class DBEngine(BaseStorage, BaseCache, BaseLogger):
@@ -300,9 +299,6 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         self, state: str, session_id: str = ""
     ) -> Union[dict, None]:
         return self.get("get_by_state_and_session_id", state, session_id)
-
-    def get_by_session_id(self, session_id: str) -> Union[dict, None]:
-        return self.get("get_by_session_id", session_id)
 
     @property
     def is_connected(self):
