@@ -27,7 +27,6 @@ from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.satosa.exceptions import (
     AuthorizeUnmatchedResponse,
-    BadRequestError,
     FinalizedSessionError,
     HTTPError,
     InvalidInternalStateError,
@@ -43,35 +42,6 @@ class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
-
-    def _parse_http_request(self, context: Context) -> dict:
-        """Parse the http layer of the request to extract the dictionary data.
-
-        :param context: the satosa context containing, among the others, the details of the HTTP request
-        :type context: satosa.Context
-
-        :return: a dictionary containing the request data
-        :rtype: dict
-
-        :raises BadRequestError: when request paramets are in a not processable state; the expected handling is returning 400
-        """
-        if (
-            http_method := context.request_method.lower()
-        ) != ResponseHandler._SUPPORTED_RESPONSE_METHOD:
-            raise BadRequestError(f"HTTP method [{http_method}] not supported")
-
-        if (
-            content_type := context.http_headers["HTTP_CONTENT_TYPE"]
-        ) != ResponseHandler._SUPPORTED_RESPONSE_CONTENT_TYPE:
-            raise BadRequestError(f"HTTP content type [{content_type}] not supported")
-
-        _endpoint = f"{self.server_url}{context.request_uri}"
-        
-        if self.config["metadata"].get("response_uris", None):
-            if _endpoint not in self.config["metadata"]["response_uris"]:
-                raise BadRequestError("response_uri not valid")
-
-        return context.request
 
     def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
