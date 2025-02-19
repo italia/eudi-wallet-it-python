@@ -91,7 +91,7 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._retrieve_trust_source(issuer)
 
-        if len(trust_source.trust_params.values()) == 0:
+        if not trust_source or len(trust_source.trust_params.values()) == 0:
             trust_source = self._upsert_source_trust_materials(issuer, trust_source)
 
         return trust_source
