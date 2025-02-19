@@ -1,13 +1,11 @@
 from typing import Dict
 
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.jwt.verification import verify_jws_with_key
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
-
-
 from pyeudiw.jwk.exceptions import KidNotFoundError
-from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format
+from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.openid4vp.exceptions import InvalidVPToken
+from pyeudiw.openid4vp.vp import Vp
 
 
 class VpSdJwt(Vp):
@@ -43,13 +41,10 @@ class VpSdJwt(Vp):
         Parse the digital credential of VP.
         """
 
-        self.credential_headers = decode_jwt_header(self.payload['vp'])
-        self.credential_payload = decode_jwt_payload(self.payload['vp'])
+        self.credential_headers = decode_jwt_header(self.payload["vp"])
+        self.credential_payload = decode_jwt_payload(self.payload["vp"])
 
-    def verify(
-        self,
-        **kwargs
-    ) -> bool:
+    def verify(self, **kwargs) -> bool:
         """
         Verifies a SDJWT.
 
@@ -62,8 +57,7 @@ class VpSdJwt(Vp):
 
         :returns: True if is valid, False otherwise.
         """
-        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get(
-            "issuer_jwks_by_kid", {})
+        issuer_jwks_by_kid: Dict[str, dict] = kwargs.get("issuer_jwks_by_kid", {})
 
         if not issuer_jwks_by_kid.get(self.credential_headers["kid"], None):
             raise KidNotFoundError(
@@ -85,13 +79,11 @@ class VpSdJwt(Vp):
         # TODO: with unit tests we have holder_disclosed_claims while in
         # interop we don't have it!
 
-        self.disclosed_user_attributes = result.get(
-            "holder_disclosed_claims", result
-        )
+        self.disclosed_user_attributes = result.get("holder_disclosed_claims", result)
 
         # If IDA flatten the user attributes to be released
-        if 'verified_claims' in result:
-            result.update(result['verified_claims'].get('claims', {}))
+        if "verified_claims" in result:
+            result.update(result["verified_claims"].get("claims", {}))
 
         return True
 
@@ -130,6 +122,6 @@ class VpSdJwt(Vp):
     @property
     def credential_issuer(self) -> str:
         """Returns the credential issuer"""
-        if not self.credential_payload.get('iss', None):
+        if not self.credential_payload.get("iss", None):
             self.parse_digital_credential()
-        return self.credential_payload.get('iss', None)
+        return self.credential_payload.get("iss", None)

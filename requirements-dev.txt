@@ -8,6 +8,7 @@ isort
 autoflake
 bandit
 autopep8
+black
 beautifulsoup4
 lxml
 freezegun

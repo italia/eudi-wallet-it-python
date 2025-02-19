@@ -8,12 +8,9 @@ from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import new_rsa_key
 
-from .exceptions import InvalidKid, KidNotFoundError, InvalidJwk
+from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
 
-KEY_TYPES_FUNC = dict(
-    EC=new_ec_key,
-    RSA=new_rsa_key
-)
+KEY_TYPES_FUNC = dict(EC=new_ec_key, RSA=new_rsa_key)
 
 
 class JWK:
@@ -25,8 +22,8 @@ class JWK:
         self,
         key: Union[dict, None] = None,
         key_type: str = "EC",
-        hash_func: str = 'SHA-256',
-        ec_crv: str = "P-256"
+        hash_func: str = "SHA-256",
+        ec_crv: str = "P-256",
     ) -> None:
         """
         Creates an instance of JWK.
@@ -52,21 +49,21 @@ class JWK:
         if key:
             if isinstance(key, dict):
                 self.key = key_from_jwk_dict(key)
-                key_type = key.get('kty', key_type)
-                self.kid = key.get('kid', "")
+                key_type = key.get("kty", key_type)
+                self.kid = key.get("kid", "")
             else:
                 self.key = key
         else:
             # create new one
-            if key_type in ['EC', None]:
-                kwargs['crv'] = ec_crv
-            self.key = KEY_TYPES_FUNC[key_type or 'EC'](**kwargs)
+            if key_type in ["EC", None]:
+                kwargs["crv"] = ec_crv
+            self.key = KEY_TYPES_FUNC[key_type or "EC"](**kwargs)
 
         self.thumbprint = self.key.thumbprint(hash_function=hash_func)
         self.jwk = self.key.to_dict()
         self.jwk["kid"] = self.kid or self.thumbprint.decode()
         self.public_key = self.key.serialize()
-        self.public_key['kid'] = self.jwk["kid"]
+        self.public_key["kid"] = self.jwk["kid"]
 
     def as_json(self) -> str:
         """
@@ -125,64 +122,6 @@ class JWK:
         """
         return self.public_key
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # private part!
         return self.as_json()
-
-
-class RSAJWK(JWK):
-    def __init__(self, key: dict | None = None, hash_func: str = "SHA-256") -> None:
-        super().__init__(key, "RSA", hash_func, None)
-
-
-class ECJWK(JWK):
-    def __init__(self, key: dict | None = None, hash_func: str = "SHA-256", ec_crv: str = "P-256") -> None:
-        super().__init__(key, "EC", hash_func, ec_crv)
-
-
-def jwk_form_dict(key: dict, hash_func: str = "SHA-256") -> RSAJWK | ECJWK:
-    """
-    Returns a JWK instance from a dict.
-
-    :param key: a dict that represents the key.
-    :type key: dict
-
-    :returns: a JWK instance.
-    :rtype: JWK
-    """
-    _kty = key.get('kty', None)
-
-    if _kty is None or _kty not in ['EC', 'RSA']:
-        raise InvalidJwk("Invalid JWK")
-    elif _kty == "RSA":
-        return RSAJWK(key, hash_func)
-    else:
-        ec_crv = key.get('crv', "P-256")
-        return ECJWK(key, hash_func, ec_crv)
-
-
-def find_jwk_by_kid(kid: str, jwks: list[dict], as_dict: bool = True) -> dict | JWK:
-    """
-    Find the JWK with the indicated kid in the jwks list.
-
-    :param kid: the identifier of the jwk
-    :type kid: str
-    :param jwks: the list of jwks
-    :type jwks: list[dict]
-    :param as_dict: if True the return type will be a dict, JWK otherwise.
-    :type as_dict: bool
-
-    :raises InvalidKid: if kid is None.
-    :raises KidNotFoundError: if kid is not in jwks list.
-
-    :returns: the jwk with the indicated kid or an empty dict if no jwk is found
-    :rtype: dict | JWK
-    """
-    if not kid:
-        raise InvalidKid("Kid cannot be empty")
-    for jwk in jwks:
-        valid_jwk = jwk.get("kid", None)
-        if valid_jwk and kid == valid_jwk:
-            return jwk if as_dict else JWK(jwk)
-
-    raise KidNotFoundError(f"Key with Kid {kid} not found")

@@ -1,7 +1,3 @@
-class InvalidDPoPJwk(Exception):
-    pass
-
-
 class InvalidDPoPAth(Exception):
     pass
 

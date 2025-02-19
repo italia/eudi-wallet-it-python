@@ -1,5 +1,8 @@
 from typing import Optional
 
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
@@ -7,26 +10,28 @@ from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
-    def __init__(self, token: str, verifier_id: Optional[str] = None, verifier_nonce: Optional[str] = None):
+    def __init__(
+        self,
+        token: str,
+        verifier_id: Optional[str] = None,
+        verifier_nonce: Optional[str] = None,
+    ):
         self.token = token
         if not is_sd_jwt_kb_format(token):
             raise ValueError(
-                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?")
+                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?"
+            )
         self.verifier_id = verifier_id
         self.verifier_nonce = verifier_nonce
         # precomputed values
         self.sdjwt = SdJwt(self.token)
 
     def get_issuer_name(self) -> str:
-        iss = self.sdjwt.issuer_jwt.payload.get("iss", None)
+        iss = self.sdjwt.get_issuer_jwt().payload.get("iss", None)
         if not iss:
-            raise Exception(
-                "missing required information in token paylaod: [iss]")
+            raise Exception("missing required information in token paylaod: [iss]")
         return iss
 
     def get_credentials(self) -> dict:

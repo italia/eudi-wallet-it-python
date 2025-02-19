@@ -5,12 +5,7 @@ VC_SD_JWT_TYPE = "vc+sd-jwt"
 WALLET_ATTESTATION_TYPE = "wallet-attestation+jwt"
 MDOC_BCOR_TYPE = "mdoc_cbor"
 
-SUPPORTED_VC_TYPES = (
-    JWT_TYPE,
-    VC_SD_JWT_TYPE,
-    WALLET_ATTESTATION_TYPE,
-    MDOC_BCOR_TYPE
-)
+SUPPORTED_VC_TYPES = (JWT_TYPE, VC_SD_JWT_TYPE, WALLET_ATTESTATION_TYPE, MDOC_BCOR_TYPE)
 
 
 class Vp(BaseLogger):
@@ -38,8 +33,5 @@ class Vp(BaseLogger):
         # TODO: check the revocation of the credential
         self._log_warning("VP", "Revocation check not implemented yet")
 
-    def verify(
-        self,
-        **kwargs
-    ) -> bool:
+    def verify(self, **kwargs) -> bool:
         raise NotImplementedError

@@ -1,4 +1,4 @@
-from pyeudiw.jwk.schemas.public import JwkSchema, ECJwkSchema, RSAJwkSchema
+from pyeudiw.jwk.schemas.public import ECJwkSchema, JwkSchema, RSAJwkSchema
 
 
 def test_valid_rsa_jwk():
@@ -29,12 +29,7 @@ def test_valid_ec_jwk():
 def test_invalid_keys():
     # table with keys that should fail jwk parsing
     bad_keys_table: list[tuple[dict, str]] = [
-        (
-            {
-                "aaaa": "1"
-            },
-            "non-sense key"
-        ),
+        ({"aaaa": "1"}, "non-sense key"),
         (
             {
                 "kty": "RSA",
@@ -42,7 +37,7 @@ def test_invalid_keys():
                 "alg": "RS256",
                 "kid": "2011-04-29",
             },
-            "rsa key with missing attribute [n]"
+            "rsa key with missing attribute [n]",
         ),
         (
             {
@@ -53,7 +48,7 @@ def test_invalid_keys():
                 "alg": "RS256",
                 "kid": "2011-04-29",
             },
-            "rsa key with unexpected attribute [x]"
+            "rsa key with unexpected attribute [x]",
         ),
         (
             {
@@ -63,7 +58,7 @@ def test_invalid_keys():
                 "use": "enc",
                 "kid": "1",
             },
-            "ec key with missing attribute [crv]"
+            "ec key with missing attribute [crv]",
         ),
         (
             {
@@ -73,7 +68,7 @@ def test_invalid_keys():
                 "use": "enc",
                 "kid": "1",
             },
-            "ec key with missing attribute [x]"
+            "ec key with missing attribute [x]",
         ),
         (
             {
@@ -85,8 +80,8 @@ def test_invalid_keys():
                 "use": "enc",
                 "kid": "1",
             },
-            "ec key with unexpected attribute [e]"
-        )
+            "ec key with unexpected attribute [e]",
+        ),
     ]
     for i, (bad_key, reason) in enumerate(bad_keys_table):
         try:

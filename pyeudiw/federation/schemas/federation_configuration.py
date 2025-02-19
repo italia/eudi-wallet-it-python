@@ -1,5 +1,8 @@
 from pydantic import BaseModel, HttpUrl
-from pyeudiw.federation.schemas.wallet_relying_party import SigningAlgValuesSupported
+
+from pyeudiw.federation.schemas.openid_credential_verifier import (
+    SigningAlgValuesSupported,
+)
 from pyeudiw.jwk.schemas.public import JwkSchema
 
 

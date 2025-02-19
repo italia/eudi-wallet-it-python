@@ -1,22 +1,22 @@
 import logging
+from typing import Dict
+
 import pydantic
 
-from typing import Dict
 from pyeudiw.jwk import JWK
-
 from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 from pyeudiw.openid4vp.exceptions import (
     InvalidVPToken,
-    VPNotFound,
+    NoNonceInVPToken,
     VPInvalidNonce,
-    NoNonceInVPToken
+    VPNotFound,
 )
-from pyeudiw.openid4vp.schemas.vp_token import VPTokenPayload, VPTokenHeader
-from pyeudiw.openid4vp.vp import Vp
+from pyeudiw.openid4vp.schemas.vp_token import VPTokenHeader, VPTokenPayload
 from pyeudiw.openid4vp.utils import vp_parser
+from pyeudiw.openid4vp.vp import Vp
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class DirectPostResponse:
         :raises JWSVerificationError: if jws field is not in a JWS Format
         :raises JWEDecryptionError: if jwe field is not in a JWE Format
         """
-        _kid = self.headers.get('kid', None)
+        _kid = self.headers.get("kid", None)
         if not _kid:
             raise KidNotFoundError(
                 f"The JWT headers {self.headers} doesnt have any KID value"
@@ -90,10 +90,10 @@ class DirectPostResponse:
         try:
             # check nonce
             if self.nonce:
-                if not vp.payload.get('nonce', None):
+                if not vp.payload.get("nonce", None):
                     raise NoNonceInVPToken()
 
-                if self.nonce != vp.payload['nonce']:
+                if self.nonce != vp.payload["nonce"]:
                     raise VPInvalidNonce(
                         "VP has a unknown nonce: "
                         f"{self.nonce} != {vp.payload['nonce']}"
@@ -101,9 +101,7 @@ class DirectPostResponse:
             VPTokenPayload(**vp.payload)
             VPTokenHeader(**vp.headers)
         except pydantic.ValidationError as e:
-            raise InvalidVPToken(
-                f"VP is not valid, {e}: {vp.headers}.{vp.payload}"
-            )
+            raise InvalidVPToken(f"VP is not valid, {e}: {vp.headers}.{vp.payload}")
         return True
 
     def validate(self) -> bool:
@@ -120,9 +118,7 @@ class DirectPostResponse:
                 if all_valid is None:
                     all_valid = True
             except Exception:
-                logger.error(
-
-                )
+                logger.error()
                 all_valid = False
 
         return all_valid
@@ -139,23 +135,21 @@ class DirectPostResponse:
         if self._vps:
             return self._vps
 
-        _vps = self.payload.get('vp_token', [])
+        _vps = self.payload.get("vp_token", [])
         vps = [_vps] if isinstance(_vps, str) else _vps
 
         if not vps:
-            raise VPNotFound(
-                f'Vps are empty for response with nonce "{self.nonce}"'
-            )
+            raise VPNotFound(f'Vps are empty for response with nonce "{self.nonce}"')
 
         for vp in vps:
             # TODO - add an exception handling here
             _vp = vp_parser(vp)
             self._vps.append(_vp)
 
-            cred_iss = _vp.credential_payload['iss']
+            cred_iss = _vp.credential_payload["iss"]
             if not self.credentials_by_issuer.get(cred_iss, None):
                 self.credentials_by_issuer[cred_iss] = []
-            self.credentials_by_issuer[cred_iss].append(_vp.payload['vp'])
+            self.credentials_by_issuer[cred_iss].append(_vp.payload["vp"])
 
         return self._vps
 

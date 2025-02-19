@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Callable
 
 import pymongo
+from pymongo.collection import Collection
+from pymongo.database import Database
+from pymongo.mongo_client import MongoClient
 
 from pyeudiw.storage.base_cache import BaseCache, RetrieveStatus
-from pymongo.collection import Collection
-from pymongo.mongo_client import MongoClient
-from pymongo.database import Database
 
 
 class MongoCache(BaseCache):
@@ -39,7 +39,9 @@ class MongoCache(BaseCache):
         self._connect()
         self.client.close()
 
-    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
+    def try_retrieve(
+        self, object_name: str, on_not_found: Callable[[], str]
+    ) -> tuple[dict, RetrieveStatus]:
         self._connect()
 
         query = {"object_name": object_name}
@@ -62,17 +64,14 @@ class MongoCache(BaseCache):
         cache_object = {
             "object_name": object_name,
             "data": new_data,
-            "creation_date": update_time
+            "creation_date": update_time,
         }
 
         query = {"object_name": object_name}
 
-        self.collection.update_one(query, {
-            "$set": {
-                "data": new_data,
-                "creation_date": update_time
-            }
-        })
+        self.collection.update_one(
+            query, {"$set": {"data": new_data, "creation_date": update_time}}
+        )
 
         return cache_object
 
@@ -83,8 +82,7 @@ class MongoCache(BaseCache):
 
     def _connect(self) -> None:
         if not self.client or not self.client.server_info():
-            self.client = pymongo.MongoClient(
-                self.url, **self.connection_params)
+            self.client = pymongo.MongoClient(self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.collection = getattr(self.db, "cache_storage")
 
@@ -101,5 +99,5 @@ class MongoCache(BaseCache):
         return {
             "object_name": object_name,
             "data": data,
-            "creation_date": datetime.now().isoformat()
+            "creation_date": datetime.now().isoformat(),
         }

@@ -1,16 +1,17 @@
-import pydantic
-
 from typing import Union
+
+import pydantic
 from satosa.context import Context
 
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPVerifier
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
-    WalletInstanceAttestationHeader, WalletInstanceAttestationPayload)
+    WalletInstanceAttestationHeader,
+    WalletInstanceAttestationPayload,
+)
+from pyeudiw.satosa.exceptions import DPOPValidationError
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
-
-from pyeudiw.satosa.exceptions import DPOPValidationError
 
 
 class BackendDPoP(BaseLogger):
@@ -18,7 +19,9 @@ class BackendDPoP(BaseLogger):
     Backend DPoP class.
     """
 
-    def _request_endpoint_dpop(self, context: Context, *args) -> Union[JsonResponse, None]:
+    def _request_endpoint_dpop(
+        self, context: Context, *args
+    ) -> Union[JsonResponse, None]:
         """
         Validates, if any, the DPoP http request header
 
@@ -33,25 +36,30 @@ class BackendDPoP(BaseLogger):
         :rtype: Union[JsonResponse, None]
         """
 
-        if context.http_headers and 'HTTP_AUTHORIZATION' in context.http_headers:
+        if context.http_headers and "HTTP_AUTHORIZATION" in context.http_headers:
             # The wallet instance uses the endpoint authentication to give its WIA
 
             # take WIA
-            dpop_jws = context.http_headers['HTTP_AUTHORIZATION'].split()[-1]
+            dpop_jws = context.http_headers["HTTP_AUTHORIZATION"].split()[-1]
             _head = decode_jwt_header(dpop_jws)
             wia = decode_jwt_payload(dpop_jws)
 
             self._log_debug(
-                context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}")
+                context, message=f"[FOUND WIA] Headers: {_head} and Payload: {wia}"
+            )
 
             try:
                 WalletInstanceAttestationHeader(**_head)
             except pydantic.ValidationError as e:
                 self._log_warning(
-                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}")
+                    context,
+                    message=f"[FOUND WIA] Invalid Headers: {_head}. Validation error: {e}",
+                )
             except Exception as e:
                 self._log_warning(
-                    context, message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}")
+                    context,
+                    message=f"[FOUND WIA] Invalid Headers: {_head}. Unexpected error: {e}",
+                )
 
             try:
                 WalletInstanceAttestationPayload(**wia)
@@ -72,9 +80,9 @@ class BackendDPoP(BaseLogger):
 
             try:
                 dpop = DPoPVerifier(
-                    public_jwk=wia['cnf']['jwk'],
-                    http_header_authz=context.http_headers['HTTP_AUTHORIZATION'],
-                    http_header_dpop=context.http_headers['HTTP_DPOP']
+                    public_jwk=wia["cnf"]["jwk"],
+                    http_header_authz=context.http_headers["HTTP_AUTHORIZATION"],
+                    http_header_dpop=context.http_headers["HTTP_DPOP"],
                 )
             except pydantic.ValidationError as e:
                 _msg = f"DPoP validation error: {e}"

@@ -2,8 +2,8 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.demo_utils import get_jwk
-from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 from pyeudiw.sd_jwt.utils.yaml_specification import remove_sdobj_wrappers
+from pyeudiw.sd_jwt.verifier import SDJWTVerifier
 
 
 def test_e2e(testcase, settings):
@@ -25,8 +25,7 @@ def test_e2e(testcase, settings):
     sdjwt_at_issuer = SDJWTIssuer(
         user_claims,
         demo_keys["issuer_keys"],
-        demo_keys["holder_key"] if testcase.get(
-            "key_binding", False) else None,
+        demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
         add_decoy_claims=use_decoys,
         serialization_format=serialization_format,
         extra_header_parameters=extra_header_parameters,
@@ -75,7 +74,7 @@ def test_e2e(testcase, settings):
 
     expected_header_parameters = {
         "alg": testcase.get("sign_alg", "ES256"),
-        "typ": "testcase+sd-jwt"
+        "typ": "testcase+sd-jwt",
     }
     expected_header_parameters.update(extra_header_parameters)
 

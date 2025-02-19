@@ -1,4 +1,5 @@
 import logging
+
 import satosa.logging_util as lu
 from satosa.context import Context
 
@@ -21,12 +22,7 @@ class BaseLogger:
         context = context if isinstance(context, str) else context.state
 
         log_level = getattr(logger, level)
-        log_level(
-            lu.LOG_FMT.format(
-                id=lu.get_session_id(context),
-                message=message
-            )
-        )
+        log_level(lu.LOG_FMT.format(id=lu.get_session_id(context), message=message))
 
     def _log_debug(self, context: str | Context, message: str) -> None:
         """
@@ -40,7 +36,9 @@ class BaseLogger:
 
         self._log(context, "debug", message)
 
-    def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args=None) -> None:
+    def _log_function_debug(
+        self, fn_name: str, context: Context, args_name: str | None = None, args=None
+    ) -> None:
         """
         Logs a message at the start of a backend function.
 

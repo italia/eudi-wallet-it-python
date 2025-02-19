@@ -1,24 +1,19 @@
 import json
+from typing import Literal, TypeAlias
+
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.hmac import SYMKey
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptojwt.jwk.okp import OKPKey
+from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_key_from_x5c
-
 from pyeudiw.jwt.log import logger
-
-
-from typing import TypeAlias, Literal
-
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-from cryptojwt.jwk.okp import OKPKey
-from cryptojwt.jwk.hmac import SYMKey
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 
-from . exceptions import LifetimeException
-
+from .exceptions import LifetimeException
 
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
@@ -45,8 +40,7 @@ class JWHelperInterface:
         elif isinstance(jwks, (ECKey, RSAKey, OKPKey, SYMKey)):
             self.jwks = [jwks]
         else:
-            raise TypeError(
-                f"unable to handle input jwks with type {type(jwks)}")
+            raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
 
     def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
         if not kid:
@@ -86,7 +80,8 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
             candidate_key = parse_key_from_x5c(header["x5c"])
         except Exception as e:
             logger.debug(
-                f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
+                f"failed to parse key from x5c chain {header['x5c']}", exc_info=e
+            )
         return set(["5xc"]), candidate_key
     if "jwk" in header:
         candidate_key = JWK(header["jwk"])
@@ -94,7 +89,8 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
     unsupported_claims = set(("trust_chain", "jku", "x5u", "x5t"))
     if unsupported_claims.intersection(header):
         raise NotImplementedError(
-            f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
+            f"self contained key extraction form header with claims {unsupported_claims} not supported yet"
+        )
     return None
 
 
@@ -134,14 +130,14 @@ def validate_jwt_timestamps_claims(payload: dict, tolerance_s: int = 0) -> None:
     """
     current_time = iat_now()
 
-    if 'iat' in payload:
-        if payload['iat'] - tolerance_s > current_time:
+    if "iat" in payload:
+        if payload["iat"] - tolerance_s > current_time:
             raise LifetimeException("Future issue time, token is invalid.")
 
-    if 'exp' in payload:
-        if payload['exp'] + tolerance_s <= current_time:
+    if "exp" in payload:
+        if payload["exp"] + tolerance_s <= current_time:
             raise LifetimeException("Token has expired.")
 
-    if 'nbf' in payload:
-        if payload['nbf'] - tolerance_s > current_time:
+    if "nbf" in payload:
+        if payload["nbf"] - tolerance_s > current_time:
             raise LifetimeException("Token not yet valid.")

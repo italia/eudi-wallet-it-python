@@ -1,6 +1,7 @@
 from typing import Optional
 
 from cryptojwt.jwt import utc_time_sans_frac
+
 from pyeudiw.tools.base_logger import BaseLogger
 
 __author__ = "Roland Hedberg"

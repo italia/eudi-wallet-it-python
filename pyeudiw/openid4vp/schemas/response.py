@@ -46,8 +46,7 @@ class AuthorizeResponseDirectPostJwt:
     def __post_init__(self):
         jwt = self.response
         if not is_jwe_format(jwt) and not is_jwt_format(jwt):
-            raise ValueError(
-                f"input response={jwt} is neither jwt not jwe format")
+            raise ValueError(f"input response={jwt} is neither jwt not jwe format")
 
 
 @dataclass
@@ -61,6 +60,7 @@ class AuthorizeResponsePayload:
     as it is not meant to validate the _content_ of the response; just that the
     representation lands with the proper expected claims
     """
+
     state: str
     vp_token: str | list[str]
     presentation_submission: dict

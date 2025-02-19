@@ -30,9 +30,10 @@ from pyeudiw.tests.federation.base import (
 )
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from saml2_sp import saml2_request
 
-from settings import (
+from . saml2_sp import saml2_request
+
+from . settings import (
     IDP_BASEURL,
     CONFIG_DB,
     RP_EID,
@@ -177,8 +178,8 @@ def create_authorize_response(vp_token: str, state: str, response_uri: str) -> s
     ).content.decode()
     rp_ec = decode_jwt_payload(rp_ec_jwt)
 
-    assert response_uri == rp_ec["metadata"]["wallet_relying_party"]["response_uris_supported"][0]
-    encryption_key = rp_ec["metadata"]["wallet_relying_party"]["jwks"]["keys"][1]
+    #  assert response_uri == rp_ec["metadata"]["openid_credential_verifier"]["response_uris"][0]
+    encryption_key = rp_ec["metadata"]["openid_credential_verifier"]["jwks"]["keys"][1]
 
     response = {
         "state": state,

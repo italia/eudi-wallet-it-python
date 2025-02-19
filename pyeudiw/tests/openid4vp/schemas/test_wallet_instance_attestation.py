@@ -1,10 +1,9 @@
 import pytest
-
 from pydantic import ValidationError
 
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation import (
     WalletInstanceAttestationHeader,
-    WalletInstanceAttestationPayload
+    WalletInstanceAttestationPayload,
 )
 
 WALLET_INSTANCE_ATTESTATION = {
@@ -17,7 +16,7 @@ WALLET_INSTANCE_ATTESTATION = {
             "eyJhbGciOiJFUz...H9gw",
         ],
         "typ": "wallet-attestation+jwt",
-        "x5c": ["MIIBjDCC ... XFehgKQA=="]
+        "x5c": ["MIIBjDCC ... XFehgKQA=="],
     },
     "payload": {
         "iss": "https://wallet-provider.example.org",
@@ -47,102 +46,107 @@ WALLET_INSTANCE_ATTESTATION = {
                 "rbxVxiZHjU6zL6jY5QJdh1QCmENoejj_ytspMmGW7yMRxzUqgxcAqOBpVm0b-_mW3HoBdjQ",
                 "e": "AQAB",
                 "kid": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
-                "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg"
+                "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
             }
         },
         "authorization_endpoint": "haip:",
-        "response_types_supported": [
-            "vp_token"
-        ],
+        "response_types_supported": ["vp_token"],
         "vp_formats_supported": {
-            "jwt_vp_json": {
-                "alg_values_supported": ["RS256"]
-            },
-            "jwt_vc_json": {
-                "alg_values_supported": ["RS256"]
-            }
+            "jwt_vp_json": {"alg_values_supported": ["RS256"]},
+            "jwt_vc_json": {"alg_values_supported": ["RS256"]},
         },
-        "request_object_signing_alg_values_supported": [
-            "RS256"
-        ],
+        "request_object_signing_alg_values_supported": ["RS256"],
         "presentation_definition_uri_supported": False,
         "iat": 1687281195,
-        "exp": 1687288395
-    }
+        "exp": 1687288395,
+    },
 }
 
 
 def test_header():
-    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION['header'])
+    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
     # alg is RS256
     # it should fail if alg is not in supported_algorithms
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader.model_validate(
-            WALLET_INSTANCE_ATTESTATION['header'], context={"supported_algorithms": None})
+            WALLET_INSTANCE_ATTESTATION["header"],
+            context={"supported_algorithms": None},
+        )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader.model_validate(
-            WALLET_INSTANCE_ATTESTATION['header'], context={"supported_algorithms": []})
+            WALLET_INSTANCE_ATTESTATION["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader.model_validate(
-            WALLET_INSTANCE_ATTESTATION['header'], context={"supported_algorithms": ["asd"]})
+            WALLET_INSTANCE_ATTESTATION["header"],
+            context={"supported_algorithms": ["asd"]},
+        )
 
     WalletInstanceAttestationHeader.model_validate(
-        WALLET_INSTANCE_ATTESTATION['header'], context={"supported_algorithms": ["RS256"]})
+        WALLET_INSTANCE_ATTESTATION["header"],
+        context={"supported_algorithms": ["RS256"]},
+    )
 
     # x5c and trust_chain are not required
-    WALLET_INSTANCE_ATTESTATION['header']['x5c'] = None
-    WALLET_INSTANCE_ATTESTATION['header']['trust_chain'] = None
-    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION['header'])
-    del WALLET_INSTANCE_ATTESTATION['header']['x5c']
-    del WALLET_INSTANCE_ATTESTATION['header']['trust_chain']
-    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION['header'])
+    WALLET_INSTANCE_ATTESTATION["header"]["x5c"] = None
+    WALLET_INSTANCE_ATTESTATION["header"]["trust_chain"] = None
+    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
+    del WALLET_INSTANCE_ATTESTATION["header"]["x5c"]
+    del WALLET_INSTANCE_ATTESTATION["header"]["trust_chain"]
+    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
 
     # kid is required
-    WALLET_INSTANCE_ATTESTATION['header']['kid'] = None
+    WALLET_INSTANCE_ATTESTATION["header"]["kid"] = None
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationHeader(
-            **WALLET_INSTANCE_ATTESTATION['header'])
-    del WALLET_INSTANCE_ATTESTATION['header']['kid']
+        WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
+    del WALLET_INSTANCE_ATTESTATION["header"]["kid"]
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationHeader(
-            **WALLET_INSTANCE_ATTESTATION['header'])
+        WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
 
     # typ must be "wallet-attestation-jwt"
-    WALLET_INSTANCE_ATTESTATION['header']['typ'] = "asd"
+    WALLET_INSTANCE_ATTESTATION["header"]["typ"] = "asd"
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationHeader(
-            **WALLET_INSTANCE_ATTESTATION['header'])
+        WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
 
 
 def test_payload():
-    WalletInstanceAttestationPayload(**WALLET_INSTANCE_ATTESTATION['payload'])
+    WalletInstanceAttestationPayload(**WALLET_INSTANCE_ATTESTATION["payload"])
     WalletInstanceAttestationPayload.model_validate(
-        WALLET_INSTANCE_ATTESTATION['payload'])
+        WALLET_INSTANCE_ATTESTATION["payload"]
+    )
 
     # iss is not HttpUrl
-    WALLET_INSTANCE_ATTESTATION['payload']['iss'] = WALLET_INSTANCE_ATTESTATION['payload']['iss'][4:]
+    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = WALLET_INSTANCE_ATTESTATION[
+        "payload"
+    ]["iss"][4:]
     with pytest.raises(ValidationError):
         WalletInstanceAttestationPayload.model_validate(
-            WALLET_INSTANCE_ATTESTATION['payload'])
-    WALLET_INSTANCE_ATTESTATION['payload']['iss'] = "http" + \
-        WALLET_INSTANCE_ATTESTATION['payload']['iss']
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
+    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = (
+        "http" + WALLET_INSTANCE_ATTESTATION["payload"]["iss"]
+    )
     WalletInstanceAttestationPayload.model_validate(
-        WALLET_INSTANCE_ATTESTATION['payload'])
+        WALLET_INSTANCE_ATTESTATION["payload"]
+    )
 
     # empty cnf
-    cnf = WALLET_INSTANCE_ATTESTATION['payload']['cnf']
-    WALLET_INSTANCE_ATTESTATION['payload']['cnf'] = {}
+    cnf = WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]
+    WALLET_INSTANCE_ATTESTATION["payload"]["cnf"] = {}
     with pytest.raises(ValidationError):
         WalletInstanceAttestationPayload.model_validate(
-            WALLET_INSTANCE_ATTESTATION['payload'])
-    del WALLET_INSTANCE_ATTESTATION['payload']['cnf']
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
+    del WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]
     with pytest.raises(ValidationError):
         WalletInstanceAttestationPayload.model_validate(
-            WALLET_INSTANCE_ATTESTATION['payload'])
-    WALLET_INSTANCE_ATTESTATION['payload']['cnf'] = cnf
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
+    WALLET_INSTANCE_ATTESTATION["payload"]["cnf"] = cnf
 
     # cnf jwk is not a JWK
-    WALLET_INSTANCE_ATTESTATION['payload']['cnf']['jwk'] = {}
+    WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]["jwk"] = {}
     with pytest.raises(ValidationError):
         WalletInstanceAttestationPayload.model_validate(
-            WALLET_INSTANCE_ATTESTATION['payload'])
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )

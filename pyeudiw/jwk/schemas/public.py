@@ -18,18 +18,13 @@ _SUPPORTED_ALGS = Literal[
 
 _SUPPORTED_ALG_BY_KTY = {
     "RSA": ("PS256", "PS384", "PS512", "RS256", "RS384", "RS512"),
-    "EC": ("ES256", "ES384", "ES512")
+    "EC": ("ES256", "ES384", "ES512"),
 }
 
 # TODO: supported alg by kty and use
 
 _SUPPORTED_CRVS = Literal[
-    "P-256",
-    "P-384",
-    "P-521",
-    "brainpoolP256r1",
-    "brainpoolP384r1",
-    "brainpoolP512r1"
+    "P-256", "P-384", "P-521", "brainpoolP256r1", "brainpoolP384r1", "brainpoolP512r1"
 ]
 
 
@@ -54,20 +49,23 @@ class RSAJwkSchema(JwkBaseModel):
 class JwkSchema(BaseModel):
     kid: str  # Base64url-encoded thumbprint string
     kty: _SUPPORTED_KTY
-    alg: Annotated[Union[_SUPPORTED_ALGS, None],
-                   Field(validate_default=True)] = None
-    use: Annotated[Union[Literal["sig", "enc"], None],
-                   Field(validate_default=True)] = None
-    n: Annotated[Union[str, None], Field(
-        validate_default=True)] = None  # Base64urlUInt-encoded
-    e: Annotated[Union[str, None], Field(
-        validate_default=True)] = None  # Base64urlUInt-encoded
-    x: Annotated[Union[str, None], Field(
-        validate_default=True)] = None  # Base64urlUInt-encoded
-    y: Annotated[Union[str, None], Field(
-        validate_default=True)] = None  # Base64urlUInt-encoded
-    crv: Annotated[Union[_SUPPORTED_CRVS, None],
-                   Field(validate_default=True)] = None
+    alg: Annotated[Union[_SUPPORTED_ALGS, None], Field(validate_default=True)] = None
+    use: Annotated[Union[Literal["sig", "enc"], None], Field(validate_default=True)] = (
+        None
+    )
+    n: Annotated[Union[str, None], Field(validate_default=True)] = (
+        None  # Base64urlUInt-encoded
+    )
+    e: Annotated[Union[str, None], Field(validate_default=True)] = (
+        None  # Base64urlUInt-encoded
+    )
+    x: Annotated[Union[str, None], Field(validate_default=True)] = (
+        None  # Base64urlUInt-encoded
+    )
+    y: Annotated[Union[str, None], Field(validate_default=True)] = (
+        None  # Base64urlUInt-encoded
+    )
+    crv: Annotated[Union[_SUPPORTED_CRVS, None], Field(validate_default=True)] = None
 
     def _must_specific_kty_only(v, exp_kty: _SUPPORTED_ALGS, v_name: str, values: dict):
         """validate a jwk parameter by that it is (1) defined and (2) mandatory
@@ -96,7 +94,8 @@ class JwkSchema(BaseModel):
         kty = values.data.get("kty")
         if v not in _SUPPORTED_ALG_BY_KTY[kty]:
             raise ValueError(
-                f"alg value {v} is not compatible or not supported with kty {kty}")
+                f"alg value {v} is not compatible or not supported with kty {kty}"
+            )
         return
 
     @field_validator("n")
@@ -120,8 +119,7 @@ class JwkSchema(BaseModel):
         cls._must_specific_kty_only(v, "EC", "crv", values.data)
 
 
-_JwkSchema_T = Annotated[Union[ECJwkSchema, RSAJwkSchema],
-                         Field(discriminator="kty")]
+_JwkSchema_T = Annotated[Union[ECJwkSchema, RSAJwkSchema], Field(discriminator="kty")]
 
 
 class JwksSchema(BaseModel):

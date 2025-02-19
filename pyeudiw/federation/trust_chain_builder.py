@@ -1,24 +1,18 @@
 import datetime
 import json
 import logging
-
 from collections import OrderedDict
 from typing import Union
 
-from .policy import TrustChainPolicy
+from pyeudiw.tools.utils import datetime_from_timestamp
 
 from .exceptions import (
     InvalidEntityStatement,
     InvalidRequiredTrustMark,
-    MetadataDiscoveryException
+    MetadataDiscoveryException,
 )
-
-from .statements import (
-    get_entity_configurations,
-    EntityStatement,
-)
-from pyeudiw.tools.utils import datetime_from_timestamp
-
+from .policy import TrustChainPolicy
+from .statements import EntityStatement, get_entity_configurations
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +76,8 @@ class TrustChainBuilder:
                 )
 
                 subject_configuration.update_trust_anchor_conf(
-                    trust_anchor_configuration)
+                    trust_anchor_configuration
+                )
                 subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
@@ -90,8 +85,7 @@ class TrustChainBuilder:
                 raise InvalidEntityStatement(_msg)
         elif isinstance(trust_anchor_configuration, str):
             trust_anchor_configuration = EntityStatement(
-                jwt=trust_anchor_configuration,
-                httpc_params=self.httpc_params
+                jwt=trust_anchor_configuration, httpc_params=self.httpc_params
             )
 
         self.trust_anchor_configuration = trust_anchor_configuration
@@ -154,8 +148,7 @@ class TrustChainBuilder:
         # once I filtered a concrete and unique trust path I can apply the metadata policy
         if path_found:
             logger.info(f"Found a trust path: {self.trust_path}")
-            self.final_metadata = self.subject_configuration.payload.get(
-                "metadata", {})
+            self.final_metadata = self.subject_configuration.payload.get("metadata", {})
             if not self.final_metadata:
                 logger.error(
                     f"Missing metadata in {self.subject_configuration.payload['metadata']}"
@@ -164,9 +157,8 @@ class TrustChainBuilder:
 
             for i in range(len(self.trust_path))[::-1]:
                 self.trust_path[i - 1].sub
-                _pol = (
-                    self.trust_path[i]
-                    .verified_descendant_statements.get("metadata_policy", {})
+                _pol = self.trust_path[i].verified_descendant_statements.get(
+                    "metadata_policy", {}
                 )
                 for md_type, md in _pol.items():
                     if not self.final_metadata.get(md_type):
@@ -197,8 +189,7 @@ class TrustChainBuilder:
         :returns: the validity status of the updated chain
         :rtype: bool
         """
-        logger.info(
-            f"Starting a Walk into Metadata Discovery for {self.subject}")
+        logger.info(f"Starting a Walk into Metadata Discovery for {self.subject}")
         self.tree_of_trust[0] = [self.subject_configuration]
 
         ecs_history = []
@@ -254,8 +245,7 @@ class TrustChainBuilder:
         with the entity statement of trust anchor.
         """
         if not isinstance(self.trust_anchor, EntityStatement):
-            logger.info(
-                f"Get Trust Anchor Entity Configuration for {self.subject}")
+            logger.info(f"Get Trust Anchor Entity Configuration for {self.subject}")
             ta_jwt = get_entity_configurations(
                 self.trust_anchor, httpc_params=self.httpc_params
             )[0]
@@ -300,8 +290,9 @@ class TrustChainBuilder:
                     self.subject, httpc_params=self.httpc_params
                 )
                 self.subject_configuration = EntityStatement(
-                    jwts[0], trust_anchor_entity_conf=self.trust_anchor_configuration,
-                    httpc_params=self.httpc_params
+                    jwts[0],
+                    trust_anchor_entity_conf=self.trust_anchor_configuration,
+                    httpc_params=self.httpc_params,
                 )
                 self.subject_configuration.validate_by_itself()
             except Exception as e:
@@ -346,9 +337,9 @@ class TrustChainBuilder:
         # we keep just the leaf's and TA's EC, all the intermediates EC will be dropped
         ta_ec: str = ""
         for stat in self.trust_path:
-            if (self.subject == stat.sub == stat.iss):
+            if self.subject == stat.sub == stat.iss:
                 res.append(stat.jwt)
-            elif (self.trust_anchor_configuration.sub == stat.sub == stat.iss):
+            elif self.trust_anchor_configuration.sub == stat.sub == stat.iss:
                 ta_ec = stat.jwt
 
             if stat.verified_descendant_statements:

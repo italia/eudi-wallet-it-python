@@ -1,12 +1,14 @@
 import pytest
-
 from pydantic import ValidationError
 
 from pyeudiw.federation.schemas.entity_configuration import (
-    EntityConfigurationHeader, EntityConfigurationPayload)
+    EntityConfigurationHeader,
+    EntityConfigurationPayload,
+)
 from pyeudiw.openid4vp.schemas.wallet_instance_attestation_request import (
     WalletInstanceAttestationRequestHeader,
-    WalletInstanceAttestationRequestPayload)
+    WalletInstanceAttestationRequestPayload,
+)
 
 
 def test_wir():
@@ -14,7 +16,7 @@ def test_wir():
         "header": {
             "alg": "RS256",
             "kid": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
-            "typ": "var+jwt"
+            "typ": "var+jwt",
         },
         "payload": {
             "iss": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
@@ -42,67 +44,74 @@ def test_wir():
                     "RRfVrbxVxiZHjU6zL6jY5QJdh1QCmENoejj_ytspMmGW7yMRxzUqgxcAqOBpVm0b-_mW3HoBdjQ",
                     "e": "AQAB",
                     "kid": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
-                    "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg"
+                    "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
                 }
             },
             "iat": 1686645115,
-            "exp": 1686652315
-        }}
+            "exp": 1686652315,
+        },
+    }
 
     WalletInstanceAttestationRequestHeader(**wir_dict["header"])
-    WalletInstanceAttestationRequestPayload(
-        **wir_dict["payload"])
+    WalletInstanceAttestationRequestPayload(**wir_dict["payload"])
 
     WalletInstanceAttestationRequestHeader.model_validate(
-        wir_dict["header"], context={"supported_algorithms": ["RS256"]})
+        wir_dict["header"], context={"supported_algorithms": ["RS256"]}
+    )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestHeader.model_validate(
-            wir_dict["header"], context={"supported_algorithms": []})
+            wir_dict["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestHeader.model_validate(
-            wir_dict["header"], context={"supported_algorithms": None})
+            wir_dict["header"], context={"supported_algorithms": None}
+        )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestHeader.model_validate(
-            wir_dict["header"], context={"supported_algorithms": ["RS384"]})
+            wir_dict["header"], context={"supported_algorithms": ["RS384"]}
+        )
 
     wir_dict["payload"]["type"] = "NOT_WalletInstanceAttestationRequest"
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestPayload.model_validate(
-            wir_dict["payload"], context={"supported_algorithms": ["RS256"]})
+            wir_dict["payload"], context={"supported_algorithms": ["RS256"]}
+        )
     wir_dict["payload"]["type"] = "WalletInstanceAttestationRequest"
 
-    wir_dict["payload"]["cnf"] = {
-        "wrong_name_jwk": wir_dict["payload"]["cnf"]["jwk"]}
+    wir_dict["payload"]["cnf"] = {"wrong_name_jwk": wir_dict["payload"]["cnf"]["jwk"]}
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestPayload.model_validate(
-            wir_dict["payload"], context={"supported_algorithms": ["RS256"]})
-    wir_dict["payload"]["cnf"] = {
-        "jwk": wir_dict["payload"]["cnf"]["wrong_name_jwk"]}
+            wir_dict["payload"], context={"supported_algorithms": ["RS256"]}
+        )
+    wir_dict["payload"]["cnf"] = {"jwk": wir_dict["payload"]["cnf"]["wrong_name_jwk"]}
 
 
 def test_entity_config_header():
     header = {
         "alg": "RS256",
         "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
-        "typ": "entity-statement+jwt"
+        "typ": "entity-statement+jwt",
     }
     EntityConfigurationHeader(**header)
 
-    header['typ'] = "entity-config+jwt"
+    header["typ"] = "entity-config+jwt"
     with pytest.raises(ValidationError):
         EntityConfigurationHeader(**header)
-    header['typ'] = "entity-statement+jwt"
+    header["typ"] = "entity-statement+jwt"
 
     with pytest.raises(ValidationError):
         EntityConfigurationHeader.model_validate(
-            header, context={"supported_algorithms": []})
+            header, context={"supported_algorithms": []}
+        )
 
     with pytest.raises(ValidationError):
         EntityConfigurationHeader.model_validate(
-            header, context={"supported_algorithms": ["asd"]})
+            header, context={"supported_algorithms": ["asd"]}
+        )
 
     EntityConfigurationHeader.model_validate(
-        header, context={"supported_algorithms": ["RS256"]})
+        header, context={"supported_algorithms": ["RS256"]}
+    )
 
 
 def test_entity_config_payload():
@@ -117,12 +126,12 @@ def test_entity_config_payload():
                     "kty": "RSA",
                     "n": "5s4qi …",
                     "e": "AQAB",
-                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs"
+                    "kid": "2HnoFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
                 }
             ]
         },
         "metadata": {
-            "wallet_relying_party": {
+            "openid_credential_verifier": {
                 "application_type": "web",
                 "client_id": "https://rp.example.it",
                 "client_name": "Name of an example organization",
@@ -134,46 +143,29 @@ def test_entity_config_payload():
                             "n": "1Ta-sE …",
                             "e": "AQAB",
                             "kid": "YhNFS3YnC9tjiCaivhWLVUJ3AxwGGz_98uRFaqMEEs",
-                            "x5c": [
-                                "..."
-                            ]
+                            "x5c": ["..."],
                         }
                     ]
                 },
-                "contacts": [
-                    "ops@verifier.example.org"
-                ],
-                "request_uris": [
-                    "https://verifier.example.org/request_uri"
-                ],
-                "redirect_uris": [
-                    "https://verifier.example.org/callback"
-                ],
+                "contacts": ["ops@verifier.example.org"],
+                "request_uris": ["https://verifier.example.org/request_uri"],
+                "redirect_uris": ["https://verifier.example.org/callback"],
                 "default_acr_values": [
                     "https://www.spid.gov.it/SpidL2",
-                    "https://www.spid.gov.it/SpidL3"
+                    "https://www.spid.gov.it/SpidL3",
                 ],
                 "vp_formats": {
                     "vc+sd-jwt": {
-                        "sd-jwt_alg_values": [
-                            "ES256",
-                            "ES384"
-                        ],
-                        "kb-jwt_alg_values": [
-                            "ES256",
-                            "ES384"
-                        ]
+                        "sd-jwt_alg_values": ["ES256", "ES384"],
+                        "kb-jwt_alg_values": ["ES256", "ES384"],
                     }
                 },
                 "default_max_age": 1111,
-                "authorization_signed_response_alg": [
-                    "RS256",
-                    "ES256"
-                ],
+                "authorization_signed_response_alg": ["RS256", "ES256"],
                 "authorization_encrypted_response_alg": [
                     "RSA-OAEP",
                     "RSA-OAEP-256",
-                    "ECDH-ES"
+                    "ECDH-ES",
                 ],
                 "authorization_encrypted_response_enc": [
                     "A128CBC-HS256",
@@ -181,39 +173,29 @@ def test_entity_config_payload():
                     "A256CBC-HS512",
                     "A128GCM",
                     "A192GCM",
-                    "A256GCM"
+                    "A256GCM",
                 ],
                 "subject_type": "pairwise",
                 "require_auth_time": True,
-                "id_token_signed_response_alg": [
-                    "RS256",
-                    "ES256"
-                ],
-                "id_token_encrypted_response_alg": [
-                    "RSA-OAEP",
-                    "RSA-OAEP-256"
-                ],
+                "id_token_signed_response_alg": ["RS256", "ES256"],
+                "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
                 "id_token_encrypted_response_enc": [
                     "A128CBC-HS256",
                     "A192CBC-HS384",
                     "A256CBC-HS512",
                     "A128GCM",
                     "A192GCM",
-                    "A256GCM"
-                ]
+                    "A256GCM",
+                ],
             },
             "federation_entity": {
                 "organization_name": "OpenID Wallet Verifier example",
                 "homepage_uri": "https://verifier.example.org/home",
                 "policy_uri": "https://verifier.example.org/policy",
                 "logo_uri": "https://verifier.example.org/static/logo.svg",
-                "contacts": [
-                    "tech@verifier.example.org"
-                ]
-            }
+                "contacts": ["tech@verifier.example.org"],
+            },
         },
-        "authority_hints": [
-            "https://registry.eudi-wallet.example.it"
-        ]
+        "authority_hints": ["https://registry.eudi-wallet.example.it"],
     }
     EntityConfigurationPayload(**payload)

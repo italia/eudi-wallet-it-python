@@ -1,39 +1,38 @@
 import json
-import pydantic
 import uuid
-
 from typing import Callable
-from urllib.parse import quote_plus, urlencode
 
+import pydantic
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Redirect, Response
 
-from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
-from pyeudiw.openid4vp.utils import detect_flow_typ
-from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
-from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.jwk import JWK
+from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
+from pyeudiw.openid4vp.utils import detect_flow_typ
+from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.satosa.utils.trust import BackendTrust
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
-class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
+class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
     def __init__(
         self,
         auth_callback_func: Callable[[Context, InternalData], Response],
         internal_attributes: dict[str, dict[str, str | list[str]]],
         config: dict[str, dict[str, str] | list[str]],
         base_url: str,
-        name: str
+        name: str,
     ) -> None:
         """
         OpenID4VP backend module.
@@ -53,46 +52,62 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         super().__init__(auth_callback_func, internal_attributes, base_url, name)
 
+        # to be inizialized by .db_engine() property
+        self._db_engine = None
+
         self.config = config
 
         self._backend_url = f"{base_url}/{name}"
         self._client_id = self._backend_url
-        self.config['metadata']['client_id'] = self.client_id
+        self.config["metadata"]["client_id"] = self.client_id
 
-        self.config['metadata']['response_uris_supported'] = []
-        self.config['metadata']['response_uris_supported'].append(
-            f"{self._backend_url}/response-uri")
+        self.config["metadata"]["response_uris"] = []
+        self.config["metadata"]["response_uris"].append(
+            f"{self._backend_url}/response-uri"
+        )
 
-        self.config['metadata']['request_uris'] = []
-        self.config['metadata']['request_uris'].append(
-            f"{self._backend_url}/request-uri")
+        self.config["metadata"]["request_uris"] = []
+        self.config["metadata"]["request_uris"].append(
+            f"{self._backend_url}/request-uri"
+        )
 
-        self.default_exp = int(self.config['jwt']['default_exp'])
+        self.default_exp = int(self.config["jwt"]["default_exp"])
 
-        federation_jwks = self.config['trust']['federation']['config']['federation_jwks']
+        federation_jwks = self.config["trust"]["federation"]["config"][
+            "federation_jwks"
+        ]
         if isinstance(federation_jwks, str):
             try:
-                self.config['trust']['federation']['config']['federation_jwks'] = json.loads(federation_jwks)
+                self.config["trust"]["federation"]["config"]["federation_jwks"] = (
+                    json.loads(federation_jwks)
+                )
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid federation_jwks {self.config['trust']['federation']['config']['federation_jwks']} JSON: {e}")
-        
-        if isinstance(self.config['trust']['federation']['config']['federation_jwks'] , dict):
-            self.config['trust']['federation']['config']['federation_jwks']  = [self.config['trust']['federation']['config']['federation_jwks']]
-        
-        if isinstance(self.config['metadata_jwks'], str):
+                raise ValueError(
+                    f"Invalid federation_jwks {self.config['trust']['federation']['config']['federation_jwks']} JSON: {e}"
+                )
+
+        if isinstance(
+            self.config["trust"]["federation"]["config"]["federation_jwks"], dict
+        ):
+            self.config["trust"]["federation"]["config"]["federation_jwks"] = [
+                self.config["trust"]["federation"]["config"]["federation_jwks"]
+            ]
+
+        if isinstance(self.config["metadata_jwks"], str):
             try:
-                self.config['metadata_jwks'] = json.loads(self.config['metadata_jwks'])
+                self.config["metadata_jwks"] = json.loads(self.config["metadata_jwks"])
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid metadata_jwks {self.config['metadata_jwks']} JSON: {e}")
-                
-        if isinstance(self.config['metadata_jwks'], dict):
-            self.config['metadata_jwks']  = [self.config['metadata_jwks']]
-        self.metadata_jwks_by_kids = {
-            i['kid']: i for i in self.config['metadata_jwks']
+                raise ValueError(
+                    f"Invalid metadata_jwks {self.config['metadata_jwks']} JSON: {e}"
+                )
+
+        if isinstance(self.config["metadata_jwks"], dict):
+            self.config["metadata_jwks"] = [self.config["metadata_jwks"]]
+
+        self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
+        self.config["metadata"]["jwks"] = {
+            "keys": [JWK(i).public_key for i in self.config["metadata_jwks"]]
         }
-        self.config['metadata']['jwks'] = {"keys": [
-            JWK(i).public_key for i in self.config['metadata_jwks']
-        ]}
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
@@ -104,9 +119,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         self.registered_get_response_endpoint = None
 
         self._server_url = (
-            self.base_url[:-1]
-            if self.base_url[-1] == '/'
-            else self.base_url
+            self.base_url[:-1] if self.base_url[-1] == "/" else self.base_url
         )
 
         try:
@@ -116,18 +129,26 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning("OpenID4VPBackend", debug_message)
 
         self.response_code_helper = ResponseCodeSource(
-            self.config["response_code"]["sym_key"])
+            self.config["response_code"]["sym_key"]
+        )
+
+        # This loads all the configured trust evaluation mechanisms
         trust_configuration = self.config.get("trust", {})
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, self.db_engine)
-        # Questo carica risorse, metadata endpoint (sotto formate di attributi con pattern *_endpoint) etc, che satosa deve pubblicare
-        self.init_trust_resources()
+            trust_configuration, self.db_engine, default_client_id = self.client_id
+        )
+
+    def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:
+
+        for i in self.trust_evaluator.handlers:
+            if i.__class__.__name__ == class_name:
+                return i
 
     @property
     def client_id(self):
-        if (_cid := self.config["authorization"].get("client_id")):
+        if _cid := self.config["authorization"].get("client_id"):
             return _cid
-        elif (_cid := self.config["metadata"].get("client_id")):
+        elif _cid := self.config["metadata"].get("client_id"):
             return _cid
         else:
             return self._client_id
@@ -140,12 +161,12 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         :rtype: Sequence[(str, Callable[[satosa.context.Context], satosa.response.Response]]
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
+        # This loads the metadata endpoints required by the supported/configured trust evaluation methods
         url_map = self.trust_evaluator.build_metadata_endpoints(
-            self.name,
-            self._backend_url
+            self.name, self._backend_url
         )
 
-        for k, v in self.config['endpoints'].items():
+        for k, v in self.config["endpoints"].items():
             endpoint_value = v
 
             if isinstance(endpoint_value, dict):
@@ -153,19 +174,18 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
 
             if not endpoint_value or not isinstance(endpoint_value, str):
                 raise ValueError(
-                    f"Invalid endpoint value for \"{k}\". Given value: {endpoint_value}"
+                    f"Invalid endpoint value for '{k}'. Given value: {endpoint_value}"
                 )
 
             url_map.append(
                 (
                     f"^{self.name}/{endpoint_value.lstrip('/')}$",
-                    getattr(self, f"{k}_endpoint")
+                    getattr(self, f"{k}_endpoint"),
                 )
             )
             _endpoint = f"{self._backend_url}/{endpoint_value.lstrip('/')}"
             self._log_debug(
-                "OpenID4VPBackend",
-                f"Exposing backend entity endpoint = {_endpoint}"
+                "OpenID4VPBackend", f"Exposing backend entity endpoint = {_endpoint}"
             )
             match k:
                 case "get_response":
@@ -194,7 +214,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
         return self.pre_request_endpoint(context, internal_request)
 
-    def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
+    def pre_request_endpoint(
+        self, context: Context, internal_request, **kwargs
+    ) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance before calling the request endpoint.
         It initializes the session and returns the request_uri to be used by the User-Agent/Wallet Instance.
@@ -209,7 +231,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         """
 
         self._log_function_debug(
-            "pre_request_endpoint", context, "internal_request", internal_request)
+            "pre_request_endpoint", context, "internal_request", internal_request
+        )
 
         session_id = context.state["SESSION_ID"]
         state = str(uuid.uuid4())
@@ -219,7 +242,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             self._log_warning(context, _msg)
             return self._handle_400(
                 context,
-                "previous authn session not found. It seems that the flow did not started with a valid authn request to one of the configured frontend."
+                "previous authn session not found. It seems that the flow did "
+                "not started with a valid authn request to one of the configured frontend.",
             )
 
         flow_typ = detect_flow_typ(context)
@@ -227,29 +251,30 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         # Init session
         try:
             self.db_engine.init_session(
-                state=state,
-                session_id=session_id,
-                remote_flow_typ=flow_typ.value
+                state=state, session_id=session_id, remote_flow_typ=flow_typ.value
             )
-        except (StorageWriteError) as e:
-            _msg = f"Error while initializing session with state {state} and {session_id}."
+        except StorageWriteError as e:
+            _msg = (
+                f"Error while initializing session with state {state} and {session_id}."
+            )
             self._log_error(context, f"{_msg} for the following reason {e}")
             return self._handle_500(context, _msg, e)
 
-        except (Exception) as e:
-            _msg = f"Error while initializing session with state {state} and {session_id}."
+        except Exception as e:
+            _msg = (
+                f"Error while initializing session with state {state} and {session_id}."
+            )
             self._log_error(context, _msg)
             return self._handle_500(context, _msg, e)
 
         # PAR
         payload = {
-            'client_id': self.client_id,
-            'request_uri': f"{self.absolute_request_url}?id={state}",
+            "client_id": self.client_id,
+            "request_uri": f"{self.absolute_request_url}?id={state}",
         }
 
         response_url = build_authorization_request_url(
-            self.config["authorization"]["url_scheme"],
-            payload
+            self.config["authorization"]["url_scheme"], payload
         )
 
         match flow_typ:
@@ -260,7 +285,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             case unsupported:
                 _msg = f"unrecognized remote flow type: {unsupported}"
                 self._log_error(context, _msg)
-                return self._handle_500(context, "something went wrong when creating your authentication request", Exception(_msg))
+                return self._handle_500(
+                    context,
+                    "something went wrong when creating your authentication request",
+                    Exception(_msg),
+                )
 
     def _same_device_http_response(self, response_url: str) -> Response:
         return Redirect(response_url)
@@ -274,7 +303,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
                 "qrcode_logo_path": self.config["qrcode"]["logo_path"],
                 "qrcode_expiration_time": self.config["qrcode"]["expiration_time"],
                 "state": state,
-                "status_endpoint": self.absolute_status_url
+                "status_endpoint": self.absolute_status_url,
             }
         )
         return Response(result, content="text/html; charset=utf8", status="200")
@@ -292,14 +321,15 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
         try:
             state = self.response_code_helper.recover_state(resp_code)
         except Exception:
-            return self._handle_400(context, "missing or invalid parameter [response_code]")
+            return self._handle_400(
+                context, "missing or invalid parameter [response_code]"
+            )
 
         finalized_session = None
 
         try:
             finalized_session = self.db_engine.get_by_state_and_session_id(
-                state=state,
-                session_id=session_id
+                state=state, session_id=session_id
             )
         except Exception as e:
             _msg = f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e}"
@@ -309,19 +339,17 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             return self._handle_400(context, "session not found or invalid")
 
         _now = iat_now()
-        _exp = finalized_session['request_object']['exp']
+        _exp = finalized_session["request_object"]["exp"]
         if _exp < _now:
-            return self._handle_400(context, f"session expired, request object exp is {_exp} while now is {_now}")
+            return self._handle_400(
+                context,
+                f"session expired, request object exp is {_exp} while now is {_now}",
+            )
 
         internal_response = InternalData()
-        resp = internal_response.from_dict(
-            finalized_session['internal_response']
-        )
+        resp = internal_response.from_dict(finalized_session["internal_response"])
 
-        return self.auth_callback_func(
-            context,
-            resp
-        )
+        return self.auth_callback_func(context, resp)
 
     def status_endpoint(self, context: Context) -> JsonResponse:
 
@@ -354,57 +382,37 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BackendTrust):
             if iat_now() > request_object["exp"]:
                 return self._handle_403("expired", "Request object expired")
 
-        if (session["finalized"] is True):
+        if session["finalized"] is True:
             resp_code = self.response_code_helper.create_code(state)
             return JsonResponse(
                 {
                     "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
                 },
-                status="200"
+                status="200",
             )
         else:
             if request_object is not None:
-                return JsonResponse(
-                    {
-                        "response": "Accepted"
-                    },
-                    status="202"
-                )
+                return JsonResponse({"response": "Accepted"}, status="202")
 
-            return JsonResponse(
-                {
-                    "response": "Request object issued"
-                },
-                status="201"
-            )
+            return JsonResponse({"response": "Request object issued"}, status="201")
 
     @property
     def db_engine(self) -> DBEngine:
         """Returns the DBEngine instance used by the class"""
+        if not self._db_engine:
+            self._db_engine = DBEngine(self.config["storage"])
+
         try:
             self._db_engine.is_connected
         except Exception as e:
-            if getattr(self, '_db_engine', None):
+            if getattr(self, "_db_engine", None):
                 self._log_debug(
                     "OpenID4VP db storage handling",
-                    f"connection check silently fails and get restored: {e}"
+                    f"connection check silently fails and get restored: {e}",
                 )
             self._db_engine = DBEngine(self.config["storage"])
 
         return self._db_engine
-
-    def _build_authz_request_url(self, payload: dict) -> str:
-        scheme = self.config["authorization"]["url_scheme"]
-        if "://" not in scheme:
-            scheme = scheme + "://"
-        if not scheme.endswith("/"):
-            scheme = scheme + "/"
-        # NOTE: path component is currently unused by the protocol, but currently
-        # we leave it there as 'authorize' to stress the fact that this is an
-        # OAuth 2.0 request modified by JAR (RFC9101)
-        path = "authorize"
-        query_params = urlencode(payload, quote_via=quote_plus)
-        return f"{scheme}{path}?{query_params}"
 
     @property
     def default_metadata_private_jwk(self) -> tuple:

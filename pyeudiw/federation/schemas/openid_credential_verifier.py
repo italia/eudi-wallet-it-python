@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import List
-from pyeudiw.jwk.schemas.public import JwksSchema
+
 from pydantic import BaseModel, HttpUrl, PositiveInt
+
+from pyeudiw.jwk.schemas.public import JwksSchema
 from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
 
 
@@ -47,7 +49,7 @@ class AuthorizationSignedResponseAlg(str, Enum):
     es512 = "ES512"
 
 
-class WalletRelyingParty(BaseModel):
+class OpenIDCredentialVerifier(BaseModel):
     application_type: str
     client_id: HttpUrl
     client_name: str

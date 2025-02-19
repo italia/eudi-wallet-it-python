@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 from typing import Union
+
 from pymongo.results import UpdateResult
 
 from .base_db import BaseDB
@@ -15,17 +16,17 @@ class TrustType(Enum):
 trust_type_map: dict = {
     TrustType.X509: "x509",
     TrustType.FEDERATION: "federation",
-    TrustType.DIRECT_TRUST_SD_JWT_VC: "direct_trust_sd_jwt_vc"
+    TrustType.DIRECT_TRUST_SD_JWT_VC: "direct_trust_sd_jwt_vc",
 }
 
 trust_attestation_field_map: dict = {
     TrustType.X509: "x5c",
-    TrustType.FEDERATION: "chain"
+    TrustType.FEDERATION: "chain",
 }
 
 trust_anchor_field_map: dict = {
     TrustType.X509: "pem",
-    TrustType.FEDERATION: "entity_configuration"
+    TrustType.FEDERATION: "entity_configuration",
 }
 
 
@@ -34,7 +35,9 @@ class BaseStorage(BaseDB):
     Interface class for storage.
     """
 
-    def init_session(self, document_id: str, session_id: str, state: str, remote_flow_typ: str) -> str:
+    def init_session(
+        self, document_id: str, session_id: str, state: str, remote_flow_typ: str
+    ) -> str:
         """
         Initialize a session.
 
@@ -66,7 +69,9 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict) -> UpdateResult:
+    def add_dpop_proof_and_attestation(
+        self, document_id, dpop_proof: dict, attestation: dict
+    ) -> UpdateResult:
         """
         Add a dpop proof and an attestation to the session.
 
@@ -95,7 +100,9 @@ class BaseStorage(BaseDB):
 
         raise NotImplementedError()
 
-    def update_request_object(self, document_id: str, request_object: dict) -> UpdateResult:
+    def update_request_object(
+        self, document_id: str, request_object: dict
+    ) -> UpdateResult:
         """
         Update the request object of the session.
 
@@ -109,7 +116,9 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def update_response_object(self, nonce: str, state: str, response_object: dict) -> UpdateResult:
+    def update_response_object(
+        self, nonce: str, state: str, response_object: dict
+    ) -> UpdateResult:
         """
         Update the response object of the session.
 
@@ -177,7 +186,14 @@ class BaseStorage(BaseDB):
     def has_trust_source(self, entity_id: str) -> bool:
         raise NotImplementedError()
 
-    def add_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
+    def add_trust_attestation(
+        self,
+        entity_id: str,
+        attestation: list[str],
+        exp: datetime,
+        trust_type: TrustType,
+        jwks: dict,
+    ) -> str:
         """
         Add a trust attestation.
 
@@ -197,7 +213,9 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict) -> str:
+    def add_trust_attestation_metadata(
+        self, entity_id: str, metadata_type: str, metadata: dict
+    ) -> str:
         """
         Add a trust attestation metadata.
 
@@ -237,7 +255,13 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType):
+    def add_trust_anchor(
+        self,
+        entity_id: str,
+        entity_configuration: str,
+        exp: datetime,
+        trust_type: TrustType,
+    ):
         """
         Add a trust anchor.
 
@@ -255,7 +279,14 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime, trust_type: TrustType, jwks: dict) -> str:
+    def update_trust_attestation(
+        self,
+        entity_id: str,
+        attestation: list[str],
+        exp: datetime,
+        trust_type: TrustType,
+        jwks: dict,
+    ) -> str:
         """
         Update a trust attestation.
 
@@ -275,7 +306,13 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def update_trust_anchor(self, entity_id: str, entity_configuration: str, exp: datetime, trust_type: TrustType) -> str:
+    def update_trust_anchor(
+        self,
+        entity_id: str,
+        entity_configuration: str,
+        exp: datetime,
+        trust_type: TrustType,
+    ) -> str:
         """
         Update a trust anchor.
 
@@ -333,7 +370,9 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def get_by_state_and_session_id(self, state: str, session_id: str = "") -> Union[dict, None]:
+    def get_by_state_and_session_id(
+        self, state: str, session_id: str = ""
+    ) -> Union[dict, None]:
         """
         Get a session by state and session id.
 
@@ -360,7 +399,9 @@ class BaseStorage(BaseDB):
         raise NotImplementedError()
 
     # TODO: create add_or_update for all the write methods
-    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
+    def add_or_update_trust_attestation(
+        self, entity_id: str, attestation: list[str], exp: datetime
+    ) -> str:
         """
         Add or update a trust attestation.
 

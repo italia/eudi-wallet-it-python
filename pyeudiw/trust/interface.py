@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 import satosa.context
 import satosa.response
 
@@ -36,7 +37,11 @@ class TrustEvaluator:
         """
         raise NotImplementedError
 
-    def build_metadata_endpoints(self, base_path: str) -> list[tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]]:
+    def build_metadata_endpoints(
+        self, base_path: str
+    ) -> list[
+        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+    ]:
         """
         Expose one or more metadata endpoint required to publish metadata
         information about *myself* and that are associated to a trust

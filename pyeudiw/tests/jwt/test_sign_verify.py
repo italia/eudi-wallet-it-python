@@ -9,10 +9,24 @@ class TestJWSHeperSelectSigningKey:
     @pytest.fixture
     def sign_jwks(self):
         return [
-            {"crv": "P-256", "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
-                "kty": "EC", "use": "sig", "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv": "P-256", "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
-                "kty": "EC", "use": "sig", "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {
+                "crv": "P-256",
+                "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA",
+                "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
+                "kty": "EC",
+                "use": "sig",
+                "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40",
+                "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk",
+            },
+            {
+                "crv": "P-256",
+                "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA",
+                "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
+                "kty": "EC",
+                "use": "sig",
+                "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk",
+                "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M",
+            },
         ]
 
     def test_JWSHelper_select_signing_key_undefined(self, sign_jwks):
@@ -42,14 +56,28 @@ class TestJWSHeperSelectSigningKey:
         assert k == exp_k
 
 
-class TestJWSHelperSignerHeader():
+class TestJWSHelperSignerHeader:
     @pytest.fixture
     def sign_jwks(self):
         return [
-            {"crv": "P-256", "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
-                "kty": "EC", "use": "sig", "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv": "P-256", "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
-                "kty": "EC", "use": "sig", "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {
+                "crv": "P-256",
+                "d": "qIVMRJ0ioosFjCFhBw-kLBuip9tV0Y2D6iYD42nCKBA",
+                "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
+                "kty": "EC",
+                "use": "sig",
+                "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40",
+                "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk",
+            },
+            {
+                "crv": "P-256",
+                "d": "SW976Rpuse5crOTbM5yBifa7u1tgw46XlJCJRwon4kA",
+                "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
+                "kty": "EC",
+                "use": "sig",
+                "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk",
+                "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M",
+            },
         ]
 
     def test_signed_header_add_kid(self, sign_jwks):
@@ -72,14 +100,26 @@ class TestJWSHelperSignerHeader():
         assert "alg" in dec_header
 
 
-class TestJWSHelperSelectVerifyingKey():
+class TestJWSHelperSelectVerifyingKey:
     @pytest.fixture
     def verify_jwks(self):
         return [
-            {"crv": "P-256", "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI", "kty": "EC", "use": "sig",
-                "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40", "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk"},
-            {"crv": "P-256", "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas", "kty": "EC", "use": "sig",
-                "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk", "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M"}
+            {
+                "crv": "P-256",
+                "kid": "ppBQZHPUTaEPdiLsj99gadhfqLtYMwiU9bmDCfAsWfI",
+                "kty": "EC",
+                "use": "sig",
+                "x": "_336mq5GanihcG_V40tiLDq2sFJ83w-vxaPAZtfCr40",
+                "y": "CYUM4Q1YlSTTgSp6OnJZt-O4YlzPf430AgVAM0oNlQk",
+            },
+            {
+                "crv": "P-256",
+                "kid": "35DgiI1eugPL1QB7sHG826YLLLLGDogvHmDa2jUilas",
+                "kty": "EC",
+                "use": "sig",
+                "x": "RXQ0lfXVXikgi00Yy8Qm2EX83_1JbLTXhyUXj9M21lk",
+                "y": "xTfCwP-eelZXMBFNKwiEUQaUJeebHWcVgnGyB7fOF1M",
+            },
         ]
 
     def test_JWSHelper_select_verifying_key_undefined(self, verify_jwks):
@@ -100,11 +140,18 @@ class TestJWSHelperSelectVerifyingKey():
         assert k == exp_k
 
 
-class TestJWSHelperSignVerify():
+class TestJWSHelperSignVerify:
     @pytest.fixture
     def signing_key(self):
-        return {"crv": "P-256", "d": "1Fpynl9yQN88xI_AIkna0PiO0-5y5vUtNwC7rbg-BHE", "kid": "lfnXwtreAr8zgUE9CUFr9rGZsS5f52I7whhfiPr5I1o",
-                "kty": "EC", "use": "sig", "x": "2I-JeMD_JgNw95NORslAFUElmwMHWbT4uOdDCy99mac", "y": "Oy7Cyg2O_4GsLt475BbD5m71-snr52uMneUUHRiodBY"}
+        return {
+            "crv": "P-256",
+            "d": "1Fpynl9yQN88xI_AIkna0PiO0-5y5vUtNwC7rbg-BHE",
+            "kid": "lfnXwtreAr8zgUE9CUFr9rGZsS5f52I7whhfiPr5I1o",
+            "kty": "EC",
+            "use": "sig",
+            "x": "2I-JeMD_JgNw95NORslAFUElmwMHWbT4uOdDCy99mac",
+            "y": "Oy7Cyg2O_4GsLt475BbD5m71-snr52uMneUUHRiodBY",
+        }
 
     def test_JWSHelper_sign_then_verify(self, signing_key):
         helper = JWSHelper(signing_key)
@@ -113,7 +160,7 @@ class TestJWSHelperSignVerify():
             "exp": iat_now() + 999,
             "iss": "token-issuer",
             "sub": "token-subject",
-            "aud": "token-audience"
+            "aud": "token-audience",
         }
         token = helper.sign(claims, kid_in_header=True)
         assert "alg" in decode_jwt_header(token)
@@ -132,7 +179,7 @@ class TestJWSHelperSignVerify():
             "exp": iat_now() + 999,
             "iss": "token-issuer",
             "sub": "token-subject",
-            "aud": "token-audience"
+            "aud": "token-audience",
         }
         token = helper.sign(claims, kid_in_header=True)
 
@@ -144,11 +191,13 @@ class TestJWSHelperSignVerify():
         # case 1: using global configured tolerance
         DEFAULT_TOKEN_TIME_TOLERANCE
         claims = {
-            "iat": iat_now() + DEFAULT_TOKEN_TIME_TOLERANCE//2,  # oops, issuer clock is slightly skewed!
+            "iat": iat_now()
+            + DEFAULT_TOKEN_TIME_TOLERANCE
+            // 2,  # oops, issuer clock is slightly skewed!
             "exp": iat_now() + 999,
             "iss": "token-issuer",
             "sub": "token-subject",
-            "aud": "token-audience"
+            "aud": "token-audience",
         }
         try:
             helper.verify(token)

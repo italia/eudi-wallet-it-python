@@ -1,22 +1,22 @@
 import logging
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.tools.utils import iat_now
-from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
-from pyeudiw.federation import is_es
+
+from pyeudiw.federation.exceptions import (
+    InvalidEntityStatement,
+    KeyValidationError,
+    MissingTrustAnchorPublicKey,
+    TimeValidationError,
+)
 from pyeudiw.federation.policy import TrustChainPolicy
 from pyeudiw.federation.statements import (
     get_entity_configurations,
-    get_entity_statements
+    get_entity_statements,
 )
-from pyeudiw.federation.exceptions import (
-    MissingTrustAnchorPublicKey,
-    TimeValidationError,
-    KeyValidationError,
-    InvalidEntityStatement
-)
-
-from pyeudiw.jwk import find_jwk_by_kid
-from pyeudiw.jwk.exceptions import KidNotFoundError, InvalidKid
+from pyeudiw.federation.utils import is_es
+from pyeudiw.jwk.jwks import find_jwk_by_kid
+from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +80,7 @@ class StaticTrustChainValidator:
         """
 
         if not self._check_expired(exp):
-            raise TimeValidationError(
-                "Expired validation error"
-            )
+            raise TimeValidationError("Expired validation error")
 
     def _validate_keys(self, fed_jwks: list[dict], st_header: dict) -> None:
         """
@@ -117,9 +115,7 @@ class StaticTrustChainValidator:
         """
 
         # start from the last entity statement
-        rev_tc = [
-            i for i in reversed(self.trust_chain)
-        ]
+        rev_tc = [i for i in reversed(self.trust_chain)]
 
         # inspect the entity statement kid header to know which
         # TA's public key to use for the validation
@@ -127,14 +123,10 @@ class StaticTrustChainValidator:
         es_header = decode_jwt_header(last_element)
         es_payload = decode_jwt_payload(last_element)
 
-        ta_jwk = find_jwk_by_kid(
-            es_header.get("kid", None), self.trust_anchor_jwks
-        )
+        ta_jwk = find_jwk_by_kid(self.trust_anchor_jwks, es_header.get("kid", None))
 
         if not ta_jwk:
-            logger.error(
-                "Trust chain validation error: TA jwks not found."
-            )
+            logger.error("Trust chain validation error: TA jwks not found.")
             return False
 
         # Validate the last statement with ta_jwk
@@ -165,9 +157,7 @@ class StaticTrustChainValidator:
             st_payload = decode_jwt_payload(st)
 
             try:
-                jwk = find_jwk_by_kid(
-                    st_header.get("kid", None), fed_jwks
-                )
+                jwk = find_jwk_by_kid(fed_jwks, st_header.get("kid", None))
             except (KidNotFoundError, InvalidKid):
                 logger.error(
                     f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}"
@@ -226,7 +216,7 @@ class StaticTrustChainValidator:
         :rtype: str
         """
         payload = decode_jwt_payload(st)
-        iss = payload['iss']
+        iss = payload["iss"]
 
         try:
             is_es(payload)
@@ -237,9 +227,7 @@ class StaticTrustChainValidator:
         # if it has the source_endpoint let's try a fast renewal
         download_url: str = payload.get("source_endpoint", "")
         if download_url:
-            jwt = self._retrieve_es(
-                f"{download_url}?sub={payload['sub']}", iss
-            )
+            jwt = self._retrieve_es(f"{download_url}?sub={payload['sub']}", iss)
         else:
             ec = self._retrieve_ec(iss)
             ec_data = decode_jwt_payload(ec)

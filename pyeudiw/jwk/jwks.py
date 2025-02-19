@@ -1,27 +1,32 @@
 from pyeudiw.jwk import JWK
+from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
 
 
-def find_jwk_by_kid(jwks: list[dict], kid: str) -> dict | None:
-    """Find the key with the indicated kid in the given jwks list.
-    If multiple such keys are int he set, then the first found key
-    will be returned.
+def find_jwk_by_kid(jwks: list[dict], kid: str, as_dict: bool = True) -> dict | JWK:
+    """
+    Find the JWK with the indicated kid in the jwks list.
 
     :param kid: the identifier of the jwk
     :type kid: str
     :param jwks: the list of jwks
     :type jwks: list[dict]
+    :param as_dict: if True the return type will be a dict, JWK otherwise.
+    :type as_dict: bool
 
-    :returns: the jwk with the indicated kid or None if the such key can be found
-    :rtype: dict | None
+    :raises InvalidKid: if kid is None.
+    :raises KidNotFoundError: if kid is not in jwks list.
+
+    :returns: the jwk with the indicated kid or an empty dict if no jwk is found
+    :rtype: dict | JWK
     """
     if not kid:
-        raise ValueError("kid cannot be empty")
+        raise InvalidKid("Kid cannot be empty")
     for jwk in jwks:
-        obtained_kid = jwk.get("kid", None)
-        if kid == obtained_kid:
-            return jwk
-    return None
+        valid_jwk = jwk.get("kid", None)
+        if valid_jwk and kid == valid_jwk:
+            return jwk if as_dict else JWK(jwk)
 
+    raise KidNotFoundError(f"Key with Kid {kid} not found")
 
 def find_jwk_by_thumbprint(jwks: list[dict], thumbprint: bytes) -> dict | None:
     """Find if a jwk with the given thumbprint is part of the given JWKS.

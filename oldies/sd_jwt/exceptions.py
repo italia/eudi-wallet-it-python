@@ -1,0 +1,3 @@
+class UnknownCurveNistName(Exception):
+    pass
+

@@ -1,6 +1,6 @@
+import satosa.context
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-import satosa.context
 
 from pyeudiw.openid4vp.schemas.response import AuthorizeResponsePayload
 
@@ -19,7 +19,9 @@ class AuthorizationResponseParser:
     object, method or interface.
     """
 
-    def parse_and_validate(self, context: satosa.context.Context) -> AuthorizeResponsePayload:
+    def parse_and_validate(
+        self, context: satosa.context.Context
+    ) -> AuthorizeResponsePayload:
         """
         Parse (and optionally validate) a satosa http request, wrapped in its own
         context, in order to extract an auhtorization response.

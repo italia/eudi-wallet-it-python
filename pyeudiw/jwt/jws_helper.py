@@ -1,18 +1,27 @@
 import binascii
-from copy import deepcopy
 import logging
 import os
+from copy import deepcopy
 from typing import Any, Literal, Union
 
 from cryptojwt import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
+from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
-from pyeudiw.jwt.exceptions import JWEEncryptionError, JWSSigningError, JWSVerificationError, LifetimeException
-from pyeudiw.jwt.helper import JWHelperInterface, find_self_contained_key, serialize_payload, validate_jwt_timestamps_claims
-
-from pyeudiw.jwk import JWK
+from pyeudiw.jwt.exceptions import (
+    JWEEncryptionError,
+    JWSSigningError,
+    JWSVerificationError,
+    LifetimeException,
+)
+from pyeudiw.jwt.helper import (
+    JWHelperInterface,
+    find_self_contained_key,
+    serialize_payload,
+    validate_jwt_timestamps_claims,
+)
 from pyeudiw.jwt.utils import decode_jwt_header
 
 SerializationFormat = Literal["compact", "json"]
@@ -21,27 +30,17 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_HASH_FUNC = "SHA-256"
 
-DEFAULT_SIG_KTY_MAP = {
-    "RSA": "RS256",
-    "EC": "ES256"
-}
+DEFAULT_SIG_KTY_MAP = {"RSA": "RS256", "EC": "ES256"}
 
-DEFAULT_SIG_ALG_MAP = {
-    "RSA": "RS256",
-    "EC": "ES256"
-}
+DEFAULT_SIG_ALG_MAP = {"RSA": "RS256", "EC": "ES256"}
 
-DEFAULT_ENC_ALG_MAP = {
-    "RSA": "RSA-OAEP",
-    "EC": "ECDH-ES+A256KW"
-}
+DEFAULT_ENC_ALG_MAP = {"RSA": "RSA-OAEP", "EC": "ECDH-ES+A256KW"}
 
-DEFAULT_ENC_ENC_MAP = {
-    "RSA": "A256CBC-HS512",
-    "EC": "A256GCM"
-}
+DEFAULT_ENC_ENC_MAP = {"RSA": "A256CBC-HS512", "EC": "A256GCM"}
 
-DEFAULT_TOKEN_TIME_TOLERANCE = int(os.getenv("PYEUDIW_TOKEN_TIME_TOLERANCE", "60"), base=10)
+DEFAULT_TOKEN_TIME_TOLERANCE = int(
+    os.getenv("PYEUDIW_TOKEN_TIME_TOLERANCE", "60"), base=10
+)
 
 
 class JWSHelper(JWHelperInterface):
@@ -57,7 +56,7 @@ class JWSHelper(JWHelperInterface):
         serialization_format: SerializationFormat = "compact",
         signing_kid: str = "",
         kid_in_header: bool = True,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Generate a signed JWS with the given payload and header.
         This method provides no guarantee that the input header is fully preserved,
@@ -103,15 +102,15 @@ class JWSHelper(JWHelperInterface):
 
         # Select the signing key
         # TODO: check that singing key is either private or symmetric
-        signing_key = self._select_signing_key(
-            (protected, unprotected), signing_kid)
+        signing_key = self._select_signing_key((protected, unprotected), signing_kid)
 
         # Ensure the key ID in the header matches the signing key
         header_kid = protected.get("kid")
         signer_kid = signing_key.get("kid")
         if header_kid and signer_kid and (header_kid != signer_kid):
             raise JWSSigningError(
-                f"token header contains a kid {header_kid} that does not match the signing key kid {signer_kid}")
+                f"token header contains a kid {header_kid} that does not match the signing key kid {signer_kid}"
+            )
 
         payload = serialize_payload(plain_dict)
 
@@ -121,8 +120,7 @@ class JWSHelper(JWHelperInterface):
 
         # Add "typ" header if not present
         if "typ" not in protected:
-            protected["typ"] = "sd-jwt" if self.is_sd_jwt(
-                plain_dict) else "JWT"
+            protected["typ"] = "sd-jwt" if self.is_sd_jwt(plain_dict) else "JWT"
 
         # Include the signing key's kid in the header if required
         if kid_in_header and signer_kid:
@@ -141,9 +139,7 @@ class JWSHelper(JWHelperInterface):
 
         if serialization_format == "compact":
             try:
-                signed = signer.sign_compact(
-                    keys, protected=protected, **kwargs
-                )
+                signed = signer.sign_compact(keys, protected=protected, **kwargs)
                 return signed
             except Exception as e:
                 raise JWSSigningError("Signing error: error in step", e)
@@ -153,28 +149,33 @@ class JWSHelper(JWHelperInterface):
             flatten=True,
         )
 
-    def _select_signing_key(self, headers: tuple[dict, dict], signing_kid: str = "") -> dict:
+    def _select_signing_key(
+        self, headers: tuple[dict, dict], signing_kid: str = ""
+    ) -> dict:
         if len(self.jwks) == 0:
             raise JWEEncryptionError(
-                "signing error: no key available for signature; note that {'alg':'none'} is not supported")
+                "signing error: no key available for signature; note that {'alg':'none'} is not supported"
+            )
         # Case 0: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
             if not signing_kid:
                 raise JWEEncryptionError(
-                    f"signing forced by using key with {signing_kid=}, but no such key is available")
+                    f"signing forced by using key with {signing_kid=}, but no such key is available"
+                )
             return signing_key.to_dict()
         # Case 1: only one key
-        if (signing_key := self._select_signing_key_by_uniqueness()):
+        if signing_key := self._select_signing_key_by_uniqueness():
             return signing_key
         # Case 2: only one *singing* key
-        if (signing_key := self._select_key_by_use(use="sig")):
+        if signing_key := self._select_key_by_use(use="sig"):
             return signing_key
         # Case 3: match key by kid: this goes beyond what promised on the method definition
-        if (signing_key := self._select_key_by_kid(headers)):
+        if signing_key := self._select_key_by_kid(headers):
             return signing_key
         raise JWSSigningError(
-            "signing error: not possible to uniquely determine the signing key")
+            "signing error: not possible to uniquely determine the signing key"
+        )
 
     def _select_signing_key_by_uniqueness(self) -> dict | None:
         if len(self.jwks) == 1:
@@ -185,7 +186,7 @@ class JWSHelper(JWHelperInterface):
         candidate_signing_keys: list[dict] = []
         for key in self.jwks:
             key_d = key.to_dict()
-            if use == key_d .get("use", ""):
+            if use == key_d.get("use", ""):
                 candidate_signing_keys.append(key_d)
         if len(candidate_signing_keys) == 1:
             return candidate_signing_keys[0]
@@ -202,7 +203,9 @@ class JWSHelper(JWHelperInterface):
             return None
         return find_jwk_by_kid([key.to_dict() for key in self.jwks], kid)
 
-    def verify(self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE) -> (str | Any | bytes):
+    def verify(
+        self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE
+    ) -> str | Any | bytes:
         """Verify a JWS with one of the initialized keys and validate standard
         standard claims if possible, such as 'iat' and 'exp'.
         Verification of tokens in JSON serialization format is not supported.
@@ -231,22 +234,23 @@ class JWSHelper(JWHelperInterface):
         verifying_key = self._select_verifying_key(header)
         if not verifying_key:
             raise JWSVerificationError(
-                f"Verification error: unable to find matching public key for header {header}")
+                f"Verification error: unable to find matching public key for header {header}"
+            )
 
         # sanity check: kid must match if present
-        if (expected_kid := header.get("kid")):
+        if expected_kid := header.get("kid"):
             obtained_kid = verifying_key.get("kid", None)
             if obtained_kid and (obtained_kid != expected_kid):
                 raise JWSVerificationError(
                     KidError(
                         "unexpected verification state: found a valid verifying key,"
-                        f"but its kid {obtained_kid} does not match token header kid {expected_kid}")
+                        f"but its kid {obtained_kid} does not match token header kid {expected_kid}"
+                    )
                 )
 
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
-        msg: dict = verifier.verify_compact(
-            jwt, [key_from_jwk_dict(verifying_key)])
+        msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
 
         # Validate JWT claims
         try:
@@ -261,19 +265,22 @@ class JWSHelper(JWHelperInterface):
 
         # case 1: can be found by header
         if "kid" in header:
-            if (verifying_key := find_jwk_by_kid(available_keys, header["kid"])):
+            if verifying_key := find_jwk_by_kid(available_keys, header["kid"]):
                 return verifying_key
 
         # case 2: the token is self contained, and the verification key matches one of the key in the whitelist
-        if (self_contained_claims_key_pair := find_self_contained_key(header)):
+        if self_contained_claims_key_pair := find_self_contained_key(header):
             # check if the self contained key matches a trusted jwk
-            used_claims, candidate_key = self_contained_claims_key_pair
+            _, candidate_key = self_contained_claims_key_pair
             if hasattr(candidate_key, "thumbprint"):
-                if (verifying_key := find_jwk_by_thumbprint(available_keys, candidate_key.thumbprint)):
+                if verifying_key := find_jwk_by_thumbprint(
+                    available_keys, candidate_key.thumbprint
+                ):
                     return verifying_key
                 else:
                     logger.error(
-                        f"Candidate key {candidate_key} does not have a thumbprint attribute.")
+                        f"Candidate key {candidate_key} does not have a thumbprint attribute."
+                    )
                     raise ValueError("Invalid key: missing thumbprint.")
 
         # case 3: if only one key and there is no header claim that can identitfy any key, than that MUST

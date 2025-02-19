@@ -1,7 +1,3 @@
-class ChainAlreadyExist(Exception):
-    pass
-
-
 class ChainNotExist(Exception):
     pass
 

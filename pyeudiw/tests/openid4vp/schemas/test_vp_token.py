@@ -1,5 +1,4 @@
 import pytest
-
 from pydantic import ValidationError
 
 from pyeudiw.openid4vp.schemas.vp_token import VPTokenHeader, VPTokenPayload
@@ -8,7 +7,7 @@ VP_TOKEN = {
     "header": {
         "alg": "ES256",
         "typ": "JWT",
-        "kid": "e0bbf2f1-8c3a-4eab-a8ac-2e8f34db8a47"
+        "kid": "e0bbf2f1-8c3a-4eab-a8ac-2e8f34db8a47",
     },
     "payload": {
         "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
@@ -25,37 +24,41 @@ VP_TOKEN = {
         "kZHJlc3MiLCB7InN0cmVldF9hZGRyZXNzIjogIlNjaHVsc3RyLiAxMiIsICJsb2NhbGl0eSI6ICJTY2h1bHBmb3J0YSIsICJyZWdpb24iOiAiU2FjaHNlbi1BbmhhbHQiLCAiY291bnRyeSI6ICJER"
         "SJ9XQ~WyJjR1ctZl9NVmlJUnp6M0Q1QVNxOUt3IiwgImVtYWlsIiwgIm1heEBob21lLmNvbSJd~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK2p3dCJ9.eyJub25jZSI6ICIyZjlkZWE4YTBkYm"
         "Y1ZGRiN2NlOWQyZmRlOWZiOGJkNiIsICJhdWQiOiAiaHR0cHM6Ly9leGFtcGxlLmNvbS92ZXJpZmllciIsICJpYXQiOiAxNjkwOTYyNzM1fQ.ScCgejwnR7fdF2trKDSJooNKWiz6-dLQGlQzRK-NV"
-        "MSayKWXxj6Ebxwleb2MS_SbSHYHN2GygLw5NNyXV_3TlA"
+        "MSayKWXxj6Ebxwleb2MS_SbSHYHN2GygLw5NNyXV_3TlA",
         # "vp": "<SD-JWT>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>"
-    }
+    },
 }
 
 
 def test_vp_token_header():
-    VPTokenHeader(**VP_TOKEN['header'])
+    VPTokenHeader(**VP_TOKEN["header"])
     # alg is ES256
     # it should fail if alg is not in supported_algorithms
     with pytest.raises(ValidationError):
         VPTokenHeader.model_validate(
-            VP_TOKEN['header'], context={"supported_algorithms": None})
+            VP_TOKEN["header"], context={"supported_algorithms": None}
+        )
     with pytest.raises(ValidationError):
         VPTokenHeader.model_validate(
-            VP_TOKEN['header'], context={"supported_algorithms": []})
+            VP_TOKEN["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
         VPTokenHeader.model_validate(
-            VP_TOKEN['header'], context={"supported_algorithms": ["asd"]})
+            VP_TOKEN["header"], context={"supported_algorithms": ["asd"]}
+        )
 
     VPTokenHeader.model_validate(
-        VP_TOKEN['header'], context={"supported_algorithms": ["ES256"]})
+        VP_TOKEN["header"], context={"supported_algorithms": ["ES256"]}
+    )
 
 
 def test_vp_token_payload():
-    VPTokenPayload(**VP_TOKEN['payload'])
+    VPTokenPayload(**VP_TOKEN["payload"])
     # it should fail on SD-JWT format or missing vp
     VP_TOKEN["payload"]["vp"] = VP_TOKEN["payload"]["vp"].replace("~", ".")
     with pytest.raises(ValidationError):
-        VPTokenPayload(**VP_TOKEN['payload'])
+        VPTokenPayload(**VP_TOKEN["payload"])
     VP_TOKEN["payload"]["vp"] = VP_TOKEN["payload"]["vp"].replace(".", "~")
     del VP_TOKEN["payload"]["vp"]
     with pytest.raises(ValidationError):
-        VPTokenPayload(**VP_TOKEN['payload'])
+        VPTokenPayload(**VP_TOKEN["payload"])

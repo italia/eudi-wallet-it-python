@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
-from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims, build_authorization_request_url
+from pyeudiw.openid4vp.authorization_request import (
+    build_authorization_request_claims,
+    build_authorization_request_url,
+)
 
 
 def test_build_authoriation_request_url():
@@ -14,18 +17,22 @@ def test_build_authoriation_request_url():
     test_cases: list[TestCase] = [
         TestCase(
             scheme="haip",
-            params={"client_id": "https://rp.example",
-                    "request_uri": "https://rp.example/resource_location.jwt"},
+            params={
+                "client_id": "https://rp.example",
+                "request_uri": "https://rp.example/resource_location.jwt",
+            },
             exp="haip://?client_id=https%3A%2F%2Frp.example&https%3A%2F%2Frp.example%2Fresource_location.jwt",
-            explanation="base scheme like haip or eudiw"
+            explanation="base scheme like haip or eudiw",
         ),
         TestCase(
             scheme="https://walletsolution.example",
-            params={"client_id": "https://rp.example",
-                    "request_uri": "https://rp.example/resource_location.jwt"},
+            params={
+                "client_id": "https://rp.example",
+                "request_uri": "https://rp.example/resource_location.jwt",
+            },
             exp="https://walletsolution.example?client_id=https%3A%2F%2Frp.example.org&https%3A%2F%2Frp.example.org%2Fresource_location.jwt",
-            explanation="base scheme is a complete URI location"
-        )
+            explanation="base scheme is a complete URI location",
+        ),
     ]
 
     for i, case in enumerate(test_cases):
@@ -50,36 +57,30 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {
-                        "vc+sd-jwt": {}
-                    },
+                    "format": {"vc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
-                                "path": [
-                                    "$.vct"
-                                ],
+                                "path": ["$.vct"],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1"
-                                }
+                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
+                                },
                             }
                         ]
-                    }
+                    },
                 }
-            ]
-        }
+            ],
+        },
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config)
+    claims = build_authorization_request_claims(client_id, state, response_uri, config)
 
     assert "aud" not in claims
     assert "nonce" in claims
     assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in (
-        "family_name given_name", "given_name family_name")
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -95,36 +96,32 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {
-                        "vc+sd-jwt": {}
-                    },
+                    "format": {"vc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
-                                "path": [
-                                    "$.vct"
-                                ],
+                                "path": ["$.vct"],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1"
-                                }
+                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
+                                },
                             }
                         ]
-                    }
+                    },
                 }
-            ]
-        }
+            ],
+        },
     }
 
     claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_aud)
+        client_id, state, response_uri, config_aud
+    )
 
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
     assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in (
-        "family_name given_name", "given_name family_name")
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -140,35 +137,31 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {
-                        "vc+sd-jwt": {}
-                    },
+                    "format": {"vc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
-                                "path": [
-                                    "$.vct"
-                                ],
+                                "path": ["$.vct"],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1"
-                                }
+                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
+                                },
                             }
                         ]
-                    }
+                    },
                 }
-            ]
-        }
+            ],
+        },
     }
 
     claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_rmode)
+        client_id, state, response_uri, config_rmode
+    )
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
     assert "presentation_definition" in claims
-    assert claims["scope"] in (
-        "family_name given_name", "given_name family_name")
+    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -177,19 +170,18 @@ def test_build_authorization_request_claims():
     config_noscope = {
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
-        "presentation_definition": {
-            "id": "global-id",
-            "input_descriptors": []
-        }
+        "presentation_definition": {"id": "global-id", "input_descriptors": []},
     }
 
     claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope)
+        client_id, state, response_uri, config_noscope
+    )
     assert "scope" not in claims
 
     # case 4: force nonce
     claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
+        client_id, state, response_uri, config_noscope, nonce="predetermined-nonce"
+    )
     assert claims["nonce"] == "predetermined-nonce"
 
     # case 5: custom client_id
@@ -204,27 +196,24 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {
-                        "vc+sd-jwt": {}
-                    },
+                    "format": {"vc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
-                                "path": [
-                                    "$.vct"
-                                ],
+                                "path": ["$.vct"],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1"
-                                }
+                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
+                                },
                             }
                         ]
-                    }
+                    },
                 }
-            ]
-        }
+            ],
+        },
     }
 
     claims = build_authorization_request_claims(
-        "custom-client-id", state, response_uri, config_custom_id)
+        "custom-client-id", state, response_uri, config_custom_id
+    )
     assert claims["iss"] != client_id

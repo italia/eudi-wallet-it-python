@@ -118,7 +118,14 @@ Please consider the following branches:
 
 ### Executing Unit Tests
 
-Once you have activate the virtualenv, unit tests can be executed as show below.
+Once you have activate the virtualenv, further dependencies must be installed as show below.
+
+````
+pip install -r requirements-dev.txt
+
+````
+
+Therefore the unit tests can be executed as show below.
 
 ````
 pytest pyeudiw -x
@@ -130,6 +137,23 @@ you can run the test by passing the mon user and password in this way
 ````
 PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 ````
+
+### Executing integration tests
+
+iam-proxy-italia project must be configured and in execution.
+
+Integrations tests checks bot hthe cross device flow and the same device flow.
+
+The cross device flow requires `playwrite` to be installed.
+
+````
+cd examples/satosa/integration_tests
+
+playwrite install
+
+PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
+````
+
 
 
 ## Authors
