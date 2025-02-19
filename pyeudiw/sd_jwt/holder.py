@@ -63,7 +63,7 @@ class SDJWTHolder(SDJWTCommon):
 
     def create_presentation(
         self, 
-        claims_to_disclose: Union[dict, True, None],
+        claims_to_disclose: Union[dict, bool, None],
         nonce: Union[str, None] = None, 
         aud: Union[str, None] = None, 
         holder_key: Union[KeyLike, None] = None, 
@@ -129,7 +129,7 @@ class SDJWTHolder(SDJWTCommon):
     def _select_disclosures(
             self, 
             sd_jwt_claims: Union[bytes, list, dict], 
-            claims_to_disclose: Union[dict, True, None]) -> Union[dict, list, None]:
+            claims_to_disclose: Union[dict, bool, None]) -> Union[dict, list, None]:
         """
         Recursively process the claims in sd_jwt_claims. In each
         object found therein, look at the SD_DIGESTS_KEY. If it
@@ -161,7 +161,7 @@ class SDJWTHolder(SDJWTCommon):
     def _select_disclosures_list(
             self, 
             sd_jwt_claims: list, 
-            claims_to_disclose: Union[list, True, None]) -> list:
+            claims_to_disclose: Union[list, bool, None]) -> list:
         
         """
         Process the claims in a list.
@@ -251,7 +251,7 @@ class SDJWTHolder(SDJWTCommon):
     def _select_disclosures_dict(
             self, 
             sd_jwt_claims: dict, 
-            claims_to_disclose: Union[dict, True, None]):
+            claims_to_disclose: Union[dict, bool, None]) -> dict:
         """
         Process the claims in a dictionary.
 
