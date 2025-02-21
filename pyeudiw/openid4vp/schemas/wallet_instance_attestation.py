@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, HttpUrl, field_validator
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.openid4vp.schemas.cnf_schema import CNFSchema
 from pyeudiw.tools.schema_utils import check_algorithm
@@ -28,12 +28,11 @@ class WalletInstanceAttestationHeader(BaseModel):
     alg: str
     typ: Literal["wallet-attestation+jwt"]
     kid: str
-    x5c: Optional[List[str]] = None
     trust_chain: Optional[List[str]] = None
 
     @field_validator("alg")
     @classmethod
-    def _check_alg(cls, alg, info: FieldValidationInfo):
+    def _check_alg(cls, alg, info: ValidationInfo):
         return check_algorithm(alg, info)
 
 
@@ -42,14 +41,15 @@ class WalletInstanceAttestationPayload(BaseModel):
     sub: str
     iat: int
     exp: int
-    type: Literal["WalletInstanceAttestation"]
-    policy_uri: HttpUrl
-    tos_uri: HttpUrl
-    logo_uri: HttpUrl
-    attested_security_context: HttpUrl
+    aal: HttpUrl
     cnf: CNFSchema
-    authorization_endpoint: str
-    response_types_supported: List[str]
-    vp_formats_supported: VPFormatSchema
-    request_object_signing_alg_values_supported: List[str]
-    presentation_definition_uri_supported: bool
+    # Wallet Capabilities
+    type: Optional[Literal["WalletInstanceAttestation"]] = None
+    policy_uri: Optional[HttpUrl] = None
+    tos_uri: Optional[HttpUrl] = None
+    logo_uri: Optional[HttpUrl] = None
+    authorization_endpoint: Optional[str] = None
+    response_types_supported: Optional[List[str]] = None
+    vp_formats_supported: Optional[VPFormatSchema] = None
+    request_object_signing_alg_values_supported: Optional[List[str]] = None
+    presentation_definition_uri_supported: Optional[bool] = None

@@ -8,7 +8,11 @@ isort
 autoflake
 bandit
 autopep8
+black
 beautifulsoup4
 lxml
 freezegun
 html-linter
+sphinx
+sphinx_rtd_theme
+playwright

@@ -5,7 +5,7 @@ import pyqrcode
 
 
 class QRCode:
-    def __init__(self, data: str, size: int, color: str):
+    def __init__(self, data: str, size: int, color: str, **kwargs):
         """
         Create a QR code from the given data
         :param data: The data to be encoded
@@ -37,7 +37,7 @@ class QRCode:
         :return: The svg data for html, base64 encoded
         :rtype: str
         """
-        return base64.b64encode(self.svg.encode()).decode('utf-8')
+        return base64.b64encode(self.svg.encode()).decode("utf-8")
 
     def to_html(self) -> str:
         """

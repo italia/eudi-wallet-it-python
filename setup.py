@@ -39,9 +39,10 @@ setup(
         ]
     },
     install_requires=[
-        "cryptojwt>=1.8.2,<1.9",
+        "cryptojwt>=1.9,<1.10",
+        "pydantic>=2.10,<2.11",
         "pyqrcode>=1.2,<1.3",
-        "pydantic>=2.0,<2.2"
+        "pem>=23.1,<23.2"
     ],
     extra_require={
         "satosa": [
@@ -50,11 +51,12 @@ setup(
             "satosa>=8.4,<8.6",
             "jinja2>=3.0,<4",
             "pymongo>=4.4.1,<4.5",
-            'sd-jwt @ git+https://github.com/danielfett/sd-jwt.git'
+            "requests>=2.2,<2.4",
+            "pymdoccbor @ git+https://github.com/peppelinux/pyMDOC-CBOR.git"
         ],
         "federation": [
-            "asyncio"
-            "requests"
+            "asyncio>=4,<4.1",
+            "aiohttp>=3.8,<3.9"
         ]
     }
 )

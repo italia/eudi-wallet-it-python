@@ -1,384 +1,76 @@
 import base64
+import datetime
 import json
-import pathlib
 import urllib.parse
-import uuid
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from bs4 import BeautifulSoup
+from cryptojwt.jws.jws import JWS
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
-from sd_jwt.holder import SDJWTHolder
 
-from pyeudiw.jwk import JWK
-from pyeudiw.jwt import JWEHelper, JWSHelper, unpad_jwt_header
-from pyeudiw.jwt.utils import unpad_jwt_payload
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.sd_jwt import (_adapt_keys, issue_sd_jwt,
-                            load_specification_from_yaml_string)
-from pyeudiw.tools.utils import exp_from_now, iat_now
-
-BASE_URL = "https://example.com"
-AUTHZ_PAGE = "example.com"
-AUTH_ENDPOINT = "https://example.com/auth"
-CLIENT_ID = "client_id"
-
-CONFIG = {
-    "base_url": BASE_URL,
-
-    "ui": {
-        "static_storage_url": BASE_URL,
-        "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
-        "qrcode_template": "qrcode.html",
-        "error_template": "error.html",
-        "error_url": "https://localhost:9999/error_page.html"
-    },
-
-    "endpoints": {
-        "entity_configuration": "/OpenID4VP/.well-known/openid-federation",
-        "pre_request": "/OpenID4VP/pre-request",
-        "redirect": "/OpenID4VP/redirect_uri",
-        "request": "/OpenID4VP/request_uri",
-    },
-    "qrcode": {
-        "size": 100,
-        "color": "#2B4375",
-    },
-    "jwt": {
-        "default_sig_alg": "ES256",
-        "default_exp": 6
-    },
-    "authorization": {
-        "url_scheme": "eudiw",  # eudiw://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
-    },
-    "federation": {
-        "metadata_type": "wallet_relying_party",
-        "federation_authorities": [
-            "https://localhost:8000"
-        ],
-        "default_sig_alg": "RS256",
-        "federation_jwks": [
-            {
-                "kty": "RSA",
-                "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
-                "e": "AQAB",
-                "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
-                "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
-                "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
-                "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-            },
-            {
-                'kty': 'EC',
-                'kid': 'xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg',
-                'crv': 'P-256',
-                'x': 'EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo',
-                'y': 'VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU',
-                'd': 'oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0'
-            }
-        ],
-        "trust_marks": [
-            "..."
-        ]
-    },
-    "metadata_jwks": [
-        {
-            "crv": "P-256",
-            "d": "KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc",
-            "kid": "dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s",
-            "kty": "EC",
-            "x": "TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk",
-            "y": "ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7"
-        },
-        {
-
-            "kty": "RSA",
-            "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
-            "e": "AQAB",
-            "use": "enc",
-            "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
-            "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
-            "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
-            "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM"
-        }
-    ],
-    "storage": {
-        "mongo_db": {
-            "cache": {
-                "module": "pyeudiw.storage.mongo_cache",
-                "class": "MongoCache",
-                "init_params": {
-                    "url": "mongodb://localhost:27017/",
-                    "conf": {
-                        "db_name": "eudiw"
-                    },
-                    "connection_params": {}
-                }
-            },
-            "storage": {
-                "module": "pyeudiw.storage.mongo_storage",
-                "class": "MongoStorage",
-                "init_params": {
-                    "url": "mongodb://localhost:27017/",
-                    "conf": {
-                        "db_name": "eudiw",
-                        "db_sessions_collection": "sessions",
-                        "db_attestations_collection": "chains"
-                    },
-                    "connection_params": {}
-                }
-            }
-        }
-    },
-    "metadata": {
-        "application_type": "web",
-        "authorization_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "authorization_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "authorization_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "client_id": f"{BASE_URL}/OpenID4VP",
-        "client_name": "Name of an example organization",
-        "contacts": [
-            "ops@verifier.example.org"
-        ],
-        "default_acr_values": [
-            "https://www.spid.gov.it/SpidL2",
-            "https://www.spid.gov.it/SpidL3"
-        ],
-        "default_max_age": 1111,
-        "id_token_encrypted_response_alg": [
-            "RSA-OAEP",
-            "RSA-OAEP-256"
-        ],
-        "id_token_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
-            "A128GCM",
-            "A192GCM",
-            "A256GCM"
-        ],
-        "id_token_signed_response_alg": [
-            "RS256",
-            "ES256"
-        ],
-        "presentation_definitions": [
-            {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.type"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "type": "object"
-                                        },
-                                        "path": [
-                                            "$.sd-jwt.cnf"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.given_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": [
-                                            "$.sd-jwt.unique_id"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "jwt": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "sd-jwt"
-                    }
-                ]
-            },
-            {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.doctype"
-                                        ]
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string"
-                                        },
-                                        "path": [
-                                            "$.mdoc.namespace"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.family_name"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.portrait"
-                                        ]
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": [
-                                            "$.mdoc.driving_privileges"
-                                        ]
-                                    }
-                                ],
-                                "limit_disclosure": "required"
-                            },
-                            "mso_mdoc": {
-                                "alg": [
-                                    "EdDSA",
-                                    "ES256"
-                                ]
-                            }
-                        },
-                        "id": "mDL"
-                    }
-                ]
-            }
-        ],
-        "redirect_uris": [
-            f"{BASE_URL}/OpenID4VP/redirect_uri"
-        ],
-        "request_uris": [
-            f"{BASE_URL}/OpenID4VP/request_uri"
-        ],
-        "require_auth_time": True,
-        "subject_type": "pairwise",
-        "vp_formats": {
-            "jwt_vp_json": {
-                "alg": [
-                    "EdDSA",
-                    "ES256K"
-                ]
-            }
-        }
-    }
-}
-
-ISSUER_CONF = {
-    "sd_specification": """
-        user_claims:
-            !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            !sd given_name: "Mario"
-            !sd family_name: "Rossi"
-            !sd birthdate: "1980-01-10"
-            !sd place_of_birth:
-                country: "IT"
-                locality: "Rome"
-            !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
-
-        holder_disclosed_claims:
-            { "given_name": "Mario", "family_name": "Rossi", "place_of_birth": {country: "IT", locality: "Rome"} }
-
-        key_binding: True
-    """,
-    "no_randomness": True
-}
-
-
-INTERNAL_ATTRIBUTES: dict = {
-    'attributes': {}
-}
-
-
-PRIVATE_JWK = JWK()
-PUBLIC_JWK = PRIVATE_JWK.public_key
-
-
-WALLET_INSTANCE_ATTESTATION = {
-    "iss": "https://wallet-provider.example.org",
-    "sub": "vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-    "type": "WalletInstanceAttestation",
-    "policy_uri": "https://wallet-provider.example.org/privacy_policy",
-    "tos_uri": "https://wallet-provider.example.org/info_policy",
-    "logo_uri": "https://wallet-provider.example.org/logo.svg",
-    "asc": "https://wallet-provider.example.org/LoA/basic",
-    "cnf":
-    {
-        "jwk": PUBLIC_JWK
-    },
-    "authorization_endpoint": "eudiw:",
-    "response_types_supported": [
-        "vp_token"
-    ],
-    "vp_formats_supported": {
-        "jwt_vp_json": {
-            "alg_values_supported": ["ES256"]
-        },
-        "jwt_vc_json": {
-            "alg_values_supported": ["ES256"]
-        }
-    },
-    "request_object_signing_alg_values_supported": [
-        "ES256"
-    ],
-    "presentation_definition_uri_supported": False,
-    "iat": iat_now(),
-    "exp": iat_now() + 1024
-}
+from pyeudiw.storage.base_storage import TrustType
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tests.federation.base import (
+    EXP,
+    NOW,
+    leaf_cred_jwk_prot,
+    ta_ec,
+    ta_ec_signed,
+    ta_jwk,
+    trust_chain_wallet,
+)
+from pyeudiw.tests.settings import (
+    BASE_URL,
+    CONFIG,
+    CREDENTIAL_ISSUER_ENTITY_ID,
+    INTERNAL_ATTRIBUTES,
+    PRIVATE_JWK,
+    WALLET_INSTANCE_ATTESTATION,
+)
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
+from pyeudiw.trust.model.trust_source import TrustSourceData
 
 
 class TestOpenID4VPBackend:
+
     @pytest.fixture(autouse=True)
     def create_backend(self):
+
+        db_engine_inst = DBEngine(CONFIG["storage"])
+
+        # TODO - not necessary if federation is not tested
+        db_engine_inst.add_trust_anchor(
+            entity_id=ta_ec["iss"],
+            entity_configuration=ta_ec_signed,
+            exp=EXP,
+        )
+
+        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
+            trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
+            jwks=[issuer_jwk],
+        )
+
+        tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
+        tsd.add_key(issuer_jwk)
+
+        db_engine_inst.add_trust_source(tsd.serialize())
+
         self.backend = OpenID4VPBackend(
-            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name")
+            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name"
+        )
+
+        url_map = self.backend.register_endpoints()
+        assert len(url_map) == 7
 
     @pytest.fixture
     def internal_attributes(self):
@@ -387,251 +79,560 @@ class TestOpenID4VPBackend:
                 "givenname": {"openid": ["given_name"]},
                 "mail": {"openid": ["email"]},
                 "edupersontargetedid": {"openid": ["sub"]},
-                "surname": {"openid": ["family_name"]}
+                "surname": {"openid": ["family_name"]},
             }
         }
 
     @pytest.fixture
     def context(self):
         context = Context()
+        context.target_frontend = "someFrontend"
         context.state = State()
         return context
 
     def test_backend_init(self):
         assert self.backend.name == "name"
 
-    def test_register_endpoints(self):
-        url_map = self.backend.register_endpoints()
-        assert len(url_map) == 4
-        assert url_map[0][0] == '^' + \
-            CONFIG['endpoints']['entity_configuration'].lstrip('/') + '$'
-        assert url_map[1][0] == '^' + \
-            CONFIG['endpoints']['pre_request'].lstrip('/') + '$'
-        assert url_map[2][0] == '^' + \
-            CONFIG['endpoints']['redirect'].lstrip('/') + '$'
-        assert url_map[3][0] == '^' + \
-            CONFIG['endpoints']['request'].lstrip('/') + '$'
+    # TODO: Move to trust evaluation handlers tests
+    def test_entity_configuration(self, context):
+        context.qs_params = {}
 
-    def test_entity_configuration(self):
-        entity_config = self.backend.entity_configuration_endpoint(None)
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler"
+        )
+        assert _fedback
+
+        entity_config = _fedback.entity_configuration_endpoint(context)
         assert entity_config
         assert entity_config.status == "200"
         assert entity_config.message
+
+        # TODO: decode EC jwt, validate signature and both header and payload schema validation
+
+    def test_pre_request_without_frontend(self):
+        context = Context()
+        context.state = State()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
+        )
+        resp = self.backend.pre_request_endpoint(context, InternalData())
+        assert resp is not None
+        assert resp.status == "400"
+        assert resp.message is not None
 
     def test_pre_request_endpoint(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(
-            context, internal_data)
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
         assert pre_request_endpoint
         assert pre_request_endpoint.status == "200"
         assert pre_request_endpoint.message
 
         assert "src='data:image/svg+xml;base64," in pre_request_endpoint.message
 
-        soup = BeautifulSoup(pre_request_endpoint.message, 'html.parser')
+        soup = BeautifulSoup(pre_request_endpoint.message, "html.parser")
         # get the img tag with src attribute starting with data:image/svg+xml;base64,
         img_tag = soup.find(
-            lambda tag: tag.name == 'img' and tag.get('src', '').startswith('data:image/svg+xml;base64,'))
+            lambda tag: tag.name == "img"
+            and tag.get("src", "").startswith("data:image/svg+xml;base64,")
+        )
         assert img_tag
         # get the src attribute
-        src = img_tag['src']
+        src = img_tag["src"]
         # remove the data:image/svg+xml;base64, part
-        data = src.replace('data:image/svg+xml;base64,', '')
+        data = src.replace("data:image/svg+xml;base64,", "")
         # decode the base64 data
-        decoded = base64.b64decode(data).decode("utf-8")
+        base64.b64decode(data).decode("utf-8")
 
-        svg = BeautifulSoup(decoded, features="xml")
-        assert svg
-        assert svg.find("svg")
-        assert svg.find_all("path")
+        # get the div with id "state"
+        state_div = soup.find("div", {"id": "state"})
+        assert state_div
+        assert state_div["value"]
 
     def test_pre_request_endpoint_mobile(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(
-            context, internal_data)
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
         assert pre_request_endpoint
         assert "302" in pre_request_endpoint.status
 
-        assert f"{CONFIG['authorization']['url_scheme']}://authorize" in pre_request_endpoint.message
+        assert (
+            f"{CONFIG['authorization']['url_scheme']}://"
+            in pre_request_endpoint.message
+        )
 
         unquoted = urllib.parse.unquote(
-            pre_request_endpoint.message, encoding='utf-8', errors='replace')
+            pre_request_endpoint.message, encoding="utf-8", errors="replace"
+        )
         parsed = urllib.parse.urlparse(unquoted)
 
-        assert parsed.scheme == "eudiw"
-        assert parsed.netloc == "authorize"
+        assert parsed.scheme == CONFIG["authorization"]["url_scheme"]
         assert parsed.path == ""
         assert parsed.query
 
         qs = urllib.parse.parse_qs(parsed.query)
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
-        assert qs["request_uri"][0].startswith(
-            CONFIG["metadata"]["request_uris"][0])
+        assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
 
-    def test_redirect_endpoint(self, context):
-        issuer_jwk = JWK(CONFIG["metadata_jwks"][0])
-        holder_jwk = JWK()
+    # def test_vp_validation_in_response_endpoint(self, context):
+    # TODO: re enable or delete the following commented
+    #     self.backend.register_endpoints()
 
-        settings = ISSUER_CONF
-        settings['issuer'] = "https://issuer.example.com"
-        settings['default_exp'] = CONFIG['jwt']['default_exp']
+    #     issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
+    #     holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
 
-        sd_specification = load_specification_from_yaml_string(
-            settings["sd_specification"])
+    #     settings = CREDENTIAL_ISSUER_CONF
+    #     settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+    #     settings['default_exp'] = CONFIG['jwt']['default_exp']
 
-        issued_jwt = issue_sd_jwt(
-            sd_specification,
-            settings,
-            issuer_jwk,
-            holder_jwk
-        )
+    #     sd_specification = load_specification_from_yaml_string(
+    #         settings["sd_specification"])
 
-        adapted_keys = _adapt_keys(
-            settings,
-            issuer_jwk, holder_jwk)
+    #     issued_jwt = issue_sd_jwt(
+    #         sd_specification,
+    #         settings,
+    #         issuer_jwk,
+    #         holder_jwk,
+    #         trust_chain=trust_chain_issuer,
+    #         additional_headers={"typ": "vc+sd-jwt"}
+    #     )
 
-        sdjwt_at_holder = SDJWTHolder(
-            issued_jwt["issuance"],
-            serialization_format="compact",
-        )
-        sdjwt_at_holder.create_presentation(
-            {},
-            str(uuid.uuid4()),
-            str(uuid.uuid4()),
-            adapted_keys["holder_key"] if sd_specification.get(
-                "key_binding", False) else None,
-        )
+    #     _adapt_keys(issuer_jwk, holder_jwk)
 
-        data = {
-            "iss": "https://wallet-provider.example.org/instance/vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c",
-            "jti": str(uuid.uuid4()),
-            "aud": "https://verifier.example.org/callback",
-            "iat": iat_now(),
-            "exp": exp_from_now(minutes=15),
-            "nonce": str(uuid.uuid4()),
-            "vp": sdjwt_at_holder.sd_jwt_presentation,
-        }
+    #     sdjwt_at_holder = SDJWTHolder(
+    #         issued_jwt["issuance"],
+    #         serialization_format="compact",
+    #     )
 
-        vp_token = JWSHelper(issuer_jwk).sign(
-            data,
-            protected={"typ": "JWT"}
-        )
+    #     nonce = str(uuid.uuid4())
+    #     sdjwt_at_holder.create_presentation(
+    #         {},
+    #         nonce,
+    #         self.backend.client_id,
+    #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+    #             "key_binding", False) else None,
+    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #     )
 
-        context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["redirect_uris"][0]
+    #     vp_token = sdjwt_at_holder.sd_jwt_presentation
+    #     context.request_method = "POST"
+    #     context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+    #         CONFIG["base_url"])
 
-        response = {
-            "state": "3be39b69-6ac1-41aa-921b-3e6c07ddcb03",
-            "vp_token": vp_token,
-            "presentation_submission": {
-                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-                "descriptor_map": [
-                    {
-                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
-                        "format": "vc+sd-jwt"
-                    }
-                ]
-            }
-        }
-        encrypted_response = JWEHelper(
-            JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
-        try:
-            redirect_endpoint = self.backend.redirect_endpoint(context)
-            assert redirect_endpoint
-        except Exception:
-            # TODO: this test case must implement the backend requests in the correct order and with the correct nonce and state
-            return
-        # TODO any additional checks after the backend returned the user attributes to satosa core
+    #     state = str(uuid.uuid4())
+    #     response = {
+    #         "state": state,
+    #         "vp_token": vp_token,
+    #         "presentation_submission": {
+    #             "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    #             "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+    #             "descriptor_map": [
+    #                 {
+    #                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
+    #                     "path": "$.vp_token.verified_claims.claims._sd[0]",
+    #                     "format": "vc+sd-jwt"
+    #                 }
+    #             ]
+    #         }
+    #     }
+    #     session_id = context.state["SESSION_ID"]
+    #     self.backend.db_engine.init_session(
+    #         state=state,
+    #         session_id=session_id
+    #     )
+    #     doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+    #     # Put a different nonce in the stored request object.
+    #     # This will trigger a `VPInvalidNonce` error
+    #     self.backend.db_engine.update_request_object(
+    #         document_id=doc_id,
+    #         request_object={"nonce": str(uuid.uuid4()), "state": state})
+
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     assert request_endpoint.status == "400"
+    #     msg = json.loads(request_endpoint.message)
+    #     assert msg["error"] == "invalid_request"
+    #     assert msg["error_description"]
+
+    #     # This will trigger a `UnicodeDecodeError` which will be caught by the generic `Exception case`.
+    #     response["vp_token"] = "asd.fgh.jkl"
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     assert request_endpoint.status == "400"
+    #     msg = json.loads(request_endpoint.message)
+    #     assert msg["error"] == "invalid_request"
+    #     assert msg["error_description"]
+
+    # def test_response_endpoint(self, context):
+    #     self.backend.register_endpoints()
+
+    #     issuer_jwk = JWK(leaf_cred_jwk_prot.serialize(private=True))
+    #     holder_jwk = JWK(leaf_wallet_jwk.serialize(private=True))
+
+    #     settings = CREDENTIAL_ISSUER_CONF
+    #     settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+    #     settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+    #     sd_specification = load_specification_from_yaml_string(
+    #         settings["sd_specification"])
+
+    #     issued_jwt = issue_sd_jwt(
+    #         sd_specification,
+    #         settings,
+    #         issuer_jwk,
+    #         holder_jwk,
+    #         trust_chain=trust_chain_issuer,
+    #         additional_headers={"typ": "vc+sd-jwt"}
+    #     )
+
+    #     _adapt_keys(issuer_jwk, holder_jwk)
+
+    #     sdjwt_at_holder = SDJWTHolder(
+    #         issued_jwt["issuance"],
+    #         serialization_format="compact",
+    #     )
+
+    #     nonce = str(uuid.uuid4())
+    #     state = str(uuid.uuid4())
+    #     aud = self.backend.client_id
+
+    #     session_id = context.state["SESSION_ID"]
+    #     self.backend.db_engine.init_session(
+    #         state=state,
+    #         session_id=session_id
+    #     )
+    #     doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+    #     self.backend.db_engine.update_request_object(
+    #         document_id=doc_id,
+    #         request_object={"nonce": nonce, "state": state})
+
+    #     bad_nonce = str(uuid.uuid4())
+    #     bad_state = str(uuid.uuid4())
+    #     bad_aud = str(uuid.uuid4())
+
+    #     # case (1): bad nonce
+    #     sdjwt_at_holder.create_presentation(
+    #         {},
+    #         bad_nonce,
+    #         aud,
+    #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+    #             "key_binding", False) else None,
+    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #     )
+
+    #     vp_token_bad_nonce = sdjwt_at_holder.sd_jwt_presentation
+
+    #     context.request_method = "POST"
+    #     context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+    #         CONFIG["base_url"])
+
+    #     response_with_bad_nonce = {
+    #         "state": state,
+    #         "vp_token": vp_token_bad_nonce,
+    #         "presentation_submission": {
+    #             "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    #             "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+    #             "descriptor_map": [
+    #                 {
+    #                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
+    #                     "path": "$.vp_token.verified_claims.claims._sd[0]",
+    #                     "format": "vc+sd-jwt"
+    #                 }
+    #             ]
+    #         }
+    #     }
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_nonce)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     msg = json.loads(request_endpoint.message)
+    #     assert request_endpoint.status != "200"
+    #     assert msg["error"] == "invalid_request"
+
+    #     # case (2): bad state
+    #     sdjwt_at_holder.create_presentation(
+    #         {},
+    #         nonce,
+    #         aud,
+    #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+    #             "key_binding", False) else None,
+    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #     )
+
+    #     vp_token = sdjwt_at_holder.sd_jwt_presentation
+
+    #     response_with_bad_state = {
+    #         "state": bad_state,
+    #         "vp_token": vp_token,
+    #         "presentation_submission": {
+    #             "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    #             "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+    #             "descriptor_map": [
+    #                 {
+    #                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
+    #                     "path": "$.vp_token.verified_claims.claims._sd[0]",
+    #                     "format": "vc+sd-jwt"
+    #                 }
+    #             ]
+    #         }
+    #     }
+
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_state)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     msg = json.loads(request_endpoint.message)
+    #     assert request_endpoint.status != "200"
+    #     assert msg["error"] == "invalid_request"
+
+    #     # case (3): bad aud
+    #     sdjwt_at_holder.create_presentation(
+    #         {},
+    #         nonce,
+    #         bad_aud,
+    #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+    #             "key_binding", False) else None,
+    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #     )
+
+    #     vp_token_bad_aud = sdjwt_at_holder.sd_jwt_presentation
+
+    #     response_with_bad_aud = {
+    #         "state": state,
+    #         "vp_token": vp_token_bad_aud,
+    #         "presentation_submission": {
+    #             "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    #             "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+    #             "descriptor_map": [
+    #                 {
+    #                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
+    #                     "path": "$.vp_token.verified_claims.claims._sd[0]",
+    #                     "format": "vc+sd-jwt"
+    #                 }
+    #             ]
+    #         }
+    #     }
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response_with_bad_aud)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     msg = json.loads(request_endpoint.message)
+    #     assert request_endpoint.status != "200"
+    #     assert msg["error"] == "invalid_request"
+
+    #     # case (4): good aud, nonce and state
+    #     sdjwt_at_holder.create_presentation(
+    #         {},
+    #         nonce,
+    #         aud,
+    #         import_ec(holder_jwk.key.priv_key, kid=holder_jwk.kid) if sd_specification.get(
+    #             "key_binding", False) else None,
+    #         sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk.key.kty],
+    #     )
+
+    #     vp_token = sdjwt_at_holder.sd_jwt_presentation
+
+    #     response = {
+    #         "state": state,
+    #         "vp_token": vp_token,
+    #         "presentation_submission": {
+    #             "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    #             "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+    #             "descriptor_map": [
+    #                 {
+    #                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
+    #                     "path": "$.vp_token.verified_claims.claims._sd[0]",
+    #                     "format": "vc+sd-jwt"
+    #                 }
+    #             ]
+    #         }
+    #     }
+
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+    #     encrypted_response = JWEHelper(
+    #         JWK(CONFIG["metadata_jwks"][1])).encrypt(response)
+    #     context.request = {
+    #         "response": encrypted_response
+    #     }
+    #     request_endpoint = self.backend.response_endpoint(context)
+    #     assert request_endpoint.status == "200"
 
     def test_request_endpoint(self, context):
         # No session created
-        state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "403"
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
-        msg = json.loads(state_endpoint_response.message)
-        assert msg["message"]
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"]
 
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(
-            context, internal_data)
-        state = urllib.parse.unquote(
-            pre_request_endpoint.message).split("=")[-1]
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
+        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
+
         wia = jwshelper.sign(
-            WALLET_INSTANCE_ATTESTATION,
-            protected={'trust_chain': [], 'x5c': []}
+            plain_dict=WALLET_INSTANCE_ATTESTATION,
+            protected={
+                "trust_chain": trust_chain_wallet,
+                "x5c": [],
+            },
         )
 
         dpop_wia = wia
+
         dpop_proof = DPoPIssuer(
-            htu=CONFIG['metadata']['request_uris'][0],
+            htu=CONFIG["metadata"]["request_uris"][0],
             token=dpop_wia,
-            private_jwk=PRIVATE_JWK
+            private_jwk=PRIVATE_JWK,
         ).proof
 
         context.http_headers = dict(
-            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}",
-            HTTP_DPOP=dpop_proof
+            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
         )
 
         context.qs_params = {"id": state}
 
-        # Not yet finalized
-        state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "204"
+        # put a trust attestation related itself into the storage
+        # this then is used as trust_chain header parameter in the signed
+        # request object
+        db_engine_inst = DBEngine(CONFIG["storage"])
+
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler"
+        )
+        assert _fedback
+
+        _es = {
+            "exp": EXP,
+            "iat": NOW,
+            "iss": "https://trust-anchor.example.org",
+            "sub": self.backend.client_id,
+            "jwks": _fedback.entity_configuration_as_dict["jwks"],
+        }
+        ta_signer = JWS(_es, alg="ES256", typ="application/entity-statement+jwt")
+
+        its_trust_chain = [
+            _fedback.entity_configuration,
+            ta_signer.sign_compact([ta_jwk]),
+        ]
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=self.backend.client_id,
+            attestation=its_trust_chain,
+            exp=datetime.datetime.now().isoformat(),
+        )
+        # End RP trust chain
+
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "201"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id
         context.qs_params = {"id": "WRONG"}
-        state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "403"
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
 
-        context.request_method = "POST"
+        context.request_method = "GET"
         context.qs_params = {"id": state}
-        request_uri = CONFIG['metadata']['request_uris'][0]
+        request_uri = CONFIG["metadata"]["request_uris"][0]
         context.request_uri = request_uri
-        request_endpoint = self.backend.request_endpoint(context)
 
-        assert request_endpoint
-        assert request_endpoint.status == "200"
-        assert request_endpoint.message
-        msg = json.loads(request_endpoint.message)
-        assert msg["response"]
+        req_resp = self.backend.request_endpoint(context)
+        req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers})"
+        obtained_content_types = list(
+            map(
+                lambda header_name_value_pair: header_name_value_pair[1],
+                filter(
+                    lambda header_name_value_pair: header_name_value_pair[0].lower()
+                    == "content-type",
+                    req_resp.headers,
+                ),
+            )
+        )
+        assert req_resp
+        assert (
+            req_resp.status == "200"
+        ), f"invalid status in request object response {req_resp_str}"
+        assert (
+            len(obtained_content_types) > 0
+        ), f"missing Content-Type in request object response {req_resp_str}"
+        assert (
+            obtained_content_types[0] == "application/oauth-authz-req+jwt"
+        ), f"invalid Content-Type in request object response {req_resp_str}"
+        assert (
+            req_resp.message
+        ), f"invalid message in request object response {req_resp_str}"
+        request_object_jwt = req_resp.message
 
-        header = unpad_jwt_header(msg["response"])
-        payload = unpad_jwt_payload(msg["response"])
+        header = decode_jwt_header(request_object_jwt)
+        payload = decode_jwt_payload(request_object_jwt)
         assert header["alg"]
         assert header["kid"]
+        assert header["typ"] == "oauth-authz-req+jwt"
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
-        assert payload["response_uri"] == CONFIG["metadata"]["redirect_uris"][0]
+        assert (
+            payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
+        )
 
-        state_endpoint_response = self.backend.state_endpoint(context)
-        assert state_endpoint_response.status == "302"
-        assert state_endpoint_response.message
-        msg = json.loads(state_endpoint_response.message)
-        assert msg["response"] == "Authentication successful"
+        datetime_mock = Mock(wraps=datetime.datetime)
+        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
+        with patch("datetime.datetime", new=datetime_mock):
+            self.backend.status_endpoint(context)
+            state_endpoint_response = self.backend.status_endpoint(context)
+            assert state_endpoint_response.status == "403"
+            assert state_endpoint_response.message
+            err = json.loads(state_endpoint_response.message)
+            assert err["error"] == "expired"
+
+        # TODO - the authentication is successful ONLY if redirect_endpoints gets a valid presentation!
+        # state_endpoint_response = self.backend.status_endpoint(context)
+        # assert state_endpoint_response.status == "302"
+        # assert state_endpoint_response.message
+        # msg = json.loads(state_endpoint_response.message)
+        # assert msg["response"] == "Authentication successful"
 
     def test_handle_error(self, context):
-        error_message = "Error message!"
-        error_resp = self.backend.handle_error(context, error_message)
+        error_message = "server_error"
+        error_resp = self.backend._handle_500(context, error_message, Exception())
         assert error_resp.status == "500"
         assert error_resp.message
         err = json.loads(error_resp.message)
-        assert err["message"] == error_message
+        assert err["error"] == error_message

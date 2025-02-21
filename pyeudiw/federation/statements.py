@@ -1,66 +1,90 @@
+from __future__ import annotations
+
+import logging
 from copy import deepcopy
+
+import pydantic
+
 from pyeudiw.federation.exceptions import (
-    UnknownKid,
+    InvalidEntityHeader,
+    InvalidEntityStatementPayload,
     MissingJwksClaim,
     MissingTrustMark,
     TrustAnchorNeeded,
+    UnknownKid,
 )
-from pyeudiw.federation.http_client import http_get
-from pyeudiw.jwt.utils import unpad_jwt_payload, unpad_jwt_header
-from pyeudiw.jwt import JWSHelper
-
-import asyncio
-import json
-import logging
-import requests
-
-
-try:
-    pass
-except ImportError:  # pragma: no cover
-    pass
-
+from pyeudiw.federation.schemas.entity_configuration import (
+    EntityConfigurationHeader,
+    EntityStatementPayload,
+)
+from pyeudiw.jwk.jwks import find_jwk_by_kid
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.tools.utils import get_http_url
 
 OIDCFED_FEDERATION_WELLKNOWN_URL = ".well-known/openid-federation"
-logger = logging.getLogger("pyeudiw.federation")
+logger = logging.getLogger(__name__)
 
 
-def jwks_from_jwks_uri(jwks_uri: str, httpc_params: dict = {}) -> list:
-    return [json.loads(asyncio.run(http_get([jwks_uri], httpc_params)))]  # pragma: no cover
-
-
-def get_federation_jwks(jwt_payload: dict, httpc_params: dict = {}):
-    return (
-        jwt_payload.get("jwks", {}).get("keys", [])
-    )
-
-
-def get_http_url(urls: list, httpc_params: dict = {}, http_async: bool = True) -> list:
-    if http_async:
-        responses = asyncio.run(
-            http_get(urls, httpc_params))  # pragma: no cover
-    else:
-        responses = []
-        for i in urls:
-            res = requests.get(i, **httpc_params)  # nosec - B113
-            responses.append(res.content.decode())
-    return responses
-
-
-def get_entity_statements(urls: list, httpc_params: dict = {}) -> list:
+def get_federation_jwks(jwt_payload: dict) -> list[dict]:
     """
-    Fetches an entity statement/configuration
+    Returns the list of JWKS inside a JWT payload.
+
+    :param jwt_payload: the jwt payload from where extract the JWKs.
+    :type jwt_payload: dict
+
+    :returns: A list of entity jwk's keys.
+    :rtype: list[dict]
     """
-    if isinstance(urls, str):
-        urls = [urls]  # pragma: no cover
+
+    jwks = jwt_payload.get("jwks", {})
+    keys = jwks.get("keys", [])
+    return keys
+
+
+def get_entity_statements(
+    urls: list[str] | str, httpc_params: dict, http_async: bool = True
+) -> list[bytes]:
+    """
+    Fetches an entity statement from the specified urls.
+
+    :param urls: The url or a list of url where perform the GET HTTP calls
+    :type urls: list[str] | str
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param http_async: if is set to True the operation will be performed in async (deafault True)
+    :type http_async: bool
+
+    :returns: A list of entity statements.
+    :rtype: list[Response]
+    """
+
+    urls = urls if isinstance(urls, list) else [urls]
     for url in urls:
         logger.debug(f"Starting Entity Statement Request to {url}")
-    return get_http_url(urls, httpc_params)
+
+    return [i.content for i in get_http_url(urls, httpc_params, http_async)]
 
 
-def get_entity_configurations(subjects: list, httpc_params: dict = {}):
-    if isinstance(subjects, str):
-        subjects = [subjects]
+def get_entity_configurations(
+    subjects: list[str] | str, httpc_params: dict, http_async: bool = False
+) -> list[bytes]:
+    """
+    Fetches an entity configuration from the specified subjects.
+
+    :param subjects: The url or a list of url where perform the GET HTTP calls
+    :type subjects: list[str] | str
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+    :param http_async: if is set to True the operation will be performed in async (deafault True)
+    :type http_async: bool
+
+    :returns: A list of entity statements.
+    :rtype: list[Response]
+    """
+
+    subjects = subjects if isinstance(subjects, list) else [subjects]
+
     urls = []
     for subject in subjects:
         if subject[-1] != "/":
@@ -68,14 +92,26 @@ def get_entity_configurations(subjects: list, httpc_params: dict = {}):
         url = f"{subject}{OIDCFED_FEDERATION_WELLKNOWN_URL}"
         urls.append(url)
         logger.info(f"Starting Entity Configuration Request for {url}")
-    return get_http_url(urls, httpc_params)
+
+    return [i.content for i in get_http_url(urls, httpc_params, http_async)]
 
 
 class TrustMark:
-    def __init__(self, jwt: str, httpc_params: dict = {}):
+    """The class representing a Trust Mark"""
+
+    def __init__(self, jwt: str, httpc_params: dict):
+        """
+        Create an instance of Trust Mark
+
+        :param jwt: the JWT containing the trust marks
+        :type jwt: str
+        :param httpc_params: parameters to perform http requests.
+        :type httpc_params: dict
+        """
+
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
 
         self.id = self.payload["id"]
         self.sub = self.payload["sub"]
@@ -83,46 +119,76 @@ class TrustMark:
 
         self.is_valid = False
 
-        self.issuer_entity_configuration = None
+        self.issuer_entity_configuration: list[bytes] = None
         self.httpc_params = httpc_params
 
-    def validate_by(self, ec) -> bool:
-        # TODO: pydantic entity configuration validation here
+    def validate_by(self, ec: dict) -> bool:
+        """
+        Validates Trust Marks by an Entity Configuration
 
-        if self.header.get("kid") not in ec.kids:
+        :param ec: the entity configuration to validate by
+        :type ec: dict
+
+        :returns: True if is valid otherwise False
+        :rtype: bool
+        """
+        try:
+            EntityConfigurationHeader(**self.header)
+        except pydantic.ValidationError as e:
+            raise InvalidEntityHeader(
+                # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
+
+        _kid = self.header["kid"]
+
+        if _kid not in ec.kids:
             raise UnknownKid(  # pragma: no cover
                 f"Trust Mark validation failed: "
                 f"{self.header.get('kid')} not found in {ec.jwks}"
             )
-        # verify signature
 
-        jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
+        _jwk = find_jwk_by_kid(ec.jwks, _kid)
+
+        # verify signature
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
         return payload
 
     def validate_by_its_issuer(self) -> bool:
+        """
+        Validates Trust Marks by it's issuer
+
+        :returns: True if is valid otherwise False
+        :rtype: bool
+        """
         if not self.issuer_entity_configuration:
-            self.issuer_entity_configuration = get_entity_configurations(
-                self.iss, self.httpc_params
-            )
+            self.issuer_entity_configuration = [
+                i.content
+                for i in get_entity_configurations(self.iss, self.httpc_params, False)
+            ]
+
+        _kid = self.header.get("kid")
         try:
             ec = EntityStatement(self.issuer_entity_configuration[0])
             ec.validate_by_itself()
         except UnknownKid:
             logger.warning(
                 f"Trust Mark validation failed by its Issuer: "
-                f"{self.header.get('kid')} not found in "
-                f"{self.issuer_entity_configuration.jwks}")
+                f"{_kid} not found in "
+                f"{self.issuer_entity_configuration.jwks}"
+            )
             return False
         except Exception:
-            logger.warning(
-                f"Issuer {self.iss} of trust mark {self.id} is not valid.")
+            logger.warning(f"Issuer {self.iss} of trust mark {self.id} is not valid.")
             self.is_valid = False
             return False
 
         # verify signature
-        jwsh = JWSHelper(ec.jwks[ec.kids.index(self.header["kid"])])
+        _jwk = find_jwk_by_kid(ec.jwks, _kid)
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(self.jwt)
         self.is_valid = True
         return payload
@@ -139,18 +205,32 @@ class EntityStatement:
     def __init__(
         self,
         jwt: str,
-        httpc_params: dict = {},
-        filter_by_allowed_trust_marks: list = [],
-        trust_anchor_entity_conf=None,
-        trust_mark_issuers_entity_confs: dict = [],
+        httpc_params: dict,
+        filter_by_allowed_trust_marks: list[str] = [],
+        trust_anchor_entity_conf: EntityStatement | None = None,
+        trust_mark_issuers_entity_confs: list[EntityStatement] = [],
     ):
+        """
+        Creates EntityStatement istance
+
+        :param jwt: the JWT containing the trust marks.
+        :type jwt: str
+        :param httpc_params: parameters to perform http requests.
+        :type httpc_params: dict
+        :param filter_by_allowed_trust_marks: allowed trust marks list.
+        :type filter_by_allowed_trust_marks: list[str]
+        :param trust_anchor_entity_conf: the trust anchor entity conf or None
+        :type trust_anchor_entity_conf: EntityStatement | None
+        :param trust_mark_issuers_entity_confs: the list containig the trust mark's entiity confs
+        """
         self.jwt = jwt
-        self.header = unpad_jwt_header(jwt)
-        self.payload = unpad_jwt_payload(jwt)
+        self.header = decode_jwt_header(jwt)
+        self.payload = decode_jwt_payload(jwt)
         self.sub = self.payload["sub"]
         self.iss = self.payload["iss"]
-        self.jwks = get_federation_jwks(self.payload, httpc_params)
-        if not self.jwks[0]:
+        self.exp = self.payload["exp"]
+        self.jwks = get_federation_jwks(self.payload)
+        if not self.jwks or not self.jwks[0]:
             _msg = f"Missing jwks in the statement for {self.sub}"
             logger.error(_msg)
             raise MissingJwksClaim(_msg)
@@ -169,7 +249,6 @@ class EntityStatement:
 
         # a dict with sup_sub : entity statement issued for self
         self.verified_by_superiors = {}
-        self.failed_by_superiors = {}
 
         # a dict with the paylaod of valid entity statements for each descendant subject
         self.verified_descendant_statements = {}
@@ -181,16 +260,38 @@ class EntityStatement:
         self.verified_trust_marks = []
         self.is_valid = False
 
+    def update_trust_anchor_conf(
+        self, trust_anchor_entity_conf: "EntityStatement"
+    ) -> None:
+        """
+        Updates the internal Trust Anchor conf.
+
+        :param trust_anchor_entity_conf: the trust anchor entity conf
+        :type trust_anchor_entity_conf: EntityStatement
+        """
+        self.trust_anchor_entity_conf = trust_anchor_entity_conf
+
     def validate_by_itself(self) -> bool:
         """
         validates the entity configuration by it self
         """
-        # TODO: pydantic entity configuration validation here
-        if self.header.get("kid") not in self.kids:
-            raise UnknownKid(
-                f"{self.header.get('kid')} not found in {self.jwks}")  # pragma: no cover
+        try:
+            EntityConfigurationHeader(**self.header)
+        except pydantic.ValidationError as e:
+            raise InvalidEntityHeader(
+                # pragma: no cover
+                f"Trust Mark validation failed: "
+                f"{e}"
+            )
+
+        _kid = self.header.get("kid")
+
+        if _kid not in self.kids:
+            raise UnknownKid(f"{_kid} not found in {self.jwks}")  # pragma: no cover
+
         # verify signature
-        jwsh = JWSHelper(self.jwks[self.kids.index(self.header["kid"])])
+        _jwk = find_jwk_by_kid(self.jwks, _kid)
+        jwsh = JWSHelper(_jwk)
         jwsh.verify(self.jwt)
         self.is_valid = True
         return True
@@ -240,7 +341,8 @@ class EntityStatement:
 
         if not trust_marks:
             raise MissingTrustMark(
-                "Required Trust marks are missing.")  # pragma: no cover
+                "Required Trust marks are missing."
+            )  # pragma: no cover
 
         trust_mark_issuers_by_id = self.trust_anchor_entity_conf.payload.get(
             "trust_marks_issuers", {}
@@ -280,8 +382,7 @@ class EntityStatement:
             elif id_issuers and trust_mark.iss in id_issuers:
                 is_valid = trust_mark.validate_by_its_issuer()
             elif not id_issuers:
-                is_valid = trust_mark.validate_by(
-                    self.trust_anchor_entity_conf)
+                is_valid = trust_mark.validate_by(self.trust_anchor_entity_conf)
 
             if not trust_mark.is_valid:
                 is_valid = False
@@ -296,16 +397,27 @@ class EntityStatement:
 
     def get_superiors(
         self,
-        authority_hints: list = [],
+        authority_hints: list[str] = [],
         max_authority_hints: int = 0,
-        superiors_hints: list = [],
+        superiors_hints: list[dict] = [],
     ) -> dict:
         """
         get superiors entity configurations
+
+        :param authority_hints: the authority hint list
+        :type authority_hints: list[str]
+        :param max_authority_hints: the number of max authority hint
+        :type max_authority_hints: int
+        :param superiors_hints: the list of superior hints
+        :type superiors_hints: list[dict]
+
+        :returns: a dict with the superior's entity configurations
+        :rtype: dict
         """
         # apply limits if defined
         authority_hints = authority_hints or deepcopy(
-            self.payload.get("authority_hints", []))
+            self.payload.get("authority_hints", [])
+        )
         if (
             max_authority_hints
             and authority_hints != authority_hints[:max_authority_hints]
@@ -337,15 +449,14 @@ class EntityStatement:
                 jwts = [self.trust_anchor_configuration]
 
         if not jwts:
-            jwts = get_entity_configurations(
-                authority_hints, self.httpc_params)
+            jwts = get_entity_configurations(authority_hints, self.httpc_params, False)
 
         for jwt in jwts:
             try:
                 ec = self.__class__(
                     jwt,
                     httpc_params=self.httpc_params,
-                    trust_anchor_entity_conf=self.trust_anchor_entity_conf
+                    trust_anchor_entity_conf=self.trust_anchor_entity_conf,
                 )
             except Exception as e:
                 logger.warning(f"Get Entity Configuration for {jwt}: {e}")
@@ -370,40 +481,65 @@ class EntityStatement:
     def validate_descendant_statement(self, jwt: str) -> bool:
         """
         jwt is a descendant entity statement issued by self
-        """
-        # TODO: pydantic entity configuration validation here
-        header = unpad_jwt_header(jwt)
-        payload = unpad_jwt_payload(jwt)
 
-        if header.get("kid") not in self.kids:
-            raise UnknownKid(
-                f"{self.header.get('kid')} not found in {self.jwks}")
+        :param jwt: the JWT to validate by
+        :type jwt: str
+
+        :returns: True if is valid or False otherwise
+        :rtype: bool
+        """
+        header = decode_jwt_header(jwt)
+        payload = decode_jwt_payload(jwt)
+
+        try:
+            EntityConfigurationHeader(**header)
+        except pydantic.ValidationError as e:
+            raise InvalidEntityHeader(  # pragma: no cover
+                f"Trust Mark validation failed: " f"{e}"
+            )
+
+        try:
+            EntityStatementPayload(**payload)
+        except pydantic.ValidationError as e:
+            raise InvalidEntityStatementPayload(  # pragma: no cover
+                f"Trust Mark validation failed: " f"{e}"
+            )
+
+        _kid = header.get("kid")
+
+        if _kid not in self.kids:
+            raise UnknownKid(f"{_kid} not found in {self.jwks}")
+
         # verify signature
-        jwsh = JWSHelper(self.jwks[self.kids.index(header["kid"])])
+        _jwk = find_jwk_by_kid(self.jwks, _kid)
+        jwsh = JWSHelper(_jwk)
         payload = jwsh.verify(jwt)
 
         self.verified_descendant_statements[payload["sub"]] = payload
         self.verified_descendant_statements_as_jwt[payload["sub"]] = jwt
         return self.verified_descendant_statements
 
-    def validate_by_superior_statement(self, jwt: str, ec):
+    def validate_by_superior_statement(self, jwt: str, ec: "EntityStatement") -> str:
         """
-        jwt is a statement issued by a superior
-        ec is a superior entity configuration
+        validates self with the jwks contained in statement of the superior
+        :param jwt: the statement issued by a superior in form of JWT
+        :type jwt: str
+        :param ec: is a superior entity configuration
+        :type ec: EntityStatement
 
-        this method validates self with the jwks contained in statement
-        of the superior
+        :returns: the entity configuration subject if is valid
+        :rtype: str
         """
         is_valid = None
         payload = {}
         try:
-            payload = unpad_jwt_payload(jwt)
+            payload = decode_jwt_payload(jwt)
             ec.validate_by_itself()
             ec.validate_descendant_statement(jwt)
-            _jwks = get_federation_jwks(payload, self.httpc_params)
-            _kids = [i.get("kid") for i in _jwks]
+            _jwks = get_federation_jwks(payload)
+            _jwk = find_jwk_by_kid(_jwks, self.header["kid"])
 
-            jwsh = JWSHelper(_jwks[_kids.index(self.header["kid"])])
+            jwsh = JWSHelper(_jwk)
             payload = jwsh.verify(self.jwt)
 
             is_valid = True
@@ -430,13 +566,16 @@ class EntityStatement:
     def validate_by_superiors(
         self,
         superiors_entity_configurations: dict = {},
-    ):  # -> dict[str, EntityConfiguration]:
+    ) -> dict:
         """
-        validates the entity configuration with the entity statements
-        issued by its superiors
+        validates the entity configuration with the entity statements issued by its superiors
+        this methods create self.verified_superiors and failed ones and self.verified_by_superiors and failed ones
 
-        this methods create self.verified_superiors and failed ones
-        and self.verified_by_superiors and failed ones
+        :param superiors_entity_configurations: an object containing the entity configurations of superiors
+        :type superiors_entity_configurations: dict
+
+        :returns: an object containing the superior validations
+        :rtype: dict
         """
         for ec in superiors_entity_configurations:
             if ec.sub in ec.verified_by_superiors:
@@ -459,16 +598,14 @@ class EntityStatement:
             else:
                 _url = f"{fetch_api_url}?sub={self.sub}"
                 logger.info(f"Getting entity statements from {_url}")
-                jwts = get_entity_statements([_url], self.httpc_params)
-                # TODO - this could be different from ZERO
-                # to be tested and fixed when the tests will be available
+                jwts = get_entity_statements([_url], self.httpc_params, False)
+                if not jwts:
+                    logger.error(f"Empty response for {_url}")
                 jwt = jwts[0]
                 if jwt:
                     self.validate_by_superior_statement(jwt, ec)
                 else:
-                    logger.error(
-                        f"Empty response for {_url}"
-                    )
+                    logger.error(f"JWT validation for {_url}")
 
         return self.verified_by_superiors
 

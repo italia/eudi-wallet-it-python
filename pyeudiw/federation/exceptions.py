@@ -68,3 +68,19 @@ class KeyValidationError(Exception):
 
 class InvalidChainError(Exception):
     pass
+
+
+class ProtocolMetadataNotFound(Exception):
+    pass
+
+
+class InvalidEntityHeader(Exception):
+    pass
+
+
+class InvalidEntityStatementPayload(Exception):
+    pass
+
+
+class PolicyError(Exception):
+    pass

@@ -2,46 +2,56 @@ module: pyeudiw.satosa.backend.OpenID4VPBackend
 name: OpenID4VP
 
 config:
-  
+
   ui:
-    static_storage_url: "https://localhost:9999"
+    static_storage_url: !ENV SATOSA_BASE_STATIC
     template_folder: "templates" # project root
-    qrcode_template: "qrcode.html"
+    qrcode_template: "qr_code.html"
     error_template: "error.html"
-    error_url: "https://localhost:9999/error_page.html"
+    error_url: "https://localhost/error_page.html"
   
   endpoints:
-      pre_request: '/<name>/pre-request'
-      redirect: '/<name>/redirect_uri'
-      request: '/<name>/request_uri'
-      entity_configuration: '/<name>/.well-known/openid-federation'
+    pre_request: '/pre-request'
+    request:
+      module: pyeudiw.satosa.default.request_handler
+      class: RequestHandler
+      path: '/request-uri'
+    response:
+      module: pyeudiw.satosa.default.response_handler
+      class: ResponseHandler
+      path: '/response-uri'
+    status: '/status'
+    get_response: '/get-response'
 
   qrcode:
-    size: 100
-    color: '#2B4375'
-    logo_path: 
-    use_zlib: false
+    size: 250 # px
+    color: '#000000'  # hex
+    expiration_time: 120 # seconds
+    logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
+
+  response_code:
+    sym_key: "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" # hex string of 64 characters
 
   jwt:
     default_sig_alg: ES256 # or RS256
     default_enc_alg: RSA-OAEP
     default_enc_enc: A256CBC-HS512
     default_exp: 6         # minutes
-    enc_alg_supported:
+    enc_alg_supported: &enc_alg_supported
         - RSA-OAEP
         - RSA-OAEP-256
         - ECDH-ES
         - ECDH-ES+A128KW
         - ECDH-ES+A192KW
         - ECDH-ES+A256KW
-    enc_enc_supported:
+    enc_enc_supported: &enc_enc_supported
         - A128CBC-HS256
         - A192CBC-HS384
         - A256CBC-HS512
         - A128GCM
         - A192GCM
         - A256GCM
-    sig_alg_supported:
+    sig_alg_supported: &sig_alg_supported
         - RS256
         - RS384
         - RS512
@@ -50,31 +60,60 @@ config:
         - ES512
     
   authorization:
-    url_scheme: "eudiw" # eudiw://
-    scopes: 
+    client_id: # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
+    auth_iss_id: # this field if not set will be set to client_id in the authz request 
+    url_scheme: haip
+    scopes:
     - pid-sd-jwt:unique_id+given_name+family_name
-    
-  federation:
-    metadata_type: "wallet_relying_party"
-    federation_authorities:
-        - http://127.0.0.1:8000
-    default_sig_alg: "RS256"
-    
-    # private jwk
-    federation_jwks:
-      - kty: RSA
-        d: QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q
-        e: AQAB
-        kid: 9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w
-        n: utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw
-        p: 2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0
-        q: 2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM
-    
-    trust_marks: # todo
-    - ...
+    default_acr_value: https://www.spid.gov.it/SpidL2
+    expiration_time: 5 # minutes
+    aud: https://self-issued.me/v2
+    response_mode: direct_post
+    presentation_definition:
+      id: global-presentation-definition-id
+      input_descriptors:
+      - id: input-specific-id
+        purpose: Request presentation holding Power of Representation attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          fields:
+          - path:
+            - "$.vct"
+            filter:
+              const: urn:eu.europa.ec.eudi:por:1
+      - id: another-input-specific-id
+        purpose: Request first name and last name claims from PID attestation
+        format:
+          vc+sd-jwt: {}
+        constraints:
+          limit_disclosure: required
+          fields:
+            - path:
+              - "$.vct"
+              filter:
+                type: string
+                pattern: urn:eu.europa.ec.eudi:por:1
+            - path:
+              - "$.family_name"
+            - path:
+              - "$.given_name"
+
+  user_attributes:
+    unique_identifiers:
+    - tax_id_code
+    - unique_id
+    subject_id_random_value: CHANGEME!
+  
+  network:
+    httpc_params: &httpc_params
+      connection:
+        ssl: true
+      session:
+        timeout: 6
 
   # private jwk
-  metadata_jwks: 
+  metadata_jwks: &metadata_jwks
     - crv: P-256
       d: KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc
       kid: dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s
@@ -91,36 +130,17 @@ config:
       p: 2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0
       q: 2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM
 
-
-  # Mongodb database configuration
-  storage:
-    mongo_db:
-      cache:
-        module: pyeudiw.storage.mongo_cache
-        class: MongoCache
-        config:
-          url: mongodb://localhost:27017/
-          conf:
-            db_name: eudiw
-      storage:
-        module: pyeudiw.storage.mongo_storage
-        class: MongoStorage
-        config:
-          url: mongodb://localhost:27017/
-          db_name: eudiw
-          db_collection: sessions
-
   #This is the configuration for the relaying party metadata
-  metadata:
+  metadata: &metadata
     application_type: web
 
     #The following section contains all the algorithms supported for the encryption of response
-    authorization_encrypted_response_alg: <jwt.enc_alg_supported>
-    authorization_encrypted_response_enc: <jwt.enc_enc_supported>
-    authorization_signed_response_alg: <jwt.sig_alg_supported>
+    authorization_encrypted_response_alg: *enc_alg_supported
+    authorization_encrypted_response_enc: *enc_enc_supported
+    authorization_signed_response_alg: *sig_alg_supported
 
     #Various informations of the client
-    client_id: "<base_url>/<name>"
+    client_id: # this field is autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     client_name: Name of an example organization
     contacts:
       - ops@verifier.example.org
@@ -128,88 +148,108 @@ config:
       - https://www.spid.gov.it/SpidL2
       - https://www.spid.gov.it/SpidL3
 
-    default_max_age: 1111
-
     #The following section contains all the algorithms supported for the encryption of id token response
-    id_token_encrypted_response_alg: <jwt.enc_alg_supported>
-    id_token_encrypted_response_enc: <jwt.enc_enc_supported>
-    id_token_signed_response_alg: <jwt.sig_alg_supported>
+    id_token_encrypted_response_alg: *enc_alg_supported
+    id_token_encrypted_response_enc: *enc_enc_supported
+    id_token_signed_response_alg: *sig_alg_supported
 
     # loaded in the __init__
     # jwks:
 
-    #This section contains the details for presentation request
-    presentation_definitions:
-      - id: pid-sd-jwt:unique_id+given_name+family_name
-        input_descriptors:
-        - id: pid-sd-jwt:unique_id+given_name+family_name
-          format:
-            constraints:
-              fields:
-              - filter:
-                  const: PersonIdentificationData
-                  type: string
-                path:
-                - $.sd-jwt.type
-              - filter:
-                  type: object
-                path:
-                - $.sd-jwt.cnf
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.family_name
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.given_name
-              - intent_to_retain: 'true'
-                path:
-                - $.sd-jwt.unique_id
-              limit_disclosure: required
-            jwt:
-              alg:
-              - EdDSA
-              - ES256
-      - id: mDL-sample-req
-        input_descriptors:
-        - format:
-            constraints:
-              fields:
-              - filter:
-                  const: org.iso.18013.5.1.mDL
-                  type: string
-                path:
-                - $.mdoc.doctype
-              - filter:
-                  const: org.iso.18013.5.1
-                  type: string
-                path:
-                - $.mdoc.namespace
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.family_name
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.portrait
-              - intent_to_retain: 'false'
-                path:
-                - $.mdoc.driving_privileges
-              limit_disclosure: required
-            mso_mdoc:
-              alg:
-              - EdDSA
-              - ES256
-          id: mDL
+    redirect_uris: 
+      # This field is autopopulated using internal variables base_url and name using the following format: <base_url>/<name>/redirect-uri"
+    request_uris: 
+      # This field is autopopulated using internal variables base_url and name using the following format: <base_url>/<name>/request-uri"
 
-    redirect_uris:
-      - <base_url>/<name>/redirect_uri
-    request_uris:
-      - <base_url>/<name>/request_uri
-
-    require_auth_time: true
-    subject_type: pairwise
+    # not necessary according to openid4vp
+    # default_max_age: 1111
+    # require_auth_time: true
+    # subject_type: pairwise
 
     vp_formats:
-      jwt_vp_json:
-        alg:
-          - EdDSA
-          - ES256K
+      vc+sd-jwt:
+        sd-jwt_alg_values:
+          - ES256
+          - ES384
+        kb-jwt_alg_values:
+          - ES256
+          - ES384
+
+  trust:
+    direct_trust_sd_jwt_vc:
+      module: pyeudiw.trust.handler.direct_trust_sd_jwt_vc
+      class: DirectTrustSdJwtVc
+      config:
+        cache_ttl: 0
+        httpc_params: *httpc_params
+        jwk_endpoint: /.well-known/jwt-vc-issuer
+    direct_trust_jar:
+      module: pyeudiw.trust.handler.direct_trust_jar
+      class: DirectTrustJar
+      config:
+        cache_ttl: 0
+        httpc_params: *httpc_params
+        jwk_endpoint: /.well-known/jar-issuer
+        jwks: *metadata_jwks
+    federation:
+      module: pyeudiw.trust.handler.federation
+      class: FederationHandler
+      config:
+        httpc_params: *httpc_params
+        cache_ttl: 0
+        entity_configuration_exp: 600
+        metadata_type: "openid_credential_verifier"
+        metadata: *metadata
+        authority_hints:
+            - http://127.0.0.1:8000
+        trust_anchors:
+            - http://127.0.0.1:8000: [] # array of public keys
+        default_sig_alg: "RS256"
+        trust_marks: [] 
+        federation_entity_metadata:
+            organization_name: IAM Proxy Italia OpenID4VP backend
+            homepage_uri: https://developers.italia.it
+            policy_uri: https://developers.italia.it
+            tos_uri: https://developers.italia.it
+            logo_uri: https://developers.italia.it/assets/icons/logo-it.svg
+        federation_jwks: # !ENV PYEUDIW_FEDERATION_JWKS
+          - kty: RSA
+            d: QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q
+            e: AQAB
+            kid: 9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w
+            n: utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw
+            p: 2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0
+            q: 2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM
+    # x509:
+      # module: pyeudiw.trust.handler.x509
+      # class: X509TrustModel
+      # config:
+        # trust_anchor_certificates:
+            # - "todo"
+        # trust_anchors_cn: # we might mix CN and SAN together
+            # - http://127.0.0.1:8000
+
+  # Mongodb database configuration
+  storage:
+    mongo_db:
+      cache:
+        module: pyeudiw.storage.mongo_cache
+        class: MongoCache
+        init_params:
+          url: mongodb://localhost:27017
+          conf:
+            db_name: eudiw
+          # connection_params:
+      storage:
+        module: pyeudiw.storage.mongo_storage
+        class: MongoStorage
+        init_params:
+          url: mongodb://localhost:27017
+          conf:
+            db_name: eudiw
+            db_sessions_collection: sessions
+            db_trust_attestations_collection: trust_attestations
+            db_trust_anchors_collection: trust_anchors
+            db_trust_sources_collection: trust_sources
+            data_ttl: 63072000 # 2 years
+          # - connection_params:

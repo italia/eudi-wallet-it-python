@@ -168,3 +168,9 @@ env
 */__MACOSX
 
 .DS_Store
+
+docs/source
+
+# VSCode
+#  VSCode specific settings
+.vscode/

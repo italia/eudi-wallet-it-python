@@ -1,10 +1,14 @@
-class ChainAlreadyExist(BaseException):
+class ChainNotExist(Exception):
     pass
 
 
-class ChainNotExist(BaseException):
+class StorageWriteError(Exception):
     pass
 
 
-class ReplicaError(BaseException):
+class StorageEntryUpdateFailed(Exception):
+    pass
+
+
+class EntryNotFound(Exception):
     pass

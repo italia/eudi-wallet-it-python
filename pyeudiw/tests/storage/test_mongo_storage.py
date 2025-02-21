@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import pytest
@@ -9,10 +10,15 @@ class TestMongoStorage:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.storage = MongoStorage(
-            {"db_name": "eudiw", "db_sessions_collection": "sessions",
-                "db_attestations_collection": "attestations"},
-            "mongodb://localhost:27017/",
-            {}
+            {
+                "db_name": "test-eudiw",
+                "db_sessions_collection": "sessions",
+                "db_trust_attestations_collection": "trust_attestations",
+                "db_trust_anchors_collection": "trust_anchors",
+                "db_trust_sources_collection": "trust_source",
+            },
+            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+            {},
         )
 
     def test_mongo_connection(self):
@@ -21,24 +27,26 @@ class TestMongoStorage:
         assert self.storage.db is not None
         assert self.storage.client
         assert self.storage.sessions is not None
-        assert self.storage.attestations is not None
+        assert self.storage.trust_attestations is not None
+        assert self.storage.trust_anchors is not None
 
     def test_entity_initialization(self):
         state = str(uuid.uuid4())
         session_id = str(uuid.uuid4())
 
         document_id = self.storage.init_session(
-            str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
         dpop_proof = {"dpop": "test"}
         attestation = {"attestation": "test"}
         self.storage.add_dpop_proof_and_attestation(
-            document_id, dpop_proof=dpop_proof, attestation=attestation)
+            document_id, dpop_proof=dpop_proof, attestation=attestation
+        )
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["dpop_proof"]
@@ -51,8 +59,8 @@ class TestMongoStorage:
         session_id = str(uuid.uuid4())
 
         document_id = self.storage.init_session(
-            str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
@@ -61,7 +69,7 @@ class TestMongoStorage:
 
         self.storage.update_request_object(document_id, request_object)
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["request_object"] == request_object
@@ -75,8 +83,8 @@ class TestMongoStorage:
         session_id = str(uuid.uuid4())
 
         document_id = self.storage.init_session(
-            str(uuid.uuid4()),
-            session_id=session_id, state=state)
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
@@ -84,16 +92,18 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
 
         request_object = {"nonce": nonce, "state": state}
-
-        self.storage.update_request_object(
-            document_id, request_object)
+        self.storage.update_request_object(document_id, request_object)
         documentStatus = self.storage.update_response_object(
-            nonce, state, {"response": "test"})
+            nonce, state, {"response": "test"}
+        )
         self.storage.add_dpop_proof_and_attestation(
-            document_id, dpop_proof={"dpop": "test"}, attestation={"attestation": "test"})
+            document_id,
+            dpop_proof={"dpop": "test"},
+            attestation={"attestation": "test"},
+        )
         assert documentStatus
 
-        document = self.storage._retrieve_document_by_id(document_id)
+        document = self.storage.get_by_id(document_id)
 
         assert document
         assert document["dpop_proof"]
@@ -105,5 +115,25 @@ class TestMongoStorage:
         assert document["state"]
         assert document["nonce"] == nonce
         assert document["request_object"] == request_object
-        assert document["response_object"]
-        assert document["response_object"] == {"response": "test"}
+        assert document["internal_response"] == {"response": "test"}
+
+    #  def test_retention_ttl(self):
+    #  """
+    #  MongoDB does not garantee that the document will be deleted at the exact time
+    #  https://www.mongodb.com/docs/v7.0/core/index-ttl/#timing-of-the-delete-operation
+    #  """
+    #  self.storage.set_session_retention_ttl(5)
+    #  assert self.storage.has_session_retention_ttl()
+
+    #  state = str(uuid.uuid4())
+    #  session_id = str(uuid.uuid4())
+
+    #  document_id = self.storage.init_session(
+    #  str(uuid.uuid4()),
+    #  session_id=session_id, state=state)
+
+    #  assert document_id
+
+    #  document = self.storage.get_by_id(document_id)
+    #  time.sleep(6)
+    #  assert not document

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from pyeudiw.jwk.schema import JwkSchema
+from pyeudiw.jwk.schemas.public import JwkSchema
 
 
 class CNFSchema(BaseModel):

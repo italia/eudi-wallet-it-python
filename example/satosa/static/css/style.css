@@ -290,7 +290,7 @@
 }
 
 .qr-code-title{
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 600;
 }
 
@@ -391,5 +391,16 @@
 }
 
 .qr-code-text{
-    font-size: 15px;
+    font-size: 18px;
+}
+
+.icon-qr-code {
+    width: 130%;
+    vertical-align: middle;
+    margin-left: -15%;
+    margin-top: -10%;
+}
+
+.btn {
+    font-size: 18px;
 }

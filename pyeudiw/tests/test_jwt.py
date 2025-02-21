@@ -1,55 +1,47 @@
 import pytest
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.rsa import new_rsa_key
 
-from pyeudiw.jwk import JWK
-from pyeudiw.jwt import (DEFAUL_ENC_ALG_MAP, DEFAUL_ENC_ENC_MAP, JWEHelper,
-                         JWSHelper)
-from pyeudiw.jwt.utils import unpad_jwt_header
+from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import DEFAULT_ENC_ALG_MAP, DEFAULT_ENC_ENC_MAP, JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
 
 JWKs_EC = [
-    (JWK(key_type="EC"), {"key": "value"}),
-    (JWK(key_type="EC"), "simple string"),
-    (JWK(key_type="EC"), None),
+    (new_ec_key("P-256"), {"key": "value"}),
+    (new_ec_key("P-256"), "simple string"),
+    (new_ec_key("P-256"), None),
 ]
 
 JWKs_RSA = [
-    (JWK(key_type="RSA"), {"key": "value"}),
-    (JWK(key_type="RSA"), "simple string"),
-    (JWK(key_type="RSA"), None),
+    (new_rsa_key(), {"key": "value"}),
+    (new_rsa_key(), "simple string"),
+    (new_rsa_key(), None),
 ]
 
 JWKs = JWKs_EC + JWKs_RSA
 
-# TODO: ENC also with EC and not only with RSA
-ENC_JWKs = JWKs_RSA
 
-
-@pytest.mark.parametrize("jwk, payload", JWKs_RSA)
-def test_unpad_jwt_header(jwk, payload):
+@pytest.mark.parametrize("jwk, payload", JWKs)
+def test_decode_jwt_header(jwk, payload):
     jwe_helper = JWEHelper(jwk)
     jwe = jwe_helper.encrypt(payload)
     assert jwe
-    header = unpad_jwt_header(jwe)
+    header = decode_jwt_header(jwe)
     assert header
-    assert header["alg"] == DEFAUL_ENC_ALG_MAP[jwk.jwk["kty"]]
-    assert header["enc"] == DEFAUL_ENC_ENC_MAP[jwk.jwk["kty"]]
-    assert header["kid"] == jwk.jwk["kid"]
+    assert header["alg"] == DEFAULT_ENC_ALG_MAP[jwk.kty]
+    assert header["enc"] == DEFAULT_ENC_ENC_MAP[jwk.kty]
+    assert header["kid"] == jwk.kid
 
 
-@pytest.mark.parametrize("key_type", ["RSA", "EC"])
-def test_jwe_helper_init(key_type):
-    jwk = JWK(key_type=key_type)
-    helper = JWEHelper(jwk)
-    assert helper.jwk == jwk
-
-
-@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_encrypt(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
     assert jwe
+    assert is_jwe_format(jwe)
 
 
-@pytest.mark.parametrize("jwk, payload", JWKs_RSA)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_decrypt(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
@@ -60,7 +52,7 @@ def test_jwe_helper_decrypt(jwk, payload):
     assert decrypted == payload or decrypted == payload.encode()
 
 
-@pytest.mark.parametrize("jwk, payload", ENC_JWKs)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jwe_helper_decrypt_fail(jwk, payload):
     helper = JWEHelper(jwk)
     jwe = helper.encrypt(payload)
@@ -70,21 +62,14 @@ def test_jwe_helper_decrypt_fail(jwk, payload):
         helper.decrypt(jwe)
 
 
-@pytest.mark.parametrize("key_type", ["RSA", "EC"])
-def test_jws_helper_init(key_type):
-    jwk = JWK(key_type=key_type)
-    helper = JWSHelper(jwk)
-    assert helper.jwk == jwk
-
-
-@pytest.mark.parametrize("jwk, payload", JWKs_RSA)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_sign(jwk, payload):
     helper = JWSHelper(jwk)
-    jws = helper.sign(payload)
+    jws = helper.sign(payload, signing_kid=jwk.kid)
     assert jws
 
 
-@pytest.mark.parametrize("jwk, payload", JWKs_RSA)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_verify(jwk, payload):
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
@@ -95,7 +80,7 @@ def test_jws_helper_verify(jwk, payload):
     assert verified == payload or verified == payload.encode()
 
 
-@pytest.mark.parametrize("jwk, payload", JWKs_RSA)
+@pytest.mark.parametrize("jwk, payload", JWKs)
 def test_jws_helper_verify_fail(jwk, payload):
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
