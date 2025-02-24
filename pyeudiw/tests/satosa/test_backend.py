@@ -5,6 +5,7 @@ import urllib.parse
 from unittest.mock import Mock, patch
 
 import pytest
+import unittest.mock
 from bs4 import BeautifulSoup
 from cryptojwt.jws.jws import JWS
 from satosa.context import Context
@@ -35,7 +36,7 @@ from pyeudiw.tests.settings import (
     WALLET_INSTANCE_ATTESTATION,
 )
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
 
 
 class TestOpenID4VPBackend:
@@ -628,6 +629,97 @@ class TestOpenID4VPBackend:
         # assert state_endpoint_response.message
         # msg = json.loads(state_endpoint_response.message)
         # assert msg["response"] == "Authentication successful"
+
+    def test_trust_patameters_in_response(self, context):
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
+        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
+
+        jwshelper = JWSHelper(PRIVATE_JWK)
+
+        wia = jwshelper.sign(
+            plain_dict=WALLET_INSTANCE_ATTESTATION,
+            protected={
+                "trust_chain": trust_chain_wallet,
+                "x5c": [],
+            },
+        )
+
+        dpop_wia = wia
+
+        dpop_proof = DPoPIssuer(
+            htu=CONFIG["metadata"]["request_uris"][0],
+            token=dpop_wia,
+            private_jwk=PRIVATE_JWK,
+        ).proof
+
+        context.http_headers = dict(
+            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
+        )
+
+        context.qs_params = {"id": state}
+
+        # put a trust attestation related itself into the storage
+        # this then is used as trust_chain header parameter in the signed
+        # request object
+        db_engine_inst = DBEngine(CONFIG["storage"])
+
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler"
+        )
+        assert _fedback
+
+        _es = {
+            "exp": EXP,
+            "iat": NOW,
+            "iss": "https://trust-anchor.example.org",
+            "sub": self.backend.client_id,
+            "jwks": _fedback.entity_configuration_as_dict["jwks"],
+        }
+        ta_signer = JWS(_es, alg="ES256", typ="application/entity-statement+jwt")
+
+        its_trust_chain = [
+            _fedback.entity_configuration,
+            ta_signer.sign_compact([ta_jwk]),
+        ]
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=self.backend.client_id,
+            attestation=its_trust_chain,
+            exp=datetime.datetime.now().isoformat(),
+        )
+        # End RP trust chain
+
+        context.request_method = "GET"
+        context.qs_params = {"id": state}
+        request_uri = CONFIG["metadata"]["request_uris"][0]
+        context.request_uri = request_uri
+
+        tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
+        tsd.add_trust_param(
+            "trust_chain",
+            TrustParameterData(
+                "trust_chain",
+                trust_chain_wallet,
+                datetime.datetime.now()
+            )
+        )
+
+        mocked_jwks_document_endpoint = unittest.mock.patch(
+            "pyeudiw.trust.handler.federation.FederationHandler.extract_and_update_trust_materials",
+            return_value=tsd,
+        )
+
+        mocked_jwks_document_endpoint.start()
+        req_resp = self.backend.request_endpoint(context)
+        mocked_jwks_document_endpoint.stop()
+
+        assert req_resp
+        assert req_resp.status == "200"
+        assert decode_jwt_header(req_resp.message)["trust_chain"]
+        assert decode_jwt_header(req_resp.message)["trust_chain"] == trust_chain_wallet
 
     def test_handle_error(self, context):
         error_message = "server_error"
