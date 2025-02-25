@@ -214,7 +214,7 @@ class TestOpenID4VPBackend:
         assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
         assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
 
-    def test_vp_validation_in_response_endpoint(self, context):
+    def test_fail_vp_validation_in_response_endpoint(self, context):
         self.backend.register_endpoints()
 
         issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
@@ -299,7 +299,7 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
         assert msg["error_description"]
 
-        # This will trigger a `UnicodeDecodeError` which will be caught by the generic `Exception case`.
+        # check that malformed jwt result in 400 response
         response["vp_token"] = "asd.fgh.jkl"
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(response)
@@ -397,7 +397,7 @@ class TestOpenID4VPBackend:
 
         response_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status != "200"
+        assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
 
         # case (2): bad state
@@ -436,7 +436,7 @@ class TestOpenID4VPBackend:
 
         response_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status != "200"
+        assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
 
         # case (3): bad aud
@@ -474,7 +474,7 @@ class TestOpenID4VPBackend:
 
         response_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status != "200"
+        assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
 
         # case (4): good aud, nonce and state
