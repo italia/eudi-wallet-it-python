@@ -48,7 +48,7 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 
 
-def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> str:
+def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
