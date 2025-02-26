@@ -54,7 +54,7 @@ class CombinedTrustEvaluator(BaseLogger):
             return None
 
     def _upsert_source_trust_materials(
-        self, issuer: str, trust_source: Optional[TrustSourceData]
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
     ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers.
@@ -71,6 +71,9 @@ class CombinedTrustEvaluator(BaseLogger):
             trust_source = TrustSourceData.empty(issuer)
 
         for handler in self.handlers:
+            if not issuer:
+                issuer = handler.default_client_id
+
             trust_source = handler.extract_and_update_trust_materials(
                 issuer, trust_source
             )
@@ -79,7 +82,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source
 
-    def _get_trust_source(self, issuer: str) -> TrustSourceData:
+    def _get_trust_source(self, issuer: Optional[str] = None) -> TrustSourceData:
         """
         Retrieve the trust source from the database or extract it from the trust handlers.
 
@@ -91,12 +94,12 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._retrieve_trust_source(issuer)
 
-        if not trust_source:
-            trust_source = self._upsert_source_trust_materials(issuer, trust_source)
+        if not trust_source or len(trust_source.trust_params.values()) == 0:
+            trust_source = self._upsert_source_trust_materials(trust_source, issuer)
 
         return trust_source
 
-    def get_public_keys(self, issuer: str) -> list[dict]:
+    def get_public_keys(self, issuer: Optional[str] = None) -> list[dict]:
         """
         Yields a list of public keys for an issuer, according to some trust model.
 
@@ -116,7 +119,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.public_keys
 
-    def get_metadata(self, issuer: str) -> dict:
+    def get_metadata(self, issuer: Optional[str] = None) -> dict:
         """
         Yields a dictionary of metadata about an issuer, according to some trust model.
         """
@@ -130,7 +133,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.metadata
 
-    def is_revoked(self, issuer: str) -> bool:
+    def is_revoked(self, issuer: Optional[str] = None) -> bool:
         """
         Yield if the trust toward the issuer was revoked according to some trust model;
         This asusmed that  the isser exists, is valid, but is not trusted.
@@ -144,7 +147,7 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer)
         return trust_source.is_revoked
 
-    def get_policies(self, issuer: str) -> dict[str, any]:
+    def get_policies(self, issuer: Optional[str] = None) -> dict[str, any]:
         """
         Get the policies of a certain issuer according to some trust model.
 
@@ -164,7 +167,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.policies
 
-    def get_selfissued_jwt_header_trust_parameters(self, issuer: str) -> list[dict]:
+    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None) -> list[dict]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
 
@@ -175,15 +178,6 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: list[dict]
         """
         trust_source = self._get_trust_source(issuer)
-
-        # why should we issue an exception if a configuration might work without
-        # any trust evaluation handler?
-
-        #  if not trust_source.trust_params:
-            #  raise Exception(
-                #  f"no trust evaluator can provide trust parameters for {issuer}: "
-                #  f"searched among: {self.handlers_names}"
-            #  )
 
         return {
             _typ: param.trust_params

@@ -101,3 +101,13 @@ class TrustHandlerInterface:
         :rtype: str
         """
         return self.__class__.__name__
+    
+    @property
+    def default_client_id(self) -> str:
+        """
+        Return the default client id of the trust handler.
+
+        :returns: The default client id of the trust handler
+        :rtype: str
+        """
+        return self.client_id
