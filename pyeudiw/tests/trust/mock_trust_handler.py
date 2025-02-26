@@ -23,7 +23,7 @@ class MockTrustHandler(TrustHandlerInterface):
         self.client_id = kwargs.get("default_client_id", None)
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
-        if issuer == self.default_client_id:
+        if issuer == self.client_id:
             trust_source.metadata = {"default_key": "default_value"}
             return trust_source
 
@@ -36,7 +36,7 @@ class MockTrustHandler(TrustHandlerInterface):
         trust_source = self.get_metadata(issuer, trust_source)
         trust_source.keys.append(mock_jwk)
 
-        if issuer == self.default_client_id:
+        if issuer == self.client_id:
             trust_param = TrustParameterData(
                 type="trust_param_type",
                 trust_params= {"default_trust_param_key": "default_trust_param_value"},
