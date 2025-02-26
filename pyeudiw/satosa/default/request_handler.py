@@ -59,7 +59,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         # load all the trust handlers request jwt header parameters, if any
 
         _protected_jwt_headers.update(
-            self.trust_evaluator.get_selfissued_jwt_header_trust_parameters(issuer=self.client_id)
+            self.trust_evaluator.get_jwt_header_trust_parameters(issuer=self.client_id)
         )
 
         #  federation_trust_handler_backend_class: TrustHandlerInterface = (
