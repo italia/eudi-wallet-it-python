@@ -49,7 +49,7 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         try:
             trust_source = self.db_engine.get_trust_source(issuer)
-            return TrustSourceData.from_dict(trust_source)
+            return TrustSourceData.from_dict(trust_source) if trust_source else None
         except EntryNotFound:
             return None
 
