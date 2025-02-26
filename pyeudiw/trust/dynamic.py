@@ -68,15 +68,20 @@ class CombinedTrustEvaluator(BaseLogger):
         """
 
         if not trust_source:
-            trust_source = TrustSourceData.empty(issuer)
+            trust_source = TrustSourceData.empty(issuer or "__internal__")
 
         for handler in self.handlers:
-            if not issuer:
-                issuer = handler.default_client_id
+            if not issuer or issuer == "__internal__":
+                issuer = handler.client_id
 
-            trust_source = handler.extract_and_update_trust_materials(
-                issuer, trust_source
-            )
+            handler_name = handler.__class__.__name__
+
+            trust_param = trust_source.get_trust_param(handler_name)
+
+            if not trust_param or trust_param.expired():
+                trust_source = handler.extract_and_update_trust_materials(
+                    issuer, trust_source
+                )
 
         self.db_engine.add_trust_source(trust_source.serialize())
 
@@ -92,12 +97,9 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The trust source
         :rtype: TrustSourceData
         """
-        trust_source = self._retrieve_trust_source(issuer)
+        trust_source = self._retrieve_trust_source(issuer or "__internal__")            
 
-        if not trust_source or len(trust_source.trust_params.values()) == 0:
-            trust_source = self._upsert_source_trust_materials(trust_source, issuer)
-
-        return trust_source
+        return self._upsert_source_trust_materials(trust_source, issuer)
 
     def get_public_keys(self, issuer: Optional[str] = None) -> list[dict]:
         """
@@ -180,8 +182,8 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer)
 
         return {
-            _typ: param.trust_params
-            for _typ, param in trust_source.trust_params.items()
+            param.type: param.trust_params
+            for param in trust_source.trust_params.values()
         }
 
     def build_metadata_endpoints(
