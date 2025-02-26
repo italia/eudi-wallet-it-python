@@ -638,28 +638,6 @@ class TestOpenID4VPBackend:
         pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
         state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
 
-        jwshelper = JWSHelper(PRIVATE_JWK)
-
-        wia = jwshelper.sign(
-            plain_dict=WALLET_INSTANCE_ATTESTATION,
-            protected={
-                "trust_chain": trust_chain_wallet,
-                "x5c": [],
-            },
-        )
-
-        dpop_wia = wia
-
-        dpop_proof = DPoPIssuer(
-            htu=CONFIG["metadata"]["request_uris"][0],
-            token=dpop_wia,
-            private_jwk=PRIVATE_JWK,
-        ).proof
-
-        context.http_headers = dict(
-            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
-        )
-
         context.qs_params = {"id": state}
 
         # put a trust attestation related itself into the storage
