@@ -180,6 +180,36 @@ class TrustSourceData:
                 type: param.serialize() for type, param in self.trust_params.items()
             },
         }
+    
+    def is_key_revoked(self, kid: str) -> bool:
+        """
+        Return whether the trust source is revoked.
+
+        :returns: Whether the trust source is revoked
+        :rtype: bool
+        """
+
+        found = False
+
+        for key in self.keys:
+            if key["kid"] == kid:
+                found = True
+                break
+
+        if not found:
+            self.revoked = True
+            return False
+
+        return True
+    
+    def is_revoked(self) -> bool:
+        """
+        Return whether the trust source is revoked.
+
+        :returns: Whether the trust source is revoked
+        :rtype: bool
+        """
+        return self.revoked
 
     @staticmethod
     def empty(entity_id: str) -> "TrustSourceData":
