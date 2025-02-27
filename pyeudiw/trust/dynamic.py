@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional
 import satosa.context
 import satosa.response
 
+from typing import Union, Literal
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
@@ -16,6 +17,7 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 
 logger = logging.getLogger(__name__)
 
+UpsertMode = Union[Literal["update_first"], Literal["cache_first"]]
 
 class CombinedTrustEvaluator(BaseLogger):
     """
@@ -23,7 +25,10 @@ class CombinedTrustEvaluator(BaseLogger):
     """
 
     def __init__(
-        self, handlers: list[TrustHandlerInterface], db_engine: DBEngine
+        self, 
+        handlers: list[TrustHandlerInterface], 
+        db_engine: DBEngine,
+        mode: UpsertMode = "update_first"
     ) -> None:
         """
         Initialize the CombinedTrustEvaluator.
@@ -36,6 +41,7 @@ class CombinedTrustEvaluator(BaseLogger):
         self.db_engine: DBEngine = db_engine
         self.handlers: list[TrustHandlerInterface] = handlers
         self.handlers_names: list[str] = [e.name for e in self.handlers]
+        self.mode = mode
 
     def _retrieve_trust_source(self, issuer: str) -> Optional[TrustSourceData]:
         """
@@ -52,6 +58,55 @@ class CombinedTrustEvaluator(BaseLogger):
             return TrustSourceData.from_dict(trust_source) if trust_source else None
         except EntryNotFound:
             return None
+        
+    def _update_upsert_source_trust_materials(
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
+    ) -> TrustSourceData:
+        """
+        Extract the trust material of a certain issuer from all the trust handlers using the update_first mode.
+        It always updates first the trust material of the issuer and, if it is not found, it extracts it from cache.
+
+        :param issuer: The issuer
+        :type issuer: str
+
+        :returns: The trust source
+        :rtype: Optional[TrustSourceData]
+        """
+        for handler in self.handlers:
+            trust_source = handler.extract_and_update_trust_materials(
+                issuer, trust_source
+            )   
+
+        self.db_engine.add_trust_source(trust_source.serialize())
+
+        return trust_source
+
+    def _cache_upsert_source_trust_materials(
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
+    ) -> TrustSourceData:
+        """
+        Extract the trust material of a certain issuer from all the trust handlers using the cache_first mode.
+        It always extracts first the trust material of the issuer from cache and, if it is not found, it updates it.
+
+        :param issuer: The issuer
+        :type issuer: str
+
+        :returns: The trust source
+        :rtype: Optional[TrustSourceData]
+        """
+        for handler in self.handlers:
+            handler_name = handler.__class__.__name__
+
+            trust_param = trust_source.get_trust_param(handler_name)
+
+            if not trust_param or trust_param.expired():
+                trust_source = handler.extract_and_update_trust_materials(
+                    issuer, trust_source
+                )
+
+        self.db_engine.add_trust_source(trust_source.serialize())
+
+        return trust_source
 
     def _upsert_source_trust_materials(
         self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
@@ -67,26 +122,19 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: Optional[TrustSourceData]
         """
 
+        entity_id = issuer or "__internal__"
+
         if not trust_source:
-            trust_source = TrustSourceData.empty(issuer or "__internal__")
+            trust_source = TrustSourceData.empty(entity_id)
 
-        for handler in self.handlers:
-            if not issuer or issuer == "__internal__":
-                issuer = handler.client_id
-
-            handler_name = handler.__class__.__name__
-
-            trust_param = trust_source.get_trust_param(handler_name)
-
-            if not trust_param or trust_param.expired():
-                trust_source = handler.extract_and_update_trust_materials(
-                    issuer, trust_source
-                )
-
-        self.db_engine.add_trust_source(trust_source.serialize())
-
-        return trust_source
-
+        if entity_id == "__internal__":
+            return self._cache_upsert_source_trust_materials(trust_source, issuer)
+        
+        if self.mode == "update_first":
+            return self._update_upsert_source_trust_materials(trust_source, issuer)
+        else:
+            return self._cache_upsert_source_trust_materials(trust_source, issuer)
+    
     def _get_trust_source(self, issuer: Optional[str] = None) -> TrustSourceData:
         """
         Retrieve the trust source from the database or extract it from the trust handlers.
