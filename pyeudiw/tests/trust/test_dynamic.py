@@ -79,3 +79,63 @@ def test_public_key_and_metadata_retrive():
     assert trust_ev.get_metadata() == {"default_key": "default_value"}
 
     assert trust_ev.get_jwt_header_trust_parameters() == {'trust_param_type': {'default_trust_param_key': 'default_trust_param_value'}}
+
+def test_update_first_strategy():
+    db_engine = DBEngine(CONFIG["storage"])
+
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {
+            "mock": {
+                "module": "pyeudiw.tests.trust.mock_trust_handler",
+                "class": "UpdateTrustHandler",
+                "config": {},
+            },
+                
+        }, db_engine, default_client_id="default-client-id"
+    )
+
+    uuid_url = f"http://{uuid4()}.issuer.it"
+
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
+
+
+def test_cache_first_strategy():
+    db_engine = DBEngine(CONFIG["storage"])
+
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {
+            "mock": {
+                "module": "pyeudiw.tests.trust.mock_trust_handler",
+                "class": "UpdateTrustHandler",
+                "config": {},
+            },
+                
+        }, db_engine, default_client_id="default-client-id", mode="cache_first"
+    )
+
+    uuid_url = f"http://{uuid4()}.issuer.it"
+
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+
+def test_cache_first_strategy_expired():
+    db_engine = DBEngine(CONFIG["storage"])
+
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {
+            "mock": {
+                "module": "pyeudiw.tests.trust.mock_trust_handler",
+                "class": "UpdateTrustHandler",
+                "config": {
+                    "exp": 0
+                },
+            },
+                
+        }, db_engine, default_client_id="default-client-id", mode="cache_first"
+    )
+
+    uuid_url = f"http://{uuid4()}.issuer.it"
+
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
