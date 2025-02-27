@@ -99,7 +99,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
             trust_param = trust_source.get_trust_param(handler_name)
 
-            if not trust_param or trust_param.expired():
+            if not trust_param or trust_param.expired:
                 trust_source = handler.extract_and_update_trust_materials(
                     issuer, trust_source
                 )
@@ -254,7 +254,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
     @staticmethod
     def from_config(
-        config: dict, db_engine: DBEngine, default_client_id: str
+        config: dict, db_engine: DBEngine, default_client_id: str, mode: UpsertMode = "update_first"
     ) -> "CombinedTrustEvaluator":
         """
         Create a CombinedTrustEvaluator from a configuration.
@@ -301,4 +301,4 @@ class CombinedTrustEvaluator(BaseLogger):
             handlers.append(DirectTrustSdJwtVc())
             handlers.append(DirectTrustJar())
 
-        return CombinedTrustEvaluator(handlers, db_engine)
+        return CombinedTrustEvaluator(handlers, db_engine, mode)
