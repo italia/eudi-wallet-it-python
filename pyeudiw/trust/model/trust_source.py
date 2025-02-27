@@ -161,7 +161,7 @@ class TrustSourceData:
         """
         if not self.has_trust_param(type):
             return None
-        return TrustParameterData(type, self.trust_params[type])
+        return self.trust_params[type]
 
     def serialize(self) -> dict[str, any]:
         """
