@@ -47,7 +47,14 @@ def test_public_key_and_metadata_retrive():
     db_engine = DBEngine(CONFIG["storage"])
 
     trust_ev = CombinedTrustEvaluator.from_config(
-        correct_config, db_engine, default_client_id="default-client-id"
+        {
+            "mock": {
+                "module": "pyeudiw.tests.trust.mock_trust_handler",
+                "class": "MockTrustHandler",
+                "config": {},
+            },
+                
+        }, db_engine, default_client_id="default-client-id"
     )
 
     uuid_url = f"http://{uuid4()}.issuer.it"
@@ -66,3 +73,9 @@ def test_public_key_and_metadata_retrive():
     metadata = trust_ev.get_metadata(uuid_url)
 
     assert metadata == {"json_key": "json_value"}
+
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param': {'trust_param_key': 'trust_param_value'}}
+
+    assert trust_ev.get_metadata() == {"default_key": "default_value"}
+
+    assert trust_ev.get_jwt_header_trust_parameters() == {'trust_param': {'default_trust_param_key': 'default_trust_param_value'}}
