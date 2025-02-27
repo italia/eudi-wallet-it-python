@@ -109,7 +109,7 @@ class CombinedTrustEvaluator(BaseLogger):
         return trust_source
 
     def _upsert_source_trust_materials(
-        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None, force_update: bool = False
     ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers.
@@ -130,12 +130,12 @@ class CombinedTrustEvaluator(BaseLogger):
         if entity_id == "__internal__":
             return self._cache_upsert_source_trust_materials(trust_source, issuer)
         
-        if self.mode == "update_first":
+        if self.mode == "update_first" or force_update:
             return self._update_upsert_source_trust_materials(trust_source, issuer)
         else:
             return self._cache_upsert_source_trust_materials(trust_source, issuer)
     
-    def _get_trust_source(self, issuer: Optional[str] = None) -> TrustSourceData:
+    def _get_trust_source(self, issuer: Optional[str] = None, force_update: bool = False) -> TrustSourceData:
         """
         Retrieve the trust source from the database or extract it from the trust handlers.
 
@@ -147,9 +147,9 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._retrieve_trust_source(issuer or "__internal__")            
 
-        return self._upsert_source_trust_materials(trust_source, issuer)
+        return self._upsert_source_trust_materials(trust_source, issuer, force_update)
 
-    def get_public_keys(self, issuer: Optional[str] = None) -> list[dict]:
+    def get_public_keys(self, issuer: Optional[str] = None, force_update: bool = False) -> list[dict]:
         """
         Yields a list of public keys for an issuer, according to some trust model.
 
@@ -159,7 +159,7 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The public keys
         :rtype: list[dict]
         """
-        trust_source = self._get_trust_source(issuer)
+        trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.keys:
             raise NoCriptographicMaterial(
@@ -169,11 +169,11 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.public_keys
 
-    def get_metadata(self, issuer: Optional[str] = None) -> dict:
+    def get_metadata(self, issuer: Optional[str] = None, force_update: bool = False) -> dict:
         """
         Yields a dictionary of metadata about an issuer, according to some trust model.
         """
-        trust_source = self._get_trust_source(issuer)
+        trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.metadata:
             raise Exception(
@@ -183,7 +183,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.metadata
 
-    def is_revoked(self, issuer: Optional[str] = None) -> bool:
+    def is_revoked(self, issuer: Optional[str] = None, force_update: bool = False) -> bool:
         """
         Yield if the trust toward the issuer was revoked according to some trust model;
         This asusmed that  the isser exists, is valid, but is not trusted.
@@ -193,11 +193,12 @@ class CombinedTrustEvaluator(BaseLogger):
 
         :returns: If the trust toward the issuer was revoked
         :rtype: bool
+        trust_source = self._get_trust_source(issuer, force_update)
         """
         trust_source = self._get_trust_source(issuer)
         return trust_source.is_revoked
 
-    def get_policies(self, issuer: Optional[str] = None) -> dict[str, any]:
+    def get_policies(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, any]:
         """
         Get the policies of a certain issuer according to some trust model.
 
@@ -207,7 +208,7 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The policies
         :rtype: dict[str, any]
         """
-        trust_source = self._get_trust_source(issuer)
+        trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.policies:
             raise Exception(
@@ -217,7 +218,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.policies
 
-    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None) -> list[dict]:
+    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> list[dict]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
 
@@ -227,7 +228,7 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The trust parameters
         :rtype: list[dict]
         """
-        trust_source = self._get_trust_source(issuer)
+        trust_source = self._get_trust_source(issuer, force_update)
 
         return {
             param.type: param.trust_params
