@@ -163,7 +163,7 @@ def test_cache_first_strategy_expired_revoked():
     assert trust_ev.is_revoked(uuid_url) == True
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
 
-def test_cache_first_strategy_expired_revoked_force():
+def test_cache_first_strategy_expired_force_update():
     db_engine = DBEngine(CONFIG["storage"])
 
     trust_ev = CombinedTrustEvaluator.from_config(
