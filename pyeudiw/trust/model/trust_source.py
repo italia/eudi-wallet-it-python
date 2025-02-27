@@ -181,27 +181,6 @@ class TrustSourceData:
             },
         }
     
-    def is_key_revoked(self, kid: str) -> bool:
-        """
-        Return whether the trust source is revoked.
-
-        :returns: Whether the trust source is revoked
-        :rtype: bool
-        """
-
-        found = False
-
-        for key in self.keys:
-            if key["kid"] == kid:
-                found = True
-                break
-
-        if not found:
-            self.revoked = True
-            return False
-
-        return True
-    
     def is_revoked(self) -> bool:
         """
         Return whether the trust source is revoked.
