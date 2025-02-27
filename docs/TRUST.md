@@ -4,6 +4,16 @@ Trust module main responsability is to provide cryptographic material, metadata 
 Users can define their own trust module by realizing and configuring a class that satisfy the interface [pyeudiw.trust.interface.TrustEvaluator](/pyeudiw/trust/interface.py).
 This project includes some default implementation of trust, whose configuration are described below.
 
+## Caching modes
+There are two caching modes that can be used to store the cryptographic material of the parties involved in the protocol.
+- update_first: The cryptographic material is fetched using the handler protocol and then stored in the cache.
+                If the retrieval fails, the cache is used.
+- cache_first: The cryptographic material is fetched using the cache.
+               If the cache is empty, the handler protocol is used to retrieve the cryptographic material and then stored in the cache and returned.
+
+update_first is the default caching mode.
+You can set the caching mode by setting the variable trust_caching_mode in the configuration file.
+
 ## Configuration of default Trust modules
 
 ### Direct Trust for SD-JWT VC
