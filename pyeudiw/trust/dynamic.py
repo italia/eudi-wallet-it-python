@@ -99,7 +99,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
             trust_param = trust_source.get_trust_param(handler_name)
 
-            if not trust_param or trust_param.expired:
+            if not trust_param or trust_param.expired or trust_source.revoked:
                 trust_source = handler.extract_and_update_trust_materials(
                     issuer, trust_source
                 )
@@ -193,10 +193,20 @@ class CombinedTrustEvaluator(BaseLogger):
 
         :returns: If the trust toward the issuer was revoked
         :rtype: bool
+        """
         trust_source = self._get_trust_source(issuer, force_update)
+        return trust_source.is_revoked()
+    
+    def revoke(self, issuer: Optional[str] = None) -> None:
+        """
+        Revoke the trust toward the issuer according to some trust model.
+
+        :param issuer: The issuer
+        :type issuer: str
         """
         trust_source = self._get_trust_source(issuer)
-        return trust_source.is_revoked
+        trust_source.revoked = True
+        self.db_engine.add_trust_source(trust_source.serialize())
 
     def get_policies(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, any]:
         """
