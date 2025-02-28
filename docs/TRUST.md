@@ -103,3 +103,7 @@ The following is an example of the [TrustHandlerInterface](/pyeudiw/trust/handle
                     timeout: 10
             jwk_endpoint: /.well-known/jwt-vc-issuer
 ```
+
+### Client ID and Default Client ID
+The configuration can also define a client id that is used by default when a method of CombinedTrustEvaluator is called without a client_id parameter. 
+If the client_id is not defined in the configuration of the handler, in the phase of initialization of the CombinedTrustEvaluator, the client_id is set to default_client_id.
