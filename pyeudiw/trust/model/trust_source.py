@@ -112,21 +112,29 @@ class TrustSourceData:
 
     def add_key(self, key: dict) -> None:
         """
-        Add a key to the trust source.
+        Add a key to the trust source if it is not already present.
 
         :param key: The key to add
         :type key: dict
         """
-        self.keys.append(key)
+        key_thumbprint = key_from_jwk_dict(key).thumbprint("SHA-256")
+        filtered_keys = [k for k in self.keys if key_from_jwk_dict(k).thumbprint("SHA-256") == key_thumbprint]
+
+        if not filtered_keys:
+            self.keys.append(key)
 
     def add_keys(self, keys: list[dict]) -> None:
         """
-        Add keys to the trust source.
+        Add keys to the trust source if they are not already present.
 
         :param keys: The keys to add
         :type keys: list[dict]
         """
-        self.keys.extend(keys)
+        thumbprints = [key_from_jwk_dict(key).thumbprint("SHA-256") for key in self.keys]
+        
+        for key in keys:
+            if key_from_jwk_dict(key).thumbprint("SHA-256") not in thumbprints:
+                self.keys.append(key)
 
     def add_trust_param(self, type: str, trust_params: TrustParameterData) -> None:
         """
@@ -161,7 +169,7 @@ class TrustSourceData:
         """
         if not self.has_trust_param(type):
             return None
-        return TrustParameterData(type, self.trust_params[type])
+        return self.trust_params[type]
 
     def serialize(self) -> dict[str, any]:
         """
@@ -180,6 +188,15 @@ class TrustSourceData:
                 type: param.serialize() for type, param in self.trust_params.items()
             },
         }
+    
+    def is_revoked(self) -> bool:
+        """
+        Return whether the trust source is revoked.
+
+        :returns: Whether the trust source is revoked
+        :rtype: bool
+        """
+        return self.revoked
 
     @staticmethod
     def empty(entity_id: str) -> "TrustSourceData":

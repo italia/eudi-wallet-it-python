@@ -2,7 +2,7 @@ from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.model.trust_source import TrustParameterData
 from datetime import datetime
-from typing import Union
+from pyeudiw.tools.utils import exp_from_now
 
 mock_jwk = {
     "crv": "P-256",
@@ -21,9 +21,10 @@ class MockTrustHandler(TrustHandlerInterface):
 
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("default_client_id", None)
+        self.exp = kwargs.get("exp", 10)
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
-        if issuer == self.default_client_id:
+        if issuer == self.client_id:
             trust_source.metadata = {"default_key": "default_value"}
             return trust_source
 
@@ -34,25 +35,55 @@ class MockTrustHandler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
-        trust_source.keys.append(mock_jwk)
+        trust_source.add_key(mock_jwk)
 
-        if issuer == self.default_client_id:
+        if issuer == self.client_id:
             trust_param = TrustParameterData(
                 type="trust_param_type",
                 trust_params= {"default_trust_param_key": "default_trust_param_value"},
-                expiration_date=datetime.now(),
+                expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
             )
         else:
             trust_param = TrustParameterData(
                 type="trust_param_type",
                 trust_params= {"trust_param_key": "trust_param_value"},
-                expiration_date=datetime.now(),
+                expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
             )
 
-        trust_source.add_trust_param("trust_param", trust_param)
+        trust_source.add_trust_param(str(self.__class__.__name__), trust_param)
 
         return trust_source
 
+class UpdateTrustHandler(MockTrustHandler):
+    """
+    Mock realization of TrustEvaluator for testing purposes only
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.updated = False
+
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
+        
+        if not self.updated:
+            self.updated = True
+            return super().extract_and_update_trust_materials(issuer, trust_source)
+        
+        
+        trust_source = self.get_metadata(issuer, trust_source)
+        trust_source.keys.append(mock_jwk)
+
+        trust_param = TrustParameterData(
+            type="trust_param_type",
+            trust_params= {"updated_trust_param_key": "updated_trust_param_value"},
+            expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+        )
+
+        trust_source.add_trust_param(str(self.__class__.__name__), trust_param)
+
+        return trust_source
 
 class NonConformatTrustHandler:
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:

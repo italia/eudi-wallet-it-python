@@ -2,12 +2,23 @@
 
 # Trust Module
 
+## Caching modes
+There are two caching modes that can be used to store the cryptographic material of the parties involved in the protocol.
+- update_first: The cryptographic material is fetched using the handler protocol and then stored in the cache.
+                If the retrieval fails, the cache is used.
+- cache_first: The cryptographic material is fetched using the cache.
+               If the cache is empty, the handler protocol is used to retrieve the cryptographic material and then stored in the cache and returned.
+
+update_first is the default caching mode.
+You can set the caching mode by setting the variable trust_caching_mode in the configuration file.
+
+## Configuration of default Trust modules
+
 The main responsibility of the Trust module is to provide cryptographic material, metadata, trust parameters, and revocation status of parties involved in the [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol. This project includes some default implementations of trust, whose configurations are described below.
 
 > [!NOTE] 
 > A trust parameter is a piece of information that can be used to evaluate the trustworthiness of an entity. For example, the trust parameter of an OpenID Federation entity is the [trust chain](https://openid.net/specs/openid-federation-1_0.html#section-4) of the entity.
 
-## Configuration of Default Trust Modules
 
 ### Direct Trust for SD-JWT VC
 
