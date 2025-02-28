@@ -2,7 +2,10 @@
 
 # Trust Module
 
-The main responsibility of the Trust module is to provide cryptographic material, metadata, and revocation status of parties involved in the [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol. This project includes some default implementations of trust, whose configurations are described below.
+The main responsibility of the Trust module is to provide cryptographic material, metadata, trust parameters, and revocation status of parties involved in the [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol. This project includes some default implementations of trust, whose configurations are described below.
+
+> [!NOTE] 
+> A trust parameter is a piece of information that can be used to evaluate the trustworthiness of an entity. For example, the trust parameter of an OpenID Federation entity is the [trust chain](https://openid.net/specs/openid-federation-1_0.html#section-4) of the entity.
 
 ## Configuration of Default Trust Modules
 
@@ -51,7 +54,7 @@ The module `pyeudiw.trust.handler.federation` provides a source of trusted entit
 
 Users can define their own trust module by implementing and configuring a class that satisfies the interface [TrustHandlerInterface](/pyeudiw/trust/handler/interface.py).
 
-The handler works with the trust information of an entity, such as the public key, metadata, and revocation status using the class [TrustSource](/pyeudiw/trust/model/trust_source.py). This class is used by the `CombinedTrustEvaluator` to store the trust information of an entity in the database using the database module.
+The handler works with the trust information of an entity, such as the public key, metadata, trust parameters, and revocation status using the class [TrustSource](/pyeudiw/trust/model/trust_source.py). This class is used by the `CombinedTrustEvaluator` to store the trust information of an entity in the database using the database module.
 
 Every method of the `TrustHandlerInterface` takes a `TrustSource` object as input and returns the same object updated with the trust information of a certain entity. This information can be retrieved from the database, if the entity's information was already stored, or reconstructed from the network following the protocol of trustability.
 
