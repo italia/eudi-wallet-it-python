@@ -51,14 +51,14 @@ The module `pyeudiw.trust.handler.federation` provides a source of trusted entit
 
 Users can define their own trust module by implementing and configuring a class that satisfies the interface [TrustHandlerInterface](/pyeudiw/trust/handler/interface.py).
 
-The handler works with the trust information of an entity, such as the public key, metadata, and revocation status using the class [TrustSource](/pyeudiw/trust/model/trust_source.py). This class is used by the `DinamicTrustHandler` to store the trust information of an entity in the database using the database module.
+The handler works with the trust information of an entity, such as the public key, metadata, and revocation status using the class [TrustSource](/pyeudiw/trust/model/trust_source.py). This class is used by the `CombinedTrustEvaluator` to store the trust information of an entity in the database using the database module.
 
 Every method of the `TrustHandlerInterface` takes a `TrustSource` object as input and returns the same object updated with the trust information of a certain entity. This information can be retrieved from the database, if the entity's information was already stored, or reconstructed from the network following the protocol of trustability.
 
 To work correctly the TrustHandler must implements the following methods:
 
 - extract_and_update_trust_materials:
-    This method is called internally from the DinamicTrustHandler to extract the trust materials from the entity and update the TrustSource object when the trust information of the entity is not stored in the database or outdated. This method must:
+    This method is called internally from the CombinedTrustEvaluator to extract the trust materials from the entity and update the TrustSource object when the trust information of the entity is not stored in the database or outdated. This method must:
     1. Retrieve the trust materials following the protocol of trustability.
     2. Update the TrustSource object with the trust information of the entity using the provided methods like `add_key` to store a public key or `add_trust_param` to store a trust parameter.
     3. Return the updated TrustSource object.
@@ -75,7 +75,7 @@ To work correctly the TrustHandler must implements the following methods:
     The TrustHandler may not have any associated metadata endpoints, in which case an empty list is returned.
 
 - get_metadata:
-    This method is called internally from the DinamicTrustHandler to retrieve the metadata of the entity. This method must:
+    This method is called internally from the CombinedTrustEvaluator to retrieve the metadata of the entity. This method must:
     1. Retrieve the metadata of the entity following the protocol of trustability.
     2. Update the TrustSource object with the metadata information of the entity using the provided method `add_metadata` to store the metadata.
     3. Return the updated TrustSource object.
