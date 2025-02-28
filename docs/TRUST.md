@@ -37,6 +37,8 @@ Some HTTPC parameters are commonly used, have a default value, and can alternati
 The module `pyeudiw.trust.handler.federation` provides a source of trusted entities and metadata based on [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html). It is intended to be applicable to Issuers, Holders, and Verifiers. Specifically, for the Verifier (this application), the module can expose verifier metadata at the `.well-known/openid-federation` endpoint.
 
 ####
+
+| Parameter                                                      | Description                                               | Example Value                                                            |
 | -------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
 | config.federation.metadata_type                                | The type of metadata to use for the federation            | openid_credential_verifier                                                     |
 | config.federation.authority_hints                              | The list of authority hints to use for the federation     | [http://127.0.0.1:10000]                                                 |
@@ -47,7 +49,7 @@ The module `pyeudiw.trust.handler.federation` provides a source of trusted entit
 | config.federation.federation_entity_metadata.policy_uri        | The URI of the policy                                     | https://developers.italia.it/policy.html                                 |
 | config.federation.federation_entity_metadata.tos_uri           | The URI of the TOS                                        | https://developers.italia.it/tos.html                                    |
 | config.federation.federation_entity_metadata.logo_uri          | The URI of the logo                                       | https://developers.italia.it/assets/icons/logo-it.svg                    |
-| config.federation.federation_jwks                              | The list of (private) JSON Web Keys for the federation    |                                                                          |
+| config.federation.federation_jwks                              | The list of (private) JSON Web Keys for the federation    |                                                                          |                                                                  |
 
 
 ## Write a Custom Trust Handler Module
