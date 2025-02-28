@@ -35,7 +35,7 @@ class MockTrustHandler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
-        trust_source.keys.append(mock_jwk)
+        trust_source.add_key(mock_jwk)
 
         if issuer == self.client_id:
             trust_param = TrustParameterData(

@@ -181,3 +181,27 @@ def test_cache_first_strategy_expired_force_update():
 
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url, force_update=True) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
+
+def test_no_public_key_duplicates():
+    db_engine = DBEngine(CONFIG["storage"])
+
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {
+            "mock": {
+                "module": "pyeudiw.tests.trust.mock_trust_handler",
+                "class": "MockTrustHandler",
+                "config": {},
+            },
+                
+        }, db_engine, default_client_id="default-client-id", mode="update_first"
+    )
+
+    uuid_url = f"http://{uuid4()}.issuer.it"
+
+    pub_keys = trust_ev.get_public_keys(uuid_url)
+
+    assert len(pub_keys) == 1
+
+    pub_keys = trust_ev.get_public_keys(uuid_url)
+
+    assert len(pub_keys) == 1
