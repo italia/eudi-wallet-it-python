@@ -117,7 +117,8 @@ class TrustSourceData:
         :param key: The key to add
         :type key: dict
         """
-        filtered_keys = [k for k in self.keys if k["kid"] == key["kid"]]
+        key_thumbprint = key_from_jwk_dict(key).thumbprint("SHA-256")
+        filtered_keys = [k for k in self.keys if key_from_jwk_dict(key).thumbprint("SHA-256") == key_thumbprint]
 
         if not filtered_keys:
             self.keys.append(key)
@@ -129,10 +130,10 @@ class TrustSourceData:
         :param keys: The keys to add
         :type keys: list[dict]
         """
-        kids = [key["kid"] for key in self.keys]
+        thumbprints = [key_from_jwk_dict(key).thumbprint("SHA-256") for key in self.keys]
         
         for key in keys:
-            if key["kid"] not in kids:
+            if key_from_jwk_dict(key).thumbprint("SHA-256") not in thumbprints:
                 self.keys.append(key)
 
     def add_trust_param(self, type: str, trust_params: TrustParameterData) -> None:
