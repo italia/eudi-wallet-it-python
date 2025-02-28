@@ -211,6 +211,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
 def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
     if not endpoint_component:
         return issuer_id
+
+    issuer_id = f"https://{issuer_id.strip('/')}" if not issuer_id.startswith("http") else issuer_id
+
     baseurl = urlparse(issuer_id)
     full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}"
     return baseurl._replace(path=full_endpoint_path).geturl()
