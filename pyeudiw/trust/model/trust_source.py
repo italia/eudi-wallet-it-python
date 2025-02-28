@@ -112,21 +112,28 @@ class TrustSourceData:
 
     def add_key(self, key: dict) -> None:
         """
-        Add a key to the trust source.
+        Add a key to the trust source if it is not already present.
 
         :param key: The key to add
         :type key: dict
         """
-        self.keys.append(key)
+        filtered_keys = [k for k in self.keys if k["kid"] == key["kid"]]
+
+        if not filtered_keys:
+            self.keys.append(key)
 
     def add_keys(self, keys: list[dict]) -> None:
         """
-        Add keys to the trust source.
+        Add keys to the trust source if they are not already present.
 
         :param keys: The keys to add
         :type keys: list[dict]
         """
-        self.keys.extend(keys)
+        kids = [key["kid"] for key in self.keys]
+        
+        for key in keys:
+            if key["kid"] not in kids:
+                self.keys.append(key)
 
     def add_trust_param(self, type: str, trust_params: TrustParameterData) -> None:
         """
