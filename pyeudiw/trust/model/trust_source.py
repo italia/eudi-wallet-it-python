@@ -118,7 +118,7 @@ class TrustSourceData:
         :type key: dict
         """
         key_thumbprint = key_from_jwk_dict(key).thumbprint("SHA-256")
-        filtered_keys = [k for k in self.keys if key_from_jwk_dict(key).thumbprint("SHA-256") == key_thumbprint]
+        filtered_keys = [k for k in self.keys if key_from_jwk_dict(k).thumbprint("SHA-256") == key_thumbprint]
 
         if not filtered_keys:
             self.keys.append(key)
