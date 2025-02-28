@@ -1,16 +1,19 @@
 # Trust 
 
-Trust module main responsability is to provide cryptographic material, metadata and revocation status of parties involved in the [OpnedID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol.
-Users can define their own trust module by realizing and configuring a class that satisfy the interface [pyeudiw.trust.interface.TrustEvaluator](/pyeudiw/trust/interface.py).
-This project includes some default implementation of trust, whose configuration are described below.
+# Trust Module
 
-## Configuration of default Trust modules
+The main responsibility of the Trust module is to provide cryptographic material, metadata, trust parameters, and revocation status of parties involved in the [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol. This project includes some default implementations of trust, whose configurations are described below.
+
+> [!NOTE] 
+> A trust parameter is a piece of information that can be used to evaluate the trustworthiness of an entity. For example, the trust parameter of an OpenID Federation entity is the [trust chain](https://openid.net/specs/openid-federation-1_0.html#section-4) of the entity.
+
+## Configuration of Default Trust Modules
 
 ### Direct Trust for SD-JWT VC
 
-Module `pyeudiw.trust.default.direct_trust_sd_jwt_vc` provides a source of direct trust that can be used to validate VP tokens with format [SD-JWT VC](https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-05.html).
+The module `pyeudiw.trust.default.direct_trust_sd_jwt_vc` provides a source of direct trust that can be used to validate VP tokens with the format [SD-JWT VC](https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-05.html).
 
-The configuration parameters of the module are the following.
+#### Configuration Parameters
 
 | Parameter        | Description                                                             | Example Value              |
 | ---------------- | ----------------------------------------------------------------------- | -------------------------- |
@@ -18,21 +21,22 @@ The configuration parameters of the module are the following.
 | cache_ttl        | (Optional) Maximum time (in seconds) of a cached jwk; use 0 to disable  | 60                         |
 | httpc_parameters | (Optional) Parameters of the HTTP connection of the request above       | (see below)                |
 
+#### HTTPC Parameters
+
 HTTPC parameters are optional and described below.
 
 | Parameter               | Description                                                                 |
 | ----------------------- | --------------------------------------------------------------------------- |
-| httpc_params.connection | dictionary that represents a `aiohttp._RequestOptions` used in GET requests |
-| httpc_params.session    | dictionary that represents the keyword arguments of `aiohttp.ClientSession` |
+| httpc_params.connection | Dictionary that represents a `aiohttp._RequestOptions` used in GET requests |
+| httpc_params.session    | Dictionary that represents the keyword arguments of `aiohttp.ClientSession` |
 
-Some HTTPC parameters are commonly used, have a default value and as an alternative can be optionally defined by an  [environment variable](https://github.com/italia/eudi-wallet-it-python/blob/dev/README.SATOSA.md).
+Some HTTPC parameters are commonly used, have a default value, and can alternatively be defined by an [environment variable](https://github.com/italia/eudi-wallet-it-python/blob/dev/README.SATOSA.md).
 
 ### Federation
 
-Module `pyeudiw.trust.handler.federation` provides a source of trusted entities and metadata based on [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html) that is intended to be applicable to Issuer, Holders and Verifiers. In the specific case of the Verifier (this application), the module can expose verifier metadata at the `.well-known/openid-federation` endpoint.
+The module `pyeudiw.trust.handler.federation` provides a source of trusted entities and metadata based on [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html). It is intended to be applicable to Issuers, Holders, and Verifiers. Specifically, for the Verifier (this application), the module can expose verifier metadata at the `.well-known/openid-federation` endpoint.
 
-The configuration parameters of the module are the following.
-
+####
 
 | Parameter                                                      | Description                                               | Example Value                                                            |
 | -------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -45,4 +49,66 @@ The configuration parameters of the module are the following.
 | config.federation.federation_entity_metadata.policy_uri        | The URI of the policy                                     | https://developers.italia.it/policy.html                                 |
 | config.federation.federation_entity_metadata.tos_uri           | The URI of the TOS                                        | https://developers.italia.it/tos.html                                    |
 | config.federation.federation_entity_metadata.logo_uri          | The URI of the logo                                       | https://developers.italia.it/assets/icons/logo-it.svg                    |
-| config.federation.federation_jwks                              | The list of (private) JSON Web Keys for the federation    |                                                                          |
+| config.federation.federation_jwks                              | The list of (private) JSON Web Keys for the federation    |                                                                          |                                                                  |
+
+
+## Write a Custom Trust Handler Module
+
+Users can define their own trust module by implementing and configuring a class that satisfies the interface [TrustHandlerInterface](/pyeudiw/trust/handler/interface.py).
+
+The handler works with the trust information of an entity, such as the public key, metadata, trust parameters, and revocation status using the class [TrustSource](/pyeudiw/trust/model/trust_source.py). This class is used by the `CombinedTrustEvaluator` to store the trust information of an entity in the database using the database module.
+
+Every method of the `TrustHandlerInterface` takes a `TrustSource` object as input and returns the same object updated with the trust information of a certain entity. This information can be retrieved from the database, if the entity's information was already stored, or reconstructed from the network following the protocol of trustability.
+
+To work correctly the TrustHandler must implements the following methods:
+
+- extract_and_update_trust_materials:
+    This method is called internally from the CombinedTrustEvaluator to extract the trust materials from the entity and update the TrustSource object when the trust information of the entity is not stored in the database or outdated. This method must:
+    1. Retrieve the trust materials following the protocol of trustability.
+    2. Update the TrustSource object with the trust information of the entity using the provided methods like `add_key` to store a public key or `add_trust_param` to store a trust parameter.
+    3. Return the updated TrustSource object.
+
+- build_metadata_endpoints: 
+    Expose one or more metadata endpoints required to publish metadata information about the entity, such as public keys, configurations, and policies. These endpoints are attached to a backend named according to the first function argument.
+
+    The method returns a list of tuples, each containing:
+    1. A regex for routing to the endpoint, where the first path must match the backend.
+    2. An HTTP handler that provides a response based on the context.
+
+    The `entity_uri` is the full path component of the exposed module, which can also serve as the issuer value when signing tokens. The module is exposed to the web in the pattern `<scheme>://<host>/<base_path>`.
+
+    The TrustHandler may not have any associated metadata endpoints, in which case an empty list is returned.
+
+- get_metadata:
+    This method is called internally from the CombinedTrustEvaluator to retrieve the metadata of the entity. This method must:
+    1. Retrieve the metadata of the entity following the protocol of trustability.
+    2. Update the TrustSource object with the metadata information of the entity using the provided method `add_metadata` to store the metadata.
+    3. Return the updated TrustSource object.
+
+
+Finally, to properly load the custom TrustHandler, the user must define the module in a block under the trust section of the configuration file. The module must contain the following fields:
+
+- module: The module path of the TrustHandler.
+- class: The path to the class name of the TrustHandler.
+- config: The configuration parameters of the TrustHandler.
+          This field is dynamic and must contain all the parameters required by the TrustHandler to work correctly.
+
+The following is an example of the [TrustHandlerInterface](/pyeudiw/trust/handler/interface.py) configuration:
+
+```yaml
+    direct_trust_sd_jwt_vc:
+        module: pyeudiw.trust.handler.direct_trust_sd_jwt_vc
+        class: DirectTrustSdJwtVc
+        config:
+            cache_ttl: 0
+            httpc_params:
+                connection:
+                    timeout: 10
+                session:
+                    timeout: 10
+            jwk_endpoint: /.well-known/jwt-vc-issuer
+```
+
+### Client ID and Default Client ID
+The configuration can also define a client id that is used by default when a method of CombinedTrustEvaluator is called without a client_id parameter. 
+If the client_id is not defined in the configuration of the handler, in the phase of initialization of the CombinedTrustEvaluator, the client_id is set to default_client_id.
