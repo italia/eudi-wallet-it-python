@@ -130,7 +130,11 @@ class ResponseHandler(ResponseHandlerInterface):
         except InvalidInternalStateError as e500:
             return self._handle_500(context, e500.args[0], "invalid state")
         except FinalizedSessionError as e400:
-            return self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
+            return self._handle_400(
+                context, 
+                "invalid authorization response: session already finalized or corrupted", 
+                e400
+            )
 
         # the flow below is a simplified algorithm of authentication response processing, where:
         # (1) we don't check that presentation submission matches definition (yet)
