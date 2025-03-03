@@ -520,6 +520,23 @@ class TestOpenID4VPBackend:
         response_endpoint = self.backend.response_endpoint(context)
         assert response_endpoint.status == "200"
 
+    def test_response_endpoint_invalid_jwt(self, context):
+        self.backend.register_endpoints()
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        context.request = {
+            "response": "not_a_jwt"
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(response_endpoint.message)
+        assert response_endpoint.status == "400"
+        assert msg["error"] == "invalid_request"
+
     def test_request_endpoint(self, context):
         # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
@@ -704,3 +721,5 @@ class TestOpenID4VPBackend:
         assert error_resp.message
         err = json.loads(error_resp.message)
         assert err["error"] == error_message
+
+    
