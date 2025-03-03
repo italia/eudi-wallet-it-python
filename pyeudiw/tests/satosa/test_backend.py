@@ -559,6 +559,11 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "200"
 
+        doc = self.backend.db_engine.get_by_state(state)
+
+        assert doc["finalized"] == True
+        assert doc["error_response"] == response_with_bad_nonce
+
     def test_request_endpoint(self, context):
         # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
