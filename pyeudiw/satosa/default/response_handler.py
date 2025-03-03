@@ -173,7 +173,7 @@ class ResponseHandler(ResponseHandlerInterface):
             except InvalidVPKeyBinding as e400:
                 return self._handle_400(
                     context, 
-                    "invalid vp token: nonce challange mismatch",
+                    "invalid vp token: nonce or aud mismatch",
                     e400
                 )
 
