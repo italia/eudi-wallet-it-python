@@ -102,9 +102,9 @@ class ResponseHandler(ResponseHandlerInterface):
                 self._parse_authorization_response(context)
             )
         except AuthRespParsingException as e400:
-            self._handle_400(context, e400.args[0], e400.args[1])
+            return self._handle_400(context, e400.args[0], e400.args[1])
         except AuthRespValidationException as e401:
-            self._handle_401(
+            return self._handle_401(
                 context,
                 "invalid authentication method: token might be invalid or expired",
                 e401,
