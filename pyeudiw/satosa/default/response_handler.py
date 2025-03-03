@@ -122,7 +122,11 @@ class ResponseHandler(ResponseHandlerInterface):
         try:
             request_session = self._retrieve_session_from_state(authz_payload.state)
         except AuthorizeUnmatchedResponse as e400:
-            return self._handle_400(context, e400.args[0], e400.args[1])
+            return self._handle_400(
+                context, 
+                "invalid authorization response: cannot find the session associated to the state",
+                e400
+            )
         except InvalidInternalStateError as e500:
             return self._handle_500(context, e500.args[0], "invalid state")
         except FinalizedSessionError as e400:
