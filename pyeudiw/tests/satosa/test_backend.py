@@ -520,6 +520,45 @@ class TestOpenID4VPBackend:
         response_endpoint = self.backend.response_endpoint(context)
         assert response_endpoint.status == "200"
 
+    def test_response_endpoint_error_flow(self, context):
+        self.backend.register_endpoints()
+
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        response_with_bad_nonce = {
+            "state": state,
+            "error": "invalid_request",
+            "error_description": "invalid request"
+        }
+
+        context.request = response_with_bad_nonce
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(response_endpoint.message)
+        assert response_endpoint.status == "200"
+
     def test_request_endpoint(self, context):
         # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
