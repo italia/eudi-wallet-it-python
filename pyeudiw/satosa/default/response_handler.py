@@ -37,6 +37,7 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
+from dataclasses import asdict
 
 
 class ResponseHandler(ResponseHandlerInterface):
@@ -113,6 +114,15 @@ class ResponseHandler(ResponseHandlerInterface):
         )
 
         if isinstance(authz_payload, ErrorResponsePayload):
+            request_session: dict = {}
+            request_session = self._retrieve_session_from_state(authz_payload.state)
+
+            self.db_engine.update_response_object(
+                request_session["nonce"], authz_payload.state, asdict(authz_payload), True
+            )
+
+            self.db_engine.set_finalized(request_session["document_id"])
+
             return JsonResponse({"status": "OK"}, status="200")
 
         request_session: dict = {}
