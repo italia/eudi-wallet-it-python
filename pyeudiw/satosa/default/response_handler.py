@@ -170,8 +170,12 @@ class ResponseHandler(ResponseHandlerInterface):
 
             try:
                 token_verifier.verify_challenge()
-            except InvalidVPKeyBinding as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            except InvalidVPKeyBinding as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: nonce challange mismatch",
+                    e400
+                )
 
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
