@@ -9,6 +9,7 @@ from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
+from pyeudiw.openid4vp.exceptions import NotKBJWT
 
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
@@ -20,7 +21,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
     ):
         self.token = token
         if not is_sd_jwt_kb_format(token):
-            raise ValueError(
+            raise NotKBJWT(
                 f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?"
             )
         self.verifier_id = verifier_id
