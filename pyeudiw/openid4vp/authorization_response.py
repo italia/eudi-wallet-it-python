@@ -23,6 +23,8 @@ def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
         return ResponseMode.direct_post_jwt
     if "vp_token" in context.request:
         return ResponseMode.direct_post
+    if "error" in context.request:
+        return ResponseMode.error
     raise AuthRespParsingException(
         "HTTP POST request body does not contain a recognized openid4vp response mode"
     )
