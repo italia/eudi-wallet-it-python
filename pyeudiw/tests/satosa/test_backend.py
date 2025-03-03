@@ -546,13 +546,13 @@ class TestOpenID4VPBackend:
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
             CONFIG["base_url"])
 
-        response_with_bad_nonce = {
+        response_with_error = {
             "state": state,
             "error": "invalid_request",
             "error_description": "invalid request"
         }
 
-        context.request = response_with_bad_nonce
+        context.request = response_with_error
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.response_endpoint(context)
@@ -562,7 +562,7 @@ class TestOpenID4VPBackend:
         doc = self.backend.db_engine.get_by_state(state)
 
         assert doc["finalized"] == True
-        assert doc["error_response"] == response_with_bad_nonce
+        assert doc["error_response"] == response_with_error
 
     def test_request_endpoint(self, context):
         # No session created
