@@ -100,11 +100,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             # get jwks by value
             return jwks
         return self._get_jwks_by_reference(jwks_uri)
-
-    def _get_jwk_metadata(self, issuer_id: str) -> dict:
-        if not self.jwk_endpoint:
-            return {}
-        endpoint = build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint)
+    
+    def _get_url(self, endpoint: str) -> str:
         if self.cache_ttl:
             resp = cacheable_get_http_url(
                 self.cache_ttl,
@@ -116,11 +113,27 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             resp = get_http_url(
                 [endpoint], self.httpc_params, http_async=self.http_async_calls
             )[0]
-        if (not resp) or (resp.status_code != 200):
-            raise InvalidJwkMetadataException(
-                f"failed to fetch valid jwk metadata: obtained {resp}"
-            )
-        return resp.json()
+
+        return resp
+
+    def _get_jwk_metadata(self, issuer_id: str) -> dict:
+        if not self.jwk_endpoint:
+            return {}
+        
+        endpoints = [
+            build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint),
+            build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint, conform=False),
+        ]
+
+        for endpoint in endpoints:
+            resp = self._get_url(endpoint)
+
+            if resp and resp.status_code == 200:
+                return resp.json()
+
+        raise InvalidJwkMetadataException(
+            f"failed to fetch valid jwk metadata: obtained {resp}"
+        )
 
     def _get_jwks_by_reference(self, jwks_reference_uri: str) -> dict:
         """
@@ -208,9 +221,12 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         return trust_source
 
 
-def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
+def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
     if not endpoint_component:
         return issuer_id
+
+    issuer_id = f"https://{issuer_id.strip('/')}" if not issuer_id.startswith("http") else issuer_id
+
     baseurl = urlparse(issuer_id)
-    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}"
+    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}" if conform else f"{baseurl.path}/{endpoint_component.strip('/')}"
     return baseurl._replace(path=full_endpoint_path).geturl()
