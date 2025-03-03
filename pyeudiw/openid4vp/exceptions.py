@@ -29,3 +29,9 @@ class VPFormatNotSupported(Exception):
     Raised when a given VP format is not supported
     """
     pass
+
+class NotKBJWT(Exception):
+    """
+    Raised when a given VP format is not Key Binding JWT format
+    """
+    pass
