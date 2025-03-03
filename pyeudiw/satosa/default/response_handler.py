@@ -36,6 +36,7 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.openid4vp.exceptions import NotKBJWT
 
 
 class ResponseHandler(ResponseHandlerInterface):
@@ -145,8 +146,12 @@ class ResponseHandler(ResponseHandlerInterface):
                 token_parser, token_verifier = self._vp_verifier_factory(
                     authz_payload.presentation_submission, vp_token, request_session
                 )
-            except ValueError as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            except NotKBJWT as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: not a key-bound jwt",
+                    e400
+                )
 
             token_issuer = token_parser.get_issuer_name()
             whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
