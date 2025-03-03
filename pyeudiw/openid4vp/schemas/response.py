@@ -22,6 +22,7 @@ class PresentationSubmissionSchema(BaseModel):
 class ResponseMode(str, Enum):
     direct_post = "direct_post"
     direct_post_jwt = "direct_post.jwt"
+    error = "error"
 
 
 class ResponseSchema(BaseModel):
@@ -64,3 +65,9 @@ class AuthorizeResponsePayload:
     state: str
     vp_token: str | list[str]
     presentation_submission: dict
+
+@dataclass
+class ErrorResponsePayload:
+    state: str
+    error: str
+    error_description: str
