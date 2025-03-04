@@ -354,35 +354,45 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return self.auth_callback_func(context, resp)
 
     def status_endpoint(self, context: Context) -> JsonResponse:
-
         self._log_function_debug("status_endpoint", context)
 
         session_id = context.state["SESSION_ID"]
-        _err_msg = ""
-        state = None
 
         try:
             state = context.qs_params["id"]
-        except TypeError as e:
-            _err_msg = f"No query params found: {e}"
-        except KeyError as e:
-            _err_msg = f"No id found in qs_params: {e}"
 
-        if _err_msg:
-            return self._handle_400(context, _err_msg)
+            if not state:
+                raise ValueError("id")
+
+        except (KeyError, TypeError, ValueError) as e400:
+            return self._handle_400(
+                context, 
+                "request error: missing or invalid parameter [id]",
+                e400
+            )
 
         try:
             session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
             )
-        except Exception as e:
-            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
-            return self._handle_401(context, _msg)
+        except Exception as e401:
+            self._log_error(
+                context,
+                f"Error while retrieving session by state {state} and session_id {session_id}: {e401}"
+            )
+            return self._handle_401(
+                context,
+                "client error: no session associated to the state",
+                e401
+            )
 
         request_object = session.get("request_object", None)
         if request_object:
             if iat_now() > request_object["exp"]:
-                return self._handle_403("expired", "Request object expired")
+                return self._handle_403(
+                    context, 
+                    "request error: request expired",
+                )
 
         if session["finalized"] is True:
             resp_code = self.response_code_helper.create_code(state)
