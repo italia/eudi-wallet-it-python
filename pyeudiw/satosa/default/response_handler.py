@@ -92,6 +92,18 @@ class ResponseHandler(ResponseHandlerInterface):
                 f"unable to find nonce in session associated to state {state}: corrupted data"
             )
         return request_session
+    
+    def _handle_error_response(self, error_response: ErrorResponsePayload) -> JsonResponse:
+        request_session: dict = {}
+        request_session = self._retrieve_session_from_state(error_response.state)
+
+        self.db_engine.update_response_object(
+            request_session["nonce"], error_response.state, asdict(error_response), True
+        )
+
+        self.db_engine.set_finalized(request_session["document_id"])
+
+        return JsonResponse({"status": "OK"}, status="200")
 
     def response_endpoint(
         self, context: Context, *args: tuple
@@ -114,16 +126,7 @@ class ResponseHandler(ResponseHandlerInterface):
         )
 
         if isinstance(authz_payload, ErrorResponsePayload):
-            request_session: dict = {}
-            request_session = self._retrieve_session_from_state(authz_payload.state)
-
-            self.db_engine.update_response_object(
-                request_session["nonce"], authz_payload.state, asdict(authz_payload), True
-            )
-
-            self.db_engine.set_finalized(request_session["document_id"])
-
-            return JsonResponse({"status": "OK"}, status="200")
+            return self._handle_error_response(authz_payload)
 
         request_session: dict = {}
         try:
