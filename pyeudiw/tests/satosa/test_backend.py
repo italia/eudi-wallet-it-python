@@ -175,11 +175,11 @@ class TestOpenID4VPBackend:
             }
         }
 
-    def _initialize_session(self, nonce, state, session_id):
+    def _initialize_session(self, nonce, state, session_id, remote_flow_typ = "same_device"):
         self.backend.db_engine.init_session(
             state=state,
             session_id=session_id,
-            remote_flow_typ="same_device"
+            remote_flow_typ=remote_flow_typ
         )
 
         doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
@@ -455,10 +455,35 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid vp token: signature verification failed"
 
+    def test_response_endpoint_no_typ_session_must_fail(self, context):
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self._initialize_session(nonce, state, session_id, None)
+
+        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        encrypted_response = JWEHelper(
+            CONFIG["metadata_jwks"][1]).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "500"
+        msg = json.loads(response_endpoint.message)
+        assert msg["error"] == "server_error"
+        assert msg["error_description"] == "flow error: unable to identify flow from stored session"
+
     def test_response_endpoint_already_finalized_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
-        aud = self.backend.client_id
 
         session_id = context.state["SESSION_ID"]
         self._initialize_session(nonce, state, session_id)
