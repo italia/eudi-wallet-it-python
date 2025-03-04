@@ -663,12 +663,12 @@ class TestOpenID4VPBackend:
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "200"
 
         doc = self.backend.db_engine.get_by_state(state)
 
         assert doc["finalized"] == True
+        assert "error_response" in doc
         assert doc["error_response"] == response_with_error
 
     def test_request_endpoint(self, context):
