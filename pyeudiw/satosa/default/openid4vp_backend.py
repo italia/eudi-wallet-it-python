@@ -339,6 +339,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
         if not finalized_session:
             return self._handle_400(context, "session not found or invalid")
+        
+        if "error_response" in finalized_session:
+            return self._handle_400(context, "error response found in session")
 
         _now = iat_now()
         _exp = finalized_session["request_object"]["exp"]
