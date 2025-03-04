@@ -165,8 +165,12 @@ class ResponseHandler(ResponseHandlerInterface):
             whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
             try:
                 token_verifier.verify_signature(whitelisted_keys)
-            except Exception as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            except Exception as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: signature verification failed",
+                    e400
+                )
 
             try:
                 token_verifier.verify_challenge()
