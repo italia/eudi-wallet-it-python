@@ -206,10 +206,14 @@ class ResponseHandler(ResponseHandlerInterface):
                     context, f"Session update on storage: {request_session}"
                 )
 
-        except StorageWriteError as e:
+        except StorageWriteError as e500:
             # TODO - do we have to block in the case the update cannot be done?
-            self._log_error(context, f"Session update on storage failed: {e}")
-            return self._handle_500(context, "Cannot update response object.", e)
+            self._log_error(context, f"Session update on storage failed: {e500}")
+            return self._handle_500(
+                context, 
+                "Update error: Cannot update response object.", 
+                e500
+            )
 
         try:
             flow_type = RemoteFlowType(request_session["remote_flow_typ"])
