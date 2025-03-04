@@ -35,7 +35,9 @@ def _check_http_post_headers(context: satosa.context.Context) -> None:
     :raises AuthRespParsingException: if the request in the context does not \
         look like a POST request
     """
-    if (http_method := context.request_method.upper()) != "POST":
+    http_method = context.request_method.upper() if context.request_method else None
+
+    if http_method != "POST":
         err_msg = f"HTTP method [{http_method}] not supported"
         raise AuthRespParsingException(err_msg, err_msg)
 
