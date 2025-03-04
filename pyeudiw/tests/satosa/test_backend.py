@@ -447,6 +447,55 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
     
+    def test_response_endpoint_invalid_signature(self, context):
+        self.backend.register_endpoints()
+
+        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        holder_jwk = leaf_wallet_jwk.serialize(private=True)
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+
+        response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, self.backend.client_id)
+
+        jwt_segments = response["vp_token"].split(".")
+
+        midlen = len(jwt_segments[2]) // 2
+        jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen+1:] 
+
+        response["vp_token"] = ".".join(jwt_segments)
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        encrypted_response = JWEHelper(
+            CONFIG["metadata_jwks"][1]).encrypt(response)
+        
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        msg = json.loads(response_endpoint.message)
+
+        assert response_endpoint.status == "400"
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "invalid vp token: signature verification failed"
+
     def test_response_endpoint_already_finalized_session_must_fail(self, context):
         self.backend.register_endpoints()
 
