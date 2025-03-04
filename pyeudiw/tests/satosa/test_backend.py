@@ -361,8 +361,9 @@ class TestOpenID4VPBackend:
 
         response_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status.startswith("4")
+        assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "invalid authorization response: cannot find the session associated to the state"
 
         # case (3): bad aud
         bad_aud_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, bad_aud)
