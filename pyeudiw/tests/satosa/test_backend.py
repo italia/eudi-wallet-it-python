@@ -89,16 +89,17 @@ class TestOpenID4VPBackend:
             exp=EXP,
         )
 
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        self.issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        self.holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=CREDENTIAL_ISSUER_ENTITY_ID,
             trust_type=TrustType.DIRECT_TRUST_SD_JWT_VC,
-            jwks=[issuer_jwk],
+            jwks=[self.issuer_jwk],
         )
 
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
-        tsd.add_key(issuer_jwk)
+        tsd.add_key(self.issuer_jwk)
 
         db_engine_inst.add_trust_source(tsd.serialize())
 
@@ -174,6 +175,19 @@ class TestOpenID4VPBackend:
             }
         }
 
+    def _initialize_session(self, nonce, state, session_id):
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+    
     def test_backend_init(self):
         assert self.backend.name == "name"
 
@@ -263,11 +277,6 @@ class TestOpenID4VPBackend:
         assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
 
     def test_fail_vp_validation_in_response_endpoint(self, context):
-        self.backend.register_endpoints()
-
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
-        holder_jwk = leaf_wallet_jwk.serialize(private=True)
-
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
 
@@ -275,21 +284,12 @@ class TestOpenID4VPBackend:
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
             CONFIG["base_url"])
         
-        response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, self.backend.client_id)
+        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
-
         # Put a different nonce in the stored request object.
         # This will trigger a `VPInvalidNonce` error
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": str(uuid.uuid4()), "state": state})
+        self._initialize_session(str(uuid.uuid4()), state, session_id)
 
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(response)
@@ -319,33 +319,18 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
 
     def test_response_endpoint(self, context):
-        self.backend.register_endpoints()
-
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
-        holder_jwk = leaf_wallet_jwk.serialize(private=True)
-
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
-        aud = self.backend.client_id
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
-
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
+        self._initialize_session(nonce, state, session_id)
         
         bad_nonce = str(uuid.uuid4())
         bad_state = str(uuid.uuid4())
         bad_aud = str(uuid.uuid4())
 
         # case (1): bad nonce
-        bad_nonce_response = self._generate_payload(issuer_jwk, holder_jwk, bad_nonce, state, self.backend.client_id)
+        bad_nonce_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, bad_nonce, state, self.backend.client_id)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
@@ -365,7 +350,7 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
 
         # case (2): bad state
-        bad_state_response = self._generate_payload(issuer_jwk, holder_jwk, nonce, bad_state, self.backend.client_id)
+        bad_state_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id)
 
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(bad_state_response)
@@ -380,7 +365,7 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
 
         # case (3): bad aud
-        bad_aud_response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, bad_aud)
+        bad_aud_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, bad_aud)
 
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(bad_aud_response)
@@ -396,7 +381,7 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
 
         # case (4): good aud, nonce and state
-        good_response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, self.backend.client_id)
+        good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(good_response)
@@ -409,27 +394,13 @@ class TestOpenID4VPBackend:
         assert "redirect_uri" in response_endpoint.message
 
     def test_response_endpoint_no_key_binding_jwt(self, context):
-        self.backend.register_endpoints()
-
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
-        holder_jwk = leaf_wallet_jwk.serialize(private=True)
-
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+        self._initialize_session(nonce, state, session_id)
 
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
-
-        response = self._generate_payload(issuer_jwk, holder_jwk, None, state, self.backend.client_id)
+        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, None, state, self.backend.client_id)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
@@ -444,31 +415,18 @@ class TestOpenID4VPBackend:
 
         response_endpoint = self.backend.response_endpoint(context)
         msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status.startswith("4")
+        assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
     
     def test_response_endpoint_invalid_signature(self, context):
-        self.backend.register_endpoints()
-
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
-        holder_jwk = leaf_wallet_jwk.serialize(private=True)
-
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+        self._initialize_session(nonce, state, session_id)
 
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
-
-        response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, self.backend.client_id)
+        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         jwt_segments = response["vp_token"].split(".")
 
@@ -497,28 +455,14 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "invalid vp token: signature verification failed"
 
     def test_response_endpoint_already_finalized_session_must_fail(self, context):
-        self.backend.register_endpoints()
-
-        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
-        holder_jwk = leaf_wallet_jwk.serialize(private=True)
-
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
         aud = self.backend.client_id
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
-        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+        self._initialize_session(nonce, state, session_id)
 
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
-
-        response = self._generate_payload(issuer_jwk, holder_jwk, nonce, state, self.backend.client_id)
+        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
