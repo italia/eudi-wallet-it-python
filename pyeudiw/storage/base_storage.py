@@ -128,6 +128,8 @@ class BaseStorage(BaseDB):
         :type state: str
         :param response_object: the response object.
         :type response_object: dict
+        :param isError: if the response is an error response.
+        :type isError: bool
 
         :returns: the result of the update operation.
         :rtype: UpdateResult
