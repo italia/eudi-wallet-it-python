@@ -175,7 +175,7 @@ class TestOpenID4VPBackend:
             }
         }
 
-    def _initialize_session(self, nonce, state, session_id, remote_flow_typ = "same_device"):
+    def _initialize_session(self, nonce, state, session_id, remote_flow_typ = "same_device", exp=None):
         self.backend.db_engine.init_session(
             state=state,
             session_id=session_id,
@@ -184,9 +184,14 @@ class TestOpenID4VPBackend:
 
         doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
 
+        request_object={"nonce": nonce, "state": state}
+
+        if exp:
+            request_object["exp"] = exp
+
         self.backend.db_engine.update_request_object(
             document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
+            request_object=request_object)
     
     def test_backend_init(self):
         assert self.backend.name == "name"
@@ -323,7 +328,7 @@ class TestOpenID4VPBackend:
         state = str(uuid.uuid4())
 
         session_id = context.state["SESSION_ID"]
-        self._initialize_session(nonce, state, session_id)
+        self._initialize_session(nonce, state, session_id, exp=exp_from_now(3000))
         
         bad_nonce = str(uuid.uuid4())
         bad_state = str(uuid.uuid4())
@@ -392,6 +397,16 @@ class TestOpenID4VPBackend:
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
         response_endpoint = self.backend.response_endpoint(context)
         assert response_endpoint.status == "200"
+        assert "redirect_uri" in response_endpoint.message
+
+        # test status endpoint
+        msg = json.loads(response_endpoint.message)
+
+        context.request_method = "GET"
+        context.qs_params = {"id": state}
+        status_endpoint = self.backend.status_endpoint(context)
+
+        assert status_endpoint.status == "200"
         assert "redirect_uri" in response_endpoint.message
 
     def test_response_endpoint_no_key_binding_jwt(self, context):
@@ -509,14 +524,35 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid authorization response: session already finalized or corrupted"
 
-    def test_request_endpoint(self, context):
-        # No session created
+    def test_status_endpoint_no_session(self, context):
+        # No query string parameters
         state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
-        assert request_object_jwt["error"]
+        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error_description"] == "request error: missing or invalid parameter [id]"
 
+        # Invalid state
+        context.qs_params = {"id": None}
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.message
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error_description"] == "request error: missing or invalid parameter [id]"
+
+        # Unexistent session
+        context.qs_params = {"id": str(uuid.uuid4())}
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "401"
+        assert state_endpoint_response.message
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"] == "invalid_client"
+        assert request_object_jwt["error_description"] == "client error: no session associated to the state"
+
+
+    def test_request_endpoint(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
