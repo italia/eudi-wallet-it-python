@@ -27,3 +27,9 @@ class NotKBJWT(Exception):
     Raised when a given VP format is not Key Binding JWT format
     """
     pass
+
+class MissingIssuer(Exception):
+    """
+    Raised when a given VP not contain the issuer
+    """
+    pass

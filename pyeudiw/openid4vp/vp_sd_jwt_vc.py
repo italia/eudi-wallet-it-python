@@ -9,7 +9,7 @@ from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
-from pyeudiw.openid4vp.exceptions import NotKBJWT
+from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
 
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
@@ -40,7 +40,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         """
         iss = self.sdjwt.get_issuer_jwt().payload.get("iss", None)
         if not iss:
-            raise Exception("missing required information in token paylaod: [iss]")
+            raise MissingIssuer("missing required information in token paylaod: [iss]")
         return iss
 
     def get_credentials(self) -> dict:
