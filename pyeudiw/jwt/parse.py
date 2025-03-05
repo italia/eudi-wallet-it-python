@@ -49,10 +49,8 @@ def unsafe_parse_jws(token: str) -> DecodedJwt:
     if not is_jwt_format(token):
         raise ValueError(f"unable to parse {token}: not a jwt")
 
-    try:
-        head = decode_jwt_header(token)
-        payload = decode_jwt_payload(token)
-        signature = token.split(".")[2]
-    except Exception as e:
-        raise ValueError(f"unable to decode JWS part: {e}")
+    head = decode_jwt_header(token)
+    payload = decode_jwt_payload(token)
+    signature = token.split(".")[2]
+
     return DecodedJwt(token, head, payload, signature=signature)
