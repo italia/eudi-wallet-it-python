@@ -336,7 +336,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         except Exception as e401:
             self._log_error(
                 context,
-                f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e400}"
+                f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e401}"
             )
             return self._handle_401(
                 context, 
