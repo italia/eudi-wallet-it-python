@@ -17,7 +17,7 @@ from pyeudiw.sd_jwt.schema import (
     is_sd_jwt_format,
 )
 
-from . import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
+from pyeudiw.sd_jwt import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
 
 _JsonTypes = dict | list | str | int | float | bool | None
 _JsonTypes_T = TypeVar("_JsonTypes_T", bound=_JsonTypes)
@@ -178,6 +178,7 @@ class SdJwt:
         verify_jws_with_key(self.holder_kb.jwt, cnf)
 
 
+def _verify_challenge(hkb: DecodedJwt, challenge: VerifierChallenge) -> None:
     """
     Verify the challenge in the key binding
 
@@ -199,6 +200,7 @@ class SdJwt:
         )
 
 
+def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: str) -> None:
     """
     Verify the sd-jwt hash
 
@@ -235,6 +237,7 @@ def _verify_iat(payload: dict) -> None:
     # we check that 'iat' claim exists, according to sd-jwt specs, but since its a standard claim,
     # its value is validated by the general purpose token verification tool JWSHelper accordidng to
     # its own rules
+    
     iat: int | None = payload.get("iat", None)
     if not isinstance(iat, int):
         raise ValueError("missing or invalid parameter [iat] in kbjwt")
@@ -245,6 +248,7 @@ def _verify_key_binding(
     sd_hash_alg: str,
     hkb: DecodedJwt,
     challenge: VerifierChallenge,
+) -> None:
     """
     Verify the key binding in the sd-jwt
 
@@ -289,13 +293,17 @@ def _disclosures_to_hash_mappings(
     """
     hash_to_disclosure: dict[str, str] = {}
     hash_to_dec_disclosure: dict[str, Any] = {}
+
     for disclosure in disclosures:
         decoded_disclosure = json.loads(base64_urldecode(disclosure).decode("utf-8"))
         digest = sd_alg(disclosure)
+    
         if digest in hash_to_dec_disclosure:
             raise ValueError(f"duplicate disclosure for digest {digest}")
+    
         hash_to_dec_disclosure[digest] = decoded_disclosure
         hash_to_disclosure[digest] = disclosure
+    
     return hash_to_disclosure, hash_to_dec_disclosure
 
 
@@ -317,6 +325,8 @@ def _extract_claims_from_payload(
     :returns: the disclosed claims
     :rtype: dict
     """
+
+    _, hash_to_dec_disclosure = _disclosures_to_hash_mappings(
         disclosures, sd_alg
     )
     return _unpack_claims(payload, hash_to_dec_disclosure, sd_alg, [])
