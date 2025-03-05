@@ -16,14 +16,6 @@ class InvalidVPToken(Exception):
     """
     pass
 
-
-class InvalidVPKeyBinding(InvalidVPToken):
-    """Raised when a given VP contains a proof of possession key binding with
-    wrong parameters.
-    """
-    pass
-
-
 class VPFormatNotSupported(Exception):
     """
     Raised when a given VP format is not supported
