@@ -18,13 +18,14 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
 
         try:
             state = context.qs_params["id"]
-        except Exception as e:
-            _msg = (
-                "Error while retrieving id from qs_params: "
-                f"{e.__class__.__name__}: {e}"
-            )
+
+            if not state:
+                raise ValueError("state is missing")
+        except Exception as e400:
             return self._handle_400(
-                context, _msg, HTTPError(f"{e} with {context.__dict__}")
+                context, 
+                "request error: missing or invalid parameter [id]",
+                e400
             )
 
         data = build_authorization_request_claims(
@@ -42,15 +43,18 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             document_id = document["document_id"]
             self.db_engine.update_request_object(document_id, data)
 
-        except ValueError as e:
-            _msg = "Error while retrieving request object from database."
-            return self._handle_500(
-                context, _msg, HTTPError(f"{e} with {context.__dict__}")
+        except ValueError as e401:
+            return self._handle_401(
+                context, 
+                "session error: cannot find the session associated to the state",
+                e401
             )
-
-        except (Exception, BaseException) as e:
-            _msg = f"Error while updating request object: {e}"
-            return self._handle_500(context, _msg, e)
+        except (Exception, BaseException) as e500:
+            return self._handle_500(
+                context,
+                "session error: cannot update the session",
+                e500,
+            )
 
         _protected_jwt_headers = {
             "typ": RequestHandler._REQUEST_OBJECT_TYP,
