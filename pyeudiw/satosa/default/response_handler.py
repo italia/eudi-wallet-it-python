@@ -19,7 +19,6 @@ from pyeudiw.openid4vp.authorization_response import (
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
-    InvalidVPKeyBinding,
 )
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
@@ -36,7 +35,10 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.openid4vp.exceptions import NotKBJWT
+from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
+from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.sd_jwt.exceptions import UnsupportedSdAlg, InvalidKeyBinding
 
 
 class ResponseHandler(ResponseHandlerInterface):
@@ -161,23 +163,51 @@ class ResponseHandler(ResponseHandlerInterface):
                     e400
                 )
 
-            token_issuer = token_parser.get_issuer_name()
-            whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
             try:
+                token_issuer = token_parser.get_issuer_name()
+                whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
                 token_verifier.verify_signature(whitelisted_keys)
-            except Exception as e400:
+                token_verifier.verify_challenge()
+            except MissingIssuer as e400:
                 return self._handle_400(
                     context, 
-                    "invalid vp token: signature verification failed",
+                    "invalid vp token: missing issuer information",
                     e400
                 )
-
-            try:
-                token_verifier.verify_challenge()
-            except InvalidVPKeyBinding as e400:
+            except InvalidJwkMetadataException as e500:
+                return self._handle_500(
+                    context, 
+                    "trust error: cannot fetch public keys",
+                    e500
+                )
+            except JWSVerificationError as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: invalid signature",
+                    e400
+                )
+            except UnsupportedSdAlg as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: unsupported signature algorithm",
+                    e400
+                )
+            except InvalidKeyBinding as e400:
                 return self._handle_400(
                     context, 
                     "invalid vp token: nonce or aud mismatch",
+                    e400
+                )
+            except ValueError as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: missing or invalid iat claim",
+                    e400
+                )
+            except Exception as e400:
+                return self._handle_400(
+                    context, 
+                    "trust error: cannot verify vp token",
                     e400
                 )
 
