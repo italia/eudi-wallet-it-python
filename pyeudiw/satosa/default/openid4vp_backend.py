@@ -364,6 +364,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return self.auth_callback_func(context, resp)
 
     def status_endpoint(self, context: Context) -> JsonResponse:
+        """
+        This endpoint is called by the User-Agent/Wallet Instance to check the status of the request.
+
+        :type context: the context of current request
+        :param context: the request context
+
+        :return: a response containing the status of the request
+        :rtype: satosa.response.Response
+        """
+
         self._log_function_debug("status_endpoint", context)
 
         session_id = context.state["SESSION_ID"]
