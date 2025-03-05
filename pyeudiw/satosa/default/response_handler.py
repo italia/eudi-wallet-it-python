@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 from copy import deepcopy
-from typing import Any
+from typing import Any, Union
 
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
@@ -16,6 +16,7 @@ from pyeudiw.openid4vp.authorization_response import (
     DirectPostParser,
     detect_response_mode,
 )
+from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
@@ -36,6 +37,7 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
+from dataclasses import asdict
 
 
 class ResponseHandler(ResponseHandlerInterface):
@@ -90,6 +92,18 @@ class ResponseHandler(ResponseHandlerInterface):
                 f"unable to find nonce in session associated to state {state}: corrupted data"
             )
         return request_session
+    
+    def _handle_error_response(self, error_response: ErrorResponsePayload) -> JsonResponse:
+        request_session: dict = {}
+        request_session = self._retrieve_session_from_state(error_response.state)
+
+        self.db_engine.update_response_object(
+            request_session["nonce"], error_response.state, asdict(error_response), True
+        )
+
+        self.db_engine.set_finalized(request_session["document_id"])
+
+        return JsonResponse({"status": "OK"}, status="200")
 
     def response_endpoint(
         self, context: Context, *args: tuple
@@ -98,9 +112,7 @@ class ResponseHandler(ResponseHandlerInterface):
 
         # parse and eventually decrypt jwt in response
         try:
-            authz_payload: AuthorizeResponsePayload = (
-                self._parse_authorization_response(context)
-            )
+            authz_payload = self._parse_authorization_response(context)
         except AuthRespParsingException as e400:
             self._handle_400(context, e400.args[0], e400.args[1])
         except AuthRespValidationException as e401:
@@ -112,6 +124,9 @@ class ResponseHandler(ResponseHandlerInterface):
         self._log_debug(
             context, f"response URI endpoint response with payload {authz_payload}"
         )
+
+        if isinstance(authz_payload, ErrorResponsePayload):
+            return self._handle_error_response(authz_payload)
 
         request_session: dict = {}
         try:
@@ -272,7 +287,7 @@ class ResponseHandler(ResponseHandlerInterface):
 
     def _parse_authorization_response(
         self, context: Context
-    ) -> AuthorizeResponsePayload:
+    ) -> Union[AuthorizeResponsePayload, ErrorResponsePayload]:
         response_mode = detect_response_mode(context)
         match response_mode:
             case ResponseMode.direct_post:
@@ -282,6 +297,8 @@ class ResponseHandler(ResponseHandlerInterface):
                 jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
                 parser = DirectPostJwtJweParser(jwe_decrypter)
                 return parser.parse_and_validate(context)
+            case ResponseMode.error:
+                return ErrorResponsePayload(**context.request)
             case _:
                 raise AuthRespParsingException(
                     f"invalid or unrecognized response mode: {response_mode}",

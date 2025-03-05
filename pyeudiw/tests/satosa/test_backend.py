@@ -47,6 +47,7 @@ from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.satosa.utils.response import JsonResponse
 
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
@@ -74,6 +75,8 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
 
     return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
+def _mock_auth_callback_function(context: Context, internal_data: InternalData):
+    return JsonResponse({"response": "Authentication successful"}, status="200")
 
 class TestOpenID4VPBackend:
 
@@ -103,7 +106,11 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_trust_source(tsd.serialize())
 
         self.backend = OpenID4VPBackend(
-            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name"
+            Mock(side_effect=_mock_auth_callback_function), 
+            INTERNAL_ATTRIBUTES, 
+            CONFIG, 
+            BASE_URL, 
+            "name"
         )
 
         url_map = self.backend.register_endpoints()
@@ -519,6 +526,150 @@ class TestOpenID4VPBackend:
         }
         response_endpoint = self.backend.response_endpoint(context)
         assert response_endpoint.status == "200"
+
+        msg = json.loads(response_endpoint.message)
+        assert "redirect_uri" in msg
+        assert msg["redirect_uri"].split("=")[1]
+
+    def test_get_response_endpoint(self, context):
+        self.backend.register_endpoints()
+
+        issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        holder_jwk = leaf_wallet_jwk.serialize(private=True)
+
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+        sd_specification = _yaml_load_specification(
+            settings["sd_specification"])
+        
+        issued_jwt = issue_sd_jwt(
+            sd_specification,
+            settings,
+            issuer_jwk,
+            holder_jwk,
+            #additional_headers={"typ": "vc+sd-jwt"}
+        )
+
+        sdjwt_at_holder = SDJWTHolder(
+            issued_jwt["issuance"],
+            serialization_format="compact",
+        )
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+        aud = self.backend.client_id
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state, "exp": exp_from_now(settings["default_exp"])})
+
+        # case (4): good aud, nonce and state
+        sdjwt_at_holder.create_presentation(
+            {},
+            nonce,
+            self.backend.client_id,
+            holder_key=holder_jwk,
+            sign_alg=DEFAULT_SIG_KTY_MAP[holder_jwk["kty"]],
+        )
+
+        vp_token = sdjwt_at_holder.sd_jwt_presentation
+
+        response = {
+            "state": state,
+            "vp_token": vp_token,
+            "presentation_submission": {
+                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
+                "descriptor_map": [
+                    {
+                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
+                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "format": "vc+sd-jwt"
+                    }
+                ]
+            }
+        }
+
+        encrypted_response = JWEHelper(
+            CONFIG["metadata_jwks"][1]).encrypt(response)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+        context.request_method = "POST"
+
+        response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+
+        msg = json.loads(response_endpoint.message)
+
+        response_code = msg["redirect_uri"].split("=")[1]
+
+        context.request_method = "GET"
+        context.qs_params = {"response_code": response_code}
+        context.request_uri = msg["redirect_uri"].split("=")[0].removeprefix(
+            CONFIG["base_url"])
+        
+        response = self.backend.get_response_endpoint(context)
+
+        assert response.status == "200"
+
+        msg = json.loads(response.message)
+        assert msg["response"] == "Authentication successful"
+
+    def test_response_endpoint_error_flow(self, context):
+        self.backend.register_endpoints()
+
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        response_with_error = {
+            "state": state,
+            "error": "invalid_request",
+            "error_description": "invalid request"
+        }
+
+        context.request = response_with_error
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+
+        doc = self.backend.db_engine.get_by_state(state)
+
+        assert doc["finalized"] == True
+        assert "error_response" in doc
+        assert doc["error_response"] == response_with_error
 
     def test_request_endpoint(self, context):
         # No session created
