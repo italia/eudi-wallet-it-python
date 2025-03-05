@@ -384,7 +384,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             if not state:
                 raise ValueError("id")
 
-        except (KeyError, TypeError, ValueError) as e400:
+        except Exception as e400:
             return self._handle_400(
                 context, 
                 "request error: missing or invalid parameter [id]",
