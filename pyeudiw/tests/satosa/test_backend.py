@@ -551,6 +551,43 @@ class TestOpenID4VPBackend:
         assert request_object_jwt["error"] == "invalid_client"
         assert request_object_jwt["error_description"] == "client error: no session associated to the state"
 
+    def test_request_endpoint_no_id(self, context):
+        context.qs_params = {}
+        context.request_method = "GET"
+        context.qs_params = {"id": str(uuid.uuid4())}
+        request_uri = CONFIG["metadata"]["request_uris"][0]
+        context.request_uri = request_uri
+
+        req_resp = self.backend.request_endpoint(context)
+        req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers}"
+        assert req_resp
+        assert req_resp.status == "401", f"invalid status in request object response {req_resp_str}"
+        assert req_resp.message, f"invalid message in request object response {req_resp_str}"
+
+        msg = json.loads(req_resp.message)
+        assert msg["error"] == "invalid_client"
+        assert msg["error_description"] == "session error: cannot find the session associated to the state"
+
+        context.qs_params = {"id": None}
+        req_resp = self.backend.request_endpoint(context)
+
+        assert req_resp.status == "400"
+        assert req_resp.message
+        
+        msg = json.loads(req_resp.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "request error: missing or invalid parameter [id]"
+
+
+        context.qs_params = {}
+        req_resp = self.backend.request_endpoint(context)
+
+        assert req_resp.status == "400"
+        assert req_resp.message
+        
+        msg = json.loads(req_resp.message)
+        assert msg["error"] == "invalid_request"
+        assert msg["error_description"] == "request error: missing or invalid parameter [id]"
 
     def test_request_endpoint(self, context):
         internal_data = InternalData()
