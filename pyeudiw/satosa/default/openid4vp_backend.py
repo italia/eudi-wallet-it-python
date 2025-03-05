@@ -158,6 +158,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         Creates a list of all the endpoints this backend module needs to listen to. In this case
         it's the authentication response from the underlying OP that is redirected from the OP to
         the proxy.
+
         :rtype: Sequence[(str, Callable[[satosa.context.Context], satosa.response.Response]]
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
@@ -297,6 +298,15 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return Response(result, content="text/html; charset=utf8", status="200")
 
     def get_response_endpoint(self, context: Context) -> Response:
+        """
+        This endpoint is called by the User-Agent/Wallet Instance after the authorization is done for retrieving the response.
+
+        :type context: the context of current request
+        :param context: the request context
+
+        :return: a response containing the response
+        :rtype: satosa.response.Response
+        """
 
         self._log_function_debug("get_response_endpoint", context)
         resp_code = context.qs_params.get("response_code", None)
@@ -410,7 +420,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
     @property
     def db_engine(self) -> DBEngine:
-        """Returns the DBEngine instance used by the class"""
+        """
+        Returns the DBEngine instance used by the class
+        """
         if not self._db_engine:
             self._db_engine = DBEngine(self.config["storage"])
 
@@ -428,10 +440,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
     @property
     def default_metadata_private_jwk(self) -> tuple:
-        """Returns the default metadata private JWK"""
+        """
+        Returns the default metadata private JWK
+        """
         return tuple(self.metadata_jwks_by_kids.values())[0]
 
     @property
     def server_url(self):
-        """Returns the server url"""
+        """
+        Returns the server url
+        """
         return self._server_url
