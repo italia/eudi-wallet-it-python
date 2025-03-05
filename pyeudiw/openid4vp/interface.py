@@ -58,6 +58,14 @@ class VpTokenParser:
         raise NotImplementedError
 
     def get_issuer_name(self) -> str:
+        """
+        Get the issuer name from the token payload.
+
+        :raises MissingIssuer: if the issuer name is missing in the token payload
+
+        :return: the issuer name
+        :rtype: str
+        """
         raise NotImplementedError
 
 
@@ -82,13 +90,23 @@ class VpTokenVerifier:
 
     def verify_signature(self, public_key: ECKey | RSAKey | dict) -> None:
         """
-        :raises [InvalidSignatureException]:
+        Verifies the signature of the jwt.
+
+        :param public_key: the public key to verify the signature
+        :type public_key: ECKey | RSAKey | dict
+
+        :raises JWSVerificationError: if the signature is invalid
         """
         raise NotImplementedError
 
     def verify_challenge(self) -> None:
         """
-        :raises []:
+        Verifies the challenge of the jwt.
+
+        :raises UnsupportedSdAlg: if verification fails due to an unkown _sd_alg
+        :raises InvalidKeyBinding: if the verification fails for a known reason
+        :raises ValueError: if the iat claim is missing or invalid
+        :raises JWSVerificationError: if the verification of a JWS fails
         """
         raise NotImplementedError
 
