@@ -6,6 +6,7 @@ from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.jwt.exceptions import JWSSigningError
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -71,12 +72,20 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         #  )
 
         helper = JWSHelper(self.default_metadata_private_jwk)
-        request_object_jwt = helper.sign(
-            data,
-            protected=_protected_jwt_headers,
-        )
-        return Response(
-            message=request_object_jwt,
-            status="200",
-            content=RequestHandler._RESP_CONTENT_TYPE,
-        )
+
+        try:
+            request_object_jwt = helper.sign(
+                data,
+                protected=_protected_jwt_headers,
+            )
+            return Response(
+                message=request_object_jwt,
+                status="200",
+                content=RequestHandler._RESP_CONTENT_TYPE,
+            )
+        except JWSSigningError as e500:
+            return self._handle_500(
+                context,
+                "internal error: error while processing the request object",
+                e500,
+            )
