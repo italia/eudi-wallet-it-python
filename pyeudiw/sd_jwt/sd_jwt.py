@@ -11,7 +11,7 @@ from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
 from pyeudiw.sd_jwt.common import SDJWTCommon
-from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
+from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg, MissingConfirmationKey
 from pyeudiw.sd_jwt.schema import (
     VerifierChallenge,
     is_sd_jwt_format,
@@ -76,7 +76,7 @@ class SdJwt:
 
         cnf: dict = self.issuer_jwt.payload.get("cnf", {}).get("jwk", {})
         if not cnf:
-            raise ValueError(
+            raise MissingConfirmationKey(
                 "missing confirmation (cnf) key from issuer payload claims"
             )
         return cnf
