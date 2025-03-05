@@ -4,9 +4,7 @@ from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwt.helper import is_jwt_expired
-from pyeudiw.openid4vp.exceptions import InvalidVPKeyBinding
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
-from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg
 from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
@@ -93,7 +91,4 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         challenge["aud"] = self.verifier_id
         challenge["nonce"] = self.verifier_nonce
 
-        try:
-            self.sdjwt.verify_holder_kb_jwt(challenge)
-        except (UnsupportedSdAlg, InvalidKeyBinding) as e:
-            raise InvalidVPKeyBinding(f"{e}")
+        self.sdjwt.verify_holder_kb_jwt(challenge)
