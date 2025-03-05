@@ -317,14 +317,18 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         session_id = context.state.get("SESSION_ID", None)
 
         if not session_id:
-            return self._handle_400(context, "session id not found")
+            return self._handle_400(
+                context, 
+                "request error: session id not found"
+            )
 
-        state = ""
         try:
             state = self.response_code_helper.recover_state(resp_code)
-        except Exception:
+        except Exception as e400:
             return self._handle_400(
-                context, "missing or invalid parameter [response_code]"
+                context, 
+                "request error: missing or invalid parameter [response_code]",
+                e400
             )
 
         finalized_session = None
@@ -333,19 +337,29 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             finalized_session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
             )
-        except Exception as e:
-            _msg = f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e}"
-            return self._handle_401(context, _msg, e)
+        except Exception as e401:
+            self._log_error(
+                context,
+                f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e400}"
+            )
+            return self._handle_401(
+                context, 
+                "client error: no session associated to the state",
+                e401
+            )
 
         if not finalized_session:
-            return self._handle_400(context, "session not found or invalid")
+            return self._handle_400(
+                context, 
+                "request error: session not finalized"
+            )
 
         _now = iat_now()
         _exp = finalized_session["request_object"]["exp"]
         if _exp < _now:
             return self._handle_400(
                 context,
-                f"session expired, request object exp is {_exp} while now is {_now}",
+                "request error: request expired",
             )
 
         internal_response = InternalData()
