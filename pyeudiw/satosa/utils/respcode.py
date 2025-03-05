@@ -10,7 +10,8 @@ CODE_SYM_KEY_LEN = 32  # in bytes (256 bits)
 
 @dataclass
 class ResponseCodeSource:
-    """ResponseCodeSource is a utility box that wraps a secreet key and
+    """
+    ResponseCodeSource is a utility box that wraps a secreet key and
     exposes utility methods that define the relationship between request
     status and response code.
 
@@ -31,13 +32,47 @@ class ResponseCodeSource:
         _ = decode_key(self.key)
 
     def create_code(self, state: str) -> str:
+        """
+        Create a code from the state using the key.
+        
+        :param state: the state to encrypt
+        :type state: str
+        
+        :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
+        
+        :return: the encrypted code
+        :rtype: str
+        """
         return create_code(state, self.key)
 
     def recover_state(self, code: str) -> str:
+        """
+        Recover the state from the code using the key.
+
+        :param code: the code to decrypt
+        :type code: str
+
+        :raises UnicodeDecodeError: if the key is not in the expected format
+        :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
+
+        :return: the decrypted state
+        :rtype: str
+        """
         return recover_state(code, self.key)
 
 
 def decode_key(key: str) -> bytes:
+    """
+    Decode the key from the hex string format.
+
+    :param key: the key to decode
+    :type key: str
+
+    :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
+
+    :return: the decoded key
+    :rtype: bytes
+    """
     if not set(key) <= set(string.hexdigits):
         raise ValueError("key in format different than hex currently not supported")
     key_len = len(key)
@@ -58,12 +93,34 @@ def _base64_decode_no_pad(s: str) -> bytes:
 
 
 def _encrypt_state(msg: bytes, key: bytes) -> bytes:
+    """
+    Encrypt the message using the key.
+
+    :param msg: the message to encrypt
+    :type msg: bytes
+    :param key: the key to use for encryption
+    :type key: bytes
+
+    :return: the encrypted message
+    :rtype: bytes
+    """
     nonce = secrets.token_bytes(12)
     ciphertext = AESGCM(key).encrypt(nonce, msg, b"")
     return nonce + ciphertext
 
 
 def _decrypt_code(encrypted_token: bytes, key: bytes) -> bytes:
+    """
+    Decrypt the encrypted token using the key.
+
+    :param encrypted_token: the encrypted token
+    :type encrypted_token: bytes
+    :param key: the key to use for decryption
+    :type key: bytes
+
+    :return: the decrypted token
+    :rtype: bytes
+    """
     nonce = encrypted_token[:12]
     ciphertext = encrypted_token[12:]
     dec = AESGCM(key).decrypt(nonce, ciphertext, b"")
@@ -71,6 +128,19 @@ def _decrypt_code(encrypted_token: bytes, key: bytes) -> bytes:
 
 
 def create_code(state: str, key: str) -> str:
+    """
+    Create a code from the state using the key.
+
+    :param state: the state to encrypt
+    :type state: str
+    :param key: the key to use for encryption
+    :type key: str
+
+    :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
+
+    :return: the encrypted code
+    :rtype: str
+    """
     bkey = decode_key(key)
     msg = bytes(state, encoding="utf-8")
     code = _encrypt_state(msg, bkey)
@@ -78,6 +148,20 @@ def create_code(state: str, key: str) -> str:
 
 
 def recover_state(code: str, key: str) -> str:
+    """
+    Recover the state from the code using the key.
+
+    :param code: the code to decrypt
+    :type code: str
+    :param key: the key to use for decryption
+    :type key: str
+
+    :raises UnicodeDecodeError: if the key is not in the expected format
+    :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
+
+    :return: the decrypted state
+    :rtype: str
+    """
     bkey = decode_key(key)
     enc = _base64_decode_no_pad(code)
     state = _decrypt_code(enc, bkey)
