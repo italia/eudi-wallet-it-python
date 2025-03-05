@@ -17,12 +17,10 @@ from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-
-from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
+from pyeudiw.satosa.interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
 class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
@@ -255,19 +253,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             self.db_engine.init_session(
                 state=state, session_id=session_id, remote_flow_typ=flow_typ.value
             )
-        except StorageWriteError as e:
-            _msg = (
-                f"Error while initializing session with state {state} and {session_id}."
+        except Exception as e500:
+            self._log_error(
+                context, 
+                f"Error while initializing session with state {state} and {session_id}: {e500}"
             )
-            self._log_error(context, f"{_msg} for the following reason {e}")
-            return self._handle_500(context, _msg, e)
-
-        except Exception as e:
-            _msg = (
-                f"Error while initializing session with state {state} and {session_id}."
+            return self._handle_500(
+                context, 
+                "internal error: something went wrong when creating your authentication request",
+                e500
             )
-            self._log_error(context, _msg)
-            return self._handle_500(context, _msg, e)
 
         # PAR
         payload = {
@@ -279,19 +274,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             self.config["authorization"]["url_scheme"], payload
         )
 
-        match flow_typ:
-            case RemoteFlowType.SAME_DEVICE:
-                return self._same_device_http_response(response_url)
-            case RemoteFlowType.CROSS_DEVICE:
-                return self._cross_device_http_response(response_url, state)
-            case unsupported:
-                _msg = f"unrecognized remote flow type: {unsupported}"
-                self._log_error(context, _msg)
-                return self._handle_500(
-                    context,
-                    "something went wrong when creating your authentication request",
-                    Exception(_msg),
-                )
+        if flow_typ == RemoteFlowType.SAME_DEVICE:
+            return self._same_device_http_response(response_url)
+        elif flow_typ == RemoteFlowType.CROSS_DEVICE:
+            return self._cross_device_http_response(response_url, state)
 
     def _same_device_http_response(self, response_url: str) -> Response:
         return Redirect(response_url)
