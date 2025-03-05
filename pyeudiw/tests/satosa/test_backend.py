@@ -468,7 +468,7 @@ class TestOpenID4VPBackend:
 
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: signature verification failed"
+        assert msg["error_description"] == "invalid vp token: invalid signature"
 
     def test_response_endpoint_no_typ_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
