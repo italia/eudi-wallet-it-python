@@ -47,6 +47,7 @@ from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.satosa.utils.response import JsonResponse
 
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
@@ -74,6 +75,8 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
 
     return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
+def _mock_auth_callback_function(context: Context, internal_data: InternalData):
+    return JsonResponse({"response": "Authentication successful"}, status="200")
 
 class TestOpenID4VPBackend:
 
@@ -104,7 +107,11 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_trust_source(tsd.serialize())
 
         self.backend = OpenID4VPBackend(
-            Mock(), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, "name"
+            Mock(side_effect=_mock_auth_callback_function), 
+            INTERNAL_ATTRIBUTES, 
+            CONFIG, 
+            BASE_URL, 
+            "name"
         )
 
         url_map = self.backend.register_endpoints()
@@ -526,6 +533,78 @@ class TestOpenID4VPBackend:
 
     def test_status_endpoint_no_session(self, context):
         # No query string parameters
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.message
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error_description"] == "request error: missing or invalid parameter [id]"
+
+        # Invalid state
+        context.qs_params = {"id": None}
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.message
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"]
+        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error_description"] == "request error: missing or invalid parameter [id]"
+
+        # Unexistent session
+        context.qs_params = {"id": str(uuid.uuid4())}
+        state_endpoint_response = self.backend.status_endpoint(context)
+        assert state_endpoint_response.status == "401"
+        assert state_endpoint_response.message
+        request_object_jwt = json.loads(state_endpoint_response.message)
+        assert request_object_jwt["error"] == "invalid_client"
+        assert request_object_jwt["error_description"] == "client error: no session associated to the state"
+
+    def test_response_endpoint_error_flow(self, context):
+        self.backend.register_endpoints()
+
+        settings = CREDENTIAL_ISSUER_CONF
+        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings['default_exp'] = CONFIG['jwt']['default_exp']
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self.backend.db_engine.init_session(
+            state=state,
+            session_id=session_id,
+            remote_flow_typ="same_device"
+        )
+        doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
+
+        self.backend.db_engine.update_request_object(
+            document_id=doc_id,
+            request_object={"nonce": nonce, "state": state})
+
+        context.request_method = "POST"
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
+            CONFIG["base_url"])
+
+        response_with_error = {
+            "state": state,
+            "error": "invalid_request",
+            "error_description": "invalid request"
+        }
+
+        context.request = response_with_error
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+
+        response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+
+        doc = self.backend.db_engine.get_by_state(state)
+
+        assert doc["finalized"] == True
+        assert "error_response" in doc
+        assert doc["error_response"] == response_with_error
+
+    def test_request_endpoint(self, context):
+        # No session created
         state_endpoint_response = self.backend.status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
