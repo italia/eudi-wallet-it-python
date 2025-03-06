@@ -18,6 +18,7 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
     :type position: int
 
     :raises JWTInvalidElementPosition: If the JWT element position is greather then one or less of 0
+    :raises JWTDecodeError: If the JWT element cannot be decoded.
 
     :returns: a dict with the content of the decoded section.
     :rtype: dict
@@ -53,6 +54,9 @@ def decode_jwt_header(jwt: str) -> dict:
     :param jwt: a string that represents the jwt.
     :type jwt: str
 
+    :raises JWTDecodeError: If the JWT header cannot be decoded.
+    :raises JWTInvalidElementPosition: If the JWT element position is missing
+
     :returns: a dict with the content of the decoded header.
     :rtype: dict
     """
@@ -65,6 +69,9 @@ def decode_jwt_payload(jwt: str) -> dict:
 
     :param jwt: a string that represents the jwt.
     :type jwt: str
+
+    :raises JWTDecodeError: If the JWT header cannot be decoded.
+    :raises JWTInvalidElementPosition: If the JWT element position is missing
 
     :returns: a dict with the content of the decoded payload.
     :rtype: dict
