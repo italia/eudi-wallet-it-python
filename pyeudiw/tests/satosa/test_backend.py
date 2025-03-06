@@ -491,7 +491,8 @@ class TestOpenID4VPBackend:
             CONFIG["base_url"])
 
         encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
+            CONFIG["metadata_jwks"][1]
+        ).encrypt(response)
         context.request = {
             "response": encrypted_response
         }
