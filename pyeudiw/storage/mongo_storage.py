@@ -195,14 +195,17 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_response_object(
-        self, nonce: str, state: str, internal_response: dict
+        self, nonce: str, state: str, internal_response: dict, isError: bool = False
     ) -> UpdateResult:
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
+
+        updated_data_label = "internal_response" if not isError else "error_response"
+
         document_status = self.sessions.update_one(
             {"_id": document_id},
             {
-                "$set": {"internal_response": internal_response},
+                "$set": {updated_data_label: internal_response},
             },
         )
 

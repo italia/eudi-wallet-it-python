@@ -110,9 +110,9 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         return self.write("update_request_object", document_id, request_object)
 
     def update_response_object(
-        self, nonce: str, state: str, response_object: dict
+        self, nonce: str, state: str, response_object: dict, isError: bool = False
     ) -> int:
-        return self.write("update_response_object", nonce, state, response_object)
+        return self.write("update_response_object", nonce, state, response_object, isError)
 
     def get(self, method: str, *args, **kwargs) -> Union[dict, None]:
         """

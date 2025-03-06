@@ -117,7 +117,7 @@ class BaseStorage(BaseDB):
         raise NotImplementedError()
 
     def update_response_object(
-        self, nonce: str, state: str, response_object: dict
+        self, nonce: str, state: str, response_object: dict, isError: bool = False
     ) -> UpdateResult:
         """
         Update the response object of the session.
@@ -128,6 +128,8 @@ class BaseStorage(BaseDB):
         :type state: str
         :param response_object: the response object.
         :type response_object: dict
+        :param isError: if the response is an error response.
+        :type isError: bool
 
         :returns: the result of the update operation.
         :rtype: UpdateResult
