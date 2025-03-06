@@ -31,18 +31,14 @@ The `BaseStorage` class can be extended by implementing the following methods:
 - `update_request_object`
 - `set_finalized`
 - `update_response_object`
-- `_get_trust_attestation`
 - `get_trust_attestation`
 - `get_trust_anchor`
-- `_has_trust_attestation`
 - `has_trust_attestation`
 - `has_trust_anchor`
-- `_update_attestation_metadata`
 - `_update_anchor_metadata`
 - `add_trust_attestation`
 - `add_trust_attestation_metadata`
 - `add_trust_anchor`
-- `_update_trust_attestation`
 - `update_trust_attestation`
 - `update_trust_anchor`
 
@@ -124,11 +120,11 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
 ]
 ```
 
-| Name               | Description                                              |
-| ------------------ | -------------------------------------------------------- |
-| `_id`            | Unique identifier in MongoDB.                            |
-| `entity_id`      | The string which uniquely identifies the entity.         |
-| `metadata`       | Object containing additional properties.                 |
+| Name                   | Description                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `_id`                | Unique identifier in MongoDB.                            |
+| `entity_id`          | The string which uniquely identifies the entity.         |
+| `metadata`           | Object containing additional properties.                 |
 | `tp_key`             | The label of trust parameter inside the object           |
 | `trust_handler_name` | The name of the trust handler that operates on that data |
 
