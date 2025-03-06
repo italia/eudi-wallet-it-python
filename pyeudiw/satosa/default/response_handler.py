@@ -2,7 +2,9 @@ import datetime
 import hashlib
 import json
 import logging
+
 from copy import deepcopy
+from dataclasses import asdict
 from typing import Any, Union
 
 from satosa.context import Context
@@ -20,7 +22,6 @@ from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
-    InvalidVPKeyBinding,
 )
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
@@ -29,7 +30,6 @@ from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.satosa.exceptions import (
     AuthorizeUnmatchedResponse,
     FinalizedSessionError,
-    HTTPError,
     InvalidInternalStateError,
 )
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
@@ -37,7 +37,11 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from dataclasses import asdict
+from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
+from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.sd_jwt.exceptions import UnsupportedSdAlg, InvalidKeyBinding
+
 
 
 class ResponseHandler(ResponseHandlerInterface):
@@ -114,9 +118,13 @@ class ResponseHandler(ResponseHandlerInterface):
         try:
             authz_payload = self._parse_authorization_response(context)
         except AuthRespParsingException as e400:
-            self._handle_400(context, e400.args[0], e400.args[1])
+            return self._handle_400(
+                context,
+                "invalid authorization response: cannot parse the payload",
+                e400
+            )
         except AuthRespValidationException as e401:
-            self._handle_401(
+            return self._handle_401(
                 context,
                 "invalid authentication method: token might be invalid or expired",
                 e401,
@@ -132,11 +140,19 @@ class ResponseHandler(ResponseHandlerInterface):
         try:
             request_session = self._retrieve_session_from_state(authz_payload.state)
         except AuthorizeUnmatchedResponse as e400:
-            return self._handle_400(context, e400.args[0], e400.args[1])
+            return self._handle_400(
+                context, 
+                "invalid authorization response: cannot find the session associated to the state",
+                e400
+            )
         except InvalidInternalStateError as e500:
             return self._handle_500(context, e500.args[0], "invalid state")
         except FinalizedSessionError as e400:
-            return self._handle_400(context, e400.args[0], HTTPError(e400.args[0]))
+            return self._handle_400(
+                context, 
+                "invalid authorization response: session already finalized or corrupted", 
+                e400
+            )
 
         # the flow below is a simplified algorithm of authentication response processing, where:
         # (1) we don't check that presentation submission matches definition (yet)
@@ -156,20 +172,60 @@ class ResponseHandler(ResponseHandlerInterface):
                 token_parser, token_verifier = self._vp_verifier_factory(
                     authz_payload.presentation_submission, vp_token, request_session
                 )
-            except ValueError as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            except NotKBJWT as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: not a key-bound jwt",
+                    e400
+                )
 
-            token_issuer = token_parser.get_issuer_name()
-            whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
             try:
+                token_issuer = token_parser.get_issuer_name()
+                whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
                 token_verifier.verify_signature(whitelisted_keys)
-            except Exception as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
-
-            try:
                 token_verifier.verify_challenge()
-            except InvalidVPKeyBinding as e:
-                return self._handle_400(context, f"VP parsing error: {e}")
+            except MissingIssuer as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: missing issuer information",
+                    e400
+                )
+            except InvalidJwkMetadataException as e500:
+                return self._handle_500(
+                    context, 
+                    "trust error: cannot fetch public keys",
+                    e500
+                )
+            except JWSVerificationError as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: invalid signature",
+                    e400
+                )
+            except UnsupportedSdAlg as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: unsupported signature algorithm",
+                    e400
+                )
+            except InvalidKeyBinding as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: nonce or aud mismatch",
+                    e400
+                )
+            except ValueError as e400:
+                return self._handle_400(
+                    context, 
+                    "invalid vp token: missing or invalid iat claim",
+                    e400
+                )
+            except Exception as e400:
+                return self._handle_400(
+                    context, 
+                    "trust error: cannot verify vp token",
+                    e400
+                )
 
             claims = token_parser.get_credentials()
             iss = token_parser.get_issuer_name()
@@ -196,35 +252,32 @@ class ResponseHandler(ResponseHandlerInterface):
                     context, f"Session update on storage: {request_session}"
                 )
 
-        except StorageWriteError as e:
+        except StorageWriteError as e500:
             # TODO - do we have to block in the case the update cannot be done?
-            self._log_error(context, f"Session update on storage failed: {e}")
-            return self._handle_500(context, "Cannot update response object.", e)
+            self._log_error(context, f"Session update on storage failed: {e500}")
+            return self._handle_500(
+                context, 
+                "Update error: Cannot update response object.", 
+                e500
+            )
 
         try:
             flow_type = RemoteFlowType(request_session["remote_flow_typ"])
-        except ValueError as e:
+        except Exception as e500:
             self._log_error(
-                context, f"unable to identify flow from stored session: {e}"
+                context, f"unable to identify flow from stored session: {e500}"
             )
             return self._handle_500(
-                context, "error in authentication response processing", e
+                context, 
+                "flow error: unable to identify flow from stored session", 
+                e500
             )
-
-        match flow_type:
-            case RemoteFlowType.SAME_DEVICE:
-                cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
-                return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
-            case RemoteFlowType.CROSS_DEVICE:
-                return JsonResponse({"status": "OK"}, status="200")
-            case unsupported:
-                _msg = f"unrecognized remote flow type: {unsupported}"
-                self._log_error(context, _msg)
-                return self._handle_500(
-                    context,
-                    "error in authentication response processing",
-                    Exception(_msg),
-                )
+        
+        if flow_type == RemoteFlowType.SAME_DEVICE:
+            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
+        else:
+            return JsonResponse({"status": "OK"}, status="200")
 
     def _translate_response(
         self, response: dict, issuer: str, context: Context

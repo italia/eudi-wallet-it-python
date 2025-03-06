@@ -95,6 +95,15 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
 
 
 def is_payload_expired(token_payload: dict) -> bool:
+    """
+    Check if a JWT payload is expired.
+
+    :param token_payload: The decoded JWT payload.
+    :type token_payload: dict
+
+    :returns: True if the payload is expired, False otherwise.
+    :rtype: bool
+    """
     exp = token_payload.get("exp", None)
     if not exp:
         return True
@@ -104,6 +113,15 @@ def is_payload_expired(token_payload: dict) -> bool:
 
 
 def is_jwt_expired(token: str) -> bool:
+    """
+    Check if a JWT token is expired.
+
+    :param token: The JWT token.
+    :type token: str
+
+    :returns: True if the token is expired, False otherwise.
+    :rtype: bool
+    """
     payload = decode_jwt_payload(token)
     return is_payload_expired(payload)
 

@@ -51,6 +51,11 @@ class DirectTrustSdJwtVc(DirectTrust):
         Previous responses might or might not be cached based on the cache_ttl
         parameter.
 
+        :param issuer: the issuer of the public key
+        :type issuer: str
+
+        :raises InvalidJwkMetadataException: if the jwk metadata is invalid
+
         :returns: a list of jwk(s)
         """
         md = self._get_jwk_metadata(issuer)

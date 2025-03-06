@@ -19,6 +19,15 @@ class DecodedJwt:
 
     @staticmethod
     def parse(jws: str) -> "DecodedJwt":
+        """
+        Parse a token into its components.
+
+        :raises ValueError: if the token is not a jwt
+
+        :param jws: the token to parse
+        :type jws: str
+        """
+
         return unsafe_parse_jws(jws)
 
 
@@ -27,14 +36,21 @@ def unsafe_parse_jws(token: str) -> DecodedJwt:
     Parse a token into its components.
     Correctness of this function is not guaranteed when the token is in a
     derived format, such as sd-jwt and jwe.
+
+    :param token: the token to parse
+    :type token: str
+
+    :raises JWTDecodeError: if the token is not a jwt
+    :raises JWTInvalidElementPosition: if the token is not a jwt
+
+    :return: the decoded jwt
+    :rtype: DecodedJwt
     """
     if not is_jwt_format(token):
         raise ValueError(f"unable to parse {token}: not a jwt")
 
-    try:
-        head = decode_jwt_header(token)
-        payload = decode_jwt_payload(token)
-        signature = token.split(".")[2]
-    except Exception as e:
-        raise ValueError(f"unable to decode JWS part: {e}")
+    head = decode_jwt_header(token)
+    payload = decode_jwt_payload(token)
+    signature = token.split(".")[2]
+
     return DecodedJwt(token, head, payload, signature=signature)

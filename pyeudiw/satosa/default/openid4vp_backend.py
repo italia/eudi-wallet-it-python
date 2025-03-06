@@ -17,12 +17,10 @@ from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-
-from ..interfaces.openid4vp_backend import OpenID4VPBackendInterface
+from pyeudiw.satosa.interfaces.openid4vp_backend import OpenID4VPBackendInterface
 
 
 class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
@@ -160,6 +158,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         Creates a list of all the endpoints this backend module needs to listen to. In this case
         it's the authentication response from the underlying OP that is redirected from the OP to
         the proxy.
+
         :rtype: Sequence[(str, Callable[[satosa.context.Context], satosa.response.Response]]
         :return: A list that can be used to map the request to SATOSA to this endpoint.
         """
@@ -255,19 +254,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             self.db_engine.init_session(
                 state=state, session_id=session_id, remote_flow_typ=flow_typ.value
             )
-        except StorageWriteError as e:
-            _msg = (
-                f"Error while initializing session with state {state} and {session_id}."
+        except Exception as e500:
+            self._log_error(
+                context, 
+                f"Error while initializing session with state {state} and {session_id}: {e500}"
             )
-            self._log_error(context, f"{_msg} for the following reason {e}")
-            return self._handle_500(context, _msg, e)
-
-        except Exception as e:
-            _msg = (
-                f"Error while initializing session with state {state} and {session_id}."
+            return self._handle_500(
+                context, 
+                "internal error: something went wrong when creating your authentication request",
+                e500
             )
-            self._log_error(context, _msg)
-            return self._handle_500(context, _msg, e)
 
         # PAR
         payload = {
@@ -279,19 +275,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             self.config["authorization"]["url_scheme"], payload
         )
 
-        match flow_typ:
-            case RemoteFlowType.SAME_DEVICE:
-                return self._same_device_http_response(response_url)
-            case RemoteFlowType.CROSS_DEVICE:
-                return self._cross_device_http_response(response_url, state)
-            case unsupported:
-                _msg = f"unrecognized remote flow type: {unsupported}"
-                self._log_error(context, _msg)
-                return self._handle_500(
-                    context,
-                    "something went wrong when creating your authentication request",
-                    Exception(_msg),
-                )
+        if flow_typ == RemoteFlowType.SAME_DEVICE:
+            return self._same_device_http_response(response_url)
+        elif flow_typ == RemoteFlowType.CROSS_DEVICE:
+            return self._cross_device_http_response(response_url, state)
 
     def _same_device_http_response(self, response_url: str) -> Response:
         return Redirect(response_url)
@@ -311,20 +298,33 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return Response(result, content="text/html; charset=utf8", status="200")
 
     def get_response_endpoint(self, context: Context) -> Response:
+        """
+        This endpoint is called by the User-Agent/Wallet Instance after the authorization is done for retrieving the response.
+
+        :type context: the context of current request
+        :param context: the request context
+
+        :return: a response containing the response
+        :rtype: satosa.response.Response
+        """
 
         self._log_function_debug("get_response_endpoint", context)
         resp_code = context.qs_params.get("response_code", None)
         session_id = context.state.get("SESSION_ID", None)
 
         if not session_id:
-            return self._handle_400(context, "session id not found")
+            return self._handle_400(
+                context, 
+                "request error: session id not found"
+            )
 
-        state = ""
         try:
             state = self.response_code_helper.recover_state(resp_code)
-        except Exception:
+        except Exception as e400:
             return self._handle_400(
-                context, "missing or invalid parameter [response_code]"
+                context, 
+                "request error: missing or invalid parameter [response_code]",
+                e400
             )
 
         finalized_session = None
@@ -333,22 +333,29 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             finalized_session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
             )
-        except Exception as e:
-            _msg = f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e}"
-            return self._handle_401(context, _msg, e)
+        except Exception as e401:
+            self._log_error(
+                context,
+                f"Error while retrieving internal response with response_code {resp_code} and session_id {session_id}: {e401}"
+            )
+            return self._handle_401(
+                context, 
+                "client error: no session associated to the state",
+                e401
+            )
 
         if not finalized_session:
-            return self._handle_400(context, "session not found or invalid")
-        
-        if "error_response" in finalized_session:
-            return self._handle_400(context, "error response found in session")
+            return self._handle_400(
+                context, 
+                "request error: session not finalized"
+            )
 
         _now = iat_now()
         _exp = finalized_session["request_object"]["exp"]
         if _exp < _now:
             return self._handle_400(
                 context,
-                f"session expired, request object exp is {_exp} while now is {_now}",
+                "request error: request expired",
             )
 
         internal_response = InternalData()
@@ -357,35 +364,55 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return self.auth_callback_func(context, resp)
 
     def status_endpoint(self, context: Context) -> JsonResponse:
+        """
+        This endpoint is called by the User-Agent/Wallet Instance to check the status of the request.
+
+        :type context: the context of current request
+        :param context: the request context
+
+        :return: a response containing the status of the request
+        :rtype: satosa.response.Response
+        """
 
         self._log_function_debug("status_endpoint", context)
 
         session_id = context.state["SESSION_ID"]
-        _err_msg = ""
-        state = None
 
         try:
             state = context.qs_params["id"]
-        except TypeError as e:
-            _err_msg = f"No query params found: {e}"
-        except KeyError as e:
-            _err_msg = f"No id found in qs_params: {e}"
 
-        if _err_msg:
-            return self._handle_400(context, _err_msg)
+            if not state:
+                raise ValueError("id")
+
+        except Exception as e400:
+            return self._handle_400(
+                context, 
+                "request error: missing or invalid parameter [id]",
+                e400
+            )
 
         try:
             session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
             )
-        except Exception as e:
-            _msg = f"Error while retrieving session by state {state} and session_id {session_id}: {e}"
-            return self._handle_401(context, _msg)
+        except Exception as e401:
+            self._log_error(
+                context,
+                f"Error while retrieving session by state {state} and session_id {session_id}: {e401}"
+            )
+            return self._handle_401(
+                context,
+                "client error: no session associated to the state",
+                e401
+            )
 
         request_object = session.get("request_object", None)
         if request_object:
             if iat_now() > request_object["exp"]:
-                return self._handle_403("expired", "Request object expired")
+                return self._handle_403(
+                    context, 
+                    "request error: request expired",
+                )
 
         if session["finalized"] is True:
             resp_code = self.response_code_helper.create_code(state)
@@ -403,7 +430,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
     @property
     def db_engine(self) -> DBEngine:
-        """Returns the DBEngine instance used by the class"""
+        """
+        Returns the DBEngine instance used by the class
+        """
         if not self._db_engine:
             self._db_engine = DBEngine(self.config["storage"])
 
@@ -421,10 +450,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
     @property
     def default_metadata_private_jwk(self) -> tuple:
-        """Returns the default metadata private JWK"""
+        """
+        Returns the default metadata private JWK
+        """
         return tuple(self.metadata_jwks_by_kids.values())[0]
 
     @property
     def server_url(self):
-        """Returns the server url"""
+        """
+        Returns the server url
+        """
         return self._server_url
