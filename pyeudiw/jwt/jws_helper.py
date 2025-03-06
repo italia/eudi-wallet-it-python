@@ -250,13 +250,15 @@ class JWSHelper(JWHelperInterface):
 
         # Verify the JWS compact signature
         verifier = JWS(alg=header["alg"])
-        msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
 
         # Validate JWT claims
         try:
+            msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
             validate_jwt_timestamps_claims(msg, tolerance_s)
         except LifetimeException as e:
             raise JWSVerificationError(f"Invalid JWT claims: {e}")
+        except Exception as e:
+            raise JWSVerificationError(f"Error during signature verification: {e}")
 
         return msg
 

@@ -7,6 +7,11 @@ class InvalidKeyBinding(Exception):
 class UnsupportedSdAlg(Exception):
     pass
 
+class MissingConfirmationKey(Exception):
+    """
+    Raised when a given VP not contain a confirmation key
+    """
+    pass
 
 class SDJWTHasSDClaimException(Exception):
     """Exception raised when input data contains the special _sd claim reserved for SD-JWT internal data."""
