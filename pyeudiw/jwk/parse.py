@@ -22,5 +22,17 @@ def parse_key_from_x5c(x5c: list[str]) -> JWK:
         key_dict = ECKey(pub_key=public_key).to_dict()
         return JWK(key_dict)
     except Exception:
-        # neither RSA nor EC
-        raise InvalidJwk(f"unable to parse key from x5c: {x5c}")
+    """
+    Parse a key from an x509 chain. This function currently
+    support only the parsing of public RSA key from such a chain.
+    The first element of the chain will contain the verifying key.
+    See RFC7517 https://datatracker.ietf.org/doc/html/rfc7517#section-4.7
+    
+    :param x5c: list of x509 certificates
+    :type x5c: list[str]
+
+    :raises InvalidJwk: if the key cannot be parsed from the x5c chain
+
+    :return: JWK object
+    :rtype: JWK
+    """
