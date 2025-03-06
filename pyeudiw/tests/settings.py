@@ -63,7 +63,6 @@ CONFIG = {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
-        "error_template": "error.html",
         "error_url": "https://localhost:9999/error_page.html",
     },
     "endpoints": {
@@ -309,7 +308,6 @@ CONFIG_DIRECT_TRUST = {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
-        "error_template": "error.html",
         "error_url": "https://localhost:9999/error_page.html",
     },
     "endpoints": {
