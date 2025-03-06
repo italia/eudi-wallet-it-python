@@ -2,7 +2,7 @@ import logging
 from typing import Any, Callable, Optional
 
 import satosa.context
-import satosa.response
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from typing import Union, Literal
 from pyeudiw.storage.db_engine import DBEngine
@@ -167,10 +167,14 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer, force_update)
 
         keys = []
+        thumbprints = []
 
         for handler in self.handlers:
             if (key := trust_source.get_trust_param_by_handler_name(handler.__class__.__name__)) is not None:
-                keys += key.jwks
+                for jwk in key.jwks:
+                    if key_from_jwk_dict(jwk) not in thumbprints:
+                        thumbprints.append(key_from_jwk_dict(jwk))
+                        keys.append(jwk)
 
         if not keys:
             raise NoCriptographicMaterial(
