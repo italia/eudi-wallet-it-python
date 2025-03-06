@@ -55,7 +55,12 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         try:
             trust_source = self.db_engine.get_trust_source(issuer)
-            return TrustSourceData.from_dict(trust_source) if trust_source else None
+
+            if trust_source:
+                del trust_source["_id"]
+                return TrustSourceData.from_dict(trust_source)
+
+            return None
         except EntryNotFound:
             return None
         
@@ -97,7 +102,7 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler in self.handlers:
             handler_name = handler.__class__.__name__
 
-            trust_param = trust_source.get_trust_param(handler_name)
+            trust_param = trust_source.get_trust_param_by_handler_name(handler_name)
 
             if not trust_param or trust_param.expired or trust_source.revoked:
                 trust_source = handler.extract_and_update_trust_materials(
@@ -161,13 +166,19 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
-        if not trust_source.keys:
+        keys = []
+
+        for handler in self.handlers:
+            if (key := trust_source.get_trust_param_by_handler_name(handler.__class__.__name__)) is not None:
+                keys += key.jwks
+
+        if not keys:
             raise NoCriptographicMaterial(
                 f"no trust evaluator can provide cyptographic material "
                 f"for {issuer}: searched among: {self.handlers_names}"
             )
 
-        return trust_source.public_keys
+        return keys
 
     def get_metadata(self, issuer: Optional[str] = None, force_update: bool = False) -> dict:
         """
@@ -240,10 +251,15 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
-        return {
-            param.type: param.trust_params
-            for param in trust_source.trust_params.values()
-        }
+        excluded_fields = ["entity_id", "policies", "metadata", "revoked"]
+
+        headers_params = {}
+
+        for param_name, param_value in trust_source.serialize().items():
+            if param_name not in excluded_fields:
+                headers_params[param_value["tp_key"]] = param_value[param_value["tp_key"]]
+
+        return headers_params
 
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
