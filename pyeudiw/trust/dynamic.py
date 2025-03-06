@@ -261,7 +261,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         for param_name, param_value in trust_source.serialize().items():
             if param_name not in excluded_fields:
-                headers_params[param_value["tp_key"]] = param_value[param_value["tp_key"]]
+                headers_params[param_value["attribute_name"]] = param_value[param_value["attribute_name"]]
 
         return headers_params
 

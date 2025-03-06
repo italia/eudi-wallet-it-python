@@ -97,7 +97,7 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
     "entity_id": string,
     "federation" : {
       "trust_chain": ARRAY[EC,ES,ES],
-      "tp_key": "trust_chain",
+      "attribute_name": "trust_chain",
       "exp": datetime,
       "update": datetime,
       "trust_handler_name": "FederationHandler",
@@ -106,12 +106,12 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
     "x509": {
       "x5c": ARRAY[bytestring(DER), bytestring(DER), bytestring(DER)] -> contains public keys,
       "exp": datetime,
-      "tp_key": "x5c",
+      "attribute_name": "x5c",
       "trust_handler_name": "X509Handler",
       "jwks":  ARRAY[object],
     },
     "direct_trust_sd_jwt_vc": {
-      "tp_key": "jwks",
+      "attribute_name": "jwks",
       "trust_handler_name": "DirectTrustSdJwtVc",
       "jwks": ARRAY[object]
     }
@@ -125,7 +125,7 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
 | `_id`                | Unique identifier in MongoDB.                            |
 | `entity_id`          | The string which uniquely identifies the entity.         |
 | `metadata`           | Object containing additional properties.                 |
-| `tp_key`             | The label of trust parameter inside the object           |
+| `attribute_name`         | The label of trust parameter inside the object           |
 | `trust_handler_name` | The name of the trust handler that operates on that data |
 
 #### Sessions

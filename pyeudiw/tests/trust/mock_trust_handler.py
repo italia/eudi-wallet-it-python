@@ -38,7 +38,7 @@ class MockTrustHandler(TrustHandlerInterface):
 
         if issuer == self.client_id:
             trust_param = TrustParameterData(
-                tp_key="trust_param_name",
+                attribute_name="trust_param_name",
                 jwks=[mock_jwk],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
                 trust_param_name={'trust_param_key': 'trust_param_value'},
@@ -46,7 +46,7 @@ class MockTrustHandler(TrustHandlerInterface):
             )
         else:
             trust_param = TrustParameterData(
-                tp_key="trust_param_name",
+                attribute_name="trust_param_name",
                 jwks=[mock_jwk],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
                 trust_param_name={"trust_param_key": "trust_param_value"},
@@ -78,7 +78,7 @@ class UpdateTrustHandler(MockTrustHandler):
         trust_source = self.get_metadata(issuer, trust_source)
 
         trust_param = TrustParameterData(
-            tp_key="trust_param_name",
+            attribute_name="trust_param_name",
             jwks=[mock_jwk],
             expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
             trust_param_name={'updated_trust_param_key': 'updated_trust_param_value'},

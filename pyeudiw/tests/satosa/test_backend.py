@@ -827,9 +827,9 @@ class TestOpenID4VPBackend:
         tsd.add_trust_param(
             "trust_chain",
             TrustParameterData(
-                "trust_chain",
-                trust_chain_wallet,
-                datetime.datetime.now(),
+                attribute_name="trust_chain",
+                jwks=[JWK(key=ta_jwk).as_dict()],
+                expiration_date=datetime.datetime.now(),
                 trust_chain=trust_chain_wallet,
             )
         )

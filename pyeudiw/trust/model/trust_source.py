@@ -10,7 +10,7 @@ class TrustParameterData:
 
     def __init__(
         self,
-        tp_key: str,
+        attribute_name: str,
         expiration_date: datetime,
         jwks: list[dict] = [],
         trust_handler_name: str = "",
@@ -27,7 +27,7 @@ class TrustParameterData:
         :type expiration_date: datetime
         """
 
-        self.tp_key = tp_key
+        self.attribute_name = attribute_name
         self.expiration_date = expiration_date
         self.jwks = jwks
         self.trust_handler_name = trust_handler_name
@@ -42,7 +42,7 @@ class TrustParameterData:
         :returns: The trust parameters for the self-issued jwt header
         :rtype: dict[str, any]
         """
-        return {self.type: getattr(self, self.tp_key)}
+        return {self.type: getattr(self, self.attribute_name)}
 
     def serialize(self) -> dict[str, any]:
         """
@@ -52,11 +52,11 @@ class TrustParameterData:
         :rtype: dict[str, any]
         """
         return {
-            "tp_key": self.tp_key,
+            "attribute_name": self.attribute_name,
             "expiration_date": self.expiration_date,
             "jwks": self.jwks,
             "trust_handler_name": self.trust_handler_name,
-            self.tp_key: getattr(self, self.tp_key)
+            self.attribute_name: getattr(self, self.attribute_name)
         }
 
     @property

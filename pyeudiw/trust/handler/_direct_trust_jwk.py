@@ -209,7 +209,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             trust_source.add_trust_param(
                 "direct_trust_sd_jwt_vc",
                 TrustParameterData(
-                    tp_key="jwks",
+                    attribute_name="jwks",
                     jwks=[JWK(key=jwk).as_dict() for jwk in jwk_l],
                     expiration_date=None,
                     trust_handler_name=str(self.__class__.__name__),
