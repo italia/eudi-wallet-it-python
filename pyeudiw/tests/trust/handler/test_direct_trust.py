@@ -132,7 +132,7 @@ def test_direct_trust_jwk():
         random_issuer, trust_source
     )
 
-    obtained_jwks = trust_source.keys
+    obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
     mocked_metadata_endpoint.stop()
@@ -157,7 +157,7 @@ def test_direct_trust_jwk_not_conformat_url():
         issuer, trust_source
     )
 
-    obtained_jwks = trust_source.keys
+    obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
 

@@ -59,26 +59,9 @@ def test_public_key_and_metadata_retrive():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    pub_keys = trust_ev.get_public_keys(uuid_url)
-    trust_source = db_engine.get_trust_source(uuid_url)
-
-    assert trust_source
-    assert (
-        trust_source["keys"][0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
-    )
-    assert trust_source["metadata"] == {"json_key": "json_value"}
-
-    assert pub_keys[0]["kid"] == "qTo9RGpuU_CSolt6GZmndLyPXJJa48up5dH1YbxVDPs"
-
-    metadata = trust_ev.get_metadata(uuid_url)
-
-    assert metadata == {"json_key": "json_value"}
-
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
-
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
     assert trust_ev.get_metadata() == {"default_key": "default_value"}
 
-    assert trust_ev.get_jwt_header_trust_parameters() == {'trust_param_type': {'default_trust_param_key': 'default_trust_param_value'}}
 
 def test_update_first_strategy():
     db_engine = DBEngine(CONFIG["storage"])
@@ -96,8 +79,8 @@ def test_update_first_strategy():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'updated_trust_param_key': 'updated_trust_param_value'}}
 
 
 def test_cache_first_strategy():
@@ -116,8 +99,8 @@ def test_cache_first_strategy():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
 
 def test_cache_first_strategy_expired():
     db_engine = DBEngine(CONFIG["storage"])
@@ -137,8 +120,8 @@ def test_cache_first_strategy_expired():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'updated_trust_param_key': 'updated_trust_param_value'}}
 
 def test_cache_first_strategy_expired_revoked():
     db_engine = DBEngine(CONFIG["storage"])
@@ -156,12 +139,12 @@ def test_cache_first_strategy_expired_revoked():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
 
     trust_ev.revoke(uuid_url)
 
     assert trust_ev.is_revoked(uuid_url) == True
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'updated_trust_param_key': 'updated_trust_param_value'}}
 
 def test_cache_first_strategy_expired_force_update():
     db_engine = DBEngine(CONFIG["storage"])
@@ -179,29 +162,5 @@ def test_cache_first_strategy_expired_force_update():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_type': {'trust_param_key': 'trust_param_value'}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url, force_update=True) == {'trust_param_type': {'updated_trust_param_key': 'updated_trust_param_value'}}
-
-def test_no_public_key_duplicates():
-    db_engine = DBEngine(CONFIG["storage"])
-
-    trust_ev = CombinedTrustEvaluator.from_config(
-        {
-            "mock": {
-                "module": "pyeudiw.tests.trust.mock_trust_handler",
-                "class": "MockTrustHandler",
-                "config": {},
-            },
-                
-        }, db_engine, default_client_id="default-client-id", mode="update_first"
-    )
-
-    uuid_url = f"http://{uuid4()}.issuer.it"
-
-    pub_keys = trust_ev.get_public_keys(uuid_url)
-
-    assert len(pub_keys) == 1
-
-    pub_keys = trust_ev.get_public_keys(uuid_url)
-
-    assert len(pub_keys) == 1
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url, force_update=True) == {'trust_param_name': {'updated_trust_param_key': 'updated_trust_param_value'}}

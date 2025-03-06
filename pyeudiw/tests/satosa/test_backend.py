@@ -102,7 +102,15 @@ class TestOpenID4VPBackend:
         )
 
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
-        tsd.add_key(self.issuer_jwk)
+        tsd.add_trust_param(
+            "direct_trust_sd_jwt_vc",
+            TrustParameterData(
+                "jwks",
+                jwks=[JWK(key=self.issuer_jwk).as_dict()],
+                expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
+                trust_handler_name="DirectTrustSdJwtVc",
+            ),
+        )
 
         db_engine_inst.add_trust_source(tsd.serialize())
 
@@ -821,7 +829,8 @@ class TestOpenID4VPBackend:
             TrustParameterData(
                 "trust_chain",
                 trust_chain_wallet,
-                datetime.datetime.now()
+                datetime.datetime.now(),
+                trust_chain=trust_chain_wallet,
             )
         )
 

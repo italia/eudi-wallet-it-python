@@ -35,22 +35,25 @@ class MockTrustHandler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
-        trust_source.add_key(mock_jwk)
 
         if issuer == self.client_id:
             trust_param = TrustParameterData(
-                type="trust_param_type",
-                trust_params= {"default_trust_param_key": "default_trust_param_value"},
+                tp_key="trust_param_name",
+                jwks=[mock_jwk],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+                trust_param_name={'trust_param_key': 'trust_param_value'},
+                trust_handler_name=str(self.__class__.__name__)
             )
         else:
             trust_param = TrustParameterData(
-                type="trust_param_type",
-                trust_params= {"trust_param_key": "trust_param_value"},
+                tp_key="trust_param_name",
+                jwks=[mock_jwk],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+                trust_param_name={"trust_param_key": "trust_param_value"},
+                trust_handler_name=str(self.__class__.__name__)
             )
 
-        trust_source.add_trust_param(str(self.__class__.__name__), trust_param)
+        trust_source.add_trust_param("test_trust_param", trust_param)
 
         return trust_source
 
@@ -73,15 +76,16 @@ class UpdateTrustHandler(MockTrustHandler):
         
         
         trust_source = self.get_metadata(issuer, trust_source)
-        trust_source.keys.append(mock_jwk)
 
         trust_param = TrustParameterData(
-            type="trust_param_type",
-            trust_params= {"updated_trust_param_key": "updated_trust_param_value"},
+            tp_key="trust_param_name",
+            jwks=[mock_jwk],
             expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+            trust_param_name={'updated_trust_param_key': 'updated_trust_param_value'},
+            trust_handler_name=str(self.__class__.__name__)
         )
 
-        trust_source.add_trust_param(str(self.__class__.__name__), trust_param)
+        trust_source.add_trust_param("test_trust_param", trust_param)
 
         return trust_source
 
