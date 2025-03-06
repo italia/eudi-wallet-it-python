@@ -10,7 +10,7 @@ from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
 
 
 class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
@@ -206,7 +206,15 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
                     "unable to find jwks in issuer jwk metadata"
                 )
 
-            trust_source.add_keys(jwk_l)
+            trust_source.add_trust_param(
+                "direct_trust_sd_jwt_vc",
+                TrustParameterData(
+                    tp_key="jwks",
+                    jwks=[JWK(key=jwk).as_dict() for jwk in jwk_l],
+                    expiration_date=None,
+                    trust_handler_name=str(self.__class__.__name__),
+                )
+            )
         except Exception as e:
             self._log_warning(
                 "Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}"
