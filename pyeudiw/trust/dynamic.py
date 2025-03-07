@@ -192,7 +192,7 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.metadata:
-            raise Exception(
+            raise NoMetadata(
                 f"no trust evaluator can provide metadata for {issuer}: "
                 f"searched among: {self.handlers_names}"
             )
