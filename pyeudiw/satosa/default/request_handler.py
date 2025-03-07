@@ -28,12 +28,18 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 "request error: missing or invalid parameter [id]",
                 e400
             )
+        
+        try:
+            metadata = self.trust_evaluator.get_metadata(self.client_id)
+        except Exception:
+            metadata = None
 
         data = build_authorization_request_claims(
             self.client_id,
             state,
             self.absolute_response_url,
             self.config["authorization"],
+            metadata=metadata,
         )
 
         if _aud := self.config["authorization"].get("aud"):
