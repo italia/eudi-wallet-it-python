@@ -19,12 +19,14 @@ class TrustParameterData:
         """
         Initialize the trust parameter data.
 
-        :param type: The type of the trust parameter
-        :type type: str
-        :param trust_params: The trust parameters
-        :type trust_params: dict
+        :param attribute_name: The attribute name of the the field that holds the trust parameter data
+        :type attribute_name: str
         :param expiration_date: The expiration date of the trust parameter data
         :type expiration_date: datetime
+        :param jwks: The jwks of the trust parameter data
+        :type jwks: list[dict], optional
+        :param trust_handler_name: The trust handler that handles the trust parameter data
+        :type trust_handler_name: str, optional
         """
 
         self.attribute_name = attribute_name
@@ -97,10 +99,6 @@ class TrustSourceData:
         :type metadata: dict, optional
         :param revoked: Whether the trust source is revoked
         :type revoked: bool, optional
-        :param keys: The keys of the trust source
-        :type keys: list[dict], optional
-        :param trust_params: The trust parameters of the trust source
-        :type trust_params: dict[str, dict[str, any]], optional
         """
         self.entity_id = entity_id
         self.policies = policies
