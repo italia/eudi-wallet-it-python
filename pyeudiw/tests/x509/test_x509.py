@@ -15,7 +15,7 @@ from pyeudiw.x509.verify import (
 )
 
 
-def gen_chain() -> list[bytes]:
+def gen_chain(date: datetime = datetime.now()) -> list[bytes]:
     # Generate a private key for the CA
     ca_private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -53,8 +53,8 @@ def gen_chain() -> list[bytes]:
         )
         .public_key(ca_private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.utcnow())
-        .not_valid_after(datetime.utcnow() + timedelta(days=365))
+        .not_valid_before(date - timedelta(days=1))
+        .not_valid_after(date + timedelta(days=365))
         .add_extension(
             x509.BasicConstraints(ca=True, path_length=1),
             critical=True,
@@ -75,8 +75,8 @@ def gen_chain() -> list[bytes]:
         .issuer_name(ca.subject)
         .public_key(intermediate_private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.utcnow())
-        .not_valid_after(datetime.utcnow() + timedelta(days=365))
+        .not_valid_before(date - timedelta(days=1))
+        .not_valid_after(date + timedelta(days=365))
         .add_extension(
             x509.BasicConstraints(ca=True, path_length=0),
             critical=True,
@@ -97,8 +97,8 @@ def gen_chain() -> list[bytes]:
         .issuer_name(intermediate.subject)
         .public_key(leaf_private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.utcnow())
-        .not_valid_after(datetime.utcnow() + timedelta(days=365))
+        .not_valid_before(date - timedelta(days=1))
+        .not_valid_after(date + timedelta(days=365))
         .add_extension(
             x509.BasicConstraints(ca=False, path_length=None),
             critical=True,
@@ -125,7 +125,7 @@ def chain_to_pem(chain: list[bytes]) -> str:
 
 def test_valid_chain():
     chain = gen_chain()
-    assert verify_x509_attestation_chain(chain, datetime.fromisoformat("2050-12-04"))
+    assert verify_x509_attestation_chain(chain)
 
 
 def test_valid_chain_with_none_exp():
@@ -134,10 +134,8 @@ def test_valid_chain_with_none_exp():
 
 
 def test_valid_chain_invalid_date():
-    chain = gen_chain()
-    assert not verify_x509_attestation_chain(
-        chain, datetime.fromisoformat("2014-12-04")
-    )
+    chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
+    assert not verify_x509_attestation_chain(chain)
 
 
 def test_invalid_intermediary_chain():
@@ -158,9 +156,7 @@ def test_invalid_intermediary_chain():
         \xc9=\x06\xf7\xdb_\r\xc1\xf1\x1d\xea\xb0\x85\xf8p\x1e\xa5\xb0\xb6\xact\xb1\x86UmVNX\xb6\x8c\x07o\xc6\x0e\x88\xe7,\x9e\xbe\xb6w\xf9\x88\xca!\xb2k\xcdE
         \xaf%r\xfd\x1d+\xab\x1do/i\x84~\xad\xa1\x99\x80\x03\xf4\xf2s\x88\x90\xa3\x93\x83&\x1b\xa1a\xc9\xe6\\\xfe\xcar\x17\x83\x84\x8bB\x8e\x8d\xcb\xb2\x1bD\x08
         \xb5\x11y\xad\xa6~\x9ae5\xa4\x88\xac\xae\x03\xe9\xb2&\x05\x149\xa0\x86I\x84\xc1`!F\xb8"""
-    assert not verify_x509_attestation_chain(
-        chain, datetime.fromisoformat("2050-12-04")
-    )
+    assert not verify_x509_attestation_chain(chain)
 
 
 def test_chain_issuer():
@@ -174,24 +170,20 @@ def test_invalid_len():
     chain = gen_chain()
     del chain[0]
     del chain[1]
-    assert not verify_x509_attestation_chain(
-        chain, datetime.fromisoformat("2050-12-04")
-    )
+    assert not verify_x509_attestation_chain(chain)
 
 
 def test_invalid_chain_order():
     chain = gen_chain()
     chain.reverse()
-    assert not verify_x509_attestation_chain(
-        chain, datetime.fromisoformat("2050-12-04")
-    )
+    assert not verify_x509_attestation_chain(chain)
 
 
 def test_valid_anchor():
     chain = gen_chain()
     pem = chain_to_pem(chain)
 
-    assert verify_x509_anchor(pem, datetime.fromisoformat("2050-12-04"))
+    assert verify_x509_anchor(pem)
 
 
 def test_valid_anchor_nodate():
@@ -202,10 +194,10 @@ def test_valid_anchor_nodate():
 
 
 def test_anchor_valid_chain_invalid_date():
-    chain = gen_chain()
+    chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
     pem = chain_to_pem(chain)
 
-    assert not verify_x509_anchor(pem, datetime.fromisoformat("2014-12-04"))
+    assert not verify_x509_anchor(pem)
 
 
 def test_anchor_invalid_intermediary_chain():
@@ -228,7 +220,7 @@ def test_anchor_invalid_intermediary_chain():
         \xb5\x11y\xad\xa6~\x9ae5\xa4\x88\xac\xae\x03\xe9\xb2&\x05\x149\xa0\x86I\x84\xc1`!F\xb8"""
     pem = chain_to_pem(chain)
 
-    assert not verify_x509_anchor(pem, datetime.fromisoformat("2050-12-04"))
+    assert not verify_x509_anchor(pem)
 
 
 def test_anchor_invalid_len():
@@ -237,7 +229,7 @@ def test_anchor_invalid_len():
     del chain[1]
     pem = chain_to_pem(chain)
 
-    assert not verify_x509_anchor(pem, datetime.fromisoformat("2050-12-04"))
+    assert not verify_x509_anchor(pem)
 
 
 def test_anchor_invalid_chain_order():
@@ -245,7 +237,7 @@ def test_anchor_invalid_chain_order():
     chain.reverse()
     pem = chain_to_pem(chain)
 
-    assert not verify_x509_anchor(pem, datetime.fromisoformat("2050-12-04"))
+    assert not verify_x509_anchor(pem)
 
 
 def test_valid_der():
