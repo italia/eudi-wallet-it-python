@@ -62,7 +62,7 @@ CREDENTIAL_ISSUER_TRUST_SOURCE_Dict = {
     "metadata": {},
     "revoked": False,
     "direct_trust_sd_jwt_vc": {
-        "tp_key": "jwks",
+        "attribute_name": "jwks",
         "expiration_date": exp_from_now(1024),
         "jwks": [CREDENTIAL_ISSUER_JWK.as_dict()],
         "trust_handler_name": "DirectTrustSdJwtVc",
