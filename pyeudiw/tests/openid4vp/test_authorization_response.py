@@ -5,6 +5,7 @@ from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.openid4vp.authorization_response import (
     DirectPostJwtJweParser,
     DirectPostParser,
+    normalize_jsonstring_to_string,
 )
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
@@ -114,12 +115,26 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
             {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
         ],
     }
+
+    # case 0: vp_token is string
     data = {
         "vp_token": vp_token,
         "state": state,
         "presentation_submission": presentation_submission,
     }
     ctx.request = {"response": jwe_helper.encrypt(data)}
+
+    resp = parser.parse_and_validate(ctx)
+    assert resp.vp_token == vp_token
+    assert resp.state == state
+    assert resp.presentation_submission == presentation_submission
+
+    # case 1: vp_token is a json string
+    ctx.request = {
+        "vp_token": f'"{vp_token}"',
+        "state": state,
+        "presentation_submission": presentation_submission
+    }
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
@@ -213,3 +228,13 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper):
         assert False, f"obtained unexpected parsing exception: {e}"
     except AuthRespValidationException:
         assert True
+
+
+def test_normalize_json_string():
+    s = 'asd'
+    assert s == normalize_jsonstring_to_string(s)
+    assert s == normalize_jsonstring_to_string(f'"{s}"')
+
+    sl = ['asd', 'fgh']
+    assert sl == normalize_jsonstring_to_string(sl)
+    assert sl == normalize_jsonstring_to_string([f'"{sl[0]}"', f'"{sl[1]}"'])
