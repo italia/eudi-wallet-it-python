@@ -9,7 +9,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
-from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError
+from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError, NoMetadata
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
