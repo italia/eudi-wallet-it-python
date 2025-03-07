@@ -100,7 +100,7 @@ class TrustHandlerInterface:
         :returns: The name of the trust handler
         :rtype: str
         """
-        return self.__class__.__name__
+        return str(self.__class__.__name__)
     
     @property
     def default_client_id(self) -> str:
