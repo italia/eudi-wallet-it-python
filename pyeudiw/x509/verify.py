@@ -137,8 +137,8 @@ def verify_x509_anchor(pem_str: str) -> bool:
     """
     Verify the x509 anchor certificate.
 
-    :param der_str: The x509 anchor certificate
-    :type der_str: str
+    :param pem_str: The x509 anchor certificate
+    :type pem_str: str
 
     :returns: True if the x509 anchor certificate is valid else False
     :rtype: bool
