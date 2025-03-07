@@ -109,19 +109,20 @@ def verify_x509_attestation_chain(
     return _verify_x509_certificate_chain(pems)
 
 
-def verify_x509_anchor(pem_str: str, exp: datetime | None = None) -> bool:
+def verify_x509_anchor(pem_str: str) -> bool:
     """
     Verify the x509 anchor certificate.
 
     :param pem_str: The x509 anchor certificate
     :type pem_str: str
-    :param exp: The x509 anchor certificate expiration date
-    :type exp: datetime.datetime | None
 
     :returns: True if the x509 anchor certificate is valid else False
     :rtype: bool
     """
-    if not _check_datetime(exp):
+
+    cert_data = load_der_x509_certificate(pem_str)
+
+    if not _check_datetime(cert_data.not_valid_after):
         logging.error(LOG_ERROR.format("check datetime failed"))
         return False
 
