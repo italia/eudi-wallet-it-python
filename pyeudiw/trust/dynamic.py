@@ -188,6 +188,14 @@ class CombinedTrustEvaluator(BaseLogger):
     def get_metadata(self, issuer: Optional[str] = None, force_update: bool = False) -> dict:
         """
         Yields a dictionary of metadata about an issuer, according to some trust model.
+
+        :param issuer: The issuer
+        :type issuer: str
+        :param force_update: If the metadata should be updated even if it is already present in the cache
+        :type force_update: bool
+
+        :returns: The metadata
+        :rtype: dict
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
