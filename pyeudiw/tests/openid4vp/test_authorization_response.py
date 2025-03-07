@@ -43,10 +43,23 @@ def test_direct_post_parser_good_case():
             {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
         ],
     }
+    # case 0: vp_token is string
     ctx.request = {
         "vp_token": vp_token,
         "state": state,
         "presentation_submission": presentation_submission,
+    }
+
+    resp = parser.parse_and_validate(ctx)
+    assert resp.vp_token == vp_token
+    assert resp.state == state
+    assert resp.presentation_submission == presentation_submission
+
+    # case 1: vp_token is a json string
+    ctx.request = {
+        "vp_token": f'"{vp_token}"',
+        "state": state,
+        "presentation_submission": presentation_submission
     }
 
     resp = parser.parse_and_validate(ctx)
@@ -116,25 +129,12 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
         ],
     }
 
-    # case 0: vp_token is string
     data = {
         "vp_token": vp_token,
         "state": state,
         "presentation_submission": presentation_submission,
     }
     ctx.request = {"response": jwe_helper.encrypt(data)}
-
-    resp = parser.parse_and_validate(ctx)
-    assert resp.vp_token == vp_token
-    assert resp.state == state
-    assert resp.presentation_submission == presentation_submission
-
-    # case 1: vp_token is a json string
-    ctx.request = {
-        "vp_token": f'"{vp_token}"',
-        "state": state,
-        "presentation_submission": presentation_submission
-    }
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
