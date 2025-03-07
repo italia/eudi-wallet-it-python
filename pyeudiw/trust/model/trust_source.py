@@ -37,15 +37,6 @@ class TrustParameterData:
         for type, tp in kwargs.items():
             setattr(self, type, tp)
 
-    def selfissued_jwt_header_trust_parameters(self) -> dict[str, any]:
-        """
-        Return the trust parameters for the self-issued jwt header.
-
-        :returns: The trust parameters for the self-issued jwt header
-        :rtype: dict[str, any]
-        """
-        return {self.type: getattr(self, self.attribute_name)}
-
     def serialize(self) -> dict[str, any]:
         """
         Serialize the trust parameter data.
