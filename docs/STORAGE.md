@@ -120,13 +120,13 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
 ]
 ```
 
-| Name                   | Description                                              |
-| ---------------------- | -------------------------------------------------------- |
-| `_id`                | Unique identifier in MongoDB.                            |
-| `entity_id`          | The string which uniquely identifies the entity.         |
-| `metadata`           | Object containing additional properties.                 |
-| `attribute_name`         | The label of trust parameter inside the object           |
-| `trust_handler_name` | The name of the trust handler that operates on that data |
+| Name                   | Description                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| `_id`                | Unique identifier in MongoDB.                                                               |
+| `entity_id`          | The string which uniquely identifies the entity.                                            |
+| `metadata`           | Object containing additional properties.                                                    |
+| `attribute_name`     | The label of trust parameter inside the object (For Mdoc Cbor data this field is optional) |
+| `trust_handler_name` | The name of the trust handler that operates on that data                                    |
 
 #### Sessions
 
