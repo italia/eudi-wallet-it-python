@@ -167,7 +167,7 @@ def get_issuer_from_x5c(x5c: list[bytes]) -> str:
     cert = load_der_x509_certificate(x5c[-1])
     return cert.subject.rfc4514_string().split("=")[1]
 
-def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
+def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """
     Get the expiry date from the x509 certificate chain.
 
@@ -177,7 +177,8 @@ def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     :returns: The expiry date
     :rtype: datetime
     """
-    cert = load_der_x509_certificate(PEM_cert_to_DER_cert(x5c[-1]))
+    der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
+    cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
 def is_der_format(cert: bytes) -> str:
