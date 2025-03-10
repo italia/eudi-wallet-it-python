@@ -95,8 +95,12 @@ class TrustSourceData:
         """
         self.entity_id = entity_id
         self.policies = policies
-        self.metadata = metadata
         self.revoked = revoked
+
+        if "jwks" in metadata and "keys" in metadata["jwks"]:
+            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
+
+        self.metadata = metadata
 
         for type, tp in kwargs.items():
             setattr(self, type, TrustParameterData(**tp)) 
@@ -163,9 +167,15 @@ class TrustSourceData:
         trust_source = {
             "entity_id": self.entity_id,
             "policies": self.policies,
-            "metadata": self.metadata,
             "revoked": self.revoked,
         }
+
+        tmp_metadata = self.metadata.copy()
+
+        if "jwks" in tmp_metadata and "keys" in tmp_metadata["jwks"]:
+            tmp_metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in tmp_metadata["jwks"]["keys"]]
+
+        trust_source["metadata"] = tmp_metadata
 
         for type in dir(self):
             if isinstance(getattr(self, type), TrustParameterData):
