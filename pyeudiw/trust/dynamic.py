@@ -9,7 +9,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
-from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError
+from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError, NoMetadata
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
@@ -172,10 +172,11 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler in self.handlers:
             if (key := trust_source.get_trust_param_by_handler_name(handler.__class__.__name__)) is not None:
                 for jwk in key.jwks:
-                    thumbprint = key_from_jwk_dict(jwk).thumbprint("SHA-256")
+                    key = key_from_jwk_dict(jwk)
+                    thumbprint = key.thumbprint("SHA-256")
                     if thumbprint not in thumbprints:
                         thumbprints.append(thumbprint)
-                        keys.append(jwk)
+                        keys.append(key.serialize(private=False))
 
         if not keys:
             raise NoCriptographicMaterial(
@@ -188,16 +189,29 @@ class CombinedTrustEvaluator(BaseLogger):
     def get_metadata(self, issuer: Optional[str] = None, force_update: bool = False) -> dict:
         """
         Yields a dictionary of metadata about an issuer, according to some trust model.
+
+        :param issuer: The issuer
+        :type issuer: str
+        :param force_update: If the metadata should be updated even if it is already present in the cache
+        :type force_update: bool
+
+        :returns: The metadata
+        :rtype: dict
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.metadata:
-            raise Exception(
+            raise NoMetadata(
                 f"no trust evaluator can provide metadata for {issuer}: "
                 f"searched among: {self.handlers_names}"
             )
+        
+        metadata = trust_source.metadata.copy()
+        
+        if "jwks" in metadata and "keys" in metadata["jwks"]:
+            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
 
-        return trust_source.metadata
+        return metadata
 
     def is_revoked(self, issuer: Optional[str] = None, force_update: bool = False) -> bool:
         """

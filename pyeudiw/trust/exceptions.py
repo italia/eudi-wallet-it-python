@@ -32,3 +32,6 @@ class TrustConfigurationError(Exception):
 
 class NoCriptographicMaterial(Exception):
     pass
+
+class NoMetadata(Exception):
+    pass
