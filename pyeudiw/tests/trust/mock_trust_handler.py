@@ -13,6 +13,17 @@ mock_jwk = {
     "y": "fUEsB8IrX2DgzqABfVsCody1RypAXX54fXQ1keoPP5Y",
 }
 
+mock_jwk_private = {
+    "kty": "EC",
+    "d": "Md6-VEjd5ZEFTnKo7AUCzUdejljdXdSAurSywGNw8oo",
+    "use": "sig",
+    "crv": "P-256",
+    "kid": "8OQ2P3OVYOys0Aobqr1HbK2HVpJiiWBl1Z2c2v732Sw",
+    "x": "SMbScr0uzMGAsEMaGbAMXjQwv45h5Lpx3oMLljgsAeA",
+    "y": "NGbl7KWmrDc_LiM2oLOm-wrNPmlhtSDdBV6noIB7jyw",
+    "alg": "ES256"
+}
+
 
 class MockTrustHandler(TrustHandlerInterface):
     """
@@ -39,7 +50,7 @@ class MockTrustHandler(TrustHandlerInterface):
         if issuer == self.client_id:
             trust_param = TrustParameterData(
                 attribute_name="trust_param_name",
-                jwks=[mock_jwk],
+                jwks=[mock_jwk, mock_jwk_private],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
                 trust_param_name={'trust_param_key': 'trust_param_value'},
                 trust_handler_name=str(self.__class__.__name__)
@@ -47,7 +58,7 @@ class MockTrustHandler(TrustHandlerInterface):
         else:
             trust_param = TrustParameterData(
                 attribute_name="trust_param_name",
-                jwks=[mock_jwk],
+                jwks=[mock_jwk, mock_jwk_private],
                 expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
                 trust_param_name={"trust_param_key": "trust_param_value"},
                 trust_handler_name=str(self.__class__.__name__)

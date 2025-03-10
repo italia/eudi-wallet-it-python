@@ -62,6 +62,11 @@ def test_public_key_and_metadata_retrive():
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
     assert trust_ev.get_metadata() == {"default_key": "default_value"}
 
+    keys = trust_ev.get_public_keys()
+
+    assert len(keys) == 2
+    assert "d" not in keys[0]
+    assert "d" not in keys[1]
 
 def test_update_first_strategy():
     db_engine = DBEngine(CONFIG["storage"])
