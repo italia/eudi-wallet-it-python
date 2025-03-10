@@ -36,7 +36,15 @@ class MockTrustHandler(TrustHandlerInterface):
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
         if issuer == self.client_id:
-            trust_source.metadata = {"default_key": "default_value"}
+            trust_source.metadata = {
+                "default_key": "default_value",
+                "jwks": {
+                    "keys": [
+                        mock_jwk, 
+                        mock_jwk_private
+                    ]
+                },
+            }
             return trust_source
 
         trust_source.metadata = {"json_key": "json_value"}
