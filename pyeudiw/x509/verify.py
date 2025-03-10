@@ -177,7 +177,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     :returns: The expiry date
     :rtype: datetime
     """
-    cert = load_der_x509_certificate(x5c[-1])
+    cert = load_der_x509_certificate(PEM_cert_to_DER_cert(x5c[-1]))
     return cert.not_valid_after
 
 def is_der_format(cert: bytes) -> str:
