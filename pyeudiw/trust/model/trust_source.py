@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+
 @dataclass
 class TrustParameterData:
     """
@@ -31,8 +33,8 @@ class TrustParameterData:
 
         self.attribute_name = attribute_name
         self.expiration_date = expiration_date
-        self.jwks = jwks
         self.trust_handler_name = trust_handler_name
+        self.jwks = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in jwks]
 
         for type, tp in kwargs.items():
             setattr(self, type, tp)
