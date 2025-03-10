@@ -49,7 +49,7 @@ class TrustParameterData:
         return {
             "attribute_name": self.attribute_name,
             "expiration_date": self.expiration_date,
-            "jwks": self.jwks,
+            "jwks": [key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks],
             "trust_handler_name": self.trust_handler_name,
             self.attribute_name: getattr(self, self.attribute_name)
         }
