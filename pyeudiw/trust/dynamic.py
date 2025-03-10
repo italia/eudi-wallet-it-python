@@ -205,8 +205,13 @@ class CombinedTrustEvaluator(BaseLogger):
                 f"no trust evaluator can provide metadata for {issuer}: "
                 f"searched among: {self.handlers_names}"
             )
+        
+        metadata = trust_source.metadata.copy()
+        
+        if "jwks" in metadata and "keys" in metadata["jwks"]:
+            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
 
-        return trust_source.metadata
+        return metadata
 
     def is_revoked(self, issuer: Optional[str] = None, force_update: bool = False) -> bool:
         """
