@@ -8,7 +8,7 @@ class VpMDocCbor:
         self.mdoc = MdocCbor()
         self.parse_digital_credential()
 
-    def get_credentials(self) -> dict:
+    def get_documents(self) -> dict:
         return self.mdoc.data_as_cbor_dict["documents"]
     
     def is_revoked(self) -> bool:
