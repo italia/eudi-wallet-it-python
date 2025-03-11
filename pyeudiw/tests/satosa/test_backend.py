@@ -336,7 +336,7 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status == "400"
         msg = json.loads(response_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
+        assert msg["error_description"] == "invalid vp token: cannot parse vp token"
 
     def test_response_endpoint(self, context):
         nonce = str(uuid.uuid4())
@@ -448,7 +448,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
+        assert msg["error_description"] == "invalid vp token: cannot parse vp token"
     
     def test_response_endpoint_invalid_signature(self, context):
         nonce = str(uuid.uuid4())
