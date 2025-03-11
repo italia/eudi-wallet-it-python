@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+
 @dataclass
 class TrustParameterData:
     """
@@ -31,8 +33,8 @@ class TrustParameterData:
 
         self.attribute_name = attribute_name
         self.expiration_date = expiration_date
-        self.jwks = jwks
         self.trust_handler_name = trust_handler_name
+        self.jwks = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in jwks]
 
         for type, tp in kwargs.items():
             setattr(self, type, tp)
@@ -47,7 +49,7 @@ class TrustParameterData:
         return {
             "attribute_name": self.attribute_name,
             "expiration_date": self.expiration_date,
-            "jwks": self.jwks,
+            "jwks": [key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks],
             "trust_handler_name": self.trust_handler_name,
             self.attribute_name: getattr(self, self.attribute_name)
         }
@@ -93,8 +95,12 @@ class TrustSourceData:
         """
         self.entity_id = entity_id
         self.policies = policies
-        self.metadata = metadata
         self.revoked = revoked
+
+        if "jwks" in metadata and "keys" in metadata["jwks"]:
+            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
+
+        self.metadata = metadata
 
         for type, tp in kwargs.items():
             setattr(self, type, TrustParameterData(**tp)) 
@@ -161,9 +167,15 @@ class TrustSourceData:
         trust_source = {
             "entity_id": self.entity_id,
             "policies": self.policies,
-            "metadata": self.metadata,
             "revoked": self.revoked,
         }
+
+        tmp_metadata = self.metadata.copy()
+
+        if "jwks" in tmp_metadata and "keys" in tmp_metadata["jwks"]:
+            tmp_metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in tmp_metadata["jwks"]["keys"]]
+
+        trust_source["metadata"] = tmp_metadata
 
         for type in dir(self):
             if isinstance(getattr(self, type), TrustParameterData):
