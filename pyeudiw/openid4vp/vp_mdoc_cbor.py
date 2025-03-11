@@ -9,10 +9,7 @@ class VpMDocCbor:
         self.parse_digital_credential()
 
     def get_credentials(self) -> dict:
-        return self.mdoc.data_as_cbor_dict()["issuerSigned"]
-    
-    def get_doc_type(self) -> str:
-        return self.mdoc.data_as_cbor_dict()["docType"]
+        return self.mdoc.data_as_cbor_dict["documents"]
     
     def is_revoked(self) -> bool:
         return False
@@ -29,7 +26,7 @@ class VpMDocCbor:
             raise MdocCborValidationError("Signature is invalid")
         
     def parse_digital_credential(self) -> None:
-        self.mdoc.load(data=self.data)
+        self.mdoc.loads(data=self.data)
 
     def _detect_vp_type(self) -> str:
         return "mdoc_cbor"
