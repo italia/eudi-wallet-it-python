@@ -7,7 +7,7 @@ from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
-from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
+from pyeudiw.openid4vp.exceptions import MissingIssuer
 
 
 class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
@@ -60,7 +60,7 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         :returns: if the credential is expired
         :rtype: bool
         """
-        return is_jwt_expired(self.sdjwt.issuer_jwt)
+        return is_jwt_expired(self.sdjwt.issuer_jwt.jwt)
 
     def verify_signature(self, public_key: ECKey | RSAKey | dict) -> None:
         """
