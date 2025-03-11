@@ -33,3 +33,15 @@ class MissingIssuer(Exception):
     Raised when a given VP not contain the issuer
     """
     pass
+
+class MdocCborValidationError(Exception):
+    """
+    Raised when a given VP not contain the issuer
+    """
+    pass
+
+class VPExpired(Exception):
+    """
+    Raised when a given VP is expired
+    """
+    pass
