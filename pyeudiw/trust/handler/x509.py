@@ -31,7 +31,7 @@ class X509Hanlder(TrustHandlerInterface):
             logger.error(f"Failed to parse x509 certificate chain for issuer {issuer}: {e}")
             return trust_source
         
-        exp = get_expiry_date_from_x5c(pem)
+        exp = get_expiry_date_from_x5c(pems)
 
         trust_source.add_trust_param(
             "x509",
