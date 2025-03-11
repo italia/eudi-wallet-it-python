@@ -5,7 +5,7 @@ from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
-from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
+from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
 
@@ -18,10 +18,6 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         verifier_nonce: Optional[str] = None,
     ):
         self.token = token
-        if not is_sd_jwt_kb_format(token):
-            raise NotKBJWT(
-                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?"
-            )
         self.verifier_id = verifier_id
         self.verifier_nonce = verifier_nonce
         # precomputed values
