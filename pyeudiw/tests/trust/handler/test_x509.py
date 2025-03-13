@@ -17,15 +17,27 @@ def test_wrong_configuration_must_fail():
 
     try:
         X509Hanlder(
-            "https://example.com",
+            "example.com",
             {
-                "https://wrong_example.com": gen_chain()
+                "wrong_example.com": gen_chain()
             },
             []
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
         assert str(e) == "No x509 certificate chain provided for the relying party"
+
+    try:
+        X509Hanlder(
+            "https://example.com",
+            {
+                "https://example.com": gen_chain(ca_cn="wrong_example.com")
+            },
+            []
+        )
+        assert False, "Should have raised InvalidTrustHandlerConfiguration"
+    except InvalidTrustHandlerConfiguration as e:
+        assert str(e) == "Invalid x509 certificate: expected https://example.com got wrong_example.com"
 
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
