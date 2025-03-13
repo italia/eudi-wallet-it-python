@@ -1,8 +1,32 @@
 import datetime
-import unittest.mock
 from pyeudiw.trust.handler.x509 import X509Hanlder
-from pyeudiw.tests.x509.test_x509 import gen_chain, chain_to_pem
+from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.trust.model.trust_source import TrustSourceData
+from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+
+def test_wrong_configuration_must_fail():
+    try:
+        X509Hanlder(
+            "https://example.com",
+            None,
+            []
+        )
+        assert False, "Should have raised InvalidTrustHandlerConfiguration"
+    except InvalidTrustHandlerConfiguration as e:
+        assert str(e) == "No x509 certificate chains provided"
+
+    try:
+        X509Hanlder(
+            "https://example.com",
+            {
+                "https://wrong_example.com": gen_chain()
+            },
+            []
+        )
+        assert False, "Should have raised InvalidTrustHandlerConfiguration"
+    except InvalidTrustHandlerConfiguration as e:
+        assert str(e) == "No x509 certificate chain provided for the relying party"
+
 
 def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
     trust_handler = X509Hanlder(
