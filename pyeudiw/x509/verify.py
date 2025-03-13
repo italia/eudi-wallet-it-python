@@ -104,7 +104,7 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
 
     return _verify_x509_certificate_chain(pems)
 
-def to_pems_list(cert: str) -> list[str]:
+def pem_to_pems_list(cert: str) -> list[str]:
     """
     Convert the x509 certificate chain from PEM to multiple PEMs.
 
@@ -115,6 +115,18 @@ def to_pems_list(cert: str) -> list[str]:
     :rtype: list[str]
     """
     return [str(cert) for cert in pem.parse(cert)]
+
+def der_list_to_pem_list(der_list: list[bytes]) -> list[str]:
+    """
+    Convert the x509 certificate chain from DER to PEM.
+
+    :param der: The x509 certificate chain in DER format
+    :type der: list[bytes]
+
+    :returns: The x509 certificate chain in PEM format
+    :rtype: list[str]
+    """
+    return [DER_cert_to_PEM_cert(cert) for cert in der_list]
 
 def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     """
@@ -145,7 +157,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
         logging.error(LOG_ERROR.format("check datetime failed"))
         return False
 
-    pems = to_pems_list(pem_str)
+    pems = pem_to_pems_list(pem_str)
 
     if not _check_chain_len(pems):
         logging.error(LOG_ERROR.format("check chain len failed"))
