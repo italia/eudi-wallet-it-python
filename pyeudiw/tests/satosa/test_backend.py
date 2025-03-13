@@ -880,8 +880,13 @@ class TestOpenID4VPBackend:
 
         assert req_resp
         assert req_resp.status == "200"
-        assert decode_jwt_header(req_resp.message)["trust_chain"]
-        assert decode_jwt_header(req_resp.message)["trust_chain"] == trust_chain_wallet
+        
+        header = decode_jwt_header(req_resp.message)
+
+        assert header["trust_chain"]
+        assert header["trust_chain"] == trust_chain_wallet
+        assert header["x5c"]
+        assert len(header["x5c"]) == 3
 
     def test_handle_error(self, context):
         error_message = "server_error"
