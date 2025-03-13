@@ -2,6 +2,7 @@ import ssl
 import logging
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
+from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,12 @@ class X509Hanlder(TrustHandlerInterface):
         private_keys: list[dict[str, str]],
         **kwargs
     ):
+        if not relying_party_certificate_chains_by_ca:
+            raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided")
+        
+        if client_id not in relying_party_certificate_chains_by_ca:
+            raise InvalidTrustHandlerConfiguration("No x509 certificate chain provided for the relying party")
+
         self.client_id = client_id
         self.relying_party_certificate_chains_by_ca = relying_party_certificate_chains_by_ca
         self.private_keys = private_keys
