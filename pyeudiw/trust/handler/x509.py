@@ -1,9 +1,9 @@
-import ssl
 import logging
+from typing import Union
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c, der_list_to_pem_list
+from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c, der_list_to_pem_list, pem_list_to_der_list
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +14,10 @@ class X509Hanlder(TrustHandlerInterface):
     def __init__(
         self, 
         client_id: str, 
-        relying_party_certificate_chains_by_ca: dict[str, list[bytes]],
+        relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         **kwargs
-    ):
+    ):  
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided")
         
@@ -25,7 +25,13 @@ class X509Hanlder(TrustHandlerInterface):
             raise InvalidTrustHandlerConfiguration("No x509 certificate chain provided for the relying party")
 
         self.client_id = client_id
-        self.relying_party_certificate_chains_by_ca = relying_party_certificate_chains_by_ca
+
+        self.relying_party_certificate_chains_by_ca = {}
+
+        for k, v in relying_party_certificate_chains_by_ca.items():
+            chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
+            self.relying_party_certificate_chains_by_ca[k] = chain
+
         self.private_keys = private_keys
 
     def extract_and_update_trust_materials(
