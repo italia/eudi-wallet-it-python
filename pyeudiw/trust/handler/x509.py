@@ -3,7 +3,7 @@ import logging
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c
+from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c, der_list_to_pem_list
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class X509Hanlder(TrustHandlerInterface):
             "x509",
             TrustParameterData(
                 attribute_name="x5c",
-                x5c=chain,
+                x5c=der_list_to_pem_list(chain),
                 expiration_date=exp,
                 jwks=self.private_keys,
                 trust_handler_name=self.name,
