@@ -128,6 +128,18 @@ def der_list_to_pem_list(der_list: list[bytes]) -> list[str]:
     """
     return [DER_cert_to_PEM_cert(cert) for cert in der_list]
 
+def pem_list_to_der_list(pem_list: list[str]) -> list[bytes]:
+    """
+    Convert the x509 certificate chain from PEM to DER.
+
+    :param pem_list: The x509 certificate chain in PEM format
+    :type pem_list: list[str]
+
+    :returns: The x509 certificate chain in DER format
+    :rtype: list[bytes]
+    """
+    return [PEM_cert_to_DER_cert(cert) for cert in pem_list]
+
 def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     """
     Get the expiry date from the x509 certificate chain.
