@@ -32,7 +32,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
     trust_handler = X509Hanlder(
         "https://example.com",
         {
-            "https://example.com": gen_chain()
+            "https://example.com": gen_chain(ca_cn="example.com")
         },
         [
             {

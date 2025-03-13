@@ -205,6 +205,20 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
+def get_x509_dns_name(x5c: list[bytes] | list[str]) -> datetime:
+    """
+    Get the expiry date from the x509 certificate chain.
+
+    :param x5c: The x509 certificate chain
+    :type x5c: list[bytes]
+
+    :returns: The expiry date
+    :rtype: datetime
+    """
+    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
+    cert = load_der_x509_certificate(der)
+    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
+
 def is_der_format(cert: bytes) -> str:
     """
     Check if the certificate is in DER format.

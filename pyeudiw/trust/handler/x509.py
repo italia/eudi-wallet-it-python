@@ -3,7 +3,13 @@ from typing import Union
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.x509.verify import verify_x509_attestation_chain, get_expiry_date_from_x5c, der_list_to_pem_list, pem_list_to_der_list
+from pyeudiw.x509.verify import (
+    verify_x509_attestation_chain, 
+    get_expiry_date_from_x5c, 
+    der_list_to_pem_list, 
+    pem_list_to_der_list, 
+    get_x509_dns_name
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +35,11 @@ class X509Hanlder(TrustHandlerInterface):
         self.relying_party_certificate_chains_by_ca = {}
 
         for k, v in relying_party_certificate_chains_by_ca.items():
+            dns_name = get_x509_dns_name(v)
+            
+            if not dns_name in k:
+                raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {dns_name}")
+
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
             self.relying_party_certificate_chains_by_ca[k] = chain
 
