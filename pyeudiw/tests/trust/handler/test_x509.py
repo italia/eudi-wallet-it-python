@@ -40,7 +40,7 @@ def test_wrong_configuration_must_fail():
         assert str(e) == "Invalid x509 certificate: expected https://example.com got wrong_example.com"
 
 
-def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
+def test_extract_trust_material_from_x509_handler():
     trust_handler = X509Hanlder(
         "https://example.com",
         {
@@ -77,3 +77,17 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_by_reference():
     assert serialized_object["x509"]["jwks"][0]["kty"] == "RSA"
     assert "n" in serialized_object["x509"]["jwks"][0]
 
+def test_return_nothing_if_chain_is_invalid():
+    trust_handler = X509Hanlder(
+        "https://example.com",
+        {
+            "ca.example.com": gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
+        },
+        []
+    )
+    trust_source = TrustSourceData.empty("https://example.com")
+
+    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
+    serialized_object = trust_source.serialize()
+
+    assert "x509" not in serialized_object
