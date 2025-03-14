@@ -8,7 +8,8 @@ from pyeudiw.x509.verify import (
     get_expiry_date_from_x5c, 
     der_list_to_pem_list, 
     pem_list_to_der_list, 
-    get_x509_dns_name
+    get_leaf_x509_dns_name,
+    get_root_x509_dns_name
 )
 
 logger = logging.getLogger(__name__)
@@ -26,19 +27,18 @@ class X509Hanlder(TrustHandlerInterface):
     ):  
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided")
-        
-        if client_id not in relying_party_certificate_chains_by_ca:
-            raise InvalidTrustHandlerConfiguration("No x509 certificate chain provided for the relying party")
-
-        self.client_id = client_id
 
         self.relying_party_certificate_chains_by_ca = {}
 
         for k, v in relying_party_certificate_chains_by_ca.items():
-            dns_name = get_x509_dns_name(v)
+            leaf_dns_name = get_leaf_x509_dns_name(v)
+            root_dns_name = get_root_x509_dns_name(v)
             
-            if not dns_name in k:
-                raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {dns_name}")
+            if not root_dns_name in k:
+                raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name}")
+                    
+            if leaf_dns_name not in client_id:
+                raise InvalidTrustHandlerConfiguration("Invalid x509 chain: not associated with the relying party")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
             self.relying_party_certificate_chains_by_ca[k] = chain

@@ -15,7 +15,7 @@ from pyeudiw.x509.verify import (
 )
 
 
-def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com") -> list[bytes]:
+def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", leaf_cn: str = "leaf.example.org") -> list[bytes]:
     # Generate a private key for the CA
     ca_private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -90,7 +90,7 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com") ->
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME, "leaf.example.org"),
+                    x509.NameAttribute(NameOID.COMMON_NAME, leaf_cn),
                 ]
             )
         )
