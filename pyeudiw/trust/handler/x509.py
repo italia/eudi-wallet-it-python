@@ -48,30 +48,27 @@ class X509Hanlder(TrustHandlerInterface):
     def extract_and_update_trust_materials(
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
-        issuer = issuer if issuer != "__internal__" else self.client_id
-        chain = self.relying_party_certificate_chains_by_ca.get(issuer)
+        # Return the first valid chain
+        for ca, chain in self.relying_party_certificate_chains_by_ca.items():    
+            if not verify_x509_attestation_chain(chain):
+                logger.error(f"Invalid x509 anchor certificate for CA {ca}")
+                continue
+            
+            exp = get_expiry_date_from_x5c(chain)
 
-        if not chain:
-            logger.error(f"Invalid x509 anchor certificate for issuer {issuer}")
-            return trust_source
+            trust_source.add_trust_param(
+                "x509",
+                TrustParameterData(
+                    attribute_name="x5c",
+                    x5c=der_list_to_pem_list(chain),
+                    expiration_date=exp,
+                    jwks=self.private_keys,
+                    trust_handler_name=self.name,
+                )
+            )
 
-        if not verify_x509_attestation_chain(chain):
-            logger.error(f"Invalid x509 anchor certificate for issuer {issuer}")
             return trust_source
         
-        exp = get_expiry_date_from_x5c(chain)
-
-        trust_source.add_trust_param(
-            "x509",
-            TrustParameterData(
-                attribute_name="x5c",
-                x5c=der_list_to_pem_list(chain),
-                expiration_date=exp,
-                jwks=self.private_keys,
-                trust_handler_name=self.name,
-            )
-        )
-
         return trust_source
     
     def get_metadata(
