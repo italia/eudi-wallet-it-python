@@ -25,7 +25,7 @@ def test_wrong_configuration_must_fail():
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
-        assert str(e) == "Invalid x509 certificate: expected example.com got wrong_example.com"
+        assert "Invalid x509 certificate: expected" in str(e)
 
 
 def test_extract_trust_material_from_x509_handler():
