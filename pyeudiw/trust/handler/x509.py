@@ -22,7 +22,7 @@ class X509Hanlder(TrustHandlerInterface):
         client_id: str, 
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
-        client_id_scheme: str = "x509_san_dns",
+        client_id_scheme: str = "x509_san_uri",
         **kwargs
     ):  
         self.client_id = client_id
