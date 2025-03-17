@@ -208,31 +208,33 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
-def get_x509_info(x5c: list[bytes] | list[str], info_type: str = "x509_san_dns", position: int = 0) -> Optional[str]:
+def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
     """
-    Get the expiry date from the x509 certificate chain.
+    Get the x509 certificate information.
 
-    :param x5c: The x509 certificate chain
-    :type x5c: list[bytes]
-    :info_type: The type of information to extract
+    :param cert: The x509 certificate
+    :type cert: bytes | str
+    :param info_type: The information type
     :type info_type: str
-    :position: The position of the certificate in the chain
-    :type position: int
 
     :returns: The certificate information
     :rtype: str
     """
-    der = x5c[position] if isinstance(x5c[position], bytes) else PEM_cert_to_DER_cert(x5c[position])
-    cert = load_der_x509_certificate(der, default_backend())
-    san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+    get_common_name = lambda cert: cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
+
+    der = cert if isinstance(cert, bytes) else PEM_cert_to_DER_cert(cert)
+    cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
 
     try:
+        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
         if info_type == "x509_san_dns":
             return san.value.get_values_for_type(x509.DNSName)[0]
         elif info_type == "x509_san_uri":
             return san.value.get_values_for_type(x509.UniformResourceIdentifier)[0]
+        
+        return get_common_name(cert)
     except x509.ExtensionNotFound:
-        return None
+        return get_common_name(cert)
 
 def get_leaf_x509_dns_name(x5c: list[bytes] | list[str]) -> datetime:
     """

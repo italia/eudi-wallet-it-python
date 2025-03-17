@@ -34,10 +34,20 @@ class X509Hanlder(TrustHandlerInterface):
         self.relying_party_certificate_chains_by_ca = {}
 
         for k, v in relying_party_certificate_chains_by_ca.items():
-            root_dns_name = get_x509_info(v)
+            root_dns_name = get_x509_info(v[0])
             
             if not root_dns_name in k:
                 raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name}")
+            
+            found_client_id = False
+
+            for cert in v[1:]:
+                if get_x509_info(cert, self.client_id_scheme) == client_id:
+                    found_client_id = True
+                    break
+                
+            if not found_client_id:
+                logger.error(f"Invalid x509 anchor certificate for CA {k}: the chain will be removed")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
 
@@ -52,7 +62,7 @@ class X509Hanlder(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
-        for ca, chain in self.relying_party_certificate_chains_by_ca.items():    
+        for ca, chain in self.relying_party_certificate_chains_by_ca.items():
             if not verify_x509_attestation_chain(chain):
                 logger.error(f"Invalid x509 anchor certificate for CA {ca}: the chain will be removed")
                 del self.relying_party_certificate_chains_by_ca[ca]
