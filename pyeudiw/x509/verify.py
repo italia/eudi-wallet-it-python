@@ -237,20 +237,6 @@ def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
     except x509.ExtensionNotFound:
         return get_common_name(cert)
 
-def get_leaf_x509_dns_name(x5c: list[bytes] | list[str]) -> datetime:
-    """
-    Get the expiry date from the x509 certificate chain.
-
-    :param x5c: The x509 certificate chain
-    :type x5c: list[bytes]
-
-    :returns: The expiry date
-    :rtype: datetime
-    """
-    der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
-    cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
-
 def is_der_format(cert: bytes) -> str:
     """
     Check if the certificate is in DER format.
