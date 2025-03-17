@@ -8,7 +8,6 @@ from pyeudiw.x509.verify import (
     get_expiry_date_from_x5c, 
     der_list_to_pem_list, 
     pem_list_to_der_list, 
-    get_leaf_x509_dns_name,
     get_root_x509_dns_name
 )
 
@@ -21,9 +20,9 @@ class X509Hanlder(TrustHandlerInterface):
     def __init__(
         self, 
         client_id: str, 
-        client_id_scheme: str,
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
+        client_id_scheme: str = "x509_san_dns",
         **kwargs
     ):  
         self.client_id = client_id
