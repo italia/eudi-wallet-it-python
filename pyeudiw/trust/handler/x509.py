@@ -51,7 +51,8 @@ class X509Hanlder(TrustHandlerInterface):
         # Return the first valid chain
         for ca, chain in self.relying_party_certificate_chains_by_ca.items():    
             if not verify_x509_attestation_chain(chain):
-                logger.error(f"Invalid x509 anchor certificate for CA {ca}")
+                logger.error(f"Invalid x509 anchor certificate for CA {ca}: the chain will be removed")
+                del self.relying_party_certificate_chains_by_ca[ca]
                 continue
             
             exp = get_expiry_date_from_x5c(chain)
