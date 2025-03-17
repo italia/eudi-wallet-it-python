@@ -32,10 +32,11 @@ def _verify_x509_certificate_chain(pems: list[str]):
             crypto.load_certificate(crypto.FILETYPE_PEM, str(pem)) for pem in pems
         ]
 
-        for cert in x509_certs[:-1]:
+        for cert in x509_certs[1:]:
             store.add_cert(cert)
 
-        store_ctx = crypto.X509StoreContext(store, x509_certs[-1])
+        store_ctx = crypto.X509StoreContext(store, x509_certs[0])
+
         store_ctx.verify_certificate()
         return True
     except crypto.Error as e:
@@ -153,7 +154,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     :returns: The expiry date
     :rtype: datetime
     """
-    cert = load_der_x509_certificate(x5c[-1])
+    cert = load_der_x509_certificate(x5c[0])
     return cert.not_valid_after
 
 def verify_x509_anchor(pem_str: str) -> bool:
@@ -204,7 +205,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     :returns: The expiry date
     :rtype: datetime
     """
-    der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
+    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
