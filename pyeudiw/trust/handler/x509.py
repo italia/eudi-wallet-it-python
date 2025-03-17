@@ -29,7 +29,7 @@ class X509Hanlder(TrustHandlerInterface):
         self.client_id_scheme = client_id_scheme
 
         if not relying_party_certificate_chains_by_ca:
-            raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided")
+            raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
 
         self.relying_party_certificate_chains_by_ca = {}
 
@@ -37,7 +37,7 @@ class X509Hanlder(TrustHandlerInterface):
             root_dns_name = get_x509_info(v[-1])
             
             if not root_dns_name in k:
-                raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name}")
+                raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name} instead of {k}")
             
             found_client_id = False
 
@@ -47,7 +47,7 @@ class X509Hanlder(TrustHandlerInterface):
                     break
                 
             if not found_client_id:
-                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id, the chain will be removed")
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}), the chain will be removed")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
 
