@@ -109,7 +109,7 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", le
         .add_extension(
             x509.SubjectAlternativeName([
                 x509.DNSName(leaf_cn),
-                x509.UniformResourceIdentifier(f"https://{leaf_cn}/OpenID4VP")
+                x509.UniformResourceIdentifier(f"{default_client_id}")
             ]),
             critical=False
         )
