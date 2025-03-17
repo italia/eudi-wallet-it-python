@@ -21,10 +21,14 @@ class X509Hanlder(TrustHandlerInterface):
     def __init__(
         self, 
         client_id: str, 
+        client_id_scheme: str,
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         **kwargs
     ):  
+        self.client_id = client_id
+        self.client_id_scheme = client_id_scheme
+
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided")
 
