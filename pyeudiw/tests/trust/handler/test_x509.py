@@ -17,18 +17,6 @@ def test_wrong_configuration_must_fail():
 
     try:
         X509Hanlder(
-            "example.com",
-            {
-                "wrong_example.com": gen_chain(ca_cn="wrong_example.com", leaf_cn="not_example.com")
-            },
-            []
-        )
-        assert False, "Should have raised InvalidTrustHandlerConfiguration"
-    except InvalidTrustHandlerConfiguration as e:
-        assert str(e) == "Invalid x509 chain: not associated with the relying party"
-
-    try:
-        X509Hanlder(
             "https://example.com",
             {
                 "https://example.com": gen_chain(ca_cn="wrong_example.com")

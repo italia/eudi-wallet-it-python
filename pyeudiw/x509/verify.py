@@ -3,7 +3,10 @@ from datetime import datetime
 from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
 
 import pem
+from typing import Optional
+from cryptography import x509
 from cryptography.x509 import load_der_x509_certificate
+from cryptography.hazmat.backends import default_backend
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
@@ -205,19 +208,31 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
-def get_root_x509_dns_name(x5c: list[bytes] | list[str]) -> datetime:
+def get_x509_info(x5c: list[bytes] | list[str], info_type: str = "x509_san_dns", position: int = 0) -> Optional[str]:
     """
     Get the expiry date from the x509 certificate chain.
 
     :param x5c: The x509 certificate chain
     :type x5c: list[bytes]
+    :info_type: The type of information to extract
+    :type info_type: str
+    :position: The position of the certificate in the chain
+    :type position: int
 
-    :returns: The expiry date
-    :rtype: datetime
+    :returns: The certificate information
+    :rtype: str
     """
-    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
-    cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
+    der = x5c[position] if isinstance(x5c[position], bytes) else PEM_cert_to_DER_cert(x5c[position])
+    cert = load_der_x509_certificate(der, default_backend())
+    san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+    try:
+        if info_type == "x509_san_dns":
+            return san.value.get_values_for_type(x509.DNSName)[0]
+        elif info_type == "x509_san_uri":
+            return san.value.get_values_for_type(x509.UniformResourceIdentifier)[0]
+    except x509.ExtensionNotFound:
+        return None
 
 def get_leaf_x509_dns_name(x5c: list[bytes] | list[str]) -> datetime:
     """

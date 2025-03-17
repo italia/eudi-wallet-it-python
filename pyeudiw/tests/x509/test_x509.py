@@ -59,6 +59,10 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", le
             x509.BasicConstraints(ca=True, path_length=1),
             critical=True,
         )
+        .add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(ca_cn)]),
+            critical=False
+        )
         .sign(ca_private_key, hashes.SHA256())
     )
 
@@ -102,6 +106,13 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", le
         .add_extension(
             x509.BasicConstraints(ca=False, path_length=None),
             critical=True,
+        )
+        .add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(ca_cn),
+                x509.UniformResourceIdentifier(f"https://{leaf_cn}/OpenID4VP")
+            ]),
+            critical=False
         )
         .sign(intermediate_private_key, hashes.SHA256())
     )
