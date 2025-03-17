@@ -41,7 +41,11 @@ class X509Hanlder(TrustHandlerInterface):
                 raise InvalidTrustHandlerConfiguration("Invalid x509 chain: not associated with the relying party")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
-            self.relying_party_certificate_chains_by_ca[k] = chain
+
+            if verify_x509_attestation_chain(chain):
+                self.relying_party_certificate_chains_by_ca[k] = chain
+            else:
+                logger.error(f"Invalid x509 anchor certificate for CA {k}: the chain will be removed")
 
         self.private_keys = private_keys
 
