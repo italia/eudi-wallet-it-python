@@ -47,7 +47,7 @@ class X509Hanlder(TrustHandlerInterface):
                     break
                 
             if not found_client_id:
-                logger.error(f"Invalid x509 anchor certificate for CA {k}: the chain will be removed")
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id, the chain will be removed")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
 
