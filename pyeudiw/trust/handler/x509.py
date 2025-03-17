@@ -31,14 +31,10 @@ class X509Hanlder(TrustHandlerInterface):
         self.relying_party_certificate_chains_by_ca = {}
 
         for k, v in relying_party_certificate_chains_by_ca.items():
-            leaf_dns_name = get_leaf_x509_dns_name(v)
             root_dns_name = get_root_x509_dns_name(v)
             
             if not root_dns_name in k:
                 raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name}")
-                    
-            if leaf_dns_name not in client_id:
-                raise InvalidTrustHandlerConfiguration("Invalid x509 chain: not associated with the relying party")
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
 
