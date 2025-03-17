@@ -54,7 +54,7 @@ class X509Hanlder(TrustHandlerInterface):
             if verify_x509_attestation_chain(chain):
                 self.relying_party_certificate_chains_by_ca[k] = chain
             else:
-                logger.error(f"Invalid x509 anchor certificate for CA {k}: the chain will be removed")
+                logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
 
         self.private_keys = private_keys
 
