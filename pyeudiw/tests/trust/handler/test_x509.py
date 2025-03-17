@@ -13,7 +13,7 @@ def test_wrong_configuration_must_fail():
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
-        assert str(e) == "No x509 certificate chains provided"
+        assert str(e) == "No x509 certificate chains provided in the configuration"
 
     try:
         X509Hanlder(
