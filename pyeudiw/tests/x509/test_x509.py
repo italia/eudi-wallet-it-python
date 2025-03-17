@@ -14,7 +14,14 @@ from pyeudiw.x509.verify import (
 )
 
 
-def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", leaf_cn: str = "leaf.example.org") -> list[bytes]:
+def gen_chain(
+        date: datetime = datetime.now(), 
+        ca_cn: str = "ca.example.com", 
+        ca_dns: str = "ca.example.com",
+        leaf_cn: str = "leaf.example.org", 
+        leaf_dns: str = "leaf.example.org",
+        leaf_uri: str = "https:/leaf.example.org/OpenID4VP"
+    ) -> list[bytes]:
     # Generate a private key for the CA
     ca_private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -59,7 +66,7 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", le
             critical=True,
         )
         .add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(ca_cn)]),
+            x509.SubjectAlternativeName([x509.DNSName(ca_dns)]),
             critical=False
         )
         .sign(ca_private_key, hashes.SHA256())
@@ -108,8 +115,8 @@ def gen_chain(date: datetime = datetime.now(), ca_cn: str = "ca.example.com", le
         )
         .add_extension(
             x509.SubjectAlternativeName([
-                x509.DNSName(leaf_cn),
-                x509.UniformResourceIdentifier(f"{default_client_id}")
+                x509.DNSName(leaf_dns),
+                x509.UniformResourceIdentifier(leaf_uri),
             ]),
             critical=False
         )

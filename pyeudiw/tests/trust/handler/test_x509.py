@@ -7,7 +7,7 @@ from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 def test_wrong_configuration_must_fail():
     try:
         X509Hanlder(
-            "https://example.com",
+            "https://test.com",
             None,
             []
         )
@@ -17,22 +17,22 @@ def test_wrong_configuration_must_fail():
 
     try:
         X509Hanlder(
-            "https://example.com",
+            "https://test.com",
             {
-                "https://example.com": gen_chain(ca_cn="wrong_example.com")
+                "example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")
             },
             []
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
-        assert str(e) == "Invalid x509 certificate: expected https://example.com got wrong_example.com"
+        assert str(e) == "Invalid x509 certificate: expected example.com got wrong_example.com"
 
 
 def test_extract_trust_material_from_x509_handler():
     trust_handler = X509Hanlder(
         "https://example.com",
         {
-            "ca.example.com": gen_chain(leaf_cn="example.com")
+            "ca.example.com": gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com")
         },
         [
             {
