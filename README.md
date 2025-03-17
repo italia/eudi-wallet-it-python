@@ -9,7 +9,7 @@
 
 The EUDI Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
-to the [Italian Wallet implementation profile](https://italia.github.io/eudi-wallet-it-docs/versione-corrente/en/).
+to the [Italian Wallet implementation profile](https://italia.github.io/eid-wallet-it-docs/versione-corrente/en/).
 
 The toolchain contains the following components:
 
@@ -20,11 +20,11 @@ The toolchain contains the following components:
 | __tools.qrcode__ | QRCodes creation | 
 | __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
 | __federation__ | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html) |
-| __trust__ | Helper classes to handle both X.509 and OpenID Federation trust evaluation mechanisms |
+| __x509__ | Trust evaluation mechanism using X.509 PKI, according to [RFC5280](https://datatracker.ietf.org/doc/html/rfc5280) |
+| __trust__ | trust handlers bringing multiple evaluation mechanisms |
 | __satosa.backend__ | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
 | __openid4vp__ | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
-| __presentation_exchange__ | Resources related to [DiF Presentation Exchange](https://identity.foundation/presentation-exchange/) |
-| __sd_jwt__ | Issuance and verification of SD-JWT according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/) |
+| __sd_jwt__ | Issuance and verification of SD-JWT(-VC) according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/) |
 
 
 ## Setup
@@ -159,12 +159,11 @@ PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 ## Authors
 
 - Giuseppe De Marco
-- Thomas Chiozzi
-- Elisa Nicolussi Paolaz
-
 
 ## Acknowledgments
+- Thomas Chiozzi
 - Pasquale De Rose
+- Elisa Nicolussi Paolaz
 - Salvatore Laiso
 - Alessio Murru
 - Nicola Saitto
