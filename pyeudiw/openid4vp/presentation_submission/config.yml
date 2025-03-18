@@ -8,8 +8,8 @@ formats:
   - name: "jwt_vp_json"
     module: "pyeudiw.openid4vp.presentation_submission"
     class: "JwtVpJson"
-  - name: "ac_vp"
-    module: "pyeudiw.openid4vp.presentation_submission"
-    class: "AcVp"
+  - name: "mso_mdoc"
+    module: "pymdoccbor.mdoc.verifier"
+    class: "MdocCbor"
 
 MAX_SUBMISSION_SIZE: 4096
