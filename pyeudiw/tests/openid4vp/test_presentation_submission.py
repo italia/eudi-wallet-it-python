@@ -1,85 +1,115 @@
-from unittest.mock import patch, MagicMock
-from pydantic import ValidationError
-from pytest import raises
-from pyeudiw.openid4vp.presentation_submission import PresentationSubmission
-from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
-
+from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
+from pyeudiw.tests.openid4vp.mock_parser_handlers import MockLdpVpHandler, MockJwtVpJsonHandler
+from pyeudiw.openid4vp.presentation_submission.exceptions import SubmissionValidationError
 
 # Mock data for testing
 mock_format_config = {
     "formats": [
-        {"name": "ldp_vp", "module": "mock.module", "class": "MockLdpVpHandler"},
-        {"name": "jwt_vp_json", "module": "mock.module", "class": "MockJwtVpJsonHandler"}
+        {
+            "name": "ldp_vp", 
+            "module": "pyeudiw.tests.openid4vp.test_presentation_submission", 
+            "class": "MockLdpVpHandler"
+        },
+        {
+            "name": "jwt_vp_json", 
+            "module": "pyeudiw.tests.openid4vp.test_presentation_submission", 
+            "class": "MockJwtVpJsonHandler"
+        }
     ],
-    "MAX_SUBMISSION_SIZE": 10 * 1024  # 10 KB
+    "max_submission_size": 10 * 1024  # 10 KB
 }
 
 valid_submission = {
     "id": "submission_id",
     "definition_id": "definition_id",
     "descriptor_map": [
-        {"id": "descriptor_1", "format": "ldp_vp", "path": "$"},
-        {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$"}
+        {"id": "descriptor_1", "format": "ldp_vp", "path": "$[0]"},
+        {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$[1]"}
     ]
 }
 
 
-# Mock classes that inherit from BaseVPParser and implement required methods
-class MockLdpVpHandler(BaseVPParser):
-    def __init__(self, *args, config=None, **kwargs):
-        self.args = args
-        self.config = config
-        self.kwargs = kwargs
+def test_handler_initialization():
+    ps = PresentationSubmissionHandler(**mock_format_config)
 
-    def parse(self, data):
-        return {"parsed": data}
+    assert len(ps.handlers) == len(valid_submission["descriptor_map"]), "Not all handlers were created."
 
-    def validate(self, data):
-        return True
+    assert isinstance(ps.handlers["ldp_vp"], MockLdpVpHandler), "Handler for 'ldp_vp' format is incorrect."
+    assert isinstance(ps.handlers["jwt_vp_json"], MockJwtVpJsonHandler), "Handler for 'jwt_vp_json' format is incorrect."
 
+def test_handler_correct_parsing():
+    ps = PresentationSubmissionHandler(**mock_format_config)
 
-class MockJwtVpJsonHandler(BaseVPParser):
-    def __init__(self, *args, config=None, **kwargs):
-        self.args = args
-        self.config = config
-        self.kwargs = kwargs
+    parsed_tokens = ps.parse(valid_submission, ["vp_token_1", "vp_token_2"])
 
-    def parse(self, data):
-        return {"parsed": data}
+    assert len(parsed_tokens) == len(valid_submission["descriptor_map"]), "Not all tokens were parsed."
+    assert parsed_tokens[0] == {"parsed": "vp_token_1"}, "Token 1 was not parsed correctly."
+    assert parsed_tokens[1] == {"parsed": "vp_token_2"}, "Token 2 was not parsed correctly."
 
-    def validate(self, data):
-        return True
+def test_handler_missing_handler():
+    ps = PresentationSubmissionHandler(**mock_format_config)
 
+    invalid_submission = {
+        "id": "submission_id",
+        "definition_id": "definition_id",
+        "descriptor_map": [
+            {"id": "descriptor_1", "format": "ldp_vp", "path": "$[0]"},
+            {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$[1]"},
+            {"id": "descriptor_3", "format": "non_existent_format", "path": "$[2]"}
+        ]
+    }
 
-def test_presentation_submission_initialization_with_schema_validation():
-    """
-    Test that the PresentationSubmission class initializes correctly,
-    validates against the Pydantic schema, and properly instantiates handlers.
-    """
-    # Simuliamo il modulo contenente le classi
-    mock_module = MagicMock()
-    setattr(mock_module, "MockLdpVpHandler", MockLdpVpHandler)
-    setattr(mock_module, "MockJwtVpJsonHandler", MockJwtVpJsonHandler)
+    try:
+        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2", "vp_token_3"])
+    except Exception as e:
+        assert str(e) == "Handler for format 'non_existent_format' not found.", "Incorrect exception message."
 
-    test_args = ("arg1", "arg2")
-    test_kwargs = {"kwarg1": "value1", "kwarg2": "value2"}
+def test_handler_invalid_path():
+    ps = PresentationSubmissionHandler(**mock_format_config)
 
-    with patch("importlib.import_module", return_value=mock_module):
-        # Corretto: passiamo prima gli argomenti posizionali, poi config, infine kwargs
-        ps = PresentationSubmission(valid_submission, *test_args, config=mock_format_config, **test_kwargs)
+    invalid_submission = {
+        "id": "submission_id",
+        "definition_id": "definition_id",
+        "descriptor_map": [
+            {"id": "descriptor_1", "format": "ldp_vp", "path": "$[0]"},
+            {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$[1]"},
+            {"id": "descriptor_3", "format": "ldp_vp", "path": "invalid_path"}
+        ]
+    }
 
-        # Assert that handlers were created for all formats in descriptor_map
-        assert len(ps.handlers) == len(valid_submission["descriptor_map"]), "Not all handlers were created."
+    try:
+        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2", "vp_token_3"])
+    except Exception as e:
+        assert str(e) == "Invalid path format: invalid_path", "Incorrect exception message."
 
-        # Verifica che i gestori siano effettivamente delle istanze delle classi corrette
-        assert isinstance(ps.handlers[0], MockLdpVpHandler), "Handler for 'ldp_vp' format is incorrect."
-        assert isinstance(ps.handlers[1], MockJwtVpJsonHandler), "Handler for 'jwt_vp_json' format is incorrect."
+def test_handler_mismatched_tokens():
+    ps = PresentationSubmissionHandler(**mock_format_config)
 
-        # Verifica che gli argomenti siano stati passati correttamente
-        assert ps.handlers[0].args == test_args, "Args not passed correctly to 'MockLdpVpHandler'"
-        assert ps.handlers[0].config == mock_format_config, "Config not passed correctly to 'MockLdpVpHandler'"
-        assert ps.handlers[0].kwargs == test_kwargs, "Kwargs not passed correctly to 'MockLdpVpHandler'"
+    invalid_submission = {
+        "id": "submission_id",
+        "definition_id": "definition_id",
+        "descriptor_map": [
+            {"id": "descriptor_1", "format": "ldp_vp", "path": "$[0]"},
+            {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$[1]"}
+        ]
+    }
 
-        assert ps.handlers[1].args == test_args, "Args not passed correctly to 'MockJwtVpJsonHandler'"
-        assert ps.handlers[1].config == mock_format_config, "Config not passed correctly to 'MockJwtVpJsonHandler'"
-        assert ps.handlers[1].kwargs == test_kwargs, "Kwargs not passed correctly to 'MockJwtVpJsonHandler'"
+    try:
+        ps.parse(invalid_submission, ["vp_token_1"])
+    except Exception as e:
+        assert str(e) == "Number of VP tokens (1) does not match the number of descriptors (2).", "Incorrect exception message."
+
+def test_handler_invalid_submission():
+    ps = PresentationSubmissionHandler(**mock_format_config)
+
+    invalid_submission = {
+        "fail": "submission"
+    }
+
+    try:
+        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2"])
+    except SubmissionValidationError as e:
+        pass
+    except Exception as e:
+        assert False, f"Incorrect exception type: {type(e)}"
+        
