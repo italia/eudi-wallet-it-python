@@ -259,7 +259,7 @@ config:
             data_ttl: 63072000 # 2 years
           # - connection_params:
 
-  parser_handler:
+  credential_presentation_handlers:
     formats:
     - name: "dc+sd-jwt"
       module: "pyeudiw.sd_jwt.verifier"
