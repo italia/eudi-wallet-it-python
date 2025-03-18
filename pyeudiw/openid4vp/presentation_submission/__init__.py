@@ -6,7 +6,13 @@ import logging
 
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
-from pyeudiw.openid4vp.presentation_submission.exceptions import MissingHandler, MalformedPath, SubmissionValidationError, VPTokenDescriptorMapMismatch
+from pyeudiw.openid4vp.presentation_submission.exceptions import (
+    MissingHandler, 
+    MalformedPath, 
+    SubmissionValidationError, 
+    VPTokenDescriptorMapMismatch,
+    ParseError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +115,8 @@ class PresentationSubmissionHandler:
         :type submission: dict[str, Any]
 
         :raises MissingHandler: If the handler for the format is not found.
+        :raises VPTokenDescriptorMapMismatch: If the number of VP tokens does not match the number of descriptors.
+        :raises ParseError: If parsing fails.
 
         :return: Parsed presentation submission data.
         :rtype: dict
@@ -132,6 +140,9 @@ class PresentationSubmissionHandler:
             
             position = self._extract_position(descriptor.path)
 
-            parsed_tokens[position] = handler.parse(vp_tokens[position])
+            try:
+                parsed_tokens[position] = handler.parse(vp_tokens[position])
+            except Exception as e:
+                raise ParseError(f"Error parsing token at position {position}: {e}")
 
         return parsed_tokens

@@ -21,3 +21,9 @@ class VPTokenDescriptorMapMismatch(Exception):
     Exception raised when the number of tokens does not match the number of descriptors.
     """
     pass
+
+class ParseError(Exception):
+    """
+    Exception raised when parsing fails.
+    """
+    pass
