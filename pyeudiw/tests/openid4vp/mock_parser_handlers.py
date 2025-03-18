@@ -24,3 +24,15 @@ class MockJwtVpJsonHandler(BaseVPParser):
 
     def validate(self, data):
         return True
+    
+class MockFailingParser(BaseVPParser):
+    def __init__(self, *args, config=None, **kwargs):
+        self.args = args
+        self.config = config
+        self.kwargs = kwargs
+
+    def parse(self, data):
+        raise ValueError("This parser is meant to fail.")
+
+    def validate(self, data):
+        return True

@@ -1,5 +1,5 @@
 from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
-from pyeudiw.tests.openid4vp.mock_parser_handlers import MockLdpVpHandler, MockJwtVpJsonHandler
+from pyeudiw.tests.openid4vp.mock_parser_handlers import MockLdpVpHandler, MockJwtVpJsonHandler, MockFailingParser
 from pyeudiw.openid4vp.presentation_submission.exceptions import SubmissionValidationError
 
 # Mock data for testing
@@ -7,13 +7,18 @@ mock_format_config = {
     "formats": [
         {
             "name": "ldp_vp", 
-            "module": "pyeudiw.tests.openid4vp.test_presentation_submission", 
+            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
             "class": "MockLdpVpHandler"
         },
         {
             "name": "jwt_vp_json", 
-            "module": "pyeudiw.tests.openid4vp.test_presentation_submission", 
+            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
             "class": "MockJwtVpJsonHandler"
+        },
+        {
+            "name": "fail_parser",
+            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
+            "class": "MockFailingParser"
         }
     ],
     "max_submission_size": 10 * 1024  # 10 KB
@@ -32,10 +37,11 @@ valid_submission = {
 def test_handler_initialization():
     ps = PresentationSubmissionHandler(**mock_format_config)
 
-    assert len(ps.handlers) == len(valid_submission["descriptor_map"]), "Not all handlers were created."
+    assert len(ps.handlers) == 3, "Not all handlers were created."
 
     assert isinstance(ps.handlers["ldp_vp"], MockLdpVpHandler), "Handler for 'ldp_vp' format is incorrect."
     assert isinstance(ps.handlers["jwt_vp_json"], MockJwtVpJsonHandler), "Handler for 'jwt_vp_json' format is incorrect."
+    assert isinstance(ps.handlers["fail_parser"], MockFailingParser), "Handler for 'fail_parser' format is incorrect."
 
 def test_handler_correct_parsing():
     ps = PresentationSubmissionHandler(**mock_format_config)
@@ -113,3 +119,19 @@ def test_handler_invalid_submission():
     except Exception as e:
         assert False, f"Incorrect exception type: {type(e)}"
         
+def test_handler_parser_failure():
+    ps = PresentationSubmissionHandler(**mock_format_config)
+
+    invalid_submission = {
+        "id": "submission_id",
+        "definition_id": "definition_id",
+        "descriptor_map": [
+            {"id": "descriptor_1", "format": "fail_parser", "path": "$[0]"},
+            {"id": "descriptor_2", "format": "jwt_vp_json", "path": "$[1]"}
+        ]
+    }
+
+    try:
+        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2"])
+    except Exception as e:
+        assert str(e) == "Error parsing token at position 0: This parser is meant to fail."
