@@ -1,7 +1,7 @@
 formats:
   - name: "dc+sd-jwt"
-    module: "pyeudiw.openid4vp.presentation_submission"
-    class: "VcSdJwt"
+    module: "pyeudiw.sd_jwt.verifier"
+    class: "SDJWTVerifier"
   - name: "ldp_vp"
     module: "pyeudiw.openid4vp.presentation_submission"
     class: "LdpVp"
