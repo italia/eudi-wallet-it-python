@@ -1,3 +1,4 @@
+import os
 import uuid
 import base64
 import datetime
@@ -20,6 +21,7 @@ from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
+from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from pyeudiw.tests.federation.base import (
     EXP,
     NOW,
@@ -48,6 +50,31 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.satosa.utils.response import JsonResponse
+
+PKEY = {
+    'KTY': 'EC2',
+    'CURVE': 'P_256',
+    'ALG': 'ES256',
+    'D': os.urandom(32),
+    'KID': b"demo-kid"
+}
+
+PID_DATA = {
+    "eu.europa.ec.eudiw.pid.1": {
+        "family_name": "Raffaello",
+        "given_name": "Mascetti",
+        "birth_date": "1922-03-13",
+        "birth_place": "Rome",
+        "birth_country": "IT"
+    },
+    "eu.europa.ec.eudiw.pid.it.1": {
+        "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
+    }
+}
+
+mdoci = MdocCborIssuer(
+    private_key=PKEY
+)
 
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
@@ -174,9 +201,17 @@ class TestOpenID4VPBackend:
 
         vp_token = sdjwt_at_holder.sd_jwt_presentation
 
+        mdoci.new(
+            doctype="eu.europa.ec.eudiw.pid.1",
+            data=PID_DATA,
+            devicekeyinfo=PKEY
+        )
+
+        vp_token_mdoc = mdoci.dumps().decode()
+
         return {
             "state": state,
-            "vp_token": vp_token,
+            "vp_token": [vp_token, vp_token_mdoc],
             "presentation_submission": {
                 "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
                 "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
@@ -459,7 +494,7 @@ class TestOpenID4VPBackend:
 
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
-        jwt_segments = response["vp_token"].split(".")
+        jwt_segments = response["vp_token"][0].split(".")
 
         midlen = len(jwt_segments[2]) // 2
         jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen+1:] 

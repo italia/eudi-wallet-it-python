@@ -235,7 +235,6 @@ class ResponseHandler(ResponseHandlerInterface):
                         e400
                     )
                 except Exception as e400:
-                    breakpoint()
                     return self._handle_400(
                         context, 
                         "trust error: cannot verify vp token",
@@ -253,13 +252,15 @@ class ResponseHandler(ResponseHandlerInterface):
                 
                 try:
                     token_processor.verify_signature()
-                    if token_processor.is_expired() == True:
-                        raise VPExpired("VP is expired")
                     
-                    claims = token_processor.get_credentials()
-                    doc_type = token_processor.get_doc_type()
+                    docs = token_processor.get_documents()
 
-                    extracted_attributes[doc_type] = claims
+                    #TODO: implement decode of attributes
+
+                    #for doc in docs:
+                     #   data = doc["issuerSigned"]["nameSpaces"].values()
+                      #  extracted_attributes[data["doc_type"]] = doc
+
                 except MdocCborValidationError as e400:
                     return self._handle_400(
                         context, 
