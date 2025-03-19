@@ -259,18 +259,17 @@ config:
             data_ttl: 63072000 # 2 years
           # - connection_params:
 
-  parser_handler:
-    formats:
-    - name: "dc+sd-jwt"
+  credential_presentation_handlers:
+    - format: "dc+sd-jwt"
       module: "pyeudiw.sd_jwt.verifier"
       class: "SDJWTVerifier"
-    - name: "ldp_vp"
+    - format: "ldp_vp"
       module: "pyeudiw.openid4vp.presentation_submission"
       class: "LdpVp"
-    - name: "jwt_vp_json"
+    - format: "jwt_vp_json"
       module: "pyeudiw.openid4vp.presentation_submission"
       class: "JwtVpJson"
-    - name: "mso_mdoc"
+    - format: "mso_mdoc"
       module: "pymdoccbor.mdoc.verifier"
       class: "MdocCbor"
 
