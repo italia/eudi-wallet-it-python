@@ -1,29 +1,16 @@
-from typing import Optional
-
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwt.helper import is_jwt_expired
-from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 from pyeudiw.openid4vp.exceptions import MissingIssuer
+from pyeudiw.openid4vp.exceptions import VPExpired
+from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 
 
-class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
-    def __init__(
-        self,
-        token: str,
-        verifier_id: Optional[str] = None,
-        verifier_nonce: Optional[str] = None,
-    ):
-        self.token = token
-        self.verifier_id = verifier_id
-        self.verifier_nonce = verifier_nonce
-        # precomputed values
-        self.sdjwt = SdJwt(self.token)
-
-    def get_issuer_name(self) -> str:
+class VpVcSdJwtParserVerifier(BaseVPParser):
+    def _get_issuer_name(self, sdjwt: SdJwt) -> str:
         """
         Get the issuer name from the token payload.
 
@@ -32,12 +19,12 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         :return: the issuer name
         :rtype: str
         """
-        iss = self.sdjwt.get_issuer_jwt().payload.get("iss", None)
+        iss = sdjwt.get_issuer_jwt().payload.get("iss", None)
         if not iss:
             raise MissingIssuer("missing required information in token paylaod: [iss]")
         return iss
 
-    def get_credentials(self) -> dict:
+    def _get_credentials(self, sdjwt: SdJwt) -> dict:
         """
         Get the disclosed claims from the token payload.
 
@@ -47,22 +34,27 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         :return: the disclosed claims
         :rtype: dict
         """
-        return self.sdjwt.get_disclosed_claims()
+        return sdjwt.get_disclosed_claims()
+    
+    def parse(self, token: str) -> dict:
+        sdjwt = SdJwt(token)
 
-    def is_revoked(self) -> bool:
+        return self._get_credentials(sdjwt)
+
+    def _is_revoked(self) -> bool:
         # TODO: implement revocation check
         return False
 
-    def is_expired(self) -> bool:
+    def _is_expired(self, sdjwt: SdJwt) -> bool:
         """
         Check if the credential is expired.
 
         :returns: if the credential is expired
         :rtype: bool
         """
-        return is_jwt_expired(self.sdjwt.issuer_jwt.jwt)
-
-    def verify_signature(self, public_key: ECKey | RSAKey | dict) -> None:
+        return is_jwt_expired(sdjwt.issuer_jwt.jwt)
+    
+    def _verify_signature(self, sdjwt: SdJwt, public_keys: list[ECKey | RSAKey | dict] | None = None) -> None:
         """
         Verifies the signature of the jwt.
 
@@ -71,9 +63,9 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
 
         :raises JWSVerificationError: if the signature is invalid
         """
-        return self.sdjwt.verify_issuer_jwt_signature(public_key)
+        return sdjwt.verify_issuer_jwt_signature(public_keys)
 
-    def verify_challenge(self) -> None:
+    def _verify_challenge(self, sdjwt: SdJwt, verifier_id: str, verifier_nonce: str) -> None:
         """
         Verifies the challenge of the jwt.
 
@@ -84,7 +76,28 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         """
 
         challenge: VerifierChallenge = {}
-        challenge["aud"] = self.verifier_id
-        challenge["nonce"] = self.verifier_nonce
+        challenge["aud"] = verifier_id
+        challenge["nonce"] = verifier_nonce
 
-        self.sdjwt.verify_holder_kb_jwt(challenge)
+        sdjwt.verify_holder_kb_jwt(challenge)
+    
+    def validate(
+        self, 
+        token: str, 
+        verifier_id: str, 
+        verifier_nonce: str, 
+    ) -> None:
+        # precomputed values
+        sdjwt = SdJwt(token)
+
+        public_keys = self.trust_evaluator.get_public_keys(
+            self._get_issuer_name(sdjwt)
+        )
+
+        self._verify_signature(sdjwt, public_keys)
+        self._verify_challenge(sdjwt, verifier_id, verifier_nonce)
+
+        if self._is_expired(sdjwt):
+            raise VPExpired("VP is expired")
+        
+        # TODO: implement revocation check

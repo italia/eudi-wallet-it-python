@@ -1,32 +1,45 @@
-from pymdoccbor.mdoc.verifier import MdocCbor
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+
 from datetime import datetime
+from pymdoccbor.mdoc.verifier import MdocCbor
+from pymdoccbor.mso.verifier import MsoVerifier
 from pyeudiw.openid4vp.exceptions import MdocCborValidationError
+from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 
-class VpMDocCbor:
-    def __init__(self, data: str) -> None:
-        self.data = data
-        self.mdoc = MdocCbor()
-        self.parse_digital_credential()
-
-    def get_documents(self) -> dict:
-        return self.mdoc.data_as_cbor_dict["documents"]
-    
-    def is_revoked(self) -> bool:
+class VpMDocCbor(BaseVPParser):
+    def _is_expired(self, mdoc: MdocCbor) -> bool:
         return False
-    
-    def is_expired(self) -> bool:
+        #Todo: Implement this method
+
         exp_date = datetime.fromisoformat(
-            self.mdoc.data_as_cbor_dict()["issuerSigned"]["issuerAuth"]["validityInfo"]["validUntil"]
+            mdoc.data_as_cbor_dict["issuerSigned"]["issuerAuth"]["validityInfo"]["validUntil"]
         )
 
         return exp_date < datetime.now()
-    
-    def verify_signature(self) -> None:
-        if self.mdoc.verify() == False:
+
+    def validate(
+            self, 
+            token: str, 
+            verifier_id: str, 
+            verifier_nonce: str
+        ) -> None:
+        mdoc = MdocCbor()
+        mdoc.loads(data=token)
+
+        if mdoc.verify() == False:
             raise MdocCborValidationError("Signature is invalid")
         
-    def parse_digital_credential(self) -> None:
-        self.mdoc.loads(data=self.data)
+        if self._is_expired(mdoc):
+            raise MdocCborValidationError("Credential is expired")
+        
+    def parse(self, token: str) -> None:
+        mdoc = MdocCbor()
+        mdoc.loads(data=token)
 
-    def _detect_vp_type(self) -> str:
-        return "mdoc_cbor"
+        return {}
+    
+        #Todo: Implement this method
+
+        mdoc.data_as_cbor_dict["documents"]
+        return 

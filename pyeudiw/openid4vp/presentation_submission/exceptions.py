@@ -27,3 +27,9 @@ class ParseError(Exception):
     Exception raised when parsing fails.
     """
     pass
+
+class ValidationError(Exception):
+    """
+    Exception raised when parsing fails.
+    """
+    pass

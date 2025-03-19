@@ -4,6 +4,9 @@ import importlib
 from typing import Any
 import logging
 
+from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.rsa import RSAKey
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 from pyeudiw.openid4vp.presentation_submission.exceptions import (
@@ -11,13 +14,18 @@ from pyeudiw.openid4vp.presentation_submission.exceptions import (
     MalformedPath, 
     SubmissionValidationError, 
     VPTokenDescriptorMapMismatch,
-    ParseError
+    ParseError,
+    ValidationError
 )
 
 logger = logging.getLogger(__name__)
 
 class PresentationSubmissionHandler:
-    def __init__(self, formats: list[dict], max_submission_size: int = 4096) -> None:
+    def __init__(
+            self, 
+            config: dict,
+            trust_evaluator: CombinedTrustEvaluator,
+        ) -> None:
         """
         Initialize the PresentationSubmissionHandler handler with the submission data.
 
@@ -35,16 +43,19 @@ class PresentationSubmissionHandler:
         :raises ImportError: If the module or class cannot be loaded.
         :raises ValidationError: If the submission data is invalid or exceeds size limits.
         """
+        formats = config.get("formats", [])
+
         if not formats:
             raise ValueError("At least one format must be defined.")
 
-        self.max_submission_size = max_submission_size
+        self.max_submission_size = config.get("max_submission_size", 4096)
         self.handlers: dict[str, BaseVPParser] = {}
+        self.trust_evaluator = trust_evaluator
 
         for format_conf in formats:
             module_name = format_conf["module"]
             class_name = format_conf["class"]
-            handler_name = format_conf["name"]
+            format_name = format_conf["format"]
             module_config = format_conf.get("config", {})
 
             try:
@@ -55,7 +66,7 @@ class PresentationSubmissionHandler:
                 if not issubclass(cls, BaseVPParser):
                      raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
                 
-                self.handlers[handler_name] = cls(**module_config)
+                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config)
             except ModuleNotFoundError:
                 raise ImportError(f"Module '{module_name}' not found for format '{format_conf['name']}'.")
             except AttributeError:
@@ -121,7 +132,42 @@ class PresentationSubmissionHandler:
         :return: Parsed presentation submission data.
         :rtype: dict
         """
-        validated_submission = self._validate_submission(submission)
+        descriptor_map_len = len(submission["descriptor_map"])
+
+        parsed_tokens = [None] * descriptor_map_len
+        
+        for descriptor in submission["descriptor_map"]:
+            handler = self.handlers.get(descriptor['format'])            
+            position = self._extract_position(descriptor['path'])
+
+            try:
+                parsed_tokens[position] = handler.parse(vp_tokens[position])
+            except Exception as e:
+                raise ParseError(f"Error parsing token at position {position}: {e}")
+
+        return parsed_tokens
+    
+    def validate(
+        self, 
+        submission: dict[str, Any], 
+        vp_tokens: list[str],
+        verifier_id: str, 
+        verifier_nonce: str
+    ) -> None:
+        """
+        Validate the presentation submission data using the appropriate handler.
+
+        :param submission: The presentation submission data.
+        :type submission: dict[str, Any]
+
+        :raises MissingHandler: If the handler for the format is not found.
+        :raises VPTokenDescriptorMapMismatch: If the number of VP tokens does not match the number of descriptors.
+        :raises ParseError: If parsing fails.
+        """
+        try:
+            validated_submission = self._validate_submission(submission)
+        except Exception as e:
+            raise SubmissionValidationError(f"Submission validation failed: {e}")
 
         descriptor_map_len = len(validated_submission.descriptor_map)
 
@@ -129,8 +175,6 @@ class PresentationSubmissionHandler:
             raise VPTokenDescriptorMapMismatch(
                 f"Number of VP tokens ({len(vp_tokens)}) does not match the number of descriptors ({descriptor_map_len})."
             )
-        
-        parsed_tokens = [None] * descriptor_map_len
         
         for descriptor in validated_submission.descriptor_map:
             handler = self.handlers.get(descriptor.format)
@@ -141,8 +185,6 @@ class PresentationSubmissionHandler:
             position = self._extract_position(descriptor.path)
 
             try:
-                parsed_tokens[position] = handler.parse(vp_tokens[position])
+                handler.validate(vp_tokens[position], verifier_id, verifier_nonce)
             except Exception as e:
-                raise ParseError(f"Error parsing token at position {position}: {e}")
-
-        return parsed_tokens
+                raise ValidationError(f"Error parsing token at position {position}: {e}")
