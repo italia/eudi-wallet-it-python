@@ -9,7 +9,7 @@ class MockLdpVpHandler(BaseVPParser):
     def parse(self, data):
         return {"parsed": data}
 
-    def validate(self, data):
+    def validate(self, data, verifier_id, verifier_nonce):
         return True
 
 
@@ -22,7 +22,7 @@ class MockJwtVpJsonHandler(BaseVPParser):
     def parse(self, data):
         return {"parsed": data}
 
-    def validate(self, data):
+    def validate(self, data, verifier_id, verifier_nonce):
         return True
     
 class MockFailingParser(BaseVPParser):
@@ -34,5 +34,5 @@ class MockFailingParser(BaseVPParser):
     def parse(self, data):
         raise ValueError("This parser is meant to fail.")
 
-    def validate(self, data):
+    def validate(self, data, verifier_id, verifier_nonce):
         return True

@@ -1,22 +1,26 @@
 from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
 from pyeudiw.tests.openid4vp.mock_parser_handlers import MockLdpVpHandler, MockJwtVpJsonHandler, MockFailingParser
 from pyeudiw.openid4vp.presentation_submission.exceptions import SubmissionValidationError
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tests.settings import CONFIG
+from pyeudiw.tests.trust import correct_config
 
 # Mock data for testing
 mock_format_config = {
     "formats": [
         {
-            "name": "ldp_vp", 
+            "format": "ldp_vp", 
             "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
             "class": "MockLdpVpHandler"
         },
         {
-            "name": "jwt_vp_json", 
+            "format": "jwt_vp_json", 
             "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
             "class": "MockJwtVpJsonHandler"
         },
         {
-            "name": "fail_parser",
+            "format": "fail_parser",
             "module": "pyeudiw.tests.openid4vp.mock_parser_handlers", 
             "class": "MockFailingParser"
         }
@@ -33,9 +37,15 @@ valid_submission = {
     ]
 }
 
+trust_ev = CombinedTrustEvaluator.from_config(
+    correct_config,
+    DBEngine(CONFIG["storage"]),
+    default_client_id="default-client-id",
+)
 
 def test_handler_initialization():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     assert len(ps.handlers) == 3, "Not all handlers were created."
 
@@ -44,7 +54,7 @@ def test_handler_initialization():
     assert isinstance(ps.handlers["fail_parser"], MockFailingParser), "Handler for 'fail_parser' format is incorrect."
 
 def test_handler_correct_parsing():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     parsed_tokens = ps.parse(valid_submission, ["vp_token_1", "vp_token_2"])
 
@@ -53,7 +63,7 @@ def test_handler_correct_parsing():
     assert parsed_tokens[1] == {"parsed": "vp_token_2"}, "Token 2 was not parsed correctly."
 
 def test_handler_missing_handler():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     invalid_submission = {
         "id": "submission_id",
@@ -66,12 +76,12 @@ def test_handler_missing_handler():
     }
 
     try:
-        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2", "vp_token_3"])
+        ps.validate(invalid_submission, ["vp_token_1", "vp_token_2", "vp_token_3"], "verifier_id", "verifier_nonce")
     except Exception as e:
         assert str(e) == "Handler for format 'non_existent_format' not found.", "Incorrect exception message."
 
 def test_handler_invalid_path():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     invalid_submission = {
         "id": "submission_id",
@@ -89,7 +99,7 @@ def test_handler_invalid_path():
         assert str(e) == "Invalid path format: invalid_path", "Incorrect exception message."
 
 def test_handler_mismatched_tokens():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     invalid_submission = {
         "id": "submission_id",
@@ -101,26 +111,26 @@ def test_handler_mismatched_tokens():
     }
 
     try:
-        ps.parse(invalid_submission, ["vp_token_1"])
+        ps.validate(invalid_submission, ["vp_token_1"], "verifier_id", "verifier_nonce")
     except Exception as e:
         assert str(e) == "Number of VP tokens (1) does not match the number of descriptors (2).", "Incorrect exception message."
 
 def test_handler_invalid_submission():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     invalid_submission = {
         "fail": "submission"
     }
 
     try:
-        ps.parse(invalid_submission, ["vp_token_1", "vp_token_2"])
+        ps.validate(invalid_submission, ["vp_token_1", "vp_token_2"], "verifier_id", "verifier_nonce")
     except SubmissionValidationError as e:
         pass
     except Exception as e:
         assert False, f"Incorrect exception type: {type(e)}"
         
 def test_handler_parser_failure():
-    ps = PresentationSubmissionHandler(**mock_format_config)
+    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
 
     invalid_submission = {
         "id": "submission_id",

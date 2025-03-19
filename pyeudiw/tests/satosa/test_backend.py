@@ -55,7 +55,7 @@ PKEY = {
     'KTY': 'EC2',
     'CURVE': 'P_256',
     'ALG': 'ES256',
-    'D': os.urandom(32),
+    'D': b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
     'KID': b"demo-kid"
 }
 
@@ -73,7 +73,8 @@ PID_DATA = {
 }
 
 mdoci = MdocCborIssuer(
-    private_key=PKEY
+    private_key=PKEY,
+    alg="ES256",
 )
 
 
@@ -204,7 +205,10 @@ class TestOpenID4VPBackend:
         mdoci.new(
             doctype="eu.europa.ec.eudiw.pid.1",
             data=PID_DATA,
-            devicekeyinfo=PKEY
+            validity={
+                "issuance_date": "2024-12-31",
+                "expiry_date": "2050-12-31"
+            }
         )
 
         vp_token_mdoc = mdoci.dumps().decode()
@@ -218,8 +222,13 @@ class TestOpenID4VPBackend:
                 "descriptor_map": [
                     {
                         "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
+                        "path": "$[0]",
                         "format": "vc+sd-jwt"
+                    },
+                    {
+                        "id": "eu.europa.ec.eudiw.pid.1",
+                        "path": "$[1]",
+                        "format": "mso_mdoc"
                     }
                 ]
             }
@@ -402,7 +411,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # case (2): bad state
         bad_state_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id)
@@ -483,7 +492,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: cannot parse vp token"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
     
     def test_response_endpoint_invalid_signature(self, context):
         nonce = str(uuid.uuid4())
@@ -499,7 +508,7 @@ class TestOpenID4VPBackend:
         midlen = len(jwt_segments[2]) // 2
         jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen+1:] 
 
-        response["vp_token"] = ".".join(jwt_segments)
+        response["vp_token"][0] = ".".join(jwt_segments)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
@@ -518,7 +527,7 @@ class TestOpenID4VPBackend:
 
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: invalid signature"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
     def test_response_endpoint_no_typ_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
@@ -554,20 +563,20 @@ class TestOpenID4VPBackend:
         session_id = context.state["SESSION_ID"]
         self._initialize_session(nonce, state, session_id)
 
-        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
-
-        context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
+            CONFIG["metadata_jwks"][1]).encrypt(good_response)
         context.request = {
             "response": encrypted_response
         }
+        context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-
+        
         response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+        assert "redirect_uri" in response_endpoint.message
+
         response_endpoint = self.backend.response_endpoint(context)
 
         msg = json.loads(response_endpoint.message)
