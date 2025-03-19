@@ -260,17 +260,17 @@ config:
           # - connection_params:
 
   credential_presentation_handlers:
-    - format: "dc+sd-jwt"
-      module: "pyeudiw.sd_jwt.verifier"
-      class: "SDJWTVerifier"
-    - format: "ldp_vp"
-      module: "pyeudiw.openid4vp.presentation_submission"
-      class: "LdpVp"
-    - format: "jwt_vp_json"
-      module: "pyeudiw.openid4vp.presentation_submission"
-      class: "JwtVpJson"
-    - format: "mso_mdoc"
-      module: "pymdoccbor.mdoc.verifier"
-      class: "MdocCbor"
-
     max_submission_size: 4096
+    formats:
+      - format: "dc+sd-jwt"
+        module: "pyeudiw.sd_jwt.verifier"
+        class: "SDJWTVerifier"
+      - format: "ldp_vp"
+        module: "pyeudiw.openid4vp.presentation_submission"
+        class: "LdpVp"
+      - format: "jwt_vp_json"
+        module: "pyeudiw.openid4vp.presentation_submission"
+        class: "JwtVpJson"
+      - format: "mso_mdoc"
+        module: "pymdoccbor.mdoc.verifier"
+        class: "MdocCbor"
