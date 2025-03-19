@@ -45,7 +45,14 @@ from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.openid4vp.exceptions import MdocCborValidationError, VPExpired
 
-
+from pyeudiw.openid4vp.presentation_submission.exceptions import (
+    MissingHandler, 
+    MalformedPath, 
+    SubmissionValidationError, 
+    VPTokenDescriptorMapMismatch,
+    ParseError,
+    ValidationError
+)
 
 class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
@@ -169,117 +176,65 @@ class ResponseHandler(ResponseHandlerInterface):
             else authz_payload.vp_token
         )
 
-        for vp_token in encoded_vps:
-            # verify vp token and extract user information
-            if is_sd_jwt_kb_format(vp_token):
-                try:
-                    challenge = self._get_verifier_challenge(request_session)
+        presentation_submission = authz_payload.presentation_submission
 
-                    token_processor = VpVcSdJwtParserVerifier(
-                        vp_token, challenge["aud"], challenge["nonce"]
-                    )
-
-                    token_issuer = token_processor.get_issuer_name()
-
-                    whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
-                    token_processor.verify_signature(whitelisted_keys)
-                    token_processor.verify_challenge()
-
-                    if token_processor.is_expired() == True:
-                        raise VPExpired("VP is expired")
-                    
-                    claims = token_processor.get_credentials()
-                    iss = token_processor.get_issuer_name()
-
-                    extracted_attributes[iss] = claims
-                except MissingIssuer as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: missing issuer information",
-                        e400
-                    )
-                except InvalidJwkMetadataException as e500:
-                    return self._handle_500(
-                        context, 
-                        "trust error: cannot fetch public keys",
-                        e500
-                    )
-                except JWSVerificationError as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: invalid signature",
-                        e400
-                    )
-                except UnsupportedSdAlg as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: unsupported signature algorithm",
-                        e400
-                    )
-                except InvalidKeyBinding as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: nonce or aud mismatch",
-                        e400
-                    )
-                except ValueError as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: missing or invalid iat claim",
-                        e400
-                    )
-                except VPExpired as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: expired",
-                        e400
-                    )
-                except Exception as e400:
-                    return self._handle_400(
-                        context, 
-                        "trust error: cannot verify vp token",
-                        e400
-                    )
-            else:
-                try:
-                    token_processor = VpMDocCbor(vp_token)
-                except Exception as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: cannot parse vp token",
-                        e400
-                    )
-                
-                try:
-                    token_processor.verify_signature()
-                    
-                    docs = token_processor.get_documents()
-
-                    #TODO: implement decode of attributes
-
-                    #for doc in docs:
-                     #   data = doc["issuerSigned"]["nameSpaces"].values()
-                      #  extracted_attributes[data["doc_type"]] = doc
-
-                except MdocCborValidationError as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: invalid signature",
-                        e400
-                    )
-                except VPExpired as e400:
-                    return self._handle_400(
-                        context, 
-                        "invalid vp token: expired",
-                        e400
-                    )
-                except Exception as e400:
-                    return self._handle_400(
-                        context, 
-                        "trust error: cannot verify vp token",
-                        e400
-                    )
-
+        try:
+            challange = self._get_verifier_challenge(request_session)
+            self.token_parser.validate(
+                presentation_submission,
+                encoded_vps,
+                challange["aud"],
+                challange["nonce"],
+            )
+        except VPTokenDescriptorMapMismatch as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: the number of token and descriptors does not match",
+                e400
+            )
+        except SubmissionValidationError as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: the submission is invalid",
+                e400
+            )
+        except MissingHandler as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: vp_format not supported",
+                e400
+            )
+        except ValidationError as e400:
+            return self._handle_400(
+                context,
+                "invalid presentation submission: validation error",
+                e400
+            )
+        except Exception as e500:
+            return self._handle_500(
+                context, 
+                "invalid presentation submission: unknown error",
+                e500
+            )
+        
+        try:
+            extracted_attributes = self.token_parser.parse(
+                presentation_submission, 
+                encoded_vps
+            )
+        except ParseError as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: parsing error",
+                e400
+            )
+        except Exception as e500:
+            return self._handle_500(
+                context, 
+                "invalid presentation submission: unknown error",
+                e500
+            )
+        
         all_attributes = self._extract_all_user_attributes(extracted_attributes)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
         internal_resp = self._translate_response(
