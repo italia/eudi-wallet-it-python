@@ -49,11 +49,11 @@ class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
-    def _extract_all_user_attributes(self, extracted_attributess: dict) -> dict:
+    def _extract_all_user_attributes(self, extracted_attributess: list[dict]) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
         # returns the user attributes ...
         all_user_attributes = dict()
-        for i in extracted_attributess.values():
+        for i in extracted_attributess:
             all_user_attributes.update(**i)
         return all_user_attributes
 
