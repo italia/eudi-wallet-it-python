@@ -13,6 +13,10 @@ class VpMDocCbor(BaseVPParser):
         )
 
         return exp_date < datetime.now()
+    
+    def _is_revoked(self) -> bool:
+        # TODO - revocation check here, using status list
+        return False
 
     def validate(
             self, 
