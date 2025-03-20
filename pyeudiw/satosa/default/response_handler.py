@@ -180,7 +180,7 @@ class ResponseHandler(ResponseHandlerInterface):
 
         try:
             challange = self._get_verifier_challenge(request_session)
-            self.token_parser.validate(
+            self.vp_token_parser.validate(
                 presentation_submission,
                 encoded_vps,
                 challange["aud"],
@@ -218,7 +218,7 @@ class ResponseHandler(ResponseHandlerInterface):
             )
         
         try:
-            extracted_attributes = self.token_parser.parse(
+            extracted_attributes = self.vp_token_parser.parse(
                 presentation_submission, 
                 encoded_vps
             )

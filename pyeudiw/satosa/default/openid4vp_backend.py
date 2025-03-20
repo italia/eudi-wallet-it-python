@@ -140,7 +140,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         )
 
         credential_presentation_handlers_configuration = self.config.get("credential_presentation_handlers", {})
-        self.token_parser = PresentationSubmissionHandler(
+        self.vp_token_parser = PresentationSubmissionHandler(
             credential_presentation_handlers_configuration,
             self.trust_evaluator
         )
