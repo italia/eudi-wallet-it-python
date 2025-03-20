@@ -1,9 +1,5 @@
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-
 from datetime import datetime
 from pymdoccbor.mdoc.verifier import MdocCbor
-from pymdoccbor.mso.verifier import MsoVerifier
 from pyeudiw.openid4vp.exceptions import MdocCborValidationError
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 
