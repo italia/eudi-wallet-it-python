@@ -179,12 +179,12 @@ class ResponseHandler(ResponseHandlerInterface):
         presentation_submission = authz_payload.presentation_submission
 
         try:
-            challange = self._get_verifier_challenge(request_session)
+            challenge = self._get_verifier_challenge(request_session)
             self.vp_token_parser.validate(
                 presentation_submission,
                 encoded_vps,
-                challange["aud"],
-                challange["nonce"],
+                challenge["aud"],
+                challenge["nonce"],
             )
         except VPTokenDescriptorMapMismatch as e400:
             return self._handle_400(
