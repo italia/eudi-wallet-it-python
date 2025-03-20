@@ -223,7 +223,7 @@ class TestOpenID4VPBackend:
                     {
                         "id": "pid-sd-jwt:unique_id+given_name+family_name",
                         "path": "$[0]",
-                        "format": "vc+sd-jwt"
+                        "format": "dc+sd-jwt"
                     },
                     {
                         "id": "eu.europa.ec.eudiw.pid.1",
@@ -367,10 +367,10 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status == "400"
         msg = json.loads(response_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # check that malformed jwt result in 400 response
-        response["vp_token"] = "asd.fgh.jkl"
+        response["vp_token"][0] = "asd.fgh.jkl"
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(response)
         context.request = {
@@ -380,7 +380,7 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status == "400"
         msg = json.loads(response_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: cannot parse vp token"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
     def test_response_endpoint(self, context):
         nonce = str(uuid.uuid4())
@@ -443,7 +443,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # case (4): good aud, nonce and state
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
