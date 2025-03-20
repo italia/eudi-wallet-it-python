@@ -323,7 +323,7 @@ CONFIG = {
             {
                 "module": "pyeudiw.openid4vp.vp_sd_jwt_vc",
                 "class": "VpVcSdJwtParserVerifier",
-                "format": "vc+sd-jwt",
+                "format": "dc+sd-jwt",
             },
             {
                 "module": "pyeudiw.openid4vp.vp_mdoc_cbor",
