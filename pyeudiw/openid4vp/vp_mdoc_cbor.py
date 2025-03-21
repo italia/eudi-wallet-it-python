@@ -36,10 +36,6 @@ class VpMDocCbor(BaseVPParser):
     def parse(self, token: str) -> None:
         mdoc = MdocCbor()
         mdoc.loads(data=token)
+        mdoc.verify()
 
-        return {}
-    
-        #Todo: Implement this method
-
-        mdoc.data_as_cbor_dict["documents"]
-        return 
+        return mdoc.disclosure_map
