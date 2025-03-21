@@ -221,6 +221,18 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             )
 
         return trust_source
+    
+    def validate_trust_material(self, trust_chain: list[str], trust_source: TrustSourceData) -> tuple[bool, TrustSourceData]:
+        """
+        Validate the trust material of the trust source.
+        """
+        return False, trust_source
+    
+    def get_handled_trust_material_name(self) -> str:
+        """
+        Return the name of the trust material that is handled by the trust handler.
+        """
+        return "direct_trust_sd_jwt_vc"
 
     def get_metadata(
         self, issuer: str, trust_source: TrustSourceData

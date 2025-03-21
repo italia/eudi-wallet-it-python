@@ -3,6 +3,7 @@ from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 from pyeudiw.openid4vp.exceptions import MissingIssuer
 from pyeudiw.openid4vp.exceptions import VPExpired
+from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 
@@ -43,8 +44,18 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
 
         sdjwt = SdJwt(token)
 
+        static_trust_materials = {}
+        header = decode_jwt_header(token)
+
+        if "x5c" in header:
+            static_trust_materials["x5c"] = header["x5c"]
+        
+        if "trust_chain" in header:
+            static_trust_materials["trust_chain"] = header["trust_chain"]
+        
         public_keys = self.trust_evaluator.get_public_keys(
-            self._get_issuer_name(sdjwt)
+            self._get_issuer_name(sdjwt),
+            static_trust_materials
         )
 
         sdjwt.verify_issuer_jwt_signature(public_keys)

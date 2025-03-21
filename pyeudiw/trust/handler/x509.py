@@ -1,14 +1,17 @@
 import logging
 from typing import Union
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+from pyeudiw.jwk.parse import parse_pem, parse_x5c_keys
 from pyeudiw.x509.verify import (
     verify_x509_attestation_chain, 
     get_expiry_date_from_x5c, 
     der_list_to_pem_list, 
     pem_list_to_der_list, 
-    get_x509_info
+    get_x509_info,
+    get_issuer_from_x5c
 )
 
 logger = logging.getLogger(__name__)
@@ -84,6 +87,65 @@ class X509Hanlder(TrustHandlerInterface):
             return trust_source
         
         return trust_source
+    
+    def validate_trust_material(
+        self, 
+        x5c: list[str], 
+        trust_source: TrustSourceData,
+        db_engine: DBEngine
+    ) -> dict[bool, TrustSourceData]:
+        chain = pem_list_to_der_list(x5c)
+
+        if not verify_x509_attestation_chain(chain):
+            logger.error(f"Invalid x509 certificate chain. Chain validation failed")
+            return False, trust_source
+
+        issuer = get_issuer_from_x5c(chain)
+
+        if not issuer in self.relying_party_certificate_chains_by_ca:
+            logger.error(f"Invalid x509 certificate chain. Issuer not found in the configured CAs")
+            return False, trust_source
+        
+        trust_anchor = db_engine.get_trust_anchor(issuer)
+
+        if not trust_anchor:
+            logger.error(f"Invalid x509 certificate chain. Trust anchor not found")
+            return False, trust_source
+        
+        issuer_x509 = trust_anchor.get("x509")
+
+        if not issuer_x509:
+            logger.error(f"Invalid x509 certificate chain. Trust anchor x509 not found")
+            return False, trust_source
+        
+        issuer_pem = issuer_x509["pem"]
+
+        try:
+            issuer_jwk = parse_pem(issuer_pem)
+            chain_jwks = parse_x5c_keys(chain)
+        except Exception as e:
+            logger.error(f"Invalid x509 certificate chain. Parsing failed: {e}")
+            return False, trust_source
+
+        if not issuer_jwk.thumbprint() == chain_jwks[0].thumbprint():
+            logger.error(f"Invalid x509 certificate chain. Issuer thumbprint does not match")
+            return False, trust_source
+        
+        trust_source.add_trust_param(
+            "x509",
+            TrustEvaluationType(
+                attribute_name="x5c",
+                x5c=x5c,
+                expiration_date=get_expiry_date_from_x5c(chain),
+                jwks=[jwk.as_dict() for jwk in chain_jwks],
+                trust_handler_name=self.name,
+            )
+        )
+
+        return True, trust_source
+    
+    def get_handled_trust_material_name(self) -> str:
+        return "x5c"
     
     def get_metadata(
         self, issuer: str, trust_source: TrustSourceData
