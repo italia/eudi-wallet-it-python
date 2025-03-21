@@ -46,7 +46,7 @@ class PresentationSubmissionHandler:
         formats = config.get("formats", [])
 
         if not formats:
-            raise ValueError("At least one format must be defined.")
+            raise ValueError("credential_presentation_handlers in the backend configuration must have at least one format defined.")
 
         self.max_submission_size = config.get("max_submission_size", 4096)
         self.handlers: dict[str, BaseVPParser] = {}
