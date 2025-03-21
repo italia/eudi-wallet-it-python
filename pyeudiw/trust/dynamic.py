@@ -102,7 +102,7 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler in self.handlers:
             handler_name = handler.__class__.__name__
 
-            trust_param = trust_source.get_trust_param_by_handler_name(handler_name)
+            trust_param = trust_source.get_trust_evaluation_type_by_handler_name(handler_name)
 
             if not trust_param or trust_param.expired or trust_source.revoked:
                 trust_source = handler.extract_and_update_trust_materials(

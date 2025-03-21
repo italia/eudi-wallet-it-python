@@ -10,7 +10,7 @@ from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 
 
 class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
@@ -208,7 +208,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
 
             trust_source.add_trust_param(
                 "direct_trust_sd_jwt_vc",
-                TrustParameterData(
+                TrustEvaluationType(
                     attribute_name="jwks",
                     jwks=[JWK(key=jwk).as_dict() for jwk in jwk_l],
                     expiration_date=None,

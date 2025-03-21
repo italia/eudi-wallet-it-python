@@ -42,7 +42,7 @@ from pyeudiw.tests.settings import (
     WALLET_INSTANCE_ATTESTATION,
 )
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
@@ -132,7 +132,7 @@ class TestOpenID4VPBackend:
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
         tsd.add_trust_param(
             "direct_trust_sd_jwt_vc",
-            TrustParameterData(
+            TrustEvaluationType(
                 "jwks",
                 jwks=[JWK(key=self.issuer_jwk).as_dict()],
                 expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
@@ -870,7 +870,7 @@ class TestOpenID4VPBackend:
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
         tsd.add_trust_param(
             "trust_chain",
-            TrustParameterData(
+            TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
                 expiration_date=datetime.datetime.now(),

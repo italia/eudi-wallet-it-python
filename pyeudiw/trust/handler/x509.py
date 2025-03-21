@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 from pyeudiw.x509.verify import (
     verify_x509_attestation_chain, 
@@ -72,7 +72,7 @@ class X509Hanlder(TrustHandlerInterface):
 
             trust_source.add_trust_param(
                 "x509",
-                TrustParameterData(
+                TrustEvaluationType(
                     attribute_name="x5c",
                     x5c=der_list_to_pem_list(chain),
                     expiration_date=exp,
