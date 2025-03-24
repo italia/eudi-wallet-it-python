@@ -367,6 +367,17 @@ class MongoStorage(BaseStorage):
 
         return documentStatus
 
+    def add_empty_trust_anchor(self, entity_id: str) -> str:
+        entity = {"entity_id": entity_id, "federation": {}, "x509": {}}
+
+        self._upsert_entry(
+            "entity_id",
+            self.storage_conf["db_trust_anchors_collection"],
+            entity,
+        )
+
+        return entity_id
+
     def add_trust_anchor(
         self,
         entity_id: str,

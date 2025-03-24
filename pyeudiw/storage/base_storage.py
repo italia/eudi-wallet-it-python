@@ -257,6 +257,18 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
+    def add_empty_trust_anchor(self, entity_id: str) -> str:
+        """
+        Add an empty trust anchor.
+
+        :param entity_id: the entity id.
+        :type entity_id: str
+
+        :returns: the document id.
+        :rtype: str
+        """
+        raise NotImplementedError
+
     def add_trust_anchor(
         self,
         entity_id: str,
