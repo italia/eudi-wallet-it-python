@@ -122,12 +122,12 @@ class X509Hanlder(TrustHandlerInterface):
 
         try:
             issuer_jwk = parse_pem(issuer_pem)
-            chain_jwks = parse_x5c_keys(chain)
+            chain_jwks = parse_x5c_keys(x5c)
         except Exception as e:
             logger.error(f"Invalid x509 certificate chain. Parsing failed: {e}")
             return False, trust_source
 
-        if not issuer_jwk.thumbprint() == chain_jwks[0].thumbprint():
+        if not issuer_jwk.thumbprint == chain_jwks[-1].thumbprint:
             logger.error(f"Invalid x509 certificate chain. Issuer thumbprint does not match")
             return False, trust_source
         
@@ -137,7 +137,7 @@ class X509Hanlder(TrustHandlerInterface):
                 attribute_name="x5c",
                 x5c=x5c,
                 expiration_date=get_expiry_date_from_x5c(chain),
-                jwks=[jwk.as_dict() for jwk in chain_jwks],
+                jwks=chain_jwks,
                 trust_handler_name=self.name,
             )
         )
