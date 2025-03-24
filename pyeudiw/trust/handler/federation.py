@@ -236,12 +236,15 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
 
             _is_valid = tc.update()
 
+        leaf_jwks = decode_jwt_payload(trust_chain[0]).get('jwks', {}).get('keys', [])
+
         # the good trust chain is then stored
         trust_source.add_trust_param(
-            "direct_trust_sd_jwt_vc",
+            "federation",
             TrustEvaluationType(
-                attribute_name="jwks",
-                jwks=[JWK(key=jwk).as_dict() for jwk in jwks],
+                attribute_name="trust_chain",
+                trust_chain=trust_chain,
+                jwks=[JWK(key=jwk).as_dict() for jwk in leaf_jwks],
                 expiration_date=None,
                 trust_handler_name=str(self.__class__.__name__),
             )

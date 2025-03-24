@@ -25,12 +25,13 @@ from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from pyeudiw.tests.federation.base import (
     EXP,
     NOW,
-    leaf_cred_jwk_prot,
+    leaf_cred_jwk,
     leaf_wallet_jwk,
     ta_ec,
     ta_ec_signed,
     ta_jwk,
     trust_chain_wallet,
+    trust_chain_issuer
 )
 from pyeudiw.tests.settings import (
     BASE_URL,
@@ -89,7 +90,9 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
     use_decoys = specification.get("add_decoy_claims", True)
     #adapted_keys = _adapt_keys(issuer_key, holder_key)
 
-    additional_headers = {}
+    additional_headers = {
+        "trust_chain": trust_chain_issuer
+    }
     #additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key["kid"]
 
@@ -120,7 +123,7 @@ class TestOpenID4VPBackend:
             exp=EXP,
         )
 
-        self.issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        self.issuer_jwk = leaf_cred_jwk.serialize(private=True)
         self.holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
         db_engine_inst.add_or_update_trust_attestation(

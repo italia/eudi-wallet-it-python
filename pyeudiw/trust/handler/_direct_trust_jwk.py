@@ -5,6 +5,7 @@ import satosa.context
 import satosa.response
 
 from pyeudiw.jwk import JWK
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
@@ -222,7 +223,12 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
 
         return trust_source
     
-    def validate_trust_material(self, trust_chain: list[str], trust_source: TrustSourceData) -> tuple[bool, TrustSourceData]:
+    def validate_trust_material(
+            self, 
+            trust_chain: list[str], 
+            trust_source: TrustSourceData,
+            db_engine: DBEngine
+        ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust material of the trust source.
         """

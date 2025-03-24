@@ -183,10 +183,14 @@ class CombinedTrustEvaluator(BaseLogger):
 
         # try to derive the public key from static trust materials
         if static_trust_materials:
-            for key, trust_material in static_trust_materials:
+            for key, trust_material in static_trust_materials.items():
                 for handler in self.handlers:
                     if handler.get_handled_trust_material_name() == key:
-                        status, trust_source = handler.validate_trust_material(trust_material, trust_source)
+                        status, trust_source = handler.validate_trust_material(
+                            trust_material, 
+                            trust_source, 
+                            self.db_engine
+                        )
 
                         if status:
                             self.db_engine.add_trust_source(trust_source.serialize())

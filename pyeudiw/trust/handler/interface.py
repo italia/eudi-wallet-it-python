@@ -102,12 +102,19 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
     
-    def validate_trust_material(self, trust_chain: list[str], trust_source: TrustSourceData) -> tuple[bool, TrustSourceData]:
+    def validate_trust_material(
+            self, 
+            trust_chain: list[str], 
+            trust_source: TrustSourceData,
+            db_engine: DBEngine
+        ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust chain using the trust handler.
 
         :param trust_chain: The trust chain to validate
         :type trust_chain: list[str]
+        :param trust_source: The trust source
+        :type trust_source: TrustSourceData
         :param db_engine: The database engine
         :type db_engine: DBEngine
 
