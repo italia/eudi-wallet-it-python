@@ -11,7 +11,7 @@ from pyeudiw.x509.verify import (
     der_list_to_pem_list, 
     pem_list_to_der_list, 
     get_x509_info,
-    get_issuer_from_x5c
+    get_trust_anchor_from_x5c
 )
 
 logger = logging.getLogger(__name__)
@@ -96,29 +96,25 @@ class X509Hanlder(TrustHandlerInterface):
     ) -> dict[bool, TrustSourceData]:
         chain = pem_list_to_der_list(x5c)
 
-        if not verify_x509_attestation_chain(chain):
+        if len(chain) > 1 and not verify_x509_attestation_chain(chain):
             logger.error(f"Invalid x509 certificate chain. Chain validation failed")
             return False, trust_source
 
-        issuer = get_issuer_from_x5c(chain)
+        issuer = get_trust_anchor_from_x5c(chain)
 
-        if not issuer in self.relying_party_certificate_chains_by_ca:
-            logger.error(f"Invalid x509 certificate chain. Issuer not found in the configured CAs")
-            return False, trust_source
-        
         trust_anchor = db_engine.get_trust_anchor(issuer)
 
         if not trust_anchor:
             logger.error(f"Invalid x509 certificate chain. Trust anchor not found")
             return False, trust_source
         
-        issuer_x509 = trust_anchor.get("x509")
+        anchor_x509 = trust_anchor.get("x509")
 
-        if not issuer_x509:
+        if not anchor_x509:
             logger.error(f"Invalid x509 certificate chain. Trust anchor x509 not found")
             return False, trust_source
         
-        issuer_pem = issuer_x509["pem"]
+        issuer_pem = anchor_x509["pem"]
 
         try:
             issuer_jwk = parse_pem(issuer_pem)

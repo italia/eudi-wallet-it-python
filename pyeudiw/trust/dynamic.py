@@ -199,6 +199,11 @@ class CombinedTrustEvaluator(BaseLogger):
                         else:
                             used_handlers.append(handler.__class__.__name__)
 
+            raise NoCriptographicMaterial(
+                f"no trust evaluator can provide cyptographic material "
+                f"for {issuer}: searched among: {self.handlers_names}"
+            )
+
         # try with handlers that don't use static trust materials like DirectTrustJar
         filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
 

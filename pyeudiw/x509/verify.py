@@ -182,7 +182,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
     return _verify_x509_certificate_chain(pems)
 
 
-def get_issuer_from_x5c(x5c: list[bytes]) -> str:
+def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> str:
     """
     Get the issuer from the x509 certificate chain.
 
@@ -192,8 +192,25 @@ def get_issuer_from_x5c(x5c: list[bytes]) -> str:
     :returns: The issuer
     :rtype: str
     """
-    cert = load_der_x509_certificate(x5c[-1])
-    return cert.subject.rfc4514_string().split("=")[1]
+    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
+
+    cert = load_der_x509_certificate(der)
+    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
+
+def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> str:
+    """
+    Get the issuer from the x509 certificate chain.
+
+    :param x5c: The x509 certificate chain
+    :type x5c: list[bytes]
+
+    :returns: The issuer
+    :rtype: str
+    """
+    der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
+
+    cert = load_der_x509_certificate(der)
+    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """
