@@ -4,6 +4,8 @@ from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
+from pyeudiw.jwk import JWK
+
 @dataclass
 class TrustEvaluationType:
     """
@@ -14,7 +16,7 @@ class TrustEvaluationType:
         self,
         attribute_name: str,
         expiration_date: datetime,
-        jwks: list[dict] = [],
+        jwks: list[dict | JWK ] = [],
         trust_handler_name: str = "",
         **kwargs
     ) -> None:
@@ -26,7 +28,7 @@ class TrustEvaluationType:
         :param expiration_date: The expiration date of the trust parameter data
         :type expiration_date: datetime
         :param jwks: The jwks of the trust parameter data
-        :type jwks: list[dict], optional
+        :type jwks: list[dict | JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
         :type trust_handler_name: str, optional
         """
@@ -34,7 +36,12 @@ class TrustEvaluationType:
         self.attribute_name = attribute_name
         self.expiration_date = expiration_date
         self.trust_handler_name = trust_handler_name
-        self.jwks = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in jwks]
+
+        self.jwks = []
+
+        for jwk in jwks:
+            jwk = key_from_jwk_dict(jwk).serialize(private=False) if isinstance(jwk, dict) else jwk.as_public_dict()
+            self.jwks.append(jwk)
 
         for type, tp in kwargs.items():
             setattr(self, type, tp)
