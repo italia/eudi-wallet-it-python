@@ -28,22 +28,22 @@ class VpMDocCbor(BaseVPParser):
         mdoc = MdocCbor()
         mdoc.loads(data=token)
 
-        # Materiale crittografico da validare con trust evaluator
-        # mdoc.issuersigned.issuer_auth.x509_certificates
-
         if mdoc.verify() == False:
             raise MdocCborValidationError("Signature is invalid")
         
-        for document in mdoc.documents:
-            x5c = [
-                cert.public_bytes(encoding=serialization.Encoding.PEM).decode() 
-                for cert in document.issuersigned.issuer_auth.x509_certificates
-            ]
+        try:
+            for document in mdoc.documents:
+                x5c = [
+                    cert.public_bytes(encoding=serialization.Encoding.PEM).decode() 
+                    for cert in document.issuersigned.issuer_auth.x509_certificates
+                ]
 
-            self.trust_evaluator.get_public_keys(
-                get_issuer_from_x5c(x5c),
-                {"x5c": x5c}
-            )
+                self.trust_evaluator.get_public_keys(
+                    get_issuer_from_x5c(x5c),
+                    {"x5c": x5c}
+                )
+        except Exception as e:
+            raise MdocCborValidationError(f"Error validating keys: {e}")
         
         if self._is_expired(mdoc):
             raise MdocCborValidationError("Credential is expired")
