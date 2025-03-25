@@ -262,15 +262,9 @@ config:
   credential_presentation_handlers:
     max_submission_size: 4096
     formats:
-      - format: "dc+sd-jwt"
-        module: "pyeudiw.sd_jwt.verifier"
-        class: "SDJWTVerifier"
-      - format: "ldp_vp"
-        module: "pyeudiw.openid4vp.presentation_submission"
-        class: "LdpVp"
-      - format: "jwt_vp_json"
-        module: "pyeudiw.openid4vp.presentation_submission"
-        class: "JwtVpJson"
-      - format: "mso_mdoc"
-        module: "pymdoccbor.mdoc.verifier"
-        class: "MdocCbor"
+      - module: pyeudiw.openid4vp.vp_sd_jwt_vc
+        class:  VpVcSdJwtParserVerifier
+        format: dc+sd-jwt
+      - module: pyeudiw.openid4vp.vp_mdoc_cbor
+        class:  VpMDocCbor
+        format: mso_mdoc
