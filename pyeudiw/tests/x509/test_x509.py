@@ -11,6 +11,7 @@ from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
     is_der_format,
     verify_x509_attestation_chain,
+    get_trust_anchor_from_x5c
 )
 
 
@@ -182,8 +183,10 @@ def test_invalid_intermediary_chain():
 def test_chain_issuer():
     chain = gen_chain()
     issuer = get_issuer_from_x5c(chain)
-    assert issuer
-    assert issuer == "ca.example.com"
+    trust_anchor = get_trust_anchor_from_x5c(chain)
+
+    assert issuer == "leaf.example.org"
+    assert trust_anchor == "ca.example.com"
 
 
 def test_invalid_len():
