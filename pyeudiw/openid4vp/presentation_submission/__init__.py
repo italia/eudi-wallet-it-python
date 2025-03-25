@@ -4,8 +4,6 @@ import importlib
 from typing import Any
 import logging
 
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
