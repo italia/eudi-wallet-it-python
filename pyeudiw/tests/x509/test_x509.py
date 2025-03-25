@@ -20,7 +20,8 @@ def gen_chain(
         ca_dns: str = "ca.example.com",
         leaf_cn: str = "leaf.example.org", 
         leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "https:/leaf.example.org/OpenID4VP"
+        leaf_uri: str = "https:/leaf.example.org/OpenID4VP",
+        leaf_private_key: rsa.RSAPrivateKey = None
     ) -> list[bytes]:
     # Generate a private key for the CA
     ca_private_key = rsa.generate_private_key(
@@ -35,10 +36,12 @@ def gen_chain(
     )
 
     # Generate a private key for the leaf
-    leaf_private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
+
+    if leaf_private_key is None:
+        leaf_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
 
     # Generate the CA's certificate
     ca = (
