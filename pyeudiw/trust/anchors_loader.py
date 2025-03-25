@@ -2,6 +2,7 @@ from datetime import datetime
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.storage.db_engine import DBEngine, TrustType
 from pyeudiw.x509.verify import get_expiry_date_from_x5c
+from pyeudiw.storage.exceptions import EntryNotFound
 
 class AnchorsLoader:
     @staticmethod
@@ -19,9 +20,11 @@ class AnchorsLoader:
             entity_id = anchor.get("entity_id")
             if entity_id is None:
                 raise ValueError("An entity_id is required for each trust anchor.")
-
-            if db.has_trust_anchor(entity_id):
-                db.add_empty_trust_anchor(anchor)
+            
+            try:
+                db.has_trust_anchor(entity_id)
+            except EntryNotFound:
+                db.add_empty_trust_anchor(entity_id)
 
             if "x509" in anchor:
                 db.update_trust_anchor(
