@@ -102,9 +102,9 @@ class X509Handler(TrustHandlerInterface):
 
         issuer = get_trust_anchor_from_x5c(chain)
 
-        trust_anchor = db_engine.get_trust_anchor(issuer)
-
-        if not trust_anchor:
+        try:
+            trust_anchor = db_engine.get_trust_anchor(issuer)
+        except Exception:
             logger.error(f"Invalid x509 certificate chain. Trust anchor not found")
             return False, trust_source
         
