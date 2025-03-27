@@ -181,6 +181,8 @@ config:
       - module: pyeudiw.openid4vp.vp_sd_jwt_vc
         class:  VpVcSdJwtParserVerifier
         format: dc+sd-jwt
+        config:
+          sig_alg_supported: *sig_alg_supported
       - module: pyeudiw.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc

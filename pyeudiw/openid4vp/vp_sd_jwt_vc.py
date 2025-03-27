@@ -6,9 +6,23 @@ from pyeudiw.openid4vp.exceptions import VPExpired
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
 class VpVcSdJwtParserVerifier(BaseVPParser):
+
+    def __init__(self, trust_evaluator: CombinedTrustEvaluator, sig_alg_supported: list[str] = [], **kwargs) -> None:
+        """
+        Initialize the VpVcSdJwtParserVerifier with the trust evaluator.
+
+        :param trust_evaluator: The trust evaluator instance.
+        :type trust_evaluator: CombinedTrustEvaluator
+        :param sig_alg_supported: List of supported signature algorithms.
+        :type sig_alg_supported: list[str]
+        """
+        self.sig_alg_supported = sig_alg_supported
+        super().__init__(trust_evaluator, **kwargs)
+
     def _get_issuer_name(self, sdjwt: SdJwt) -> str:
         """
         Get the issuer name from the token payload.
@@ -46,6 +60,10 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
 
         static_trust_materials = {}
         header = decode_jwt_header(token)
+
+        alg = header.get("alg", None)
+        if alg not in self.sig_alg_supported:
+            raise ValueError(f"Unsupported algorithm: {alg}")
 
         if "x5c" in header:
             static_trust_materials["x5c"] = header["x5c"]
