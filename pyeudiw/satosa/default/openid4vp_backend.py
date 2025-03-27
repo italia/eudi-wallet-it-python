@@ -340,10 +340,25 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
                 "request error: request expired",
             )
 
-        internal_response = InternalData()
-        resp = internal_response.from_dict(finalized_session["internal_response"])
+        if "error_response" in finalized_session:
+            return self._get_response_authorization_error_page(finalized_session["error_response"])
+        if "internal_response" in finalized_session:
+            internal_response = InternalData()
+            resp = internal_response.from_dict(finalized_session["internal_response"])
+            return self.auth_callback_func(context, resp)
 
-        return self.auth_callback_func(context, resp)
+        return self._handle_500(
+            context,
+            "finished authentication at an invalid state",
+            Exception("finished authentication is in an invalid state: neither user data nor error are located in a finished session", finalized_session)
+        )
+
+    def _get_response_authorization_error_page(self, wallet_error_response: dict):
+        # TODO: le informazioni di fallaback andrebbero gestite dalla view, non dal controller, motivi i multilingua etc
+        return self.template.authorization_error_response_page.render({
+            "error": wallet_error_response.get("error", "unknown error"),
+            "error_description": wallet_error_response.get("error_description", "unknown error details")
+        })
 
     def status_endpoint(self, context: Context) -> JsonResponse:
         """

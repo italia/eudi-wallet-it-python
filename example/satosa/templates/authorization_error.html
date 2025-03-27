@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="py-md-5 bd-content">
+    <div class="card-wrapper card-space">
+       <div class="card card-bg no-after">
+          <div class="card-body">
+            <div class="row bg-danger">
+                <p id="content-title" class="authz-error-title text-center">Errore di Autenticazione</p>
+            </div>
+            <div id="content">
+                <div id="content-text" class="row">
+                    Il tuo dispositivo Wallet ha rifiutato la richiesta di autenticazione con il seguente messaggio di errore.
+                </div>
+                <div id="content-err-text" class="row">
+                    Errore: {{ error }}
+                </div>
+                <div id="content-err-desc-text" class="row">
+                    Descrizione dell'errore: {{ error_description }}
+                </div>
+                <div id="button-home-row" class="row">
+                    <div class="text-center button-container mt-2">
+                        <a href="/" 
+                        class="btn btn-primary" 
+                        aria-haspopup="false" 
+                        aria-expanded="false" 
+                        data-focus-mouse="false"
+                        >
+                            <span>Vai alla home</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+{% endblock body %}
