@@ -10,6 +10,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
+import re
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -182,7 +183,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
     return _verify_x509_certificate_chain(pems)
 
 
-def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> str:
+def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     Get the issuer from the x509 certificate chain.
 
@@ -193,11 +194,13 @@ def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> str:
     :rtype: str
     """
     der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
-
     cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
 
-def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> str:
+    subject = cert.subject.rfc4514_string()
+    match = re.search(r"CN=([^,]+)", subject)
+    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
+
+def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     Get the issuer from the x509 certificate chain.
 
@@ -208,9 +211,11 @@ def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> str:
     :rtype: str
     """
     der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
-
     cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
+
+    subject = cert.subject.rfc4514_string()
+    match = re.search(r"CN=([^,]+)", subject)
+    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """

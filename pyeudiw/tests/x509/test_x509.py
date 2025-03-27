@@ -216,8 +216,8 @@ def test_chain_issuer():
     issuer = get_issuer_from_x5c(chain)
     trust_anchor = get_trust_anchor_from_x5c(chain)
 
-    assert issuer == "leaf.example.org"
-    assert trust_anchor == "ca.example.com"
+    assert issuer == "https://leaf.example.com/OpenID4VP"
+    assert trust_anchor == "https://ca.example.com"
 
 
 def test_invalid_len():
