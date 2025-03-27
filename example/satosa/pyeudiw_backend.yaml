@@ -75,7 +75,7 @@ config:
       - id: input-specific-id
         purpose: Request presentation holding Power of Representation attestation
         format:
-          vc+sd-jwt: {}
+          dc+sd-jwt: {}
         constraints:
           fields:
           - path:
@@ -85,7 +85,7 @@ config:
       - id: another-input-specific-id
         purpose: Request first name and last name claims from PID attestation
         format:
-          vc+sd-jwt: {}
+          dc+sd-jwt: {}
         constraints:
           limit_disclosure: required
           fields:
@@ -153,8 +153,8 @@ config:
     id_token_encrypted_response_enc: *enc_enc_supported
     id_token_signed_response_alg: *sig_alg_supported
 
-    # loaded in the __init__
-    # jwks:
+    # public part loaded in the __init__
+    jwks: *metadata_jwks
 
     redirect_uris: 
       # This field is autopopulated using internal variables base_url and name using the following format: <base_url>/<name>/redirect-uri"
@@ -167,7 +167,7 @@ config:
     # subject_type: pairwise
 
     vp_formats:
-      vc+sd-jwt:
+      dc+sd-jwt:
         sd-jwt_alg_values:
           - ES256
           - ES384
