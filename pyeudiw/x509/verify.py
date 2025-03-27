@@ -182,6 +182,34 @@ def verify_x509_anchor(pem_str: str) -> bool:
 
     return _verify_x509_certificate_chain(pems)
 
+def get_get_subject_name(der: bytes) -> Optional[str]:
+    """
+    Get the subject name from the x509 certificate.
+
+    :param der: The x509 certificate
+    :type der: bytes
+
+    :returns: The subject name
+    :rtype: str
+    """
+    cert = load_der_x509_certificate(der)
+
+    #get san dns name
+    san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+    if san:
+        dns = san.value.get_values_for_type(x509.DNSName)
+        if dns:
+            return dns[0]
+        
+        uri = san.value.get_values_for_type(x509.UniformResourceIdentifier)
+        if uri:
+            return uri[0]
+
+    # alternatively get the common name
+    subject = cert.subject.rfc4514_string()
+    match = re.search(r"CN=([^,]+)", subject)
+    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
 
 def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
@@ -194,11 +222,8 @@ def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     :rtype: str
     """
     der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
-    cert = load_der_x509_certificate(der)
-
-    subject = cert.subject.rfc4514_string()
-    match = re.search(r"CN=([^,]+)", subject)
-    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
+    return get_get_subject_name(der)
+    
 
 def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
@@ -211,11 +236,7 @@ def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     :rtype: str
     """
     der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
-    cert = load_der_x509_certificate(der)
-
-    subject = cert.subject.rfc4514_string()
-    match = re.search(r"CN=([^,]+)", subject)
-    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
+    return get_get_subject_name(der)
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """
