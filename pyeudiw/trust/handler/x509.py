@@ -16,7 +16,7 @@ from pyeudiw.x509.verify import (
 
 logger = logging.getLogger(__name__)
 
-class X509Hanlder(TrustHandlerInterface):
+class X509Handler(TrustHandlerInterface):
     """
     X509Handler is a trust handler implementation that extracts trust material from x509 certificates.
     """

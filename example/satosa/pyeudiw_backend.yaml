@@ -175,6 +175,16 @@ config:
           - ES256
           - ES384
 
+  credential_presentation_handlers:
+    max_submission_size: 4096
+    formats:
+      - module: pyeudiw.openid4vp.vp_sd_jwt_vc
+        class:  VpVcSdJwtParserVerifier
+        format: dc+sd-jwt
+      - module: pyeudiw.openid4vp.vp_mdoc_cbor
+        class:  VpMDocCbor
+        format: mso_mdoc
+
   trust:
     direct_trust_sd_jwt_vc:
       module: pyeudiw.trust.handler.direct_trust_sd_jwt_vc
@@ -222,12 +232,12 @@ config:
             q: 2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM
     x509:
       module: pyeudiw.trust.handler.x509
-      class: X509TrustHandler
+      class: X509Handler
       config:
         # client_id: *client_id
         client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request. 
         relying_party_certificate_chains_by_ca: # chains can be formed by items serialized in binary python serialization or PEM
-            - ca.example.com:
+            ca.example.com:
               - |
                 -----BEGIN CERTIFICATE-----
                 MIIDeDCCAmCgAwIBAgIUNUYqcuiqU4ykUo5Ttg0IGoNxV2swDQYJKoZIhvcNAQEL
