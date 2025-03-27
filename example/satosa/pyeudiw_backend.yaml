@@ -9,6 +9,7 @@ config:
     qrcode_template: "qr_code.html"
     error_template: "error.html"
     error_url: "https://localhost/error_page.html"
+    authorization_error_template: "authorization_error.html"
   
   endpoints:
     pre_request: '/pre-request'
