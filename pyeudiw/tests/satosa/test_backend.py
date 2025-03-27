@@ -166,7 +166,7 @@ class TestOpenID4VPBackend:
         )
 
         db_engine_inst.add_trust_anchor(
-            entity_id="ca.example.com",
+            entity_id="https://ca.example.com",
             entity_configuration=issuer_pem,
             exp=EXP,
             trust_type=TrustType.X509,
