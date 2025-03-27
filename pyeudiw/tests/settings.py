@@ -236,7 +236,7 @@ CONFIG = {
         },
         "x509": {
             "module": "pyeudiw.trust.handler.x509",
-            "class": "X509Hanlder",
+            "class": "X509Handler",
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
                 "relying_party_certificate_chains_by_ca":{
