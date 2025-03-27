@@ -16,7 +16,7 @@ from pyeudiw.jwk.schemas.public import JwkSchema
 
 _OptionalDict_T = TypeVar("T", None, dict)
 
-_IDENTIFYING_VC_TYP = "vc+sd-jwt"
+_IDENTIFYING_VC_TYP = "dc+sd-jwt"
 _IDENTIFYING_KB_TYP = "kb+jwt"
 
 # this pattern matches sd-jwt and sd-jwt w/ kb

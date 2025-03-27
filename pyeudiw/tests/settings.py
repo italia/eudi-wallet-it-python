@@ -51,7 +51,7 @@ _METADATA = {
     "require_auth_time": True,
     "subject_type": "pairwise",
     "vp_formats": {
-        "vc+sd-jwt": {
+        "dc+sd-jwt": {
             "sd-jwt_alg_values": ["ES256", "ES384"],
             "kb-jwt_alg_values": ["ES256", "ES384"],
         }
@@ -554,7 +554,7 @@ CONFIG_DIRECT_TRUST = {
         "require_auth_time": True,
         "subject_type": "pairwise",
         "vp_formats": {
-            "vc+sd-jwt": {
+            "dc+sd-jwt": {
                 "sd-jwt_alg_values": ["ES256", "ES384"],
                 "kb-jwt_alg_values": ["ES256", "ES384"],
             }

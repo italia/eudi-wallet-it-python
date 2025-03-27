@@ -17,9 +17,9 @@ from pyeudiw.x509.verify import (
 
 def gen_chain(
         date: datetime = datetime.now(), 
-        ca_cn: str = "ca.example.com", 
+        ca_cn: str = "CN=https://ca.example.com, O=Example CA, C=IT", 
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "leaf.example.org", 
+        leaf_cn: str = "CN=https://leaf.example.com/OpenID4VP, O=Example Leaf, C=IT", 
         leaf_dns: str = "leaf.example.org",
         leaf_uri: str = "https:/leaf.example.org/OpenID4VP",
         leaf_private_key: rsa.RSAPrivateKey = None
@@ -50,14 +50,30 @@ def gen_chain(
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME, ca_cn),
+                    x509.NameAttribute(NameOID.COMMON_NAME,
+                        ca_cn
+                    ),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                        "Example CA"
+                    ),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME,
+                        "IT"
+                    ),
                 ]
             )
         )
         .issuer_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME, ca_cn),
+                    x509.NameAttribute(NameOID.COMMON_NAME,
+                        ca_cn
+                    ),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                        "Example CA"
+                    ),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME,
+                        "IT"
+                    ),
                 ]
             )
         )
@@ -82,7 +98,15 @@ def gen_chain(
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME, "intermediate.example.net"),
+                    x509.NameAttribute(NameOID.COMMON_NAME,
+                        "https://intermediate.example.net"
+                    ),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                        "Example INT"
+                    ),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME,
+                        "IT"
+                    ),
                 ]
             )
         )
@@ -104,7 +128,15 @@ def gen_chain(
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME, leaf_cn),
+                    x509.NameAttribute(NameOID.COMMON_NAME,
+                        leaf_cn
+                    ),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                        "Example Leaf"
+                    ),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME,
+                        "IT"
+                    ),
                 ]
             )
         )
@@ -135,7 +167,6 @@ def gen_chain(
         intermediate.public_bytes(Encoding.DER),
         ca.public_bytes(Encoding.DER),
     ]
-
     return certificate_chain
 
 

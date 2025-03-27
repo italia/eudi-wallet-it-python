@@ -19,4 +19,4 @@ class VcSdJwt(BaseModel):
 
 
 class VpFormats(BaseModel):
-    vc_sd_jwt: VcSdJwt = Field(..., alias="vc+sd-jwt")
+    vc_sd_jwt: VcSdJwt = Field(..., alias="dc+sd-jwt")
