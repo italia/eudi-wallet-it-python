@@ -317,6 +317,21 @@ CONFIG = {
         }
     },
     "metadata": _METADATA,
+    "credential_presentation_handlers": {
+        "max_submission_size": 4096,
+        "formats": [
+            {
+                "module": "pyeudiw.openid4vp.vp_sd_jwt_vc",
+                "class": "VpVcSdJwtParserVerifier",
+                "format": "dc+sd-jwt",
+            },
+            {
+                "module": "pyeudiw.openid4vp.vp_mdoc_cbor",
+                "class": "VpMDocCbor",
+                "format": "mso_mdoc",
+            }
+        ],
+    },
 }
 
 CREDENTIAL_ISSUER_ENTITY_ID = "https://issuer.example.com"

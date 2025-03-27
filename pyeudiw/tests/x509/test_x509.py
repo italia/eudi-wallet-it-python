@@ -11,6 +11,7 @@ from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
     is_der_format,
     verify_x509_attestation_chain,
+    get_trust_anchor_from_x5c
 )
 
 
@@ -20,7 +21,8 @@ def gen_chain(
         ca_dns: str = "ca.example.com",
         leaf_cn: str = "leaf.example.org", 
         leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "https:/leaf.example.org/OpenID4VP"
+        leaf_uri: str = "https:/leaf.example.org/OpenID4VP",
+        leaf_private_key: rsa.RSAPrivateKey = None
     ) -> list[bytes]:
     # Generate a private key for the CA
     ca_private_key = rsa.generate_private_key(
@@ -35,10 +37,12 @@ def gen_chain(
     )
 
     # Generate a private key for the leaf
-    leaf_private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
+
+    if leaf_private_key is None:
+        leaf_private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
 
     # Generate the CA's certificate
     ca = (
@@ -179,8 +183,10 @@ def test_invalid_intermediary_chain():
 def test_chain_issuer():
     chain = gen_chain()
     issuer = get_issuer_from_x5c(chain)
-    assert issuer
-    assert issuer == "ca.example.com"
+    trust_anchor = get_trust_anchor_from_x5c(chain)
+
+    assert issuer == "leaf.example.org"
+    assert trust_anchor == "ca.example.com"
 
 
 def test_invalid_len():

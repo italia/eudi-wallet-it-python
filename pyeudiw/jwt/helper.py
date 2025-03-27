@@ -8,7 +8,7 @@ from cryptojwt.jwk.okp import OKPKey
 from cryptojwt.jwk.rsa import RSAKey
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwk.parse import parse_key_from_x5c
+from pyeudiw.jwk.parse import parse_x5c_keys
 from pyeudiw.jwt.log import logger
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
@@ -77,7 +77,7 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
     if "x5c" in header:
         candidate_key: JWK | None = None
         try:
-            candidate_key = parse_key_from_x5c(header["x5c"])
+            candidate_key = parse_x5c_keys(header["x5c"])[0]
         except Exception as e:
             logger.debug(
                 f"failed to parse key from x5c chain {header['x5c']}", exc_info=e

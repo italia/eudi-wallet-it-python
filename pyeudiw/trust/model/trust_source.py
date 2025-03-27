@@ -4,17 +4,19 @@ from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
+from pyeudiw.jwk import JWK
+
 @dataclass
-class TrustParameterData:
+class TrustEvaluationType:
     """
-    TrustParameterData is a dataclass that holds one of the trust parameters for a trust source.
+    TrustEvaluationType is a dataclass that holds one of the trust parameters for a trust source.
     """
 
     def __init__(
         self,
         attribute_name: str,
         expiration_date: datetime,
-        jwks: list[dict] = [],
+        jwks: list[dict | JWK ] = [],
         trust_handler_name: str = "",
         **kwargs
     ) -> None:
@@ -26,7 +28,7 @@ class TrustParameterData:
         :param expiration_date: The expiration date of the trust parameter data
         :type expiration_date: datetime
         :param jwks: The jwks of the trust parameter data
-        :type jwks: list[dict], optional
+        :type jwks: list[dict | JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
         :type trust_handler_name: str, optional
         """
@@ -34,7 +36,12 @@ class TrustParameterData:
         self.attribute_name = attribute_name
         self.expiration_date = expiration_date
         self.trust_handler_name = trust_handler_name
-        self.jwks = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in jwks]
+
+        self.jwks = []
+
+        for jwk in jwks:
+            jwk = key_from_jwk_dict(jwk).serialize(private=False) if isinstance(jwk, dict) else jwk.as_public_dict()
+            self.jwks.append(jwk)
 
         for type, tp in kwargs.items():
             setattr(self, type, tp)
@@ -103,17 +110,17 @@ class TrustSourceData:
         self.metadata = metadata
 
         for type, tp in kwargs.items():
-            setattr(self, type, TrustParameterData(**tp)) 
+            setattr(self, type, TrustEvaluationType(**tp)) 
 
     
-    def add_trust_param(self, type: str, trust_params: TrustParameterData) -> None:
+    def add_trust_param(self, type: str, trust_params: TrustEvaluationType) -> None:
         """
         Add a trust source to the trust source.
 
         :param type: The type of the trust source
         :type type: str
         :param trust_params: The trust parameters of the trust source
-        :type trust_params: TrustParameterData
+        :type trust_params: TrustEvaluationType
         """
         setattr(self, type, trust_params)
 
@@ -128,30 +135,30 @@ class TrustSourceData:
         """
         return hasattr(self, type)
 
-    def get_trust_param(self, type: str) -> Optional[TrustParameterData]:
+    def get_trust_param(self, type: str) -> Optional[TrustEvaluationType]:
         """
         Return the trust source of the given type.
 
         :param type: The type of the trust source
         :type type: str
         :returns: The trust source of the given type
-        :rtype: TrustParameterData
+        :rtype: TrustEvaluationType
         """
         if not self.has_trust_param(type):
             return None
         return getattr(self, type)
     
-    def get_trust_param_by_handler_name(self, handler_name: str) -> Optional[TrustParameterData]:
+    def get_trust_evaluation_type_by_handler_name(self, handler_name: str) -> Optional[TrustEvaluationType]:
         """
         Return the trust source of the given handler name.
 
         :param handler_name: The handler name of the trust source
         :type handler_name: str
         :returns: The trust source of the given handler name
-        :rtype: TrustParameterData
+        :rtype: TrustEvaluationType
         """
         for type in dir(self):
-            if isinstance(getattr(self, type), TrustParameterData):
+            if isinstance(getattr(self, type), TrustEvaluationType):
                 if getattr(self, type).trust_handler_name == handler_name:
                     return getattr(self, type)
         return None
@@ -178,7 +185,7 @@ class TrustSourceData:
         trust_source["metadata"] = tmp_metadata
 
         for type in dir(self):
-            if isinstance(getattr(self, type), TrustParameterData):
+            if isinstance(getattr(self, type), TrustEvaluationType):
                 trust_source[type] = getattr(self, type).serialize()
 
         return trust_source

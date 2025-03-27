@@ -1,33 +1,15 @@
-from typing import Optional
-
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
-
 from pyeudiw.jwt.helper import is_jwt_expired
-from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
-from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
+from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
-from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
+from pyeudiw.openid4vp.exceptions import MissingIssuer
+from pyeudiw.openid4vp.exceptions import VPExpired
+from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
+from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 
 
-class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
-    def __init__(
-        self,
-        token: str,
-        verifier_id: Optional[str] = None,
-        verifier_nonce: Optional[str] = None,
-    ):
-        self.token = token
-        if not is_sd_jwt_kb_format(token):
-            raise NotKBJWT(
-                f"input [token]={token} is not an sd-jwt with key binding: maybe it is a regular jwt or key binding jwt is missing?"
-            )
-        self.verifier_id = verifier_id
-        self.verifier_nonce = verifier_nonce
-        # precomputed values
-        self.sdjwt = SdJwt(self.token)
-
-    def get_issuer_name(self) -> str:
+class VpVcSdJwtParserVerifier(BaseVPParser):
+    def _get_issuer_name(self, sdjwt: SdJwt) -> str:
         """
         Get the issuer name from the token payload.
 
@@ -36,59 +18,55 @@ class VpVcSdJwtParserVerifier(VpTokenParser, VpTokenVerifier):
         :return: the issuer name
         :rtype: str
         """
-        iss = self.sdjwt.get_issuer_jwt().payload.get("iss", None)
+        iss = sdjwt.get_issuer_jwt().payload.get("iss", None)
         if not iss:
             raise MissingIssuer("missing required information in token paylaod: [iss]")
         return iss
+    
+    def parse(self, token: str) -> dict:
+        sdjwt = SdJwt(token)
 
-    def get_credentials(self) -> dict:
-        """
-        Get the disclosed claims from the token payload.
+        return sdjwt.get_disclosed_claims()
 
-        :raises ValueError: if there are multiple claims with the same digest
-        :raises UnsupportedSdAlg: if the sd-jwt algorithm is not supported
-
-        :return: the disclosed claims
-        :rtype: dict
-        """
-        return self.sdjwt.get_disclosed_claims()
-
-    def is_revoked(self) -> bool:
+    def _is_revoked(self) -> bool:
         # TODO: implement revocation check
         return False
+    
+    def validate(
+        self, 
+        token: str, 
+        verifier_id: str, 
+        verifier_nonce: str, 
+    ) -> None:
+        # precomputed values
+        if not is_sd_jwt_kb_format(token):
+            raise ValueError("Token is not in the expected format")
 
-    def is_expired(self) -> bool:
-        """
-        Check if the credential is expired.
+        sdjwt = SdJwt(token)
 
-        :returns: if the credential is expired
-        :rtype: bool
-        """
-        return is_jwt_expired(self.sdjwt.issuer_jwt)
+        static_trust_materials = {}
+        header = decode_jwt_header(token)
 
-    def verify_signature(self, public_key: ECKey | RSAKey | dict) -> None:
-        """
-        Verifies the signature of the jwt.
+        if "x5c" in header:
+            static_trust_materials["x5c"] = header["x5c"]
+        
+        if "trust_chain" in header:
+            static_trust_materials["trust_chain"] = header["trust_chain"]
+        
+        public_keys = self.trust_evaluator.get_public_keys(
+            self._get_issuer_name(sdjwt),
+            static_trust_materials
+        )
 
-        :param public_key: the public key to verify the signature
-        :type public_key: ECKey | RSAKey | dict
-
-        :raises JWSVerificationError: if the signature is invalid
-        """
-        return self.sdjwt.verify_issuer_jwt_signature(public_key)
-
-    def verify_challenge(self) -> None:
-        """
-        Verifies the challenge of the jwt.
-
-        :raises UnsupportedSdAlg: if verification fails due to an unkown _sd_alg
-        :raises InvalidKeyBinding: if the verification fails for a known reason
-        :raises ValueError: if the iat claim is missing or invalid
-        :raises JWSVerificationError: if the verification fails
-        """
-
+        sdjwt.verify_issuer_jwt_signature(public_keys)
+        
         challenge: VerifierChallenge = {}
-        challenge["aud"] = self.verifier_id
-        challenge["nonce"] = self.verifier_nonce
+        challenge["aud"] = verifier_id
+        challenge["nonce"] = verifier_nonce
 
-        self.sdjwt.verify_holder_kb_jwt(challenge)
+        sdjwt.verify_holder_kb_jwt(challenge)
+
+        if is_jwt_expired(sdjwt.issuer_jwt.jwt):
+            raise VPExpired("VP is expired")
+        
+        # TODO: implement revocation check

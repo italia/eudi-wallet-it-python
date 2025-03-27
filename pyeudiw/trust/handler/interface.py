@@ -4,6 +4,7 @@ import satosa.context
 import satosa.response
 
 from pyeudiw.trust.model.trust_source import TrustSourceData
+from pyeudiw.storage.db_engine import DBEngine
 
 
 class TrustHandlerInterface:
@@ -91,6 +92,36 @@ class TrustHandlerInterface:
         an empty list is returned instead.
         """
         return []
+    
+    def get_handled_trust_material_name(self) -> str:
+        """
+        Return the name of the trust material that this handler can handle.
+
+        :returns: The name of the trust material
+        :rtype: str
+        """
+        raise NotImplementedError
+    
+    def validate_trust_material(
+            self, 
+            trust_chain: list[str], 
+            trust_source: TrustSourceData,
+            db_engine: DBEngine
+        ) -> tuple[bool, TrustSourceData]:
+        """
+        Validate the trust chain using the trust handler.
+
+        :param trust_chain: The trust chain to validate
+        :type trust_chain: list[str]
+        :param trust_source: The trust source
+        :type trust_source: TrustSourceData
+        :param db_engine: The database engine
+        :type db_engine: DBEngine
+
+        :returns: True if the trust chain is valid, False otherwise
+        :rtype: bool
+        """
+        raise NotImplementedError
 
     @property
     def name(self) -> str:

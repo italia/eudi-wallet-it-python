@@ -1,3 +1,4 @@
+import os
 import uuid
 import base64
 import datetime
@@ -18,17 +19,19 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
 from pyeudiw.satosa.backend import OpenID4VPBackend
 from pyeudiw.storage.base_storage import TrustType
-from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.storage.db_engine import DBEngine, TrustType
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
+from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from pyeudiw.tests.federation.base import (
     EXP,
     NOW,
-    leaf_cred_jwk_prot,
+    leaf_cred_jwk,
     leaf_wallet_jwk,
     ta_ec,
     ta_ec_signed,
     ta_jwk,
     trust_chain_wallet,
+    trust_chain_issuer
 )
 from pyeudiw.tests.settings import (
     BASE_URL,
@@ -40,7 +43,7 @@ from pyeudiw.tests.settings import (
     WALLET_INSTANCE_ATTESTATION,
 )
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustParameterData
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
@@ -48,9 +51,39 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.x509.verify import der_list_to_pem_list
+from pyeudiw.jwk.parse import parse_pem
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from cryptography.hazmat.primitives.asymmetric import rsa
 
+PKEY = {
+    'KTY': 'EC2',
+    'CURVE': 'P_256',
+    'ALG': 'ES256',
+    'D': b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
+    'KID': b"demo-kid"
+}
 
-def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK) -> dict:
+PID_DATA = {
+    "eu.europa.ec.eudiw.pid.1": {
+        "family_name": "Raffaello",
+        "given_name": "Mascetti",
+        "birth_date": "1922-03-13",
+        "birth_place": "Rome",
+        "birth_country": "IT"
+    },
+    "eu.europa.ec.eudiw.pid.it.1": {
+        "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
+    }
+}
+
+mdoci = MdocCborIssuer(
+    private_key=PKEY,
+    alg="ES256",
+)
+
+def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, additional_headers: dict) -> dict:
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
@@ -59,10 +92,7 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
 
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
-    #adapted_keys = _adapt_keys(issuer_key, holder_key)
 
-    additional_headers = {}
-    #additional_headers = {"trust_chain": trust_chain} if trust_chain else {}
     additional_headers['kid'] = issuer_key["kid"]
 
     sdjwt_at_issuer = SDJWTIssuer(
@@ -79,20 +109,77 @@ def _mock_auth_callback_function(context: Context, internal_data: InternalData):
     return JsonResponse({"response": "Authentication successful"}, status="200")
 
 class TestOpenID4VPBackend:
-
     @pytest.fixture(autouse=True)
     def create_backend(self):
 
         db_engine_inst = DBEngine(CONFIG["storage"])
 
-        # TODO - not necessary if federation is not tested
+        jwk = {
+            "kty": "RSA",
+            "use": "sig",
+            "alg": "RS256",
+            "kid": "m00NPAelNBnG_wK2R5EpI_k-GWCHEUySamQYubgFjCg",
+            "d": "nMsnqz0lPHNGBgUqyuJ5nXQ0jh-mzs6d2xOY_QhpkRW1kEbexRJDdVV3fqMxj_s0MiF8mn-s8ea3e8cbNDgIy000Wvx05y1rMkB6KaZX2ZL5jwU7i_xP6NlLh8itikqJz7kKQSILgibQFFQDcScpEk8gUKa6fmSJQVwTII6GoJCdiJflv-FI2OQ_TCBQEEVVLpeUiVSP0n3OMUKGBlbaHOQkArUpla_ke_mtdfIrl7uB74Rxrin68KtFHkGDGdJPs-PPO1yJ2paFZI9QR_ettZ22v45c-qIgmCjsEnITDMaO9724PU_umlWsWe36Y9RAAzofKsjKqvA1OIzU03ob9Q",
+            "n": "sP6jt1XwJE0JDKxy4B7r3Jdb8W6bSRoVunyjWMgl5IafqFwHsJlYgCAWPeTrAL-iyjdnWC1csHuTqWjdndDL-oqEarrqoDAycVkfFTUTD81_wVhWUzAwxhQHiT7PTUIsV7m9VGlfC_kdCpQl5CcK1yx2nQ1KbqWOV1_5WnMgnN_EpNmztkZDnJmKedVduOb2dKWwnLS3fcGvUxXc87DjAzC2vfgQSoQfXAZbwItyS6OinFiUnBxRvt9ZY2IapjI1-wwDKKeRrqPC-fV2oWTrMqoYAvIDnf9AjKHAbIw7q301-7-eaUMF1hVtAz1XeXvMp0wK8_uSo9Vgv1vHhBpOwQ",
+            "e": "AQAB",
+            "p": "0ViKTSyZdLtvbLBpTvVAXTdrhTwGXuh16PadQMAVmkoxOPiExRB5uLiy2ADaVKSglia5aQBUp9v0ygEEOmkiUtn5A26D9ui0dkPR0hx4fwqCOOmA2ZyDUNFJ_qrGSwT1SxGQDHeRteymJG7uN9QekS3XiBDgFJxwl-vVpoSTBJM",
+            "q": "2HBr9qhVd3zZUQuNb7ro06ErLl4fhL-DiKsNqXB772tDNTJYeog1nOWgS22tcv5WHrSoYF1x5Q74YVoA6yVj6DwFx2Hc2pYZazzhYMRC3NAWkTEdroy9IjtpzKIpQIqw-sq8CbWVBXzho8uQBCdg8h73z11_HPyXT9BqQCmxJ9s",
+            "dp": "WsQ32rQuqNUnv4lRb4GYcZI41SCsZnQFw4dBsTRXaXknlFr0PfkhvXyfVlYwU6i5U8DgfO0-xzTwErGUIrs4vZFyjRFauDA3JlvLWn0rpXFp-sELM87PhLfpjDiBFz_EFtM7kJw7GhTMCFnsgVpAEpQ8sesXLPiTPNts2_D5SW8",
+            "dq": "jWlucLrtFGOjDRuyLjT9l__uWZ4vk6kZRHsWMwWGRBhd0ezx-CT0em1hPMcNE1vvYqKAfG2xU4pjaB_JB9nnG73TvMBI7xwwwWsGihXQ5bqjc_uWPAxCKpKM_qFYuI2lMkaxctqL4gkE1-LRVpVv9uGa4YZh3ct_BSvTr9ZNpA8",
+            "qi": "kn9Etj4a2erCUmoZUQalPjHxCRYm5Q3wAkFIRGSQADA51mkwQHyTYqXbHcmXn2ZgXBVI6XDWJB51Me-NCPfITTlusqxvATF7Q-QJtdK_FbgNtcVRNc1FMq_M7VBHA1i9wJR7T4t57aywfXPmlsA5TToTDRe-ybdw0C3ys4KQATs"
+        }
+
+        def base64url_to_int(val):
+            import base64
+            import binascii
+            return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
+
+        # Extract components from JWK
+        n = base64url_to_int(jwk['n'])
+        e = base64url_to_int(jwk['e'])
+        d = base64url_to_int(jwk['d'])
+        p = base64url_to_int(jwk['p'])
+        q = base64url_to_int(jwk['q'])
+        dp = base64url_to_int(jwk['dp'])
+        dq = base64url_to_int(jwk['dq'])
+        qi = base64url_to_int(jwk['qi'])
+
+        # Create RSA private key
+        private_key = rsa.RSAPrivateNumbers(
+            p=p,
+            q=q,
+            d=d,
+            dmp1=dp,
+            dmq1=dq,
+            iqmp=qi,
+            public_numbers=rsa.RSAPublicNumbers(e=e, n=n)
+        ).private_key()
+
+        self.chain = der_list_to_pem_list(gen_chain(leaf_private_key=private_key))
+        issuer_pem = self.chain[-1]
+        self.x509_leaf_private_key = jwk
+
         db_engine_inst.add_trust_anchor(
             entity_id=ta_ec["iss"],
             entity_configuration=ta_ec_signed,
             exp=EXP,
         )
 
-        self.issuer_jwk = leaf_cred_jwk_prot.serialize(private=True)
+        db_engine_inst.add_trust_anchor(
+            entity_id="ca.example.com",
+            entity_configuration=issuer_pem,
+            exp=EXP,
+            trust_type=TrustType.X509,
+        )
+
+        db_engine_inst.add_trust_anchor(
+            entity_id="mysite.com",
+            entity_configuration="-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n",
+            exp=EXP,
+            trust_type=TrustType.X509,
+        )
+
+        self.issuer_jwk = leaf_cred_jwk.serialize(private=True)
         self.holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
         db_engine_inst.add_or_update_trust_attestation(
@@ -104,7 +191,7 @@ class TestOpenID4VPBackend:
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
         tsd.add_trust_param(
             "direct_trust_sd_jwt_vc",
-            TrustParameterData(
+            TrustEvaluationType(
                 "jwks",
                 jwks=[JWK(key=self.issuer_jwk).as_dict()],
                 expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
@@ -143,7 +230,7 @@ class TestOpenID4VPBackend:
         context.state = State()
         return context
     
-    def _generate_payload(self, issuer_jwk, holder_jwk, nonce, state, aud):
+    def _generate_payload(self, issuer_jwk, holder_jwk, nonce, state, aud, x509=False):
         settings = CREDENTIAL_ISSUER_CONF
         settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
         settings['default_exp'] = CONFIG['jwt']['default_exp']
@@ -151,12 +238,21 @@ class TestOpenID4VPBackend:
         sd_specification = _yaml_load_specification(
             settings["sd_specification"])
         
+        if x509:
+            additional_headers = {
+                "x5c": self.chain
+            }
+        else:
+            additional_headers = {
+                "trust_chain": trust_chain_issuer
+            }
+        
         issued_jwt = issue_sd_jwt(
             sd_specification,
             settings,
             issuer_jwk,
             holder_jwk,
-            #additional_headers={"typ": "vc+sd-jwt"}
+            additional_headers
         )
 
         sdjwt_at_holder = SDJWTHolder(
@@ -174,17 +270,33 @@ class TestOpenID4VPBackend:
 
         vp_token = sdjwt_at_holder.sd_jwt_presentation
 
+        mdoci.new(
+            doctype="eu.europa.ec.eudiw.pid.1",
+            data=PID_DATA,
+            validity={
+                "issuance_date": "2024-12-31",
+                "expiry_date": "2050-12-31"
+            }
+        )
+
+        vp_token_mdoc = mdoci.dumps().decode()
+
         return {
             "state": state,
-            "vp_token": vp_token,
+            "vp_token": [vp_token, vp_token_mdoc],
             "presentation_submission": {
                 "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
                 "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
                 "descriptor_map": [
                     {
                         "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                        "path": "$.vp_token.verified_claims.claims._sd[0]",
-                        "format": "vc+sd-jwt"
+                        "path": "$[0]",
+                        "format": "dc+sd-jwt"
+                    },
+                    {
+                        "id": "eu.europa.ec.eudiw.pid.1",
+                        "path": "$[1]",
+                        "format": "mso_mdoc"
                     }
                 ]
             }
@@ -323,10 +435,10 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status == "400"
         msg = json.loads(response_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # check that malformed jwt result in 400 response
-        response["vp_token"] = "asd.fgh.jkl"
+        response["vp_token"][0] = "asd.fgh.jkl"
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(response)
         context.request = {
@@ -336,7 +448,7 @@ class TestOpenID4VPBackend:
         assert response_endpoint.status == "400"
         msg = json.loads(response_endpoint.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
     def test_response_endpoint(self, context):
         nonce = str(uuid.uuid4())
@@ -367,7 +479,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # case (2): bad state
         bad_state_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id)
@@ -399,7 +511,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: nonce or aud mismatch"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
         # case (4): good aud, nonce and state
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
@@ -448,7 +560,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: not a key-bound jwt"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
     
     def test_response_endpoint_invalid_signature(self, context):
         nonce = str(uuid.uuid4())
@@ -459,12 +571,12 @@ class TestOpenID4VPBackend:
 
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
-        jwt_segments = response["vp_token"].split(".")
+        jwt_segments = response["vp_token"][0].split(".")
 
         midlen = len(jwt_segments[2]) // 2
         jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen+1:] 
 
-        response["vp_token"] = ".".join(jwt_segments)
+        response["vp_token"][0] = ".".join(jwt_segments)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
@@ -483,7 +595,7 @@ class TestOpenID4VPBackend:
 
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid vp token: invalid signature"
+        assert msg["error_description"] == "invalid presentation submission: validation error"
 
     def test_response_endpoint_no_typ_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
@@ -519,26 +631,52 @@ class TestOpenID4VPBackend:
         session_id = context.state["SESSION_ID"]
         self._initialize_session(nonce, state, session_id)
 
-        response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
-
-        context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
+            CONFIG["metadata_jwks"][1]).encrypt(good_response)
         context.request = {
             "response": encrypted_response
         }
+        context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-
+        
         response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+        assert "redirect_uri" in response_endpoint.message
+
         response_endpoint = self.backend.response_endpoint(context)
 
         msg = json.loads(response_endpoint.message)
         assert response_endpoint.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid authorization response: session already finalized or corrupted"
+
+    def test_response_endpoint_x5c_chain(self, context):
+
+
+
+        nonce = str(uuid.uuid4())
+        state = str(uuid.uuid4())
+
+        session_id = context.state["SESSION_ID"]
+        self._initialize_session(nonce, state, session_id)
+
+        issuer_jwk = parse_pem(self.chain[0])
+
+        good_response = self._generate_payload(self.x509_leaf_private_key, self.holder_jwk, nonce, state, self.backend.client_id, x509=True)
+
+        encrypted_response = JWEHelper(
+            CONFIG["metadata_jwks"][1]).encrypt(good_response)
+        context.request = {
+            "response": encrypted_response
+        }
+        context.request_method = "POST"
+        context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
+        
+        response_endpoint = self.backend.response_endpoint(context)
+        assert response_endpoint.status == "200"
+        assert "redirect_uri" in response_endpoint.message
 
     def test_status_endpoint_no_session(self, context):
         # No query string parameters
@@ -826,7 +964,7 @@ class TestOpenID4VPBackend:
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
         tsd.add_trust_param(
             "trust_chain",
-            TrustParameterData(
+            TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
                 expiration_date=datetime.datetime.now(),

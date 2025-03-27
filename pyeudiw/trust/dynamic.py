@@ -102,7 +102,7 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler in self.handlers:
             handler_name = handler.__class__.__name__
 
-            trust_param = trust_source.get_trust_param_by_handler_name(handler_name)
+            trust_param = trust_source.get_trust_evaluation_type_by_handler_name(handler_name)
 
             if not trust_param or trust_param.expired or trust_source.revoked:
                 trust_source = handler.extract_and_update_trust_materials(
@@ -154,24 +154,62 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return self._upsert_source_trust_materials(trust_source, issuer, force_update)
 
-    def get_public_keys(self, issuer: Optional[str] = None, force_update: bool = False) -> list[dict]:
+    def get_public_keys(
+            self, 
+            issuer: Optional[str] = None, 
+            static_trust_materials: dict = {}, 
+            force_update: bool = False
+        ) -> list[dict]:
         """
         Yields a list of public keys for an issuer, according to some trust model.
+        If trust materials are provided, they are used to derive the public keys.
+        If not, the public keys are derived from a trust model that does not require trust materials to attest the trust.
 
         :param issuer: The issuer
         :type issuer: str
+        :param static_trust_materials: The static trust materials
+        :type static_trust_materials: dict
+        :param force_update: If the public keys should be updated even if they are already present in the cache
+        :type force_update: bool
 
         :returns: The public keys
         :rtype: list[dict]
         """
-        trust_source = self._get_trust_source(issuer, force_update)
-
         keys = []
         thumbprints = []
+        used_handlers = []
 
-        for handler in self.handlers:
-            if (key := trust_source.get_trust_param_by_handler_name(handler.__class__.__name__)) is not None:
-                for jwk in key.jwks:
+        trust_source = self._get_trust_source(issuer, force_update)
+
+        # try to derive the public key from static trust materials
+        if static_trust_materials:
+            for key, trust_material in static_trust_materials.items():
+                for handler in self.handlers:
+                    if handler.get_handled_trust_material_name() == key:
+                        status, trust_source = handler.validate_trust_material(
+                            trust_material, 
+                            trust_source, 
+                            self.db_engine
+                        )
+
+                        if status:
+                            self.db_engine.add_trust_source(trust_source.serialize())
+                            evaluation_type = trust_source.get_trust_evaluation_type_by_handler_name(handler.__class__.__name__)
+                            return [key_from_jwk_dict(jwk).serialize(private=False) for jwk in evaluation_type.jwks]
+                        else:
+                            used_handlers.append(handler.__class__.__name__)
+
+            raise NoCriptographicMaterial(
+                f"no trust evaluator can provide cyptographic material "
+                f"for {issuer}: searched among: {self.handlers_names}"
+            )
+
+        # try with handlers that don't use static trust materials like DirectTrustJar
+        filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
+
+        for handler in filetered_handlers:
+            if (evaluation_type := trust_source.get_trust_evaluation_type_by_handler_name(handler.__class__.__name__)) is not None:
+                for jwk in evaluation_type.jwks:
                     key = key_from_jwk_dict(jwk)
                     thumbprint = key.thumbprint("SHA-256")
                     if thumbprint not in thumbprints:

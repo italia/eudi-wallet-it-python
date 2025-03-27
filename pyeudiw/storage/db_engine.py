@@ -185,6 +185,12 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def get_trust_source(self, entity_id: str) -> dict:
         return self.get("get_trust_source", entity_id)
 
+    def add_empty_trust_anchor(self, entity_id: str) -> str:
+        return self.write(
+            "add_empty_trust_anchor", 
+            entity_id
+        )
+
     def add_trust_anchor(
         self,
         entity_id: str,

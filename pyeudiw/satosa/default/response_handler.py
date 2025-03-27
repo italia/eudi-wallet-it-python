@@ -23,10 +23,8 @@ from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
 )
-from pyeudiw.openid4vp.interface import VpTokenParser, VpTokenVerifier
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
-from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.satosa.exceptions import (
     AuthorizeUnmatchedResponse,
     FinalizedSessionError,
@@ -37,23 +35,25 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.openid4vp.exceptions import NotKBJWT, MissingIssuer
-from pyeudiw.trust.exceptions import InvalidJwkMetadataException
-from pyeudiw.jwt.exceptions import JWSVerificationError
-from pyeudiw.sd_jwt.exceptions import UnsupportedSdAlg, InvalidKeyBinding
 
-
+from pyeudiw.openid4vp.presentation_submission.exceptions import (
+    MissingHandler, 
+    SubmissionValidationError, 
+    VPTokenDescriptorMapMismatch,
+    ParseError,
+    ValidationError
+)
 
 class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
-    def _extract_all_user_attributes(self, attributes_by_issuers: dict) -> dict:
+    def _extract_all_user_attributes(self, extracted_attributes: list[dict]) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
         # returns the user attributes ...
         all_user_attributes = dict()
-        for i in attributes_by_issuers.values():
+        for i in extracted_attributes:
             all_user_attributes.update(**i)
         return all_user_attributes
 
@@ -158,7 +158,7 @@ class ResponseHandler(ResponseHandlerInterface):
         # (1) we don't check that presentation submission matches definition (yet)
         # (2) we don't check that vp tokens are aligned with information declared in the presentation submission
         # (3) we use all disclosed claims in vp tokens to build the user identity
-        attributes_by_issuer: dict[str, dict[str, Any]] = {}
+        extracted_attributes: dict[str, dict[str, Any]] = {}
         credential_issuers: list[str] = []
         encoded_vps: list[str] = (
             [authz_payload.vp_token]
@@ -166,73 +166,66 @@ class ResponseHandler(ResponseHandlerInterface):
             else authz_payload.vp_token
         )
 
-        for vp_token in encoded_vps:
-            # verify vp token and extract user information
-            try:
-                token_parser, token_verifier = self._vp_verifier_factory(
-                    authz_payload.presentation_submission, vp_token, request_session
-                )
-            except NotKBJWT as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: not a key-bound jwt",
-                    e400
-                )
+        presentation_submission = authz_payload.presentation_submission
 
-            try:
-                token_issuer = token_parser.get_issuer_name()
-                whitelisted_keys = self.trust_evaluator.get_public_keys(token_issuer)
-                token_verifier.verify_signature(whitelisted_keys)
-                token_verifier.verify_challenge()
-            except MissingIssuer as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: missing issuer information",
-                    e400
-                )
-            except InvalidJwkMetadataException as e500:
-                return self._handle_500(
-                    context, 
-                    "trust error: cannot fetch public keys",
-                    e500
-                )
-            except JWSVerificationError as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: invalid signature",
-                    e400
-                )
-            except UnsupportedSdAlg as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: unsupported signature algorithm",
-                    e400
-                )
-            except InvalidKeyBinding as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: nonce or aud mismatch",
-                    e400
-                )
-            except ValueError as e400:
-                return self._handle_400(
-                    context, 
-                    "invalid vp token: missing or invalid iat claim",
-                    e400
-                )
-            except Exception as e400:
-                return self._handle_400(
-                    context, 
-                    "trust error: cannot verify vp token",
-                    e400
-                )
-
-            claims = token_parser.get_credentials()
-            iss = token_parser.get_issuer_name()
-            attributes_by_issuer[iss] = claims
-            self._log_debug(context, f"disclosed claims {claims} from issuer {iss}")
-
-        all_attributes = self._extract_all_user_attributes(attributes_by_issuer)
+        try:
+            challenge = self._get_verifier_challenge(request_session)
+            self.vp_token_parser.validate(
+                presentation_submission,
+                encoded_vps,
+                challenge["aud"],
+                challenge["nonce"],
+            )
+        except VPTokenDescriptorMapMismatch as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: the number of token and descriptors does not match",
+                e400
+            )
+        except SubmissionValidationError as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: the submission is invalid",
+                e400
+            )
+        except MissingHandler as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: vp_format not supported",
+                e400
+            )
+        except ValidationError as e400:
+            return self._handle_400(
+                context,
+                "invalid presentation submission: validation error",
+                e400
+            )
+        except Exception as e500:
+            return self._handle_500(
+                context, 
+                "invalid presentation submission: unknown error",
+                e500
+            )
+        
+        try:
+            extracted_attributes = self.vp_token_parser.parse(
+                presentation_submission, 
+                encoded_vps
+            )
+        except ParseError as e400:
+            return self._handle_400(
+                context, 
+                "invalid presentation submission: parsing error",
+                e400
+            )
+        except Exception as e500:
+            return self._handle_500(
+                context, 
+                "invalid presentation submission: unknown error",
+                e500
+            )
+        
+        all_attributes = self._extract_all_user_attributes(extracted_attributes)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
         internal_resp = self._translate_response(
             all_attributes, iss_list_serialized, context
@@ -357,17 +350,6 @@ class ResponseHandler(ResponseHandlerInterface):
                     f"invalid or unrecognized response mode: {response_mode}",
                     Exception("invalid program state"),
                 )
-
-    def _vp_verifier_factory(
-        self, presentation_submission: dict, token: str, session_data: dict
-    ) -> tuple[VpTokenParser, VpTokenVerifier]:
-        # TODO: la funzione dovrebbe consumare la presentation submission per sapere quale token
-        # ritornare - per ora viene ritornata l'unica implementazione possibile
-        challenge = self._get_verifier_challenge(session_data)
-        token_processor = VpVcSdJwtParserVerifier(
-            token, challenge["aud"], challenge["nonce"]
-        )
-        return (token_processor, deepcopy(token_processor))
 
     def _get_verifier_challenge(self, session_data: dict) -> VerifierChallenge:
         # TODO: check aud according to the LSP Potential singularities ...
