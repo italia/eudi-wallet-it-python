@@ -206,10 +206,8 @@ def get_get_subject_name(der: bytes) -> Optional[str]:
         if uri:
             return uri[0]
 
-    # alternatively get the common name
-    subject = cert.subject.rfc4514_string()
-    match = re.search(r"CN=([^,]+)", subject)
-    return match.group(1).replace("CN=", "").replace("\\", "") if match else None
+    # alternatively erturn the rfc4514 string
+    return cert.subject.rfc4514_string()
 
 def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
