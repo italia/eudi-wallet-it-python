@@ -166,14 +166,14 @@ class TestOpenID4VPBackend:
         )
 
         db_engine_inst.add_trust_anchor(
-            entity_id="https://ca.example.com",
+            entity_id="ca.example.com",
             entity_configuration=issuer_pem,
             exp=EXP,
             trust_type=TrustType.X509,
         )
 
         db_engine_inst.add_trust_anchor(
-            entity_id="mysite.com",
+            entity_id="https://credential-issuer.example.org",
             entity_configuration="-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n",
             exp=EXP,
             trust_type=TrustType.X509,
@@ -653,8 +653,6 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "invalid authorization response: session already finalized or corrupted"
 
     def test_response_endpoint_x5c_chain(self, context):
-
-
 
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
