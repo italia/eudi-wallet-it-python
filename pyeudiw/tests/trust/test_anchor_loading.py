@@ -8,7 +8,6 @@ from ssl import DER_cert_to_PEM_cert
 
 def test_load_anchors():
     db = DBEngine(CONFIG["storage"])
-
     pem = DER_cert_to_PEM_cert(gen_chain()[-1])
 
     anchors = [

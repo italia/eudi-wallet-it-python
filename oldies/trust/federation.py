@@ -20,7 +20,6 @@ def get_backend_trust_chain(self) -> list[str]:
     """
 
     try:
-        breakpoint()
         trust_evaluation_helper = self.build_trust_chain_for_entity_id(
             storage=self.db_engine,
             entity_id=self.client_id,
