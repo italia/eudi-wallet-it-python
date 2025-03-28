@@ -308,6 +308,34 @@ config:
 
         private_keys: *metadata_jwks
         
+  trust_anchors:
+    - entity: ca.example.com
+      X509:
+        - pem: |
+            -----BEGIN CERTIFICATE-----
+            MIIDczCCAlugAwIBAgIUeroJ3EGn7QIEbcydLoOJ8aAS7FwwDQYJKoZIhvcNAQEL
+            BQAwWjE2MDQGA1UEAwwtQ049aHR0cHM6Ly9jYS5leGFtcGxlLmNvbSwgTz1FeGFt
+            cGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYDVQQGEwJJVDAe
+            Fw0yNTAzMjYxMTQwNDBaFw0yNjAzMjcxMTQwNDBaMFoxNjA0BgNVBAMMLUNOPWh0
+            dHBzOi8vY2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1JVDETMBEGA1UE
+            CgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+            DwAwggEKAoIBAQC6tNNMkVbyZonwHW/Ho7P6n7nF+OwkGG9Vc/tL1Xhquc8uug4U
+            S8HB857hVR0ojEsLlJ1DPcsyt3CXGcK6P7cmcw4zQi5v5dkjafD1VEg9egiJFfAD
+            AVAFGlljqHWARo3xjceUAY0Vk88cPae3uGV8wBDKj41HNOP166S5ozxxRIYstkTh
+            cqNdSGHkImbK3fOHo5Ai54QqDFfGcanCUJLxy8Un5e4TMIGDiESoh2T+m4KWK3SI
+            WHM8de2kiBi6PfHpq1rrjc3q/DaW0WToaCfkI5/EkHrbTeCux6nso2TE0/UG2kNu
+            VqAVU1BqcJ8ZBm8P04jFiTRnlsNtUB8wBPSRAgMBAAGjMTAvMBIGA1UdEwEB/wQI
+            MAYBAf8CAQEwGQYDVR0RBBIwEIIOY2EuZXhhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+            BQADggEBAHC69qK8Lms8gd8vBjlD1okImZ12R9eIbfJn4bsjbdkXYoQp6kyW7PJE
+            WbyCgUfiYXKMQfmXCN1OVzIjao8tWe+r2VpYVF6jw0l+nZCewHzAWFSbnLNuRSZZ
+            kMTzrWD6O6KelV/V2g8FAx7yhDieHleKeFkmownqFPRSTF5Uj5p9glny9PApQUNI
+            2Pvxy2Xewze5o3EKOdypv/z8A4gKCfztz8Jn51awjfKsCq6EBuHp3GkkgurJgU94
+            Gev1U1YIGjcsFh0m5KUoLO5VRqjzNpdEWPcgIU4+iqpHfS7PEDb2QNEZKwnE7YFx
+            sOz7pgjS1lS+KeLbt9gzcVRtRA3FOlA=
+            -----END CERTIFICATE-----
+    - entity: https://trust-anchor.example.org
+      federation:
+        - entity_configuration: eyJhbGciOiJFUzI1NiIsImtpZCI6IlRrUXdVRmR2VGtwdlNubEhOVk56Wm5odk9IQm1OM1Y0YzBKU2RGaFhVbmcxYzJ0clZrMUlaVmN4UlEiLCJ0eXAiOiJlbnRpdHktc3RhdGVtZW50K2p3dCJ9.eyJleHAiOjE3NDM0NjEwOTEsImlhdCI6MTc0MzE2MTA5MSwiaXNzIjoiaHR0cHM6Ly90cnVzdC1hbmNob3IuZXhhbXBsZS5vcmciLCJzdWIiOiJodHRwczovL3RydXN0LWFuY2hvci5leGFtcGxlLm9yZyIsImp3a3MiOnsia2V5cyI6W3sia3R5IjoiRUMiLCJraWQiOiJUa1F3VUZkdlRrcHZTbmxITlZOelpuaHZPSEJtTjNWNGMwSlNkRmhYVW5nMWMydHJWazFJWlZjeFJRIiwiYWxnIjoiRVMyNTYiLCJjcnYiOiJQLTI1NiIsIngiOiJ0YnFwem9Fem8zUk44UDdWQVRlRWNjZ0J1QjNtZ0RrVHhSTFpSY3RXckdRIiwieSI6Im9sb3VUZEhSOGtyQkhlRG5JRnA2WXFBYjF1MjRDOVJHT1hQTGpab2JhOTAifV19LCJtZXRhZGF0YSI6eyJmZWRlcmF0aW9uX2VudGl0eSI6eyJmZWRlcmF0aW9uX2ZldGNoX2VuZHBvaW50IjoiaHR0cHM6Ly90cnVzdC1hbmNob3IuZXhhbXBsZS5vcmcvZmV0Y2giLCJmZWRlcmF0aW9uX3Jlc29sdmVfZW5kcG9pbnQiOiJodHRwczovL3RydXN0LWFuY2hvci5leGFtcGxlLm9yZy9yZXNvbHZlIiwiZmVkZXJhdGlvbl9saXN0X2VuZHBvaW50IjoiaHR0cHM6Ly90cnVzdC1hbmNob3IuZXhhbXBsZS5vcmcvbGlzdCIsIm9yZ2FuaXphdGlvbl9uYW1lIjoiVEEgZXhhbXBsZSIsImhvbWVwYWdlX3VyaSI6Imh0dHBzOi8vdHJ1c3QtYW5jaG9yLmV4YW1wbGUub3JnL2hvbWUiLCJwb2xpY3lfdXJpIjoiaHR0cHM6Ly90cnVzdC1hbmNob3IuZXhhbXBsZS5vcmcvcG9saWN5IiwibG9nb191cmkiOiJodHRwczovL3RydXN0LWFuY2hvci5leGFtcGxlLm9yZy9zdGF0aWMvbG9nby5zdmciLCJjb250YWN0cyI6WyJ0ZWNoQHRydXN0LWFuY2hvci5leGFtcGxlLm9yZyJdfX0sImNvbnN0cmFpbnRzIjp7Im1heF9wYXRoX2xlbmd0aCI6MX19.lNO_3HKR7mhArkB3Vi_U_HfJzG9Zv9-12Jd_0PBvs_IAz1pC2HfEuHLZ4zJ5PqveaOdUoZsqw1-rqMXgHbScyg
 
   # Mongodb database configuration
   storage:
