@@ -172,15 +172,12 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
             self, 
             trust_chain: list[str], 
             trust_source: TrustSourceData,
-            db_engine: DBEngine
         ) -> dict[bool, TrustSourceData]:
         """
         Validate the trust chain of the trust source.
 
         :param trust_source: The trust source
         :type trust_source: TrustSourceData
-        :param db_engine: The database engine
-        :type db_engine: DBEngine
 
         :returns: If the trust chain is valid
         :rtype: bool

@@ -28,8 +28,7 @@ from pyeudiw.tests.federation.base import (
     NOW,
     leaf_cred_jwk,
     leaf_wallet_jwk,
-    ta_ec,
-    ta_ec_signed,
+
     ta_jwk,
     trust_chain_wallet,
     trust_chain_issuer
@@ -42,6 +41,8 @@ from pyeudiw.tests.settings import (
     INTERNAL_ATTRIBUTES,
     PRIVATE_JWK,
     WALLET_INSTANCE_ATTESTATION,
+    DEFAULT_X509_CHAIN,
+    DEFAULT_X509_LEAF_JWK
 )
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
@@ -55,8 +56,6 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.x509.verify import der_list_to_pem_list
 from pyeudiw.jwk.parse import parse_pem
-from cryptojwt.jwk.jwk import key_from_jwk_dict
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 PKEY = {
     'KTY': 'EC2',
@@ -109,54 +108,14 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
 def _mock_auth_callback_function(context: Context, internal_data: InternalData):
     return JsonResponse({"response": "Authentication successful"}, status="200")
 
-def base64url_to_int(val):
-    import base64
-    import binascii
-    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
         db_engine_inst = DBEngine(CONFIG["storage"])
         
-        jwk = {
-            "kty": "RSA",
-            "use": "sig",
-            "alg": "RS256",
-            "kid": "m00NPAelNBnG_wK2R5EpI_k-GWCHEUySamQYubgFjCg",
-            "d": "nMsnqz0lPHNGBgUqyuJ5nXQ0jh-mzs6d2xOY_QhpkRW1kEbexRJDdVV3fqMxj_s0MiF8mn-s8ea3e8cbNDgIy000Wvx05y1rMkB6KaZX2ZL5jwU7i_xP6NlLh8itikqJz7kKQSILgibQFFQDcScpEk8gUKa6fmSJQVwTII6GoJCdiJflv-FI2OQ_TCBQEEVVLpeUiVSP0n3OMUKGBlbaHOQkArUpla_ke_mtdfIrl7uB74Rxrin68KtFHkGDGdJPs-PPO1yJ2paFZI9QR_ettZ22v45c-qIgmCjsEnITDMaO9724PU_umlWsWe36Y9RAAzofKsjKqvA1OIzU03ob9Q",
-            "n": "sP6jt1XwJE0JDKxy4B7r3Jdb8W6bSRoVunyjWMgl5IafqFwHsJlYgCAWPeTrAL-iyjdnWC1csHuTqWjdndDL-oqEarrqoDAycVkfFTUTD81_wVhWUzAwxhQHiT7PTUIsV7m9VGlfC_kdCpQl5CcK1yx2nQ1KbqWOV1_5WnMgnN_EpNmztkZDnJmKedVduOb2dKWwnLS3fcGvUxXc87DjAzC2vfgQSoQfXAZbwItyS6OinFiUnBxRvt9ZY2IapjI1-wwDKKeRrqPC-fV2oWTrMqoYAvIDnf9AjKHAbIw7q301-7-eaUMF1hVtAz1XeXvMp0wK8_uSo9Vgv1vHhBpOwQ",
-            "e": "AQAB",
-            "p": "0ViKTSyZdLtvbLBpTvVAXTdrhTwGXuh16PadQMAVmkoxOPiExRB5uLiy2ADaVKSglia5aQBUp9v0ygEEOmkiUtn5A26D9ui0dkPR0hx4fwqCOOmA2ZyDUNFJ_qrGSwT1SxGQDHeRteymJG7uN9QekS3XiBDgFJxwl-vVpoSTBJM",
-            "q": "2HBr9qhVd3zZUQuNb7ro06ErLl4fhL-DiKsNqXB772tDNTJYeog1nOWgS22tcv5WHrSoYF1x5Q74YVoA6yVj6DwFx2Hc2pYZazzhYMRC3NAWkTEdroy9IjtpzKIpQIqw-sq8CbWVBXzho8uQBCdg8h73z11_HPyXT9BqQCmxJ9s",
-            "dp": "WsQ32rQuqNUnv4lRb4GYcZI41SCsZnQFw4dBsTRXaXknlFr0PfkhvXyfVlYwU6i5U8DgfO0-xzTwErGUIrs4vZFyjRFauDA3JlvLWn0rpXFp-sELM87PhLfpjDiBFz_EFtM7kJw7GhTMCFnsgVpAEpQ8sesXLPiTPNts2_D5SW8",
-            "dq": "jWlucLrtFGOjDRuyLjT9l__uWZ4vk6kZRHsWMwWGRBhd0ezx-CT0em1hPMcNE1vvYqKAfG2xU4pjaB_JB9nnG73TvMBI7xwwwWsGihXQ5bqjc_uWPAxCKpKM_qFYuI2lMkaxctqL4gkE1-LRVpVv9uGa4YZh3ct_BSvTr9ZNpA8",
-            "qi": "kn9Etj4a2erCUmoZUQalPjHxCRYm5Q3wAkFIRGSQADA51mkwQHyTYqXbHcmXn2ZgXBVI6XDWJB51Me-NCPfITTlusqxvATF7Q-QJtdK_FbgNtcVRNc1FMq_M7VBHA1i9wJR7T4t57aywfXPmlsA5TToTDRe-ybdw0C3ys4KQATs"
-        }
-
-        # Extract components from JWK
-        _n = base64url_to_int(jwk['n'])
-        _e = base64url_to_int(jwk['e'])
-        _d = base64url_to_int(jwk['d'])
-        _p = base64url_to_int(jwk['p'])
-        _q = base64url_to_int(jwk['q'])
-        _dp = base64url_to_int(jwk['dp'])
-        _dq = base64url_to_int(jwk['dq'])
-        _qi = base64url_to_int(jwk['qi'])
-
-        # Create RSA private key
-        private_key = rsa.RSAPrivateNumbers(
-            p=_p,
-            q=_q,
-            d=_d,
-            dmp1=_dp,
-            dmq1=_dq,
-            iqmp=_qi,
-            public_numbers=rsa.RSAPublicNumbers(e=_e, n=_n)
-        ).private_key()
-
-        self.chain = der_list_to_pem_list(gen_chain(leaf_private_key=private_key))
+        self.chain = der_list_to_pem_list(DEFAULT_X509_CHAIN)
         issuer_pem = self.chain[-1]
-        self.x509_leaf_private_key = jwk
+        self.x509_leaf_private_key = DEFAULT_X509_LEAF_JWK
 
         db_engine_inst.add_trust_anchor(
             entity_id="ca.example.com",
