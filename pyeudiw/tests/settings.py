@@ -6,6 +6,8 @@ from cryptojwt.jwk.ec import new_ec_key
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.x509.test_x509 import gen_chain
 
+from pyeudiw.tests.federation.base import ta_jwk
+
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
 AUTH_ENDPOINT = "https://example.com/auth"
@@ -216,7 +218,11 @@ CONFIG = {
                 "metadata": _METADATA,
                 "metadata_type": "openid_credential_verifier",
                 "authority_hints": ["https://trust-anchor.example.org"],
-                "trust_anchors": ["https://trust-anchor.example.org"],
+                "trust_anchors": {
+                    "https://trust-anchor.example.org": [
+                        ta_jwk.serialize(private=False),
+                    ]
+                },
                 "default_sig_alg": "RS256",
                 "federation_jwks": [
                     {

@@ -1,5 +1,6 @@
 import os
 import uuid
+import copy
 import base64
 import datetime
 import json
@@ -108,12 +109,15 @@ def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_ke
 def _mock_auth_callback_function(context: Context, internal_data: InternalData):
     return JsonResponse({"response": "Authentication successful"}, status="200")
 
+def base64url_to_int(val):
+    import base64
+    import binascii
+    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
-
         db_engine_inst = DBEngine(CONFIG["storage"])
-
+        
         jwk = {
             "kty": "RSA",
             "use": "sig",
@@ -129,41 +133,30 @@ class TestOpenID4VPBackend:
             "qi": "kn9Etj4a2erCUmoZUQalPjHxCRYm5Q3wAkFIRGSQADA51mkwQHyTYqXbHcmXn2ZgXBVI6XDWJB51Me-NCPfITTlusqxvATF7Q-QJtdK_FbgNtcVRNc1FMq_M7VBHA1i9wJR7T4t57aywfXPmlsA5TToTDRe-ybdw0C3ys4KQATs"
         }
 
-        def base64url_to_int(val):
-            import base64
-            import binascii
-            return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
-
         # Extract components from JWK
-        n = base64url_to_int(jwk['n'])
-        e = base64url_to_int(jwk['e'])
-        d = base64url_to_int(jwk['d'])
-        p = base64url_to_int(jwk['p'])
-        q = base64url_to_int(jwk['q'])
-        dp = base64url_to_int(jwk['dp'])
-        dq = base64url_to_int(jwk['dq'])
-        qi = base64url_to_int(jwk['qi'])
+        _n = base64url_to_int(jwk['n'])
+        _e = base64url_to_int(jwk['e'])
+        _d = base64url_to_int(jwk['d'])
+        _p = base64url_to_int(jwk['p'])
+        _q = base64url_to_int(jwk['q'])
+        _dp = base64url_to_int(jwk['dp'])
+        _dq = base64url_to_int(jwk['dq'])
+        _qi = base64url_to_int(jwk['qi'])
 
         # Create RSA private key
         private_key = rsa.RSAPrivateNumbers(
-            p=p,
-            q=q,
-            d=d,
-            dmp1=dp,
-            dmq1=dq,
-            iqmp=qi,
-            public_numbers=rsa.RSAPublicNumbers(e=e, n=n)
+            p=_p,
+            q=_q,
+            d=_d,
+            dmp1=_dp,
+            dmq1=_dq,
+            iqmp=_qi,
+            public_numbers=rsa.RSAPublicNumbers(e=_e, n=_n)
         ).private_key()
 
         self.chain = der_list_to_pem_list(gen_chain(leaf_private_key=private_key))
         issuer_pem = self.chain[-1]
         self.x509_leaf_private_key = jwk
-
-        db_engine_inst.add_trust_anchor(
-            entity_id=ta_ec["iss"],
-            entity_configuration=ta_ec_signed,
-            exp=EXP,
-        )
 
         db_engine_inst.add_trust_anchor(
             entity_id="ca.example.com",
