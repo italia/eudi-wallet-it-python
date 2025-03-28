@@ -13,6 +13,7 @@ from pyeudiw.openid4vp.schemas.response import (
     AuthorizeResponsePayload,
     ResponseMode,
 )
+from pyeudiw.jwt.utils import decode_jwt_header
 
 
 _S = TypeVar('_S', str, list[str])
@@ -117,8 +118,15 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
         https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_postjw
     """
 
-    def __init__(self, jwe_decryptor: JWEHelper):
+    def __init__(
+            self, 
+            jwe_decryptor: JWEHelper, 
+            enc_alg_supported: list[str] = [], 
+            enc_enc_supported: list[str] = []
+        ) -> None:
         self.jwe_decryptor = jwe_decryptor
+        self.enc_alg_supported = enc_alg_supported
+        self.enc_enc_supported = enc_enc_supported
 
     def parse_and_validate(
         self, context: satosa.context.Context
@@ -131,6 +139,19 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
             raise AuthRespParsingException(
                 "invalid data in direct_post.jwt request body", e
             )
+        
+        header = decode_jwt_header(resp_data.response)
+
+        if not header.get("alg") in self.enc_alg_supported:
+            raise AuthRespValidationException(
+                "invalid data in direct_post.jwt: alg not supported"
+            )
+        
+        if not header.get("enc") in self.enc_enc_supported:
+            raise AuthRespValidationException(
+                "invalid data in direct_post.jwt: enc not supported"
+            )
+
         try:
             payload = self.jwe_decryptor.decrypt(resp_data.response)
         except JWEDecryptionError as e:

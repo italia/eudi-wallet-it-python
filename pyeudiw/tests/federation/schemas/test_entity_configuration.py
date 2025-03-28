@@ -52,7 +52,7 @@ ENTITY_CONFIGURATION = {
                     "https://www.spid.gov.it/SpidL3",
                 ],
                 "vp_formats": {
-                    "vc+sd-jwt": {
+                    "dc+sd-jwt": {
                         "sd-jwt_alg_values": ["ES256", "ES384"],
                         "kb-jwt_alg_values": ["ES256", "ES384"],
                     }

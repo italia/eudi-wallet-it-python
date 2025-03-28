@@ -188,8 +188,7 @@ class CombinedTrustEvaluator(BaseLogger):
                     if handler.get_handled_trust_material_name() == key:
                         status, trust_source = handler.validate_trust_material(
                             trust_material, 
-                            trust_source, 
-                            self.db_engine
+                            trust_source
                         )
 
                         if status:

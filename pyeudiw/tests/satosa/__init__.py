@@ -38,7 +38,7 @@ issued_jwt = SDJWTIssuer(
     holder_jwk,
     add_decoy_claims=sd_specification.get("add_decoy_claims", True),
     serialization_format=sd_specification.get("serialization_format", "compact"),
-    extra_header_parameters={"typ": "vc+sd-jwt"},
+    extra_header_parameters={"typ": "dc+sd-jwt"},
 )
 
 
@@ -82,7 +82,7 @@ def _generate_response(state: str, vp_token: str) -> dict:
                 {
                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
                     "path": "$.vp_token.verified_claims.claims._sd[0]",
-                    "format": "vc+sd-jwt",
+                    "format": "dc+sd-jwt",
                 }
             ],
         },

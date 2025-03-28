@@ -57,7 +57,7 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"vc+sd-jwt": {}},
+                    "format": {"dc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
@@ -96,7 +96,7 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"vc+sd-jwt": {}},
+                    "format": {"dc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
@@ -137,7 +137,7 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"vc+sd-jwt": {}},
+                    "format": {"dc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {
@@ -196,7 +196,7 @@ def test_build_authorization_request_claims():
                 {
                     "id": "specific-id",
                     "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"vc+sd-jwt": {}},
+                    "format": {"dc+sd-jwt": {}},
                     "constraints": {
                         "fields": [
                             {

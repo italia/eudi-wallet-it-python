@@ -4,7 +4,7 @@
         {
             "id": "IdentityCredential",
             "format": {
-                "vc+sd-jwt": {}
+                "dc+sd-jwt": {}
             },
             "constraints": {
                 "limit_disclosure": "required",

@@ -1,12 +1,12 @@
 import datetime
-from pyeudiw.trust.handler.x509 import X509Hanlder
+from pyeudiw.trust.handler.x509 import X509Handler
 from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 
 def test_wrong_configuration_must_fail():
     try:
-        X509Hanlder(
+        X509Handler(
             "https://test.com",
             None,
             []
@@ -16,7 +16,7 @@ def test_wrong_configuration_must_fail():
         assert str(e) == "No x509 certificate chains provided in the configuration"
 
     try:
-        X509Hanlder(
+        X509Handler(
             "https://test.com",
             {
                 "example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")
@@ -29,7 +29,7 @@ def test_wrong_configuration_must_fail():
 
 
 def test_extract_trust_material_from_x509_handler():
-    trust_handler = X509Hanlder(
+    trust_handler = X509Handler(
         "https://example.com",
         {
             "ca.example.com": gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com")
@@ -66,7 +66,7 @@ def test_extract_trust_material_from_x509_handler():
     assert "n" in serialized_object["x509"]["jwks"][0]
 
 def test_return_nothing_if_chain_is_invalid():
-    trust_handler = X509Hanlder(
+    trust_handler = X509Handler(
         "https://example.com",
         {
             "ca.example.com": gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))

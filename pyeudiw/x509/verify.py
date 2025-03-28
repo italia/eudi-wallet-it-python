@@ -10,6 +10,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
+import re
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -181,8 +182,34 @@ def verify_x509_anchor(pem_str: str) -> bool:
 
     return _verify_x509_certificate_chain(pems)
 
+def get_get_subject_name(der: bytes) -> Optional[str]:
+    """
+    Get the subject name from the x509 certificate.
 
-def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> str:
+    :param der: The x509 certificate
+    :type der: bytes
+
+    :returns: The subject name
+    :rtype: str
+    """
+    cert = load_der_x509_certificate(der)
+
+    #get san dns name
+    san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+    if san:
+        dns = san.value.get_values_for_type(x509.DNSName)
+        if dns:
+            return dns[0]
+        
+        uri = san.value.get_values_for_type(x509.UniformResourceIdentifier)
+        if uri:
+            return uri[0]
+
+    # alternatively erturn the rfc4514 string
+    return cert.subject.rfc4514_string()
+
+def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     Get the issuer from the x509 certificate chain.
 
@@ -193,11 +220,10 @@ def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> str:
     :rtype: str
     """
     der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
+    return get_get_subject_name(der)
+    
 
-    cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
-
-def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> str:
+def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     Get the issuer from the x509 certificate chain.
 
@@ -208,9 +234,7 @@ def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> str:
     :rtype: str
     """
     der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
-
-    cert = load_der_x509_certificate(der)
-    return cert.subject.rfc4514_string().split("=")[1].split(",")[0]
+    return get_get_subject_name(der)
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """

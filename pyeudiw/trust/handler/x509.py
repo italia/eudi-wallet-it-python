@@ -16,7 +16,7 @@ from pyeudiw.x509.verify import (
 
 logger = logging.getLogger(__name__)
 
-class X509Hanlder(TrustHandlerInterface):
+class X509Handler(TrustHandlerInterface):
     """
     X509Handler is a trust handler implementation that extracts trust material from x509 certificates.
     """
@@ -26,10 +26,12 @@ class X509Hanlder(TrustHandlerInterface):
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
+        certificate_authorities: list[str] = [],
         **kwargs
     ):  
         self.client_id = client_id
         self.client_id_scheme = client_id_scheme
+        self.certificate_authorities = certificate_authorities
 
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
@@ -92,7 +94,6 @@ class X509Hanlder(TrustHandlerInterface):
         self, 
         x5c: list[str], 
         trust_source: TrustSourceData,
-        db_engine: DBEngine
     ) -> dict[bool, TrustSourceData]:
         chain = pem_list_to_der_list(x5c)
 
@@ -102,19 +103,15 @@ class X509Hanlder(TrustHandlerInterface):
 
         issuer = get_trust_anchor_from_x5c(chain)
 
-        trust_anchor = db_engine.get_trust_anchor(issuer)
-
-        if not trust_anchor:
-            logger.error(f"Invalid x509 certificate chain. Trust anchor not found")
+        if not issuer:
+            logger.error(f"Invalid x509 certificate chain. Issuer not found")
             return False, trust_source
         
-        anchor_x509 = trust_anchor.get("x509")
-
-        if not anchor_x509:
-            logger.error(f"Invalid x509 certificate chain. Trust anchor x509 not found")
+        if not issuer in self.certificate_authorities:
+            logger.error(f"Invalid x509 certificate chain. Issuer not found in the list of trusted CAs")
             return False, trust_source
         
-        issuer_pem = anchor_x509["pem"]
+        issuer_pem = self.certificate_authorities[issuer]
 
         try:
             issuer_jwk = parse_pem(issuer_pem)

@@ -341,7 +341,11 @@ class ResponseHandler(ResponseHandlerInterface):
                 return parser.parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
                 jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
-                parser = DirectPostJwtJweParser(jwe_decrypter)
+                parser = DirectPostJwtJweParser(
+                    jwe_decrypter, 
+                    self.config["jwt"].get("enc_alg_supported", []), 
+                    self.config["jwt"].get("enc_enc_supported", [])
+                )
                 return parser.parse_and_validate(context)
             case ResponseMode.error:
                 return ErrorResponsePayload(**context.request)

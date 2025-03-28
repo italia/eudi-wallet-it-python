@@ -55,7 +55,7 @@ class PresentationDefinitionClaimFormatDesignations(
                 PresentationDefinitionClaimFormatDesignations2,
             ],
             Dict[
-                Annotated[str, Field(pattern=r"^vc\+sd-jwt$")],
+                Annotated[str, Field(pattern=r"^dc\+sd-jwt$")],
                 PresentationDefinitionClaimFormatDesignations3,
             ],
         ]
@@ -71,7 +71,7 @@ class PresentationDefinitionClaimFormatDesignations(
             PresentationDefinitionClaimFormatDesignations2,
         ],
         Dict[
-            Annotated[str, Field(pattern=r"^vc\+sd-jwt$")],
+            Annotated[str, Field(pattern=r"^dc\+sd-jwt$")],
             PresentationDefinitionClaimFormatDesignations2,
         ],
     ] = Field(..., title="Presentation Definition Claim Format Designations")

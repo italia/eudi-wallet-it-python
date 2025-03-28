@@ -195,7 +195,7 @@ def create_authorize_response(vp_token: str, state: str, response_uri: str) -> s
                 {
                     "id": "pid-sd-jwt:unique_id+given_name+family_name",
                     "path": "$.vp_token.verified_claims.claims._sd[0]",
-                    "format": "vc+sd-jwt"
+                    "format": "dc+sd-jwt"
                 }
             ],
             "aud": response_uri
