@@ -82,7 +82,26 @@ CONFIG = {
         "expiration_time": 120,
         "logo_path": "pyeudiw/tests/satosa/static/logo.png",
     },
-    "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
+    "jwt": {
+        "default_sig_alg": "ES256", 
+        "default_exp": 6,
+        "enc_alg_supported": [
+            "RSA-OAEP",
+            "RSA-OAEP-256",
+            "ECDH-ES",
+            "ECDH-ES+A128KW",
+            "ECDH-ES+A192KW",
+            "ECDH-ES+A256KW"
+        ],
+        "enc_enc_supported": [
+            "A128CBC-HS256",
+            "A192CBC-HS384",
+            "A256CBC-HS512",
+            "A128GCM",
+            "A192GCM",
+            "A256GCM",
+        ],
+    },
     "authorization": {
         "url_scheme": "haip",  # haip://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],

@@ -11,6 +11,7 @@ from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
 )
+from pyeudiw.tests.settings import CONFIG
 
 
 @pytest.fixture
@@ -115,7 +116,7 @@ def test_direct_post_response_bad_parse_case():
 
 def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
 
-    parser = DirectPostJwtJweParser(jwe_helper)
+    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = satosa.context.Context()
     ctx.request_method = "POST"
@@ -144,7 +145,7 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
 
 def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper):
     # case 0: bad method
-    parser = DirectPostJwtJweParser(jwe_helper)
+    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = satosa.context.Context()
     ctx.request_method = "GET"
@@ -192,7 +193,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper):
 
 
 def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper):
-    parser = DirectPostJwtJweParser(jwe_helper)
+    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     wrong_public_key = {
         "kid": "ybmSufrnl3Cu6OrNcsOF_g95g5zShf2aKpg59PMcMm8",
