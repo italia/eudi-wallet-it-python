@@ -17,11 +17,11 @@ from pyeudiw.x509.verify import (
 
 def gen_chain(
         date: datetime = datetime.now(), 
-        ca_cn: str = "CN=https://ca.example.com, O=Example CA, C=IT", 
+        ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "CN=https://leaf.example.com/OpenID4VP, O=Example Leaf, C=IT", 
+        leaf_cn: str = "CN=eaf.example.com, O=Example Leaf, C=IT", 
         leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "https:/leaf.example.org/OpenID4VP",
+        leaf_uri: str = "leaf.example.org",
         leaf_private_key: rsa.RSAPrivateKey = None
     ) -> list[bytes]:
     # Generate a private key for the CA

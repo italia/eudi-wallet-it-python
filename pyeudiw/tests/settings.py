@@ -240,7 +240,7 @@ CONFIG = {
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
                 "relying_party_certificate_chains_by_ca":{
-                    "ca.example.com": gen_chain(leaf_cn=f"{BASE_URL}/OpenID4VP"),
+                    "ca.example.com": gen_chain(leaf_cn="example.com"),
                 },
                 "private_keys": [
                     {
