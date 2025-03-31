@@ -18,6 +18,10 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.exceptions import MissingProtocolSpecificJwks, UnknownTrustAnchor
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
+from pyeudiw.federation.statements import (
+    get_entity_configurations,
+    get_entity_statements,
+)
 
 from .commons import DEFAULT_HTTPC_PARAMS
 
@@ -31,7 +35,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self,
         metadata: List[dict],
         authority_hints: List[str],
-        trust_anchors: List[str],
+        trust_anchors: dict[str, dict[str, str]],
         default_sig_alg: str,
         federation_jwks: List[dict[str, Union[str, List[str]]]],
         trust_marks: List[dict],
@@ -53,7 +57,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.metadata_type = metadata_type
         self.metadata: dict = metadata
         self.authority_hints: List[str] = authority_hints
-        self.trust_anchors: List[str] = trust_anchors
+        self.trust_anchors: dict[str, dict[str, str]] = trust_anchors
         self.default_sig_alg: str = default_sig_alg
         self.federation_jwks: List[dict[str, Union[str, List[str]]]] = federation_jwks
         self.trust_marks: List[dict] = trust_marks
@@ -168,15 +172,12 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
             self, 
             trust_chain: list[str], 
             trust_source: TrustSourceData,
-            db_engine: DBEngine
         ) -> dict[bool, TrustSourceData]:
         """
         Validate the trust chain of the trust source.
 
         :param trust_source: The trust source
         :type trust_source: TrustSourceData
-        :param db_engine: The database engine
-        :type db_engine: DBEngine
 
         :returns: If the trust chain is valid
         :rtype: bool
@@ -189,23 +190,30 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 "Unknown Trust Anchor: can't find 'iss' in the "
                 f"first entity statement: {_first_statement} "
             )
-
-        try:
-            trust_anchor = db_engine.get_trust_anchor(trust_anchor_eid)
-        except EntryNotFound:
+        
+        if not trust_anchor_eid in self.trust_anchors:
             raise UnknownTrustAnchor(
                 f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
                 "a recognizable Trust Anchor."
             )
-
-        decoded_ec = decode_jwt_payload(
-            trust_anchor['federation']['entity_configuration']
-        )
-        jwks = decoded_ec.get('jwks', {}).get('keys', [])
+        
+        if len(self.trust_anchors[trust_anchor_eid]) != 0:
+            jwks = self.trust_anchors[trust_anchor_eid]
+        else:
+            try:
+                trust_anchor = get_entity_configurations(trust_anchor_eid, self.httpc_params, False)
+                decoded_ec = decode_jwt_payload(
+                    trust_anchor['federation']['entity_configuration']
+                )
+                jwks = decoded_ec.get('jwks', {}).get('keys', [])
+            except Exception as e:
+                raise UnknownTrustAnchor(
+                    f"Cannot fetch Trust Anchor '{trust_anchor_eid}' entity configuration: {e}"
+                ) from e
 
         if not jwks:
             raise MissingProtocolSpecificJwks(
-                f"Cannot find any jwks in {decoded_ec}"
+                f"Cannot find any jwks in for the Trust Anchor '{trust_anchor_eid}'"
             )
 
         tc = StaticTrustChainValidator(

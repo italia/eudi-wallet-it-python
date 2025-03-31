@@ -97,6 +97,14 @@ it is [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid).
 
 Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
 
+## Executing Tests Using Preexisting MongoDb Instances
+
+Use the env variable PYEUDIW_MONGO_TEST_AUTH_INLINE
+
+````
+PYEUDIW_MONGO_TEST_AUTH_INLINE=satosa:thatpassword@ pytest
+````
+
 ## Contribute
 
 Your contribution is welcome, no question is useless and no answer is obvious, we need you.

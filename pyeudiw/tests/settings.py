@@ -5,11 +5,60 @@ from cryptojwt.jwk.ec import new_ec_key
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.tests.x509.test_x509 import gen_chain
+from ssl import DER_cert_to_PEM_cert
+
+from pyeudiw.tests.federation.base import ta_jwk
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
 AUTH_ENDPOINT = "https://example.com/auth"
 CLIENT_ID = "client_id"
+
+
+def base64url_to_int(val):
+    import base64
+    import binascii
+    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
+
+jwk = {
+    "kty": "RSA",
+    "use": "sig",
+    "alg": "RS256",
+    "kid": "m00NPAelNBnG_wK2R5EpI_k-GWCHEUySamQYubgFjCg",
+    "d": "nMsnqz0lPHNGBgUqyuJ5nXQ0jh-mzs6d2xOY_QhpkRW1kEbexRJDdVV3fqMxj_s0MiF8mn-s8ea3e8cbNDgIy000Wvx05y1rMkB6KaZX2ZL5jwU7i_xP6NlLh8itikqJz7kKQSILgibQFFQDcScpEk8gUKa6fmSJQVwTII6GoJCdiJflv-FI2OQ_TCBQEEVVLpeUiVSP0n3OMUKGBlbaHOQkArUpla_ke_mtdfIrl7uB74Rxrin68KtFHkGDGdJPs-PPO1yJ2paFZI9QR_ettZ22v45c-qIgmCjsEnITDMaO9724PU_umlWsWe36Y9RAAzofKsjKqvA1OIzU03ob9Q",
+    "n": "sP6jt1XwJE0JDKxy4B7r3Jdb8W6bSRoVunyjWMgl5IafqFwHsJlYgCAWPeTrAL-iyjdnWC1csHuTqWjdndDL-oqEarrqoDAycVkfFTUTD81_wVhWUzAwxhQHiT7PTUIsV7m9VGlfC_kdCpQl5CcK1yx2nQ1KbqWOV1_5WnMgnN_EpNmztkZDnJmKedVduOb2dKWwnLS3fcGvUxXc87DjAzC2vfgQSoQfXAZbwItyS6OinFiUnBxRvt9ZY2IapjI1-wwDKKeRrqPC-fV2oWTrMqoYAvIDnf9AjKHAbIw7q301-7-eaUMF1hVtAz1XeXvMp0wK8_uSo9Vgv1vHhBpOwQ",
+    "e": "AQAB",
+    "p": "0ViKTSyZdLtvbLBpTvVAXTdrhTwGXuh16PadQMAVmkoxOPiExRB5uLiy2ADaVKSglia5aQBUp9v0ygEEOmkiUtn5A26D9ui0dkPR0hx4fwqCOOmA2ZyDUNFJ_qrGSwT1SxGQDHeRteymJG7uN9QekS3XiBDgFJxwl-vVpoSTBJM",
+    "q": "2HBr9qhVd3zZUQuNb7ro06ErLl4fhL-DiKsNqXB772tDNTJYeog1nOWgS22tcv5WHrSoYF1x5Q74YVoA6yVj6DwFx2Hc2pYZazzhYMRC3NAWkTEdroy9IjtpzKIpQIqw-sq8CbWVBXzho8uQBCdg8h73z11_HPyXT9BqQCmxJ9s",
+    "dp": "WsQ32rQuqNUnv4lRb4GYcZI41SCsZnQFw4dBsTRXaXknlFr0PfkhvXyfVlYwU6i5U8DgfO0-xzTwErGUIrs4vZFyjRFauDA3JlvLWn0rpXFp-sELM87PhLfpjDiBFz_EFtM7kJw7GhTMCFnsgVpAEpQ8sesXLPiTPNts2_D5SW8",
+    "dq": "jWlucLrtFGOjDRuyLjT9l__uWZ4vk6kZRHsWMwWGRBhd0ezx-CT0em1hPMcNE1vvYqKAfG2xU4pjaB_JB9nnG73TvMBI7xwwwWsGihXQ5bqjc_uWPAxCKpKM_qFYuI2lMkaxctqL4gkE1-LRVpVv9uGa4YZh3ct_BSvTr9ZNpA8",
+    "qi": "kn9Etj4a2erCUmoZUQalPjHxCRYm5Q3wAkFIRGSQADA51mkwQHyTYqXbHcmXn2ZgXBVI6XDWJB51Me-NCPfITTlusqxvATF7Q-QJtdK_FbgNtcVRNc1FMq_M7VBHA1i9wJR7T4t57aywfXPmlsA5TToTDRe-ybdw0C3ys4KQATs"
+}
+
+# Extract components from JWK
+_n = base64url_to_int(jwk['n'])
+_e = base64url_to_int(jwk['e'])
+_d = base64url_to_int(jwk['d'])
+_p = base64url_to_int(jwk['p'])
+_q = base64url_to_int(jwk['q'])
+_dp = base64url_to_int(jwk['dp'])
+_dq = base64url_to_int(jwk['dq'])
+_qi = base64url_to_int(jwk['qi'])
+
+# Create RSA private key
+private_key = rsa.RSAPrivateNumbers(
+    p=_p,
+    q=_q,
+    d=_d,
+    dmp1=_dp,
+    dmq1=_dq,
+    iqmp=_qi,
+    public_numbers=rsa.RSAPublicNumbers(e=_e, n=_n)
+).private_key()
+
+DEFAULT_X509_CHAIN = gen_chain(leaf_private_key=private_key)
+DEFAULT_X509_LEAF_JWK = jwk
 
 httpc_params = {
     "connection": {"ssl": True},
@@ -51,7 +100,7 @@ _METADATA = {
     "require_auth_time": True,
     "subject_type": "pairwise",
     "vp_formats": {
-        "vc+sd-jwt": {
+        "dc+sd-jwt": {
             "sd-jwt_alg_values": ["ES256", "ES384"],
             "kb-jwt_alg_values": ["ES256", "ES384"],
         }
@@ -82,7 +131,26 @@ CONFIG = {
         "expiration_time": 120,
         "logo_path": "pyeudiw/tests/satosa/static/logo.png",
     },
-    "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
+    "jwt": {
+        "default_sig_alg": "ES256", 
+        "default_exp": 6,
+        "enc_alg_supported": [
+            "RSA-OAEP",
+            "RSA-OAEP-256",
+            "ECDH-ES",
+            "ECDH-ES+A128KW",
+            "ECDH-ES+A192KW",
+            "ECDH-ES+A256KW"
+        ],
+        "enc_enc_supported": [
+            "A128CBC-HS256",
+            "A192CBC-HS384",
+            "A256CBC-HS512",
+            "A128GCM",
+            "A192GCM",
+            "A256GCM",
+        ],
+    },
     "authorization": {
         "url_scheme": "haip",  # haip://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
@@ -197,7 +265,11 @@ CONFIG = {
                 "metadata": _METADATA,
                 "metadata_type": "openid_credential_verifier",
                 "authority_hints": ["https://trust-anchor.example.org"],
-                "trust_anchors": ["https://trust-anchor.example.org"],
+                "trust_anchors": {
+                    "https://trust-anchor.example.org": [
+                        ta_jwk.serialize(private=False),
+                    ]
+                },
                 "default_sig_alg": "RS256",
                 "federation_jwks": [
                     {
@@ -236,11 +308,15 @@ CONFIG = {
         },
         "x509": {
             "module": "pyeudiw.trust.handler.x509",
-            "class": "X509Hanlder",
+            "class": "X509Handler",
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
                 "relying_party_certificate_chains_by_ca":{
-                    "ca.example.com": gen_chain(leaf_cn=f"{BASE_URL}/OpenID4VP"),
+                    "ca.example.com": gen_chain(leaf_cn="example.com"),
+                },
+                "certificate_authorities": {
+                    "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),
+                    "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n"
                 },
                 "private_keys": [
                     {
@@ -324,6 +400,16 @@ CONFIG = {
                 "module": "pyeudiw.openid4vp.vp_sd_jwt_vc",
                 "class": "VpVcSdJwtParserVerifier",
                 "format": "dc+sd-jwt",
+                "config": {
+                    "sig_alg_supported": [
+                            "RS256",
+                            "RS384",
+                            "RS512",
+                            "ES256",
+                            "ES384",
+                            "ES512",
+                    ]
+                }
             },
             {
                 "module": "pyeudiw.openid4vp.vp_mdoc_cbor",
@@ -554,7 +640,7 @@ CONFIG_DIRECT_TRUST = {
         "require_auth_time": True,
         "subject_type": "pairwise",
         "vp_formats": {
-            "vc+sd-jwt": {
+            "dc+sd-jwt": {
                 "sd-jwt_alg_values": ["ES256", "ES384"],
                 "kb-jwt_alg_values": ["ES256", "ES384"],
             }
