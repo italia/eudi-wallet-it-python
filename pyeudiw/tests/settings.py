@@ -57,8 +57,12 @@ private_key = rsa.RSAPrivateNumbers(
     public_numbers=rsa.RSAPublicNumbers(e=_e, n=_n)
 ).private_key()
 
-DEFAULT_X509_CHAIN = gen_chain(leaf_private_key=private_key)
+DEFAULT_X509_CHAIN = gen_chain(
+    leaf_uri="https://example.com/OpenID4VP",
+    leaf_private_key=private_key
+)
 DEFAULT_X509_LEAF_JWK = jwk
+DEFAULT_X509_LEAF_PRIVATE_KEY = private_key
 
 httpc_params = {
     "connection": {"ssl": True},
@@ -312,7 +316,7 @@ CONFIG = {
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
                 "relying_party_certificate_chains_by_ca":{
-                    "ca.example.com": gen_chain(leaf_cn="example.com"),
+                    "ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
                     "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),
@@ -332,7 +336,8 @@ CONFIG = {
                         "dp": "tk7iJCCI24SVXQYH6k-tNB5yH5ag5zP3Hs5DjeVG3b4bTkSwsofaNs2AIl5EKTRJOMUB4yGrw6U7FAwBJVOib3eSlym_S8-pIUUzv6IxdgGC73M5RMXuhfZi7liLANmZ7QvDCDo5LNP6qy1E8FcAa6qsCKniQydn_X4aydvijNE",
                         "dq": "Ml9mQg1Hq2NDiBXj7BGzYdiPXBQfmvO5SO0MqRhTy0i4hjwjqYo-ndiSrwZN6DMns2Fk_BpG5p2U76dtITXH3hlzSJz88LLDecI1R-akZ6CeaF9kzOvTX7sGqtYOczpFPsQsns8XddL40wvVu0Aq_Id0nV49211q5qdJktJX_lE",
                         "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA"
-                    }
+                    },
+                    jwk
                 ]
             }
         },
