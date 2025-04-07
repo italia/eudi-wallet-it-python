@@ -257,27 +257,27 @@ config:
         client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request. 
         certificate_authorities:
           - ca.example.com: |
-              -----BEGIN CERTIFICATE-----
-              MIIDczCCAlugAwIBAgIUeroJ3EGn7QIEbcydLoOJ8aAS7FwwDQYJKoZIhvcNAQEL
-              BQAwWjE2MDQGA1UEAwwtQ049aHR0cHM6Ly9jYS5leGFtcGxlLmNvbSwgTz1FeGFt
-              cGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYDVQQGEwJJVDAe
-              Fw0yNTAzMjYxMTQwNDBaFw0yNjAzMjcxMTQwNDBaMFoxNjA0BgNVBAMMLUNOPWh0
-              dHBzOi8vY2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1JVDETMBEGA1UE
-              CgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwggEiMA0GCSqGSIb3DQEBAQUAA4IB
-              DwAwggEKAoIBAQC6tNNMkVbyZonwHW/Ho7P6n7nF+OwkGG9Vc/tL1Xhquc8uug4U
-              S8HB857hVR0ojEsLlJ1DPcsyt3CXGcK6P7cmcw4zQi5v5dkjafD1VEg9egiJFfAD
-              AVAFGlljqHWARo3xjceUAY0Vk88cPae3uGV8wBDKj41HNOP166S5ozxxRIYstkTh
-              cqNdSGHkImbK3fOHo5Ai54QqDFfGcanCUJLxy8Un5e4TMIGDiESoh2T+m4KWK3SI
-              WHM8de2kiBi6PfHpq1rrjc3q/DaW0WToaCfkI5/EkHrbTeCux6nso2TE0/UG2kNu
-              VqAVU1BqcJ8ZBm8P04jFiTRnlsNtUB8wBPSRAgMBAAGjMTAvMBIGA1UdEwEB/wQI
-              MAYBAf8CAQEwGQYDVR0RBBIwEIIOY2EuZXhhbXBsZS5jb20wDQYJKoZIhvcNAQEL
-              BQADggEBAHC69qK8Lms8gd8vBjlD1okImZ12R9eIbfJn4bsjbdkXYoQp6kyW7PJE
-              WbyCgUfiYXKMQfmXCN1OVzIjao8tWe+r2VpYVF6jw0l+nZCewHzAWFSbnLNuRSZZ
-              kMTzrWD6O6KelV/V2g8FAx7yhDieHleKeFkmownqFPRSTF5Uj5p9glny9PApQUNI
-              2Pvxy2Xewze5o3EKOdypv/z8A4gKCfztz8Jn51awjfKsCq6EBuHp3GkkgurJgU94
-              Gev1U1YIGjcsFh0m5KUoLO5VRqjzNpdEWPcgIU4+iqpHfS7PEDb2QNEZKwnE7YFx
-              sOz7pgjS1lS+KeLbt9gzcVRtRA3FOlA=
-              -----END CERTIFICATE-----
+                -----BEGIN CERTIFICATE-----
+                MIIDYzCCAkugAwIBAgIUHVMNJD9vqAA4mR+QAJyEQFW4kjQwDQYJKoZIhvcNAQEL
+                BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
+                Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
+                MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxl
+                LmNvbSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQsw
+                CQYDVQQGEwJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMf3zvlY
+                zX1DYgv9QjRusMQjSRNdZi72/ydnxO/cAQ1GsgLZ8ewqIL1CnXtIs6i2F8poUOec
+                g957xk1db6sTqEWXRi5h9IfMUFcd5G7gIbJzjXCiLSVz6m9vZlvqR7BDka1VQhuH
+                rW2xEIE6+F2lWxJ+crimea/c5VlMKBCh+gQldFq3lTu6smGUz8xl8rhleBPgTgZz
+                TO4VuVO1dOb/S4lq9twfVYCTznF9vgaNaNh3la7yjzCf+zpSTGQD8TFO8ws1SZRq
+                O0bkabW8/5XsnwFHLT2LMSPkWMgMD8r+7xef93bvbEy7SA4Hw1Iow2xIIcTDYQ7F
+                77HQ3OjkogHmhrMCAwEAAaMxMC8wEgYDVR0TAQH/BAgwBgEB/wIBATAZBgNVHREE
+                EjAQgg5jYS5leGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEApRUUxw5Dn0wd
+                lFPApjn7n/SZyx5I1XnOHOIk8aWD0KFFa1zsnONlmRDgC8EQ5XKw3nMUwvnCQUR8
+                6FmrqP5gINHdqfvWiitC0eQdDhMhIHvdfUMBicgZ0XDVjDZhD6W9A+IWwR3ySLCf
+                lZHA5JwjYhpAjMYFXwSVZklOre34zJL6CRwgIUKjc9uyGPmlnVRFTUcUqLB9Uq/U
+                dFc7XMPBAbMt1frOJRj6P1OFtubuC0INpEhzivg3+w8bXmpEN6e2hBvIjoNkgnWF
+                O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
+                DTEzMjUtQA==
+                -----END CERTIFICATE-----
         relying_party_certificate_chains_by_ca: # chains can be formed by items serialized in binary python serialization or PEM
             ca.example.com:
               - |
