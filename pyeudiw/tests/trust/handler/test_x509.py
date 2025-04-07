@@ -8,9 +8,10 @@ from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 def test_wrong_configuration_must_fail():
     try:
         X509Handler(
-            "https://test.com",
-            None,
-            []
+            client_id="https://test.com",
+            relying_party_certificate_chains_by_ca={},
+            private_keys=[],
+            certificate_authorities={}
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
@@ -18,11 +19,12 @@ def test_wrong_configuration_must_fail():
 
     try:
         X509Handler(
-            "https://test.com",
-            {
+            client_id="https://test.com",
+            relying_party_certificate_chains_by_ca={
                 "example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")
             },
-            []
+            private_keys=[],
+            certificate_authorities={}
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
@@ -30,14 +32,19 @@ def test_wrong_configuration_must_fail():
 
 
 def test_extract_trust_material_from_x509_handler():
+    chain = gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com", leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY)
+
     trust_handler = X509Handler(
-        "https://example.com",
-        {
-            "ca.example.com": gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com", leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY),
+        client_id="https://example.com",
+        relying_party_certificate_chains_by_ca={
+            "ca.example.com": chain
         },
-        [
+        private_keys=[
             DEFAULT_X509_LEAF_JWK
-        ]
+        ],
+        certificate_authorities={
+            "ca.example.com": chain[-1]
+        }
     )
     trust_source = TrustSourceData.empty("https://example.com")
 
@@ -54,12 +61,18 @@ def test_extract_trust_material_from_x509_handler():
     assert "n" in serialized_object["x509"]["jwks"][0]
 
 def test_return_nothing_if_chain_is_invalid():
+    invalid_chain = gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
     trust_handler = X509Handler(
-        "https://example.com",
-        {
-            "ca.example.com": gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
+        client_id="https://example.com",
+        relying_party_certificate_chains_by_ca={
+            "ca.example.com": invalid_chain
         },
-        []
+        private_keys=[
+            DEFAULT_X509_LEAF_JWK
+        ],
+        certificate_authorities={
+            "ca.example.com": invalid_chain[-1]
+        }
     )
     trust_source = TrustSourceData.empty("https://example.com")
 
