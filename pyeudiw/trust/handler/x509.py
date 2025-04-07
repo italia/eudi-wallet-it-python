@@ -1,6 +1,5 @@
 import logging
 from typing import Union
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
@@ -27,7 +26,7 @@ class X509Handler(TrustHandlerInterface):
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
-        certificate_authorities: list[str] = [],
+        certificate_authorities: dict[str, str] = [],
         **kwargs
     ):  
         self.client_id = client_id
@@ -40,6 +39,7 @@ class X509Handler(TrustHandlerInterface):
         self.relying_party_certificate_chains_by_ca = {}
 
         private_keys_thumbprints = [key_from_jwk_dict(key, private=False).thumbprint("SHA-256") for key in private_keys]
+        certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
 
         for k, v in relying_party_certificate_chains_by_ca.items():
             root_dns_name = get_x509_info(v[-1])
@@ -47,6 +47,12 @@ class X509Handler(TrustHandlerInterface):
             if not root_dns_name in k:
                 raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name} instead of {k}")
             
+            root_cert_thumbprint = parse_certificate(v[-1]).thumbprint
+
+            if not root_cert_thumbprint in certificate_authorities_thumbprint:
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching root certificate, the chain will be removed")
+                continue
+
             found_client_id = False
 
             for cert in v[:-1]:
