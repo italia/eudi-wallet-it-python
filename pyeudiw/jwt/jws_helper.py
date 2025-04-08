@@ -101,8 +101,10 @@ class JWSHelper(JWHelperInterface):
             unprotected = {}
 
         # Select the signing key
-        # TODO: check that singing key is either private or symmetric
         signing_key = self._select_signing_key((protected, unprotected), signing_kid)
+
+        if signing_key["kty"] == "oct":
+            raise JWSSigningError(f"Key {signing_key['kid']} is a symmetric key")
 
         # Ensure the key ID in the header matches the signing key
         header_kid = protected.get("kid")
@@ -134,8 +136,13 @@ class JWSHelper(JWHelperInterface):
             signing_key = deepcopy(signing_key)
             signing_key.pop("kid", None)
 
+        signing_key_jwk = key_from_jwk_dict(signing_key)
+
+        if not signing_key_jwk.priv_key:
+            raise JWSSigningError(f"Key {signing_key_jwk.kid} is not a private key")
+
         signer = JWS(payload, alg=signing_alg)
-        keys = [key_from_jwk_dict(signing_key)]
+        keys = [signing_key_jwk]
 
         if serialization_format == "compact":
             try:

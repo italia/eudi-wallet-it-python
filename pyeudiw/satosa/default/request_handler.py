@@ -2,11 +2,12 @@ from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
-from pyeudiw.satosa.exceptions import HTTPError
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.jwt.exceptions import JWSSigningError
+from pyeudiw.jwk.parse import parse_certificate
+from pyeudiw.jwk import JWK
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -69,15 +70,29 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
 
         # load all the trust handlers request jwt header parameters, if any
 
-        _protected_jwt_headers.update(
-            self.trust_evaluator.get_jwt_header_trust_parameters(issuer=self.client_id)
-        )
+        trust_params = self.trust_evaluator.get_jwt_header_trust_parameters(issuer=self.client_id)
+        _protected_jwt_headers.update(trust_params)
 
-        #  federation_trust_handler_backend_class: TrustHandlerInterface = (
-        #  self.get_trust_backend_by_class_name("FederationHandler")
-        #  )
+        metadata_key = None
 
-        helper = JWSHelper(self.default_metadata_private_jwk)
+        if "x5c" in _protected_jwt_headers:
+            jwk = parse_certificate(_protected_jwt_headers["x5c"][0])
+
+            for key in self.config["metadata_jwks"]:
+                if JWK(key).thumbprint == jwk.thumbprint:
+                    metadata_key = key
+                    break
+            
+            if not metadata_key:
+                return self._handle_500(
+                    context,
+                    "internal error: unable to find the key in the metadata",
+                    ValueError("unable to find the key in the metadata"),
+                )
+        else:
+            metadata_key = self.default_metadata_private_jwk
+
+        helper = JWSHelper(metadata_key)
 
         try:
             request_object_jwt = helper.sign(

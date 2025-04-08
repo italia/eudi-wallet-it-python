@@ -1,10 +1,10 @@
 import logging
 from typing import Union
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.jwk.parse import parse_pem, parse_x5c_keys
+from pyeudiw.jwk.parse import parse_pem, parse_x5c_keys, parse_certificate
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.x509.verify import (
     verify_x509_attestation_chain, 
     get_expiry_date_from_x5c, 
@@ -26,7 +26,7 @@ class X509Handler(TrustHandlerInterface):
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
-        certificate_authorities: list[str] = [],
+        certificate_authorities: dict[str, str] = [],
         **kwargs
     ):  
         self.client_id = client_id
@@ -38,12 +38,21 @@ class X509Handler(TrustHandlerInterface):
 
         self.relying_party_certificate_chains_by_ca = {}
 
+        private_keys_thumbprints = [key_from_jwk_dict(key, private=False).thumbprint("SHA-256") for key in private_keys]
+        certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
+
         for k, v in relying_party_certificate_chains_by_ca.items():
             root_dns_name = get_x509_info(v[-1])
             
             if not root_dns_name in k:
                 raise InvalidTrustHandlerConfiguration(f"Invalid x509 certificate: expected {k} got {root_dns_name} instead of {k}")
             
+            root_cert_thumbprint = parse_certificate(v[-1]).thumbprint
+
+            if not root_cert_thumbprint in certificate_authorities_thumbprint:
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching root certificate, the chain will be removed")
+                continue
+
             found_client_id = False
 
             for cert in v[:-1]:
@@ -53,6 +62,19 @@ class X509Handler(TrustHandlerInterface):
                 
             if not found_client_id:
                 logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}), the chain will be removed")
+                continue
+
+            relative_to_rp = False
+
+            for cert in v[:-1]:
+                cert_jwk = parse_certificate(cert)
+                if cert_jwk.thumbprint in private_keys_thumbprints:
+                    relative_to_rp = True
+                    break
+
+            if not relative_to_rp:
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching private key, the chain will be removed")
+                continue
 
             chain = pem_list_to_der_list(v) if type(v[0]) == str and v[0].startswith("-----BEGIN CERTIFICATE-----") else v
 
@@ -60,6 +82,7 @@ class X509Handler(TrustHandlerInterface):
                 self.relying_party_certificate_chains_by_ca[k] = chain
             else:
                 logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
+                continue            
 
         self.private_keys = private_keys
 
