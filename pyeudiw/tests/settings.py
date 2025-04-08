@@ -368,6 +368,7 @@ CONFIG = {
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
         },
+        jwk
     ],
     "storage": {
         "mongo_db": {
@@ -582,6 +583,7 @@ CONFIG_DIRECT_TRUST = {
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
         },
+        jwk
     ],
     "storage": {
         "mongo_db": {
