@@ -1,5 +1,6 @@
 from cryptojwt.jwk.ec import import_ec_key, ECKey
 from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
+from ssl import DER_cert_to_PEM_cert
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import InvalidJwk
@@ -43,6 +44,24 @@ def parse_pem(pem: str) -> JWK:
             return key
         
     raise InvalidJwk(f"unable to parse key from pem: {pem}")
+
+def parse_certificate(cert: str | bytes) -> JWK:
+    """
+    Parse a key from a x509 PEM or DER certificate.
+    
+    :param cert: x509 certificate in PEM or DER format
+    :type cert: str | bytes
+
+    :raises InvalidJwk: if the key cannot be parsed from the certificate
+
+    :return: JWK object
+    :rtype: JWK
+    """
+
+    if type(cert) == bytes or type(cert) == str and not cert.startswith("-----BEGIN CERTIFICATE-----"):
+        cert = DER_cert_to_PEM_cert(cert)
+
+    return parse_pem(cert)
 
 def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     """

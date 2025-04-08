@@ -20,12 +20,13 @@ SerializationFormat = Literal["compact", "json"]
 
 
 class JWHelperInterface:
-    def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict):
+    def __init__(self, jwks: list[KeyLike | dict] | KeyLike | dict) -> None:
         """
         Creates an instance of JWEHelper.
 
-        :param jwks: The list of JWK used to crypt and encrypt the content of JWE.
+        :raises TypeError: If the input jwks is not a list, dict, or a key-like object.
 
+        :param jwks: The list of JWK used to crypt and encrypt the content of JWE.
         """
         self.jwks: list[KeyLike] = []
         if isinstance(jwks, dict):
@@ -43,6 +44,14 @@ class JWHelperInterface:
             raise TypeError(f"unable to handle input jwks with type {type(jwks)}")
 
     def get_jwk_by_kid(self, kid: str) -> KeyLike | None:
+        """
+        Returns the JWK with the given kid from the list of JWKs.
+
+        :param kid: The key ID of the JWK to retrieve.
+        :type kid: str
+        :returns: The JWK with the given kid, or None if not found.
+        :rtype: KeyLike | None
+        """
         if not kid:
             return None
         for i in self.jwks:
