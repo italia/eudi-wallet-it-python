@@ -941,6 +941,15 @@ class TestOpenID4VPBackend:
         assert header["x5c"]
         assert len(header["x5c"]) == 3
 
+        # verify that the JWT is signed using the leaf key from the x5c certificate chain
+        leaf_key = parse_pem(header["x5c"][0]).as_dict()
+
+        verification = JWSHelper(leaf_key).verify(
+            req_resp.message,
+        )
+
+        assert verification
+
     def test_handle_error(self, context):
         error_message = "server_error"
         error_resp = self.backend._handle_500(context, error_message, Exception())
