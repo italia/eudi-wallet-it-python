@@ -351,11 +351,12 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             Exception("finished authentication is in an invalid state: neither user data nor error are located in a finished session", finalized_session)
         )
 
-    def _get_response_authorization_error_page(self, wallet_error_response: dict):
-        return self.template.authorization_error_response_page.render({
+    def _get_response_authorization_error_page(self, wallet_error_response: dict) -> Response:
+        result = self.template.authorization_error_response_page.render({
             "error": wallet_error_response.get("error"),
             "error_description": wallet_error_response.get("error_description")
         })
+        return Response(result, content="text/html; charset=utf8", status="200")
 
     def _get_response_auth_callback(self, context, internal_resp_data: dict):
         internal_response = InternalData()
@@ -408,24 +409,51 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         request_object = session.get("request_object", None)
         if request_object:
             if iat_now() > request_object["exp"]:
-                return self._handle_403(
-                    context, 
-                    "request error: request expired",
-                )
+                return self._status_session_expired(context)
 
-        if session["finalized"] is True:
-            resp_code = self.response_code_helper.create_code(state)
-            return JsonResponse(
-                {
-                    "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
-                },
-                status="200",
-            )
-        else:
-            if request_object is not None:
-                return JsonResponse({"response": "Accepted"}, status="202")
+        if session["finalized"]:
+            if "error_response" in session:
+                return self._status_session_finished_error(context, session["error_response"])
+            return self._status_session_finished_ok(state)
 
-            return JsonResponse({"response": "Request object issued"}, status="201")
+        if request_object is not None:
+            return self._status_session_accepted()
+
+        return self._status_session_created()
+
+    def _status_session_expired(self, context) -> Response:
+        return self._handle_403(
+            context,
+            "request error: request expired",
+        )
+
+    def _status_session_finished_ok(self, state: str) -> Response:
+        resp_code = self.response_code_helper.create_code(state)
+        return JsonResponse(
+            {
+                "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
+            },
+            status="200",
+        )
+
+    def _status_session_finished_error(self, context, wallet_error: dict) -> Response:
+        self._log_error(
+            context,
+            f"the wallet rejected the authentication attempt and responsed with the following Authorization Response Error: {wallet_error}"
+        )
+        return JsonResponse(
+            {
+                "error": "authentication_failed",
+                "error_description": "The Wallet Instance or its User have rejected the request, the request is expired, or other errors prevented the authentication."
+            },
+            status="401"
+        )
+
+    def _status_session_accepted(self) -> Response:
+        return JsonResponse({"response": "Accepted"}, status="202")
+
+    def _status_session_created(self) -> Response:
+        JsonResponse({"response": "Request object issued"}, status="201")
 
     @property
     def db_engine(self) -> DBEngine:
