@@ -96,7 +96,7 @@ class PresentationSubmissionHandler:
         except ValidationError as e:
             raise SubmissionValidationError(f"Submission validation failed: {e}")
     
-    def _extract_position(self, path: str) -> tuple[str, str]:
+    def _extract_position(self, path: str) -> int:
         """
         Extract the position and path from the descriptor path.
 
@@ -108,8 +108,8 @@ class PresentationSubmissionHandler:
         :return: Tuple of position and path.
         :rtype: tuple[str, str]
         """
-        pattern = r'\$\[(\d+)\]'
-        match = re.search(pattern, path)
+        pattern = r"\$[a-z_\-\.]*\[(\d+)\]"
+        match = re.match(pattern, path, re.I)
         if match:
             position = int(match.group(1))
             return position
