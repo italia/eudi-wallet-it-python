@@ -65,12 +65,10 @@ async def fetch_all(
     return results
 
 
-def http_get_sync(urls, httpc_params: dict) -> list[requests.Response]:
+def http_get_sync(urls: list[str], httpc_params: dict) -> list[requests.Response]:
     """
     Perform a GET http call sync.
 
-    :param session: a dict representing the current session
-    :type session: dict
     :param urls: the url list where fetch the content
     :type urls: list[str]
     :param httpc_params: parameters to perform http requests.
