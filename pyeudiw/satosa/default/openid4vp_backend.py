@@ -343,9 +343,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         if "error_response" in finalized_session:
             return self._get_response_authorization_error_page(finalized_session["error_response"])
         if "internal_response" in finalized_session:
-            internal_response = InternalData()
-            resp = internal_response.from_dict(finalized_session["internal_response"])
-            return self.auth_callback_func(context, resp)
+            return self._get_response_auth_callback(context, finalized_session["internal_response"])
 
         return self._handle_500(
             context,
@@ -356,9 +354,14 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
     def _get_response_authorization_error_page(self, wallet_error_response: dict):
         # TODO: le informazioni di fallaback andrebbero gestite dalla view, non dal controller, motivi i multilingua etc
         return self.template.authorization_error_response_page.render({
-            "error": wallet_error_response.get("error", "unknown error"),
-            "error_description": wallet_error_response.get("error_description", "unknown error details")
+            "error": wallet_error_response.get("error"),
+            "error_description": wallet_error_response.get("error_description")
         })
+
+    def _get_response_auth_callback(self, context, internal_resp_data: dict):
+        internal_response = InternalData()
+        resp = internal_response.from_dict(internal_resp_data)
+        return self.auth_callback_func(context, resp)
 
     def status_endpoint(self, context: Context) -> JsonResponse:
         """
