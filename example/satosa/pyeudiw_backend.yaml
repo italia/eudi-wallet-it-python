@@ -114,7 +114,7 @@ config:
 
   # private jwk
   metadata_jwks: &metadata_jwks
-    - crv: P-256
+    - crv: P-256 # Please note: this is the first key [0] and it is used for signing the presentation requests
       d: KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc
       kid: dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s
       use: sig
@@ -284,7 +284,7 @@ config:
                 O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
                 DTEzMjUtQA==
                 -----END CERTIFICATE-----
-        relying_party_certificate_chains_by_ca: # chains can be formed by items serialized in binary python serialization or PEM
+        relying_party_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
             ca.example.com:
               - |
                 -----BEGIN CERTIFICATE-----
