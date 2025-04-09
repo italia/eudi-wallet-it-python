@@ -24,12 +24,12 @@
                         <ul class="it-list">
                             <li class="list-item">
                               <div class="it-right-zone">
-                                <span class="card-text">Error: {{ error }} </span>
+                                <span class="card-text">Error: {% if error != None %} {{ error }} {% else %} unknown error {% endif %}</span>
                               </div>
                             </li>
                             <li class="list-item">
                               <div class="it-right-zone">
-                                <span class="card-text">Error description: {{ error_description }} </span>
+                                <span class="card-text">Error description: {% if error_description != None %} {{ error_description }} {% else %} unknown error description {% endif %}</span>
                               </div>
                             </li>
                         </ul>
