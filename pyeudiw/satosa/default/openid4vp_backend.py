@@ -352,7 +352,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         )
 
     def _get_response_authorization_error_page(self, wallet_error_response: dict):
-        # TODO: le informazioni di fallaback andrebbero gestite dalla view, non dal controller, motivi i multilingua etc
         return self.template.authorization_error_response_page.render({
             "error": wallet_error_response.get("error"),
             "error_description": wallet_error_response.get("error_description")
