@@ -33,7 +33,7 @@ config:
     sym_key: "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" # hex string of 64 characters
 
   jwt:
-    default_sig_alg: ES256 # or RS256
+    default_sig_alg: ES256 # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
     default_enc_alg: RSA-OAEP
     default_enc_enc: A256CBC-HS512
     default_exp: 6         # minutes
