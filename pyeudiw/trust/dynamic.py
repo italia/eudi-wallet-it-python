@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 UpsertMode = Union[Literal["update_first"], Literal["cache_first"]]
 
+
 class CombinedTrustEvaluator(BaseLogger):
     """
     A trust evaluator that combines multiple trust models.
@@ -351,7 +352,7 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: CombinedTrustEvaluator
         """
         handlers = []
-
+       
         for handler_name, handler_config in config.items():
             try:
                 # every trust evaluation method might use their own client id
