@@ -73,8 +73,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
         self.default_exp = int(self.config["jwt"]["default_exp"])
 
-        
-
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
         self.config["metadata"]["jwks"] = {
             "keys": [JWK(i).public_key for i in self.config["metadata_jwks"]]
