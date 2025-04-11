@@ -96,18 +96,36 @@ class ResponseHandler(ResponseHandlerInterface):
                 f"unable to find nonce in session associated to state {state}: corrupted data"
             )
         return request_session
-    
-    def _handle_error_response(self, error_response: ErrorResponsePayload) -> JsonResponse:
+
+    def _handle_error_response(self, context: Context, error_response: ErrorResponsePayload) -> JsonResponse:
+        state = error_response.state
         request_session: dict = {}
-        request_session = self._retrieve_session_from_state(error_response.state)
+        try:
+            request_session = self._retrieve_session_from_state(state)
+        except Exception as e400:
+            return self._handle_400(
+                context,
+                "the response state is associated to an invalid, corrupted, expired or non existing authentication request",
+                Exception(f"exception found when associating authorization error respons {error_response} with a rewquest: {e400}")
+            )
 
-        self.db_engine.update_response_object(
-            request_session["nonce"], error_response.state, asdict(error_response), True
-        )
+        flow_type, response_code = None, ""
+        try:
+            flow_type = RemoteFlowType(request_session["remote_flow_typ"])
+            response_code = self.response_code_helper.create_code(error_response.state)
+            self.db_engine.update_response_object(
+                request_session["nonce"], state, asdict(error_response), True
+            )
 
-        self.db_engine.set_finalized(request_session["document_id"])
+            self.db_engine.set_finalized(request_session["document_id"])
+        except Exception as e500:
+            return self._handle_500(context, "internal server error", e500)
 
-        return JsonResponse({"status": "OK"}, status="200")
+        if flow_type == RemoteFlowType.SAME_DEVICE:
+            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
+        else:
+            return JsonResponse({}, status="200")
 
     def response_endpoint(
         self, context: Context, *args: tuple
@@ -134,7 +152,7 @@ class ResponseHandler(ResponseHandlerInterface):
         )
 
         if isinstance(authz_payload, ErrorResponsePayload):
-            return self._handle_error_response(authz_payload)
+            return self._handle_error_response(context, authz_payload)
 
         request_session: dict = {}
         try:
@@ -270,7 +288,7 @@ class ResponseHandler(ResponseHandlerInterface):
             cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
-            return JsonResponse({"status": "OK"}, status="200")
+            return JsonResponse({}, status="200")
 
     def _translate_response(
         self, response: dict, issuer: str, context: Context

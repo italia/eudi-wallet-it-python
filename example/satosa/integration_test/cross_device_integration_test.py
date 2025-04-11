@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright, Playwright, Page
 
 from pyeudiw.jwt.utils import decode_jwt_payload
 
-from . commons import (
+from commons import (
     ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
@@ -18,7 +18,7 @@ from . commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
-from . settings import TIMEOUT_S
+from settings import TIMEOUT_S
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object

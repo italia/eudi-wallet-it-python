@@ -310,7 +310,6 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             )
 
         finalized_session = None
-
         try:
             finalized_session = self.db_engine.get_by_state_and_session_id(
                 state=state, session_id=session_id
@@ -340,9 +339,9 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
                 "request error: request expired",
             )
 
-        if "error_response" in finalized_session:
+        if finalized_session.get("error_response"):
             return self._get_response_authorization_error_page(finalized_session["error_response"])
-        if "internal_response" in finalized_session:
+        if finalized_session.get("internal_response"):
             return self._get_response_auth_callback(context, finalized_session["internal_response"])
 
         return self._handle_500(
@@ -356,7 +355,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             "error": wallet_error_response.get("error"),
             "error_description": wallet_error_response.get("error_description")
         })
-        return Response(result, content="text/html; charset=utf8", status="200")
+        return Response(result, content="text/html; charset=utf8", status="401")
 
     def _get_response_auth_callback(self, context, internal_resp_data: dict):
         internal_response = InternalData()
@@ -412,7 +411,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
                 return self._status_session_expired(context)
 
         if session["finalized"]:
-            if "error_response" in session:
+            if session.get("error_response"):
                 return self._status_session_finished_error(context, session["error_response"])
             return self._status_session_finished_ok(state)
 
@@ -453,7 +452,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         return JsonResponse({"response": "Accepted"}, status="202")
 
     def _status_session_created(self) -> Response:
-        JsonResponse({"response": "Request object issued"}, status="201")
+        return JsonResponse({"response": "Request object issued"}, status="201")
 
     @property
     def db_engine(self) -> DBEngine:
