@@ -408,25 +408,25 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         request_object = session.get("request_object", None)
         if request_object:
             if iat_now() > request_object["exp"]:
-                return self._status_session_expired(context)
+                return self._status_session_expired_response(context)
 
         if session["finalized"]:
             if session.get("error_response"):
-                return self._status_session_finished_error(context, session["error_response"])
-            return self._status_session_finished_ok(state)
+                return self._status_session_finished_error_response(context, session["error_response"])
+            return self._status_session_finished_ok_response(state)
 
         if request_object is not None:
-            return self._status_session_accepted()
+            return self._status_session_accepted_response()
 
-        return self._status_session_created()
+        return self._status_session_created_response()
 
-    def _status_session_expired(self, context) -> Response:
+    def _status_session_expired_response(self, context) -> Response:
         return self._handle_403(
             context,
             "request error: request expired",
         )
 
-    def _status_session_finished_ok(self, state: str) -> Response:
+    def _status_session_finished_ok_response(self, state: str) -> Response:
         resp_code = self.response_code_helper.create_code(state)
         return JsonResponse(
             {
@@ -435,7 +435,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             status="200",
         )
 
-    def _status_session_finished_error(self, context, wallet_error: dict) -> Response:
+    def _status_session_finished_error_response(self, context, wallet_error: dict) -> Response:
         self._log_error(
             context,
             f"the wallet rejected the authentication attempt and responsed with the following Authorization Response Error: {wallet_error}"
@@ -448,10 +448,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
             status="401"
         )
 
-    def _status_session_accepted(self) -> Response:
+    def _status_session_accepted_response(self) -> Response:
         return JsonResponse({"response": "Accepted"}, status="202")
 
-    def _status_session_created(self) -> Response:
+    def _status_session_created_response(self) -> Response:
         return JsonResponse({"response": "Request object issued"}, status="201")
 
     @property
