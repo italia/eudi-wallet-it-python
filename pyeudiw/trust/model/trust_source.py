@@ -43,8 +43,8 @@ class TrustEvaluationType:
             jwk = key_from_jwk_dict(jwk).serialize(private=False) if isinstance(jwk, dict) else jwk.as_public_dict()
             self.jwks.append(jwk)
 
-        for type, tp in kwargs.items():
-            setattr(self, type, tp)
+        for ttype, tp in kwargs.items():
+            setattr(self, ttype, tp)
 
     def serialize(self) -> dict[str, any]:
         """
@@ -108,12 +108,11 @@ class TrustSourceData:
             metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
 
         self.metadata = metadata
-
-        for type, tp in kwargs.items():
-            setattr(self, type, TrustEvaluationType(**tp)) 
+        for _type, tp in kwargs.items():
+            setattr(self, _type, TrustEvaluationType(**tp)) 
 
     
-    def add_trust_param(self, type: str, trust_params: TrustEvaluationType) -> None:
+    def add_trust_param(self, ttype: str, trust_params: TrustEvaluationType) -> None:
         """
         Add a trust source to the trust source.
 
@@ -122,9 +121,9 @@ class TrustSourceData:
         :param trust_params: The trust parameters of the trust source
         :type trust_params: TrustEvaluationType
         """
-        setattr(self, type, trust_params)
+        setattr(self, ttype, trust_params)
 
-    def has_trust_param(self, type: str) -> bool:
+    def has_trust_param(self, ttype: str) -> bool:
         """
         Return whether the trust source has a trust source of the given type.
 
@@ -133,9 +132,9 @@ class TrustSourceData:
         :returns: Whether the trust source has a trust source of the given type
         :rtype: bool
         """
-        return hasattr(self, type)
+        return hasattr(self, ttype)
 
-    def get_trust_param(self, type: str) -> Optional[TrustEvaluationType]:
+    def get_trust_param(self, ttype: str) -> Optional[TrustEvaluationType]:
         """
         Return the trust source of the given type.
 
@@ -144,9 +143,9 @@ class TrustSourceData:
         :returns: The trust source of the given type
         :rtype: TrustEvaluationType
         """
-        if not self.has_trust_param(type):
+        if not self.has_trust_param(ttype):
             return None
-        return getattr(self, type)
+        return getattr(self, ttype)
     
     def get_trust_evaluation_type_by_handler_name(self, handler_name: str) -> Optional[TrustEvaluationType]:
         """
@@ -157,10 +156,10 @@ class TrustSourceData:
         :returns: The trust source of the given handler name
         :rtype: TrustEvaluationType
         """
-        for type in dir(self):
-            if isinstance(getattr(self, type), TrustEvaluationType):
-                if getattr(self, type).trust_handler_name == handler_name:
-                    return getattr(self, type)
+        for ttype in dir(self):
+            if isinstance(getattr(self, ttype), TrustEvaluationType):
+                if getattr(self, ttype).trust_handler_name == handler_name:
+                    return getattr(self, ttype)
         return None
 
     def serialize(self) -> dict[str, any]:
@@ -184,9 +183,9 @@ class TrustSourceData:
 
         trust_source["metadata"] = tmp_metadata
 
-        for type in dir(self):
-            if isinstance(getattr(self, type), TrustEvaluationType):
-                trust_source[type] = getattr(self, type).serialize()
+        for ttype in dir(self):
+            if isinstance(getattr(self, ttype), TrustEvaluationType):
+                trust_source[ttype] = getattr(self, ttype).serialize()
 
         return trust_source
     

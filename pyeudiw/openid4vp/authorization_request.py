@@ -50,7 +50,11 @@ def build_authorization_request_claims(
     """
 
     nonce = nonce or str(uuid.uuid4())
-
+    if authorization_config.get("auth_iss_id"):
+        _iss =  authorization_config["auth_iss_id"]
+    else:
+        _iss = client_id
+        
     claims = {
         "client_id_scheme": "http",  # that's federation.
         "client_id": client_id,
@@ -61,7 +65,7 @@ def build_authorization_request_claims(
         "response_uri": response_uri,
         "nonce": nonce,
         "state": state,
-        "iss": authorization_config.get("auth_iss_id", client_id),
+        "iss": _iss,
         "iat": iat_now(),
         "exp": exp_from_now(minutes=authorization_config["expiration_time"]),
     }

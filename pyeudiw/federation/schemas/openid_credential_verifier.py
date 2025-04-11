@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel, HttpUrl, PositiveInt
 
@@ -55,17 +55,17 @@ class OpenIDCredentialVerifier(BaseModel):
     client_name: str
     jwks: JwksSchema
     contacts: List[str]
-    request_uris: List[HttpUrl]
-    redirect_uris: List[HttpUrl]
-    default_acr_values: List[HttpUrl]
+    request_uris: Union[None, List[Union[HttpUrl, None]]]
+    redirect_uris: Union[None, List[Union[HttpUrl, None]]]
+    default_acr_values: List[Union[HttpUrl, None]]
     authorization_signed_response_alg: List[AuthorizationSignedResponseAlg]
     authorization_encrypted_response_alg: List[EncryptionAlgValuesSupported]
     authorization_encrypted_response_enc: List[EncryptionEncValuesSupported]
-    subject_type: str
-    require_auth_time: bool
+    # subject_type: str
+    # require_auth_time: bool
+    # default_max_age: PositiveInt
     id_token_encrypted_response_alg: List[EncryptionAlgValuesSupported]
     id_token_encrypted_response_enc: List[EncryptionEncValuesSupported]
     id_token_signed_response_alg: List[SigningAlgValuesSupported]
-    default_acr_values: List[AcrValuesSupported]
-    default_max_age: PositiveInt
+    default_acr_values: List[Union[AcrValuesSupported, None]]
     vp_formats: VpFormats
