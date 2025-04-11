@@ -45,7 +45,11 @@ trust_ev = CombinedTrustEvaluator.from_config(
 
 def test_handler_initialization():
 
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     assert len(ps.handlers) == 3, "Not all handlers were created."
 
@@ -54,7 +58,11 @@ def test_handler_initialization():
     assert isinstance(ps.handlers["fail_parser"], MockFailingParser), "Handler for 'fail_parser' format is incorrect."
 
 def test_handler_correct_parsing():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     parsed_tokens = ps.parse(valid_submission, ["vp_token_1", "vp_token_2"])
 
@@ -63,7 +71,10 @@ def test_handler_correct_parsing():
     assert parsed_tokens[1] == {"parsed": "vp_token_2"}, "Token 2 was not parsed correctly."
 
 def test_handler_missing_handler():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"])
 
     invalid_submission = {
         "id": "submission_id",
@@ -81,7 +92,11 @@ def test_handler_missing_handler():
         assert str(e) == "Handler for format 'non_existent_format' not found.", "Incorrect exception message."
 
 def test_handler_invalid_path():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     invalid_submission = {
         "id": "submission_id",
@@ -99,7 +114,11 @@ def test_handler_invalid_path():
         assert str(e) == "Invalid path format: invalid_path", "Incorrect exception message."
 
 def test_handler_mismatched_tokens():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     invalid_submission = {
         "id": "submission_id",
@@ -116,7 +135,11 @@ def test_handler_mismatched_tokens():
         assert str(e) == "Number of VP tokens (1) does not match the number of descriptors (2).", "Incorrect exception message."
 
 def test_handler_invalid_submission():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     invalid_submission = {
         "fail": "submission"
@@ -130,7 +153,11 @@ def test_handler_invalid_submission():
         assert False, f"Incorrect exception type: {type(e)}"
         
 def test_handler_parser_failure():
-    ps = PresentationSubmissionHandler(trust_evaluator=trust_ev, config=mock_format_config)
+    ps = PresentationSubmissionHandler(
+        trust_evaluator=trust_ev, 
+        config=mock_format_config,
+        sig_alg_supported=["ES256", "ES384", "ES512"]
+    )
 
     invalid_submission = {
         "id": "submission_id",
