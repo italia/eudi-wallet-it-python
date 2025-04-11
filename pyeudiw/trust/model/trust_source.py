@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
@@ -16,7 +15,7 @@ class TrustEvaluationType:
     def __init__(
         self,
         attribute_name: str,
-        expiration_date: datetime,
+        expiration_date: int,
         jwks: list[dict | JWK ] = [],
         trust_handler_name: str = "",
         **kwargs
@@ -26,8 +25,8 @@ class TrustEvaluationType:
 
         :param attribute_name: The attribute name of the the field that holds the trust parameter data
         :type attribute_name: str
-        :param expiration_date: The expiration date of the trust parameter data
-        :type expiration_date: datetime
+        :param expiration_date: The expiration date in unix timestamp of the trust parameter data
+        :type expiration_date: int
         :param jwks: The jwks of the trust parameter data
         :type jwks: list[dict | JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
