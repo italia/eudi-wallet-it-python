@@ -5,6 +5,7 @@ from typing import Optional
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.jwk import JWK
+from pyeudiw.tools.utils import iat_now
 
 @dataclass
 class TrustEvaluationType:
@@ -69,7 +70,7 @@ class TrustEvaluationType:
         :returns: Whether the trust parameter data has expired
         :rtype: bool
         """
-        return datetime.now() > self.expiration_date
+        return iat_now() > self.expiration_date
     
     def get_jwks(self) -> list[dict]:
         return self.jwks
