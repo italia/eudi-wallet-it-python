@@ -10,7 +10,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
-import re
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -299,3 +299,16 @@ def is_der_format(cert: bytes) -> str:
 
 def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
     raise NotImplementedError("TODO")
+
+def get_certificate_type(cert: str | bytes) -> str:
+    pem = cert if isinstance(cert, str) and cert.startswith("-----BEGIN CERTIFICATE-----") else DER_cert_to_PEM_cert(cert)
+
+    cert = x509.load_pem_x509_certificate(pem.encode(), default_backend())
+    public_key = cert.public_key()
+
+    if isinstance(public_key, rsa.RSAPublicKey):
+        return "RS"
+    elif isinstance(public_key, ec.EllipticCurvePublicKey):
+        return "EC"
+    else:
+        return "Unknown"

@@ -11,7 +11,8 @@ from pyeudiw.x509.verify import (
     der_list_to_pem_list, 
     pem_list_to_der_list, 
     get_x509_info,
-    get_trust_anchor_from_x5c
+    get_trust_anchor_from_x5c,
+    get_certificate_type
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class X509Handler(TrustHandlerInterface):
         client_id_scheme: str = "x509_san_uri",
         certificate_authorities: dict[str, str] = [],
         **kwargs
-    ):  
+    ) -> None:        
         self.client_id = client_id
         self.client_id_scheme = client_id_scheme
         self.certificate_authorities = certificate_authorities
@@ -64,11 +65,18 @@ class X509Handler(TrustHandlerInterface):
                 logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}), the chain will be removed")
                 continue
 
+            pem_type = get_certificate_type(v[0])
+
+            if not pem_type in private_keys[0]["kty"]:
+                raise InvalidTrustHandlerConfiguration(
+                    f"Invalid x509 certificate: expected algorithm for metadata key 0 {private_keys[0]['kty'][:2]} got {pem_type}"
+                )
+
             relative_to_rp = False
 
             for cert in v[:-1]:
                 cert_jwk = parse_certificate(cert)
-                if cert_jwk.thumbprint in private_keys_thumbprints:
+                if cert_jwk.thumbprint == private_keys_thumbprints[0]:
                     relative_to_rp = True
                     break
 
