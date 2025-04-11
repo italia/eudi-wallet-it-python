@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.jwk import JWK
+from pyeudiw.tools.utils import iat_now
 
 @dataclass
 class TrustEvaluationType:
@@ -15,7 +15,7 @@ class TrustEvaluationType:
     def __init__(
         self,
         attribute_name: str,
-        expiration_date: datetime,
+        expiration_date: int,
         jwks: list[dict | JWK ] = [],
         trust_handler_name: str = "",
         **kwargs
@@ -25,8 +25,8 @@ class TrustEvaluationType:
 
         :param attribute_name: The attribute name of the the field that holds the trust parameter data
         :type attribute_name: str
-        :param expiration_date: The expiration date of the trust parameter data
-        :type expiration_date: datetime
+        :param expiration_date: The expiration date in unix timestamp of the trust parameter data
+        :type expiration_date: int
         :param jwks: The jwks of the trust parameter data
         :type jwks: list[dict | JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
@@ -69,7 +69,7 @@ class TrustEvaluationType:
         :returns: Whether the trust parameter data has expired
         :rtype: bool
         """
-        return datetime.now() > self.expiration_date
+        return iat_now() > self.expiration_date
     
     def get_jwks(self) -> list[dict]:
         return self.jwks

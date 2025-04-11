@@ -23,6 +23,7 @@ class PresentationSubmissionHandler:
             self, 
             config: dict,
             trust_evaluator: CombinedTrustEvaluator,
+            sig_alg_supported: list[str] = [],
         ) -> None:
         """
         Initialize the PresentationSubmissionHandler handler with the submission data.
@@ -64,7 +65,7 @@ class PresentationSubmissionHandler:
                 if not issubclass(cls, BaseVPParser):
                      raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
                 
-                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config)
+                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config, sig_alg_supported=sig_alg_supported)
             except ModuleNotFoundError:
                 raise ImportError(f"Module '{module_name}' not found for format '{format_conf['name']}'.")
             except AttributeError:
