@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import time
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.settings import CONFIG
 from pyeudiw.tests.trust import correct_config, not_conformant
@@ -131,6 +132,7 @@ def test_cache_first_strategy_expired():
     uuid_url = f"http://{uuid4()}.issuer.it"
 
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
+    time.sleep(1)
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'updated_trust_param_key': 'updated_trust_param_value'}}
 
 def test_cache_first_strategy_expired_revoked():
