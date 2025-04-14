@@ -23,6 +23,7 @@ class PresentationSubmissionHandler:
             self, 
             config: dict,
             trust_evaluator: CombinedTrustEvaluator,
+            sig_alg_supported: list[str] = [],
         ) -> None:
         """
         Initialize the PresentationSubmissionHandler handler with the submission data.
@@ -64,7 +65,7 @@ class PresentationSubmissionHandler:
                 if not issubclass(cls, BaseVPParser):
                      raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
                 
-                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config)
+                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config, sig_alg_supported=sig_alg_supported)
             except ModuleNotFoundError:
                 raise ImportError(f"Module '{module_name}' not found for format '{format_conf['name']}'.")
             except AttributeError:
@@ -96,7 +97,7 @@ class PresentationSubmissionHandler:
         except ValidationError as e:
             raise SubmissionValidationError(f"Submission validation failed: {e}")
     
-    def _extract_position(self, path: str) -> tuple[str, str]:
+    def _extract_position(self, path: str) -> int:
         """
         Extract the position and path from the descriptor path.
 
@@ -108,8 +109,8 @@ class PresentationSubmissionHandler:
         :return: Tuple of position and path.
         :rtype: tuple[str, str]
         """
-        pattern = r'\$\[(\d+)\]'
-        match = re.search(pattern, path)
+        pattern = r"\$[a-z_\-\.]*\[(\d+)\]"
+        match = re.match(pattern, path, re.I)
         if match:
             position = int(match.group(1))
             return position

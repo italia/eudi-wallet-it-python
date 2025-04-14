@@ -116,7 +116,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         credential_presentation_handlers_configuration = self.config.get("credential_presentation_handlers", {})
         self.vp_token_parser = PresentationSubmissionHandler(
             credential_presentation_handlers_configuration,
-            self.trust_evaluator
+            self.trust_evaluator,
+            self.config.get("jwt", {}).get("sig_alg_supported", [])
         )
 
     def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:

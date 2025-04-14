@@ -162,13 +162,17 @@ playwrite install
 PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 ````
 
+## External Resources and Tools
 
+- [EUDIW Ref Implementation VCI](https://issuer.eudiw.dev/)
+- [EUDIW Ref Implementation RP](https://verifier.eudiw.dev/home)
 
 ## Authors
 
 - Giuseppe De Marco
 
 ## Acknowledgments
+
 - Thomas Chiozzi
 - Pasquale De Rose
 - Elisa Nicolussi Paolaz

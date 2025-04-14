@@ -1,7 +1,6 @@
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.model.trust_source import TrustEvaluationType
-from datetime import datetime
 from pyeudiw.tools.utils import exp_from_now
 
 mock_jwk = {
@@ -55,11 +54,12 @@ class MockTrustHandler(TrustHandlerInterface):
     ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
 
+
         if issuer == self.client_id:
             trust_param = TrustEvaluationType(
                 attribute_name="trust_param_name",
                 jwks=[mock_jwk, mock_jwk_private],
-                expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+                expiration_date=exp_from_now(self.exp),
                 trust_param_name={'trust_param_key': 'trust_param_value'},
                 trust_handler_name=str(self.__class__.__name__)
             )
@@ -67,7 +67,7 @@ class MockTrustHandler(TrustHandlerInterface):
             trust_param = TrustEvaluationType(
                 attribute_name="trust_param_name",
                 jwks=[mock_jwk, mock_jwk_private],
-                expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+                expiration_date=exp_from_now(self.exp),
                 trust_param_name={"trust_param_key": "trust_param_value"},
                 trust_handler_name=str(self.__class__.__name__)
             )
@@ -99,7 +99,7 @@ class UpdateTrustHandler(MockTrustHandler):
         trust_param = TrustEvaluationType(
             attribute_name="trust_param_name",
             jwks=[mock_jwk],
-            expiration_date=datetime.fromtimestamp(exp_from_now(self.exp)),
+            expiration_date=exp_from_now(self.exp),
             trust_param_name={'updated_trust_param_key': 'updated_trust_param_value'},
             trust_handler_name=str(self.__class__.__name__)
         )
