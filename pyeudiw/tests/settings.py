@@ -141,6 +141,13 @@ CONFIG = {
             "A192GCM",
             "A256GCM",
         ],
+        "sig_alg_supported": [
+            "RS256",
+            "ES256",
+            "ES384",
+            "ES512",
+            "EdDSA",
+        ],
     },
     "authorization": {
         "url_scheme": "haip",  # haip://
@@ -394,16 +401,7 @@ CONFIG = {
                 "module": "pyeudiw.openid4vp.vp_sd_jwt_vc",
                 "class": "VpVcSdJwtParserVerifier",
                 "format": "dc+sd-jwt",
-                "config": {
-                    "sig_alg_supported": [
-                            "RS256",
-                            "RS384",
-                            "RS512",
-                            "ES256",
-                            "ES384",
-                            "ES512",
-                    ]
-                }
+                "config": {}
             },
             {
                 "module": "pyeudiw.openid4vp.vp_mdoc_cbor",
