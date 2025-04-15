@@ -1,34 +1,26 @@
-import zlib
-from pyeudiw.jwt.utils import base64_urldecode
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.federation.http_client import http_get_sync
-
+from pyeudiw.status_list import _decode_jwt_status_list_token, _decode_cwt_status_list_token
 
 class StatusListTokenHelper:
-    def __init__(self, token: str) -> None:
+    def __init__(self, header: dict, payload: dict, bits: int, status_list: bytes) -> None:
         """
         Initializes the StatusListTokenHelper instance.
         
-        :param token: The JWT token to decode.
-        :type token: str
-
-        :raises ValueError: If the token is invalid or the token type is not "statuslist+jwt".
+        :param header: The JWT header.
+        :type header: dict
+        :param payload: The JWT payload.
+        :type payload: dict
+        :param bits: The number of bits used for the status list.
+        :type bits: int
+        :param status_list: The status list as a byte array.
+        :type status_list: bytes
         """
 
-        self.header = decode_jwt_header(token)
-
-        if self.header["typ"] != "statuslist+jwt":
-            raise ValueError("Invalid token type")
-        
-        self.payload = decode_jwt_payload(token)
-        
-        decoded_status_list = self.payload["status_list"]
-
-        self.bits = decoded_status_list["bits"]
-
-        compressed_data = base64_urldecode(decoded_status_list["lst"])
-        self.status_list = zlib.decompress(compressed_data)
+        self.header = header
+        self.payload = payload
+        self.bits = bits
+        self.status_list = status_list
 
     def is_expired(self) -> bool:
         """
@@ -67,6 +59,29 @@ class StatusListTokenHelper:
         status = (self.status_list[jump // 8] >> (jump % 8)) & mask
 
         return status
+    
+    @staticmethod
+    def from_token(token: str | bytes) -> "StatusListTokenHelper":
+        """
+        Create a StatusListTokenHelper instance from a status list token.
+        :param token: The status list token.
+        :type token: str | bytes
+
+        :raises ValueError: If the token is invalid or the retrieved token is invalid.  
+
+        :returns: A StatusListTokenHelper instance.
+        :rtype: StatusListTokenHelper
+        """
+        decoders = [_decode_jwt_status_list_token, _decode_cwt_status_list_token]
+
+        for decoder in decoders:
+            try:
+                header, payload, bits, status_list = decoder(token)
+                return StatusListTokenHelper(header, payload, bits, status_list)
+            except Exception:
+                continue
+
+        raise ValueError("Invalid token format")
     
     @staticmethod
     def from_status(status: dict) -> "StatusListTokenHelper":
