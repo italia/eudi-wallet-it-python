@@ -75,11 +75,10 @@ class StatusListTokenHelper:
         decoders = [_decode_jwt_status_list_token, _decode_cwt_status_list_token]
 
         for decoder in decoders:
-            try:
-                header, payload, bits, status_list = decoder(token)
+            status, header, payload, bits, status_list = decoder(token)
+
+            if status:
                 return StatusListTokenHelper(header, payload, bits, status_list)
-            except Exception:
-                continue
 
         raise ValueError("Invalid token format")
     
