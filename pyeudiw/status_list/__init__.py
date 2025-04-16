@@ -7,6 +7,7 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 
 StatusListFormat = Literal["jwt", "cwt"]
 
+def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, bytes]:
     """
     Decode a JWT status list token.
 
@@ -36,7 +37,7 @@ StatusListFormat = Literal["jwt", "cwt"]
     except Exception:
         return False, {}, {}, 0, b""
 
-def _decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
+def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
     """
     Decode a CWT status list token.
 
