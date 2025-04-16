@@ -48,7 +48,6 @@ def _decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, 
     """
 
     try:
-
         data = cbor2.loads(unhexlify(token))
         header = cbor2.loads(data.value[0])
 
