@@ -1,11 +1,12 @@
 import zlib
 import cbor2
-from typing import Optional
 from binascii import unhexlify
-from pyeudiw.jwt.utils import base64_urldecode
+from typing import Literal, Union, Optional
+from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 
-def _decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, bytes]:
+StatusListFormat = Literal["jwt", "cwt"]
+
     """
     Decode a JWT status list token.
 
@@ -64,3 +65,52 @@ def _decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, 
         return True, header, payload, bits, status_list
     except Exception:
         return False, {}, {}, 0, b""
+    
+def _compress_bitstring(bitstring: bytes) -> bytes:
+    """
+    Compress a bitstring using zlib.
+
+    :param bitstring: The bitstring to compress.
+    :type bitstring: bytes
+
+    :return: The compressed bitstring.
+    :rtype: bytes
+    """
+    compressed_data = zlib.compress(bitstring)
+    return base64_urlencode(compressed_data)
+
+def generate_status_list(
+        bitstring: bytes, 
+        bits: int = 1, 
+        aggregation_uri: Optional[str] = None, 
+        format: StatusListFormat = "jwt"
+    ) -> Union[dict, bytes]:
+    """
+    Generate a status list.
+
+    :param bitstring: The bitstring to generate the status list from.
+    :type bitstring: bytes
+    :param bits: The number of bits in the status list.
+    :type bits: int
+    :param aggregation_uri: The aggregation URI.
+    :type aggregation_uri: Optional[str]
+    :param format: The format of the status list, either "jwt" or "cwt".
+    :type format: StatusListFormat
+
+    :return: A dictionary containing the status list or a CWT token.
+    :rtype: Union[dict, bytes]
+    """
+    compressed_status_list = _compress_bitstring(bitstring)
+    
+    status_list = {
+        "bits": bits,
+        "lst": compressed_status_list
+    }
+
+    if aggregation_uri:
+        status_list["aggregation_uri"] = aggregation_uri
+
+    if format == "jwt":
+        return status_list
+
+    return cbor2.dumps(status_list)
