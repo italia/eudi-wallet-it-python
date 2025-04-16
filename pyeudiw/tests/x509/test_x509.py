@@ -3,7 +3,7 @@ from ssl import DER_cert_to_PEM_cert
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 
@@ -25,25 +25,24 @@ def gen_chain(
         leaf_private_key: rsa.RSAPrivateKey = None
     ) -> list[bytes]:
     # Generate a private key for the CA
-    ca_private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
+
+
+    ca_private_key = ec.generate_private_key(
+        ec.SECP256R1(),
     )
 
     # Generate a private key for the intermediate
-    intermediate_private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
+    intermediate_private_key = ec.generate_private_key(
+        ec.SECP256R1(),
     )
 
     # Generate a private key for the leaf
 
     if leaf_private_key is None:
-        leaf_private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
+        leaf_private_key = ec.generate_private_key(
+            ec.SECP256R1(),
         )
-
+        
     # Generate the CA's certificate
     ca = (
         x509.CertificateBuilder()

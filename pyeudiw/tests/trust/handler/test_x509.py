@@ -57,8 +57,9 @@ def test_extract_trust_material_from_x509_handler():
     assert "expiration_date" in serialized_object["x509"]
     assert serialized_object["x509"]["expiration_date"] > datetime.datetime.now()
     assert "jwks" in serialized_object["x509"]
-    assert serialized_object["x509"]["jwks"][0]["kty"] == "RSA"
-    assert "n" in serialized_object["x509"]["jwks"][0]
+    assert serialized_object["x509"]["jwks"][0]["kty"] == "EC"
+    assert "x" in serialized_object["x509"]["jwks"][0]
+    assert "y" in serialized_object["x509"]["jwks"][0]
 
 def test_return_nothing_if_chain_is_invalid():
     invalid_chain = gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
