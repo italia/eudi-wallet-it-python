@@ -45,3 +45,9 @@ class VPExpired(Exception):
     Raised when a given VP is expired
     """
     pass
+
+class VPRevoked(Exception):
+    """
+    Raised when a given VP is revoked
+    """
+    pass
