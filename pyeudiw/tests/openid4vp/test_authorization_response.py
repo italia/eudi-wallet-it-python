@@ -1,3 +1,4 @@
+import json
 import pytest
 import satosa.context
 
@@ -48,7 +49,7 @@ def test_direct_post_parser_good_case():
     ctx.request = {
         "vp_token": vp_token,
         "state": state,
-        "presentation_submission": presentation_submission,
+        "presentation_submission": json.dumps(presentation_submission),
     }
 
     resp = parser.parse_and_validate(ctx)
@@ -87,7 +88,7 @@ def test_direct_post_response_bad_parse_case():
     ctx.qs_params = {
         "vp_token": vp_token,
         "state": state,
-        "presentation_submission": presentation_submission,
+        "presentation_submission": json.dumps(presentation_submission),
     }
 
     try:

@@ -1,3 +1,4 @@
+import json
 from typing import TypeVar
 import cryptojwt.jwe.exception
 import satosa.context
@@ -98,7 +99,10 @@ class DirectPostParser(AuthorizationResponseParser):
             if (state := resp_data.get("state", None)):
                 d["state"] = state
             if (presentation_submission := resp_data["presentation_submission"]):
-                d["presentation_submission"] = presentation_submission
+                if isinstance(presentation_submission, dict):
+                    d["presentation_submission"] = presentation_submission
+                else:
+                    d["presentation_submission"] = json.loads(presentation_submission)
             return AuthorizeResponsePayload(**d)
         except Exception as e:
             raise AuthRespParsingException(
