@@ -308,14 +308,12 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
-        excluded_fields = ["entity_id", "policies", "metadata", "revoked"]
-
         headers_params = {}
 
-        for param_name, param_value in trust_source.serialize().items():
-            if param_name not in excluded_fields:
-                headers_params[param_value["attribute_name"]] = param_value[param_value["attribute_name"]]
-
+        for handler in self.handlers:
+            header = handler.get_jwt_header_trust_parameters(trust_source)
+            if header:
+                headers_params.update(header)
         return headers_params
 
     def build_metadata_endpoints(

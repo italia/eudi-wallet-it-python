@@ -246,6 +246,12 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         # this class does not handle generic metadata information: it fetches and exposes cryptographic material only
         return trust_source
 
+    def get_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        """
+        Direct Trust is not formally associated to any trust parameter
+        """
+        return {}
+
 
 def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
     if not endpoint_component:

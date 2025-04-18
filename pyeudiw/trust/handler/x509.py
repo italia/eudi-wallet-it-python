@@ -17,10 +17,15 @@ from pyeudiw.x509.verify import (
 
 logger = logging.getLogger(__name__)
 
+
 class X509Handler(TrustHandlerInterface):
     """
     X509Handler is a trust handler implementation that extracts trust material from x509 certificates.
     """
+
+    _TRUST_TYPE = "x509"
+    _TRUST_PARAMETER_NAME = "x5c"
+
     def __init__(
         self, 
         client_id: str, 
@@ -107,7 +112,7 @@ class X509Handler(TrustHandlerInterface):
             exp = get_expiry_date_from_x5c(chain)
 
             trust_source.add_trust_param(
-                "x509",
+                X509Handler._TRUST_TYPE,
                 TrustEvaluationType(
                     attribute_name="x5c",
                     x5c=der_list_to_pem_list(chain),
@@ -158,7 +163,7 @@ class X509Handler(TrustHandlerInterface):
         trust_source.add_trust_param(
             "x509",
             TrustEvaluationType(
-                attribute_name="x5c",
+                attribute_name=self.get_handled_trust_material_name(),
                 x5c=x5c,
                 expiration_date=get_expiry_date_from_x5c(chain),
                 jwks=chain_jwks,
@@ -167,9 +172,15 @@ class X509Handler(TrustHandlerInterface):
         )
 
         return True, trust_source
+
+    def get_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
+        if (x5c := tp.get(X509Handler._TRUST_PARAMETER_NAME, None)):
+            return {"x5c": x5c}
+        return {}
     
     def get_handled_trust_material_name(self) -> str:
-        return "x5c"
+        return X509Handler._TRUST_PARAMETER_NAME
     
     def get_metadata(
         self, issuer: str, trust_source: TrustSourceData
