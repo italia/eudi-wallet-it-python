@@ -98,6 +98,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 data,
                 protected=_protected_jwt_headers,
             )
+            self._log_debug(context, f"created request object {request_object_jwt}")
             return Response(
                 message=request_object_jwt,
                 status="200",
