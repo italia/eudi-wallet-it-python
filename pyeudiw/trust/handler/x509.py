@@ -173,7 +173,7 @@ class X509Handler(TrustHandlerInterface):
 
         return True, trust_source
 
-    def get_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
         if (x5c := tp.get(X509Handler._TRUST_PARAMETER_NAME, None)):
             return {"x5c": x5c}

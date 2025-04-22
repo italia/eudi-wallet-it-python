@@ -172,7 +172,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def get_handled_trust_material_name(self) -> str:
         return FederationHandler._TRUST_PARAMETER_NAME
         
-    def get_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         tp: dict = trust_source.serialize().get(FederationHandler._TRUST_TYPE, {})
         if (trust_chain := tp.get(FederationHandler._TRUST_PARAMETER_NAME, None)):
             return {"trust_chain": trust_chain}

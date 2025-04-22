@@ -311,7 +311,7 @@ class CombinedTrustEvaluator(BaseLogger):
         headers_params = {}
 
         for handler in self.handlers:
-            header = handler.get_jwt_header_trust_parameters(trust_source)
+            header = handler.extract_jwt_header_trust_parameters(trust_source)
             if header:
                 headers_params.update(header)
         return headers_params

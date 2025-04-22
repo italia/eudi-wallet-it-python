@@ -102,11 +102,14 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
     
-    def get_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         """
-        Parses a trust source to yield which trust information in the
-        source can be associated to a JWT according to this very own
-        trust evaluation mechanism.
+        Parse a trust source to extract the trust parameters (in the source)
+        that can be used as a JWT header according to what this very own trust
+        evaluation mechanism is capable of understanding.
+
+        Some trust evaluation mechanism is not associated to any JWT header
+        mechanism, in which case an empty dictionary is returned.
         """
         return {}
 
