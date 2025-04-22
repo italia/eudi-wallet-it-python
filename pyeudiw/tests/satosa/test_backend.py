@@ -897,7 +897,7 @@ class TestOpenID4VPBackend:
         # msg = json.loads(state_endpoint_response.message)
         # assert msg["response"] == "Authentication successful"
 
-    def test_trust_patameters_in_response(self, context):
+    def test_trust_parameters_in_response(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
@@ -913,7 +913,7 @@ class TestOpenID4VPBackend:
 
         tsd = TrustSourceData.empty(CREDENTIAL_ISSUER_ENTITY_ID)
         tsd.add_trust_param(
-            "trust_chain",
+            "federation",
             TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
