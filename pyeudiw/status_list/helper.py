@@ -185,7 +185,7 @@ class StatusListTokenHelper:
             raise MissingStatusListUriError("Status list URI is missing")
 
         try:
-            status_token = http_get_sync(uri, {
+            status_token = http_get_sync([uri], {
                 "connection": {"ssl": True},
                 "session": {"timeout": 4},
             })
