@@ -103,7 +103,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 status="200",
                 content=RequestHandler._RESP_CONTENT_TYPE,
             )
-        except JWSSigningError as e500:
+        except Exception as e500:
             return self._handle_500(
                 context,
                 "internal error: error while processing the request object",
