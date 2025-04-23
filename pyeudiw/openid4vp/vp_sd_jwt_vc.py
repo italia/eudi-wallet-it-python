@@ -91,8 +91,8 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
 
         if "status" in payload:
             status_list = StatusListTokenHelper.from_status(payload["status"])
-            if status_list.is_expired() and \
-               status_list.get_status(payload["status"]["statust_list"]["idx"]) > 0:
+            if status_list.is_expired() or \
+               status_list.get_status(payload["status"]["status_list"]["idx"]) > 0:
                 raise VPRevoked(
                     "Status list indicates that the token is revoked"
                 )
