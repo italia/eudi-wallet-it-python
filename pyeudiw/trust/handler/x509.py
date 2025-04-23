@@ -1,5 +1,8 @@
+import base64
 import logging
+from ssl import PEM_cert_to_DER_cert
 from typing import Union
+
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
@@ -67,7 +70,7 @@ class X509Handler(TrustHandlerInterface):
                     break
                 
             if not found_client_id:
-                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}), the chain will be removed")
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}); searched among {search_set}, the chain will be removed")
                 continue
 
             pem_type = get_certificate_type(v[0])
@@ -175,7 +178,8 @@ class X509Handler(TrustHandlerInterface):
 
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
-        if (x5c := tp.get(X509Handler._TRUST_PARAMETER_NAME, None)):
+        if (x5c_pem := tp.get(X509Handler._TRUST_PARAMETER_NAME, None)):
+            x5c = [base64.b64encode(PEM_cert_to_DER_cert(pem)).decode() for pem in x5c_pem]
             return {"x5c": x5c}
         return {}
     
