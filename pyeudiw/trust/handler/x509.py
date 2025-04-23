@@ -134,7 +134,7 @@ class X509Handler(TrustHandlerInterface):
         x5c: list[str], 
         trust_source: TrustSourceData,
     ) -> dict[bool, TrustSourceData]:
-        chain = pem_list_to_der_list(x5c)
+        chain = [base64.b64decode(b64der) for b64der in x5c]
 
         if len(chain) > 1 and not verify_x509_attestation_chain(chain):
             logger.error(f"Invalid x509 certificate chain. Chain validation failed")
