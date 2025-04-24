@@ -7,7 +7,7 @@ from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from pyeudiw.tests.federation.base import (
     leaf_cred_jwk,
     leaf_wallet_jwk,
@@ -150,7 +150,7 @@ trust_ev = CombinedTrustEvaluator.from_config(
 
 resp = Response()
 resp.status_code = 200
-resp.headers.update({"Content-Type": "application/json"})
+resp.headers.update({"Content-Type": "application/statuslist+jwt"})
 resp._content = b"eyJhbGciOiJFUzI1NiIsImtpZCI6IjEyIiwidHlwIjoic3RhdHVzbGlzdCtqd3QifQ.eyJleHAiOjIyOTE3MjAxNzAsImlhdCI6MTY4NjkyMDE3MCwiaXNzIjoiaHR0cHM6Ly9leGFtcGxlLmNvbSIsInN0YXR1c19saXN0Ijp7ImJpdHMiOjEsImxzdCI6ImVOcmJ1UmdBQWhjQlhRIn0sInN1YiI6Imh0dHBzOi8vZXhhbXBsZS5jb20vc3RhdHVzbGlzdHMvMSIsInR0bCI6NDMyMDB9.2RSRdUce0QmRvsbJkt0Hr0Ny5c9Tim2yj43wMFU76xjv9TClW5-B65b9pZSraeoPv6OxTULb4dHiWK0O8oLi6g"
 
 mock_staus_list_endpoint = patch(
