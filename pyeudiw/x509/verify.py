@@ -50,25 +50,6 @@ def _verify_x509_certificate_chain(pems: list[str]):
         return False
 
 
-def _check_chain_len(pems: list) -> bool:
-    """
-    Check the x509 certificate chain lenght.
-
-    :param pems: The x509 certificate chain
-    :type pems: list
-
-    :returns: True if the x509 certificate chain lenght is valid else False
-    :rtype: bool
-    """
-    chain_len = len(pems)
-    if chain_len < 2:
-        message = f"invalid chain lenght -> minimum expected 2 found {chain_len}"
-        logging.warning(LOG_ERROR.format(message))
-        return False
-
-    return True
-
-
 def _check_datetime(exp: datetime | None):
     """
     Check the x509 certificate chain expiration date.
@@ -102,7 +83,7 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
     """
     exp = get_expiry_date_from_x5c(x5c)
 
-    if not _check_chain_len(x5c) or not _check_datetime(exp):
+    if not _check_datetime(exp):
         return False
     
     pems = [DER_cert_to_PEM_cert(cert) for cert in x5c]
@@ -175,10 +156,6 @@ def verify_x509_anchor(pem_str: str) -> bool:
         return False
 
     pems = pem_to_pems_list(pem_str)
-
-    if not _check_chain_len(pems):
-        logging.error(LOG_ERROR.format("check chain len failed"))
-        return False
 
     return _verify_x509_certificate_chain(pems)
 
