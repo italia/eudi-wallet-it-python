@@ -310,7 +310,7 @@ CONFIG = {
             "class": "X509Handler",
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
-                "relying_party_certificate_chains_by_ca":{
+                "relying_party_certificate_chains_by_ca": {
                     "ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
