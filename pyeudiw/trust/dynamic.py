@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 UpsertMode = Union[Literal["update_first"], Literal["cache_first"]]
 
+INCLUDE_JWT_HEADER_CONFIG_NAME = "include_issued_jwt_header_param"
+
 
 class CombinedTrustEvaluator(BaseLogger):
     """
@@ -308,9 +310,9 @@ class CombinedTrustEvaluator(BaseLogger):
         headers_params = {}
 
         for handler in self.handlers:
-            header = handler.extract_jwt_header_trust_parameters(trust_source)
-            if header:
-                headers_params.update(header)
+            if getattr(handler, INCLUDE_JWT_HEADER_CONFIG_NAME, None):
+                if header := handler.extract_jwt_header_trust_parameters(trust_source):
+                    headers_params.update(header)
         return headers_params
 
     def build_metadata_endpoints(

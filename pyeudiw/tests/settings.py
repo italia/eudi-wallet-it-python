@@ -268,6 +268,7 @@ CONFIG = {
                         ta_jwk.serialize(private=False),
                     ]
                 },
+                "include_issued_jwt_header_param": True,
                 "default_sig_alg": "RS256",
                 "federation_jwks": [
                     jwk,
@@ -310,6 +311,7 @@ CONFIG = {
             "class": "X509Handler",
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
+                "include_issued_jwt_header_param": True,
                 "relying_party_certificate_chains_by_ca":{
                     "ca.example.com": DEFAULT_X509_CHAIN,
                 },

@@ -133,7 +133,7 @@ class X509Handler(TrustHandlerInterface):
         self, 
         x5c: list[str], 
         trust_source: TrustSourceData,
-    ) -> dict[bool, TrustSourceData]:
+    ) -> tuple[bool, TrustSourceData]:
         chain = [base64.b64decode(b64der) for b64der in x5c]
 
         if len(chain) > 1 and not verify_x509_attestation_chain(chain):
