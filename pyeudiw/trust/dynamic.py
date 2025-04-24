@@ -199,7 +199,7 @@ class CombinedTrustEvaluator(BaseLogger):
                         else:
                             used_handlers.append(handler.__class__.__name__)
 
-            self._log_warning(f"no configured trust handler can successfully process static trust material {static_trust_materials} of issuer {issuer}")
+            self._log_warning("static trust evaluation", f"no configured trust handler can successfully process static trust material {static_trust_materials} of issuer {issuer}")
 
         # try with handlers that don't use static trust materials like DirectTrustJar
         filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
