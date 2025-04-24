@@ -51,12 +51,12 @@ class DirectTrustJar(_DirectTrustJwkHandler):
     def extract_and_update_trust_materials(
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
+        if issuer == self.client_id:
+            return self._extract_and_update_own_trust_material(trust_source)
         # In the context of an OID4VP protocol flow, no-one but ourself
         # can be trusted as a JAR issuer. As long as this is true, we have
         # no reason to collect other parties JAR trust material.
-        if issuer != self.client_id:
-            return trust_source
-        return self._extract_and_update_own_trust_material(trust_source)
+        return trust_source
 
     def get_metadata(
         self, issuer: str, trust_source: TrustSourceData
