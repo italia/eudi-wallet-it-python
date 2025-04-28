@@ -49,6 +49,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         httpc_params: dict = DEFAULT_HTTPC_PARAMS,
         cache_ttl: int = 0,
         metadata_type: str = _ISSUER_METADATA_TYPE,
+        include_issued_jwt_header_param: bool = False,
         **kwargs,
     ):
 
@@ -68,6 +69,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.federation_entity_metadata: dict[str, str] = federation_entity_metadata
         self.client_id: str = federation_entity_metadata
         self.entity_configuration_exp = entity_configuration_exp
+        self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
         self.federation_public_jwks = [
             JWK(i).as_public_dict() for i in self.federation_jwks

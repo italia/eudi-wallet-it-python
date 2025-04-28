@@ -308,7 +308,6 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer, force_update)
 
         headers_params = {}
-
         for handler in self.handlers:
             if getattr(handler, INCLUDE_JWT_HEADER_CONFIG_NAME, None):
                 if header := handler.extract_jwt_header_trust_parameters(trust_source):

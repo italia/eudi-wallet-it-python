@@ -467,7 +467,6 @@ class TestOpenID4VPBackend:
 
         # case (4): good aud, nonce and state
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
-
         encrypted_response = JWEHelper(
             CONFIG["metadata_jwks"][1]).encrypt(good_response)
         context.request = {
@@ -919,6 +918,7 @@ class TestOpenID4VPBackend:
                 jwks=[JWK(key=ta_jwk).as_dict()],
                 expiration_date=datetime.datetime.now(),
                 trust_chain=trust_chain_wallet,
+                trust_handler_name="FederationHandler",
             )
         )
 

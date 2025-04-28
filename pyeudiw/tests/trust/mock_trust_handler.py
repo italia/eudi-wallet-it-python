@@ -32,6 +32,7 @@ class MockTrustHandler(TrustHandlerInterface):
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("default_client_id", None)
         self.exp = kwargs.get("exp", 10)
+        self.include_issued_jwt_header_param = kwargs.get("include_issued_jwt_header_param", False)
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
         if issuer == self.client_id:
