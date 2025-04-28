@@ -136,9 +136,11 @@ class TrustHandlerInterface:
 
     def is_it_me(self, client_id: str) -> bool:
         """
-        TODO
+        Returns true if, according to this trust framework implementation,
+        the argument client_id refers to the implementation itself as a
+        *member* of the trust framework.
         """
-        return client_id == self.default_client_id
+        return client_id == self.client_id
 
     @property
     def name(self) -> str:
@@ -149,7 +151,7 @@ class TrustHandlerInterface:
         :rtype: str
         """
         return str(self.__class__.__name__)
-    
+
     @property
     def default_client_id(self) -> str:
         """
@@ -158,7 +160,4 @@ class TrustHandlerInterface:
         :returns: The default client id of the trust handler
         :rtype: str
         """
-        # TODO: investiga dove questo viene veramente chiamat
-        # TODO: proposal to rename configured_client_id
-        # breakpoint()
         return self.client_id
