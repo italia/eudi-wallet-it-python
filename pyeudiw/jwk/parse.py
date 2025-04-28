@@ -59,16 +59,15 @@ def parse_certificate(cert: str | bytes) -> JWK:
     :rtype: JWK
     """
 
-    parse_methods = [
-        lambda x: parse_pem(x),
-        lambda x: parse_pem(DER_cert_to_PEM_cert(x)),
-    ]
+    try:
+        return parse_pem(cert)
+    except Exception:
+        pass
 
-    for method in parse_methods:
-        try:
-            return method(cert)
-        except Exception:
-            continue
+    try:
+        return parse_pem(DER_cert_to_PEM_cert(cert))
+    except Exception:
+        pass
     
     raise InvalidJwk(f"unable to parse key from pem: {cert}")
 
@@ -95,14 +94,14 @@ def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     :rtype: JWK
     """
 
-    parse_methos = [
-        lambda x5c: [parse_pem(pem) for pem in x5c],
-        lambda x5c: [parse_pem(DER_cert_to_PEM_cert(cert)) for cert in x5c],
-    ]
+    try:
+        return [parse_certificate(cert) for cert in x5c]
+    except Exception:
+        pass
 
-    for method in parse_methos:
-        try:
-            return method(x5c)
-        except Exception:
-            continue
+    try:
+        return [parse_certificate(DER_cert_to_PEM_cert(cert)) for cert in x5c]
+    except Exception:
+        pass
+
     raise InvalidJwk(f"unable to parse key from pem chain: {x5c}")
