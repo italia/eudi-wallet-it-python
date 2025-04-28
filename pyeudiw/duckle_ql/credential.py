@@ -10,8 +10,7 @@ JWT_VC_JSON_LD = "jwt_vc_json-ld"
 JWT_VC_JSON = "jwt_vc_json"
 JWT_VC_JSON_FORMATS = [JWT_VC_JSON_LD, JWT_VC_JSON]
 
-
-TOKEN_FORMAT_FIELD = "credential_format"
+TOKEN_FORMAT_FIELD = "credential_format" # nosec B105
 
 class DcqlCredential(BaseModel):
     credential_format: str
