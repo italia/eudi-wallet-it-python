@@ -1,13 +1,13 @@
+import logging
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
-from pyeudiw.openid4vp.exceptions import MissingIssuer
-from pyeudiw.openid4vp.exceptions import VPExpired
-from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.openid4vp.exceptions import MissingIssuer, VPRevoked, VPExpired
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
-
+from pyeudiw.status_list.helper import StatusListTokenHelper
 
 class VpVcSdJwtParserVerifier(BaseVPParser):
 
@@ -87,4 +87,12 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
         if is_jwt_expired(sdjwt.issuer_jwt.jwt):
             raise VPExpired("VP is expired")
         
-        # TODO: implement revocation check
+        payload = decode_jwt_payload(token)
+
+        if "status" in payload:
+            status_list = StatusListTokenHelper.from_status(payload["status"])
+            if status_list.is_expired() or \
+               status_list.get_status(payload["status"]["status_list"]["idx"]) > 0:
+                raise VPRevoked(
+                    "Status list indicates that the token is revoked"
+                )
