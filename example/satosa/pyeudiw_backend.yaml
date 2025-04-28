@@ -251,19 +251,19 @@ config:
         client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request. 
         include_issued_jwt_header_param: true # default false; if true, it will include x5c header parameters in the signed presentation request issued by this trust handler
         certificate_authorities:
-          - ca.example.com: |
-                -----BEGIN CERTIFICATE-----
-                MIIB2DCCAX2gAwIBAgIULx2ECoVuwx8Hjz9KT8LU2UnO5fcwCgYIKoZIzj0EAwIw
-                UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
-                VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDA5MTIw
-                ODUwWhcNMjYwNDEwMTIwODUwWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
-                bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
-                VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFnk7w/2CELwYAo1HYjh
-                v07QS3Xo3HL1Qt/SD2s5pcBmENuFzPUS8E1JFZ047hfaGIb+6NQdUcNt7RGBQgvJ
-                cNqjMTAvMBIGA1UdEwEB/wQIMAYBAf8CAQEwGQYDVR0RBBIwEIIOY2EuZXhhbXBs
-                ZS5jb20wCgYIKoZIzj0EAwIDSQAwRgIhAJLASYXdk77YGrVeuj2bdy48fFeGcHwY
-                hEt3dD1GqdqkAiEAqekBRTF9wzJ/lPmRJyPdLoxzGBbIkd53NCtGUfNvaL0=
-                -----END CERTIFICATE-----
+          ca.example.com: |
+            -----BEGIN CERTIFICATE-----
+            MIIB2DCCAX2gAwIBAgIULx2ECoVuwx8Hjz9KT8LU2UnO5fcwCgYIKoZIzj0EAwIw
+            UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+            VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDA5MTIw
+            ODUwWhcNMjYwNDEwMTIwODUwWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+            bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
+            VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFnk7w/2CELwYAo1HYjh
+            v07QS3Xo3HL1Qt/SD2s5pcBmENuFzPUS8E1JFZ047hfaGIb+6NQdUcNt7RGBQgvJ
+            cNqjMTAvMBIGA1UdEwEB/wQIMAYBAf8CAQEwGQYDVR0RBBIwEIIOY2EuZXhhbXBs
+            ZS5jb20wCgYIKoZIzj0EAwIDSQAwRgIhAJLASYXdk77YGrVeuj2bdy48fFeGcHwY
+            hEt3dD1GqdqkAiEAqekBRTF9wzJ/lPmRJyPdLoxzGBbIkd53NCtGUfNvaL0=
+            -----END CERTIFICATE-----
         relying_party_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
             ca.example.com:
               - |

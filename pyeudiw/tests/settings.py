@@ -312,7 +312,7 @@ CONFIG = {
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
                 "include_issued_jwt_header_param": True,
-                "relying_party_certificate_chains_by_ca":{
+                "relying_party_certificate_chains_by_ca": {
                     "ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
