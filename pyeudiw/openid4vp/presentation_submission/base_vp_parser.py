@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-from cryptojwt.jwk.ec import ECKey
-from cryptojwt.jwk.rsa import RSAKey
+
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 class BaseVPParser(ABC):

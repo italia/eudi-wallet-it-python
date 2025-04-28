@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import os
 import time
 import uuid
 from copy import deepcopy
@@ -8,6 +9,7 @@ from io import StringIO
 from typing import Any, Literal
 
 import requests
+import yaml
 from bs4 import BeautifulSoup
 from jose import jwt
 
@@ -172,13 +174,9 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
     return _create_generic_holder_test_data(issued_jwt, request_nonce, request_aud, serialization_format, claims_to_disclose)
 
 def create_holder_test_data_with_duckle(
-        issued_jwt: dict[Literal["jws"] | Literal["issuance"], str],
         request_nonce: str,
         request_aud: str,
-        claims_to_disclose: dict[str, bool]
 ) -> str:
-    serialization_format="json"
-    #return _create_generic_holder_test_data(issued_jwt, request_nonce, request_aud, serialization_format, claims_to_disclose)
     now = int(time.time())
 
     payload = {
@@ -187,49 +185,45 @@ def create_holder_test_data_with_duckle(
         "iat": now,
         "exp": now + 600,  # valido per 10 minuti
         "nonce": request_nonce,
+        "sub": RP_EID,
         "aud": request_aud,
-        "query": {
-            "type": "QueryByFrame",
-            "credentialQuery": [
+        "dcql_query": {
+            "credentials": [
                 {
-                    "reason": "Need proof of age",
-                    "example": {
-                        "@context": [
-                            "https://www.w3.org/2018/credentials/v1"
-                        ],
-                        "type": ["VerifiableCredential", "AgeCredential"],
-                        "credentialSubject": {
-                            "age": 25
-                        }
-                    }
+                    "credential_format": 'mso_mdoc',
+                    "doctype": 'org.iso.18013.5.1.mDL',
+                    "namespaces": {
+                        'org.iso.18013.5.1': {
+                            "given_name": 'Mario',
+                            "family_name": 'Rossi',
+                        },
+                    },
                 },
                 {
-                    "reason": "Need name verification",
-                    "example": {
-                        "@context": [
-                            "https://www.w3.org/2018/credentials/v1"
-                        ],
-                        "type": ["VerifiableCredential", "NameCredential"],
-                        "credentialSubject": {
-                            "given_name": "Mario"
+                    "credential_format": 'mso_mdoc',
+                    "doctype": 'org.iso.18013.5.1.mDL',
+                    "namespaces": {
+                        'org.iso.18013.5.1': {
+                            "resident_country": 'Italy',
+                            "resident_address": 'Via Roma 1',
+                            "non_disclosed": 'secret',
                         }
                     }
                 }
             ]
         }
     }
-
-
+    algorithm = "ES256"
+    key = filter_keys_by_algorithm(algorithm)
     headers = {
-        "alg": DEFAULT_SIG_KTY_MAP[WALLET_PRIVATE_JWK.key.kty],
+        "alg": algorithm,
         "typ": "dcql",
-        "kid": WALLET_PRIVATE_JWK.as_dict().get("kid")
+        "kid": key.get("kid")
     }
-
     token = jwt.encode(
         claims=payload,
-        key=WALLET_PRIVATE_JWK.as_dict(),
-        algorithm=headers["alg"],
+        key=key,
+        algorithm=algorithm,
         headers=headers
     )
 
@@ -348,3 +342,23 @@ def verify_request_object_jwt(ro: str, client: requests.Session):
     metadata = json.loads(metadata_raw)
     verifier = JWSHelper(metadata["jwks"]["keys"])
     verifier.verify(ro)
+
+class IgnoreUnknownTagsLoader(yaml.SafeLoader):
+    pass
+
+def ignore_unknown(loader, tag_suffix, node):
+    return loader.construct_scalar(node)
+
+IgnoreUnknownTagsLoader.add_multi_constructor('', ignore_unknown)
+
+def filter_keys_by_algorithm(algorithm: str) -> dict:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    yaml_path = os.path.normpath(os.path.join(current_dir, "..", "pyeudiw_backend.yaml"))
+
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        config = yaml.load(f, Loader=IgnoreUnknownTagsLoader)
+
+    metadata_jwks = config.get("config", {}).get("metadata_jwks", [])
+    for key in metadata_jwks:
+        if key.get("alg") == algorithm:
+            return key

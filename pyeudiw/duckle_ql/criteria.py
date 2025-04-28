@@ -1,125 +1,70 @@
-import logging
-from typing import Any
+from typing import List
 
-logger = logging.getLogger(__name__)
+from pyeudiw.duckle_ql.credential import DcqlCredential, DcqlQuery, MSO_MDOC_FORMAT
 
-def _apply_operator(resolved_value: Any, operator: str, value: Any) -> bool:
+
+def flat_credentials_mso_mdoc(credentials: List[DcqlCredential]) -> List[DcqlCredential]:
     """
-    Applies the operator to the resolved value and the expected value.
+    Flattens a list of DcqlCredential objects, merging credentials with the same
+    credential_format, doctype, and namespaces.
 
-    Args:
-        resolved_value (Any): The value resolved from the path in the example.
-        operator (str): The operator to apply (e.g., "equals", "greater_than").
-        value (Any): The expected value to compare against.
-
-    Returns:
-        bool: True if the operator check passes, False otherwise.
+    :param credentials: A list of DcqlCredential objects.
+    :return: A list of flattened DcqlCredential objects.
     """
-    if operator == "equals":
-        return resolved_value == value
-    elif operator == "greater_than":
-        return resolved_value > value
-    elif operator == "less_than":
-        return resolved_value < value
+    merged_credentials = []
+    seen = {}
+    for credential in credentials:
+        key = (credential.credential_format, credential.doctype) # Modified key
+        if key not in seen:
+            seen[key] = credential
+            merged_credentials.append(credential)
+        else:
+            existing_credential = seen[key]
+            # Merge the namespaces by combining the claims correctly
+            for namespace, claims in credential.namespaces.items():
+                if namespace in existing_credential.namespaces:
+                    existing_claims = existing_credential.namespaces[namespace]  # Get existing claims
+                    for claim_name, claim_value in claims.items():
+                        existing_claims[claim_name] = claim_value # Correctly merge claim
+                else:
+                    existing_credential.namespaces[namespace] = claims
+    return merged_credentials
+
+def match_credential_mso_mdoc_format(query: DcqlQuery, credentials: list[DcqlCredential]) -> bool:
+    for credential in credentials:
+        if (
+                credential.credential_format == query.format
+                and credential.doctype == query.meta.doctype_value
+        ):
+            all_claims_present = True
+            for claim in query.claims:
+                namespace = claim.namespace
+                claim_name = claim.claim_name
+                if (
+                        namespace not in credential.namespaces
+                        or claim_name not in credential.namespaces[namespace]
+                ):
+                    all_claims_present = False
+                    break
+
+                if claim.values:
+                    if claim_name in credential.namespaces[namespace]:
+                        claim_values = credential.namespaces[namespace][claim_name]
+                        if claim_values and claim_values not in claim.values:
+                            all_claims_present = False
+                            break
+
+            return all_claims_present
+
+def match_credential(queries: list[DcqlQuery], credentials: list[DcqlCredential]):
+    mso_mdoc_queries = list(filter(lambda q: q.format == MSO_MDOC_FORMAT, queries))
+    if mso_mdoc_queries:
+        for query in mso_mdoc_queries:
+            mso_mdoc_credentials = list(filter(lambda c: c.credential_format == MSO_MDOC_FORMAT, credentials))
+            if not mso_mdoc_credentials:
+                raise ValueError(f"Missing credential in format {MSO_MDOC_FORMAT}")
+            if not match_credential_mso_mdoc_format(query, flat_credentials_mso_mdoc(mso_mdoc_credentials)):
+                raise ValueError(f"Credential does not match query: {query.id}")
     else:
-        logger.warning(f"Unsupported operator: {operator}")
-        return False
-
-def _evaluate_criterion(example: dict, criterion: dict) -> bool:
-    """
-    Evaluates whether a single criterion is satisfied by the given example.
-
-    Args:
-        example (dict): The credential example to check against.
-        criterion (dict): The criterion definition.
-
-    Returns:
-        bool: True if satisfied, False otherwise.
-    """
-    path = criterion.get('path')
-    operator = criterion.get('operator')
-    expected = criterion.get('value')
-
-    actual = _resolve_path(example, path)
-
-    if actual is None:
-        return False
-
-    return _apply_operator(actual, operator, expected)
-
-def _resolve_path(data: Any, path: str) -> Any:
-    """
-    Resolves a dotted path like 'credentialSubject.given_name' on nested dictionaries and lists.
-
-    This function supports traversing through nested dictionaries and also handles lists
-    by recursively resolving the remaining path on each list item and returning the first
-    non-null result.
-
-    Args:
-        data (Any): The input data, usually a dictionary representing a credential or VC.
-        path (str): The dotted path string to resolve (e.g., "credentialSubject.given_name").
-
-    Returns:
-        Any: The resolved value, or None if the path cannot be resolved.
-    """
-    try:
-        parts = path.split(".")
-        for part in parts:
-            if isinstance(data, dict):
-                # Navigate to the next level using the current key
-                data = data.get(part)
-            elif isinstance(data, list):
-                # If we hit a list, try to resolve the remaining path in each item
-                remaining_path = ".".join(parts[parts.index(part):])
-                resolved = [_resolve_path(item, remaining_path) for item in data]
-                # Return the first non-null value
-                data = next((d for d in resolved if d is not None), None)
-                break
-            else:
-                # If the current data is neither a dict nor a list, we can't resolve further
-                return None
-
-            if data is None:
-                return None
-        return data
-    except Exception as e:
-        logger.error(f"Error during retrieve dclq path: {e}")
-        return None
-
-class Criteria:
-    def __init__(self, criteria_definition: list[dict]):
-        self.criteria_definition = criteria_definition
-
-    def validate(self, vp_token: dict) -> bool:
-        """
-        Validates that every criterion is satisfied by at least one credentialQuery in the VP token.
-
-        Args:
-            vp_token (dict): The VP token containing the credentialQuery list.
-
-        Returns:
-            bool: True if all criteria are satisfied by any credentialQuery.
-        """
-        if not isinstance(vp_token, dict):
-            logger.warning("VP token is not a dictionary")
-            return False
-
-        query = vp_token.get('query', {})
-        credential_queries = query.get('credentialQuery', [])
-
-        if not credential_queries:
-            logger.warning("No credentialQuery found in VP token")
-            return False
-
-        for criterion in self.criteria_definition:
-            matched = any(
-                _evaluate_criterion(cq.get('example', {}), criterion)
-                for cq in credential_queries
-            )
-            if not matched:
-                logger.info(f"Criterion not satisfied: {criterion}")
-                return False
-
-        return True
-
+        raise ValueError(f"Credential does not match format {MSO_MDOC_FORMAT}")
 

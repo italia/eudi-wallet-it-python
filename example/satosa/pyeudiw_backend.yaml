@@ -99,6 +99,11 @@ config:
             - path:
               - "$.given_name"
 
+  duckle:
+    presentation:
+      - "credentials[*].namespaces.org.iso.18013.5.1.given_name": "given_name"
+      - "credentials[*].namespaces.org.iso.18013.5.1.family_name": "family_name"
+
   user_attributes:
     unique_identifiers:
     - tax_id_code
@@ -197,6 +202,12 @@ config:
       - module: pyeudiw.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
+      - module: pyeudiw.duckle_ql.handler
+        class: DuckleHandler
+        format: jwt_vc_json
+        config:
+          query:
+            - '{ "id": "mdl-id", "format": "mso_mdoc", "meta": { "doctype_value": "org.iso.18013.5.1.mDL" }, "claims": [ { "id": "given_name", "namespace": "org.iso.18013.5.1", "claim_name": "given_name" }, { "id": "family_name", "namespace": "org.iso.18013.5.1", "claim_name": "family_name" }, { "id": "resident_country", "namespace": "org.iso.18013.5.1", "claim_name": "resident_country", "values":["Italy"] }] }'
 
   trust:
     direct_trust_sd_jwt_vc:

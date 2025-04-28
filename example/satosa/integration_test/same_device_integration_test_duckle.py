@@ -61,15 +61,8 @@ request_object_claims = decode_jwt_payload(sign_request_obj.text)
 response_uri = request_object_claims["response_uri"]
 
 verifiable_presentations = create_holder_test_data_with_duckle(
-    create_issuer_test_data_duckle(),
     request_object_claims["nonce"],
     request_object_claims["client_id"],
-    {
-        "address": {
-            "city": True
-        },
-        "birthdate": True
-    }
 )
 
 # Risposta di autorizzazione
