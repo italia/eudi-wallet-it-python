@@ -54,7 +54,7 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tests.x509.test_x509 import gen_chain
-from pyeudiw.x509.verify import der_list_to_pem_list
+from pyeudiw.x509.verify import to_pem_list
 from pyeudiw.jwk.parse import parse_pem
 
 PKEY = {
@@ -113,7 +113,7 @@ class TestOpenID4VPBackend:
     def create_backend(self):
         db_engine_inst = DBEngine(CONFIG["storage"])
         
-        self.chain = der_list_to_pem_list(DEFAULT_X509_CHAIN)
+        self.chain = to_pem_list(DEFAULT_X509_CHAIN)
         issuer_pem = self.chain[-1]
         self.x509_leaf_private_key = DEFAULT_X509_LEAF_JWK
 
