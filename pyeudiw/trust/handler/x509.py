@@ -1,6 +1,4 @@
-import base64
 import logging
-from ssl import PEM_cert_to_DER_cert
 from typing import Union
 
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
@@ -9,6 +7,8 @@ from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 from pyeudiw.jwk.parse import parse_pem, parse_x5c_keys, parse_certificate
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.x509.verify import (
+    PEM_cert_to_B64DER_cert,
+    to_DER_cert,
     verify_x509_attestation_chain, 
     get_expiry_date_from_x5c, 
     der_list_to_pem_list, 
@@ -36,11 +36,13 @@ class X509Handler(TrustHandlerInterface):
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
         certificate_authorities: dict[str, str] = [],
+        include_issued_jwt_header_param: bool = False,
         **kwargs
     ) -> None:        
         self.client_id = client_id
         self.client_id_scheme = client_id_scheme
         self.certificate_authorities = certificate_authorities
+        self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
@@ -70,7 +72,7 @@ class X509Handler(TrustHandlerInterface):
                     break
                 
             if not found_client_id:
-                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}); searched among {search_set}, the chain will be removed")
+                logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}); the chain will be removed")
                 continue
 
             pem_type = get_certificate_type(v[0])
@@ -130,24 +132,30 @@ class X509Handler(TrustHandlerInterface):
         return trust_source
     
     def validate_trust_material(
-        self, 
-        x5c: list[str], 
+        self,
+        x5c: list[str],
         trust_source: TrustSourceData,
     ) -> tuple[bool, TrustSourceData]:
-        chain = [base64.b64decode(b64der) for b64der in x5c]
+        # TODO: qui c'è del lavoro veramente sporco da fare.
+        #  Bisogna
+        #  (1) normalizzare la rappresentazione della chain a DER; per fare questo bisogna fare inferenza se PEM o Base64+DER
+        #  (2) normalizzare il salvatagggio della chain a PEM
+        #  (3) incrociare le dita che MDOC non si sfasci...
+        der_chain = [to_DER_cert(cert) for cert in x5c]
+        pem_chain = der_list_to_pem_list(der_chain)
 
-        if len(chain) > 1 and not verify_x509_attestation_chain(chain):
+        if len(der_chain) > 1 and not verify_x509_attestation_chain(der_chain):
             logger.error(f"Invalid x509 certificate chain. Chain validation failed")
             return False, trust_source
 
-        issuer = get_trust_anchor_from_x5c(chain)
+        issuer = get_trust_anchor_from_x5c(der_chain)
 
         if not issuer:
-            logger.error(f"Invalid x509 certificate chain. Issuer not found")
+            logger.error("Invalid x509 certificate chain. Issuer not found")
             return False, trust_source
         
         if not issuer in self.certificate_authorities:
-            logger.error(f"Invalid x509 certificate chain. Issuer not found in the list of trusted CAs")
+            logger.error("Invalid x509 certificate chain. Issuer not found in the list of trusted CAs")
             return False, trust_source
         
         issuer_pem = self.certificate_authorities[issuer]
@@ -156,19 +164,19 @@ class X509Handler(TrustHandlerInterface):
             issuer_jwk = parse_pem(issuer_pem)
             chain_jwks = parse_x5c_keys(x5c)
         except Exception as e:
-            logger.error(f"Invalid x509 certificate chain. Parsing failed: {e}")
+            logger.error("Invalid x509 certificate chain. Parsing failed: {e}")
             return False, trust_source
 
         if not issuer_jwk.thumbprint == chain_jwks[-1].thumbprint:
-            logger.error(f"Invalid x509 certificate chain. Issuer thumbprint does not match")
+            logger.error("Invalid x509 certificate chain. Issuer thumbprint does not match")
             return False, trust_source
         
         trust_source.add_trust_param(
             "x509",
             TrustEvaluationType(
                 attribute_name=self.get_handled_trust_material_name(),
-                x5c=x5c,
-                expiration_date=get_expiry_date_from_x5c(chain),
+                x5c=pem_chain,
+                expiration_date=get_expiry_date_from_x5c(der_chain),
                 jwks=chain_jwks,
                 trust_handler_name=self.name,
             )
@@ -179,7 +187,7 @@ class X509Handler(TrustHandlerInterface):
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
         if (x5c_pem := tp.get(X509Handler._TRUST_PARAMETER_NAME, None)):
-            x5c = [base64.b64encode(PEM_cert_to_DER_cert(pem)).decode() for pem in x5c_pem]
+            x5c = [PEM_cert_to_B64DER_cert(pem) for pem in x5c_pem]
             return {"x5c": x5c}
         return {}
     

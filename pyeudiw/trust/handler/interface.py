@@ -134,6 +134,12 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
 
+    def is_it_me(self, client_id: str) -> bool:
+        """
+        TODO
+        """
+        return client_id == self.default_client_id
+
     @property
     def name(self) -> str:
         """
@@ -152,4 +158,7 @@ class TrustHandlerInterface:
         :returns: The default client id of the trust handler
         :rtype: str
         """
+        # TODO: investiga dove questo viene veramente chiamat
+        # TODO: proposal to rename configured_client_id
+        # breakpoint()
         return self.client_id
