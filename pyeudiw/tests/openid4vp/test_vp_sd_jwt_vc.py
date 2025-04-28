@@ -274,5 +274,5 @@ def test_handler_failed_validation():
         )
         assert False, "Validation should have failed."
     except Exception as e:
-        assert str(e) == "Unknown Trust Anchor: 'https://credential_issuer.example.org' is not a recognizable Trust Anchor.", "Incorrect exception message."
+        assert str(e) == "Unknown Trust Anchor: 'https://credential-issuer.example.org' is not a recognizable Trust Anchor.", "Incorrect exception message."
     
