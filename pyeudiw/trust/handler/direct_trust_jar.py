@@ -1,4 +1,6 @@
+from pyeudiw.jwk import JWK
 from pyeudiw.trust.handler._direct_trust_jwk import _DirectTrustJwkHandler
+from pyeudiw.trust.model.trust_source import TrustEvaluationType, TrustSourceData
 
 from .commons import DEFAULT_HTTPC_PARAMS
 
@@ -28,3 +30,43 @@ class DirectTrustJar(_DirectTrustJwkHandler):
             jwks=jwks,
             client_id=client_id,
         )
+
+    def _extract_and_update_own_trust_material(self, trust_source: TrustSourceData) -> TrustSourceData:
+        if self.jwks is None:
+            return trust_source
+
+        public_keys = [JWK(k).as_public_dict() for k in self.jwks]
+
+        trust_source.add_trust_param(
+            self.get_handled_trust_material_name(),
+            TrustEvaluationType(
+                attribute_name="jwks",
+                jwks=public_keys,
+                expiration_date=None,
+                trust_handler_name=str(self.__class__.__name__),
+            )
+        )
+        return trust_source
+
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
+        if issuer == self.client_id:
+            return self._extract_and_update_own_trust_material(trust_source)
+        # In the context of an OID4VP protocol flow, no-one but ourself
+        # can be trusted as a JAR issuer. As long as this is true, we have
+        # no reason to collect other parties JAR trust material.
+        return trust_source
+
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
+        # NOTE: as of version 1 of Potential profile for OID4VP, there is
+        # no such thing as online resolution of client metadata outside of
+        # what already defined in different schemes OID4VP draft 21 section 5,
+        # where the usage of client_metadata parameter in the presentation
+        # request is suggested
+        return trust_source
+
+    def get_handled_trust_material_name(self) -> str:
+        return "direct_trust_jar"

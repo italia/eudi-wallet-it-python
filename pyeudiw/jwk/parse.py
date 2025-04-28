@@ -1,3 +1,4 @@
+import base64
 from cryptojwt.jwk.ec import import_ec_key, ECKey
 from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 from ssl import DER_cert_to_PEM_cert
@@ -62,6 +63,15 @@ def parse_certificate(cert: str | bytes) -> JWK:
         cert = DER_cert_to_PEM_cert(cert)
 
     return parse_pem(cert)
+
+
+def parse_b64der(b64der: str) -> JWK:
+    """
+    Parse a (public) key from a Base64 encoded DER certificate.
+    """
+    der = base64.b64decode(b64der)
+    return parse_certificate(der)
+
 
 def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     """

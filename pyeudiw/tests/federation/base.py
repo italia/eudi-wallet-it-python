@@ -29,17 +29,17 @@ leaf_cred_jwk_prot = new_ec_key(ec_crv, alg=ec_alg)
 leaf_cred = {
     "exp": EXP,
     "iat": NOW,
-    "iss": "https://credential_issuer.example.org",
-    "sub": "https://credential_issuer.example.org",
+    "iss": "https://credential-issuer.example.org",
+    "sub": "https://credential-issuer.example.org",
     "jwks": {"keys": []},
     "metadata": {
         "openid_credential_issuer": {"jwks": {"keys": []}},
         "federation_entity": {
             "organization_name": "OpenID Credential Issuer example",
-            "homepage_uri": "https://credential_issuer.example.org/home",
-            "policy_uri": "https://credential_issuer.example.org/policy",
-            "logo_uri": "https://credential_issuer.example.org/static/logo.svg",
-            "contacts": ["tech@credential_issuer.example.org"],
+            "homepage_uri": "https://credential-issuer.example.org/home",
+            "policy_uri": "https://credential-issuer.example.org/policy",
+            "logo_uri": "https://credential-issuer.example.org/static/logo.svg",
+            "contacts": ["tech@credential-issuer.example.org"],
         },
     },
     "authority_hints": ["https://intermediate.eidas.example.org"],
@@ -55,7 +55,7 @@ intermediate_es_cred = {
     "exp": EXP,
     "iat": NOW,
     "iss": "https://intermediate.eidas.example.org",
-    "sub": "https://credential_issuer.example.org",
+    "sub": "https://credential-issuer.example.org",
     "jwks": {"keys": []},
 }
 intermediate_es_cred["jwks"]["keys"] = [leaf_cred_jwk.serialize()]

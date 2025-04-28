@@ -11,7 +11,7 @@ from pyeudiw.tests.trust.handler import (
     issuer,
 )
 from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
-from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint
+from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint, is_url
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import (
     DirectTrustSdJwtVc,
     build_metadata_issuer_endpoint,
@@ -24,7 +24,7 @@ from requests import Response
 def fake_get_http_url(
     urls: list[str] | str, httpc_params: dict, http_async: bool = True
 ) -> list[requests.Response]:
-    issuer = f"https://example_url.issuer.it/vct"
+    issuer = f"https://example-url.issuer.it/vct"
 
     if urls[0].endswith("vct"):
         response = Response()
@@ -112,7 +112,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
 def test_direct_trust_jwk():
     trust_handler = DirectTrustSdJwtVc()
 
-    random_issuer = f"{uuid.uuid4()}.issuer.it"
+    random_issuer = f"https://{uuid.uuid4()}.issuer.it"
 
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
         "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
@@ -143,7 +143,7 @@ def test_direct_trust_jwk():
 def test_direct_trust_jwk_not_conformat_url():
     trust_handler = DirectTrustSdJwtVc()
 
-    issuer = f"https://example_url.issuer.it/vct"
+    issuer = f"https://example-url.issuer.it/vct"
 
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
         "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
@@ -163,3 +163,12 @@ def test_direct_trust_jwk_not_conformat_url():
 
     assert len(obtained_jwks) == 1, f"expected 1 jwk, obtained {len(obtained_jwks)}"
     assert expected_jwk == obtained_jwks[0]
+
+
+def test_is_url():
+    assert is_url("missing-scheme.net") == False
+    assert is_url("http//malformed-scheme.net") == False
+    assert is_url("https://malformed_domain.org") == False
+    assert is_url("https://domain.example") == True
+    assert is_url("https://domain.example/path") == True
+    assert is_url("https://domain.example/path/trailing/") == True

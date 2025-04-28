@@ -32,6 +32,7 @@ class MockTrustHandler(TrustHandlerInterface):
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("default_client_id", None)
         self.exp = kwargs.get("exp", 10)
+        self.include_issued_jwt_header_param = kwargs.get("include_issued_jwt_header_param", False)
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
         if issuer == self.client_id:
@@ -75,6 +76,9 @@ class MockTrustHandler(TrustHandlerInterface):
         trust_source.add_trust_param("test_trust_param", trust_param)
 
         return trust_source
+    
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        return {'trust_param_name': trust_source.test_trust_param.trust_param_name}
 
 class UpdateTrustHandler(MockTrustHandler):
     """
@@ -107,6 +111,9 @@ class UpdateTrustHandler(MockTrustHandler):
         trust_source.add_trust_param("test_trust_param", trust_param)
 
         return trust_source
+
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        return {'trust_param_name': trust_source.test_trust_param.trust_param_name}
 
 class NonConformatTrustHandler:
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:

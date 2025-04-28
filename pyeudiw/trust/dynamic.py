@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 UpsertMode = Union[Literal["update_first"], Literal["cache_first"]]
 
+INCLUDE_JWT_HEADER_CONFIG_NAME = "include_issued_jwt_header_param"
+
 
 class CombinedTrustEvaluator(BaseLogger):
     """
@@ -194,10 +196,7 @@ class CombinedTrustEvaluator(BaseLogger):
                         else:
                             used_handlers.append(handler.__class__.__name__)
 
-            raise NoCriptographicMaterial(
-                f"no trust evaluator can provide cyptographic material "
-                f"for {issuer}: searched among: {self.handlers_names}"
-            )
+            self._log_warning("static trust evaluation", f"no configured trust handler can successfully process static trust material {static_trust_materials} of issuer {issuer}")
 
         # try with handlers that don't use static trust materials like DirectTrustJar
         filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
@@ -303,14 +302,11 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
-        excluded_fields = ["entity_id", "policies", "metadata", "revoked"]
-
         headers_params = {}
-
-        for param_name, param_value in trust_source.serialize().items():
-            if param_name not in excluded_fields:
-                headers_params[param_value["attribute_name"]] = param_value[param_value["attribute_name"]]
-
+        for handler in self.handlers:
+            if getattr(handler, INCLUDE_JWT_HEADER_CONFIG_NAME, None):
+                if header := handler.extract_jwt_header_trust_parameters(trust_source):
+                    headers_params.update(header)
         return headers_params
 
     def build_metadata_endpoints(

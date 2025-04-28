@@ -5,8 +5,7 @@ from pyeudiw.openid4vp.authorization_request import build_authorization_request_
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.jwt.exceptions import JWSSigningError
-from pyeudiw.jwk.parse import parse_certificate
+from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwk import JWK
 
 
@@ -75,7 +74,8 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         metadata_key = None
 
         if "x5c" in _protected_jwt_headers:
-            jwk = parse_certificate(_protected_jwt_headers["x5c"][0])
+            # TODO: move this logic in the JWS signer...
+            jwk = parse_b64der(_protected_jwt_headers["x5c"][0])
 
             for key in self.config["metadata_jwks"]:
                 if JWK(key).thumbprint == jwk.thumbprint:
@@ -98,6 +98,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 data,
                 protected=_protected_jwt_headers,
             )
+            self._log_debug(context, f"created request object {request_object_jwt}")
             return Response(
                 message=request_object_jwt,
                 status="200",
