@@ -43,13 +43,11 @@ class AttributeMapper:
                     suffix = re.escape(parts[1])
                     # Costruisci la regex con la parte per l'indice
                     regex_pattern = f"{prefix}\\[\\d+\\]{suffix}$"
-                    print(f"Pattern sorgente: {src_pattern}, Regex generata: {regex_pattern}")
 
                     extracted_values = []
                     for flat_key, value in flat_data.items():
                         if re.match(regex_pattern, flat_key):
                             extracted_values.append(value)
-                            print(f"Trovata corrispondenza! Chiave: {flat_key}, Valore: {value}")
 
                     if extracted_values:
                         if '.' not in dest_path:
@@ -62,7 +60,6 @@ class AttributeMapper:
                 else:
                     # Se non c'è il carattere jolly, usa la logica precedente (dovrebbe essere raro in questo scenario)
                     regex_pattern = re.escape(src_pattern) + '$'
-                    print(f"Pattern sorgente (senza jolly): {src_pattern}, Regex generata: {regex_pattern}")
                     for flat_key, value in flat_data.items():
                         if re.match(regex_pattern, flat_key):
                             if '.' not in dest_path:
@@ -84,7 +81,6 @@ class AttributeMapper:
     def flatten_object(self, obj: Union[dict, list, str, int, float, bool, None], prefix: str, flat_dict: dict):
         """
         Recursively flattens the object and adds keys with dot notation to flat_dict.
-        Gestisce anche i casi in cui il valore non è un dizionario o una lista.
         """
         if isinstance(obj, dict):
             for key, value in obj.items():

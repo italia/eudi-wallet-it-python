@@ -47,10 +47,10 @@ class TestCredentialMatching:
         mock_query_data = {
             "id": "q1",
             "format":  MSO_MDOC_FORMAT,
-            "meta": {"doctype_value": "org.iso.18013.5.1.mDL"},  # Fornisci un dizionario
+            "meta": {"doctype_value": "org.iso.18013.5.1.mDL"},
             "claims": [
-                {"id": "1", "namespace": "ns1", "claim_name": "claim1"},  # Fornisci un dizionario
-                {"id": "2", "namespace": "ns2", "claim_name": "claim2", "values": ["val2"]}, # Fornisci un dizionario
+                {"id": "1", "namespace": "ns1", "claim_name": "claim1"},
+                {"id": "2", "namespace": "ns2", "claim_name": "claim2", "values": ["val2"]},
             ],
         }
         query = create_dcql_mdoc_query("q1", "org.iso.18013.5.1.mDL", [

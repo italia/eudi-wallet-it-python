@@ -2,7 +2,6 @@ from typing import List
 
 from pyeudiw.duckle_ql.credential import DcqlCredential, DcqlQuery, MSO_MDOC_FORMAT
 
-
 def flat_credentials_mso_mdoc(credentials: List[DcqlCredential]) -> List[DcqlCredential]:
     """
     Flattens a list of DcqlCredential objects, merging credentials with the same
