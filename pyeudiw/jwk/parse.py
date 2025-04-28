@@ -62,14 +62,10 @@ def parse_certificate(cert: str | bytes) -> JWK:
     try:
         return parse_pem(cert)
     except Exception:
-        pass
-
-    try:
-        return parse_pem(DER_cert_to_PEM_cert(cert))
-    except Exception:
-        pass
-    
-    raise InvalidJwk(f"unable to parse key from pem: {cert}")
+        try:
+            return parse_pem(DER_cert_to_PEM_cert(cert))
+        except Exception:        
+            raise InvalidJwk(f"unable to parse key from pem: {cert}")
 
 def parse_b64der(b64der: str) -> JWK:
     """
@@ -97,11 +93,7 @@ def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     try:
         return [parse_certificate(cert) for cert in x5c]
     except Exception:
-        pass
-
-    try:
-        return [parse_certificate(DER_cert_to_PEM_cert(cert)) for cert in x5c]
-    except Exception:
-        pass
-
-    raise InvalidJwk(f"unable to parse key from pem chain: {x5c}")
+        try:
+            return [parse_certificate(DER_cert_to_PEM_cert(cert)) for cert in x5c]
+        except Exception:
+            raise InvalidJwk(f"unable to parse key from pem chain: {x5c}")
