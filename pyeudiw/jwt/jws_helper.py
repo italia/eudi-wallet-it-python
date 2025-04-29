@@ -349,7 +349,7 @@ def _validate_key_with_header_kid(key: dict, header: dict) -> None:
         raise Exception(
             f"token header contains a kid {header_kid} that does not match the signing key kid {key_kid}"
         )
-    return None
+    return
 
 
 def _validate_key_with_header_x5c(key: dict, header: dict) -> None:
@@ -363,7 +363,7 @@ def _validate_key_with_header_x5c(key: dict, header: dict) -> None:
     :raises Exception: if the key is not compatible with the header content x5c (if any)
     """
     x5c: list[str] | None = header.get("x5c")
-    if x5c is None:
+    if not x5c:
         return
     leaf_cert: str = x5c[0]
 
@@ -374,13 +374,13 @@ def _validate_key_with_header_x5c(key: dict, header: dict) -> None:
             raise Exception(
                 f"token header containes a chain whose leaf certificate {leaf_cert} does not match the signing key leaf certificate {leaf_x5c_cert}"\
             )
-        return None
+        return
     header_key = parse_b64der(leaf_cert)
     if header_key.thumbprint != JWK(key).thumbprint:
         raise Exception(
             f"public material of the key does not matches the key in the leaf certificate {leaf_cert}"
         )
-    return None
+    return
 
 
 def _validate_key_with_jws_header(key: dict, protected_jws_header: dict, unprotected_jws_header: dict) -> None:

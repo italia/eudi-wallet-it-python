@@ -111,6 +111,14 @@ def B64DER_cert_to_PEM_cert(cert: str) -> str:
     return DER_cert_to_PEM_cert(base64.b64decode(cert))
 
 
+def B64DER_cert_to_DER_cert(cert: str) -> bytes:
+    """
+    Takes a certificate Base64 encoded DER and returns the
+    certificate in DER format.
+    """
+    return base64.b64decode(cert)
+
+
 def to_DER_cert(cert: str | bytes) -> bytes:
     """
     This function takes in a certificate with unknown representation
@@ -134,7 +142,7 @@ def to_DER_cert(cert: str | bytes) -> bytes:
 
     cert_s = cert_s.replace('\n\r', '')
     if _BASE64_RE.fullmatch(cert_s):
-        return B64DER_cert_to_PEM_cert(cert_s)
+        return B64DER_cert_to_DER_cert(cert_s)
 
     raise ValueError("unable to recognize input [cert] as a ccertifficate")
 

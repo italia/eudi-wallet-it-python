@@ -179,7 +179,6 @@ class PresentationSubmissionHandler:
         
         for descriptor in validated_submission.descriptor_map:
             handler = self.handlers.get(descriptor.format)
-
             if not handler:
                 raise MissingHandler(f"Handler for format '{descriptor.format}' not found.")
             
