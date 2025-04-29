@@ -10,6 +10,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
+from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwt.exceptions import (
     JWEEncryptionError,
     JWSSigningError,
@@ -76,9 +77,12 @@ class JWSHelper(JWHelperInterface):
         of available keys.
 
         If the header already contains indication of a key, such as 'kid',
-        'trust_chain' and 'x5c', there is no guarantee that the signing
-        key to be used will be aligned with those header. We assume that is
-        it responsibility of the class initiator to make those checks.
+        'trust_chain' and 'x5c', the method will attempt to match the signing
+        key among the available keys based on such claims, but there is no
+        guarantee that the correct key will be selected. We assume that is
+        it responsibility of the class initiator to make those checks. To
+        avoid any possible ambiguity, it is suggested to initilize the class
+        with one (signing) key only.
 
         :param plain_dict: The payload to be signed.
         :param protected: Protected header for the JWS.
@@ -106,13 +110,10 @@ class JWSHelper(JWHelperInterface):
         if signing_key["kty"] == "oct":
             raise JWSSigningError(f"Key {signing_key['kid']} is a symmetric key")
 
-        # Ensure the key ID in the header matches the signing key
-        header_kid = protected.get("kid")
-        signer_kid = signing_key.get("kid")
-        if header_kid and signer_kid and (header_kid != signer_kid):
-            raise JWSSigningError(
-                f"token header contains a kid {header_kid} that does not match the signing key kid {signer_kid}"
-            )
+        try:
+            _validate_key_with_jws_header(signing_key, protected, unprotected)
+        except Exception as e:
+            raise JWSSigningError(f"failed to validate signing key: it's content it not valid for current header claims: {e}", e)
 
         payload = serialize_payload(plain_dict)
 
@@ -125,6 +126,8 @@ class JWSHelper(JWHelperInterface):
             protected["typ"] = "sd-jwt" if self.is_sd_jwt(plain_dict) else "JWT"
 
         # Include the signing key's kid in the header if required
+        header_kid = protected.get("kid")
+        signer_kid = signing_key.get("kid")
         if kid_in_header and signer_kid:
             # note that is actually redundant as the underlying library auto-update the header with the kid
             protected["kid"] = signer_kid
@@ -177,8 +180,11 @@ class JWSHelper(JWHelperInterface):
         # Case 2: only one *singing* key
         if signing_key := self._select_key_by_use(use="sig"):
             return signing_key
-        # Case 3: match key by kid: this goes beyond what promised on the method definition
+        # Case 3: match key by kid
         if signing_key := self._select_key_by_kid(headers):
+            return signing_key
+        # Case 4: match key by x5c
+        if signing_key := self._select_key_by_x5c(headers):
             return signing_key
         raise JWSSigningError(
             "signing error: not possible to uniquely determine the signing key"
@@ -209,6 +215,19 @@ class JWSHelper(JWHelperInterface):
         else:
             return None
         return find_jwk_by_kid([key.to_dict() for key in self.jwks], kid)
+
+    def _select_key_by_x5c(self, headers: tuple[dict, dict]) -> dict | None:
+        if not headers:
+            return None
+        x5c: list[str] | None = headers[0].get("x5c") or headers[1].get("x5c")
+        if not x5c:
+            return None
+        header_jwk = parse_b64der(x5c[0])
+        for key in self.jwks:
+            key_d = key.to_dict()
+            if JWK(key_d).thumbprint == header_jwk.thumbprint:
+                return key_d
+        return None
 
     def verify(
         self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE
@@ -320,3 +339,60 @@ class JWSHelper(JWHelperInterface):
             # Log or handle errors (optional)
             logger.warning(f"Unable to determine if token is SD-JWT: {e}")
             return False
+
+
+def _validate_key_with_header_kid(key: dict, header: dict) -> None:
+    """
+    :raises Exception: if the key is not compatible with the header content kid (if any)
+    """
+    if (key_kid := key.get("kid")) and (header_kid := header.get("kid")) and (key_kid != header_kid):
+        raise Exception(
+            f"token header contains a kid {header_kid} that does not match the signing key kid {key_kid}"
+        )
+    return None
+
+
+def _validate_key_with_header_x5c(key: dict, header: dict) -> None:
+    """
+    Validate that a key has a public component that matches what defined in
+    the x5c leaf certificate in the header (if any).
+    Note that this method DOES NOT validate the chain. Instead, it actually
+    checks that the leaf of the chain has the same cryptographic material
+    of the argument key.
+
+    :raises Exception: if the key is not compatible with the header content x5c (if any)
+    """
+    x5c: list[str] | None = header.get("x5c")
+    if x5c is None:
+        return
+    leaf_cert: str = x5c[0]
+
+    # if the key has a certificate, check the cert, otherwise check the public material    
+    key_x5c: list[str] | None = key.get("x5c")
+    if key_x5c:
+        if leaf_cert != (leaf_x5c_cert := key_x5c[0]):
+            raise Exception(
+                f"token header containes a chain whose leaf certificate {leaf_cert} does not match the signing key leaf certificate {leaf_x5c_cert}"\
+            )
+        return None
+    header_key = parse_b64der(leaf_cert)
+    if header_key.thumbprint != JWK(key).thumbprint:
+        raise Exception(
+            f"public material of the key does not matches the key in the leaf certificate {leaf_cert}"
+        )
+    return None
+
+
+def _validate_key_with_jws_header(key: dict, protected_jws_header: dict, unprotected_jws_header: dict) -> None:
+    """
+    Validate that a key used for some operations (sign, verify) on a token
+    is compatible with the token header itself.
+
+    :raises Exception: if the key is not compatible with the token header
+    """
+    header = deepcopy(protected_jws_header)
+    header.update(unprotected_jws_header)
+    # NOTE: consistency with usage claims such as 'alg', 'kty' and 'use'
+    # are done by the signer library and are not required here
+    _validate_key_with_header_kid(key, header)
+    _validate_key_with_header_x5c(key, header)

@@ -71,27 +71,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         trust_params = self.trust_evaluator.get_jwt_header_trust_parameters(issuer=self.client_id)
         _protected_jwt_headers.update(trust_params)
 
-        metadata_key = None
-
-        if "x5c" in _protected_jwt_headers:
-            # TODO: move this logic in the JWS signer...
-            jwk = parse_b64der(_protected_jwt_headers["x5c"][0])
-
-            for key in self.config["metadata_jwks"]:
-                if JWK(key).thumbprint == jwk.thumbprint:
-                    metadata_key = key
-                    break
-            
-            if not metadata_key:
-                return self._handle_500(
-                    context,
-                    "internal error: unable to find the key in the metadata",
-                    ValueError("unable to find the key in the metadata"),
-                )
-        else:
-            metadata_key = self.default_metadata_private_jwk
-
-        helper = JWSHelper(metadata_key)
+        helper = JWSHelper(self.config["metadata_jwks"])
 
         try:
             request_object_jwt = helper.sign(
