@@ -145,27 +145,27 @@ class X509Handler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
+        if issuer == self.client_id:
+            for ca, chain in self.relying_party_certificate_chains_by_ca.items():
+                if not self._verify_chain(chain):
+                    logger.error(f"Invalid x509 certificate chain using CA {ca}. Chain will be ignored")
+                    continue
+                
+                exp = get_expiry_date_from_x5c(chain)
 
-        for ca, chain in self.relying_party_certificate_chains_by_ca.items():
-            if not self._verify_chain(chain):
-                logger.error(f"Invalid x509 certificate chain using CA {ca}. Chain will be ignored")
-                continue
-            
-            exp = get_expiry_date_from_x5c(chain)
-
-            trust_source.add_trust_param(
-                X509Handler._TRUST_TYPE,
-                TrustEvaluationType(
-                    attribute_name="x5c",
-                    x5c=to_pem_list(chain),
-                    expiration_date=exp,
-                    jwks=self.private_keys,
-                    trust_handler_name=self.name,
+                trust_source.add_trust_param(
+                    X509Handler._TRUST_TYPE,
+                    TrustEvaluationType(
+                        attribute_name="x5c",
+                        x5c=to_pem_list(chain),
+                        expiration_date=exp,
+                        jwks=self.private_keys,
+                        trust_handler_name=self.name,
+                    )
                 )
-            )
 
-            return trust_source
-        
+                return trust_source
+            
         return trust_source
     
     def validate_trust_material(
