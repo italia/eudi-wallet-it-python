@@ -6,10 +6,11 @@ from typing import Dict, Any
 import jwt
 from jwt.algorithms import RSAAlgorithm, ECAlgorithm, RSAPSSAlgorithm, OKPAlgorithm
 
-from pyeudiw.duckle_ql.attribute_mapper import AttributeMapper
+from pyeudiw.duckle_ql.attribute_mapper import map_attribute
 from pyeudiw.duckle_ql.credential import DcqlQuery, DcqlMdocCredential, MSO_MDOC_FORMAT, TOKEN_FORMAT_FIELD, \
     DcqlCredential
 from pyeudiw.duckle_ql.criteria import match_credential
+from pyeudiw.duckle_ql.utils import DCQL_QUERY_TOKEN
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -17,10 +18,8 @@ EXP_CLAIM = "exp"
 SUB_CLAIM = "sub"
 DECODE_OPT = {"verify_signature": False}
 QUERY_CONFIG = "query"
-DCQL_QUERY_TOKEN = "dcql_query" # nosec B105
 CREDENTIALS = "credentials"
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
-DUCKLE_PRESENTATION = "presentation"
 
 class DuckleHandler(BaseVPParser):
     """Handler for processing Verifiable Presentations using DCQL."""
@@ -40,8 +39,6 @@ class DuckleHandler(BaseVPParser):
         self.sig_alg_supported = sig_alg_supported
         self.public_keys = kwargs.get(METADATA_JWKS_CONFIG_KEY, [])
         self.queries = _to_dcql_query(kwargs.get(QUERY_CONFIG, []))
-        self.parser_presentation = kwargs.get(DUCKLE_PRESENTATION, [])
-
 
     def parse(self,  token: str) -> Dict[str, Any]:
         """
@@ -61,8 +58,7 @@ class DuckleHandler(BaseVPParser):
                 raise ValueError('Invalid token payload: Missing credentials in DCQL token')
             dcql_cred = _to_credentials(credentials)
             match_credential(self.queries, dcql_cred)
-            attribute_mapper = AttributeMapper(self.parser_presentation)
-            return attribute_mapper.apply_mappings(credentials)
+            return map_attribute(credentials)
         except Exception as e:
                 logging.error(f"Unexpected error during unverified parsing: {e}")
                 return None

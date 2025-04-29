@@ -1,66 +1,84 @@
-from pyeudiw.duckle_ql.attribute_mapper import AttributeMapper
+import pytest
 
-def test_apply_mappings_with_single_match():
-    mappings = [{'credentials[0].name': 'full_name'}]
-    data = [{'name': 'Alice'}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'full_name': 'Alice'}
+from pyeudiw.duckle_ql.attribute_mapper import map_attribute
+from pyeudiw.duckle_ql.credential import DC_SD_JWT_FORMAT, MSO_MDOC_FORMAT
 
 
-def test_apply_mappings_with_nested_match():
-    mappings = [{'credentials[0].details.age': 'user_age'}]
-    data = [{'details': {'age': 30}}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'user_age': 30}
-
-
-def test_apply_mappings_with_wildcard_match():
-    mappings = [{'credentials[*].value': 'all_values'}]
-    data = [{'value': 10}, {'value': 20}, {'value': 30}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'all_values': [10, 20, 30]}
-
-
-def test_apply_mappings_with_wildcard_nested_match():
-    mappings = [{'credentials[*].info.city': 'all_cities'}]
-    data = [{'info': {'city': 'Rome'}}, {'info': {'city': 'Milan'}}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'all_cities': ['Rome', 'Milan']}
-
-
-def test_apply_mappings_with_multiple_mappings():
-    mappings = [
-        {'credentials[0].name': 'full_name'},
-        {'credentials[0].details.age': 'user_age'}
+def test_map_attribute_success():
+    data_list = [
+        {
+            'credential_format': MSO_MDOC_FORMAT,
+            'doctype': 'org.iso.18013.5.1.mDL',
+            'namespaces': {
+                'org.iso.18013.5.1': {
+                    'given_name': 'Mario',
+                    'family_name': 'Rossi',
+                    'resident_country': 'Italy',
+                    'resident_address': 'Via Roma 1',
+                    'non_disclosed': 'secret'
+                }
+            }
+        },
+        {
+            'credential_format': MSO_MDOC_FORMAT,
+            'doctype': 'org.iso.18013.5.1.mDL',
+            'namespaces': {
+                'org.iso.18013.5.1': {
+                    'resident_country': 'Italy',
+                    'resident_address': 'Via Roma 1',
+                    'non_disclosed': 'secret'
+                }
+            }
+        },
+        {
+            'id': 'personal id data',
+            'credential_format': DC_SD_JWT_FORMAT,
+            'meta': {
+                'vct_values': ['https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata']
+            },
+            'claims': [{'path': ['given_name']}, {'path': ['family_name']}, {'path': ['personal_administrative_number']}]
+        },
+        {
+            'id': 'wallet attestation',
+            'credential_format': DC_SD_JWT_FORMAT,
+            'meta': {
+                'vct_values': ['https://itwallet.registry.example.it/WalletAttestation']
+            },
+            'claims': [{'path': ['wallet_link']}, {'path': ['wallet_name']}]
+        }
     ]
-    data = [{'name': 'Bob', 'details': {'age': 25}}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'full_name': 'Bob', 'user_age': 25}
+
+    expected = {
+        'given_name': 'Mario',
+        'family_name': 'Rossi',
+        'resident_country': 'Italy',
+        'resident_address': 'Via Roma 1',
+        'non_disclosed': 'secret'
+    }
+
+    result = map_attribute(data_list)
+    assert result == expected
 
 
-def test_apply_mappings_with_no_match():
-    mappings = [{'non_existent_path': 'output_field'}]
-    data = [{'some_data': 'value'}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {}
+def test_map_attribute_conflict():
+    data_list = [
+        {
+            'credential_format': MSO_MDOC_FORMAT,
+            'namespaces': {
+                'org.iso.18013.5.1': {
+                    'given_name': 'Mario'
+                }
+            }
+        },
+        {
+            'credential_format': MSO_MDOC_FORMAT,
+            'namespaces': {
+                'org.iso.18013.5.1': {
+                    'given_name': 'Luigi'
+                }
+            }
+        }
+    ]
 
-
-def test_apply_mappings_with_wildcard_and_specific_index():
-    mappings = [{'credentials[*].value': 'all_values'}, {'credentials[1].value': 'second_value'}]
-    data = [{'value': 10}, {'value': 20}, {'value': 30}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'all_values': [10, 20, 30], 'second_value': 20}
-
-def test_apply_mappings_with_nested_list():
-    mappings = [{'credentials[0].items[*].name': 'all_item_names'}]
-    data = [{'items': [{'name': 'Item 1'}, {'name': 'Item 2'}]}]
-    mapper = AttributeMapper(mappings)
-    result = mapper.apply_mappings(data)
-    assert result == {'all_item_names': ['Item 1', 'Item 2']}
+    with pytest.raises(ValueError, match="Key conflict: 'given_name' has conflicting values 'Mario' and 'Luigi'"):
+        map_attribute(data_list)

@@ -99,11 +99,6 @@ config:
             - path:
               - "$.given_name"
 
-  duckle:
-    presentation:
-      - "credentials[*].namespaces.org.iso.18013.5.1.given_name": "given_name"
-      - "credentials[*].namespaces.org.iso.18013.5.1.family_name": "family_name"
-
   user_attributes:
     unique_identifiers:
     - tax_id_code
