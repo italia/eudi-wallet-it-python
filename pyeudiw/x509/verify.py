@@ -90,7 +90,7 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
     if not _check_datetime(exp):
         return False
     
-    pems = [DER_cert_to_PEM_cert(cert) for cert in x5c]
+    pems = [to_PEM_cert(cert) for cert in x5c]
 
     return _verify_x509_certificate_chain(pems)
 
@@ -149,8 +149,22 @@ def to_PEM_cert(cer: str | bytes) -> str:
     use it unless you do NOT hany prior way to know the actual representation
     format of a certificate
     """
-    raise NotImplementedError("TODO")    
+    cert_s = b""
 
+    if isinstance(cer, str):
+        if is_pem_format(cer):
+            return cer
+        cert_s = cer.encode()
+    else:
+        cert_s = cer
+
+    if cert_s.startswith(b"-----BEGIN CERTIFICATE-----"):
+        return str(cert_s)
+
+    if _BASE64_RE.fullmatch(str(cert_s)):
+        return B64DER_cert_to_PEM_cert(cert_s)
+    else:
+        return DER_cert_to_PEM_cert(cert_s)
 
 def pem_to_pems_list(cert: str) -> list[str]:
     """
@@ -164,9 +178,10 @@ def pem_to_pems_list(cert: str) -> list[str]:
     """
     return [str(cert) for cert in pem.parse(cert)]
 
-def der_list_to_pem_list(der_list: list[bytes]) -> list[str]:
+def to_pem_list(der_list: list[bytes] | list[str]) -> list[str]:
     """
-    Convert the x509 certificate chain from DER to PEM.
+    If the input is a list of DER certificates, it will be converted to a list of PEM certificates.
+    If the input is a list of PEM certificates, it will be returned as is.
 
     :param der: The x509 certificate chain in DER format
     :type der: list[bytes]
@@ -174,11 +189,12 @@ def der_list_to_pem_list(der_list: list[bytes]) -> list[str]:
     :returns: The x509 certificate chain in PEM format
     :rtype: list[str]
     """
-    return [DER_cert_to_PEM_cert(cert) for cert in der_list]
+    return [to_PEM_cert(cert) for cert in der_list]
 
-def pem_list_to_der_list(pem_list: list[str]) -> list[bytes]:
+def to_der_list(pem_list: list[str] | list[bytes]) -> list[bytes]:
     """
-    Convert the x509 certificate chain from PEM to DER.
+    If the input is a list of PEM certificates, it will be converted to a list of DER certificates.
+    If the input is a list of DER certificates, it will be returned as is.
 
     :param pem_list: The x509 certificate chain in PEM format
     :type pem_list: list[str]
@@ -186,7 +202,7 @@ def pem_list_to_der_list(pem_list: list[str]) -> list[bytes]:
     :returns: The x509 certificate chain in DER format
     :rtype: list[bytes]
     """
-    return [PEM_cert_to_DER_cert(cert) for cert in pem_list]
+    return [to_DER_cert(cert) for cert in pem_list]
 
 def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
     """
@@ -211,7 +227,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
     :returns: True if the x509 anchor certificate is valid else False
     :rtype: bool
     """
-    cert_data = load_der_x509_certificate(PEM_cert_to_DER_cert(pem_str))
+    cert_data = load_der_x509_certificate(to_DER_cert(pem_str))
 
     if not _check_datetime(cert_data.not_valid_after):
         logging.error(LOG_ERROR.format("check datetime failed"))
@@ -258,7 +274,7 @@ def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     :returns: The issuer
     :rtype: str
     """
-    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
+    der = to_DER_cert(x5c[0])
     return get_get_subject_name(der)
     
 
@@ -272,7 +288,7 @@ def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     :returns: The issuer
     :rtype: str
     """
-    der = x5c[-1] if isinstance(x5c[-1], bytes) else PEM_cert_to_DER_cert(x5c[-1])
+    der = to_DER_cert(x5c[-1])
     return get_get_subject_name(der)
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
@@ -285,7 +301,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     :returns: The expiry date
     :rtype: datetime
     """
-    der = x5c[0] if isinstance(x5c[0], bytes) else PEM_cert_to_DER_cert(x5c[0])
+    der = to_DER_cert(x5c[0])
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
@@ -303,7 +319,7 @@ def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
     """
     get_common_name = lambda cert: cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
 
-    der = cert if isinstance(cert, bytes) else PEM_cert_to_DER_cert(cert)
+    der = to_DER_cert(cert)
     cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
 
     try:
@@ -334,13 +350,29 @@ def is_der_format(cert: bytes) -> str:
     except crypto.Error as e:
         logging.error(LOG_ERROR.format(e))
         return False
+    
+def is_pem_format(cert: str) -> str:
+    """
+    Check if the certificate is in PEM format.
 
+    :param cert: The certificate
+    :type cert: bytes
+
+    :returns: True if the certificate is in PEM format else False
+    :rtype: bool
+    """
+    try:
+        crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+        return True
+    except crypto.Error as e:
+        logging.error(LOG_ERROR.format(e))
+        return False
 
 def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
     raise NotImplementedError("TODO")
 
 def get_certificate_type(cert: str | bytes) -> str:
-    pem = cert if isinstance(cert, str) and cert.startswith("-----BEGIN CERTIFICATE-----") else DER_cert_to_PEM_cert(cert)
+    pem = to_PEM_cert(cert)
 
     cert = x509.load_pem_x509_certificate(pem.encode(), default_backend())
     public_key = cert.public_key()

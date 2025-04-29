@@ -89,7 +89,7 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
         
         payload = decode_jwt_payload(token)
 
-        if "status" in payload:
+        if "status" in payload and "status_list" in payload["status"]:
             status_list = StatusListTokenHelper.from_status(payload["status"])
             if status_list.is_expired() or \
                status_list.get_status(payload["status"]["status_list"]["idx"]) > 0:

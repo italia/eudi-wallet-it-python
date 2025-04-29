@@ -54,4 +54,4 @@ def test_parse_x5c_keys():
         assert False
     except Exception as e:
         assert isinstance(e, InvalidJwk)
-        assert str(e) == "unable to parse key from pem: invalid_x5c"
+        assert str(e) == "unable to parse key from pem chain: ['invalid_x5c']"
