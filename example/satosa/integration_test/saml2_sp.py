@@ -24,6 +24,7 @@ SAML_CONFIG = {
     'debug': True,
     'xmlsec_binary': get_xmlsec_binary(
         [
+            '/opt/homebrew/bin',
             '/opt/local/bin',
             '/usr/bin/xmlsec1'
         ]
