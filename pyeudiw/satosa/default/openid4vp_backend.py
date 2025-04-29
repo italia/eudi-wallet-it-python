@@ -1,5 +1,5 @@
 import uuid
-from typing import Callable, Optional, List
+from typing import Callable
 
 import pydantic
 from satosa.context import Context
@@ -446,7 +446,7 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
 
 def load_handlers(config: dict, trust_evaluator: CombinedTrustEvaluator):
     try:
-        from pyeudiw.credential_presentation import load_credential_presentation_handlers
+        from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
         return load_credential_presentation_handlers(
             config, trust_evaluator, config.get("jwt", {}).get("sig_alg_supported", []))
     except ImportError as e:

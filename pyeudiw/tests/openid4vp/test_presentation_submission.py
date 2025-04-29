@@ -1,6 +1,6 @@
 import pytest
 
-from pyeudiw.credential_presentation import load_credential_presentation_handlers
+from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
 from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
 from pyeudiw.openid4vp.presentation_submission.exceptions import SubmissionValidationError
 from pyeudiw.storage.db_engine import DBEngine

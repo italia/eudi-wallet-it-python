@@ -32,21 +32,21 @@ def valid_config():
 
 
 def test_load_valid_config(trust_evaluator, valid_config):
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     handler = load_credential_presentation_handlers(
         config=valid_config,
         trust_evaluator=trust_evaluator,
         sig_alg_supported=["ES256"]
     )
 
-    from pyeudiw.credential_presentation import CredentialPresentationHandlers
+    from pyeudiw.credential_presentation.handler import CredentialPresentationHandlers
     assert isinstance(handler, CredentialPresentationHandlers)
     assert "mock_format" in handler.handlers
     assert handler.max_submission_size == 2048
 
 
 def test_missing_credential_presentation_handlers_raises(trust_evaluator):
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     with pytest.raises(ValueError) as exc:
         load_credential_presentation_handlers(
             config={},
@@ -69,7 +69,7 @@ def test_missing_class_raises(trust_evaluator):
         }
     }
 
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     with pytest.raises(ImportError) as exc:
         load_credential_presentation_handlers(
             config=invalid_config,
@@ -92,7 +92,7 @@ def test_missing_module_raises(trust_evaluator):
         }
     }
 
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     with pytest.raises(ImportError) as exc:
         load_credential_presentation_handlers(
             config=invalid_config,
@@ -115,7 +115,7 @@ def test_class_not_subclass_of_base_raises(trust_evaluator):
         }
     }
 
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     with pytest.raises(ImportError) as exc:
         load_credential_presentation_handlers(
             config=invalid_config,
@@ -132,7 +132,7 @@ def test_empty_formats_raises(trust_evaluator):
         }
     }
 
-    from pyeudiw.credential_presentation import load_credential_presentation_handlers
+    from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
     with pytest.raises(ValueError) as exc:
         load_credential_presentation_handlers(
             config=invalid_config,

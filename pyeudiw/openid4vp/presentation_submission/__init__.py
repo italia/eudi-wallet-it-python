@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from pyeudiw.credential_presentation import CredentialPresentationHandlers
+from pyeudiw.credential_presentation.handler import CredentialPresentationHandlers
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.openid4vp.presentation_submission.exceptions import (
     MissingHandler,
