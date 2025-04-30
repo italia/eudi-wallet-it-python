@@ -1,66 +1,62 @@
-from typing import List, Dict, Any
-
-from pyeudiw.duckle_ql.credential import MSO_MDOC_FORMAT
+from typing import Dict, Any, List
 
 
-def _flatten_mso_mdoc(d) -> Dict[str, Any]:
+def extract_claims(data: Dict[str, Any], paths: List[Dict[str, List[str]]]) -> Dict[str, Any]:
     """
-    Recursively flattens a nested dictionary representing MSO mdoc namespace data.
+    Extracts values from a dictionary (nested or flat) based on the provided paths.
 
-    This function traverses all levels of the input dictionary and merges nested keys into a single-level dictionary.
-    If a key appears more than once with different values, a ValueError is raised to signal a conflict.
-
-    Args:
-        d (dict): A (potentially nested) dictionary representing a namespace's attributes.
-
-    Returns:
-        Dict[str, Any]: A flat dictionary with all nested key-value pairs merged.
-
-    Raises:
-        ValueError: If the same key appears with conflicting values in the nested structure.
+    :param data: The input dictionary (can be nested or flat).
+    :param paths: A list of dictionaries, each containing a "path" key with a list of key sequences to extract claims from.
+    :param raise_missing: If True, raises an exception when one or more claims are missing (default is True).
+    :return: A dictionary with the extracted values, preserving the nested structure if applicable.
+    :raises ValueError: If any claim is missing and raise_missing is set to True.
     """
-    result: Dict[str, Any] = {}
-    for k, v in d.items():
-        if isinstance(v, dict):
-            inner = _flatten_mso_mdoc(v)
-            for inner_k, inner_v in inner.items():
-                if inner_k in result and result[inner_k] != inner_v:
-                    raise ValueError(f"Key conflict: '{inner_k}' has conflicting values '{result[inner_k]}' and '{inner_v}'")
-                result[inner_k] = inner_v
+
+    def set_nested(d: dict, path: List[str], value: Any) -> None:
+        """Sets a value in a nested dictionary structure according to the given path."""
+        for key in path[:-1]:
+            d = d.setdefault(key, {})
+        d[path[-1]] = value
+
+    result = {}
+    missing = []
+
+    for path_obj in paths:
+        path = path_obj.get("path")
+        if not path:
+            continue
+
+        if isinstance(path, list) and all(isinstance(p, str) for p in path):
+            current = data
+            try:
+                for key in path:
+                    current = current[key]
+                set_nested(result, path, current)
+            except (KeyError, TypeError):
+                missing.append(".".join(path))
         else:
-            if k in result and result[k] != v:
-                raise ValueError(f"Key conflict: '{k}' has conflicting values '{result[k]}' and '{v}'")
-            result[k] = v
+            # fallback for flat single-key paths (e.g. path=["given_name"])
+            try:
+                value = data[path[0]]
+                result[path[0]] = value
+            except (KeyError, TypeError, IndexError):
+                missing.append(path[0])
+
+    if missing:
+        raise ValueError(f"Missing claims: {', '.join(missing)}")
+
     return result
 
 
-def map_attribute(data_list: List) -> Dict[str, Any]:
+def flatten_namespace(data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Extracts and merges attributes from MSO mdoc credentials in a data list.
+    Flattens a nested dictionary by removing the top-level namespaces.
 
-    This function filters the input list for credentials with the MSO_MDOC_FORMAT format,
-    flattens each of their namespace dictionaries, and merges the resulting key-value pairs
-    into a single dictionary. Conflicts in key values across credentials raise a ValueError.
-
-    Args:
-        data_list (List[Dict[str, Any]]): A list of credential dictionaries, potentially containing
-                                          multiple formats and nested namespace data.
-
-    Returns:
-        Dict[str, Any]: A single flat dictionary containing merged attributes from MSO mdoc credentials.
-
-    Raises:
-        ValueError: If duplicate keys with different values are encountered during the merge.
+    :param data: A nested dictionary where each top-level key corresponds to a namespace.
+    :return: A flattened dictionary containing all keys/values merged from all namespaces.
     """
-    flat_result: Dict[str, Any] = {}
-    for cred in data_list:
-        if cred.get("credential_format") == MSO_MDOC_FORMAT:
-            for ns_data in cred.get("namespaces", {}).values():
-                ns_flat = _flatten_mso_mdoc(ns_data)
-                for k, v in ns_flat.items():
-                    if k in flat_result:
-                        if flat_result[k] != v:
-                            raise ValueError(f"Key conflict: '{k}' has conflicting values '{flat_result[k]}' and '{v}'")
-                    else:
-                        flat_result[k] = v
-    return flat_result
+    result = {}
+    for namespace_dict in data.values():
+        if isinstance(namespace_dict, dict):
+            result.update(namespace_dict)
+    return result

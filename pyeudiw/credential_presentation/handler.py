@@ -2,6 +2,7 @@ import importlib
 from typing import Optional, List
 
 from pyeudiw.credential_presentation.model import CredentialPresentationHandlersConfig
+from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
@@ -95,4 +96,44 @@ def load_credential_presentation_handlers(
         trust_evaluator=trust_evaluator,
         sig_alg_supported=sig_alg_supported
     )
+    duckle_handler = next((handler for handler in config_model.formats if handler.class_ == "DuckleHandler"), None)
+    if duckle_handler:
+        updated_config = {
+            DUCKLE_PRESENTATION: config.get(DUCKLE_PRESENTATION, {})
+        }
+        breakpoint()
+        duckle_handler.config = add_to_config(updated_config, duckle_handler.config)
     return CredentialPresentationHandlers(config_model)
+
+
+def add_to_config(config: dict, handler_config: dict):
+    """
+    Dynamically adds elements from the config to the handler_config.
+    It handles both dictionaries (using .update()) and lists (using .extend()).
+
+    Parameters:
+        config (dict): The configuration dictionary that contains the updates.
+        handler_config (dict): The handler's current configuration to be updated.
+
+    Returns:
+        dict: The updated handler_config with new data from config.
+
+    If the value in config is a dictionary, it updates the corresponding key in handler_config.
+    If the value is a list, it extends the existing list in handler_config with the new items.
+    If the value is of any other type, it directly adds or updates the key in handler_config.
+    """
+    for key, value in config.items():
+        if isinstance(value, dict):
+            # If the value is a dictionary, update the key with .update()
+            if key not in handler_config:
+                handler_config[key] = {}
+            handler_config[key].update(value)
+        elif isinstance(value, list):
+            # If the value is a list, extend the key with .extend()
+            if key not in handler_config:
+                handler_config[key] = []
+            handler_config[key].extend(value)
+        else:
+            # For any other data type, simply add or update the key in handler_config
+            handler_config[key] = value
+    return handler_config

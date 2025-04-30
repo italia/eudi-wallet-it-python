@@ -1,1 +1,0 @@
-DCQL_QUERY_TOKEN = "dcql_query" # nosec B105

@@ -2,8 +2,6 @@ import datetime
 import hashlib
 import json
 import logging
-
-from copy import deepcopy
 from dataclasses import asdict
 from typing import Any, Union
 
@@ -18,13 +16,21 @@ from pyeudiw.openid4vp.authorization_response import (
     DirectPostParser,
     detect_response_mode,
 )
-from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
 )
+from pyeudiw.openid4vp.presentation_submission.exceptions import (
+    MissingHandler,
+    SubmissionValidationError,
+    VPTokenDescriptorMapMismatch,
+    ParseError,
+    ValidationError
+)
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
+from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.openid4vp.schemas.response import ResponseMode
+from pyeudiw.presentation_definition.parser_validator import ParserValidator
 from pyeudiw.satosa.exceptions import (
     AuthorizeUnmatchedResponse,
     FinalizedSessionError,
@@ -36,13 +42,6 @@ from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import StorageWriteError
 from pyeudiw.tools.utils import iat_now
 
-from pyeudiw.openid4vp.presentation_submission.exceptions import (
-    MissingHandler, 
-    SubmissionValidationError, 
-    VPTokenDescriptorMapMismatch,
-    ParseError,
-    ValidationError
-)
 
 class ResponseHandler(ResponseHandlerInterface):
     _SUPPORTED_RESPONSE_METHOD = "post"
@@ -160,22 +159,27 @@ class ResponseHandler(ResponseHandlerInterface):
         # (3) we use all disclosed claims in vp tokens to build the user identity
         extracted_attributes: dict[str, dict[str, Any]] = {}
         credential_issuers: list[str] = []
-        encoded_vps: list[str] = (
-            [authz_payload.vp_token]
-            if isinstance(authz_payload.vp_token, str)
-            else authz_payload.vp_token
-        )
-
+        encoded_vps: list[str] = []
         presentation_submission = authz_payload.presentation_submission
-
         try:
             challenge = self._get_verifier_challenge(request_session)
-            self.vp_token_parser.validate(
-                presentation_submission,
-                encoded_vps,
-                challenge["aud"],
-                challenge["nonce"],
-            )
+            parser_validator = ParserValidator(authz_payload.vp_token, self.vp_token_parser.handlers, self.config)
+            is_presentation_definition = parser_validator.is_active_presentation_definition()
+            if is_presentation_definition:
+                parser_validator.validate(challenge["aud"], challenge["nonce"])
+            else:
+                encoded_vps = (
+                    [authz_payload.vp_token]
+                    if isinstance(authz_payload.vp_token, str)
+                    else authz_payload.vp_token
+                )
+                self.vp_token_parser.validate(
+                    presentation_submission,
+                    encoded_vps,
+                    challenge["aud"],
+                    challenge["nonce"],
+                )
+
         except VPTokenDescriptorMapMismatch as e400:
             return self._handle_400(
                 context, 
@@ -208,10 +212,14 @@ class ResponseHandler(ResponseHandlerInterface):
             )
         
         try:
-            extracted_attributes = self.vp_token_parser.parse(
-                presentation_submission, 
-                encoded_vps
-            )
+            if presentation_submission:
+                extracted_attributes = self.vp_token_parser.parse(
+                    presentation_submission,
+                    encoded_vps
+                )
+            else:
+                extracted_attributes = parser_validator.parse()
+
         except ParseError as e400:
             return self._handle_400(
                 context, 

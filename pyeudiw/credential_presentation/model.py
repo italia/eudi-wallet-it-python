@@ -4,10 +4,6 @@ from pydantic import BaseModel, Field, model_validator
 
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
-METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
-JWT_CONFIG_KEY = "jwt"
-CREDENTIAL_PRESENTATION_HANDLERS_CONFIG_KEY = "credential_presentation_handlers"
-DUCKLE_PRESENTATION = "presentation"
 
 class FormatConfig(BaseModel):
     """

@@ -9,12 +9,10 @@ from .commons import (
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
-    create_authorize_response_duckle,
-    create_holder_test_data_with_duckle,
-    create_issuer_test_data_duckle,
     extract_saml_attributes,
     verify_request_object_jwt
 )
+from .commons_duckle import create_authorize_response_duckle, create_verifiable_presentations
 from .settings import TIMEOUT_S
 
 # put a trust attestation related itself into the storage
@@ -22,10 +20,12 @@ from .settings import TIMEOUT_S
 db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
+
 def _extract_request_uri(e: Exception) -> str:
     request_uri: str = re.search(r'request_uri=(.*?)(?:\'|\s|$)', urllib.parse.unquote_plus(e.args[0])).group(1)
     request_uri = request_uri.rstrip()
     return request_uri
+
 
 # initialize the user-agent
 http_user_agent = requests.Session()
@@ -60,19 +60,15 @@ verify_request_object_jwt(sign_request_obj.text, http_user_agent)
 request_object_claims = decode_jwt_payload(sign_request_obj.text)
 response_uri = request_object_claims["response_uri"]
 
-verifiable_presentations = create_holder_test_data_with_duckle(
-    request_object_claims["nonce"],
-    request_object_claims["client_id"],
-)
-
-# Risposta di autorizzazione
+# Provide an authentication response
 wallet_response_data = create_authorize_response_duckle(
-    verifiable_presentations,
     request_object_claims["state"],
-    response_uri
+    create_verifiable_presentations(
+        request_object_claims["nonce"],
+        request_object_claims["client_id"]
+    )
 )
 
-# Invio della risposta di autorizzazione
 authz_response = http_user_agent.post(
     response_uri,
     verify=False,
@@ -80,7 +76,6 @@ authz_response = http_user_agent.post(
     timeout=TIMEOUT_S
 )
 
-# Verifica della risposta di autorizzazione
 assert authz_response.status_code == 200
 assert authz_response.json().get("redirect_uri", None) is not None
 
@@ -94,17 +89,17 @@ satosa_authn_response = http_user_agent.get(
 assert "SAMLResponse" in satosa_authn_response.content.decode()
 print(satosa_authn_response.content.decode())
 
-# Estrazione degli attributi SAML
 attributes = extract_saml_attributes(satosa_authn_response.content.decode())
-assert attributes  # Verifica che gli attributi siano presenti
+# expect to have a non-empty list of attributes
+assert attributes
 
-# Confronto degli attributi ottenuti con quelli attesi
 expected = {
+    # https://oidref.com/2.5.4.42
     "urn:oid:2.5.4.42": ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
+    # https://oidref.com/2.5.4.4
     "urn:oid:2.5.4.4": ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
 }
 
-# Verifica che gli attributi siano corretti
 for exp_att_name, exp_att_value in expected.items():
     result_index = -1
     for i, attribute in enumerate(attributes):
@@ -115,5 +110,5 @@ for exp_att_name, exp_att_value in expected.items():
     obt_att_value = attributes[result_index].contents[0].contents[0]
     assert exp_att_value == obt_att_value, f"wrong attribute parsing expected {exp_att_value}, obtained {obt_att_value}"
 
-# Test superato
+
 print("TEST PASSED")

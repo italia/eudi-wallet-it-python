@@ -48,7 +48,7 @@ class VpMDocCbor(BaseVPParser):
         if self._is_expired(mdoc):
             raise MdocCborValidationError("Credential is expired")
         
-    def parse(self, token: str) -> None:
+    def parse(self, token: str) -> dict:
         mdoc = MdocCbor()
         mdoc.loads(data=token)
         mdoc.verify()

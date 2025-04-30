@@ -59,6 +59,7 @@ config:
         - ES384
         - ES512
     
+
   authorization:
     client_id: # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     auth_iss_id: # this field if not set will be set to client_id in the authz request 
@@ -98,6 +99,9 @@ config:
               - "$.family_name"
             - path:
               - "$.given_name"
+
+  duckle:
+    dcql_query: '{"credentials":[{"id":"personal id data","format":"dc+sd-jwt","meta":{"vct_values":["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},"claims":[{"path":["given_name"]},{"path":["family_name"]}]},{"id":"wallet attestation","format":"dc+sd-jwt","meta":{"vct_values":["https://itwallet.registry.example.it/WalletAttestation"]},"claims":[{"path":["wallet_link"]},{"path":["wallet_name"]}]}]}'
 
   user_attributes:
     unique_identifiers:
@@ -200,9 +204,6 @@ config:
       - module: pyeudiw.duckle_ql.handler
         class: DuckleHandler
         format: jwt_vc_json
-        config:
-          query:
-            - '{ "id": "mdl-id", "format": "mso_mdoc", "meta": { "doctype_value": "org.iso.18013.5.1.mDL" }, "claims": [ { "id": "given_name", "namespace": "org.iso.18013.5.1", "claim_name": "given_name" }, { "id": "family_name", "namespace": "org.iso.18013.5.1", "claim_name": "family_name" }, { "id": "resident_country", "namespace": "org.iso.18013.5.1", "claim_name": "resident_country", "values":["Italy"] }] }'
 
   trust:
     direct_trust_sd_jwt_vc:
