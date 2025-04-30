@@ -2,6 +2,7 @@ import uuid
 from urllib.parse import quote_plus, urlencode
 
 from pyeudiw.openid4vp.schemas.response import ResponseMode
+from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
@@ -26,9 +27,11 @@ def build_authorization_request_claims(
     authorization_config: dict,
     nonce: str = "",
     metadata: dict = None,
+    submission_data: dict = None
 ) -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
+    :param submission_data: data for manage custom claims in particular token
     :param client_id: the client identifier (who issue the jar token)
     :type client_id: str
     :param state: request session identifier
@@ -70,17 +73,20 @@ def build_authorization_request_claims(
         "exp": exp_from_now(minutes=authorization_config["expiration_time"]),
     }
 
-    if metadata:
-        claims["client_metadata"] = metadata
-
-    if authorization_config.get("scopes"):
-        claims["scope"] = " ".join(authorization_config["scopes"])
-    # backend configuration validation should check that at least PE or DCQL must be configured within the authz request conf
-    if authorization_config.get("presentation_definition"):
-        claims["presentation_definition"] = authorization_config[
-            "presentation_definition"
-        ]
-
     if _aud := authorization_config.get("aud"):
         claims["aud"] = _aud
+
+    if submission_data and submission_data["typo"] == DUCKLE_PRESENTATION:
+        claims[DUCKLE_QUERY_KEY] = submission_data[DUCKLE_QUERY_KEY]
+    else:
+        if metadata:
+            claims["client_metadata"] = metadata
+
+        if authorization_config.get("scopes"):
+            claims["scope"] = " ".join(authorization_config["scopes"])
+        # backend configuration validation should check that at least PE or DCQL must be configured within the authz request conf
+        if authorization_config.get("presentation_definition"):
+            claims["presentation_definition"] = authorization_config[
+                "presentation_definition"
+            ]
     return claims

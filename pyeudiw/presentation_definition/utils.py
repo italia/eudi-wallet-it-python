@@ -1,0 +1,2 @@
+DUCKLE_PRESENTATION = "duckle"
+DUCKLE_QUERY_KEY = "dcql_query"

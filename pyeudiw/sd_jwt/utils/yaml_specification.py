@@ -54,7 +54,7 @@ class _SDKeyTag(yaml.YAMLObject):
                 )
             )
 
-def _yaml_load_specification(file_buffer: TextIOWrapper):
+def yaml_load_specification(file_buffer: TextIOWrapper):
     return yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec
 
 def load_yaml_specification(file_path: str) -> dict:
@@ -70,7 +70,7 @@ def load_yaml_specification(file_path: str) -> dict:
 
     # create new resolver for tags
     with open(file_path, "r") as f:
-        example = _yaml_load_specification(f)
+        example = yaml_load_specification(f)
 
     for property in ("user_claims", "holder_disclosed_claims"):
         if property not in example:

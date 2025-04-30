@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
-from pymdoccbor.mdoc.verifier import MdocCbor
+
 from cryptography.hazmat.primitives import serialization
-from pyeudiw.x509.verify import get_issuer_from_x5c
 from pyeudiw.status_list.helper import StatusListTokenHelper
+from pymdoccbor.mdoc.verifier import MdocCbor
+
 from pyeudiw.openid4vp.exceptions import MdocCborValidationError, VPRevoked
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+from pyeudiw.x509.verify import get_issuer_from_x5c
+
 
 class VpMDocCbor(BaseVPParser):
     def _is_expired(self, mdoc: MdocCbor) -> bool:
@@ -15,7 +18,7 @@ class VpMDocCbor(BaseVPParser):
             except KeyError:
                 return True
         return False
-    
+
 
     def validate(
             self, 
@@ -53,8 +56,8 @@ class VpMDocCbor(BaseVPParser):
                 raise VPRevoked(
                     "Status list indicates that the token is revoked"
                 )
-        
-    def parse(self, token: str) -> None:
+
+    def parse(self, token: str) -> dict:
         mdoc = MdocCbor()
         mdoc.loads(data=token)
         mdoc.verify()

@@ -6,7 +6,7 @@ from satosa.context import Context
 from pyeudiw.jwk import JWK
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
-from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import leaf_cred_jwk_prot, leaf_wallet_jwk
 from pyeudiw.tests.settings import (
@@ -23,7 +23,7 @@ settings = CREDENTIAL_ISSUER_CONF
 settings["issuer"] = CREDENTIAL_ISSUER_ENTITY_ID
 settings["default_exp"] = CONFIG["jwt"]["default_exp"]
 
-sd_specification = _yaml_load_specification(StringIO(settings["sd_specification"]))
+sd_specification = yaml_load_specification(StringIO(settings["sd_specification"]))
 
 
 user_claims = {

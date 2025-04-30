@@ -47,7 +47,7 @@ from pyeudiw.tests.settings import (
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
@@ -187,7 +187,7 @@ class TestOpenID4VPBackend:
         settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
         settings['default_exp'] = CONFIG['jwt']['default_exp']
 
-        sd_specification = _yaml_load_specification(
+        sd_specification = yaml_load_specification(
             settings["sd_specification"])
         
         if x509:

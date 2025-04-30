@@ -5,8 +5,8 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 
 from pyeudiw.jwt.utils import is_jwe_format, is_jwt_format
-
 from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
+
 
 class ResponseMode(str, Enum):
     direct_post = "direct_post"
@@ -52,8 +52,8 @@ class AuthorizeResponsePayload:
     """
 
     state: str
-    vp_token: str | list[str]
-    presentation_submission: dict
+    vp_token: str | list[str] | dict
+    presentation_submission: Optional[dict] = None
 
 @dataclass
 class ErrorResponsePayload:

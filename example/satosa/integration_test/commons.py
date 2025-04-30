@@ -1,20 +1,20 @@
 import base64
-from copy import deepcopy
-import json
-from urllib.parse import urlparse
-from pyeudiw.tools.utils import exp_from_now, iat_now
-from bs4 import BeautifulSoup
 import datetime
-import requests
+import json
+from copy import deepcopy
+from io import StringIO
 from typing import Any, Literal
 
-from io import StringIO
+import requests
+from bs4 import BeautifulSoup
+
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
-from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
@@ -28,12 +28,10 @@ from pyeudiw.tests.federation.base import (
     leaf_wallet_jwk,
     leaf_wallet_signed,
 )
-from pyeudiw.sd_jwt.holder import SDJWTHolder
+from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.model.trust_source import TrustSourceData
-
-from . saml2_sp import saml2_request
-
-from . settings import (
+from .saml2_sp import saml2_request
+from .settings import (
     IDP_BASEURL,
     CONFIG_DB,
     RP_EID,
@@ -122,11 +120,15 @@ def create_saml_auth_request() -> str:
 
 
 def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]:
+    settings = ISSUER_CONF
+    settings["default_exp"] = 33
+    user_claims = yaml_load_specification(StringIO(settings["sd_specification"]))
+    return create_issuer_test_data_with_user_claims(user_claims)
+
+def create_issuer_test_data_with_user_claims(user_claims:dict) -> dict[Literal["jws"] | Literal["issuance"], str]:
     # create a SD-JWT signed by a trusted credential issuer
     settings = ISSUER_CONF
     settings["default_exp"] = 33
-    
-    user_claims = _yaml_load_specification(StringIO(settings["sd_specification"]))
     claims = {
         "iss": settings["issuer"],
         "iat": iat_now(),
@@ -145,7 +147,7 @@ def create_issuer_test_data() -> dict[Literal["jws"] | Literal["issuance"], str]
         user_claims=user_claims,
         add_decoy_claims=claims.get("add_decoy_claims", True)
     )
-    
+
     return {"jws": issued_jwt.serialized_sd_jwt, "issuance": issued_jwt.sd_jwt_issuance}
 
 
