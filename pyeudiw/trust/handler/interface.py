@@ -102,6 +102,17 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
     
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        """
+        Parse a trust source to extract the trust parameters (in the source)
+        that can be used as a JWT header according to what this very own trust
+        evaluation mechanism is capable of understanding.
+
+        Some trust evaluation mechanism is not associated to any JWT header
+        mechanism, in which case an empty dictionary is returned.
+        """
+        return {}
+
     def validate_trust_material(
             self, 
             trust_chain: list[str], 
@@ -123,6 +134,14 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
 
+    def is_it_me(self, client_id: str) -> bool:
+        """
+        Returns true if, according to this trust framework implementation,
+        the argument client_id refers to the implementation itself as a
+        *member* of the trust framework.
+        """
+        return client_id == self.client_id
+
     @property
     def name(self) -> str:
         """
@@ -132,7 +151,7 @@ class TrustHandlerInterface:
         :rtype: str
         """
         return str(self.__class__.__name__)
-    
+
     @property
     def default_client_id(self) -> str:
         """

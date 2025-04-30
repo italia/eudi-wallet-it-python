@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 UpsertMode = Union[Literal["update_first"], Literal["cache_first"]]
 
+INCLUDE_JWT_HEADER_CONFIG_NAME = "include_issued_jwt_header_param"
+
 
 class CombinedTrustEvaluator(BaseLogger):
     """
@@ -115,7 +117,7 @@ class CombinedTrustEvaluator(BaseLogger):
         return trust_source
 
     def _upsert_source_trust_materials(
-        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None, force_update: bool = False
+        self, trust_source: Optional[TrustSourceData], entity_id: Optional[str], force_update: bool = False
     ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers.
@@ -128,20 +130,15 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: Optional[TrustSourceData]
         """
 
-        entity_id = issuer or "__internal__"
-
         if not trust_source:
             trust_source = TrustSourceData.empty(entity_id)
-
-        if entity_id == "__internal__":
-            return self._cache_upsert_source_trust_materials(trust_source, issuer)
         
         if self.mode == "update_first" or force_update:
-            return self._update_upsert_source_trust_materials(trust_source, issuer)
+            return self._update_upsert_source_trust_materials(trust_source, entity_id)
         else:
-            return self._cache_upsert_source_trust_materials(trust_source, issuer)
+            return self._cache_upsert_source_trust_materials(trust_source, entity_id)
     
-    def _get_trust_source(self, issuer: Optional[str] = None, force_update: bool = False) -> TrustSourceData:
+    def _get_trust_source(self, entity_id: Optional[str], force_update: bool = False) -> TrustSourceData:
         """
         Retrieve the trust source from the database or extract it from the trust handlers.
 
@@ -151,9 +148,9 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The trust source
         :rtype: TrustSourceData
         """
-        trust_source = self._retrieve_trust_source(issuer or "__internal__")            
+        trust_source = self._retrieve_trust_source(entity_id)            
 
-        return self._upsert_source_trust_materials(trust_source, issuer, force_update)
+        return self._upsert_source_trust_materials(trust_source, entity_id, force_update)
 
     def get_public_keys(
             self, 
@@ -199,10 +196,7 @@ class CombinedTrustEvaluator(BaseLogger):
                         else:
                             used_handlers.append(handler.__class__.__name__)
 
-            raise NoCriptographicMaterial(
-                f"no trust evaluator can provide cyptographic material "
-                f"for {issuer}: searched among: {self.handlers_names}"
-            )
+            self._log_warning("static trust evaluation", f"no configured trust handler can successfully process static trust material {static_trust_materials} of issuer {issuer}")
 
         # try with handlers that don't use static trust materials like DirectTrustJar
         filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
@@ -308,14 +302,11 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._get_trust_source(issuer, force_update)
 
-        excluded_fields = ["entity_id", "policies", "metadata", "revoked"]
-
         headers_params = {}
-
-        for param_name, param_value in trust_source.serialize().items():
-            if param_name not in excluded_fields:
-                headers_params[param_value["attribute_name"]] = param_value[param_value["attribute_name"]]
-
+        for handler in self.handlers:
+            if getattr(handler, INCLUDE_JWT_HEADER_CONFIG_NAME, None):
+                if header := handler.extract_jwt_header_trust_parameters(trust_source):
+                    headers_params.update(header)
         return headers_params
 
     def build_metadata_endpoints(

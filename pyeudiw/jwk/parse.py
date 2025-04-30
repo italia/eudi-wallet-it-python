@@ -1,3 +1,4 @@
+import base64
 from cryptojwt.jwk.ec import import_ec_key, ECKey
 from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 from ssl import DER_cert_to_PEM_cert
@@ -58,10 +59,21 @@ def parse_certificate(cert: str | bytes) -> JWK:
     :rtype: JWK
     """
 
-    if type(cert) == bytes or type(cert) == str and not cert.startswith("-----BEGIN CERTIFICATE-----"):
-        cert = DER_cert_to_PEM_cert(cert)
+    try:
+        return parse_pem(cert)
+    except Exception:
+        try:
+            return parse_pem(DER_cert_to_PEM_cert(cert))
+        except Exception:        
+            raise InvalidJwk(f"unable to parse key from pem: {cert}")
 
-    return parse_pem(cert)
+def parse_b64der(b64der: str) -> JWK:
+    """
+    Parse a (public) key from a Base64 encoded DER certificate.
+    """
+    der = base64.b64decode(b64der)
+    return parse_certificate(der)
+
 
 def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     """
@@ -78,4 +90,10 @@ def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
     :rtype: JWK
     """
 
-    return [parse_pem(pem) for pem in x5c]
+    try:
+        return [parse_certificate(cert) for cert in x5c]
+    except Exception:
+        try:
+            return [parse_certificate(DER_cert_to_PEM_cert(cert)) for cert in x5c]
+        except Exception:
+            raise InvalidJwk(f"unable to parse key from pem chain: {x5c}")

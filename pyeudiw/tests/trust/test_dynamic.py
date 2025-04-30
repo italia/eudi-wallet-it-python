@@ -52,14 +52,13 @@ def test_public_key_and_metadata_retrive():
             "mock": {
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "MockTrustHandler",
-                "config": {},
+                "config": {"include_issued_jwt_header_param": True},
             },
                 
         }, db_engine, default_client_id="default-client-id", mode="update_first"
     )
 
     uuid_url = f"http://{uuid4()}.issuer.it"
-
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {'trust_param_name': {'trust_param_key': 'trust_param_value'}}
     metadata = trust_ev.get_metadata()
 
@@ -82,7 +81,7 @@ def test_update_first_strategy():
             "mock": {
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "UpdateTrustHandler",
-                "config": {},
+                "config":  {"include_issued_jwt_header_param": True},
             },
                 
         }, db_engine, default_client_id="default-client-id"
@@ -102,7 +101,7 @@ def test_cache_first_strategy():
             "mock": {
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "UpdateTrustHandler",
-                "config": {},
+                "config":  {"include_issued_jwt_header_param": True},
             },
                 
         }, db_engine, default_client_id="default-client-id", mode="cache_first"
@@ -122,7 +121,8 @@ def test_cache_first_strategy_expired():
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "UpdateTrustHandler",
                 "config": {
-                    "exp": 0
+                    "exp": 0,
+                    "include_issued_jwt_header_param": True
                 },
             },
                 
@@ -143,7 +143,7 @@ def test_cache_first_strategy_expired_revoked():
             "mock": {
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "UpdateTrustHandler",
-                "config": {},
+                "config": {"include_issued_jwt_header_param": True},
             },
                 
         }, db_engine, default_client_id="default-client-id", mode="cache_first"
@@ -166,7 +166,7 @@ def test_cache_first_strategy_expired_force_update():
             "mock": {
                 "module": "pyeudiw.tests.trust.mock_trust_handler",
                 "class": "UpdateTrustHandler",
-                "config": {},
+                "config":  {"include_issued_jwt_header_param": True},
             },
                 
         }, db_engine, default_client_id="default-client-id", mode="cache_first"

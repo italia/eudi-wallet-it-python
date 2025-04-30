@@ -8,7 +8,7 @@ from pyeudiw.tests.x509.test_x509 import gen_chain
 from ssl import DER_cert_to_PEM_cert
 
 from pyeudiw.tests.federation.base import ta_jwk
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -22,39 +22,26 @@ def base64url_to_int(val):
     return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
 
 jwk = {
-    "kty": "RSA",
+    "kty": "EC",
+    "d": "i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc",
     "use": "sig",
-    "alg": "RS256",
-    "kid": "m00NPAelNBnG_wK2R5EpI_k-GWCHEUySamQYubgFjCg",
-    "d": "nMsnqz0lPHNGBgUqyuJ5nXQ0jh-mzs6d2xOY_QhpkRW1kEbexRJDdVV3fqMxj_s0MiF8mn-s8ea3e8cbNDgIy000Wvx05y1rMkB6KaZX2ZL5jwU7i_xP6NlLh8itikqJz7kKQSILgibQFFQDcScpEk8gUKa6fmSJQVwTII6GoJCdiJflv-FI2OQ_TCBQEEVVLpeUiVSP0n3OMUKGBlbaHOQkArUpla_ke_mtdfIrl7uB74Rxrin68KtFHkGDGdJPs-PPO1yJ2paFZI9QR_ettZ22v45c-qIgmCjsEnITDMaO9724PU_umlWsWe36Y9RAAzofKsjKqvA1OIzU03ob9Q",
-    "n": "sP6jt1XwJE0JDKxy4B7r3Jdb8W6bSRoVunyjWMgl5IafqFwHsJlYgCAWPeTrAL-iyjdnWC1csHuTqWjdndDL-oqEarrqoDAycVkfFTUTD81_wVhWUzAwxhQHiT7PTUIsV7m9VGlfC_kdCpQl5CcK1yx2nQ1KbqWOV1_5WnMgnN_EpNmztkZDnJmKedVduOb2dKWwnLS3fcGvUxXc87DjAzC2vfgQSoQfXAZbwItyS6OinFiUnBxRvt9ZY2IapjI1-wwDKKeRrqPC-fV2oWTrMqoYAvIDnf9AjKHAbIw7q301-7-eaUMF1hVtAz1XeXvMp0wK8_uSo9Vgv1vHhBpOwQ",
-    "e": "AQAB",
-    "p": "0ViKTSyZdLtvbLBpTvVAXTdrhTwGXuh16PadQMAVmkoxOPiExRB5uLiy2ADaVKSglia5aQBUp9v0ygEEOmkiUtn5A26D9ui0dkPR0hx4fwqCOOmA2ZyDUNFJ_qrGSwT1SxGQDHeRteymJG7uN9QekS3XiBDgFJxwl-vVpoSTBJM",
-    "q": "2HBr9qhVd3zZUQuNb7ro06ErLl4fhL-DiKsNqXB772tDNTJYeog1nOWgS22tcv5WHrSoYF1x5Q74YVoA6yVj6DwFx2Hc2pYZazzhYMRC3NAWkTEdroy9IjtpzKIpQIqw-sq8CbWVBXzho8uQBCdg8h73z11_HPyXT9BqQCmxJ9s",
-    "dp": "WsQ32rQuqNUnv4lRb4GYcZI41SCsZnQFw4dBsTRXaXknlFr0PfkhvXyfVlYwU6i5U8DgfO0-xzTwErGUIrs4vZFyjRFauDA3JlvLWn0rpXFp-sELM87PhLfpjDiBFz_EFtM7kJw7GhTMCFnsgVpAEpQ8sesXLPiTPNts2_D5SW8",
-    "dq": "jWlucLrtFGOjDRuyLjT9l__uWZ4vk6kZRHsWMwWGRBhd0ezx-CT0em1hPMcNE1vvYqKAfG2xU4pjaB_JB9nnG73TvMBI7xwwwWsGihXQ5bqjc_uWPAxCKpKM_qFYuI2lMkaxctqL4gkE1-LRVpVv9uGa4YZh3ct_BSvTr9ZNpA8",
-    "qi": "kn9Etj4a2erCUmoZUQalPjHxCRYm5Q3wAkFIRGSQADA51mkwQHyTYqXbHcmXn2ZgXBVI6XDWJB51Me-NCPfITTlusqxvATF7Q-QJtdK_FbgNtcVRNc1FMq_M7VBHA1i9wJR7T4t57aywfXPmlsA5TToTDRe-ybdw0C3ys4KQATs"
+    "crv": "P-256",
+    "kid": "SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk",
+    "x": "Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI",
+    "y": "IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA",
+    "alg": "ES256"
 }
 
-# Extract components from JWK
-_n = base64url_to_int(jwk['n'])
-_e = base64url_to_int(jwk['e'])
 _d = base64url_to_int(jwk['d'])
-_p = base64url_to_int(jwk['p'])
-_q = base64url_to_int(jwk['q'])
-_dp = base64url_to_int(jwk['dp'])
-_dq = base64url_to_int(jwk['dq'])
-_qi = base64url_to_int(jwk['qi'])
-
-# Create RSA private key
-private_key = rsa.RSAPrivateNumbers(
-    p=_p,
-    q=_q,
-    d=_d,
-    dmp1=_dp,
-    dmq1=_dq,
-    iqmp=_qi,
-    public_numbers=rsa.RSAPublicNumbers(e=_e, n=_n)
+_x = base64url_to_int(jwk['x'])
+_y = base64url_to_int(jwk['y'])
+private_key = ec.EllipticCurvePrivateNumbers(
+    private_value=_d,
+    public_numbers=ec.EllipticCurvePublicNumbers(
+        x=_x,
+        y=_y,
+        curve=ec.SECP256R1()
+    )
 ).private_key()
 
 DEFAULT_X509_CHAIN = gen_chain(
@@ -108,6 +95,34 @@ _METADATA = {
             "sd-jwt_alg_values": ["ES256", "ES384"],
             "kb-jwt_alg_values": ["ES256", "ES384"],
         }
+    },
+    "jwks": {
+        "keys": [
+            jwk,
+            {
+                "kty": "RSA",
+                "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7v"
+                "tyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVG"
+                "H9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q",
+                "e": "AQAB",
+                "kid": "9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w",
+                "n": "utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx"
+                "6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBK"
+                "woxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw",
+                "p": "2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG6"
+                "8XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
+                "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPvi"
+                "H5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
+            },
+            {
+                "kty": "EC",
+                "kid": "xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg",
+                "crv": "P-256",
+                "x": "EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo",
+                "y": "VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU",
+                "d": "oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0",
+            },
+        ]
     },
 }
 
@@ -281,8 +296,10 @@ CONFIG = {
                         ta_jwk.serialize(private=False),
                     ]
                 },
+                "include_issued_jwt_header_param": True,
                 "default_sig_alg": "RS256",
                 "federation_jwks": [
+                    jwk,
                     {
                         "kty": "RSA",
                         "d": "QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7v"
@@ -322,7 +339,8 @@ CONFIG = {
             "class": "X509Handler",
             "config": {
                 "client_id": f"{BASE_URL}/OpenID4VP",
-                "relying_party_certificate_chains_by_ca":{
+                "include_issued_jwt_header_param": True,
+                "relying_party_certificate_chains_by_ca": {
                     "ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
@@ -330,6 +348,7 @@ CONFIG = {
                     "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n"
                 },
                 "private_keys": [
+                    jwk,
                     {
                         "kty": "RSA",
                         "use": "sig",
@@ -344,13 +363,13 @@ CONFIG = {
                         "dq": "Ml9mQg1Hq2NDiBXj7BGzYdiPXBQfmvO5SO0MqRhTy0i4hjwjqYo-ndiSrwZN6DMns2Fk_BpG5p2U76dtITXH3hlzSJz88LLDecI1R-akZ6CeaF9kzOvTX7sGqtYOczpFPsQsns8XddL40wvVu0Aq_Id0nV49211q5qdJktJX_lE",
                         "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA"
                     },
-                    jwk
                 ]
             }
         },
    
     },
     "metadata_jwks": [
+        jwk,
         {
             "crv": "P-256",
             "d": "KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc",
@@ -374,8 +393,7 @@ CONFIG = {
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
-        },
-        jwk
+        }
     ],
     "storage": {
         "mongo_db": {
@@ -557,6 +575,7 @@ CONFIG_DIRECT_TRUST = {
     "network": {"httpc_params": httpc_params},
     "trust": {"direct_trust_sd_jwt_vc": MODULE_DIRECT_TRUST_CONFIG},
     "metadata_jwks": [
+        jwk,
         {
             "crv": "P-256",
             "d": "KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc",
@@ -580,8 +599,7 @@ CONFIG_DIRECT_TRUST = {
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
-        },
-        jwk
+        }
     ],
     "storage": {
         "mongo_db": {

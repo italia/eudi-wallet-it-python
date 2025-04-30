@@ -1,3 +1,5 @@
+import re
+import requests
 from typing import Any, Callable, Literal
 from urllib.parse import urlparse
 
@@ -100,9 +102,11 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         if jwks:
             # get jwks by value
             return jwks
-        return self._get_jwks_by_reference(jwks_uri)
+        jwks_resp = self._get_jwks_by_reference(jwks_uri)
+        if jwks_resp and jwks_resp.status_code == 200:
+            return jwks_resp.json()
     
-    def _get_url(self, endpoint: str) -> str:
+    def _get_url(self, endpoint: str) -> requests.Response:
         if self.cache_ttl:
             resp = cacheable_get_http_url(
                 self.cache_ttl,
@@ -136,24 +140,11 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             f"failed to fetch valid jwk metadata: obtained {resp}"
         )
 
-    def _get_jwks_by_reference(self, jwks_reference_uri: str) -> dict:
+    def _get_jwks_by_reference(self, jwks_reference_uri: str) -> requests.Response:
         """
         call the jwks endpoint if jwks is defined by reference
         """
-        if self.cache_ttl:
-            resp = cacheable_get_http_url(
-                self.cache_ttl,
-                jwks_reference_uri,
-                self.httpc_params,
-                http_async=self.http_async_calls,
-            )
-        else:
-            resp = get_http_url(
-                [jwks_reference_uri],
-                self.httpc_params,
-                http_async=self.http_async_calls,
-            )[0]
-        return resp.json()
+        return self._get_url(jwks_reference_uri)
 
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
@@ -185,6 +176,10 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         if not issuer:
             raise ValueError("invalid issuer: cannot be empty value")
+
+        if not is_url(issuer):
+            self._log_warning("Extracting JWK", f"invalid issuer: issuer should be an URL, observed instead {issuer}")
+            return trust_source
 
         try:
             self.get_metadata(issuer, trust_source)
@@ -246,6 +241,12 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         # this class does not handle generic metadata information: it fetches and exposes cryptographic material only
         return trust_source
 
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        """
+        Direct Trust is not formally associated to any trust parameter
+        """
+        return {}
+
 
 def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
     if not endpoint_component:
@@ -256,3 +257,19 @@ def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: 
     baseurl = urlparse(issuer_id)
     full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}" if conform else f"{baseurl.path}/{endpoint_component.strip('/')}"
     return baseurl._replace(path=full_endpoint_path).geturl()
+
+
+# this is the regular expression that django uses for URL validation
+_is_url_regex = re.compile(
+    r'^(?:http|ftp)s?://' # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+    r'localhost|' #localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+    r'(?::\d+)?' # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+
+def is_url(url: str) -> bool:
+    if not _is_url_regex.search(url):
+        return False
+    return True

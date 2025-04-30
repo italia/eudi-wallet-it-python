@@ -31,6 +31,10 @@ _ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
 
 class FederationHandler(TrustHandlerInterface, BaseLogger):
+
+    _TRUST_TYPE = "federation"
+    _TRUST_PARAMETER_NAME = "trust_chain"
+
     def __init__(
         self,
         metadata: List[dict],
@@ -45,6 +49,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         httpc_params: dict = DEFAULT_HTTPC_PARAMS,
         cache_ttl: int = 0,
         metadata_type: str = _ISSUER_METADATA_TYPE,
+        include_issued_jwt_header_param: bool = False,
         **kwargs,
     ):
 
@@ -64,6 +69,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.federation_entity_metadata: dict[str, str] = federation_entity_metadata
         self.client_id: str = federation_entity_metadata
         self.entity_configuration_exp = entity_configuration_exp
+        self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
         self.federation_public_jwks = [
             JWK(i).as_public_dict() for i in self.federation_jwks
@@ -166,8 +172,14 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         return [(metadata_path, metadata_response_fn)]
     
     def get_handled_trust_material_name(self) -> str:
-        return "trust_chain"
+        return FederationHandler._TRUST_PARAMETER_NAME
         
+    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+        tp: dict = trust_source.serialize().get(FederationHandler._TRUST_TYPE, {})
+        if (trust_chain := tp.get(FederationHandler._TRUST_PARAMETER_NAME, None)):
+            return {"trust_chain": trust_chain}
+        return {}
+    
     def validate_trust_material(
             self, 
             trust_chain: list[str], 
@@ -248,9 +260,9 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
 
         # the good trust chain is then stored
         trust_source.add_trust_param(
-            "federation",
+            FederationHandler._TRUST_TYPE,
             TrustEvaluationType(
-                attribute_name="trust_chain",
+                attribute_name=FederationHandler._TRUST_PARAMETER_NAME,
                 trust_chain=trust_chain,
                 jwks=[JWK(key=jwk).as_dict() for jwk in leaf_jwks],
                 expiration_date=None,
