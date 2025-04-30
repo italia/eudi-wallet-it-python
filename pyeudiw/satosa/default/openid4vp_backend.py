@@ -111,13 +111,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
             trust_configuration, self.db_engine, default_client_id = self.client_id, mode = trust_caching_mode
         )
-
-        credential_presentation_handlers_configuration = load_handlers(
-            self.config,
-            self.trust_evaluator
-        )
         self.vp_token_parser = PresentationSubmissionHandler(
-            credential_presentation_handlers_configuration
+            self.load_credential_presentation_handlers()
         )
 
     def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:
@@ -444,10 +439,10 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         """
         return self._server_url
 
-def load_handlers(config: dict, trust_evaluator: CombinedTrustEvaluator):
-    try:
-        from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
-        return load_credential_presentation_handlers(
-            config, trust_evaluator, config.get("jwt", {}).get("sig_alg_supported", []))
-    except ImportError as e:
-        raise ImportError(f"Failed to import credential_presentation handlers: {e}")
+    def load_credential_presentation_handlers(self):
+        try:
+            from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
+            return load_credential_presentation_handlers(
+                self.config, self.trust_evaluator, self.config.get("jwt", {}).get("sig_alg_supported", []))
+        except ImportError as e:
+            raise ImportError(f"Failed to import credential_presentation handlers: {e}")
