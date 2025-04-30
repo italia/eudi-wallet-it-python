@@ -54,7 +54,7 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tests.x509.test_x509 import gen_chain
-from pyeudiw.x509.verify import to_pem_list
+from pyeudiw.x509.verify import PEM_cert_to_B64DER_cert, to_pem_list
 from pyeudiw.jwk.parse import parse_pem
 
 PKEY = {
