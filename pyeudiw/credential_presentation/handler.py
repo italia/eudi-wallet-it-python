@@ -101,7 +101,6 @@ def load_credential_presentation_handlers(
         updated_config = {
             DUCKLE_PRESENTATION: config.get(DUCKLE_PRESENTATION, {})
         }
-        breakpoint()
         duckle_handler.config = add_to_config(updated_config, duckle_handler.config)
     return CredentialPresentationHandlers(config_model)
 
