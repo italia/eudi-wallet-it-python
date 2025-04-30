@@ -1,4 +1,3 @@
-import json
 import uuid
 from typing import Callable
 
@@ -9,20 +8,20 @@ from satosa.response import Redirect, Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
+from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.utils import detect_flow_typ
-from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.satosa.interfaces.openid4vp_backend import OpenID4VPBackendInterface
 from pyeudiw.satosa.schemas.config import PyeudiwBackendConfig
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.trust.anchors_loader import AnchorsLoader
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.satosa.interfaces.openid4vp_backend import OpenID4VPBackendInterface
-from pyeudiw.openid4vp.presentation_submission import PresentationSubmissionHandler
 
 
 class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
@@ -112,12 +111,8 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
             trust_configuration, self.db_engine, default_client_id = self.client_id, mode = trust_caching_mode
         )
-
-        credential_presentation_handlers_configuration = self.config.get("credential_presentation_handlers", {})
         self.vp_token_parser = PresentationSubmissionHandler(
-            credential_presentation_handlers_configuration,
-            self.trust_evaluator,
-            self.config.get("jwt", {}).get("sig_alg_supported", [])
+            self.load_credential_presentation_handlers()
         )
 
     def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface:
@@ -487,3 +482,11 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
         Returns the server url
         """
         return self._server_url
+
+    def load_credential_presentation_handlers(self):
+        try:
+            from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
+            return load_credential_presentation_handlers(
+                self.config, self.trust_evaluator, self.config.get("jwt", {}).get("sig_alg_supported", []))
+        except ImportError as e:
+            raise ImportError(f"Failed to import credential_presentation handlers: {e}")

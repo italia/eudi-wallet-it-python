@@ -18,3 +18,6 @@ sphinx_rtd_theme
 playwright
 freezegun
 pytest-mock
+PyJWT
+cryptography
+cose

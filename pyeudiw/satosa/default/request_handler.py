@@ -1,12 +1,15 @@
+from typing import Any
+
 from satosa.context import Context
 
+from pyeudiw.jwk import JWK
+from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
+from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.jwk.parse import parse_b64der
-from pyeudiw.jwk import JWK
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -40,6 +43,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             self.absolute_response_url,
             self.config["authorization"],
             metadata=metadata,
+            submission_data=self._build_submission_data()
         )
 
         if _aud := self.config["authorization"].get("aud"):
@@ -110,3 +114,12 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 "internal error: error while processing the request object",
                 e500,
             )
+
+    def _build_submission_data(self) -> dict[str, Any]:
+        if DUCKLE_PRESENTATION in self.config:
+            return {
+                DUCKLE_QUERY_KEY: self.config.get(DUCKLE_PRESENTATION)[DUCKLE_QUERY_KEY],
+                "typo": DUCKLE_PRESENTATION
+            }
+        else:
+            return None

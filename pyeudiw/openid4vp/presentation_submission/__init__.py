@@ -1,78 +1,36 @@
-import re
-from pydantic import ValidationError
-import importlib
-from typing import Any
 import logging
+import re
+from typing import Any
 
-from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pydantic import ValidationError
+
+from pyeudiw.credential_presentation.handler import CredentialPresentationHandlers
 from pyeudiw.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
-from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 from pyeudiw.openid4vp.presentation_submission.exceptions import (
-    MissingHandler, 
-    MalformedPath, 
-    SubmissionValidationError, 
+    MissingHandler,
+    MalformedPath,
+    SubmissionValidationError,
     VPTokenDescriptorMapMismatch,
     ParseError,
     ValidationError
 )
+from pyeudiw.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 
 logger = logging.getLogger(__name__)
 
 class PresentationSubmissionHandler:
     def __init__(
-            self, 
-            config: dict,
-            trust_evaluator: CombinedTrustEvaluator,
-            sig_alg_supported: list[str] = [],
+            self,
+            config: CredentialPresentationHandlers,
         ) -> None:
         """
         Initialize the PresentationSubmissionHandler handler with the submission data.
-
-        :param submission: The presentation submission data.
-        :type submission: dict[str, Any]
-        :param config: Configuration dictionary.
-        :type config: dict[str, Any], optional
-        :param args: Additional arguments to be passed to handlers.
-        :type args: Any
-        :param kwargs: Additional keyword arguments to be passed to handlers.
-        :type kwargs: Any
-
-        :raises KeyError: If the 'format' key is missing in the submission.
-        :raises ValueError: If the format is not supported or not defined in the configuration.
-        :raises ImportError: If the module or class cannot be loaded.
-        :raises ValidationError: If the submission data is invalid or exceeds size limits.
+        :param config: Configuration object.
         """
-        formats = config.get("formats", [])
+        self.max_submission_size = config.max_submission_size or 4096
+        self.handlers = config.handlers
+        self.trust_evaluator = config.trust_evaluator
 
-        if not formats:
-            raise ValueError("credential_presentation_handlers in the backend configuration must have at least one format defined.")
-
-        self.max_submission_size = config.get("max_submission_size", 4096)
-        self.handlers: dict[str, BaseVPParser] = {}
-        self.trust_evaluator = trust_evaluator
-
-        for format_conf in formats:
-            module_name = format_conf["module"]
-            class_name = format_conf["class"]
-            format_name = format_conf["format"]
-            module_config = format_conf.get("config", {})
-
-            try:
-                # Dynamically load the module and class
-                module = importlib.import_module(module_name)
-                cls = getattr(module, class_name)
-                
-                if not issubclass(cls, BaseVPParser):
-                     raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
-                
-                self.handlers[format_name] = cls(trust_evaluator=self.trust_evaluator, **module_config, sig_alg_supported=sig_alg_supported)
-            except ModuleNotFoundError:
-                raise ImportError(f"Module '{module_name}' not found for format '{format_conf['name']}'.")
-            except AttributeError:
-                raise ImportError(f"Class '{class_name}' not found in module '{module_name}' for format '{format_conf['name']}'.")
-            except Exception as e:
-                raise ImportError(f"Error loading class '{class_name}' from module '{module_name}': {e}")
-        
     def _validate_submission(self, submission: dict[str, Any]) -> PresentationSubmissionSchema:
         """
         Validate the submission data using Pydantic and check its total size.
