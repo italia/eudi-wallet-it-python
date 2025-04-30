@@ -1,4 +1,3 @@
-import base64
 from cryptojwt.jwk.ec import import_ec_key, ECKey
 from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 from ssl import DER_cert_to_PEM_cert
@@ -6,6 +5,8 @@ from ssl import DER_cert_to_PEM_cert
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import InvalidJwk
 from typing import Optional
+
+from pyeudiw.x509.verify import B64DER_cert_to_DER_cert
 
 def _parse_rsa_key(pem: str) -> Optional[JWK]:
     try:
@@ -71,7 +72,7 @@ def parse_b64der(b64der: str) -> JWK:
     """
     Parse a (public) key from a Base64 encoded DER certificate.
     """
-    der = base64.b64decode(b64der)
+    der = B64DER_cert_to_DER_cert(b64der)
     return parse_certificate(der)
 
 

@@ -95,6 +95,13 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
     return _verify_x509_certificate_chain(pems)
 
 
+def DER_cert_to_B64DER_cert(cert: bytes) -> str:
+    """
+    Encode in Base64 a DER certificate.
+    """
+    return base64.b64encode(cert).decode()
+
+
 def PEM_cert_to_B64DER_cert(cert: str) -> str:
     """
     Takes a certificate in ANSII PEM format and returns the base64

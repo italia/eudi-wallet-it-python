@@ -71,7 +71,11 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         trust_params = self.trust_evaluator.get_jwt_header_trust_parameters(issuer=self.client_id)
         _protected_jwt_headers.update(trust_params)
 
-        helper = JWSHelper(self.config["metadata_jwks"])
+        if ("x5c" in _protected_jwt_headers) or ("kid" in _protected_jwt_headers):
+            # let helper decide which key best fit the given header, otherise use default hich is the first confgiured key
+            helper = JWSHelper(self.config["metadata_jwks"])
+        else:
+            helper = JWSHelper(self.default_metadata_private_jwk)
 
         try:
             request_object_jwt = helper.sign(
