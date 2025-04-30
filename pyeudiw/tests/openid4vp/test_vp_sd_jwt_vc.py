@@ -1,13 +1,14 @@
 import uuid
-from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
-from pyeudiw.trust.dynamic import CombinedTrustEvaluator
-from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.tests.settings import CONFIG
-from pyeudiw.sd_jwt.issuer import SDJWTIssuer
-from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.sd_jwt.holder import SDJWTHolder
-from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
 from unittest.mock import patch
+
+from requests import Response
+
+from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
+from pyeudiw.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
+from pyeudiw.sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.federation.base import (
     leaf_cred_jwk,
     leaf_wallet_jwk,
@@ -21,8 +22,9 @@ from pyeudiw.tests.settings import (
     _METADATA,
     jwk
 )
-from pyeudiw.sd_jwt.utils.yaml_specification import _yaml_load_specification
-from requests import Response
+from pyeudiw.tools.utils import exp_from_now, iat_now
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+
 
 def issue_sd_jwt(aud: str, nonce: str, status_list: bool = False, idx: int = 1, invalid_trust_chain: bool = False) -> dict:
     settings = CREDENTIAL_ISSUER_CONF
@@ -38,7 +40,7 @@ def issue_sd_jwt(aud: str, nonce: str, status_list: bool = False, idx: int = 1, 
     issuer_jwk = leaf_cred_jwk.serialize(private=True)
     holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
-    specification = _yaml_load_specification(
+    specification = yaml_load_specification(
         settings["sd_specification"])
     
     if status_list:
