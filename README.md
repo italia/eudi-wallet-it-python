@@ -5,9 +5,8 @@
 ![py-versions](https://img.shields.io/badge/python-3.10-blue.svg)
 [![GitHub issues](https://img.shields.io/github/issues/italia/eudi-wallet-it-python.svg)](https://github.com/italia/eudi-wallet-it-python/issues)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
-[![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
 
-The EUDI Wallet Python toolchain is a suite of Python libraries designed to
+The eID Wallet Python toolchain is a suite of Python libraries designed to
 make it easy the implementation of an EUDI Wallet Relying Party according 
 to the [Italian Wallet implementation profile](https://italia.github.io/eid-wallet-it-docs/versione-corrente/en/).
 
