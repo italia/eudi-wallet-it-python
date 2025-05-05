@@ -60,7 +60,6 @@ config:
         - ES384
         - ES512
     
-
   authorization:
     client_id: # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     auth_iss_id: # this field if not set will be set to client_id in the authz request 
@@ -101,15 +100,12 @@ config:
             - path:
               - "$.given_name"
 
-  duckle:
-    dcql_query: '{"credentials":[{"id":"personal id data","format":"dc+sd-jwt","meta":{"vct_values":["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},"claims":[{"path":["given_name"]},{"path":["family_name"]}]},{"id":"wallet attestation","format":"dc+sd-jwt","meta":{"vct_values":["https://itwallet.registry.example.it/WalletAttestation"]},"claims":[{"path":["wallet_link"]},{"path":["wallet_name"]}]}]}'
-
   user_attributes:
     unique_identifiers:
-    - tax_id_code
-    - unique_id
+      - tax_id_code
+      - unique_id
     subject_id_random_value: CHANGEME!
-  
+
   network:
     httpc_params: &httpc_params
       connection:
@@ -202,9 +198,6 @@ config:
       - module: pyeudiw.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
-      - module: pyeudiw.duckle_ql.handler
-        class: DuckleHandler
-        format: jwt_vc_json
 
   trust:
     direct_trust_sd_jwt_vc:
@@ -229,7 +222,6 @@ config:
         httpc_params: *httpc_params
         cache_ttl: 0
         entity_configuration_exp: 600
-        # include_issued_jwt_header_param: true # default false; if true, it will include trust_chain header parameters in the signed presentation request issued by this trust handler
         metadata_type: "openid_credential_verifier"
         metadata: *metadata
         authority_hints:
@@ -268,7 +260,7 @@ config:
       class: X509Handler
       config:
         # client_id: *client_id
-        client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request. 
+        client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request.
         include_issued_jwt_header_param: true # default false; if true, it will include x5c header parameters in the signed presentation request issued by this trust handler
         certificate_authorities:
           ca.example.com: |

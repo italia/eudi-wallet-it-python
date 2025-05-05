@@ -55,8 +55,9 @@ class AuthorizeResponsePayload:
     vp_token: str | list[str] | dict
     presentation_submission: Optional[dict] = None
 
+
 @dataclass
 class ErrorResponsePayload:
     state: str
     error: str
-    error_description: str
+    error_description: str | None = None

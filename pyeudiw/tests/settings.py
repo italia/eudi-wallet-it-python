@@ -133,6 +133,7 @@ CONFIG = {
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
         "error_url": "https://localhost:9999/error_page.html",
+        "authorization_error_template": "authorization_error.html"
     },
     "endpoints": {
         "pre_request": "/pre-request",

@@ -33,3 +33,4 @@ class Jinja2TemplateHandler:
         )
 
         self.qrcode_page = self.loader.get_template(config["qrcode_template"])
+        self.authorization_error_response_page = self.loader.get_template(config["authorization_error_template"])
