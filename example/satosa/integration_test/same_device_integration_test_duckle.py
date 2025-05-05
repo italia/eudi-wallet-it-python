@@ -1,49 +1,4 @@
 # This file defines an end-to-end integration test flow for Duckle support.
-#
-# To run this integration test, you need to modify the `pyeudiw_backend.yaml` configuration file
-# by adding the following entries:
-#
-# config:
-#   duckle:
-#     dcql_query: >
-#       {
-#         "credentials": [
-#           {
-#             "id": "personal id data",
-#             "format": "dc+sd-jwt",
-#             "meta": {
-#               "vct_values": [
-#                 "https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"
-#               ]
-#             },
-#             "claims": [
-#               { "path": ["given_name"] },
-#               { "path": ["family_name"] }
-#             ]
-#           },
-#           {
-#             "id": "wallet attestation",
-#             "format": "dc+sd-jwt",
-#             "meta": {
-#               "vct_values": [
-#                 "https://itwallet.registry.example.it/WalletAttestation"
-#               ]
-#             },
-#             "claims": [
-#               { "path": ["wallet_link"] },
-#               { "path": ["wallet_name"] }
-#             ]
-#           }
-#         ]
-#       }
-#
-# Additionally, you must register the Duckle handler in the `credential_presentation_handlers` section:
-#
-# credential_presentation_handlers: [...]
-#   - module: pyeudiw.duckle_ql.handler
-#     class: DuckleHandler
-#     format: jwt_vc_json
-
 
 import re
 import urllib.parse

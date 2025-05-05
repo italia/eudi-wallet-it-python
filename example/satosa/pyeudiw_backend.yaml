@@ -101,6 +101,9 @@ config:
             - path:
               - "$.given_name"
 
+  duckle:
+    dcql_query: '{"credentials":[{"id":"personal id data","format":"dc+sd-jwt","meta":{"vct_values":["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},"claims":[{"path":["given_name"]},{"path":["family_name"]}]},{"id":"wallet attestation","format":"dc+sd-jwt","meta":{"vct_values":["https://itwallet.registry.example.it/WalletAttestation"]},"claims":[{"path":["wallet_link"]},{"path":["wallet_name"]}]}]}'
+
   user_attributes:
     unique_identifiers:
     - tax_id_code
@@ -199,6 +202,9 @@ config:
       - module: pyeudiw.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
+      - module: pyeudiw.duckle_ql.handler
+        class: DuckleHandler
+        format: jwt_vc_json
 
   trust:
     direct_trust_sd_jwt_vc:

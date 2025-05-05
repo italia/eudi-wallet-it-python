@@ -1,3 +1,16 @@
+# This file defines an end-to-end integration test flow without Duckle support.
+#
+# To run this integration test, you need to modify the `pyeudiw_backend.yaml` configuration file
+# by adding the following entries:
+#   config.duckle.dcql_query
+#
+# Additionally, you must remove the Duckle handler in the `credential_presentation_handlers` section:
+#
+# credential_presentation_handlers: [...]
+#   - module: pyeudiw.duckle_ql.handler
+#     class: DuckleHandler
+#     format: jwt_vc_json
+
 import re
 import requests
 import urllib.parse
