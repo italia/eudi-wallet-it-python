@@ -87,11 +87,11 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
         candidate_key: JWK | None = None
         try:
             candidate_key = parse_x5c_keys(header["x5c"])[0]
+            return set(["5xc"]), candidate_key
         except Exception as e:
             logger.debug(
                 f"failed to parse key from x5c chain {header['x5c']}", exc_info=e
             )
-        return set(["5xc"]), candidate_key
     if "jwk" in header:
         candidate_key = JWK(header["jwk"])
         return set(["jwk"]), candidate_key

@@ -95,6 +95,13 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
     return _verify_x509_certificate_chain(pems)
 
 
+def DER_cert_to_B64DER_cert(cert: bytes) -> str:
+    """
+    Encode in Base64 a DER certificate.
+    """
+    return base64.b64encode(cert).decode()
+
+
 def PEM_cert_to_B64DER_cert(cert: str) -> str:
     """
     Takes a certificate in ANSII PEM format and returns the base64
@@ -109,6 +116,14 @@ def B64DER_cert_to_PEM_cert(cert: str) -> str:
     certificate in ANSII PEM format.
     """
     return DER_cert_to_PEM_cert(base64.b64decode(cert))
+
+
+def B64DER_cert_to_DER_cert(cert: str) -> bytes:
+    """
+    Takes a certificate Base64 encoded DER and returns the
+    certificate in DER format.
+    """
+    return base64.b64decode(cert)
 
 
 def to_DER_cert(cert: str | bytes) -> bytes:
@@ -134,12 +149,12 @@ def to_DER_cert(cert: str | bytes) -> bytes:
 
     cert_s = cert_s.replace('\n\r', '')
     if _BASE64_RE.fullmatch(cert_s):
-        return B64DER_cert_to_PEM_cert(cert_s)
+        return B64DER_cert_to_DER_cert(cert_s)
 
-    raise ValueError("unable to recognize input [cert] as a ccertifficate")
+    raise ValueError("unable to recognize input as a certificate")
 
 
-def to_PEM_cert(cer: str | bytes) -> str:
+def to_PEM_cert(cert: str | bytes) -> str:
     """
     This function takes in a certificate with unknown representation
     (allegedly, PEM, DER or Base64 encoded DER) and applies some
@@ -149,22 +164,28 @@ def to_PEM_cert(cer: str | bytes) -> str:
     use it unless you do NOT hany prior way to know the actual representation
     format of a certificate
     """
-    cert_s = b""
+    cert_b = b""
 
-    if isinstance(cer, str):
-        if is_pem_format(cer):
-            return cer
-        cert_s = cer.encode()
+    if isinstance(cert, str):
+        if is_pem_format(cert):
+            return cert
+        if _BASE64_RE.fullmatch(cert):
+            return B64DER_cert_to_DER_cert(cert)
+        cert_b = cert.encode()
     else:
-        cert_s = cer
+        cert_b = cert
 
-    if cert_s.startswith(b"-----BEGIN CERTIFICATE-----"):
-        return str(cert_s)
+    if cert_b.startswith(b"-----BEGIN CERTIFICATE-----"):
+        return cert_b.decode()
 
-    if _BASE64_RE.fullmatch(str(cert_s)):
-        return B64DER_cert_to_PEM_cert(cert_s)
-    else:
-        return DER_cert_to_PEM_cert(cert_s)
+    try:
+        cert_s = cert_b.decode()
+        if _BASE64_RE.fullmatch(cert_s):
+            return B64DER_cert_to_PEM_cert(cert_s)
+    except UnicodeError:
+        return DER_cert_to_PEM_cert(cert_b)
+
+    raise ValueError("unable to recognize input as a certificate")
 
 def pem_to_pems_list(cert: str) -> list[str]:
     """

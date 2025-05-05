@@ -54,7 +54,7 @@ from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tests.x509.test_x509 import gen_chain
-from pyeudiw.x509.verify import to_pem_list
+from pyeudiw.x509.verify import PEM_cert_to_B64DER_cert, to_pem_list
 from pyeudiw.jwk.parse import parse_pem
 
 PKEY = {
@@ -192,7 +192,7 @@ class TestOpenID4VPBackend:
         
         if x509:
             additional_headers = {
-                "x5c": self.chain
+                "x5c": [PEM_cert_to_B64DER_cert(pem) for pem in self.chain]
             }
         else:
             additional_headers = {
@@ -622,7 +622,6 @@ class TestOpenID4VPBackend:
         }
         context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-        
         response_endpoint = self.backend.response_endpoint(context)
         assert response_endpoint.status == "200"
         assert "redirect_uri" in response_endpoint.message

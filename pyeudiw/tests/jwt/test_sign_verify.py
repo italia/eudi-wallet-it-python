@@ -1,8 +1,12 @@
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptojwt.jwk.ec import ECKey
 import pytest
 
 from pyeudiw.jwt.jws_helper import DEFAULT_TOKEN_TIME_TOLERANCE, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
+import pyeudiw.tests.x509.test_x509 as test_x509
 from pyeudiw.tools.utils import iat_now
+from pyeudiw.x509.verify import DER_cert_to_B64DER_cert
 
 
 class TestJWSHeperSelectSigningKey:
@@ -48,6 +52,19 @@ class TestJWSHeperSelectSigningKey:
         exp_k = sign_jwks[1]
         k = signer._select_signing_key(({"kid": exp_k["kid"]}, {}))
         assert k == exp_k
+
+    def test_JWSHelper_select_signing_key_infer_kid(self, sign_jwks: list[dict]):
+        new_private_ec_key = ec.generate_private_key(ec.SECP256R1())
+        x509_der_chain = test_x509.gen_chain(leaf_private_key=new_private_ec_key)
+        x5c = [DER_cert_to_B64DER_cert(der) for der in x509_der_chain]
+        new_ec_jwk = ECKey()
+        new_ec_jwk.load_key(new_private_ec_key)
+        exp_key: dict = new_ec_jwk.serialize(private=True)
+        sign_jwks.append(exp_key)
+
+        signer = JWSHelper(sign_jwks)
+        obt_key = signer._select_signing_key(({"x5c": x5c}, {}))
+        assert exp_key == obt_key
 
     def test_JWSHelper_select_signing_key_unique(self, sign_jwks):
         signer = JWSHelper(sign_jwks[0])
