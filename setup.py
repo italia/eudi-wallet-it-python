@@ -52,7 +52,7 @@ setup(
             "jinja2>=3.0,<4",
             "pymongo>=4.4.1,<4.5",
             "requests>=2.2,<2.4",
-            "pymdoccbor @ git+https://github.com/peppelinux/pyMDOC-CBOR.git"
+            "pymdoccbor>=0.9.0,<1.0"
         ],
         "federation": [
             "asyncio>=4,<4.1",
