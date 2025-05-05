@@ -151,7 +151,7 @@ def to_DER_cert(cert: str | bytes) -> bytes:
     if _BASE64_RE.fullmatch(cert_s):
         return B64DER_cert_to_DER_cert(cert_s)
 
-    raise ValueError("unable to recognize input [cert] as a certificate")
+    raise ValueError("unable to recognize input as a certificate")
 
 
 def to_PEM_cert(cert: str | bytes) -> str:
@@ -185,7 +185,7 @@ def to_PEM_cert(cert: str | bytes) -> str:
     except UnicodeError:
         return DER_cert_to_PEM_cert(cert_b)
 
-    raise ValueError("unable to recognize input [cert] as a certificate")
+    raise ValueError("unable to recognize input as a certificate")
 
 def pem_to_pems_list(cert: str) -> list[str]:
     """
