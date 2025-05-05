@@ -205,7 +205,7 @@ class JWSHelper(JWHelperInterface):
             return candidate_signing_keys[0]
         return None
 
-    def _select_key_by_kid(self, headers: tuple[dict, dict]) -> dict | None:
+    def _select_key_by_kid(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
         if not headers:
             return None
         if "kid" in headers[0]:
@@ -216,7 +216,7 @@ class JWSHelper(JWHelperInterface):
             return None
         return find_jwk_by_kid([key.to_dict() for key in self.jwks], kid)
 
-    def _select_key_by_x5c(self, headers: tuple[dict, dict]) -> dict | None:
+    def _select_key_by_x5c(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
         if not headers:
             return None
         x5c: list[str] | None = headers[0].get("x5c") or headers[1].get("x5c")
