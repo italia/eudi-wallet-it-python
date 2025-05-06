@@ -64,6 +64,7 @@ config:
   authorization:
     client_id: # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>" 
     auth_iss_id: # this field if not set will be set to client_id in the authz request 
+    client_id_scheme: x509_san_dns
     url_scheme: haip
     scopes:
     - pid-sd-jwt:unique_id+given_name+family_name
