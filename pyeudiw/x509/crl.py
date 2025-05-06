@@ -21,31 +21,43 @@ class CRLHelper:
         """
         self.revocation_list = crl
 
-    def is_revoked(self, serial_number: str) -> bool:
+    def is_revoked(self, serial_number: str | int) -> bool:
         """
         Check if a certificate with the given serial number is revoked.
 
-        :param serial_number: The serial number of the certificate to check.
-        :type serial_number: str
+        :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.
+        :type serial_number: str | int
 
         :return: True if the certificate is revoked, False otherwise.
         :rtype: bool
         """
         try:
+            if isinstance(serial_number, str):
+                serial_number = int(serial_number, 16)
+        except ValueError:
+            raise CRLReadError(f"Invalid serial number format: {serial_number}")
+
+        try:
             return self.revocation_list.get_revoked_certificate_by_serial_number(serial_number) is not None
         except Exception as e:
             raise CRLReadError(f"Failed to check revocation status: {e}")
         
-    def get_revocation_date(self, serial_number: str) -> datetime | None:
+    def get_revocation_date(self, serial_number: str | int) -> datetime | None:
         """
         Get the revocation date of a certificate with the given serial number.
 
-        :param serial_number: The serial number of the certificate to check.
-        :type serial_number: str
+        :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.
+        :type serial_number: str | int
 
         :return: The revocation date if revoked, None otherwise.
         :rtype: str | None
         """
+        try:
+            if isinstance(serial_number, str):
+                serial_number = int(serial_number, 16)
+        except ValueError:
+            raise CRLReadError(f"Invalid serial number format: {serial_number}")
+
         try:
             cert = self.revocation_list.get_revoked_certificate_by_serial_number(serial_number)
             return cert.revocation_date if cert else None
