@@ -102,7 +102,7 @@ class CRLHelper:
         :type cert: str | bytes
 
         :raises CRLReadError: If the certificate does not contain CRL distribution points or if loading fails.
-        
+
         :return: A list of CRLHelper instances containing the loaded CRLs.
         :rtype: list[CRLHelper]
         """
@@ -119,7 +119,7 @@ class CRLHelper:
 
         for crl_url in crl_distribution_points.value:
             try:
-                crl_helper = CRLHelper.from_url(crl_url.full_name)
+                crl_helper = CRLHelper.from_url(crl_url.full_name.replace("URI:", ""))
                 crl_helpers.append(crl_helper)
             except (CRLHTTPError, CRLParseError, CRLReadError) as e:
                 raise CRLReadError(f"Failed to load CRL from certificate: {e}")
