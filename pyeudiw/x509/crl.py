@@ -94,15 +94,7 @@ class CRLHelper:
         if response.status_code != 200:
             raise CRLHTTPError(f"Failed to fetch CRL from {crl_url}: {response.status_code}")        
 
-        try:
-            return CRLHelper(
-                x509.load_pem_x509_crl(
-                    response[0].text, 
-                    default_backend()
-                )
-            )
-        except Exception as e:
-            raise CRLParseError(f"Failed to parse CRL: {e}")
+        return CRLHelper.from_crl(response[0].text)
             
     @staticmethod
     def from_certificate(cert: str | bytes) -> list["CRLHelper"]:
@@ -137,3 +129,26 @@ class CRLHelper:
                 raise CRLReadError(f"Failed to load CRL from certificate: {e}")
             
         return crl_helpers
+    
+    @staticmethod
+    def from_crl(crl: str | bytes) -> "CRLHelper":
+        """
+        Load a CRL from a given PEM or DER formatted string or bytes.
+
+        :param crl: The CRL in PEM or DER format.
+        :type crl: str | bytes
+
+        :raises CRLParseError: If the CRL file is not in the expected format.
+
+        :return: An instance of CRLHelper containing the loaded CRL.
+        :rtype: CRLHelper
+        """
+        try:
+            return CRLHelper(
+                x509.load_pem_x509_crl(
+                    crl, 
+                    default_backend()
+                )
+            )
+        except Exception as e:
+            raise CRLParseError(f"Failed to parse CRL: {e}")
