@@ -1,5 +1,7 @@
 from datetime import datetime
 from cryptography import x509
+from pyeudiw.x509.verify import to_DER_cert
+from cryptography.x509 import load_der_x509_certificate
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import CertificateRevocationList
 from pyeudiw.federation.http_client import http_get_sync
@@ -90,3 +92,36 @@ class CRLHelper:
         except Exception as e:
             raise CRLParseError(f"Failed to parse CRL: {e}")
             
+    @staticmethod
+    def from_certificate(cert: str | bytes) -> list["CRLHelper"]:
+        """
+        Load CRL distribution points from a given certificate.
+        This method extracts the CRL distribution points from the certificate and loads them into CRLHelper instances.
+
+        :param cert: The certificate in PEM or DER format.
+        :type cert: str | bytes
+
+        :raises CRLReadError: If the certificate does not contain CRL distribution points or if loading fails.
+        
+        :return: A list of CRLHelper instances containing the loaded CRLs.
+        :rtype: list[CRLHelper]
+        """
+
+        der = to_DER_cert(cert)
+        parsed_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
+        crl_distribution_points = parsed_cert.extensions.get_extension_for_class(x509.CRLDistributionPoints)
+
+        if not crl_distribution_points:
+            raise CRLReadError("No CRL distribution points found in the certificate.")
+        
+
+        crl_helpers = []
+
+        for crl_url in crl_distribution_points.value:
+            try:
+                crl_helper = CRLHelper.from_url(crl_url.full_name)
+                crl_helpers.append(crl_helper)
+            except (CRLHTTPError, CRLParseError, CRLReadError) as e:
+                raise CRLReadError(f"Failed to load CRL from certificate: {e}")
+            
+        return crl_helpers
