@@ -1,0 +1,37 @@
+pyeudiw.openid4vp.presentation\_submission package
+==================================================
+
+Submodules
+----------
+
+pyeudiw.openid4vp.presentation\_submission.base\_vp\_parser module
+------------------------------------------------------------------
+
+.. automodule:: pyeudiw.openid4vp.presentation_submission.base_vp_parser
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.presentation\_submission.exceptions module
+------------------------------------------------------------
+
+.. automodule:: pyeudiw.openid4vp.presentation_submission.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyeudiw.openid4vp.presentation\_submission.schemas module
+---------------------------------------------------------
+
+.. automodule:: pyeudiw.openid4vp.presentation_submission.schemas
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.openid4vp.presentation_submission
+   :members:
+   :undoc-members:
+   :show-inheritance:
