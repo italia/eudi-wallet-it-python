@@ -123,7 +123,7 @@ class CRLHelper:
 
         for crl_url in crl_distribution_points.value:
             try:
-                crl_helper = CRLHelper.from_url(crl_url.full_name.replace("URI:", ""))
+                crl_helper = CRLHelper.from_url(crl_url.full_name[0].value)
                 crl_helpers.append(crl_helper)
             except (CRLHTTPError, CRLParseError, CRLReadError) as e:
                 raise CRLReadError(f"Failed to load CRL from certificate: {e}")
