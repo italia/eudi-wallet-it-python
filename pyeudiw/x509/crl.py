@@ -91,10 +91,10 @@ class CRLHelper:
             }
 
         response = http_get_sync([crl_url], httpc_params)
-        if response.status_code != 200:
+        if response[0].status_code != 200:
             raise CRLHTTPError(f"Failed to fetch CRL from {crl_url}: {response.status_code}")        
 
-        return CRLHelper.from_crl(response[0].text)
+        return CRLHelper.from_crl(response[0].text.encode("utf-8"))
             
     @staticmethod
     def from_certificate(cert: str | bytes) -> list["CRLHelper"]:
