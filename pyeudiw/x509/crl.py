@@ -113,11 +113,11 @@ class CRLHelper:
 
         der = to_DER_cert(cert)
         parsed_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
-        crl_distribution_points = parsed_cert.extensions.get_extension_for_class(x509.CRLDistributionPoints)
 
-        if not crl_distribution_points:
+        try:
+            crl_distribution_points = parsed_cert.extensions.get_extension_for_class(x509.CRLDistributionPoints)
+        except x509.ExtensionNotFound:
             raise CRLReadError("No CRL distribution points found in the certificate.")
-        
 
         crl_helpers = []
 
