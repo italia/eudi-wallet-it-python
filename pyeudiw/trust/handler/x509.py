@@ -1,6 +1,8 @@
 import logging
 from typing import Union
 
+from pyeudiw.x509.crl import CRLHelper
+from pyeudiw.x509.exceptions import CRLReadError, CRLParseError
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
@@ -35,7 +37,7 @@ class X509Handler(TrustHandlerInterface):
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
-        certificate_authorities: dict[str, str] = [],
+        certificate_authorities: dict[str, str] = {},
         include_issued_jwt_header_param: bool = False,
         **kwargs
     ) -> None:        
@@ -43,6 +45,7 @@ class X509Handler(TrustHandlerInterface):
         self.client_id_scheme = client_id_scheme
         self.certificate_authorities = certificate_authorities
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
+        self.crls = {}
 
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
@@ -53,6 +56,21 @@ class X509Handler(TrustHandlerInterface):
         certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
 
         for k, v in relying_party_certificate_chains_by_ca.items():
+            crls = []
+
+            for cert in v:
+                try:
+                    crl_helper = CRLHelper.from_certificate(cert)
+                    crls.append(crl_helper)
+                except CRLReadError as e:
+                    logger.error(f"Invalid x509 certificate chain using CA {k}. CRL read error: {e}")
+                    continue
+                except CRLParseError as e:
+                    logger.error(f"Invalid x509 certificate chain using CA {k}. CRL parse error: {e}")
+                    continue
+
+            self.crls[k] = crls
+
             root_dns_name = get_x509_info(v[-1])
             
             if not root_dns_name in k:

@@ -13,6 +13,7 @@ from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from pyeudiw.x509.crl import CRLHelper
 
 LOG_ERROR = "x509 verification failed: {}"
 
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 _BASE64_RE = re.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
 
 
-def _verify_x509_certificate_chain(pems: list[str]):
+def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bool:
     """
     Verify the x509 certificate chain.
 
@@ -34,7 +35,7 @@ def _verify_x509_certificate_chain(pems: list[str]):
     try:
         store = crypto.X509Store()
         x509_certs = [
-            crypto.load_certificate(crypto.FILETYPE_PEM, str(pem)) for pem in pems
+            crypto.load_certificate(crypto.FILETYPE_PEM, pem.encode()) for pem in pems
         ]
 
         for cert in x509_certs[1:]:
@@ -43,6 +44,19 @@ def _verify_x509_certificate_chain(pems: list[str]):
         store_ctx = crypto.X509StoreContext(store, x509_certs[0])
 
         store_ctx.verify_certificate()
+
+        for x509_cert in x509_certs:
+            serial_number = x509_cert.get_serial_number()
+
+            for crl in crls:
+                if crl.is_revoked(serial_number):
+                    logging.warning(
+                        LOG_ERROR.format(
+                            f"certificate with serial number {serial_number} is revoked"
+                        )
+                    )
+                    return False
+
         return True
     except crypto.Error as e:
         _message = f"cert's chain result invalid for the following reason -> {e}"
@@ -75,7 +89,7 @@ def _check_datetime(exp: datetime | None):
     return True
 
 
-def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
+def verify_x509_attestation_chain(x5c: list[bytes], crls: list[CRLHelper] = []) -> bool:
     """
     Verify the x509 attestation certificate chain.
 
@@ -92,7 +106,7 @@ def verify_x509_attestation_chain(x5c: list[bytes]) -> bool:
     
     pems = [to_PEM_cert(cert) for cert in x5c]
 
-    return _verify_x509_certificate_chain(pems)
+    return _verify_x509_certificate_chain(pems, crls)
 
 
 def DER_cert_to_B64DER_cert(cert: bytes) -> str:
@@ -354,7 +368,7 @@ def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
     except x509.ExtensionNotFound:
         return get_common_name(cert)
 
-def is_der_format(cert: bytes) -> str:
+def is_der_format(cert: bytes) -> bool:
     """
     Check if the certificate is in DER format.
 
@@ -366,13 +380,13 @@ def is_der_format(cert: bytes) -> str:
     """
     try:
         pem = DER_cert_to_PEM_cert(cert)
-        crypto.load_certificate(crypto.FILETYPE_PEM, str(pem))
+        crypto.load_certificate(crypto.FILETYPE_PEM, pem.encode())
         return True
     except crypto.Error as e:
         logging.error(LOG_ERROR.format(e))
         return False
     
-def is_pem_format(cert: str) -> str:
+def is_pem_format(cert: str) -> bool:
     """
     Check if the certificate is in PEM format.
 
