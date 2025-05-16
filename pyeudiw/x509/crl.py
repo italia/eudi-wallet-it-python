@@ -1,11 +1,10 @@
 from datetime import datetime
 from cryptography import x509
-from pyeudiw.x509.verify import to_DER_cert
-from cryptography.x509 import load_der_x509_certificate
-from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import CertificateRevocationList
+from cryptography.hazmat.backends import default_backend
 from pyeudiw.federation.http_client import http_get_sync
 from pyeudiw.x509.exceptions import CRLHTTPError, CRLParseError, CRLReadError
+from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 
 class CRLHelper:
     """
@@ -110,9 +109,15 @@ class CRLHelper:
         :return: A list of CRLHelper instances containing the loaded CRLs.
         :rtype: list[CRLHelper]
         """
-
-        der = to_DER_cert(cert)
-        parsed_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
+        if isinstance(cert, str) and cert.startswith("-----BEGIN CERTIFICATE-----"):
+            parsed_cert: x509.Certificate = load_pem_x509_certificate(cert.encode(), default_backend())
+        elif isinstance(cert, bytes) and cert.startswith(b"-----BEGIN CERTIFICATE-----"):
+            parsed_cert: x509.Certificate = load_pem_x509_certificate(cert, default_backend())
+        else:
+            parsed_cert: x509.Certificate = load_der_x509_certificate(
+                cert.encode() if isinstance(cert, str) else cert, 
+                default_backend()
+            )
 
         try:
             crl_distribution_points = parsed_cert.extensions.get_extension_for_class(x509.CRLDistributionPoints)
