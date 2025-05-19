@@ -73,6 +73,17 @@ def datetime_from_timestamp(timestamp: int | float) -> datetime.datetime:
 
     return make_timezone_aware(datetime.datetime.fromtimestamp(timestamp))
 
+def timestamp_from_datetime(dt: datetime.datetime) -> int:
+    """
+    Get a timestamp from a datetime.
+
+    :param dt: The datetime
+    :type dt: datetime.datetime
+
+    :returns: The timestamp
+    :rtype: int
+    """
+    return int(dt.timestamp())
 
 def get_http_url(
     urls: list[str] | str, httpc_params: dict, http_async: bool = True
