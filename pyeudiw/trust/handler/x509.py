@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 
-from pyeudiw.x509.crl import CRLHelper
+from pyeudiw.x509.crl_helper import CRLHelper
 from pyeudiw.x509.exceptions import CRLReadError, CRLParseError
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType

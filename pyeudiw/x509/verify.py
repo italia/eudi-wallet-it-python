@@ -13,7 +13,7 @@ from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 from OpenSSL import crypto
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from pyeudiw.x509.crl import CRLHelper
+from pyeudiw.x509.crl_helper import CRLHelper
 
 LOG_ERROR = "x509 verification failed: {}"
 

@@ -1,7 +1,7 @@
 from requests import Response
 from cryptography import x509
 from unittest.mock import patch
-from pyeudiw.x509.crl import CRLHelper
+from pyeudiw.x509.crl_helper import CRLHelper
 from datetime import datetime, timedelta
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
@@ -122,7 +122,7 @@ def test_crl_from_certificate():
     resp._content = b"-----BEGIN X509 CRL-----MIIBcjCB+AIBATAKBggqhkjOPQQDAjBHMRwwGgYDVQQDDBMzU2hhcGUgS01TIFJvb3QgMDAxMRYwFAYDVQQLDA1Ob25wcm9kdWN0aW9uMQ8wDQYDVQQKDAYzU2hhcGUXDTIyMDkyMTE1NTA0OFoXDTI3MDkyMDE1NTA0OFowTjAlAhQbNlLUqfFJRnPUKF9NgTAsM4lFOBcNMjIwOTIxMTU0OTI1WjAlAhQbNlLUqfFJRnPUKF9NgTAsM4lFORcNMjIwOTIxMTU1MDQ4WqAwMC4wHwYDVR0jBBgwFoAUJlmqlqHSmhcu0m7aSgroirdgdWYwCwYDVR0UBAQCAhABMAoGCCqGSM49BAMCA2kAMGYCMQCDRejYgOYC8zC91vqm4D9X4H3IEjKQKfO3vQFd8iE4Q6ao+dBeIZ342nhosnePVxMCMQCHRXwB3eOkIv7u1gzDvu9bXlsWNG8cgR5coTd0re/zRqN7cXuDlkR+h2mQdb0p/Eg=-----END X509 CRL-----"
 
     mock_staus_list_endpoint = patch(
-        "pyeudiw.x509.crl.http_get_sync",
+        "pyeudiw.x509.crl_helper.http_get_sync",
         return_value=[
             resp
         ],
