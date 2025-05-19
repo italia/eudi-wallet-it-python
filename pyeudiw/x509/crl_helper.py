@@ -62,6 +62,23 @@ class CRLHelper:
             return cert.revocation_date if cert else None
         except Exception as e:
             raise CRLReadError(f"Failed to get revocation date: {e}")
+        
+    def is_crl_expired(self) -> bool:
+        """
+        Check if the CRL is valid (not expired).
+
+        :return: True if the CRL is valid, False otherwise.
+        :rtype: bool
+        """
+        try:
+            exp = self.revocation_list.next_update
+
+            if exp is None:
+                return False
+            
+            return exp < datetime.now(exp.tzinfo)
+        except Exception as e:
+            raise CRLReadError(f"Failed to check CRL validity: {e}")
 
     @staticmethod
     def from_url(crl_url: str, httpc_params: dict | None = None) -> "CRLHelper":
