@@ -18,6 +18,7 @@ class TrustEvaluationType:
         expiration_date: int,
         jwks: list[dict[str, str]] | list[JWK] = [],
         trust_handler_name: str = "",
+        crls: list[dict[str, str]] = [],
         **kwargs
     ) -> None:
         """
@@ -46,6 +47,8 @@ class TrustEvaluationType:
         for ttype, tp in kwargs.items():
             setattr(self, ttype, tp)
 
+        self.crls = crls
+
     def serialize(self) -> Dict[str, Any]:
         """
         Serialize the trust parameter data.
@@ -58,6 +61,7 @@ class TrustEvaluationType:
             "expiration_date": self.expiration_date,
             "jwks": [key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks],
             "trust_handler_name": self.trust_handler_name,
+            "crls": self.crls,
             self.attribute_name: getattr(self, self.attribute_name)
         }
 

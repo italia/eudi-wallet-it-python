@@ -100,10 +100,13 @@ class CRLHelper:
         except Exception as e:
             raise CRLReadError(f"Failed to check CRL validity: {e}")
         
-    def update(self, httpc_params: dict | None) -> None:
+    def update(self, httpc_params: dict | None = None) -> None:
         """
         Update the CRL by fetching it from the URI.
         This method fetches the CRL file from the specified URI and loads it into the CRL object.
+
+        :param httpc_params: Optional HTTP client parameters.
+        :type httpc_params: dict | None
         
         :raises CRLHTTPError: If the HTTP request fails or the response is not valid.
         :raises CRLParseError: If the CRL file is not in the expected format.
