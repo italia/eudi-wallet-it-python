@@ -4,6 +4,7 @@ from pyeudiw.trust.handler.x509 import X509Handler
 from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+from pyeudiw.tools.utils import iat_now
 
 def test_wrong_configuration_must_fail():
     try:
@@ -55,7 +56,7 @@ def test_extract_trust_material_from_x509_handler():
     assert "x5c" in serialized_object["x509"]
     assert len(serialized_object["x509"]["x5c"]) == 3
     assert "expiration_date" in serialized_object["x509"]
-    assert serialized_object["x509"]["expiration_date"] > datetime.datetime.now()
+    assert serialized_object["x509"]["expiration_date"] > iat_now()
     assert "jwks" in serialized_object["x509"]
     assert serialized_object["x509"]["jwks"][0]["kty"] == "EC"
     assert "x" in serialized_object["x509"]["jwks"][0]

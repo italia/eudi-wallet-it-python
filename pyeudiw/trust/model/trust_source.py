@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
@@ -16,7 +16,7 @@ class TrustEvaluationType:
         self,
         attribute_name: str,
         expiration_date: int,
-        jwks: list[dict | JWK ] = [],
+        jwks: list[dict[str, str]] | list[JWK] = [],
         trust_handler_name: str = "",
         **kwargs
     ) -> None:
@@ -28,7 +28,7 @@ class TrustEvaluationType:
         :param expiration_date: The expiration date in unix timestamp of the trust parameter data
         :type expiration_date: int
         :param jwks: The jwks of the trust parameter data
-        :type jwks: list[dict | JWK], optional
+        :type jwks: list[dict[str, str]] | list[JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
         :type trust_handler_name: str, optional
         """
@@ -46,7 +46,7 @@ class TrustEvaluationType:
         for ttype, tp in kwargs.items():
             setattr(self, ttype, tp)
 
-    def serialize(self) -> dict[str, any]:
+    def serialize(self) -> Dict[str, Any]:
         """
         Serialize the trust parameter data.
 
@@ -162,7 +162,7 @@ class TrustSourceData:
                     return getattr(self, ttype)
         return None
 
-    def serialize(self) -> dict[str, any]:
+    def serialize(self) -> Dict[str, Any]:
         """
         Serialize the trust source data.
 

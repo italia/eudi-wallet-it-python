@@ -193,7 +193,7 @@ def to_PEM_cert(cert: str | bytes) -> str:
         return cert_b.decode()
 
     try:
-        cert_s = cert_b.decode()
+        cert_s = bytes(cert_b).decode()
         if _BASE64_RE.fullmatch(cert_s):
             return B64DER_cert_to_PEM_cert(cert_s)
     except UnicodeError:

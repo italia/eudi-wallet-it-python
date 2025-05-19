@@ -8,6 +8,7 @@ from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationTyp
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
 from pyeudiw.jwk.parse import parse_x5c_keys, parse_certificate
 from cryptojwt.jwk.jwk import key_from_jwk_dict
+from pyeudiw.tools.utils import timestamp_from_datetime
 from pyeudiw.x509.verify import (
     PEM_cert_to_B64DER_cert,
     to_DER_cert,
@@ -176,7 +177,7 @@ class X509Handler(TrustHandlerInterface):
                     TrustEvaluationType(
                         attribute_name="x5c",
                         x5c=to_pem_list(chain),
-                        expiration_date=exp,
+                        expiration_date=timestamp_from_datetime(exp),
                         jwks=self.private_keys,
                         trust_handler_name=self.name,
                     )
@@ -188,21 +189,23 @@ class X509Handler(TrustHandlerInterface):
     
     def validate_trust_material(
         self,
-        x5c: list[str],
+        chain: list[str],
         trust_source: TrustSourceData,
     ) -> tuple[bool, TrustSourceData]:
-        chain_jwks = parse_x5c_keys(x5c)
-        valid = self._verify_chain(x5c)
+        chain_jwks = parse_x5c_keys(chain)
+        valid = self._verify_chain(chain)
 
         if not valid:
             return False, trust_source
         
+        exp = get_expiry_date_from_x5c(chain)
+
         trust_source.add_trust_param(
             "x509",
             TrustEvaluationType(
                 attribute_name=self.get_handled_trust_material_name(),
-                x5c=to_pem_list(x5c),
-                expiration_date=get_expiry_date_from_x5c(x5c),
+                x5c=to_pem_list(chain),
+                expiration_date=timestamp_from_datetime(exp),
                 jwks=chain_jwks,
                 trust_handler_name=self.name,
             )
