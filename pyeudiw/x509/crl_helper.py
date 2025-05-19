@@ -1,6 +1,7 @@
 from datetime import datetime
 from cryptography import x509
 from cryptography.x509 import CertificateRevocationList
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from pyeudiw.federation.http_client import http_get_sync
 from pyeudiw.x509.exceptions import CRLHTTPError, CRLParseError, CRLReadError
@@ -122,6 +123,21 @@ class CRLHelper:
         self.revocation_list = CRLHelper._parse_crl(
             response[0].text.encode("utf-8"),
         )
+
+    def serialize(self) -> dict[str, str]:
+        """
+        Serialize the CRL to a specified encoding format.
+
+        :param encoding: The encoding format. Can be "pem" or "der". Defaults to "pem".
+        :type encoding: str
+
+        :return: The serialized CRL with the uri.
+        :rtype: dict[str, str]
+        """
+        return {
+            "pem": self.revocation_list.public_bytes(serialization.Encoding.PEM).decode("utf-8"),
+            "uri": self.uri,
+        }
 
     @staticmethod
     def _parse_crl(crl: str | bytes) -> CertificateRevocationList:
