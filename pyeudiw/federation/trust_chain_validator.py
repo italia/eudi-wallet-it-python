@@ -27,7 +27,7 @@ class StaticTrustChainValidator:
     def __init__(
         self,
         static_trust_chain: list[str],
-        trust_anchor_jwks: list[dict],
+        trust_anchor_jwks: list[dict[str, str]],
         httpc_params: dict,
         **kwargs,
     ) -> None:
@@ -35,7 +35,7 @@ class StaticTrustChainValidator:
         Generates a new StaticTrustChainValidator instance
 
         :param static_trust_chain: the list of JWTs, containing the EC, composing the static trust chain
-        :type static_trust_chain: list[str]
+        :type static_trust_chain: list[str, str]
         :param trust_anchor_jwks: the list of trust anchor jwks
         :type trust_anchor_jwks: list[dict]
         :param httpc_params: parameters to perform http requests
