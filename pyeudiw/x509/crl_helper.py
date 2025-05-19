@@ -11,14 +11,27 @@ class CRLHelper:
     Helper class to handle CRL (Certificate Revocation List) operations.
     """
 
-    def __init__(self, crl: CertificateRevocationList):
+    def __init__(
+            self, 
+            crl: CertificateRevocationList,
+            uri: str
+        ) -> None:
         """
         Initialize the CRLHelper with a CRL object.
 
         :param crl: The CRL object to be used.
         :type crl: CertificateRevocationList
+        :param uri: The URI of the CRL.
+        :type uri: str
+
+        :raises CRLReadError: If the CRL object is invalid or if the URI is not provided.
         """
         self.revocation_list = crl
+
+        if not uri:
+            raise CRLReadError("CRL URI is required.")
+        
+        self.uri = uri
 
     def is_revoked(self, serial_number: str | int) -> bool:
         """
@@ -26,6 +39,8 @@ class CRLHelper:
 
         :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.
         :type serial_number: str | int
+
+        :raises CRLReadError: If the serial number is invalid or if the revocation list is not loaded.
 
         :return: True if the certificate is revoked, False otherwise.
         :rtype: bool
@@ -48,6 +63,8 @@ class CRLHelper:
         :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.
         :type serial_number: str | int
 
+        :raises CRLReadError: If the serial number is invalid or if the revocation list is not loaded.
+
         :return: The revocation date if revoked, None otherwise.
         :rtype: str | None
         """
@@ -67,6 +84,8 @@ class CRLHelper:
         """
         Check if the CRL is valid (not expired).
 
+        :raises CRLReadError: If the CRL is not loaded or if the expiration date cannot be determined.
+
         :return: True if the CRL is valid, False otherwise.
         :rtype: bool
         """
@@ -79,6 +98,55 @@ class CRLHelper:
             return exp < datetime.now(exp.tzinfo)
         except Exception as e:
             raise CRLReadError(f"Failed to check CRL validity: {e}")
+        
+    def update(self, httpc_params: dict | None) -> None:
+        """
+        Update the CRL by fetching it from the URI.
+        This method fetches the CRL file from the specified URI and loads it into the CRL object.
+        
+        :raises CRLHTTPError: If the HTTP request fails or the response is not valid.
+        :raises CRLParseError: If the CRL file is not in the expected format.
+        """
+        if httpc_params is None:
+            httpc_params = {
+                "connection": {
+                    "timeout": 10,
+                    "allow_redirects": True,
+                }
+            }
+
+        response = http_get_sync([self.uri], httpc_params)
+        if response[0].status_code != 200:
+            raise CRLHTTPError(f"Failed to fetch CRL from {self.uri}: {response[0].status_code}")        
+
+        self.revocation_list = CRLHelper._parse_crl(
+            response[0].text.encode("utf-8"),
+        )
+
+    @staticmethod
+    def _parse_crl(crl: str | bytes) -> CertificateRevocationList:
+        """
+        Parse a CRL from a given PEM or DER formatted string or bytes.
+
+        :param crl: The CRL in PEM or DER format.
+        :type crl: str | bytes
+
+        :raises CRLParseError: If the CRL file is not in the expected format.
+
+        :return: The parsed CRL object.
+        :rtype: CertificateRevocationList
+        """
+        if isinstance(crl, str) and crl.startswith("-----BEGIN X509 CRL-----"):
+            rev_list = x509.load_pem_x509_crl(crl.encode() if isinstance(crl, str) else crl, default_backend())
+        elif isinstance(crl, bytes) and crl.startswith(b"-----BEGIN X509 CRL-----"):
+            rev_list = x509.load_pem_x509_crl(crl, default_backend())
+        else:
+            rev_list = x509.load_der_x509_crl(
+                crl.encode() if isinstance(crl, str) else crl, 
+                default_backend()
+            )
+
+        return rev_list
 
     @staticmethod
     def from_url(crl_url: str, httpc_params: dict | None = None) -> "CRLHelper":
@@ -110,7 +178,10 @@ class CRLHelper:
         if response[0].status_code != 200:
             raise CRLHTTPError(f"Failed to fetch CRL from {crl_url}: {response[0].status_code}")        
 
-        return CRLHelper.from_crl(response[0].text.encode("utf-8"))
+        return CRLHelper.from_crl(
+            response[0].text.encode("utf-8"),
+            uri=crl_url
+        )
             
     @staticmethod
     def from_certificate(cert: str | bytes) -> list["CRLHelper"]:
@@ -153,7 +224,7 @@ class CRLHelper:
         return crl_helpers
     
     @staticmethod
-    def from_crl(crl: str | bytes) -> "CRLHelper":
+    def from_crl(crl: str | bytes, uri: str) -> "CRLHelper":
         """
         Load a CRL from a given PEM or DER formatted string or bytes.
 
@@ -167,10 +238,8 @@ class CRLHelper:
         """
         try:
             return CRLHelper(
-                x509.load_pem_x509_crl(
-                    crl.encode() if isinstance(crl, str) else crl, 
-                    default_backend()
-                )
+                crl=CRLHelper._parse_crl(crl),
+                uri=uri
             )
         except Exception as e:
             raise CRLParseError(f"Failed to parse CRL: {e}")
