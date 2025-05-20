@@ -10,7 +10,7 @@ class CRLBuilder():
     Class to build a Certificate Revocation List (CRL).
     """
 
-    def __init__(self, issuer: x509.Name, private_key: rsa.RSAPrivateKey | ec.EllipticCurvePrivateKey, next_update: int = 30) -> None:
+    def __init__(self, issuer: str, private_key: rsa.RSAPrivateKey | ec.EllipticCurvePrivateKey, next_update: int = 30) -> None:
         """
         Initialize the CRLBuilder with the issuer and private key.
 
@@ -25,7 +25,7 @@ class CRLBuilder():
         self.private_key = private_key
         self.revoked_certificates = []
         self.crl_builder = x509.CertificateRevocationListBuilder()
-        self.crl_builder = self.crl_builder.issuer_name(issuer)
+        self.crl_builder = self.crl_builder.issuer_name(x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, issuer)]))
         self.crl_builder = self.crl_builder.last_update(datetime.now(timezone.utc))
         self.crl_builder = self.crl_builder.next_update(datetime.now(timezone.utc) + timedelta(days=next_update))
 
@@ -38,7 +38,7 @@ class CRLBuilder():
         :param revocation_date: The date when the certificate was revoked.
         :type revocation_date: datetime
         """
-        self.crl_builder.add_revoked_certificate(
+        self.crl_builder = self.crl_builder.add_revoked_certificate(
             x509.RevokedCertificateBuilder()
                 .serial_number(serial_number)
                 .revocation_date(revocation_date)
