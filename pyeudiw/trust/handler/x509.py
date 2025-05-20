@@ -46,7 +46,6 @@ class X509Handler(TrustHandlerInterface):
         self.client_id_scheme = client_id_scheme
         self.certificate_authorities = certificate_authorities
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
-        self.crls = {}
 
         if not relying_party_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
@@ -224,7 +223,7 @@ class X509Handler(TrustHandlerInterface):
     @staticmethod
     def _extract_crls(trust_source: TrustSourceData, chain: list[str]) -> list[CRLHelper]:
         x509_param = trust_source.get_trust_param("x509")
-        crls = []
+        crls: list[CRLHelper] = []
 
         if x509_param and x509_param.crls:
             for crl in x509_param.crls:
@@ -240,11 +239,13 @@ class X509Handler(TrustHandlerInterface):
         else:
             for cert in chain:
                 try:
-                    crls.append(
-                        CRLHelper.from_certificate(cert)
-                    )
+                    crls = crls + CRLHelper.from_certificate(cert)
                 except CRLParseError as e:
                     logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {e}")
+                    continue
+                except CRLReadError as e:
+                    if not "No CRL distribution points found in the certificate." in str(e):
+                        logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {e}")
                     continue
                 except Exception as e:
                     logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {e}")
