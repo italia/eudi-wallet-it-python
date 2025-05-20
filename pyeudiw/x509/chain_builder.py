@@ -18,6 +18,10 @@ class ChainBuilder:
         country_name: str,
         dns: str,
         date: datetime,
+        uri: str,
+        ca: bool,
+        path_length: int | None,
+        serial_number: int | None = None,
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
         crl_distr_point: str | None = None
     ) -> None:
@@ -78,16 +82,13 @@ class ChainBuilder:
             )
         ) \
         .public_key(private_key.public_key()) \
-        .serial_number(x509.random_serial_number()) \
+        .serial_number(x509.random_serial_number() if not serial_number else serial_number) \
         .not_valid_before(date - timedelta(days=1)) \
         .not_valid_after(date + timedelta(days=365)) \
-        
-
-        if len(self.certificates_attributes) == 0:
-            cert = cert.add_extension(
-                x509.BasicConstraints(ca=True, path_length=1),
-                critical=True,
-            )
+        .add_extension(
+            x509.BasicConstraints(ca=ca, path_length=path_length),
+            critical=True,
+        )
 
         if crl_distr_point:
             cert = cert.add_extension(
@@ -105,10 +106,13 @@ class ChainBuilder:
             )
 
         cert = cert.add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(dns)]),
+            x509.SubjectAlternativeName([
+                x509.UniformResourceIdentifier(uri),
+                x509.DNSName(dns)
+            ]),
             critical=False
         ) \
-        .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["priivate_key"], hashes.SHA256())
+        .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
         
         self.certificates_attributes.insert(0, {
             "cn": cn,
