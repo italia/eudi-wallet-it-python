@@ -169,6 +169,7 @@ class X509Handler(TrustHandlerInterface):
                         expiration_date=timestamp_from_datetime(exp),
                         jwks=self.private_keys,
                         trust_handler_name=self.name,
+                        crls=[crl.serialize() for crl in crls]
                     )
                 )
 
@@ -199,6 +200,7 @@ class X509Handler(TrustHandlerInterface):
                 expiration_date=timestamp_from_datetime(exp),
                 jwks=chain_jwks,
                 trust_handler_name=self.name,
+                crls=[crl.serialize() for crl in crls],
             )
         )
 
