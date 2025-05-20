@@ -38,7 +38,7 @@ class X509Handler(TrustHandlerInterface):
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         client_id_scheme: str = "x509_san_uri",
-        certificate_authorities: dict[str, str] = {},
+        certificate_authorities: dict[str, Union[bytes, str]] = {},
         include_issued_jwt_header_param: bool = False,
         **kwargs
     ) -> None:        
