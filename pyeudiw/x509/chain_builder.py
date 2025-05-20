@@ -19,6 +19,7 @@ class ChainBuilder:
         dns: str,
         date: datetime,
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
+        crl_distr_point: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -86,6 +87,21 @@ class ChainBuilder:
             cert = cert.add_extension(
                 x509.BasicConstraints(ca=True, path_length=1),
                 critical=True,
+            )
+
+        if crl_distr_point:
+            cert = cert.add_extension(
+                x509.CRLDistributionPoints(
+                    [
+                        x509.DistributionPoint(
+                            full_name=[x509.UniformResourceIdentifier(crl_distr_point)],
+                            relative_name=None,
+                            reasons=None,
+                            crl_issuer=None,
+                        )
+                    ]
+                ),
+                critical=False
             )
 
         cert = cert.add_extension(
