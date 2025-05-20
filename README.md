@@ -2,7 +2,7 @@
 
 ![CI build](https://github.com/italia/eudi-wallet-it-python/workflows/pyeudiw/badge.svg)
 ![Python version](https://img.shields.io/badge/license-Apache%202-blue.svg)
-![py-versions](https://img.shields.io/badge/python-3.10-blue.svg)
+![py-versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python)
 [![GitHub issues](https://img.shields.io/github/issues/italia/eudi-wallet-it-python.svg)](https://github.com/italia/eudi-wallet-it-python/issues)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
