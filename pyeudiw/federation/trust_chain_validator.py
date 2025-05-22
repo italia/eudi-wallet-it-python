@@ -17,6 +17,7 @@ from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.tools.utils import iat_now
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class StaticTrustChainValidator:
     def __init__(
         self,
         static_trust_chain: list[str],
-        trust_anchor_jwks: list[dict[str, str]],
+        trust_anchor_jwks: list[dict[str, Any]],
         httpc_params: dict,
         **kwargs,
     ) -> None:
@@ -35,9 +36,9 @@ class StaticTrustChainValidator:
         Generates a new StaticTrustChainValidator instance
 
         :param static_trust_chain: the list of JWTs, containing the EC, composing the static trust chain
-        :type static_trust_chain: list[str, str]
+        :type static_trust_chain: list[str]
         :param trust_anchor_jwks: the list of trust anchor jwks
-        :type trust_anchor_jwks: list[dict]
+        :type trust_anchor_jwks: list[dict[str, Any]]
         :param httpc_params: parameters to perform http requests
         :type httpc_params: dict
         """
