@@ -240,19 +240,6 @@ def to_der_list(pem_list: list[str] | list[bytes]) -> list[bytes]:
     """
     return [to_DER_cert(cert) for cert in pem_list]
 
-def get_expiry_date_from_x5c(x5c: list[bytes]) -> datetime:
-    """
-    Get the expiry date from the x509 certificate chain.
-
-    :param x5c: The x509 certificate chain
-    :type x5c: list[bytes]
-
-    :returns: The expiry date
-    :rtype: datetime
-    """
-    cert = load_der_x509_certificate(x5c[0])
-    return cert.not_valid_after
-
 def verify_x509_anchor(pem_str: str) -> bool:
     """
     Verify the x509 anchor certificate.
