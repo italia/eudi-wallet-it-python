@@ -6,7 +6,7 @@ To install the OpenID4VP SATOSA backend you just need to:
 2. copy and customize [example/satosa/pyeudiw_backend.yaml](example/satosa/pyeudiw_backend.yaml)
 3. copy and customize the content of the folders [static](example/satosa/static) and [templates](example/satosa/templates) to your satosa deployment.
 4. include the backend configuration in your satosa configuration
-5. customize the file `internal_attributes.yaml` used in your deployment, enabling the `openid4vp` protocol. See [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml) as example. 
+5. customize the file `internal_attributes.yaml` used in your deployment, enabling the `openid4vp` protocol. See [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml) as example.
 6. start Satosa.
 
 ## Backend configuration
@@ -32,13 +32,11 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 ##### UI
 
-| Parameter                    | Description                                   | Example value                     |
-| ---------------------------- | --------------------------------------------- | --------------------------------- |
-| config.ui.static_storage_url | The URL of the static storage for the UI      | https://localhost/static          |
-| config.ui.template_folder    | The folder where the UI templates are located | templates                         |
-| config.ui.qrcode_template    | The name of the template for the QR code      | qr_code.html                      |
-| config.ui.error_template     | The name of the template for the error page   | error.html                        |
-| config.ui.error_url          | The URL of the error page                     | https://localhost/error_page.html |
+| Parameter                    | Description                                   | Example value            |
+| ---------------------------- | --------------------------------------------- | ------------------------ |
+| config.ui.static_storage_url | The URL of the static storage for the UI      | https://localhost/static |
+| config.ui.template_folder    | The folder where the UI templates are located | templates                |
+| config.ui.qrcode_template    | The name of the template for the QR code      | qr_code.html             |
 
 ##### Endpoints
 
@@ -75,29 +73,29 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 ##### Authorization
 
-| Parameter                                    | Description                                                                                         | Example value                                       |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| config.authorization.client_id               | client_id to be set only in the request object; if not set default to entity id value               | IT-PYEUDIRP (as requested by Potential LSP)         |
-| config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
-| config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]       |
-| config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
-| config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                           |
-| config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
+| Parameter                                    | Description                                                                                         | Example value                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| config.authorization.client_id               | client_id to be set only in the request object; if not set default to entity id value               | IT-PYEUDIRP (as requested by Potential LSP)      |
+| config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                     |
+| config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]    |
+| config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                   |
+| config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                        |
+| config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                     |
 | config.authorization.presentation_definition | The object that defines the presentation request                                                    | [Presentation definition](#presentation-definition) |
 
 ###### Presentation definition
 
-| Parameter                                                                 | Description                                                                                           | Example value                                  |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| config.authorization.presentation_definition.id                           | The unique identifier of the presentation definition                                                  | d76c51b7-ea90-49bb-8368-6b3d194fc131           |
-| config.authorization.presentation_definition.input_descriptors            | The list of input descriptors that specify the verifiable credentials that the client requests        | See below                                      |
-| config.authorization.presentation_definition.id                           | The unique identifier of the input descriptor                                                         | IdentityCredential                             |
-| config.authorization.presentation_definition.format                       | The object that defines the verifiable credential format that the client requests                     | dc+sd-jwt: {}                                  |
-| config.authorization.presentation_definition.constraints                  | The object that defines the constraints on the verifiable credential                                  | See below                                      |
-| config.authorization.presentation_definition.constraints.limit_disclosure | The string that indicates whether the client requests minimal disclosure of the verifiable credential | required                                       |
-| config.authorization.presentation_definition.constraints.fields           | The list of objects that define the fields that the client requests in the verifiable credential      | See below                                      |
+| Parameter                                                                 | Description                                                                                           | Example value                                    |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| config.authorization.presentation_definition.id                           | The unique identifier of the presentation definition                                                  | d76c51b7-ea90-49bb-8368-6b3d194fc131             |
+| config.authorization.presentation_definition.input_descriptors            | The list of input descriptors that specify the verifiable credentials that the client requests        | See below                                        |
+| config.authorization.presentation_definition.id                           | The unique identifier of the input descriptor                                                         | IdentityCredential                               |
+| config.authorization.presentation_definition.format                       | The object that defines the verifiable credential format that the client requests                     | dc+sd-jwt: {}                                    |
+| config.authorization.presentation_definition.constraints                  | The object that defines the constraints on the verifiable credential                                  | See below                                        |
+| config.authorization.presentation_definition.constraints.limit_disclosure | The string that indicates whether the client requests minimal disclosure of the verifiable credential | required                                         |
+| config.authorization.presentation_definition.constraints.fields           | The list of objects that define the fields that the client requests in the verifiable credential      | See below                                        |
 | config.authorization.presentation_definition.constraints.fields.path      | The list of strings that define the JSON path to the field in the verifiable credential               | ["$.vct"], ["$.family_name"], ["$.given_name"] |
-| config.authorization.presentation_definition.constraints.fields.filter    | The object that defines the filter criteria for the field in the verifiable credential                | type: string, const: IdentityCredential        |
+| config.authorization.presentation_definition.constraints.fields.filter    | The object that defines the filter criteria for the field in the verifiable credential                | type: string, const: IdentityCredential          |
 
 ##### User Attributes
 
@@ -121,11 +119,11 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 The parameters of a `config.trust` dictionary entry value are
 
-| Parameter                        | Description                                                 | Example Value                                |
-| -------------------------------- | ----------------------------------------------------------- | -------------------------------------------- |
-| config.trust.<identifier>.module | A python module that provides a trust implementation        | pyeudiw.trust.default.direct_trust_sd_jwt_vc |
-| config.trust.<identifier>.class  | The class in the module that implements the trust interface | DirectTrustSdJwtVc                           |
-| config.trust.<identifier>.config | The configuration of the class in the module                |
+| Parameter                            | Description                                                 | Example Value                                |
+| ------------------------------------ | ----------------------------------------------------------- | -------------------------------------------- |
+| config.trust.`<identifier>`.module | A python module that provides a trust implementation        | pyeudiw.trust.default.direct_trust_sd_jwt_vc |
+| config.trust.`<identifier>`.class  | The class in the module that implements the trust interface | DirectTrustSdJwtVc                           |
+| config.trust.`<identifier>`.config | The configuration of the class in the module                |                                              |
 
 For more deatils on available trust implementations and their configurations, see [docs/TRUST.md](/docs/TRUST.md)
 
@@ -134,7 +132,6 @@ For more deatils on available trust implementations and their configurations, se
 | Parameter            | Description                                          | Example Value |
 | -------------------- | ---------------------------------------------------- | ------------- |
 | config.metadata_jwks | The list of (private) JSON Web Keys for the metadata |               |
-
 
 ##### Storage
 
@@ -162,17 +159,17 @@ For more deatils on available trust implementations and their configurations, se
 | Parameter                                              | Description                                                                              | Example value                                                    |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | config.metadata.application_type                       | The type of application that uses the OpenID Connect protocol                            | web                                                              |
-| config.metadata.authorization_encrypted_response_alg   | The algorithm used to encrypt the authorization response                                 | `<jwt.enc_alg_supported>`                                        |
-| config.metadata.authorization_encrypted_response_enc   | The encryption method used to encrypt the authorization response                         | `<jwt.enc_enc_supported>`                                        |
-| config.metadata.authorization_signed_response_alg      | The algorithm used to sign the authorization response                                    | `<jwt.sig_alg_supported>`                                        |
+| config.metadata.authorization_encrypted_response_alg   | The algorithm used to encrypt the authorization response                                 | `<jwt.enc_alg_supported>`                                      |
+| config.metadata.authorization_encrypted_response_enc   | The encryption method used to encrypt the authorization response                         | `<jwt.enc_enc_supported>`                                      |
+| config.metadata.authorization_signed_response_alg      | The algorithm used to sign the authorization response                                    | `<jwt.sig_alg_supported>`                                      |
 | config.metadata.client_id                              | The unique identifier of the client                                                      | https://example.org/verifier                                     |
 | config.metadata.client_name                            | The human-readable name of the client                                                    | Name of an example organization                                  |
 | config.metadata.contacts                               | The list of email addresses of the client's contacts                                     | [ops@verifier.example.org]                                       |
 | config.metadata.default_acr_values                     | The list of default authentication context class references that the client requests     | [https://www.spid.gov.it/SpidL2, https://www.spid.gov.it/SpidL3] |
 | config.metadata.default_max_age                        | The default maximum amount of time that the authentication session is valid              | 1111                                                             |
-| config.metadata.id_token_encrypted_response_alg        | The algorithm used to encrypt the ID token response                                      | `<jwt.enc_alg_supported>`                                        |
-| config.metadata.id_token_encrypted_response_enc        | The encryption method used to encrypt the ID token response                              | `<jwt.enc_enc_supported>`                                        |
-| config.metadata.id_token_signed_response_alg           | The algorithm used to sign the ID token response                                         | `<jwt.sig_alg_supported>`                                        |
+| config.metadata.id_token_encrypted_response_alg        | The algorithm used to encrypt the ID token response                                      | `<jwt.enc_alg_supported>`                                      |
+| config.metadata.id_token_encrypted_response_enc        | The encryption method used to encrypt the ID token response                              | `<jwt.enc_enc_supported>`                                      |
+| config.metadata.id_token_signed_response_alg           | The algorithm used to sign the ID token response                                         | `<jwt.sig_alg_supported>`                                      |
 | config.metadata.redirect_uris                          | The list of URIs that the client can use to receive the authorization response           | https://example.org/verifier/redirect-uri                        |
 | config.metadata.request_uris                           | The list of URIs that the client can use to request the authorization                    | https://example.org/verifier/request-uri                         |
 | config.metadata.require_auth_time                      | The boolean value that indicates whether the auth_time claim is required in the ID token | true                                                             |
@@ -180,33 +177,34 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.vp_formats.vc+sd-jwt.sd-jwt_alg_values | VP formats specification algorithms for SD-JWT                                           | [ES256, ES384]                                                   |
 | config.metadata.vp_formats.vc+sd-jwt.kb-jwt_alg_values | VP formats specification algorithms for Key Binding JWT                                  | [ES256, ES384]                                                   |
 
-
 ## NginX
 
-Configure an httpd fronted such NginX, an example is available within the `uwsgi_setup` folder of [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid/tree/master/example/uwsgi_setup) 
+Configure an httpd fronted such NginX, an example is available within the `uwsgi_setup` folder of [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid/tree/master/example/uwsgi_setup)
 remember to customize and add any additional parameter to your preferred httpd configuration.
 
 ### Environment Variables for Key Configuration
 
 The following environment variables can be used to configure the `metadata_jwks` and `federation_jwks` dynamically. These variables accept JSON-formatted strings representing the keys.
 
-| Environment Variable      | Description                                                                                                  | Example Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment Variable        | Description                                                                                                  | Example Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PYEUDIW_METADATA_JWKS`   | Contains the private JSON Web Keys (JWK) used for metadata. Each key must be represented as a JSON object.   | `[{"kty":"EC", "crv":"P-256", "x":"TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk", "y":"ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7", "d":"KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc", "use":"sig", "kid":"signing-key-id"}, {"kty":"EC", "crv":"P-256", "x":"TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk", "y":"ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7", "d":"KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc", "use":"enc", "kid":"encryption-key-id"}]`                                                                                                                                                                                                                                                                                                         |
 | `PYEUDIW_FEDERATION_JWKS` | Contains the private JSON Web Keys (JWK) used for federation. Each key must be represented as a JSON object. | `[{"kty":"RSA", "n":"utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPja", "e":"AQAB","d":"QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q", "kid":"private-signing-key-id"}]` |
 
-
 ## Environment Variables Configuration
+
 SATOSA supports the following environment variables to customize its behavior:
-| **Variable Name**                | **Description**                                                                                 | **Default Value**   | **Allowed Values**         | **Context**               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------- | -------------------------- | ------------------------- |
-| `PYEUDIW_MONGO_TEST_AUTH_INLINE` | MongoDB connection string used for SATOSA integration tests.                                    | `""` (empty string) | Valid MongoDB URI          | Integration Testing       |
-| `PYEUDIW_LRU_CACHE_MAXSIZE`      | Configures the maximum number of elements to store in the Least Recently Used (LRU) cache.      | `2048`              | Integer                    | Cache Management          |
-| `PYEUDIW_HTTPC_SSL`              | Enables or disables SSL verification for HTTP client requests.                                  | `True`              | `True`, `False`            | HTTP Client Configuration |
-| `PYEUDIW_HTTPC_TIMEOUT`          | Sets the timeout for HTTP client requests.                                                      | `6` seconds         | Integer                    | HTTP Client Configuration |
-| `PYEUDIW_TOKEN_TIME_TOLERANCE`   | Global default tolerance windows to be used when validating token lifetime claims such as `iat`. | `60` seconds        | Integer                    | Tokens (JWT) validation
-| `SD_JWT_HEADER`                  | Specifies the type of SD-JWT header to use when generating or verifying SD-JWTs.                | `dc+sd-jwt`         | Custom values as per usage | SD-JWT Configuration      |
+
+| **Variable Name**            | **Description**                                                                              | **Default Value** | **Allowed Values**   | **Context**         |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------- | -------------------------- | ------------------------- |
+| `PYEUDIW_MONGO_TEST_AUTH_INLINE` | MongoDB connection string used for SATOSA integration tests.                                       | `""` (empty string)   | Valid MongoDB URI          | Integration Testing       |
+| `PYEUDIW_LRU_CACHE_MAXSIZE`      | Configures the maximum number of elements to store in the Least Recently Used (LRU) cache.         | `2048`                | Integer                    | Cache Management          |
+| `PYEUDIW_HTTPC_SSL`              | Enables or disables SSL verification for HTTP client requests.                                     | `True`                | `True`, `False`        | HTTP Client Configuration |
+| `PYEUDIW_HTTPC_TIMEOUT`          | Sets the timeout for HTTP client requests.                                                         | `6` seconds           | Integer                    | HTTP Client Configuration |
+| `PYEUDIW_TOKEN_TIME_TOLERANCE`   | Global default tolerance windows to be used when validating token lifetime claims such as `iat`. | `60` seconds          | Integer                    | Tokens (JWT) validation   |
+| `SD_JWT_HEADER`                  | Specifies the type of SD-JWT header to use when generating or verifying SD-JWTs.                   | `dc+sd-jwt`           | Custom values as per usage | SD-JWT Configuration      |
 
 ### Notes:
+
 1. These variables are optional and, if not explicitly set, default values will be used.
 2. To define these variables, you can use export commands in shell scripts, or any environment variable management tool.
