@@ -1,6 +1,4 @@
-class HttpError(Exception):
-    pass
-
+from pyeudiw.tools.exceptions import HttpError
 
 class TrustChainHttpError(HttpError):
     pass

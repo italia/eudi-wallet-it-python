@@ -1,6 +1,6 @@
 from typing import Optional
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.federation.http_client import http_get_sync
+from pyeudiw.tools.http import http_get_sync
 from pyeudiw.status_list import decode_jwt_status_list_token, decode_cwt_status_list_token
 from pyeudiw.status_list.exceptions import (
     PositionOutOfRangeError,

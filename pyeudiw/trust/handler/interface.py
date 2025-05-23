@@ -9,6 +9,7 @@ from pyeudiw.storage.db_engine import DBEngine
 
 class TrustHandlerInterface:
     def __init__(self, *args, **kwargs):
+        self.client_id = kwargs.get("client_id", "default_client_id")
         pass
 
     def extract_and_update_trust_materials(
@@ -115,9 +116,8 @@ class TrustHandlerInterface:
 
     def validate_trust_material(
             self, 
-            trust_chain: list[str], 
+            chain: list[str], 
             trust_source: TrustSourceData,
-            db_engine: DBEngine
         ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust chain using the trust handler.

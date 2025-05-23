@@ -10,7 +10,7 @@ from typing import NamedTuple
 
 import requests
 
-from pyeudiw.federation.http_client import http_get_async, http_get_sync
+from pyeudiw.tools.http import http_get_async, http_get_sync
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +73,17 @@ def datetime_from_timestamp(timestamp: int | float) -> datetime.datetime:
 
     return make_timezone_aware(datetime.datetime.fromtimestamp(timestamp))
 
+def timestamp_from_datetime(dt: datetime.datetime) -> int:
+    """
+    Get a timestamp from a datetime.
+
+    :param dt: The datetime
+    :type dt: datetime.datetime
+
+    :returns: The timestamp
+    :rtype: int
+    """
+    return int(dt.timestamp())
 
 def get_http_url(
     urls: list[str] | str, httpc_params: dict, http_async: bool = True
@@ -147,7 +158,11 @@ def dynamic_class_loader(
     :rtype: object
     """
 
-    storage_instance = get_dynamic_class(module_name, class_name)(**init_params)
+    dynamic_class = get_dynamic_class(module_name, class_name)
+    if callable(dynamic_class):
+        storage_instance = dynamic_class(**init_params)
+    else:
+        raise TypeError(f"The class '{class_name}' in module '{module_name}' is not callable.")
     return storage_instance
 
 
@@ -202,7 +217,7 @@ def cacheable_get_http_url(
     return resp
 
 
-@lru_cache(os.getenv("PYEUDIW_LRU_CACHE_MAXSIZE", 2048))
+@lru_cache(maxsize=int(os.getenv("PYEUDIW_LRU_CACHE_MAXSIZE", 2048)))
 def _lru_cached_get_http_url(
     timestamp: int,
     url: str,

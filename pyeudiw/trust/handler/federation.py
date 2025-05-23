@@ -1,6 +1,7 @@
 import json
 import logging
 import satosa
+from satosa.context import Context
 from typing import Any, Callable, List, Union
 from satosa.response import Response
 
@@ -37,7 +38,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
 
     def __init__(
         self,
-        metadata: List[dict],
+        metadata: dict,
         authority_hints: List[str],
         trust_anchors: dict[str, dict[str, str]],
         default_sig_alg: str,
@@ -67,7 +68,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.federation_jwks: List[dict[str, Union[str, List[str]]]] = federation_jwks
         self.trust_marks: List[dict] = trust_marks
         self.federation_entity_metadata: dict[str, str] = federation_entity_metadata
-        self.client_id: str = federation_entity_metadata
+        self.client_id: str = federation_entity_metadata.get("iss", client_id)
         self.entity_configuration_exp = entity_configuration_exp
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
@@ -98,8 +99,13 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         return trust_source
 
     @property
-    def entity_configuration(self) -> dict:
-        """Returns the entity configuration as a JWT."""
+    def entity_configuration(self) -> str:
+        """
+        Returns the entity configuration as a JWT.
+        
+        :return: The entity configuration
+        :rtype: str
+        """
         data = self.entity_configuration_as_dict
         _jwk = self.federation_jwks[0]
         jwshelper = JWSHelper(_jwk)
@@ -130,8 +136,8 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         return ec_payload
 
     def entity_configuration_endpoint(
-        self, context: satosa.context.Context
-    ) -> satosa.response.Response:
+        self, context: Context
+    ) -> Response:
         """
         Entity Configuration endpoint.
 
@@ -149,7 +155,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 content="application/json",
             )
         else:
-            return satosa.response.Response(
+            return Response(
                 self.entity_configuration,
                 status="200",
                 content="application/entity-statement+jwt",
@@ -158,15 +164,15 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[
-        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+        tuple[str, Callable[[Context, Any], Response]]
     ]:
 
         metadata_path = f'^{backend_name.strip("/")}/.well-known/openid-federation$'
         response = self.entity_configuration
 
         def metadata_response_fn(
-            ctx: satosa.context.Context, *args
-        ) -> satosa.response.Response:
+            ctx: Context, *args
+        ) -> Response:
             return JsonResponse(message=response)
 
         return [(metadata_path, metadata_response_fn)]
@@ -182,9 +188,9 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     
     def validate_trust_material(
             self, 
-            trust_chain: list[str], 
+            chain: list[str], 
             trust_source: TrustSourceData,
-        ) -> dict[bool, TrustSourceData]:
+        ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust chain of the trust source.
 
@@ -194,7 +200,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         :returns: If the trust chain is valid
         :rtype: bool
         """
-        _first_statement = decode_jwt_payload(trust_chain[-1])
+        _first_statement = decode_jwt_payload(chain[-1])
         trust_anchor_eid = _first_statement.get('iss', None)
 
         if not trust_anchor_eid:
@@ -229,7 +235,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
             )
 
         tc = StaticTrustChainValidator(
-            trust_chain, jwks, self.httpc_params
+            chain, jwks, self.httpc_params
         )
 
         _is_valid = False
@@ -246,26 +252,30 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
 
         if not _is_valid:
             try:
-                db_chain = trust_source.federation.trust_chain
+                db_chain = getattr(
+                    trust_source, 'federation'
+                ).trust_chain
+                
                 if StaticTrustChainValidator(db_chain, jwks, self.httpc_params).is_valid:
                     self.is_trusted = True
-                    return self.is_trusted
+                    return self.is_trusted, trust_source
+            
 
             except (EntryNotFound, Exception):
                 pass
 
             _is_valid = tc.update()
 
-        leaf_jwks = decode_jwt_payload(trust_chain[0]).get('jwks', {}).get('keys', [])
+        leaf_jwks = decode_jwt_payload(chain[0]).get('jwks', {}).get('keys', [])
 
         # the good trust chain is then stored
         trust_source.add_trust_param(
             FederationHandler._TRUST_TYPE,
             TrustEvaluationType(
                 attribute_name=FederationHandler._TRUST_PARAMETER_NAME,
-                trust_chain=trust_chain,
+                trust_chain=chain,
                 jwks=[JWK(key=jwk).as_dict() for jwk in leaf_jwks],
-                expiration_date=None,
+                expiration_date=0,
                 trust_handler_name=str(self.__class__.__name__),
             )
         )

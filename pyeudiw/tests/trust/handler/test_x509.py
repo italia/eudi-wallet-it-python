@@ -4,6 +4,12 @@ from pyeudiw.trust.handler.x509 import X509Handler
 from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+from pyeudiw.tools.utils import iat_now
+from unittest.mock import patch
+from cryptography.hazmat.primitives.asymmetric import ec
+from pyeudiw.x509.chain_builder import ChainBuilder
+from pyeudiw.x509.crl_builder import CRLBuilder
+from requests import Response
 
 def test_wrong_configuration_must_fail():
     try:
@@ -55,7 +61,7 @@ def test_extract_trust_material_from_x509_handler():
     assert "x5c" in serialized_object["x509"]
     assert len(serialized_object["x509"]["x5c"]) == 3
     assert "expiration_date" in serialized_object["x509"]
-    assert serialized_object["x509"]["expiration_date"] > datetime.datetime.now()
+    assert serialized_object["x509"]["expiration_date"] > iat_now()
     assert "jwks" in serialized_object["x509"]
     assert serialized_object["x509"]["jwks"][0]["kty"] == "EC"
     assert "x" in serialized_object["x509"]["jwks"][0]
@@ -81,3 +87,161 @@ def test_return_nothing_if_chain_is_invalid():
     serialized_object = trust_source.serialize()
 
     assert "x509" not in serialized_object
+
+def test_chain_crl_passing():
+    resp = Response()
+    resp.status_code = 200
+    resp.headers.update({"Content-Type": "application/x509-crl"})
+    resp._content = b"-----BEGIN X509 CRL-----MIIBcjCB+AIBATAKBggqhkjOPQQDAjBHMRwwGgYDVQQDDBMzU2hhcGUgS01TIFJvb3QgMDAxMRYwFAYDVQQLDA1Ob25wcm9kdWN0aW9uMQ8wDQYDVQQKDAYzU2hhcGUXDTIyMDkyMTE1NTA0OFoXDTI3MDkyMDE1NTA0OFowTjAlAhQbNlLUqfFJRnPUKF9NgTAsM4lFOBcNMjIwOTIxMTU0OTI1WjAlAhQbNlLUqfFJRnPUKF9NgTAsM4lFORcNMjIwOTIxMTU1MDQ4WqAwMC4wHwYDVR0jBBgwFoAUJlmqlqHSmhcu0m7aSgroirdgdWYwCwYDVR0UBAQCAhABMAoGCCqGSM49BAMCA2kAMGYCMQCDRejYgOYC8zC91vqm4D9X4H3IEjKQKfO3vQFd8iE4Q6ao+dBeIZ342nhosnePVxMCMQCHRXwB3eOkIv7u1gzDvu9bXlsWNG8cgR5coTd0re/zRqN7cXuDlkR+h2mQdb0p/Eg=-----END X509 CRL-----"
+
+    chain = ChainBuilder()
+    chain.gen_certificate(
+        cn="ca.example.com",
+        org_name="Example CA",
+        country_name="IT",
+        dns="ca.example.com",
+        date=datetime.datetime.now(),
+        uri="https://ca.example.com",
+        crl_distr_point="http://ca.example.com/crl.pem",
+        ca=True,
+        path_length=1,
+    )
+    chain.gen_certificate(
+        cn="intermediate.example.com",
+        org_name="Example Intermediate",
+        country_name="IT",
+        dns="intermediate.example.com",
+        uri="https://intermediate.example.com",
+        date=datetime.datetime.now(),
+        ca=True,
+        path_length=0,
+    )
+    chain.gen_certificate(
+        cn="example.com",
+        org_name="Example Leaf",
+        country_name="IT",
+        dns="example.com",
+        uri="https://example.com",
+        date=datetime.datetime.now(),
+        private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+        ca=False,
+        path_length=None,
+    )
+
+    chain = chain.get_chain("DER")
+    
+    trust_handler = X509Handler(
+        client_id="https://example.com",
+        relying_party_certificate_chains_by_ca={
+            "ca.example.com": chain
+        },
+        private_keys=[
+            DEFAULT_X509_LEAF_JWK
+        ],
+        certificate_authorities={
+            "ca.example.com": chain[-1]
+        }
+    )
+    trust_source = TrustSourceData.empty("https://example.com")
+
+    mock_staus_list_endpoint = patch(
+        "pyeudiw.x509.crl_helper.http_get_sync",
+        return_value=[
+            resp
+        ],
+    )
+
+    mock_staus_list_endpoint.start()
+    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
+    mock_staus_list_endpoint.stop()
+    serialized_object = trust_source.serialize()
+
+    assert "x509" in serialized_object
+    assert "crls" in serialized_object["x509"]
+    assert len(serialized_object["x509"]["crls"]) == 1
+
+def test_chain_crl_fail():
+    resp = Response()
+    resp.status_code = 200
+    resp.headers.update({"Content-Type": "application/x509-crl"})
+
+    ca_key = ec.generate_private_key(
+        ec.SECP256R1(),
+    )
+
+    crl = CRLBuilder(
+        issuer="ca.example.com",
+        private_key=ca_key,
+    )
+    crl.add_revoked_certificate(
+        serial_number=44442,
+        revocation_date=datetime.datetime.fromisoformat("2022-09-21T15:49:25"),
+    )
+
+    resp._content = crl.to_pem()
+
+    chain = ChainBuilder()
+    chain.gen_certificate(
+        cn="ca.example.com",
+        org_name="Example CA",
+        country_name="IT",
+        dns="ca.example.com",
+        date=datetime.datetime.now(),
+        uri="https://ca.example.com",
+        crl_distr_point="http://ca.example.com/crl.pem",
+        private_key=ca_key,
+        ca=True,
+        path_length=1,
+    )
+    chain.gen_certificate(
+        cn="intermediate.example.com",
+        org_name="Example Intermediate",
+        country_name="IT",
+        dns="intermediate.example.com",
+        uri="https://intermediate.example.com",
+        date=datetime.datetime.now(),
+        ca=True,
+        path_length=0,
+        serial_number=44442,
+    )
+    chain.gen_certificate(
+        cn="example.com",
+        org_name="Example Leaf",
+        country_name="IT",
+        dns="example.com",
+        uri="https://example.com",
+        date=datetime.datetime.now(),
+        private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+        ca=False,
+        path_length=None,
+    )
+
+    chain = chain.get_chain("DER")
+    
+    trust_handler = X509Handler(
+        client_id="https://example.com",
+        relying_party_certificate_chains_by_ca={
+            "ca.example.com": chain
+        },
+        private_keys=[
+            DEFAULT_X509_LEAF_JWK
+        ],
+        certificate_authorities={
+            "ca.example.com": chain[-1]
+        }
+    )
+    trust_source = TrustSourceData.empty("https://example.com")
+
+    mock_staus_list_endpoint = patch(
+        "pyeudiw.x509.crl_helper.http_get_sync",
+        return_value=[
+            resp
+        ],
+    )
+
+    mock_staus_list_endpoint.start()
+    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
+    mock_staus_list_endpoint.stop()
+    serialized_object = trust_source.serialize()
+
+    assert not "x509" in serialized_object
