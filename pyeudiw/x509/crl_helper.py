@@ -100,7 +100,7 @@ class CRLHelper:
         except Exception as e:
             raise CRLReadError(f"Failed to check CRL validity: {e}")
         
-    def update(self, httpc_params: dict | None = None) -> None:
+    def update(self, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> None:
         """
         Update the CRL by fetching it from the URI.
         This method fetches the CRL file from the specified URI and loads it into the CRL object.
@@ -111,14 +111,6 @@ class CRLHelper:
         :raises CRLHTTPError: If the HTTP request fails or the response is not valid.
         :raises CRLParseError: If the CRL file is not in the expected format.
         """
-        if httpc_params is None:
-            httpc_params = {
-                "connection": {
-                    "timeout": 10,
-                    "allow_redirects": True,
-                }
-            }
-
         response = http_get_sync([self.uri], httpc_params)
         if response[0].status_code != 200:
             raise CRLHTTPError(f"Failed to fetch CRL from {self.uri}: {response[0].status_code}")        
@@ -168,7 +160,7 @@ class CRLHelper:
         return rev_list
 
     @staticmethod
-    def from_url(crl_url: str, httpc_params: dict | None = None) -> "CRLHelper":
+    def from_url(crl_url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> "CRLHelper":
         """
         Load a CRL from a given URL.
         This method fetches the CRL file from the specified URL and loads it into a CRL object.
@@ -184,14 +176,6 @@ class CRLHelper:
         :return: An instance of CRLHelper containing the loaded CRL.
         :rtype: CRLHelper
         """
-
-        if httpc_params is None:
-            httpc_params = {
-                "connection": {
-                    "timeout": 10,
-                    "allow_redirects": True,
-                }
-            }
 
         response = http_get_sync([crl_url], httpc_params)
         if response[0].status_code != 200:
