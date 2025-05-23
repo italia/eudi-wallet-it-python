@@ -258,7 +258,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
 
     pems = pem_to_pems_list(pem_str)
 
-    return _verify_x509_certificate_chain(pems)
+    return _verify_x509_certificate_chain(pems, [])
 
 def get_get_subject_name(der: bytes) -> Optional[str]:
     """
