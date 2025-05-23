@@ -217,7 +217,7 @@ def cacheable_get_http_url(
     return resp
 
 
-@lru_cache(os.getenv("PYEUDIW_LRU_CACHE_MAXSIZE", 2048))
+@lru_cache(maxsize=int(os.getenv("PYEUDIW_LRU_CACHE_MAXSIZE", 2048)))
 def _lru_cached_get_http_url(
     timestamp: int,
     url: str,
