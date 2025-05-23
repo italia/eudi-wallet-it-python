@@ -343,18 +343,18 @@ def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
     get_common_name = lambda cert: cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
 
     der = to_DER_cert(cert)
-    cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
+    loaded_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
 
     try:
-        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+        san = loaded_cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
         if info_type == "x509_san_dns":
             return san.value.get_values_for_type(x509.DNSName)[0]
         elif info_type == "x509_san_uri":
             return san.value.get_values_for_type(x509.UniformResourceIdentifier)[0]
         
-        return get_common_name(cert)
+        return get_common_name(loaded_cert)
     except x509.ExtensionNotFound:
-        return get_common_name(cert)
+        return get_common_name(loaded_cert)
 
 def is_der_format(cert: bytes) -> bool:
     """
@@ -397,8 +397,8 @@ def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
 def get_certificate_type(cert: str | bytes) -> str:
     pem = to_PEM_cert(cert)
 
-    cert = x509.load_pem_x509_certificate(pem.encode(), default_backend())
-    public_key = cert.public_key()
+    loaded_cert = x509.load_pem_x509_certificate(pem.encode(), default_backend())
+    public_key = loaded_cert.public_key()
 
     if isinstance(public_key, rsa.RSAPublicKey):
         return "RS"
