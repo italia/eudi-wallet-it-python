@@ -158,7 +158,11 @@ def dynamic_class_loader(
     :rtype: object
     """
 
-    storage_instance = get_dynamic_class(module_name, class_name)(**init_params)
+    dynamic_class = get_dynamic_class(module_name, class_name)
+    if callable(dynamic_class):
+        storage_instance = dynamic_class(**init_params)
+    else:
+        raise TypeError(f"The class '{class_name}' in module '{module_name}' is not callable.")
     return storage_instance
 
 
