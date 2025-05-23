@@ -158,10 +158,10 @@ def to_DER_cert(cert: str | bytes) -> bytes:
     else:
         cert_s = cert
 
-    if cert_s.startswith("-----BEGIN CERTIFICATE-----"):
-        return PEM_cert_to_DER_cert(cert_s)
+    if isinstance(cert, str) and str(cert_s).startswith("-----BEGIN CERTIFICATE-----"):
+        return PEM_cert_to_DER_cert(str(cert_s))
 
-    cert_s = cert_s.replace('\n\r', '')
+    cert_s = str(cert_s).replace('\n\r', '')
     if _BASE64_RE.fullmatch(cert_s):
         return B64DER_cert_to_DER_cert(cert_s)
 
@@ -183,14 +183,15 @@ def to_PEM_cert(cert: str | bytes) -> str:
     if isinstance(cert, str):
         if is_pem_format(cert):
             return cert
-        if _BASE64_RE.fullmatch(cert):
-            return B64DER_cert_to_DER_cert(cert)
-        cert_b = cert.encode()
+        elif _BASE64_RE.fullmatch(cert):
+            cert_b = B64DER_cert_to_DER_cert(cert)
+        else:
+            cert_b = cert.encode()
     else:
         cert_b = cert
 
-    if cert_b.startswith(b"-----BEGIN CERTIFICATE-----"):
-        return cert_b.decode()
+    if isinstance(cert, bytes) and bytes(cert_b).startswith(b"-----BEGIN CERTIFICATE-----"):
+        return bytes(cert_b).decode()
 
     try:
         cert_s = bytes(cert_b).decode()
@@ -386,7 +387,7 @@ def is_der_format(cert: bytes) -> bool:
         logging.error(LOG_ERROR.format(e))
         return False
     
-def is_pem_format(cert: str) -> bool:
+def is_pem_format(cert: str | bytes) -> bool:
     """
     Check if the certificate is in PEM format.
 
@@ -397,7 +398,7 @@ def is_pem_format(cert: str) -> bool:
     :rtype: bool
     """
     try:
-        crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+        crypto.load_certificate(crypto.FILETYPE_PEM, cert.encode() if isinstance(cert, str) else cert)
         return True
     except crypto.Error as e:
         logging.error(LOG_ERROR.format(e))
