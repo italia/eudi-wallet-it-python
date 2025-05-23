@@ -3,7 +3,7 @@ from cryptography import x509
 from cryptography.x509 import CertificateRevocationList
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
-from pyeudiw.federation.http_client import http_get_sync
+from pyeudiw.tools.http import http_get_sync, DEFAULT_HTTPC_PARAMS
 from pyeudiw.x509.exceptions import CRLHTTPError, CRLParseError, CRLReadError
 from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 

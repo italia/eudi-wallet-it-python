@@ -10,7 +10,7 @@ from typing import NamedTuple
 
 import requests
 
-from pyeudiw.federation.http_client import http_get_async, http_get_sync
+from pyeudiw.tools.http import http_get_async, http_get_sync
 
 logger = logging.getLogger(__name__)
 

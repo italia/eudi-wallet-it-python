@@ -4,7 +4,7 @@ import uuid
 from unittest.mock import Mock
 
 import pyeudiw.federation.trust_chain_validator as tcv
-from pyeudiw.federation.exceptions import HttpError
+from pyeudiw.tools.exceptions import HttpError
 from pyeudiw.federation.trust_chain_validator import StaticTrustChainValidator
 from pyeudiw.tests.settings import httpc_params
 
