@@ -24,22 +24,50 @@ from pyeudiw.openid4vci.utils.response import ResponseUtils
 
 logger = logging.getLogger(__name__)
 
-
 class Openid4VCIEndpoints:
-    """Handles all the Entity endpoints"""
+    """
+    Class that handles OpenID4VCI endpoints for credential issuance.
 
-    def __init__(self,
-                 config: dict,
-                 base_url: str,
-                 name: str):
+    This class manages all incoming requests related to:
+    - Credential Offer
+    - Pushed Authorization
+    - Authorization
+    - Token issuance
+    - Nonce generation
+    - Credential issuance
+    - Deferred credential
+    - Notification
+
+    Attributes:
+        config (dict): Configuration dictionary.
+        config_utils (Config): Utility wrapper for config access.
+        _db_engine (MongoStorage): Storage backend, initialized lazily.
+        _backend_url (str): Full base URL for all endpoints.
+        jws_helper (JWSHelper): Utility for verifying and decoding JWS tokens.
+    """
+
+    def __init__(self, config: dict, base_url: str, name: str):
+        """
+        Initialize the OpenID4VCI endpoints class.
+        Args:
+            config (dict): The configuration dictionary.
+            base_url (str): The base URL of the service.
+            name (str): The name of the SATOSA module to append to the URL.
+        """
         self.config = config
         self.config_utils = Config(config)
-        # to be inizialized by .db_engine() property
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
     def credential_offer_endpoint(self, context: Context):
+        """
+        Handle a GET request to the credential_offer endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["GET"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
@@ -55,7 +83,15 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke credential_offer endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke credential_offer endpoint")
 
+
     def pushed_authorization_endpoint(self, context: Context):
+        """
+        Handle a POST request to the pushed_authorization_endpoint (PAR).
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
@@ -73,7 +109,7 @@ class Openid4VCIEndpoints:
 
             decoded_request = self.jws_helper.verify(request)
             par_request = ParRequest.model_validate(
-                    decoded_request, context = {
+                decoded_request, context = {
                     CONFIG_CTX: self.config_utils,
                     CLIENT_ID_CTX: client_id,
                     ENTITY_ID_CTX: self.entity_id
@@ -93,6 +129,13 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke par endpoint")
 
     def authorization_endpoint(self, context: Context):
+        """
+        Handle an authorization request, via GET or POST.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object, usually a redirect.
+        """
         global entity
         try:
             entity = self.db_engine.get_by_session_id(self._get_session_id(context))
@@ -122,6 +165,14 @@ class Openid4VCIEndpoints:
                 getattr(entity, "state", None))
 
     def token_endpoint(self, context: Context):
+        """
+        Handle a POST request to the token endpoint.
+        Args:
+            context (Context): The SATOSA context.
+
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
@@ -142,7 +193,15 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke token endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke token endpoint")
 
+
     def nonce_endpoint(self, context: Context):
+        """
+        Handle a POST request to the nonce endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
@@ -156,6 +215,13 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke nonce endpoint")
 
     def credential_endpoint(self, context: Context):
+        """
+        Handle a POST request to the credential endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
@@ -168,7 +234,15 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke credential endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke credential endpoint")
 
+
     def deferred_credential_endpoint(self, context: Context):
+        """
+        Handle a POST request to the deferred_credential endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             pass
         except InvalidRequestException as e:
@@ -180,6 +254,13 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke deferred endpoint")
 
     def notification_endpoint(self, context: Context):
+        """
+        Handle a POST request to the notification endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
@@ -193,39 +274,85 @@ class Openid4VCIEndpoints:
 
     #def status_assertion_endpoint(self, context: satosa.context.Context)
     #def revocation_endpoint(self, context: satosa.context.Context)
+
     @staticmethod
-    def _to_request_uri(random_part: str):
+    def _to_request_uri(random_part: str) -> str:
+        """
+        Generate the full `request_uri` from a random component.
+        Args:
+            random_part (str): The unique identifier to include in the URI.
+        Returns:
+            str: A full URN request_uri string.
+        """
         return f"urn:ietf:params:oauth:request_uri:{random_part}"
 
     @staticmethod
-    def _get_session_id(context: Context):
+    def _get_session_id(context: Context) -> str:
+        """
+        Extract the session ID from the SATOSA context.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            str: The session ID.
+        """
         return context.state["SESSION_ID"]
 
     @staticmethod
     def _validate_content_type(content_type_header: str, accepted_content_type: str):
+        """
+        Validate the Content-Type header against expected value.
+        Args:
+            content_type_header (str): The received Content-Type header.
+            accepted_content_type (str): The expected value.
+        Raises:
+            InvalidRequestException: If the header does not match.
+        """
         if (accepted_content_type == FORM_URLENCODED
-            and not ContentTypeUtils.is_form_urlencoded(content_type_header)):
+                and not ContentTypeUtils.is_form_urlencoded(content_type_header)):
             logger.error(f"Invalid content-type for check `{FORM_URLENCODED}`: {content_type_header}")
             raise InvalidRequestException("invalid content-type")
         elif (accepted_content_type == APPLICATION_JSON
-            and not ContentTypeUtils.is_application_json(content_type_header)):
+              and not ContentTypeUtils.is_application_json(content_type_header)):
             logger.error(f"Invalid content-type for check `{APPLICATION_JSON}`: {content_type_header}")
             raise InvalidRequestException("invalid content-type")
 
     @staticmethod
     def _validate_request_method(request_method: str, accepted_methods: list[str]):
+        """
+        Validate that the HTTP method is allowed.
+        Args:
+            request_method (str): The HTTP method.
+            accepted_methods (list[str]): Allowed methods.
+        Raises:
+            InvalidRequestException: If the method is invalid.
+        """
         if request_method is None or request_method.upper() not in accepted_methods:
             logger.error(f"endpoint invoked with wrong request method: {request_method}")
             raise InvalidRequestException("invalid request method")
 
     @staticmethod
     def _validate_oauth_client_attestation(context: Context):
+        """
+        Validate that OAuth-Client-Attestation headers are present.
+        Args:
+            context (Context): The SATOSA context.
+        Raises:
+            InvalidRequestException: If required headers are missing.
+        """
         if not context.http_headers["OAuth-Client-Attestation"] or not context.http_headers["OAuth-Client-Attestation-PoP"]:
             logger.error(f"Missing r{'OAuth-Client-Attestation' if not context.http_headers["OAuth-Client-Attestation"] else 'OAuth-Client-Attestation-PoP'} header for `par` endpoint")
             raise InvalidRequestException("Missing Wallet Attestation JWT header")
 
     def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
-        # Init session
+        """
+        Initialize a new DB session for a credential issuance flow.
+        Args:
+            context (Context): The SATOSA context.
+            request_uri_part (str): The generated URI part.
+            par_request (ParRequest): The validated request data.
+        Raises:
+            Exception: If the DB operation fails.
+        """
         entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request)
         try:
             self.db_engine.init_session(entity)
@@ -238,7 +365,9 @@ class Openid4VCIEndpoints:
     @property
     def db_engine(self) -> MongoStorage:
         """
-        Returns the DBEngine instance used by the class
+        Lazily initialized access to MongoDB storage engine.
+        Returns:
+            MongoStorage: The initialized DB engine instance.
         """
         if not self._db_engine:
             self._db_engine = MongoStorage(self.config["storage"])
