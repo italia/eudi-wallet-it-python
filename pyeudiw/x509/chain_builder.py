@@ -42,6 +42,18 @@ class ChainBuilder:
         :type date: datetime
         :param private_key: Private key to use for signing the certificate
         :type private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None
+        :param ca: Whether the certificate is a CA certificate
+        :type ca: bool
+        :param path_length: Path length for the CA certificate, None if not a CA
+        :type path_length: int | None
+        :param serial_number: Serial number of the certificate, random if None
+        :type serial_number: int | None
+        :param crl_distr_point: CRL Distribution Point URI, None if not set
+        :type crl_distr_point: str | None
+        :param not_valid_before: Start date of the certificate validity
+        :type not_valid_before: datetime
+        :param not_valid_after: End date of the certificate validity
+        :type not_valid_after: datetime
 
         :return: None
         """
