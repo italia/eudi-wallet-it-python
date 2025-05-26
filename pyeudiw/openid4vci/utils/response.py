@@ -7,6 +7,7 @@ from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON, \
 
 
 class ResponseUtils:
+
   @staticmethod
   def to_invalid_scope_resp(desc: str) -> BadRequest:
     return BadRequest(

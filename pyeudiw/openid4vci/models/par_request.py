@@ -1,10 +1,12 @@
 import logging
 from typing import List
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, model_validator
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
   InvalidRequestException
+from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.date import DateUtils
 
 logger = logging.getLogger(__name__)
@@ -12,6 +14,23 @@ logger = logging.getLogger(__name__)
 class AuthorizationDetail(BaseModel):
   type: str
   credential_configuration_id: str  # JsonStr
+
+  @model_validator(mode='after')
+  def check_authorization_detail(self) -> "AuthorizationDetail":
+    if not self.type :
+      logger.error("missing authorization_details.type in request `par` endpoint")
+      raise InvalidRequestException("missing `authorization_details.type` parameter")
+
+    if self.type != "openid_credential" :
+      logger.error(f"invalid authorization_details.type {self.type} in request `par` endpoint")
+      raise InvalidRequestException("invalid `authorization_details.type` parameter")
+
+    if self.credential_configuration_id not in [ccs["id"] for ccs in Config(self.__pydantic_context__.get("config")).get_credential_configurations_supported().values()]:
+      logger.error(f"invalid authorization_details.credential_configuration_id {self.credential_configuration_id} in request `par` endpoint")
+      raise InvalidRequestException("invalid `authorization_details.credential_configuration_id` parameter")
+
+    return self
+
 
 class ParRequest(BaseModel):
   iss: str
@@ -32,16 +51,18 @@ class ParRequest(BaseModel):
 
   @model_validator(mode='after')
   def check_par_request(self) -> "ParRequest":
-    config = (self.__pydantic_context__.get("config", {})
-              .get("metadata", {}).get("oauth_authorization_server", {}))
+    config = Config(self.__pydantic_context__.get("config")).get_oauth_authorization_server()
 
     if not self.iss:
       logger.error("missing iss in request `par` endpoint")
       raise InvalidRequestException("missing `iss` parameter")
 
-    if not self.aud:
-      logger.error("missing aud in request `par` endpoint")
-      raise InvalidRequestException("missing `aud` parameter")
+    req_client_id = self.__pydantic_context__.get("client_id")
+    if self.iss != req_client_id:
+      logger.error(f"invalid request iss {self.iss} in `par` endpoint")
+      raise InvalidRequestException("invalid `iss` parameter")
+
+    self.validate_aud()
 
     if not DateUtils.is_valid_unix_timestamp(self.exp):
       logger.error(f"invalid exp {self.exp} in request `par` endpoint")
@@ -55,15 +76,15 @@ class ParRequest(BaseModel):
       logger.error("expired request token in `par` endpoint")
       raise InvalidRequestException("expired token")
 
-    if self.response_type not in config.get("response_types_supported", []):
+    if self.response_type not in config.response_types_supported:
       logger.error(f"invalid response type {self.response_type} in `par` endpoint")
       raise InvalidRequestException("invalid `response_type` parameter")
 
-    if self.response_mode not in config.get("response_modes_supported", []):
+    if self.response_mode not in config.response_modes_supported:
       logger.error(f"invalid response_mode {self.response_mode} in `par` endpoint")
       raise InvalidRequestException("invalid `response_mode` parameter")
 
-    if self.client_id != self.__pydantic_context__.get("client_id"):
+    if self.client_id != req_client_id:
       logger.error(f"invalid request client_id {self.client_id} in `par` endpoint")
       raise InvalidRequestException("invalid `request.client_id` parameter")
 
@@ -75,15 +96,57 @@ class ParRequest(BaseModel):
       logger.error("missing `code_challenge` in `par` endpoint request")
       raise InvalidRequestException("missing `code_challenge` parameter")
 
-    if self.code_challenge_method not in config.get("code_challenge_methods_supported", []):
+    if self.code_challenge_method not in config.code_challenge_methods_supported:
       logger.error(f"invalid code_challenge_method {self.code_challenge_method} in `par` endpoint")
       raise InvalidRequestException("invalid `code_challenge_method` parameter")
 
     scopes = self.scope.split(" ")
-    supported_scopes = config.get("scopes_supported", [])
     for s in scopes:
-      if s not in supported_scopes:
+      if s not in config.scopes_supported:
         logger.error(f"invalid scope value '{s}' in `par` endpoint")
         raise InvalidRequestException(f"invalid scope value '{s}'")
 
+    AuthorizationDetail.model_validate(
+      self.authorization_details,
+      context = {"config": self.config})
+
+    self.validate_redirect_uri()
+    self.validate_jti()
     return self
+
+  def validate_aud(self):
+    if not self.aud:
+      logger.error("missing aud in request `par` endpoint")
+      raise InvalidRequestException("missing `aud` parameter")
+
+    entity_id = self.__pydantic_context__.get("entity_id")
+    if self.aud != entity_id:
+      logger.error(f"invalid request `aud` {self.aud} in `par` endpoint")
+      raise InvalidRequestException("invalid `aud` parameter")
+
+  def validate_redirect_uri(self):
+    if not self.redirect_uri:
+      logger.error("missing redirect_uri in request `par` endpoint")
+      raise InvalidRequestException("missing `redirect_uri` parameter")
+
+    try:
+      parsed_redirect_uri = urlparse(self.redirect_uri)
+      if not parsed_redirect_uri.scheme or not (parsed_redirect_uri.netloc or parsed_redirect_uri.path):
+        logger.error(f"invalid redirect_uri value '{self.redirect_uri}' in `par` endpoint")
+        raise InvalidRequestException("invalid redirect_uri")
+    except Exception as e:
+      logger.error(f"invalid redirect_uri value '{self.redirect_uri}' in `par` endpoint: {e}")
+      raise InvalidRequestException("invalid redirect_uri")
+
+  def validate_jti(self):
+    if not self.jti:
+      logger.error("missing jti in request `par` endpoint")
+      raise InvalidRequestException("missing `jti` parameter")
+
+    if self.iss not in self.jti:
+      logger.error(f"invalid jti {self.jti} in request `par` endpoint")
+      raise InvalidRequestException("invalid `jti` parameter")
+
+    if len(self.jti) - len(self.iss) == 0:
+      logger.error(f"invalid jti {self.jti} in request `par` endpoint")
+      raise InvalidRequestException("invalid `jti` parameter")

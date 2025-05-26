@@ -11,6 +11,9 @@ config:
       verify: false
       timeout: 14
 
+  jwt:
+    default_exp: 90
+
   # private jwk
   metadata_jwks: &metadata_jwks
     - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests
