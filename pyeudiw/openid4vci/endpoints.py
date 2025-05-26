@@ -7,16 +7,18 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from satosa.context import Context
 from satosa.response import Created, Redirect
 
-from satosa_openid4vci.exceptions.bad_request_exception import \
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.openid4vci.exceptions.bad_request_exception import \
     InvalidRequestException, InvalidScopeException
-from satosa_openid4vci.models.authorization_request import AuthorizationRequest
-from satosa_openid4vci.models.par_request import ParRequest
-from satosa_openid4vci.models.token_request import TokenRequest
-from satosa_openid4vci.storage.mongo_storage import MongoStorage
-from satosa_openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
-from satosa_openid4vci.utils.content_type import ContentTypeUtils, \
+from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest
+from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.openid4vci.models.par_request import ParRequest
+from pyeudiw.openid4vci.models.token_request import TokenRequest
+from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
+from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils, \
     CONTENT_TYPE_HEADER, APPLICATION_JSON, FORM_URLENCODED
-from satosa_openid4vci.utils.response import ResponseUtils
+from pyeudiw.openid4vci.utils.response import ResponseUtils
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,21 @@ class Openid4VCIEndpoints:
         # to be inizialized by .db_engine() property
         self._db_engine = None
 
-    def pushed_authorization_endpoint(self, context):
+    def credential_offer_endpoint(self, context: Context):
+        try:
+            self._validate_request_method(context.request_method, ["GET"])
+            self._validate_content_type(context.http_headers[CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            CredentialOfferRequest.model_validate(
+                context.request.query, context = {"config": self.config})
+        except InvalidRequestException as e:
+            return ResponseUtils.to_invalid_request_resp(e.message)
+        except InvalidScopeException as e:
+            return ResponseUtils.to_invalid_scope_resp(e.message)
+        except Exception as e:
+            logger.error(f"Error during invoke credential_offer endpoint: {e}")
+            return ResponseUtils.to_server_error_resp("error during invoke credential_offer endpoint")
+
+    def pushed_authorization_endpoint(self, context: Context):
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.get_header(CONTENT_TYPE_HEADER), FORM_URLENCODED)

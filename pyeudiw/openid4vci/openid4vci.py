@@ -5,7 +5,7 @@ import logging
 
 from satosa.frontends.base import FrontendModule
 
-from satosa_openid4vci.endpoints import Openid4VCIEndpoints
+from pyeudiw.openid4vci.endpoints import Openid4VCIEndpoints
 
 logger = logging.getLogger(__name__)
 

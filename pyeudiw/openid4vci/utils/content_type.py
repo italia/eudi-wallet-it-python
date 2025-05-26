@@ -1,5 +1,5 @@
 
-CONTENT_TYPE_HEADER = "Content-Type"
+CONTENT_TYPE_HEADER = "HTTP_CONTENT_TYPE"
 APPLICATION_JSON = "application/json"
 FORM_URLENCODED = "application/x-www-form-urlencoded"
 
@@ -42,16 +42,10 @@ class ContentTypeUtils:
   """
 
   @staticmethod
-  def _equals(value: str, expected: str) -> bool:
-    if not value or not value.strip():
-      return False
-    return value.strip().lower() == expected
-
-  @staticmethod
   def is_application_json(content_type: str) -> bool:
-    return ContentTypeUtils._equals(content_type, APPLICATION_JSON)
+    return APPLICATION_JSON in content_type
 
   @staticmethod
   def is_form_urlencoded(content_type: str) -> bool:
-    return ContentTypeUtils._equals(content_type, FORM_URLENCODED)
+    return FORM_URLENCODED in content_type
 
