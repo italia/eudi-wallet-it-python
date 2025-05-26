@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from pyeudiw.openid4vci.utils.config import Config
 
 CONFIG_CTX = "config"
+CLIENT_ID_CTX = "client_id"
 
 class OpenId4VciBaseModel(BaseModel):
     """
@@ -28,3 +29,7 @@ class OpenId4VciBaseModel(BaseModel):
         if not self._context or path not in self._context:
             raise ValueError(f"Missing '{path}' in pydantic context")
         return self._context[path]
+
+    @staticmethod
+    def strip(val: str):
+        return val.strip() if val is not None else val
