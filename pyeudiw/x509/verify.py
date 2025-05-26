@@ -161,7 +161,7 @@ def to_DER_cert(cert: str | bytes) -> bytes:
     if isinstance(cert, str) and str(cert_s).startswith("-----BEGIN CERTIFICATE-----"):
         return PEM_cert_to_DER_cert(str(cert_s))
 
-    cert_s = str(cert_s).replace('\n\r', '')
+    cert_s = re.sub(r'\n\r|\n', '', str(cert_s))
     if _BASE64_RE.fullmatch(cert_s):
         return B64DER_cert_to_DER_cert(cert_s)
 
