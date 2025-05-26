@@ -1,0 +1,42 @@
+"""
+The OpenID4vci (Credential Issuer) frontend module for the satosa proxy
+"""
+import logging
+
+from satosa.frontends.base import FrontendModule
+
+from satosa_openid4vci.endpoints import Openid4VCIEndpoints
+
+logger = logging.getLogger(__name__)
+
+class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
+  """
+  OpenID Connect frontend module based on satosa.
+  """
+
+  def __init__(self,
+      auth_req_callback_func,
+      internal_attributes,
+      conf,
+      base_url,
+      name
+  ):
+    FrontendModule.__init__(auth_req_callback_func, internal_attributes, base_url, name)
+    Openid4VCIEndpoints.__init__(self, conf)
+    self.config = conf
+    self.oauth_authorization_server_metadata = conf.get("metadata", {}).get("oauth_authorization_server", {})
+
+  def register_endpoints(self, *kwargs):
+    """
+    See super class satosa.frontends.base.FrontendModule
+    :type backend_names: list[str]
+    :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
+    :raise ValueError: if more than one backend is configured
+    """
+    url_map = []
+    endpoint_values = [v for k, v in self.oauth_authorization_server_metadata.items() if k.endswith("endpoint")]
+    for method, path in endpoint_values:
+      url_map.append((f"{self.name}/{path}", getattr(self, f"{method}")))
+
+    logger.debug(f"Loaded Credential Issuer endpoints: {url_map}")
+    return url_map
