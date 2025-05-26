@@ -19,6 +19,7 @@ class OpenId4VCIEntity(BaseModel):
   session_id: str
   remote_flow_typ: str
   request_uri_part: str
+  redirect_uri: str
   code: str
   iss: str
   finalized: False
@@ -30,10 +31,11 @@ class OpenId4VCIEntity(BaseModel):
         document_id = str(uuid.uuid4()),
         creation_date = datetime.now(tz=timezone.utc),
         request_uri_part = request_uri_part,
-        state=str(uuid.uuid4()),
+        state=par_request.state,
         session_id=context.state["SESSION_ID"],
         remote_flow_typ=detect_flow_typ(context).value,
         client_id = par_request.client_id,
         code_challenge = par_request.code_challenge,
-        code_challenge_method = par_request.code_challenge_method
+        code_challenge_method = par_request.code_challenge_method,
+        redirect_uri=par_request.redirect_uri
     )

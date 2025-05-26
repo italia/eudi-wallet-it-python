@@ -1,18 +1,17 @@
-import json
 import logging
 import secrets
 from urllib.parse import parse_qs
 
 from satosa.context import Context
-from satosa.response import Created, Redirect
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
     InvalidRequestException, InvalidScopeException
 from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
+from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.openid4vci.models.par_request import ParRequest, CLIENT_ID_CTX, ENTITY_ID_CTX
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX
+from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
 from pyeudiw.openid4vci.models.par_response import ParResponse
 from pyeudiw.openid4vci.models.token_request import TokenRequest
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
@@ -93,9 +92,9 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke par endpoint")
 
     def authorization_endpoint(self, context: Context):
-        url = ""
-        state = ""
+        global entity
         try:
+            entity = self.db_engine.get_by_session_id(context.state["SESSION_ID"])
             self._validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
                 self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
@@ -103,23 +102,23 @@ class Openid4VCIEndpoints:
             else:
                 auth_req = dict(context.request.query)
 
-            entity = self.db_engine.get_by_session_id(context.state["SESSION_ID"])
             AuthorizationRequest.model_validate(
                 auth_req, context = {
-                    PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part)
+                    PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
+                    CLIENT_ID_CTX: entity.client_id
                 })
-
-            return Redirect(
-                f"{url}?code={code}&state={entity.state}&iss={iss}",
-                content = FORM_URLENCODED
-            )
+            return AuthorizationResponse(
+                state=entity.state,
+                iss=self.entity_id,
+            ).to_redirect_response(entity.redirect_uri)
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_redirect(
-                url, e.message, state)
+                getattr(entity, "redirect_uri", None), e.message, getattr(entity, "state", None))
         except Exception as e:
             logger.error(f"Error during invoke par endpoint: {e}")
             return ResponseUtils.to_server_error_redirect(
-                url,"error during invoke authorization endpoint", state)
+                getattr(entity, "redirect_uri", None),"error during invoke authorization endpoint",
+                getattr(entity, "state", None))
 
     def token_endpoint(self, context: Context):
         try:
@@ -216,7 +215,7 @@ class Openid4VCIEndpoints:
 
     def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
         # Init session
-        entity = OpenId4VCIEntity.new_entity(context,request_uri_part, par_request)
+        entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request)
         try:
             self.db_engine.init_session(entity)
         except Exception as e500:
