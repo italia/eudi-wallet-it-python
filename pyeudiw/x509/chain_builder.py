@@ -23,7 +23,9 @@ class ChainBuilder:
         path_length: int | None,
         serial_number: int | None = None,
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
-        crl_distr_point: str | None = None
+        crl_distr_point: str | None = None,
+        not_valid_before: datetime = datetime.now() - timedelta(days=1),
+        not_valid_after: datetime = datetime.now() + timedelta(days=365)
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -83,8 +85,8 @@ class ChainBuilder:
         ) \
         .public_key(private_key.public_key()) \
         .serial_number(x509.random_serial_number() if not serial_number else serial_number) \
-        .not_valid_before(date - timedelta(days=1)) \
-        .not_valid_after(date + timedelta(days=365)) \
+        .not_valid_before(not_valid_before) \
+        .not_valid_after(not_valid_after) \
         .add_extension(
             x509.BasicConstraints(ca=ca, path_length=path_length),
             critical=True,
