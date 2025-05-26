@@ -5,13 +5,14 @@ from pydantic import BaseModel, model_validator
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
   InvalidRequestException
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 
 logger = logging.getLogger(__name__)
 
 AUTHORIZATION_CODE_GRANT = "authorization_code"
 REFRESH_TOKEN_GRANT = "refresh_token"
 
-class TokenRequest(BaseModel):
+class TokenRequest(OpenId4VciBaseModel):
   grant_type: str
   code: str
   redirect_uri: str

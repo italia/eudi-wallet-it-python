@@ -2,18 +2,22 @@ import logging
 from typing import List
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
   InvalidRequestException
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.date import DateUtils
 
 logger = logging.getLogger(__name__)
 
-class AuthorizationDetail(BaseModel):
+CLIENT_ID_CTX = "client_id"
+ENTITY_ID_CTX = "entity_id"
+
+class AuthorizationDetail(OpenId4VciBaseModel):
   type: str
-  credential_configuration_id: str  # JsonStr
+  credential_configuration_id: str
 
   @model_validator(mode='after')
   def check_authorization_detail(self) -> "AuthorizationDetail":
@@ -32,7 +36,7 @@ class AuthorizationDetail(BaseModel):
     return self
 
 
-class ParRequest(BaseModel):
+class ParRequest(OpenId4VciBaseModel):
   iss: str
   aud: str
   exp: int
@@ -51,13 +55,13 @@ class ParRequest(BaseModel):
 
   @model_validator(mode='after')
   def check_par_request(self) -> "ParRequest":
-    config = Config(self.__pydantic_context__.get("config")).get_oauth_authorization_server()
+    config = self.get_config().get_oauth_authorization_server()
 
     if not self.iss:
       logger.error("missing iss in request `par` endpoint")
       raise InvalidRequestException("missing `iss` parameter")
 
-    req_client_id = self.__pydantic_context__.get("client_id")
+    req_client_id = self.get_ctx(CLIENT_ID_CTX)
     if self.iss != req_client_id:
       logger.error(f"invalid request iss {self.iss} in `par` endpoint")
       raise InvalidRequestException("invalid `iss` parameter")
@@ -108,7 +112,7 @@ class ParRequest(BaseModel):
 
     AuthorizationDetail.model_validate(
       self.authorization_details,
-      context = {"config": self.config})
+      context = {CONFIG_CTX: self.get_config()})
 
     self.validate_redirect_uri()
     self.validate_jti()
@@ -119,8 +123,7 @@ class ParRequest(BaseModel):
       logger.error("missing aud in request `par` endpoint")
       raise InvalidRequestException("missing `aud` parameter")
 
-    entity_id = self.__pydantic_context__.get("entity_id")
-    if self.aud != entity_id:
+    if self.aud != self.get_ctx(ENTITY_ID_CTX):
       logger.error(f"invalid request `aud` {self.aud} in `par` endpoint")
       raise InvalidRequestException("invalid `aud` parameter")
 

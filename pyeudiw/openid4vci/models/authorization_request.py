@@ -1,13 +1,16 @@
 import logging
 
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
   InvalidRequestException
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 
 logger = logging.getLogger(__name__)
 
-class AuthorizationRequest(BaseModel):
+PAR_REQUEST_URI_CTX = "par_request_uri"
+
+class AuthorizationRequest(OpenId4VciBaseModel):
   client_id: str
   request_uri: str
 
@@ -21,8 +24,8 @@ class AuthorizationRequest(BaseModel):
       logger.error("missing `request_uri` in request `authorization` endpoint")
       raise InvalidRequestException("missing `request_uri` parameter")
 
-    par_request_uri = (self.__pydantic_context__.get("par_obj", {})
-              .get("request_uri"))
-    if par_request_uri != self.request_uri:
+    if self.get_ctx(PAR_REQUEST_URI_CTX) != self.request_uri:
       logger.error("Invalid `request_uri` in request `authorization` endpoint")
       raise InvalidRequestException("invalid `request_uri` parameter")
+
+    return self

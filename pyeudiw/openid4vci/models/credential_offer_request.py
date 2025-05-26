@@ -2,13 +2,14 @@ import logging
 from typing import List
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX
 
 logger = logging.getLogger(__name__)
 
-class AuthorizationCode(BaseModel):
+class AuthorizationCode(OpenId4VciBaseModel):
     issuer_state: str
     authorization_server: str
 
@@ -26,15 +27,13 @@ class AuthorizationCode(BaseModel):
             logger.error("missing 'grants.authorization_server' in request `credential_offer` endpoint")
             raise InvalidRequestException("missing `grants.authorization_server` parameter")
 
-        authorization_servers = (self.__pydantic_context__.get("config", {})
-                                     .get("metadata", {}).get("openid_credential_issuer", {}).get("authorization_servers", []))
-        if self.authorization_server not in authorization_servers:
+        if self.authorization_server not in self.get_config().get_openid_credential_issuer().authorization_servers:
                 logger.error("missing 'grants.authorization_server' in request `credential_offer` endpoint")
                 raise InvalidRequestException("missing `grants.authorization_server` parameter")
 
 
 
-class CredentialOfferRequest(BaseModel):
+class CredentialOfferRequest(OpenId4VciBaseModel):
     credential_issuer: str
     credential_configuration_ids: List[str]
     grants: AuthorizationCode
@@ -45,12 +44,11 @@ class CredentialOfferRequest(BaseModel):
         self.validate_credential_configuration_ids()
         AuthorizationCode.model_validate(
             self.grants,
-            context = {"config": self.config})
+            context = {CONFIG_CTX: self.get_config()})
         return self
 
     def validate_credential_configuration_ids(self):
-        credential_configurations_supported = (self.__pydantic_context__.get("config", {})
-                                               .get("metadata", {}).get("openid_credential_issuer", {}).get("credential_configurations_supported", {}))
+        credential_configurations_supported = self.get_config().get_credential_configurations_supported()
         for req_ids in self.credential_configuration_ids:
             if req_ids not in [ccs["id"] for ccs in credential_configurations_supported.values()]:
                 logger.error(f"invalid credential_configuration_ids {self.credential_configuration_ids} in request `credential_offer` endpoint")

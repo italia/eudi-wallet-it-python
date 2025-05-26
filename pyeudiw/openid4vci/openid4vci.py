@@ -6,6 +6,7 @@ import logging
 from satosa.frontends.base import FrontendModule
 
 from pyeudiw.openid4vci.endpoints import Openid4VCIEndpoints
+from pyeudiw.openid4vci.utils.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +18,14 @@ class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
   def __init__(self,
       auth_req_callback_func,
       internal_attributes,
-      conf,
+      config: dict,
       base_url,
       name
   ):
     FrontendModule.__init__(auth_req_callback_func, internal_attributes, base_url, name)
-    Openid4VCIEndpoints.__init__(self, conf)
-    self.config = conf
-    self.oauth_authorization_server_metadata = conf.get("metadata", {}).get("oauth_authorization_server", {})
+    Openid4VCIEndpoints.__init__(self, config)
+    self.config = config
+    self.config_utils = Config(config)
 
   def register_endpoints(self, *kwargs):
     """
@@ -34,7 +35,7 @@ class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
     :raise ValueError: if more than one backend is configured
     """
     url_map = []
-    endpoint_values = [v for k, v in self.oauth_authorization_server_metadata.items() if k.endswith("endpoint")]
+    endpoint_values = [v for k, v in self.config_utils.get_oauth_authorization_server().items() if k.endswith("endpoint")]
     for method, path in endpoint_values:
       url_map.append((f"{self.name}/{path}", getattr(self, f"{method}")))
 

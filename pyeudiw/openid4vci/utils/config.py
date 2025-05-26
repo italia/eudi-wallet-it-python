@@ -1,6 +1,7 @@
-from typing import Any, Optional, List, Dict
+from typing import Any, List, Dict
 
 from pydantic import BaseModel
+
 
 class OauthAuthorizationServerMetadata(BaseModel):
     response_types_supported: List[str]
@@ -13,6 +14,8 @@ class CredentialConfiguration(BaseModel):
 
 class OpenidCredentialIssuerMetadata(BaseModel):
     credential_configurations_supported: Dict[str, CredentialConfiguration]
+    authorization_servers: List[str]
+    credential_issuer: str
 
 
 class Metadata(BaseModel):
@@ -36,5 +39,8 @@ class Config(BaseModel):
     def get_oauth_authorization_server(self) -> OauthAuthorizationServerMetadata:
         return self.metadata.oauth_authorization_server
 
+    def get_openid_credential_issuer(self) -> OpenidCredentialIssuerMetadata:
+        return self.metadata.openid_credential_issuer
+
     def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration]:
-        return self.metadata.openid_credential_issuer.credential_configurations_supported
+        return self.get_openid_credential_issuer().credential_configurations_supported
