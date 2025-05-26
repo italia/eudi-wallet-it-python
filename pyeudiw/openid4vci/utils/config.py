@@ -1,4 +1,4 @@
-from typing import Any, List, Dict
+from typing import List, Dict
 
 from pydantic import BaseModel
 
@@ -28,10 +28,6 @@ class Jwt(BaseModel):
 class Config(BaseModel):
     jwt: Jwt
     metadata: Metadata
-
-    def __init__(self, config: dict[str, dict[str, str] | list[str]], **data: Any):
-        super().__init__(**data)
-        self.config = config
 
     def get_jwt_default_exp(self) -> int:
         return self.jwt.default_exp

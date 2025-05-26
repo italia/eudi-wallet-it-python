@@ -13,7 +13,8 @@ from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRe
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX
 from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
 from pyeudiw.openid4vci.models.par_response import ParResponse
-from pyeudiw.openid4vci.models.token_request import TokenRequest
+from pyeudiw.openid4vci.models.token_request import TokenRequest, REDIRECT_URI_CTX, CODE_CHALLENGE_CTX, \
+    CODE_CHALLENGE_METHOD_CTX
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.utils.config import Config
@@ -94,7 +95,7 @@ class Openid4VCIEndpoints:
     def authorization_endpoint(self, context: Context):
         global entity
         try:
-            entity = self.db_engine.get_by_session_id(context.state["SESSION_ID"])
+            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
             self._validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
                 self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
@@ -126,7 +127,13 @@ class Openid4VCIEndpoints:
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
             self._validate_oauth_client_attestation(context)
             decoded_request = self.jws_helper.verify(context.request.body.decode("utf-8"))
-            TokenRequest.model_validate(decoded_request)
+            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+            TokenRequest.model_validate(**decoded_request, context = {
+                CONFIG_CTX: self.config_utils,
+                REDIRECT_URI_CTX: entity.redirect_uri,
+                CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
+                CODE_CHALLENGE_CTX: entity.code_challenge
+            })
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
@@ -189,6 +196,10 @@ class Openid4VCIEndpoints:
     @staticmethod
     def _to_request_uri(random_part: str):
         return f"urn:ietf:params:oauth:request_uri:{random_part}"
+
+    @staticmethod
+    def _get_session_id(context: Context):
+        return context.state["SESSION_ID"]
 
     @staticmethod
     def _validate_content_type(content_type_header: str, accepted_content_type: str):
