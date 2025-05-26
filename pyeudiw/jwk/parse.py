@@ -76,7 +76,7 @@ def parse_b64der(b64der: str) -> JWK:
     return parse_certificate(der)
 
 
-def parse_x5c_keys(x5c: list[str]) -> list[JWK]:
+def parse_x5c_keys(x5c: list[str] | list[bytes]) -> list[JWK]:
     """
     Parse a the keys from a x5c chain.
     The first element of the chain will contain the verifying key.

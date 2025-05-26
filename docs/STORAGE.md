@@ -109,6 +109,7 @@ For a complete list of the MongoDB configuration parameters, see [README.SATOSA.
       "attribute_name": "x5c",
       "trust_handler_name": "X509Handler",
       "jwks":  ARRAY[object],
+      "crls": ARRAY[{uri, PEM}, {uri, PEM}, {uri, PEM}] -> contains objects with the CRL PEM and his url,
     },
     "direct_trust_sd_jwt_vc": {
       "attribute_name": "jwks",
