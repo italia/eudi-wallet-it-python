@@ -21,7 +21,7 @@ class DateUtils:
       return False
     try:
       # Check if datetime.fromtimestamp works and the value is in a reasonable range
-      dt = datetime.datetime.fromtimestamp(ts)
+      dt = datetime.datetime.fromtimestamp(ts, datetime.UTC)
       now = datetime.datetime.now(datetime.UTC)
       # Accept timestamps in a reasonable window, +/- 1 years from now
       earliest = now.replace(year=now.year - 1)

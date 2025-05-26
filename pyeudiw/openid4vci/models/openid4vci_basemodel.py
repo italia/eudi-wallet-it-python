@@ -1,11 +1,14 @@
+import logging
 from typing import Any
 
 from pydantic import BaseModel
 
+from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
 from pyeudiw.openid4vci.utils.config import Config
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
+logger = logging.getLogger(__name__)
 
 class OpenId4VciBaseModel(BaseModel):
     """
@@ -29,6 +32,18 @@ class OpenId4VciBaseModel(BaseModel):
         if not self._context or path not in self._context:
             raise ValueError(f"Missing '{path}' in pydantic context")
         return self._context[path]
+
+    @staticmethod
+    def check_missing_parameter(parameter: Any, parameter_name: str, endpoint_name: str):
+        if not parameter or (isinstance(parameter, list) and len(parameter) == 0):
+            logger.error(f"missing {parameter_name} in request `{endpoint_name}` endpoint")
+            raise InvalidRequestException(f"missing `{parameter_name}` parameter")
+
+    @staticmethod
+    def check_unexpected_parameter(parameter: Any, parameter_name: str, endpoint_name: str):
+        if parameter or (isinstance(parameter, list) and len(parameter) > 0):
+            logger.error(f"unexpected {parameter_name} in request `{endpoint_name}` endpoint")
+            raise InvalidRequestException(f"unexpected `{parameter_name}` parameter")
 
     @staticmethod
     def strip(val: str):

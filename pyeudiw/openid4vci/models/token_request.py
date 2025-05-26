@@ -17,6 +17,8 @@ REDIRECT_URI_CTX = "redirect_uri"
 CODE_CHALLENGE_METHOD_CTX = "code_challenge_method"
 CODE_CHALLENGE_CTX = "code_challenge"
 
+TOKEN_ENDPOINT = "token"
+
 class TokenRequest(OpenId4VciBaseModel):
   """
   Represents a request to the token endpoint in an OpenID4VCI flow.
@@ -36,7 +38,7 @@ class TokenRequest(OpenId4VciBaseModel):
       - Ensures `scope` values are in the allowed configuration list.
       - Raises `InvalidRequestException` with appropriate messages if checks fail.
   """
-  grant_type: str
+  grant_type: str = None
   code: Optional[str] = None
   redirect_uri: Optional[str] = None
   code_verifier: Optional[str] = None
@@ -45,61 +47,19 @@ class TokenRequest(OpenId4VciBaseModel):
 
   @model_validator(mode='after')
   def check_token_request(self) -> "TokenRequest":
-    if self.grant_type not in [AUTHORIZATION_CODE_GRANT, REFRESH_TOKEN_GRANT]:
-      logger.error(f"Invalid `grant_type` {self.grant_type} in token request")
-      raise InvalidRequestException("invalid `grant_type`")
-
+    self.validate_grant_type()
     is_authorization_code_grant =  self.grant_type == AUTHORIZATION_CODE_GRANT
-    if is_authorization_code_grant and not self.code:
-      logger.error("Missing `code` in token request with authorization_code as `grant_type`")
-      raise InvalidRequestException("missing `code`")
-    elif not is_authorization_code_grant and self.code:
-      logger.error("unexpected `code` for token request with refresh_token as `grant_type`")
-      raise InvalidRequestException("unexpected `code`")
+    self.validate_code(is_authorization_code_grant)
+    self.validate_redirect_uri(is_authorization_code_grant)
+    self.validate_code_verifier(is_authorization_code_grant)
+    self.validate_refresh_token(is_authorization_code_grant)
+    self.validate_scope(is_authorization_code_grant)
+    return self
 
+  def validate_scope(self, is_authorization_code_grant):
+    self.scope = self.strip(self.scope)
     if is_authorization_code_grant:
-      if not self.redirect_uri:
-        logger.error("Missing `redirect_uri` in token request with authorization_code as `grant_type`")
-        raise InvalidRequestException("missing `redirect_uri`")
-      elif self.get_ctx(REDIRECT_URI_CTX) != self.redirect_uri:
-        logger.error("Invalid `redirect_uri` in token request with authorization_code as `grant_type`")
-        raise InvalidRequestException("Invalid `redirect_uri`")
-    elif not is_authorization_code_grant and self.redirect_uri:
-      logger.error("unexpected `redirect_uri` for token request with refresh_token as `grant_type`")
-      raise InvalidRequestException("unexpected `redirect_uri`")
-
-    if is_authorization_code_grant:
-      if not self.code_verifier:
-        logger.error("Missing `code_verifier` in token request with authorization_code as `grant_type`")
-        raise InvalidRequestException("missing `code_verifier`")
-
-      match self.get_ctx(CODE_CHALLENGE_METHOD_CTX):
-        case "s256":
-          code_verifier_encode = sha256(self.code_verifier.encode('utf-8')).hexdigest()
-        case "s512":
-          code_verifier_encode = sha512(self.code_verifier.encode('utf-8')).hexdigest()
-        case _:
-          logger.error(f"unexpected code_challenge_method {self.get_ctx(CODE_CHALLENGE_METHOD_CTX)} for code_verifier in token request")
-          raise InvalidRequestException("Invalid `code_verifier`")
-
-      if code_verifier_encode != self.get_ctx(CODE_CHALLENGE_CTX):
-        logger.error(f"Invalid `code_verifier` {code_verifier_encode} in token request with authorization_code as `grant_type`")
-        raise InvalidRequestException("Invalid `code_verifier`")
-
-    elif not is_authorization_code_grant and self.code_verifier:
-      logger.error("unexpected `code_verifier` for token request with refresh_token as `grant_type`")
-      raise InvalidRequestException("unexpected `code_verifier`")
-
-    if is_authorization_code_grant and self.refresh_token:
-      logger.error("unexpected `refresh_token` for token request with authorization_code as `grant_type`")
-      raise InvalidRequestException("unexpected `code_verifier`")
-    elif not is_authorization_code_grant and not self.refresh_token:
-      logger.error("missing `refresh_token` for token request with refresh_token as `grant_type`")
-      raise InvalidRequestException("missing `refresh_token`")
-
-    if is_authorization_code_grant and self.scope:
-      logger.error("unexpected `scope` for token request with authorization_code as `grant_type`")
-      raise InvalidRequestException("unexpected `scope`")
+      self.check_unexpected_parameter(self.scope, "scope", TOKEN_ENDPOINT)
     elif self.scope:
       scopes = self.scope.split(" ")
       for s in scopes:
@@ -107,4 +67,56 @@ class TokenRequest(OpenId4VciBaseModel):
           logger.error(f"invalid scope value '{s}' in `authorization` endpoint")
           raise InvalidRequestException(f"invalid scope value '{s}'")
 
-    return self
+  def validate_refresh_token(self, is_authorization_code_grant):
+    self.refresh_token = self.strip(self.refresh_token)
+    if is_authorization_code_grant:
+      self.check_unexpected_parameter(self.refresh_token, "refresh_token", TOKEN_ENDPOINT)
+    else:
+      self.check_missing_parameter(self.refresh_token, "refresh_token", TOKEN_ENDPOINT)
+
+  def validate_code_verifier(self, is_authorization_code_grant):
+    self.code_verifier = self.strip(self.code_verifier)
+    if is_authorization_code_grant:
+      self.check_missing_parameter(self.code_verifier, "code_verifier", TOKEN_ENDPOINT)
+
+      match self.get_ctx(CODE_CHALLENGE_METHOD_CTX):
+        case "s256":
+          code_verifier_encode = sha256(self.code_verifier.encode('utf-8')).hexdigest()
+        case "s512":
+          code_verifier_encode = sha512(self.code_verifier.encode('utf-8')).hexdigest()
+        case _:
+          logger.error(
+            f"unexpected code_challenge_method {self.get_ctx(CODE_CHALLENGE_METHOD_CTX)} for code_verifier in token request")
+          raise InvalidRequestException("Invalid `code_verifier`")
+
+      if code_verifier_encode != self.get_ctx(CODE_CHALLENGE_CTX):
+        logger.error(
+          f"Invalid `code_verifier` {code_verifier_encode} in token request with authorization_code as `grant_type`")
+        raise InvalidRequestException("Invalid `code_verifier`")
+    else:
+      self.check_unexpected_parameter(self.code_verifier, "code_verifier", TOKEN_ENDPOINT)
+
+  def validate_redirect_uri(self, is_authorization_code_grant):
+    self.redirect_uri = self.strip(self.redirect_uri)
+    if is_authorization_code_grant:
+      self.check_missing_parameter(self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT)
+      if self.get_ctx(REDIRECT_URI_CTX) != self.redirect_uri:
+        logger.error("Invalid `redirect_uri` in token request with authorization_code as `grant_type`")
+        raise InvalidRequestException("Invalid `redirect_uri`")
+    else:
+      self.check_unexpected_parameter(self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT)
+
+  def validate_grant_type(self):
+    self.grant_type = self.strip(self.grant_type)
+    self.check_missing_parameter(self.grant_type, "grant_type", TOKEN_ENDPOINT)
+    if self.grant_type not in [AUTHORIZATION_CODE_GRANT, REFRESH_TOKEN_GRANT]:
+      logger.error(f"Invalid `grant_type` {self.grant_type} in token request")
+      raise InvalidRequestException("invalid `grant_type`")
+
+  def validate_code(self, is_authorization_code_grant: bool):
+    self.code = self.strip(self.code)
+    if is_authorization_code_grant:
+      self.check_missing_parameter(self.code, "code", TOKEN_ENDPOINT)
+    else:
+      self.check_unexpected_parameter(self.code, "code", TOKEN_ENDPOINT)
+

@@ -8,6 +8,7 @@ from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestEx
 from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX
 
 logger = logging.getLogger(__name__)
+CREDENTIAL_OFFER_ENDPOINT = "credential_offer"
 
 class AuthorizationCode(OpenId4VciBaseModel):
     """
@@ -43,9 +44,7 @@ class AuthorizationCode(OpenId4VciBaseModel):
             InvalidRequestException: On missing or invalid fields.
         """
         self.issuer_state = self.strip(self.issuer_state)
-        if not self.issuer_state:
-            logger.error("missing 'grants.issuer_state' in request `credential_offer` endpoint")
-            raise InvalidRequestException("missing `grants.issuer_state` parameter")
+        self.check_missing_parameter(self.issuer_state, "grants.issuer_state", CREDENTIAL_OFFER_ENDPOINT)
 
         self.validate_authorization_server()
         return self
@@ -58,10 +57,7 @@ class AuthorizationCode(OpenId4VciBaseModel):
             InvalidRequestException: If the authorization server is missing or not allowed.
         """
         self.authorization_server = self.strip(self.authorization_server)
-        if not self.authorization_server:
-            logger.error("missing 'grants.authorization_server' in request `credential_offer` endpoint")
-            raise InvalidRequestException("missing `grants.authorization_server` parameter")
-
+        self.check_missing_parameter(self.authorization_server, "grants.authorization_server", CREDENTIAL_OFFER_ENDPOINT)
         if self.authorization_server not in self.get_config().get_openid_credential_issuer().authorization_servers:
             logger.error(f"invalid 'grants.authorization_server' {self.authorization_server} in request `credential_offer` endpoint")
             raise InvalidRequestException("invalid `grants.authorization_server` parameter")
@@ -114,10 +110,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
         Raises:
             InvalidRequestException: If `grants` is missing or invalid.
         """
-        if self.grants is None:
-            logger.error("missing 'grants' in request `credential_offer` endpoint")
-            raise InvalidRequestException("missing `grants` parameter")
-
+        self.check_missing_parameter(self.grants, "grants", CREDENTIAL_OFFER_ENDPOINT)
         AuthorizationCode.model_validate(
             self.grants,
             context={CONFIG_CTX: self.get_config()}
@@ -132,10 +125,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
         Raises:
             InvalidRequestException: If the list is empty or contains unsupported IDs.
         """
-        if self.credential_configuration_ids is None or len(self.credential_configuration_ids) == 0:
-            logger.error("missing 'credential_configuration_ids' in request `credential_offer` endpoint")
-            raise InvalidRequestException("missing `credential_configuration_ids` parameter")
-
+        self.check_missing_parameter(self.credential_configuration_ids, "credential_configuration_ids", CREDENTIAL_OFFER_ENDPOINT)
         credential_configurations_supported = self.get_config().get_credential_configurations_supported()
         supported_ids = [ccs.id for ccs in credential_configurations_supported.values()]
         for req_id in self.credential_configuration_ids:
@@ -153,10 +143,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
             InvalidRequestException: If the issuer URI is missing or invalid.
         """
         self.credential_issuer = self.strip(self.credential_issuer)
-        if not self.credential_issuer:
-            logger.error("missing 'credential_issuer' in request `credential_offer` endpoint")
-            raise InvalidRequestException("missing `credential_issuer` parameter")
-
+        self.check_missing_parameter(self.credential_issuer, "credential_issuer", CREDENTIAL_OFFER_ENDPOINT)
         try:
             parsed_redirect_uri = urlparse(self.credential_issuer)
             if not parsed_redirect_uri.scheme or not parsed_redirect_uri.netloc or not parsed_redirect_uri.path:
