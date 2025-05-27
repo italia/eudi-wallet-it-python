@@ -16,6 +16,8 @@ from pyeudiw.openid4vci.models.authorization_response import AuthorizationRespon
 from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
 from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
+from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX, \
     AUTHORIZATION_DETAILS_CTX, \
@@ -277,7 +279,7 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke credential endpoint")
 
 
-    def deferred_credential_endpoint(self, context: Context):
+    def deferred_credential_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the deferred_credential endpoint.
         Args:
@@ -286,7 +288,11 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            pass
+            self._validate_request_method(context.request_method, ["POST"])
+            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            self._validate_oauth_client_attestation(context)
+            DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
+            return DeferredCredentialEndpointResponse.to_response()
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
