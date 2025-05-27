@@ -1,4 +1,4 @@
-module: pyeudiw.openid4vci.OpenID4VCIFrontend
+module: pyeudiw.openid4vci.openid4vci.OpenID4VCIFrontend
 name: OpenID4VCI
 
 config:

@@ -5,6 +5,7 @@ from pyeudiw.storage.base_db import BaseDB
 from pymongo.results import UpdateResult
 
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.storage.base_storage import TrustType
 
 
 class StorageInterface(BaseDB):

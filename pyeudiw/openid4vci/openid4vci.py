@@ -2,8 +2,12 @@
 The OpenID4vci (Credential Issuer) frontend module for the satosa proxy
 """
 import logging
+from typing import Callable
 
+from satosa.context import Context
 from satosa.frontends.base import FrontendModule
+from satosa.internal import InternalData
+from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints import Openid4VCIEndpoints
 from pyeudiw.openid4vci.utils.config import Config
@@ -16,16 +20,16 @@ class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
   """
 
   def __init__(self,
-      auth_req_callback_func,
-      internal_attributes,
-      config: dict,
-      base_url,
-      name
+       auth_callback_func: Callable[[Context, InternalData], Response],
+       internal_attributes: dict[str, dict[str, str | list[str]]],
+       config: dict[str, dict[str, str] | list[str]],
+       base_url: str,
+       name: str,
   ):
-    FrontendModule.__init__(auth_req_callback_func, internal_attributes, base_url, name)
-    Openid4VCIEndpoints.__init__(self, config)
+    FrontendModule.__init__(auth_callback_func, internal_attributes, base_url, name)
+    Openid4VCIEndpoints.__init__(self, config, base_url, name)
     self.config = config
-    self.config_utils = Config(config)
+    self.config_utils = Config(**config)
 
   def register_endpoints(self, *kwargs):
     """
