@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from satosa.response import BadRequest, Unauthorized, Redirect, ServiceError
+from satosa.response import BadRequest, Unauthorized, Redirect, ServiceError, Response
 
 from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON, \
     FORM_URLENCODED
@@ -113,3 +113,5 @@ class ResponseUtils:
             params["state"] = state
         return params
 
+class NoContent(Response):
+    _status = "204 No Content"

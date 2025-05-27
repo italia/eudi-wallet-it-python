@@ -1,12 +1,13 @@
 import logging
 import secrets
 import time
+from typing import Type
 from urllib.parse import parse_qs
 from uuid import uuid4
 
 from pydantic import BaseModel
 from satosa.context import Context
-from satosa.response import Response
+from satosa.response import Response, BadRequest, ServiceError
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
@@ -19,6 +20,7 @@ from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRe
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
+from pyeudiw.openid4vci.models.notification_request import NotificationRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX, \
     AUTHORIZATION_DETAILS_CTX, \
     ENTITY_ID_CTX, NONCE_CTX
@@ -33,7 +35,7 @@ from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils, \
     HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON, FORM_URLENCODED
-from pyeudiw.openid4vci.utils.response import ResponseUtils
+from pyeudiw.openid4vci.utils.response import ResponseUtils, NoContent
 
 logger = logging.getLogger(__name__)
 
@@ -301,7 +303,7 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke deferred endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke deferred endpoint")
 
-    def notification_endpoint(self, context: Context):
+    def notification_endpoint(self, context: Context) -> Type[NoContent] | BadRequest | ServiceError:
         """
         Handle a POST request to the notification endpoint.
         Args:
@@ -312,6 +314,8 @@ class Openid4VCIEndpoints:
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            NotificationRequest.model_validate(**context.request.body.decode("utf-8"))
+            return NoContent
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:

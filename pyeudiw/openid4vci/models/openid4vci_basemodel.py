@@ -54,6 +54,7 @@ class OpenId4VciBaseModel(BaseModel):
     def check_invalid_parameter(check: bool, parameter: Any, parameter_name: str, endpoint_name: str):
         if check:
             logger.error(f"invalid {parameter_name}" + (f" ({parameter})" if parameter is not None else "") + f" in request `{endpoint_name}` endpoint")
+            raise InvalidRequestException(f"invalid `{parameter_name}` parameter")
 
     @staticmethod
     def strip(val: str):
