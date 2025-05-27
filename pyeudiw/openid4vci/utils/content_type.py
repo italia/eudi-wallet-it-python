@@ -1,5 +1,6 @@
 HTTP_CONTENT_TYPE_HEADER = "HTTP_CONTENT_TYPE"
 CONTENT_TYPE_HEADER = "content-type"
+CACHE_CONTROL_HEADER = "Cache-Control"
 APPLICATION_JSON = "application/json"
 FORM_URLENCODED = "application/x-www-form-urlencoded"
 

@@ -6,6 +6,7 @@ from urllib.parse import parse_qs
 
 from pydantic import BaseModel
 from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.exceptions.bad_request_exception import \
@@ -13,6 +14,7 @@ from pyeudiw.openid4vci.exceptions.bad_request_exception import \
 from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX
 from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
 from pyeudiw.openid4vci.models.par_response import ParResponse
@@ -215,7 +217,7 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke token endpoint")
 
 
-    def nonce_endpoint(self, context: Context):
+    def nonce_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the nonce endpoint.
         Args:
@@ -226,7 +228,9 @@ class Openid4VCIEndpoints:
         try:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            #TODO: if body present throw exception
+            if context.request.body:
+                return ResponseUtils.to_invalid_request_resp("Request body must be empty for nonce endpoint")
+            return NonceResponse.to_response()
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
