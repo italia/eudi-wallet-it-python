@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from pydantic import model_validator
 
@@ -11,6 +12,7 @@ OPEN_ID_CREDENTIAL_TYPE = "openid_credential"
 class AuthorizationDetail(OpenId4VciBaseModel):
     type: str = None
     credential_configuration_id: str = None
+    credential_identifiers: List[str] = None # for token response
 
     @model_validator(mode='after')
     def check_authorization_detail(self) -> "AuthorizationDetail":

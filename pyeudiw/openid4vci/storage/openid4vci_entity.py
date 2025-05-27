@@ -25,6 +25,7 @@ class OpenId4VCIEntity(BaseModel):
   code: str
   iss: str
   authorization_details: List[AuthorizationDetail] = None
+  c_nonce: str = None
   finalized: False
   internal_response: None
 

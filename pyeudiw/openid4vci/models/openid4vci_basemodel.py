@@ -9,6 +9,10 @@ from pyeudiw.openid4vci.utils.config import Config
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
 ENDPOINT_CTX = "endpoint"
+AUTHORIZATION_DETAILS_CTX = "authorization_details"
+ENTITY_ID_CTX = "entity_id"
+NONCE_CTX = "nonce"
+
 logger = logging.getLogger(__name__)
 
 class OpenId4VciBaseModel(BaseModel):
@@ -45,6 +49,11 @@ class OpenId4VciBaseModel(BaseModel):
         if parameter or (isinstance(parameter, list) and len(parameter) > 0):
             logger.error(f"unexpected {parameter_name} in request `{endpoint_name}` endpoint")
             raise InvalidRequestException(f"unexpected `{parameter_name}` parameter")
+
+    @staticmethod
+    def check_invalid_parameter(check: bool, parameter: Any, parameter_name: str, endpoint_name: str):
+        if check:
+            logger.error(f"invalid {parameter_name}" + (f" ({parameter})" if parameter is not None else "") + f" in request `{endpoint_name}` endpoint")
 
     @staticmethod
     def strip(val: str):

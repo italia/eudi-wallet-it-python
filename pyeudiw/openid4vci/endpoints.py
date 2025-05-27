@@ -1,8 +1,8 @@
 import logging
 import secrets
 import time
-from os import access
 from urllib.parse import parse_qs
+from uuid import uuid4
 
 from pydantic import BaseModel
 from satosa.context import Context
@@ -13,10 +13,14 @@ from pyeudiw.openid4vci.exceptions.bad_request_exception import \
     InvalidRequestException, InvalidScopeException
 from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
+from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
+from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX
-from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX, \
+    AUTHORIZATION_DETAILS_CTX, \
+    ENTITY_ID_CTX, NONCE_CTX
+from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vci.models.par_response import ParResponse
 from pyeudiw.openid4vci.models.token import AccessToken, RefreshToken
 from pyeudiw.openid4vci.models.token_request import TokenRequest, REDIRECT_URI_CTX, CODE_CHALLENGE_CTX, \
@@ -230,7 +234,9 @@ class Openid4VCIEndpoints:
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             if context.request.body:
                 return ResponseUtils.to_invalid_request_resp("Request body must be empty for nonce endpoint")
-            return NonceResponse.to_response()
+            c_nonce = str(uuid4())
+            self.db_engine.update_nonce_by_session_id(self._get_session_id(context), c_nonce)
+            return NonceResponse.to_response(c_nonce)
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
@@ -239,7 +245,7 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke nonce endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke nonce endpoint")
 
-    def credential_endpoint(self, context: Context):
+    def credential_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the credential endpoint.
         Args:
@@ -251,6 +257,17 @@ class Openid4VCIEndpoints:
             self._validate_request_method(context.request_method, ["POST"])
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             self._validate_oauth_client_attestation(context)
+            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+            c_req = CredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"), context = {
+                AUTHORIZATION_DETAILS_CTX: entity.authorization_details
+            })
+            prof_jwt = ProofJWT.model_validate(
+                **self.jws_helper.verify(c_req.proof.jwt), context = {
+                    CLIENT_ID_CTX: entity.client_id,
+                    ENTITY_ID_CTX: self.entity_id,
+                    NONCE_CTX: entity.c_nonce
+                })
+            return CredentialEndpointResponse.to_response()
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
