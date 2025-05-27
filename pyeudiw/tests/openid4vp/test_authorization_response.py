@@ -14,7 +14,6 @@ from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
 )
-from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.tests.settings import CONFIG
 
 
