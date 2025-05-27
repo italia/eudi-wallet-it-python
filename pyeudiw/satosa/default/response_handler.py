@@ -10,6 +10,7 @@ from satosa.internal import AuthenticationInformation, InternalData
 from satosa.response import Redirect
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_response import (
     AuthorizeResponsePayload,
     DirectPostJwtJweParser,
@@ -367,8 +368,10 @@ class ResponseHandler(ResponseHandlerInterface):
                 return parser.parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
                 jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
+                jws_verifier = JWSHelper(self.config["metadata_jwks"])
                 parser = DirectPostJwtJweParser(
                     jwe_decrypter, 
+                    jws_verifier,
                     self.config["jwt"].get("enc_alg_supported", []), 
                     self.config["jwt"].get("enc_enc_supported", [])
                 )
