@@ -3,6 +3,7 @@ import pytest
 import satosa.context
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_response import (
     DirectPostJwtJweParser,
     DirectPostParser,
@@ -30,6 +31,20 @@ def jwe_helper():
     jwe_helper = JWEHelper(private_key)
     return jwe_helper
 
+@pytest.fixture
+def jws_helper():
+    private_key = {
+        "kid": "DwR3tX_BuSwRrn3HjXom_ajjMGzu_15r_mJeG0HBilo",
+        "d": "UgwHyOMdyfF2dK6EjF6LX6Tyu0Ylha9SaaFgOBhjjRi1XW3FLy83iPRxCRHSHC-d3DMCZaK7wa0qDmok8KaVOhmL0V_LKcNaDaJHDxAynlWdnh8IJnlDOGuALeDAPiC5vCvVVkRcAo4F8KbOvaxkMZLPVqwlM5lYC31yD6aXPb3f6raNy-Jl9t1Jt_OYH9LobqgllZwu9S5qkXzBqfjCw4ymcu7VTi_P3dt141cja2eSZjG5bPORZ6Wy3gd9dQkLfdpjJXo5nSA1UC8cNpOLf8NZU659enPQ6nItyrt2Kx5aNwizD993TjrVuNloKUSI5DlNznh3JdDy_nWt7GyQr-tp_9l2Xma5heSix9Az8w1_0J3xUo4wK3hfe5-WD3HkYjeJyp9CqMNNKGR8LXz7KX_lUN2-U2hiodKKnf0y6NK9zhakgoox4kSfmOUTt0ir_4wWGqoAIh6QF1yfXkVsdJ7LyMTdu2B54Kv4M41g98ifP2UjKicreCW3Lw--KmJJ",
+        "e": "AQAB",
+        "kty": "RSA",
+        "n": "vxPbeX_PgRI5mpOoANQkC1HU09LZePPygjaUtrXrZkx0rhK-2LaoNLns5EoBkJOuj8JrHU_W2UOZBIE-tpLJ8UUSuJNXNZhrWqezhjO0aIue_JgyMWjp2IZ_BofyhrMenqYI6oA8B9eKdD-1zxF0vflCHylq7vdYcKKPZcr0QjyVTltuEbRiS8WHjFV5_sWuYJkDt-5bXW4ZapDV4NG2OcwcRROR5gwU1EhWX-kQbNPw84wZpEGXy5fFTaosfUVbvKSXP_d8IZ4fizqMi69bk6IjLqfw3JZcIKnzz7ou302dq2sIH_R1gQHNJ6b-oTh5nq3JLCMViGHZAH0sIMu6eiLzvcADX5PpbMO9Y83l-UbMEqH0iv7wtW3gVE7OjolZCiFXwhhntWj5ccomlzgYFreebRevQItHZUxiN7n7tJMOWouV1LHecWfixHbweaBFooGSzY9hlFvERKmbfPqNaIce8PHd-dDWw9Yxq5RdNpcMQKm5ruYlV3pWGxoQaHdX",
+        "p": "zxOeQgvnCZzIIsZoz18ROo8fCRZT7K6h4uvz6fvTz6e_6TKWUYohjsBfYAkbNgJamkxdSJyaQWDMPs0mIG2j2IcpqG0JJGQ68QCqai8H-o-_wb0hjp3fY6TofVaEzFvQiOJE2ZyqtSn7hDrEFEmceJB_VzIvOZbS-AZo9--R2PTQ4h7CurkWKCOKAbeBfOWEX_s6UOaLQzMYDykiHSlPQmF9BZAsaoRHXdZLlsgxgQ3nbPbsBx2d1axlIIhb7Xkl",
+        "q": "7DiV8cgKFnOGCTHT3cr_8xIKwD0LoWnGibqdA2p0XSQTXTLUr532DKK_3YMdm0F0YtCyPQBbsJoLspbnK6yTo3RPFr0zooJ5eCYnLO_qOBYFwYbOhhXrYPjfpEDSXls9BD6cHhCCQtiNAADIjaMpmoEexPD6lMoijTF7qzEst2fszvYTToczroWHPe8RuJR7J_FEM-soD99ERqJanj5BUs-ruuNwshM_Fp7C-ubt9PbMo9gv5p9nrsT8oAI7wJvL",
+        "use": "enc",
+    }
+    jws_helper = JWSHelper(private_key)
+    return jws_helper
 
 def test_direct_post_parser_good_case():
     parser = DirectPostParser()
@@ -115,9 +130,14 @@ def test_direct_post_response_bad_parse_case():
         assert False, f"obtained unexpected validation exception: {e}"
 
 
-def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
+def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
-    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper, 
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []), 
+        CONFIG["jwt"].get("enc_enc_supported", [])
+    )
 
     ctx = satosa.context.Context()
     ctx.request_method = "POST"
@@ -144,9 +164,14 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper):
     assert resp.presentation_submission == presentation_submission
 
 
-def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper):
+def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     # case 0: bad method
-    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []), 
+        CONFIG["jwt"].get("enc_enc_supported", [])
+    )
 
     ctx = satosa.context.Context()
     ctx.request_method = "GET"
@@ -193,8 +218,12 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper):
         assert False, f"obtained unexpected validation exception: {e}"
 
 
-def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper):
-    parser = DirectPostJwtJweParser(jwe_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
+    parser = DirectPostJwtJweParser(
+        jwe_helper, 
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []), 
+        CONFIG["jwt"].get("enc_enc_supported", []))
 
     wrong_public_key = {
         "kid": "ybmSufrnl3Cu6OrNcsOF_g95g5zShf2aKpg59PMcMm8",
