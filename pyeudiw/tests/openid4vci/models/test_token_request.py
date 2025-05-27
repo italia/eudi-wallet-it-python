@@ -23,7 +23,8 @@ def get_valid_context(code_verifier="testverifier", redirect_uri="https://client
         REDIRECT_URI_CTX: redirect_uri,
         "config": Config(**{
             "jwt": {
-                "default_exp":60
+                "default_exp":60,
+                "default_sig_alg": "ES256"
             },
             "metadata": {
                 "oauth_authorization_server": {

@@ -24,6 +24,7 @@ class Metadata(BaseModel):
 
 class Jwt(BaseModel):
     default_exp: int
+    default_sig_alg: str
 
 class Config(BaseModel):
     jwt: Jwt
@@ -31,6 +32,9 @@ class Config(BaseModel):
 
     def get_jwt_default_exp(self) -> int:
         return self.jwt.default_exp
+
+    def get_jwt_default_sig_alg(self) -> str:
+        return self.jwt.default_sig_alg
 
     def get_oauth_authorization_server(self) -> OauthAuthorizationServerMetadata:
         return self.metadata.oauth_authorization_server

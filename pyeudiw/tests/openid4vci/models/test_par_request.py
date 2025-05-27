@@ -4,19 +4,22 @@ from uuid import uuid4
 import pytest
 
 from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
+from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.authorization_request import CLIENT_ID_CTX
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX, OPEN_ID_CREDENTIAL_TYPE
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, ENDPOINT_CTX
+from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
 from pyeudiw.openid4vci.utils.config import Config
 
 
 def get_valid_context():
     return {
+        ENDPOINT_CTX: "par",
         CLIENT_ID_CTX: "client-123",
         ENTITY_ID_CTX: "entity-123",
         CONFIG_CTX: Config(**{
             "jwt": {
-                "default_exp":60
+                "default_exp":60,
+                "default_sig_alg": "ES256"
             },
             "metadata": {
                 "oauth_authorization_server": {

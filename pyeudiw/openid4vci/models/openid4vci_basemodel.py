@@ -8,6 +8,7 @@ from pyeudiw.openid4vci.utils.config import Config
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
+ENDPOINT_CTX = "endpoint"
 logger = logging.getLogger(__name__)
 
 class OpenId4VciBaseModel(BaseModel):

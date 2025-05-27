@@ -1,7 +1,10 @@
 import logging
 import secrets
+import time
+from os import access
 from urllib.parse import parse_qs
 
+from pydantic import BaseModel
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
@@ -10,11 +13,13 @@ from pyeudiw.openid4vci.exceptions.bad_request_exception import \
 from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX
 from pyeudiw.openid4vci.models.par_request import ParRequest, ENTITY_ID_CTX
 from pyeudiw.openid4vci.models.par_response import ParResponse
+from pyeudiw.openid4vci.models.token import AccessToken, RefreshToken
 from pyeudiw.openid4vci.models.token_request import TokenRequest, REDIRECT_URI_CTX, CODE_CHALLENGE_CTX, \
     CODE_CHALLENGE_METHOD_CTX
+from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.utils.config import Config
@@ -109,7 +114,8 @@ class Openid4VCIEndpoints:
 
             decoded_request = self.jws_helper.verify(request)
             par_request = ParRequest.model_validate(
-                decoded_request, context = {
+                **decoded_request, context = {
+                    ENDPOINT_CTX: "par",
                     CONFIG_CTX: self.config_utils,
                     CLIENT_ID_CTX: client_id,
                     ENTITY_ID_CTX: self.entity_id
@@ -147,7 +153,7 @@ class Openid4VCIEndpoints:
                 auth_req = dict(context.request.query)
 
             AuthorizationRequest.model_validate(
-                auth_req, context = {
+                **auth_req, context = {
                     PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
                     CLIENT_ID_CTX: entity.client_id
                 })
@@ -185,6 +191,21 @@ class Openid4VCIEndpoints:
                 CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
                 CODE_CHALLENGE_CTX: entity.code_challenge
             })
+            iat = int(time.time())
+            access_token = AccessToken(
+                iss=self.entity_id,
+                aud=self.entity_id,
+                exp=iat + self.config_utils.get_jwt_default_exp(),
+                iat=iat,
+                client_id=entity.client_id,
+                sub=entity.client_id,
+            )
+            return TokenResponse.to_created_response(
+                self._sign_token(access_token, "at+jwt"),
+                self._sign_token(RefreshToken(**access_token.model_dump()), "rt+jwt"),
+                access_token.exp,
+                entity.authorization_details
+            )
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
@@ -361,6 +382,17 @@ class Openid4VCIEndpoints:
                 f"Error while initializing session with state {entity.state} and {entity.session_id}: {e500}"
             )
             raise e500
+
+    def _sign_token(self, token: BaseModel, typ: str):
+        jws_headers = {
+            "typ": typ,
+            "alg": self.config_utils.get_jwt_default_sig_alg,
+        }
+        return self.jws_helper.sign(
+            protected=jws_headers,
+            plain_dict=token.model_dump()
+        )
+
 
     @property
     def db_engine(self) -> MongoStorage:

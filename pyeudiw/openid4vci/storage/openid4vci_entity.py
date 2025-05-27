@@ -1,9 +1,11 @@
 import uuid
 from datetime import timezone, datetime
+from typing import List
 
 from pydantic import BaseModel
 from satosa.context import Context
 
+from pyeudiw.openid4vci.models.auhtorization_detail import AuthorizationDetail
 from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vp.utils import detect_flow_typ
 
@@ -22,6 +24,7 @@ class OpenId4VCIEntity(BaseModel):
   redirect_uri: str
   code: str
   iss: str
+  authorization_details: List[AuthorizationDetail] = None
   finalized: False
   internal_response: None
 
@@ -37,5 +40,6 @@ class OpenId4VCIEntity(BaseModel):
         client_id = par_request.client_id,
         code_challenge = par_request.code_challenge,
         code_challenge_method = par_request.code_challenge_method,
-        redirect_uri=par_request.redirect_uri
+        redirect_uri=par_request.redirect_uri,
+        authorization_details=par_request.authorization_details
     )

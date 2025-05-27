@@ -10,7 +10,8 @@ def get_valid_context(authorization_servers =[]):
     return {
         CONFIG_CTX: Config(**{
             "jwt": {
-                "default_exp":60
+                "default_exp":60,
+                "default_sig_alg": "ES256"
             },
             "metadata": {
                 "oauth_authorization_server": {
