@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 
+from typing import Optional
+
 from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
     is_der_format,
@@ -22,7 +24,7 @@ def gen_chain(
         leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
         leaf_dns: str = "leaf.example.org",
         leaf_uri: str = "leaf.example.org",
-        leaf_private_key: ec.EllipticCurvePrivateKey = None
+        leaf_private_key: Optional[ec.EllipticCurvePrivateKey] = None
     ) -> list[bytes]:
     # Generate a private key for the CA
 
@@ -122,10 +124,7 @@ def gen_chain(
                 excluded_subtrees=[
                     x509.DNSName("localhost"),
                     x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1"),
-                    x509.DNSName("example.com"),
-                    x509.DNSName("example.org"),
-                    x509.DNSName("example.net"),
+                    x509.DNSName("127.0.0.1")
                 ]
             ),
             critical=True
@@ -194,10 +193,7 @@ def gen_chain(
                 excluded_subtrees=[
                     x509.DNSName("localhost"),
                     x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1"),
-                    x509.DNSName("example.com"),
-                    x509.DNSName("example.org"),
-                    x509.DNSName("example.net"),
+                    x509.DNSName("127.0.0.1")
                 ]
             ),
             critical=True
@@ -276,10 +272,7 @@ def gen_chain(
                 excluded_subtrees=[
                     x509.DNSName("localhost"),
                     x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1"),
-                    x509.DNSName("example.com"),
-                    x509.DNSName("example.org"),
-                    x509.DNSName("example.net"),
+                    x509.DNSName("127.0.0.1")
                 ]
             ),
             critical=True
