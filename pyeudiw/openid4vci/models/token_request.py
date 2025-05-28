@@ -11,13 +11,13 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 logger = logging.getLogger(__name__)
 
 AUTHORIZATION_CODE_GRANT = "authorization_code"
-REFRESH_TOKEN_GRANT = "refresh_token"
+REFRESH_TOKEN_GRANT = "refresh_token" # nosec B105
 
 REDIRECT_URI_CTX = "redirect_uri"
 CODE_CHALLENGE_METHOD_CTX = "code_challenge_method"
 CODE_CHALLENGE_CTX = "code_challenge"
 
-TOKEN_ENDPOINT = "token"
+TOKEN_ENDPOINT = "token" # nosec B105
 
 class TokenRequest(OpenId4VciBaseModel):
   """
