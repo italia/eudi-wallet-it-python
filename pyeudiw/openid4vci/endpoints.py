@@ -400,7 +400,7 @@ class Openid4VCIEndpoints:
             InvalidRequestException: If required headers are missing.
         """
         if not context.http_headers["OAuth-Client-Attestation"] or not context.http_headers["OAuth-Client-Attestation-PoP"]:
-            logger.error(f"Missing r{'OAuth-Client-Attestation' if not context.http_headers["OAuth-Client-Attestation"] else 'OAuth-Client-Attestation-PoP'} header for `par` endpoint")
+            logger.error(f"Missing r{'OAuth-Client-Attestation' if not context.http_headers['OAuth-Client-Attestation'] else 'OAuth-Client-Attestation-PoP'} header for `par` endpoint")
             raise InvalidRequestException("Missing Wallet Attestation JWT header")
 
     def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
