@@ -11,19 +11,19 @@ def test_valid_unix_timestamp_now():
     assert DateUtils.is_valid_unix_timestamp(ts) is True
 
 def test_invalid_unix_timestamp_one_year_ago():
-    ts = int((datetime.datetime.now(datetime.UTC).replace(year=datetime.datetime.now(datetime.UTC).year - 1)).timestamp())
+    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year - 1)).timestamp())
     assert DateUtils.is_valid_unix_timestamp(ts) is False
 
 def test_valid_unix_timestamp_one_year_future():
-    ts = int((datetime.datetime.now(datetime.UTC).replace(year=datetime.datetime.now(datetime.UTC).year + 1)).timestamp())
+    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year + 1)).timestamp())
     assert DateUtils.is_valid_unix_timestamp(ts) is True
 
 def test_too_old_unix_timestamp():
-    ts = int((datetime.datetime.now(datetime.UTC).replace(year=datetime.datetime.now(datetime.UTC).year - 2)).timestamp())
+    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year - 2)).timestamp())
     assert DateUtils.is_valid_unix_timestamp(ts) is False
 
 def test_too_future_unix_timestamp():
-    ts = int((datetime.datetime.now(datetime.UTC).replace(year=datetime.datetime.now(datetime.UTC).year + 2)).timestamp())
+    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year + 2)).timestamp())
     assert DateUtils.is_valid_unix_timestamp(ts) is False
 
 @pytest.mark.parametrize("value", [None, "", "1234567890", 0.0, 123.456, object()])
