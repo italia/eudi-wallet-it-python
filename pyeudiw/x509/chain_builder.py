@@ -6,6 +6,7 @@ from cryptography.x509.oid import NameOID
 from datetime import datetime, timedelta
 from typing import Literal
 
+
 class ChainBuilder:
     def __init__(self):
         self.chain = []
