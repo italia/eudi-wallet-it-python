@@ -132,7 +132,6 @@ CONFIG = {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
-        "error_url": "https://localhost:9999/error_page.html",
         "authorization_error_template": "authorization_error.html"
     },
     "endpoints": {
@@ -460,7 +459,6 @@ CONFIG_DIRECT_TRUST = {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
-        "error_url": "https://localhost:9999/error_page.html",
     },
     "endpoints": {
         "entity_configuration": "/.well-known/openid-federation",
