@@ -1,24 +1,13 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
 from satosa.response import Response
 
+from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import CredentialItem, \
+    DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON
 
 
-class CredentialItem(BaseModel):
-    """
-    Represents a single credential used in the credential request payload.
-
-    Attributes:
-        credential (str): REQUIRED. A string containing one issued PID/(Q)EAA.
-            - If the requested format is 'dc+sd-jwt', this string MUST NOT be re-encoded.
-            - If the requested format is 'mso_mdoc', it MUST be a base64url-encoded
-              CBOR-encoded IssuerSigned structure (per ISO 18013-5).
-    """
-    credential: str
-
-class CredentialEndpointResponse(BaseModel):
+class CredentialEndpointResponse(DeferredCredentialEndpointResponse):
     """
     Represents the payload of a Credential Request, supporting both immediate and deferred flows.
 
@@ -36,13 +25,11 @@ class CredentialEndpointResponse(BaseModel):
             MUST NOT be present if `credentials` is given. Used in deferred credential flows.
     """
 
-    credentials: Optional[List[CredentialItem]] = None
     lead_time: Optional[int] = None
-    notification_id: Optional[str] = None
     transaction_id: Optional[str] = None
 
     @staticmethod
-    def to_response() -> Response:
+    def to_response(credentials: List[CredentialItem]) -> Response:
         """
         Create a SATOSA Response with a JSON payload.
 
@@ -54,7 +41,7 @@ class CredentialEndpointResponse(BaseModel):
                 - application/json content type
                 - payload
         """
-        data = CredentialEndpointResponse()
+        data = CredentialEndpointResponse(credentials = credentials)
         response = Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,

@@ -179,6 +179,7 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
                 self.credential_identifier not in valid_identifiers,
                 self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
         else:
+            self.check_missing_parameter(self.credential_configuration_id, "credential_configuration_id", CREDENTIAL_ENDPOINT)
             self.check_unexpected_parameter(self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
 
     def validate_proof(self):

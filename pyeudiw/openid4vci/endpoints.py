@@ -15,7 +15,7 @@ from pyeudiw.openid4vci.exceptions.bad_request_exception import \
 from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
-from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
+from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse, CredentialItem
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
@@ -35,6 +35,7 @@ from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils, \
     HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON, FORM_URLENCODED
+from pyeudiw.openid4vci.utils.credentials.sd_jwt import SdJwt
 from pyeudiw.openid4vci.utils.response import ResponseUtils, NoContent
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class Openid4VCIEndpoints:
             name (str): The name of the SATOSA module to append to the URL.
         """
         self.config = config
-        self.config_utils = Config(config)
+        self.config_utils = Config(**config)
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
@@ -265,13 +266,17 @@ class Openid4VCIEndpoints:
             c_req = CredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"), context = {
                 AUTHORIZATION_DETAILS_CTX: entity.authorization_details
             })
-            prof_jwt = ProofJWT.model_validate(
-                **self.jws_helper.verify(c_req.proof.jwt), context = {
+            proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
+            ProofJWT.model_validate(
+                **proof_jws_helper.verify(c_req.proof.jwt), context = {
                     CLIENT_ID_CTX: entity.client_id,
                     ENTITY_ID_CTX: self.entity_id,
                     NONCE_CTX: entity.c_nonce
                 })
-            return CredentialEndpointResponse.to_response()
+            cred = SdJwt(self.config, entity)
+            return CredentialEndpointResponse.to_response([
+               CredentialItem(**cred.issue_sd_jwt()["issuance"])
+            ])
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
@@ -294,7 +299,10 @@ class Openid4VCIEndpoints:
             self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             self._validate_oauth_client_attestation(context)
             DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
-            return DeferredCredentialEndpointResponse.to_response()
+            cred = SdJwt(self.config, entity)
+            return DeferredCredentialEndpointResponse.to_response([
+                CredentialItem(**cred.issue_sd_jwt()["issuance"])
+            ])
         except InvalidRequestException as e:
             return ResponseUtils.to_invalid_request_resp(e.message)
         except InvalidScopeException as e:
@@ -423,7 +431,6 @@ class Openid4VCIEndpoints:
             protected=jws_headers,
             plain_dict=token.model_dump()
         )
-
 
     @property
     def db_engine(self) -> MongoStorage:

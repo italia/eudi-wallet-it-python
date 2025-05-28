@@ -1,65 +1,39 @@
-from typing import Optional
+from typing import Optional, List
 
-from pydantic import BaseModel, Field
-from satosa.response import Response
+from pydantic import BaseModel
+from responses import Response
 
 from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON
 
 
+class CredentialItem(BaseModel):
+    """
+    Represents a single credential used in the credential request payload.
+
+    Attributes:
+        credential (str): REQUIRED. A string containing one issued PID/(Q)EAA.
+            - If the requested format is 'dc+sd-jwt', this string MUST NOT be re-encoded.
+            - If the requested format is 'mso_mdoc', it MUST be a base64url-encoded
+              CBOR-encoded IssuerSigned structure (per ISO 18013-5).
+    """
+    credential: str
+
 class DeferredCredentialEndpointResponse(BaseModel):
     """
-      Model representing the response to a Deferred Credential Request.
+    Represents a response returned for deferred credential issuance.
 
-      The response may contain:
-      - the Digital Credential(s), if available;
-      - an optional `notification_id`;
-      - or a 202 Accepted response with a `transaction_id` and `lead_time` if the credential is not yet ready.
+    Attributes:
+        credentials (Optional[List[CredentialItem]]):
+            A list of credentials that are ready to be retrieved. May be None if no credentials are available yet.
 
-      Attributes:
-          transaction_id (Optional[str]): Returned when the Credential is not yet ready.
-              It must match the value from the original request.
-          lead_time (Optional[int]): The amount of time (in seconds) the Wallet must wait
-              before retrying the Credential Request.
-          credentials (Optional[list[str]]): Issued credentials. Only present when issuance
-              is successful.
-          notification_id (Optional[str]): Optional identifier of an issued credential, used for
-              triggering client-side notifications.
-
-      Example (pending):
-          {
-              "transaction_id": "8xLOxBtZp8",
-              "lead_time": 864000
-          }
-
-      Example (success):
-          {
-              "credentials": ["<SD-JWT or MDOC content>"],
-              "notification_id": "pid_123456"
-          }
-
-      References:
-          - OpenID4VCI: Deferred Credential Response (Section 8.3)
-      """
-
-    transaction_id: Optional[str] = Field(
-        default=None,
-        description="Returned if credential is not ready yet; matches the original transaction_id."
-    )
-    lead_time: Optional[int] = Field(
-        default=None,
-        description="Time in seconds the Wallet must wait before retrying."
-    )
-    credentials: Optional[list[str]] = Field(
-        default=None,
-        description="List of issued credentials, if available."
-    )
-    notification_id: Optional[str] = Field(
-        default=None,
-        description="Identifier for issued credential, used in Wallet notifications."
-    )
+        notification_id (Optional[str]):
+            An optional identifier for tracking the notification related to this deferred response.
+    """
+    credentials: Optional[List[CredentialItem]] = None
+    notification_id: Optional[str] = None
 
     @staticmethod
-    def to_response() -> Response:
+    def to_response(credentials: List[CredentialItem]) -> Response:
         """
         Create a SATOSA Response with a JSON payload.
 
@@ -71,7 +45,7 @@ class DeferredCredentialEndpointResponse(BaseModel):
                 - application/json content type
                 - payload
         """
-        data = DeferredCredentialEndpointResponse()
+        data = DeferredCredentialEndpointResponse(credentials = credentials)
         response = Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,
