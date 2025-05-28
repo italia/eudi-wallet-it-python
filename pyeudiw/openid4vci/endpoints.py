@@ -100,7 +100,7 @@ class Openid4VCIEndpoints:
             return ResponseUtils.to_server_error_resp("error during invoke credential_offer endpoint")
 
 
-    def pushed_authorization_endpoint(self, context: Context):
+    def pushed_authorization_request_endpoint(self, context: Context):
         """
         Handle a POST request to the pushed_authorization_endpoint (PAR).
         Args:

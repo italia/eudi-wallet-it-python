@@ -20,13 +20,13 @@ class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
   """
 
   def __init__(self,
-       auth_callback_func: Callable[[Context, InternalData], Response],
+               auth_req_callback_func: Callable[[Context, InternalData], Response],
        internal_attributes: dict[str, dict[str, str | list[str]]],
        config: dict[str, dict[str, str] | list[str]],
        base_url: str,
        name: str,
   ):
-    FrontendModule.__init__(auth_callback_func, internal_attributes, base_url, name)
+    FrontendModule.__init__(self, auth_req_callback_func, internal_attributes, base_url, name)
     Openid4VCIEndpoints.__init__(self, config, base_url, name)
     self.config = config
     self.config_utils = Config(**config)
@@ -39,7 +39,7 @@ class OpenID4VCIFrontend(FrontendModule, Openid4VCIEndpoints):
     :raise ValueError: if more than one backend is configured
     """
     url_map = []
-    endpoint_values = [v for k, v in self.config_utils.get_oauth_authorization_server().items() if k.endswith("endpoint")]
+    endpoint_values = [v for k, v in vars(self.config_utils.get_oauth_authorization_server()).items() if k.endswith("endpoint")]
     for method, path in endpoint_values:
       url_map.append((f"{self.name}/{path}", getattr(self, f"{method}")))
 
