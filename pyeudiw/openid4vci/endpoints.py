@@ -3,21 +3,14 @@ from typing import Type
 
 from satosa.context import Context
 from satosa.response import (
-    Response,
     BadRequest,
     ServiceError
 )
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.models.credential_endpoint_response import (
-    CredentialItem
-)
-from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
-from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.utils.config import Config
-from pyeudiw.openid4vci.utils.credentials.sd_jwt import SdJwt
 from pyeudiw.openid4vci.utils.response import (
     ResponseUtils,
     NoContent
@@ -32,8 +25,7 @@ from pyeudiw.tools.exceptions import (
 )
 from pyeudiw.tools.validation import (
     validate_content_type,
-    validate_request_method,
-    validate_oauth_client_attestation
+    validate_request_method
 )
 
 logger = logging.getLogger(__name__)
@@ -73,31 +65,6 @@ class Openid4VCIEndpoints:
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-
-    def deferred_credential_endpoint(self, context: Context) -> Response:
-        """
-        Handle a POST request to the deferred_credential endpoint.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, ["POST"])
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            validate_oauth_client_attestation(context)
-            DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
-            cred = SdJwt(self.config, entity)
-            return DeferredCredentialEndpointResponse.to_response([
-                CredentialItem(**cred.issue_sd_jwt()["issuance"])
-            ])
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke deferred endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke deferred endpoint")
 
     def notification_endpoint(self, context: Context) -> Type[NoContent] | BadRequest | ServiceError:
         """

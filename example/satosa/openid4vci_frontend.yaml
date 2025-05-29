@@ -28,6 +28,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.credential_endpoint
       class: CredentialHandler
       path: '/credential'
+    deferred_credential_endpoint:
+      module: pyeudiw.openid4vci.endpoints.deferred_credential_endpoint
+      class: DeferredCredentialHandler
+      path: '/deferred-credential'
 
   network:
     httpc_params: &httpc_params
