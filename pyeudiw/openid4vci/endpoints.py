@@ -26,7 +26,6 @@ from pyeudiw.openid4vci.models.credential_endpoint_response import (
     CredentialEndpointResponse,
     CredentialItem
 )
-from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
@@ -104,29 +103,6 @@ class Openid4VCIEndpoints:
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-
-    def credential_offer_endpoint(self, context: Context):
-        """
-        Handle a GET request to the credential_offer endpoint.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, ["GET"])
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            CredentialOfferRequest.model_validate(
-                context.request.query, context = {
-                    CONFIG_CTX: self.config_utils
-                })
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke credential_offer endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke credential_offer endpoint")
 
     def authorization_endpoint(self, context: Context):
         """

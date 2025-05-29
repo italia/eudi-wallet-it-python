@@ -8,6 +8,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint
       class: ParHandler
       path: '/par'
+    credential_offer:
+      module: pyeudiw.openid4vci.endpoints.credential_offer_endpoint
+      class: CredentialOfferHandler
+      path: '/credential'
 
   network:
     httpc_params: &httpc_params

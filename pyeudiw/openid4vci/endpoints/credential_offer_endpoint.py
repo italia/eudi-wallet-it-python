@@ -1,0 +1,56 @@
+from satosa.context import Context
+
+from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
+from pyeudiw.tools.content_type import (
+    HTTP_CONTENT_TYPE_HEADER,
+    APPLICATION_JSON
+)
+from pyeudiw.tools.exceptions import (
+    InvalidRequestException,
+    InvalidScopeException
+)
+from pyeudiw.tools.validation import (
+    validate_content_type,
+    validate_request_method
+)
+
+
+class CredentialOfferHandler(BaseEndpoint):
+
+    def __init__(self, config: dict, base_url: str, name: str):
+        """
+        Initialize the Credential offer endpoints class.
+        Args:
+            config (dict): The configuration dictionary.
+            base_url (str): The base URL of the service.
+            name (str): The name of the SATOSA module to append to the URL.
+        """
+        super().__init__(config, base_url, name)
+
+    def credential_offer_endpoint(self, context: Context):
+        """
+        Handle a GET request to the credential_offer endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
+        try:
+            validate_request_method(context.request_method, ["GET"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            CredentialOfferRequest.model_validate(
+                context.request.query, context = {
+                    CONFIG_CTX: self.config_utils
+                })
+        except InvalidRequestException as e:
+            return self._handle_400(context, e.message, e)
+        except InvalidScopeException as e:
+            return self._handle_400(context, e.message, e)
+        except Exception as e:
+            self._log_error(
+                e.__class__.__name__,
+                f"Error during invoke credential_offer endpoint: {e}"
+            )
+            return self._handle_500(context, "error during invoke credential_offer endpoint", e)
