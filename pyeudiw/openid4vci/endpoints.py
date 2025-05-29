@@ -86,30 +86,6 @@ class Openid4VCIEndpoints:
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def nonce_endpoint(self, context: Context) -> Response:
-        """
-        Handle a POST request to the nonce endpoint.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, ["POST"])
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            if context.request.body:
-                return ResponseUtils.to_invalid_request_resp("Request body must be empty for nonce endpoint")
-            c_nonce = str(uuid4())
-            self.db_engine.update_nonce_by_session_id(self._get_session_id(context), c_nonce)
-            return NonceResponse.to_response(c_nonce)
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke nonce endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke nonce endpoint")
-
     def credential_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the credential endpoint.

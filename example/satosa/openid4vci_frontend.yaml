@@ -20,6 +20,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.token_endpoint
       class: TokenHandler
       path: '/token'
+    nonce_endpoint:
+      module: pyeudiw.openid4vci.endpoints.nonce_endpoint
+      class: NonceHandler
+      path: '/nonce-endpoint'
 
   network:
     httpc_params: &httpc_params
