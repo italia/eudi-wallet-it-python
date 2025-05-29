@@ -37,13 +37,11 @@ class X509Handler(TrustHandlerInterface):
         client_id: str, 
         relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
-        client_id_scheme: str = "x509_san_uri",
         certificate_authorities: dict[str, Union[bytes, str]] = {},
         include_issued_jwt_header_param: bool = False,
         **kwargs
     ) -> None:        
         self.client_id = client_id
-        self.client_id_scheme = client_id_scheme
         self.certificate_authorities = certificate_authorities
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
@@ -69,8 +67,10 @@ class X509Handler(TrustHandlerInterface):
 
             found_client_id = False
 
+            client_id_dns = self.client_id.split("://")[-1].split("/")[0]
+
             for cert in v[:-1]:
-                if get_x509_info(cert, self.client_id_scheme) == client_id:
+                if get_x509_info(cert) == client_id_dns:
                     found_client_id = True
                     break
                 

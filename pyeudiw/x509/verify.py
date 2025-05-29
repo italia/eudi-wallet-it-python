@@ -328,7 +328,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     cert = load_der_x509_certificate(der)
     return cert.not_valid_after
 
-def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
+def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     """
     Get the x509 certificate information.
 
@@ -347,10 +347,8 @@ def get_x509_info(cert: bytes | str, info_type: str = "x509_san_dns") -> str:
 
     try:
         san = loaded_cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
-        if info_type == "x509_san_dns":
+        if san_dns:
             return san.value.get_values_for_type(x509.DNSName)[0]
-        elif info_type == "x509_san_uri":
-            return san.value.get_values_for_type(x509.UniformResourceIdentifier)[0]
         
         return get_common_name(loaded_cert)
     except x509.ExtensionNotFound:

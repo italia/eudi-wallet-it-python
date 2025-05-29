@@ -45,7 +45,7 @@ private_key = ec.EllipticCurvePrivateNumbers(
 ).private_key()
 
 DEFAULT_X509_CHAIN = gen_chain(
-    leaf_uri="https://example.com/OpenID4VP",
+    leaf_dns="example.com",
     leaf_private_key=private_key
 )
 DEFAULT_X509_LEAF_JWK = jwk
