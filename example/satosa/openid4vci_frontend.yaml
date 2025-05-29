@@ -12,6 +12,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.credential_offer_endpoint
       class: CredentialOfferHandler
       path: '/credential'
+    authorization_endpoint:
+      module: pyeudiw.openid4vci.endpoints.authorization_endpoint
+      class: AuthorizationHandler
+      path: '/authorization'
 
   network:
     httpc_params: &httpc_params

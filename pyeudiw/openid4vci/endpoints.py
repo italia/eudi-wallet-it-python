@@ -104,42 +104,6 @@ class Openid4VCIEndpoints:
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def authorization_endpoint(self, context: Context):
-        """
-        Handle an authorization request, via GET or POST.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object, usually a redirect.
-        """
-        global entity
-        try:
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
-            validate_request_method(context.request_method, ["POST", "GET"])
-            if context.request_method == "POST":
-                validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-                auth_req = parse_qs(context.request.body.decode("utf-8"))
-            else:
-                auth_req = dict(context.request.query)
-
-            AuthorizationRequest.model_validate(
-                **auth_req, context = {
-                    PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
-                    CLIENT_ID_CTX: entity.client_id
-                })
-            return AuthorizationResponse(
-                state=entity.state,
-                iss=self.entity_id,
-            ).to_redirect_response(entity.redirect_uri)
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_redirect(
-                getattr(entity, "redirect_uri", None), e.message, getattr(entity, "state", None))
-        except Exception as e:
-            logger.error(f"Error during invoke par endpoint: {e}")
-            return ResponseUtils.to_server_error_redirect(
-                getattr(entity, "redirect_uri", None),"error during invoke authorization endpoint",
-                getattr(entity, "state", None))
-
     def token_endpoint(self, context: Context):
         """
         Handle a POST request to the token endpoint.

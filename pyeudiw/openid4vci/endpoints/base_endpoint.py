@@ -1,7 +1,10 @@
+from satosa.context import Context
+
 from build.lib.pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
+
 
 class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
 
@@ -28,6 +31,17 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
             str: A full URN request_uri string.
         """
         return f"urn:ietf:params:oauth:request_uri:{random_part}"
+
+    @staticmethod
+    def _get_session_id(context: Context) -> str:
+        """
+        Extract the session ID from the SATOSA context.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            str: The session ID.
+        """
+        return context.state["SESSION_ID"]
 
     @property
     def db_engine(self) -> MongoStorage:
