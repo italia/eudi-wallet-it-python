@@ -24,6 +24,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.nonce_endpoint
       class: NonceHandler
       path: '/nonce-endpoint'
+    credential_endpoint:
+      module: pyeudiw.openid4vci.endpoints.credential_endpoint
+      class: CredentialHandler
+      path: '/credential'
 
   network:
     httpc_params: &httpc_params

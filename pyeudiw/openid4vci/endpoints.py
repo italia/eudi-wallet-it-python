@@ -1,6 +1,5 @@
 import logging
 from typing import Type
-from uuid import uuid4
 
 from satosa.context import Context
 from satosa.response import (
@@ -10,23 +9,12 @@ from satosa.response import (
 )
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.models.credential_endpoint_request import (
-    CredentialEndpointRequest,
-    ProofJWT
-)
 from pyeudiw.openid4vci.models.credential_endpoint_response import (
-    CredentialEndpointResponse,
     CredentialItem
 )
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
-from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
-from pyeudiw.openid4vci.models.openid4vci_basemodel import (
-    CLIENT_ID_CTX,
-    AUTHORIZATION_DETAILS_CTX,
-    ENTITY_ID_CTX, NONCE_CTX
-)
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.credentials.sd_jwt import SdJwt
@@ -85,41 +73,6 @@ class Openid4VCIEndpoints:
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-
-    def credential_endpoint(self, context: Context) -> Response:
-        """
-        Handle a POST request to the credential endpoint.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, ["POST"])
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            validate_oauth_client_attestation(context)
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
-            c_req = CredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"), context = {
-                AUTHORIZATION_DETAILS_CTX: entity.authorization_details
-            })
-            proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
-            ProofJWT.model_validate(
-                **proof_jws_helper.verify(c_req.proof.jwt), context = {
-                    CLIENT_ID_CTX: entity.client_id,
-                    ENTITY_ID_CTX: self.entity_id,
-                    NONCE_CTX: entity.c_nonce
-                })
-            cred = SdJwt(self.config, entity)
-            return CredentialEndpointResponse.to_response([
-               CredentialItem(**cred.issue_sd_jwt()["issuance"])
-            ])
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke credential endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke credential endpoint")
 
     def deferred_credential_endpoint(self, context: Context) -> Response:
         """
