@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from satosa.response import Created
 
-from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON
+from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
 class ParResponse(BaseModel):

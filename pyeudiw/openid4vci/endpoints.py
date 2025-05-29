@@ -1,5 +1,4 @@
 import logging
-import secrets
 import time
 from typing import Type
 from urllib.parse import parse_qs
@@ -7,36 +6,66 @@ from uuid import uuid4
 
 from pydantic import BaseModel
 from satosa.context import Context
-from satosa.response import Response, BadRequest, ServiceError
+from satosa.response import (
+    Response,
+    BadRequest,
+    ServiceError
+)
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.exceptions.bad_request_exception import \
-    InvalidRequestException, InvalidScopeException
-from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, PAR_REQUEST_URI_CTX
+from pyeudiw.openid4vci.models.authorization_request import (
+    AuthorizationRequest,
+    PAR_REQUEST_URI_CTX
+)
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
-from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
-from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse, CredentialItem
+from pyeudiw.openid4vci.models.credential_endpoint_request import (
+    CredentialEndpointRequest,
+    ProofJWT
+)
+from pyeudiw.openid4vci.models.credential_endpoint_response import (
+    CredentialEndpointResponse,
+    CredentialItem
+)
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX, \
-    AUTHORIZATION_DETAILS_CTX, \
+from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+    CONFIG_CTX,
+    CLIENT_ID_CTX,
+    AUTHORIZATION_DETAILS_CTX,
     ENTITY_ID_CTX, NONCE_CTX
-from pyeudiw.openid4vci.models.par_request import ParRequest
-from pyeudiw.openid4vci.models.par_response import ParResponse
+)
 from pyeudiw.openid4vci.models.token import AccessToken, RefreshToken
-from pyeudiw.openid4vci.models.token_request import TokenRequest, REDIRECT_URI_CTX, CODE_CHALLENGE_CTX, \
+from pyeudiw.openid4vci.models.token_request import (
+    TokenRequest,
+    REDIRECT_URI_CTX,
+    CODE_CHALLENGE_CTX,
     CODE_CHALLENGE_METHOD_CTX
+)
 from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.utils.config import Config
-from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils, \
-    HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON, FORM_URLENCODED
 from pyeudiw.openid4vci.utils.credentials.sd_jwt import SdJwt
-from pyeudiw.openid4vci.utils.response import ResponseUtils, NoContent
+from pyeudiw.openid4vci.utils.response import (
+    ResponseUtils,
+    NoContent
+)
+from pyeudiw.tools.content_type import (
+    HTTP_CONTENT_TYPE_HEADER,
+    APPLICATION_JSON,
+    FORM_URLENCODED
+)
+from pyeudiw.tools.exceptions import (
+    InvalidRequestException,
+    InvalidScopeException
+)
+from pyeudiw.tools.validation import (
+    validate_content_type,
+    validate_request_method,
+    validate_oauth_client_attestation
+)
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +114,8 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["GET"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            validate_request_method(context.request_method, ["GET"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             CredentialOfferRequest.model_validate(
                 context.request.query, context = {
                     CONFIG_CTX: self.config_utils
@@ -99,52 +128,6 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke credential_offer endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke credential_offer endpoint")
 
-
-    def pushed_authorization_request_endpoint(self, context: Context):
-        """
-        Handle a POST request to the pushed_authorization_endpoint (PAR).
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            self._validate_oauth_client_attestation(context)
-
-            body = context.request.body.decode("utf-8")
-            data = parse_qs(body)
-
-            client_id = data.get("client_id", [None])[0]
-            request = data.get("request", [None])[0]
-
-            if not client_id or not request:
-                logger.error(f"invalid request parameters for `par` endpoint, missing {'client_id' if not client_id else 'request'}")
-                return ResponseUtils.to_invalid_request_resp("invalid request parameters")
-
-            decoded_request = self.jws_helper.verify(request)
-            par_request = ParRequest.model_validate(
-                **decoded_request, context = {
-                    ENDPOINT_CTX: "par",
-                    CONFIG_CTX: self.config_utils,
-                    CLIENT_ID_CTX: client_id,
-                    ENTITY_ID_CTX: self.entity_id
-                })
-            random_part = secrets.token_hex(16)
-            self._init_db_session(context, random_part, par_request)
-            return ParResponse.to_created_response(
-                self._to_request_uri(random_part),
-                self.config_utils.get_jwt_default_exp()
-            )
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke par endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke par endpoint")
-
     def authorization_endpoint(self, context: Context):
         """
         Handle an authorization request, via GET or POST.
@@ -156,9 +139,9 @@ class Openid4VCIEndpoints:
         global entity
         try:
             entity = self.db_engine.get_by_session_id(self._get_session_id(context))
-            self._validate_request_method(context.request_method, ["POST", "GET"])
+            validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
-                self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
+                validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
                 auth_req = parse_qs(context.request.body.decode("utf-8"))
             else:
                 auth_req = dict(context.request.query)
@@ -191,9 +174,9 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            self._validate_oauth_client_attestation(context)
+            validate_request_method(context.request_method, ["POST"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
+            validate_oauth_client_attestation(context)
             decoded_request = self.jws_helper.verify(context.request.body.decode("utf-8"))
             entity = self.db_engine.get_by_session_id(self._get_session_id(context))
             TokenRequest.model_validate(**decoded_request, context = {
@@ -225,7 +208,6 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke token endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke token endpoint")
 
-
     def nonce_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the nonce endpoint.
@@ -235,8 +217,8 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            validate_request_method(context.request_method, ["POST"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             if context.request.body:
                 return ResponseUtils.to_invalid_request_resp("Request body must be empty for nonce endpoint")
             c_nonce = str(uuid4())
@@ -259,9 +241,9 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            self._validate_oauth_client_attestation(context)
+            validate_request_method(context.request_method, ["POST"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            validate_oauth_client_attestation(context)
             entity = self.db_engine.get_by_session_id(self._get_session_id(context))
             c_req = CredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"), context = {
                 AUTHORIZATION_DETAILS_CTX: entity.authorization_details
@@ -285,7 +267,6 @@ class Openid4VCIEndpoints:
             logger.error(f"Error during invoke credential endpoint: {e}")
             return ResponseUtils.to_server_error_resp("error during invoke credential endpoint")
 
-
     def deferred_credential_endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the deferred_credential endpoint.
@@ -295,9 +276,9 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            self._validate_oauth_client_attestation(context)
+            validate_request_method(context.request_method, ["POST"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            validate_oauth_client_attestation(context)
             DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
             cred = SdJwt(self.config, entity)
             return DeferredCredentialEndpointResponse.to_response([
@@ -320,8 +301,8 @@ class Openid4VCIEndpoints:
             A Response object.
         """
         try:
-            self._validate_request_method(context.request_method, ["POST"])
-            self._validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            validate_request_method(context.request_method, ["POST"])
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             NotificationRequest.model_validate(**context.request.body.decode("utf-8"))
             return NoContent
         except InvalidRequestException as e:
@@ -356,71 +337,6 @@ class Openid4VCIEndpoints:
             str: The session ID.
         """
         return context.state["SESSION_ID"]
-
-    @staticmethod
-    def _validate_content_type(content_type_header: str, accepted_content_type: str):
-        """
-        Validate the Content-Type header against expected value.
-        Args:
-            content_type_header (str): The received Content-Type header.
-            accepted_content_type (str): The expected value.
-        Raises:
-            InvalidRequestException: If the header does not match.
-        """
-        if (accepted_content_type == FORM_URLENCODED
-                and not ContentTypeUtils.is_form_urlencoded(content_type_header)):
-            logger.error(f"Invalid content-type for check `{FORM_URLENCODED}`: {content_type_header}")
-            raise InvalidRequestException("invalid content-type")
-        elif (accepted_content_type == APPLICATION_JSON
-              and not ContentTypeUtils.is_application_json(content_type_header)):
-            logger.error(f"Invalid content-type for check `{APPLICATION_JSON}`: {content_type_header}")
-            raise InvalidRequestException("invalid content-type")
-
-    @staticmethod
-    def _validate_request_method(request_method: str, accepted_methods: list[str]):
-        """
-        Validate that the HTTP method is allowed.
-        Args:
-            request_method (str): The HTTP method.
-            accepted_methods (list[str]): Allowed methods.
-        Raises:
-            InvalidRequestException: If the method is invalid.
-        """
-        if request_method is None or request_method.upper() not in accepted_methods:
-            logger.error(f"endpoint invoked with wrong request method: {request_method}")
-            raise InvalidRequestException("invalid request method")
-
-    @staticmethod
-    def _validate_oauth_client_attestation(context: Context):
-        """
-        Validate that OAuth-Client-Attestation headers are present.
-        Args:
-            context (Context): The SATOSA context.
-        Raises:
-            InvalidRequestException: If required headers are missing.
-        """
-        if not context.http_headers["OAuth-Client-Attestation"] or not context.http_headers["OAuth-Client-Attestation-PoP"]:
-            logger.error(f"Missing r{'OAuth-Client-Attestation' if not context.http_headers['OAuth-Client-Attestation'] else 'OAuth-Client-Attestation-PoP'} header for `par` endpoint")
-            raise InvalidRequestException("Missing Wallet Attestation JWT header")
-
-    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
-        """
-        Initialize a new DB session for a credential issuance flow.
-        Args:
-            context (Context): The SATOSA context.
-            request_uri_part (str): The generated URI part.
-            par_request (ParRequest): The validated request data.
-        Raises:
-            Exception: If the DB operation fails.
-        """
-        entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request)
-        try:
-            self.db_engine.init_session(entity)
-        except Exception as e500:
-            logger.error(
-                f"Error while initializing session with state {entity.state} and {entity.session_id}: {e500}"
-            )
-            raise e500
 
     def _sign_token(self, token: BaseModel, typ: str):
         jws_headers = {

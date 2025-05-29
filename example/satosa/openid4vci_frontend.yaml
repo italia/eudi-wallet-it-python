@@ -2,6 +2,13 @@ module: pyeudiw.openid4vci.openid4vci.OpenID4VCIFrontend
 name: OpenID4VCI
 
 config:
+
+  endpoints:
+    par:
+      module: pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint
+      class: ParHandler
+      path: '/par'
+
   network:
     httpc_params: &httpc_params
       connection:

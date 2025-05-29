@@ -4,7 +4,7 @@ from uuid import uuid4
 from satosa.response import Redirect
 
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
-from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils, FORM_URLENCODED
+from pyeudiw.tools.content_type import ContentTypeUtils, FORM_URLENCODED
 
 
 def test_to_redirect_response_without_code():

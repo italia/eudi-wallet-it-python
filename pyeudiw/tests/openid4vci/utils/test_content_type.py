@@ -1,4 +1,4 @@
-from pyeudiw.openid4vci.utils.content_type import ContentTypeUtils
+from pyeudiw.tools.content_type import ContentTypeUtils
 
 class TestContentTypeUtils:
 

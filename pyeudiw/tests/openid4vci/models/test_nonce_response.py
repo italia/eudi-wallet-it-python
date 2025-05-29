@@ -2,7 +2,7 @@ import json
 import re
 
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
-from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON, ContentTypeUtils, CACHE_CONTROL_HEADER
+from pyeudiw.tools.content_type import APPLICATION_JSON, ContentTypeUtils, CACHE_CONTROL_HEADER
 
 
 def test_nonce_response_default():

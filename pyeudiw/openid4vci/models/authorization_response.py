@@ -4,7 +4,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from satosa.response import Redirect
 
-from pyeudiw.openid4vci.utils.content_type import FORM_URLENCODED
+from pyeudiw.tools.content_type import FORM_URLENCODED
 
 
 class AuthorizationResponse(BaseModel):

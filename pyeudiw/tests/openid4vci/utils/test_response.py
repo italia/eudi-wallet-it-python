@@ -3,7 +3,7 @@ from urllib.parse import urlparse, parse_qs
 
 from satosa.response import BadRequest, Unauthorized, Redirect, ServiceError
 
-from pyeudiw.openid4vci.utils.content_type import APPLICATION_JSON, FORM_URLENCODED, ContentTypeUtils
+from pyeudiw.tools.content_type import APPLICATION_JSON, FORM_URLENCODED, ContentTypeUtils
 from pyeudiw.openid4vci.utils.response import ResponseUtils
 
 
