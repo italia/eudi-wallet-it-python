@@ -43,7 +43,7 @@ class ParHandler(BaseEndpoint):
         super().__init__(config, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def pushed_authorization_request_endpoint(self, context: Context):
+    def endpoint(self, context: Context):
         """
         Handle a POST request to the pushed_authorization_endpoint (PAR).
         Args:

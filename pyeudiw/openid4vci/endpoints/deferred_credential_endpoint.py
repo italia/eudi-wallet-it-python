@@ -35,7 +35,7 @@ class DeferredCredentialHandler(BaseEndpoint):
         super().__init__(config, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def deferred_credential_endpoint(self, context: Context) -> Response:
+    def endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the deferred_credential endpoint.
         Args:

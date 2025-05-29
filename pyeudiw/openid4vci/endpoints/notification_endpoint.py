@@ -38,7 +38,7 @@ class NotificationHandler(BaseEndpoint):
         super().__init__(config, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def notification_endpoint(self, context: Context) -> Type[NoContent] | Response:
+    def endpoint(self, context: Context) -> Type[NoContent] | Response:
         """
         Handle a POST request to the notification endpoint.
         Args:

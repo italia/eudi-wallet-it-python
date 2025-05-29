@@ -29,7 +29,7 @@ class CredentialOfferHandler(BaseEndpoint):
         """
         super().__init__(config, base_url, name)
 
-    def credential_offer_endpoint(self, context: Context):
+    def endpoint(self, context: Context):
         """
         Handle a GET request to the credential_offer endpoint.
         Args:

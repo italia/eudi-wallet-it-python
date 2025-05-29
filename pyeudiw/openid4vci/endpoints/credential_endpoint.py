@@ -44,7 +44,7 @@ class CredentialHandler(BaseEndpoint):
         super().__init__(config, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
-    def credential_endpoint(self, context: Context) -> Response:
+    def endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the credential endpoint.
         Args:

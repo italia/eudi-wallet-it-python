@@ -3,8 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
@@ -27,11 +27,11 @@ class OpenId4VciBaseModel(BaseModel):
         else:
             self._context = {}
 
-    def get_config(self) -> Config:
+    def get_config(self) -> PyeudiwFrontendConfigUtils:
         config_obj = self.get_ctx(CONFIG_CTX)
-        if isinstance(config_obj, Config):
+        if isinstance(config_obj, PyeudiwFrontendConfigUtils):
             return config_obj
-        return Config(**config_obj)
+        return PyeudiwFrontendConfigUtils(**config_obj)
 
     def get_ctx(self, path: str) -> Any:
         if not self._context or path not in self._context:

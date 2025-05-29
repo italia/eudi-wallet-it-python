@@ -2,13 +2,13 @@ import pytest
 
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context(authorization_servers =[]):
     return {
-        CONFIG_CTX: Config(**{
+        CONFIG_CTX: PyeudiwFrontendConfig(**{
             "jwt": {
                 "default_exp":60,
                 "default_sig_alg": "ES256"

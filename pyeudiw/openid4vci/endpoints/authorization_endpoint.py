@@ -1,6 +1,7 @@
 from urllib.parse import parse_qs
 
 from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.authorization_request import (
@@ -33,7 +34,7 @@ class AuthorizationHandler(BaseEndpoint):
         """
         super().__init__(config, base_url, name)
 
-    def authorization_endpoint(self, context: Context):
+    def endpoint(self, context: Context) -> Response:
         """
         Handle an authorization request, via GET or POST.
         Args:

@@ -1,9 +1,13 @@
 from satosa.context import Context
+from satosa.response import (
+    Redirect,
+    Response
+)
 
 from build.lib.pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
-from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
+from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
 class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
@@ -17,9 +21,31 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
             name (str): The name of the SATOSA module to append to the URL.
         """
         self.config = config
-        self.config_utils = Config(**config)
+        self.config_utils = PyeudiwFrontendConfigUtils(**config)
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
+
+    def __call__(self, context: Context) -> Redirect | Response:
+        return self.endpoint(context)
+
+    def endpoint(self, context: Context) -> Redirect | Response:
+        """
+        Handle the incoming request and return either a Redirect or Response.
+
+        This method must be implemented by subclasses to process the given context
+        and return an appropriate HTTP response, such as a redirect to another
+        URL or a standard HTTP response.
+
+        Args:
+            context (Context): The SATOSA context object containing the request and environment information.
+
+        Returns:
+            Redirect | Response: A Redirect or Response object depending on the logic implemented.
+
+        Raises:
+            NotImplementedError: If the method is not overridden by a subclass.
+        """
+    raise NotImplementedError
 
     @staticmethod
     def _to_request_uri(random_part: str) -> str:

@@ -1,5 +1,5 @@
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
-from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 ALG_TO_CRV = {
     "ES256": "P-256",
@@ -10,7 +10,7 @@ ALG_TO_CRV = {
 class SdJwt:
 
     def __init__(self, config: dict, entity: OpenId4VCIEntity):
-        self.config_utils = Config(**config)
+        self.config_utils = PyeudiwFrontendConfigUtils(**config)
         self.flow_data = entity
 
     def issue_sd_jwt(self) -> dict:

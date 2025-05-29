@@ -8,7 +8,7 @@ from pyeudiw.openid4vci.models.token_request import (
     CODE_CHALLENGE_METHOD_CTX,
     REDIRECT_URI_CTX
 )
-from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
@@ -25,7 +25,7 @@ def get_valid_context(code_verifier="testverifier", redirect_uri="https://client
         CODE_CHALLENGE_CTX: code_challenge,
         CODE_CHALLENGE_METHOD_CTX: challenge_method,
         REDIRECT_URI_CTX: redirect_uri,
-        "config": Config(**{
+        "config": PyeudiwFrontendConfig(**{
             "jwt": {
                 "default_exp":60,
                 "default_sig_alg": "ES256"

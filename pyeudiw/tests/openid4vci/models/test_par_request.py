@@ -11,7 +11,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX
 )
 from pyeudiw.openid4vci.models.par_request import ParRequest
-from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
@@ -20,7 +20,7 @@ def get_valid_context():
         ENDPOINT_CTX: "par",
         CLIENT_ID_CTX: "client-123",
         ENTITY_ID_CTX: "entity-123",
-        CONFIG_CTX: Config(**{
+        CONFIG_CTX: PyeudiwFrontendConfig(**{
             "jwt": {
                 "default_exp":60,
                 "default_sig_alg": "ES256"

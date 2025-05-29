@@ -7,6 +7,7 @@ from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
 from pyeudiw.satosa.schemas.endpoint import EndpointsConfig
+from pyeudiw.satosa.schemas.metadata import Metadata
 from pyeudiw.satosa.schemas.response import ResponseConfig
 from pyeudiw.satosa.schemas.ui import UiConfig
 from pyeudiw.satosa.schemas.user_attributes import UserAttributesConfig
@@ -26,3 +27,7 @@ class PyeudiwBackendConfig(BaseModel):
     metadata_jwks: list[JwkSchema]
     storage: Storage
     metadata: OpenIDCredentialVerifier
+
+class PyeudiwFrontendConfig(BaseModel):
+    jwt: JWTConfig
+    metadata: Metadata
