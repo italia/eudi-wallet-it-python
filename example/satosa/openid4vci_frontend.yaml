@@ -32,6 +32,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.deferred_credential_endpoint
       class: DeferredCredentialHandler
       path: '/deferred-credential'
+    notification_endpoint:
+      module: pyeudiw.openid4vci.endpoints.notification_endpoint
+      class: NotificationHandler
+      path: '/notification'
 
   network:
     httpc_params: &httpc_params
