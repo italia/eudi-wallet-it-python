@@ -4,6 +4,8 @@ import cryptojwt.jwe.exception
 import satosa.context
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
@@ -14,7 +16,8 @@ from pyeudiw.openid4vp.schemas.response import (
     AuthorizeResponsePayload,
     ResponseMode,
 )
-from pyeudiw.jwt.utils import decode_jwt_header
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.jwt.utils import is_jwe_format
 
 
 _S = TypeVar('_S', str, list[str])
@@ -125,10 +128,12 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
     def __init__(
             self, 
             jwe_decryptor: JWEHelper, 
+            jws_verifier: JWSHelper,
             enc_alg_supported: list[str] = [], 
             enc_enc_supported: list[str] = []
         ) -> None:
         self.jwe_decryptor = jwe_decryptor
+        self.jws_verifier = jws_verifier
         self.enc_alg_supported = enc_alg_supported
         self.enc_enc_supported = enc_enc_supported
 
@@ -144,33 +149,47 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
                 "invalid data in direct_post.jwt request body", e
             )
         
-        header = decode_jwt_header(resp_data.response)
+        if is_jwe_format(resp_data.response):
+            # if the response is a JWE, we need to decrypt it
+            header = decode_jwt_header(resp_data.response)
 
-        if not header.get("alg") in self.enc_alg_supported:
-            raise AuthRespValidationException(
-                "invalid data in direct_post.jwt: alg not supported"
-            )
+            if not header.get("alg") in self.enc_alg_supported:
+                raise AuthRespValidationException(
+                    "invalid data in direct_post.jwt: alg not supported"
+                )
         
-        if not header.get("enc") in self.enc_enc_supported:
-            raise AuthRespValidationException(
-                "invalid data in direct_post.jwt: enc not supported"
-            )
+            if not header.get("enc") in self.enc_enc_supported:
+                raise AuthRespValidationException(
+                    "invalid data in direct_post.jwt: enc not supported"
+                )
 
-        try:
-            payload = self.jwe_decryptor.decrypt(resp_data.response)
-        except JWEDecryptionError as e:
-            raise AuthRespParsingException(
-                "invalid data in direct_post.jwt request body: not a jwe", e
-            )
-        except cryptojwt.jwe.exception.DecryptionFailed:
-            raise AuthRespValidationException(
-                "invalid data in direct_post.jwt: unable to decrypt token"
-            )
-        except Exception as e:
-            # unfortunately library cryptojwt is not very exhaustive on why an operation failed...
-            raise AuthRespValidationException(
-                "invalid data in direct_post.jwt request body", e
-            )
+            try:
+                payload = self.jwe_decryptor.decrypt(resp_data.response)
+            except JWEDecryptionError as e:
+                raise AuthRespParsingException(
+                    "invalid data in direct_post.jwt request body: not a jwe", e
+                )
+            except cryptojwt.jwe.exception.DecryptionFailed:
+                raise AuthRespValidationException(
+                    "invalid data in direct_post.jwt: unable to decrypt token"
+                )
+            except Exception as e:
+                # unfortunately library cryptojwt is not very exhaustive on why an operation failed...
+                raise AuthRespValidationException(
+                    "invalid data in direct_post.jwt request body", e
+                )
+        else:
+            # if the response is a JWT, we just decode it
+            try:
+                payload = self.jws_verifier.verify(resp_data.response)
+            except JWSVerificationError as e:
+                raise AuthRespParsingException(
+                    "invalid data in direct_post.jwt request body: cannot validate the jws", e
+                )
+            except Exception as e:
+                raise AuthRespParsingException(
+                    "invalid data in direct_post.jwt request body: not a jwt", e
+                )
 
         # iss, exp and aud MUST be OMITTED in the JWT Claims Set of the JWE
         if ("iss" in payload) or ("exp" in payload):

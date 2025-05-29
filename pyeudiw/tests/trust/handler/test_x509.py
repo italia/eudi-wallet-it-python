@@ -41,7 +41,7 @@ def test_extract_trust_material_from_x509_handler():
     chain = gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com", leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY)
 
     trust_handler = X509Handler(
-        client_id="https://example.com",
+        client_id="example.com",
         relying_party_certificate_chains_by_ca={
             "ca.example.com": chain
         },
@@ -52,9 +52,9 @@ def test_extract_trust_material_from_x509_handler():
             "ca.example.com": chain[-1]
         }
     )
-    trust_source = TrustSourceData.empty("https://example.com")
+    trust_source = TrustSourceData.empty("example.com")
 
-    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
+    trust_handler.extract_and_update_trust_materials("example.com", trust_source)
     serialized_object = trust_source.serialize()
 
     assert "x509" in serialized_object
@@ -131,7 +131,7 @@ def test_chain_crl_passing():
     chain = chain.get_chain("DER")
     
     trust_handler = X509Handler(
-        client_id="https://example.com",
+        client_id="example.com",
         relying_party_certificate_chains_by_ca={
             "ca.example.com": chain
         },
@@ -142,7 +142,7 @@ def test_chain_crl_passing():
             "ca.example.com": chain[-1]
         }
     )
-    trust_source = TrustSourceData.empty("https://example.com")
+    trust_source = TrustSourceData.empty("example.com")
 
     mock_staus_list_endpoint = patch(
         "pyeudiw.x509.crl_helper.http_get_sync",
@@ -152,7 +152,7 @@ def test_chain_crl_passing():
     )
 
     mock_staus_list_endpoint.start()
-    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
+    trust_handler.extract_and_update_trust_materials("example.com", trust_source)
     mock_staus_list_endpoint.stop()
     serialized_object = trust_source.serialize()
 
