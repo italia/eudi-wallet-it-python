@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 
+from typing import Optional
+
 from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
     is_der_format,
@@ -19,10 +21,10 @@ def gen_chain(
         date: datetime = datetime.now(), 
         ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "CN=eaf.example.com, O=Example Leaf, C=IT", 
+        leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
         leaf_dns: str = "leaf.example.org",
         leaf_uri: str = "leaf.example.org",
-        leaf_private_key: rsa.RSAPrivateKey = None
+        leaf_private_key: Optional[ec.EllipticCurvePrivateKey] = None
     ) -> list[bytes]:
     # Generate a private key for the CA
 
@@ -81,12 +83,51 @@ def gen_chain(
         .not_valid_before(date - timedelta(days=1))
         .not_valid_after(date + timedelta(days=365))
         .add_extension(
-            x509.BasicConstraints(ca=True, path_length=1),
+            x509.BasicConstraints(ca=True, path_length=2),
             critical=True,
         )
         .add_extension(
             x509.SubjectAlternativeName([x509.DNSName(ca_dns)]),
             critical=False
+        )
+        .add_extension(
+            x509.KeyUsage(
+                digital_signature=True,
+                key_cert_sign=True,
+                key_encipherment=True,
+                crl_sign=True,
+                key_agreement=False,
+                content_commitment=False,
+                data_encipherment=False,
+                encipher_only=False,
+                decipher_only=False
+            ), True
+        )
+        .add_extension(
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            f"https://ca.example.com/crl/ca.example.com.crl"
+                        )
+                    ],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=None
+                )
+            ]),
+            critical=False
+        )
+        .add_extension(
+            x509.NameConstraints(
+                permitted_subtrees= None,
+                excluded_subtrees=[
+                    x509.DNSName("localhost"),
+                    x509.DNSName("localhost.localdomain"),
+                    x509.DNSName("127.0.0.1")
+                ]
+            ),
+            critical=True
         )
         .sign(ca_private_key, hashes.SHA256())
     )
@@ -115,8 +156,47 @@ def gen_chain(
         .not_valid_before(date - timedelta(days=1))
         .not_valid_after(date + timedelta(days=365))
         .add_extension(
-            x509.BasicConstraints(ca=True, path_length=0),
+            x509.BasicConstraints(ca=True, path_length=1),
             critical=True,
+        )
+        .add_extension(
+            x509.KeyUsage(
+                digital_signature=True,
+                key_cert_sign=True,
+                key_encipherment=True,
+                crl_sign=True,
+                key_agreement=False,
+                content_commitment=False,
+                data_encipherment=False,
+                encipher_only=False,
+                decipher_only=False
+            ), True
+        )
+        .add_extension(
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            "https://intermediate.example.net/crl/intermediate.example.net.crl"
+                        )
+                    ],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=None
+                )
+            ]),
+            critical=False
+        )
+        .add_extension(
+            x509.NameConstraints(
+                permitted_subtrees=None,
+                excluded_subtrees=[
+                    x509.DNSName("localhost"),
+                    x509.DNSName("localhost.localdomain"),
+                    x509.DNSName("127.0.0.1")
+                ]
+            ),
+            critical=True
         )
         .sign(ca_private_key, hashes.SHA256())
     )
@@ -145,7 +225,7 @@ def gen_chain(
         .not_valid_before(date - timedelta(days=1))
         .not_valid_after(date + timedelta(days=365))
         .add_extension(
-            x509.BasicConstraints(ca=False, path_length=None),
+            x509.BasicConstraints(ca=True, path_length=0),
             critical=True,
         )
         .add_extension(
@@ -154,6 +234,48 @@ def gen_chain(
                 x509.UniformResourceIdentifier(leaf_uri),
             ]),
             critical=False
+        )
+        .add_extension(
+            x509.KeyUsage(
+                digital_signature=True,
+                key_cert_sign=True,
+                key_encipherment=True,
+                crl_sign=True,
+                key_agreement=False,
+                content_commitment=False,
+                data_encipherment=False,
+                encipher_only=False,
+                decipher_only=False
+            ), True
+        )
+        .add_extension(
+            x509.CRLDistributionPoints([
+                x509.DistributionPoint(
+                    full_name=[
+                        x509.UniformResourceIdentifier(
+                            f"https://leaf.example.com/crl/leaf.example.com.crl"
+                        )
+                    ],
+                    relative_name=None,
+                    reasons=None,
+                    crl_issuer=None
+                )
+            ]),
+            critical=False
+        )
+        .add_extension(
+            x509.NameConstraints(
+                permitted_subtrees=[
+                    x509.UniformResourceIdentifier(f"https://leaf.example.com"),
+                    x509.DNSName("leaf.example.com"),
+                ],
+                excluded_subtrees=[
+                    x509.DNSName("localhost"),
+                    x509.DNSName("localhost.localdomain"),
+                    x509.DNSName("127.0.0.1")
+                ]
+            ),
+            critical=True
         )
         .sign(intermediate_private_key, hashes.SHA256())
     )
