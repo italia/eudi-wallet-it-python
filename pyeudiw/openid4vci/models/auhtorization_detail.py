@@ -27,12 +27,12 @@ class AuthorizationDetail(OpenId4VciBaseModel):
 
         credential_configurations_supported = self.get_config().get_credential_configurations_supported()
         if self.credential_configuration_id not in [ccs.id for ccs in credential_configurations_supported.values()]:
-            logger.error(f"invalid credential_configuration_ids {self.credential_configuration_id} in request `f{endpoint}` endpoint")
+            logger.error(f"invalid credential_configuration_ids {self.credential_configuration_id} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `authorization_details.credential_configuration_id` parameter")
 
     def validate_type(self, endpoint: str):
         self.type = self.strip(self.type)
         self.check_missing_parameter(self.type, "authorization_details.type", endpoint)
         if self.type != OPEN_ID_CREDENTIAL_TYPE :
-            logger.error(f"invalid authorization_details.type {self.type} in request `f{endpoint}` endpoint")
+            logger.error(f"invalid authorization_details.type {self.type} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `authorization_details.type` parameter")
