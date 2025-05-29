@@ -1,10 +1,7 @@
 import logging
-import time
 from typing import Type
-from urllib.parse import parse_qs
 from uuid import uuid4
 
-from pydantic import BaseModel
 from satosa.context import Context
 from satosa.response import (
     Response,
@@ -13,11 +10,6 @@ from satosa.response import (
 )
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.models.authorization_request import (
-    AuthorizationRequest,
-    PAR_REQUEST_URI_CTX
-)
-from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.credential_endpoint_request import (
     CredentialEndpointRequest,
     ProofJWT
@@ -31,19 +23,10 @@ from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import Defe
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
-    CONFIG_CTX,
     CLIENT_ID_CTX,
     AUTHORIZATION_DETAILS_CTX,
     ENTITY_ID_CTX, NONCE_CTX
 )
-from pyeudiw.openid4vci.models.token import AccessToken, RefreshToken
-from pyeudiw.openid4vci.models.token_request import (
-    TokenRequest,
-    REDIRECT_URI_CTX,
-    CODE_CHALLENGE_CTX,
-    CODE_CHALLENGE_METHOD_CTX
-)
-from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
 from pyeudiw.openid4vci.utils.config import Config
 from pyeudiw.openid4vci.utils.credentials.sd_jwt import SdJwt
@@ -53,8 +36,7 @@ from pyeudiw.openid4vci.utils.response import (
 )
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
-    APPLICATION_JSON,
-    FORM_URLENCODED
+    APPLICATION_JSON
 )
 from pyeudiw.tools.exceptions import (
     InvalidRequestException,
@@ -103,50 +85,6 @@ class Openid4VCIEndpoints:
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-
-    def token_endpoint(self, context: Context):
-        """
-        Handle a POST request to the token endpoint.
-        Args:
-            context (Context): The SATOSA context.
-
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, ["POST"])
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            validate_oauth_client_attestation(context)
-            decoded_request = self.jws_helper.verify(context.request.body.decode("utf-8"))
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
-            TokenRequest.model_validate(**decoded_request, context = {
-                CONFIG_CTX: self.config_utils,
-                REDIRECT_URI_CTX: entity.redirect_uri,
-                CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
-                CODE_CHALLENGE_CTX: entity.code_challenge
-            })
-            iat = int(time.time())
-            access_token = AccessToken(
-                iss=self.entity_id,
-                aud=self.entity_id,
-                exp=iat + self.config_utils.get_jwt_default_exp(),
-                iat=iat,
-                client_id=entity.client_id,
-                sub=entity.client_id,
-            )
-            return TokenResponse.to_created_response(
-                self._sign_token(access_token, "at+jwt"),
-                self._sign_token(RefreshToken(**access_token.model_dump()), "rt+jwt"),
-                access_token.exp,
-                entity.authorization_details
-            )
-        except InvalidRequestException as e:
-            return ResponseUtils.to_invalid_request_resp(e.message)
-        except InvalidScopeException as e:
-            return ResponseUtils.to_invalid_scope_resp(e.message)
-        except Exception as e:
-            logger.error(f"Error during invoke token endpoint: {e}")
-            return ResponseUtils.to_server_error_resp("error during invoke token endpoint")
 
     def nonce_endpoint(self, context: Context) -> Response:
         """
@@ -277,16 +215,6 @@ class Openid4VCIEndpoints:
             str: The session ID.
         """
         return context.state["SESSION_ID"]
-
-    def _sign_token(self, token: BaseModel, typ: str):
-        jws_headers = {
-            "typ": typ,
-            "alg": self.config_utils.get_jwt_default_sig_alg,
-        }
-        return self.jws_helper.sign(
-            protected=jws_headers,
-            plain_dict=token.model_dump()
-        )
 
     @property
     def db_engine(self) -> MongoStorage:

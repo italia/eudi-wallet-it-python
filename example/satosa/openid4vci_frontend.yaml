@@ -16,6 +16,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.authorization_endpoint
       class: AuthorizationHandler
       path: '/authorization'
+    token_endpoint:
+      module: pyeudiw.openid4vci.endpoints.token_endpoint
+      class: TokenHandler
+      path: '/token'
 
   network:
     httpc_params: &httpc_params

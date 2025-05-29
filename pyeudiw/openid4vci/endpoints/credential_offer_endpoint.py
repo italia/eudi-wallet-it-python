@@ -44,9 +44,7 @@ class CredentialOfferHandler(BaseEndpoint):
                 context.request.query, context = {
                     CONFIG_CTX: self.config_utils
                 })
-        except InvalidRequestException as e:
-            return self._handle_400(context, e.message, e)
-        except InvalidScopeException as e:
+        except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
             self._log_error(
