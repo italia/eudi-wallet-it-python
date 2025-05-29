@@ -63,7 +63,7 @@ class TokenRequest(OpenId4VciBaseModel):
       scopes = self.scope.split(" ")
       for s in scopes:
         if s not in self.get_config().metadata.oauth_authorization_server.scopes_supported:
-          logger.error(f"invalid scope value '{s}' in `authorization` endpoint")
+          logger.error(f"invalid scope value '{s}' in `token` endpoint")
           raise InvalidRequestException(f"invalid scope value '{s}'")
 
   def validate_refresh_token(self, is_authorization_code_grant):
