@@ -3,12 +3,16 @@ from uuid import uuid4
 
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.authorization_request import CLIENT_ID_CTX
-from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, ENDPOINT_CTX, ENTITY_ID_CTX
+from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+    CONFIG_CTX,
+    ENDPOINT_CTX,
+    ENTITY_ID_CTX
+)
 from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context():

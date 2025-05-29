@@ -1,9 +1,9 @@
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context(authorization_servers =[]):

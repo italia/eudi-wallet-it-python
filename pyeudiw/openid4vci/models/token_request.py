@@ -4,8 +4,8 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
 from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 

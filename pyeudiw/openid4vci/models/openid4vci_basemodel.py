@@ -3,8 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
 from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"

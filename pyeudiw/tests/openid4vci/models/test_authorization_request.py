@@ -1,7 +1,11 @@
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
-from pyeudiw.openid4vci.models.authorization_request import AuthorizationRequest, CLIENT_ID_CTX, PAR_REQUEST_URI_CTX
+from pyeudiw.openid4vci.models.authorization_request import (
+    AuthorizationRequest,
+    CLIENT_ID_CTX,
+    PAR_REQUEST_URI_CTX
+)
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context():

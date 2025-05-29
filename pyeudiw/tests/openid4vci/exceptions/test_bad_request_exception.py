@@ -1,6 +1,9 @@
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException, InvalidScopeException
+from pyeudiw.tools.exceptions import (
+  InvalidRequestException,
+  InvalidScopeException
+)
 
 
 def test_invalid_request_exception():

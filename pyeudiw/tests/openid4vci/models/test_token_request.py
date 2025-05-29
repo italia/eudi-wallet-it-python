@@ -2,10 +2,14 @@ from hashlib import sha256, sha512
 
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
-from pyeudiw.openid4vci.models.token_request import TokenRequest, CODE_CHALLENGE_CTX, CODE_CHALLENGE_METHOD_CTX, \
+from pyeudiw.openid4vci.models.token_request import (
+    TokenRequest,
+    CODE_CHALLENGE_CTX,
+    CODE_CHALLENGE_METHOD_CTX,
     REDIRECT_URI_CTX
+)
 from pyeudiw.openid4vci.utils.config import Config
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context(code_verifier="testverifier", redirect_uri="https://client.example.org/cb", challenge_method="s256", scopes_supported = ["scope1", "scope2", "openid"]):

@@ -3,7 +3,10 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from satosa.response import Response
 
-from pyeudiw.tools.content_type import APPLICATION_JSON, CACHE_CONTROL_HEADER
+from pyeudiw.tools.content_type import (
+  APPLICATION_JSON,
+  CACHE_CONTROL_HEADER
+)
 
 
 class NonceResponse(BaseModel):

@@ -3,10 +3,17 @@ from typing import cast
 
 from pydantic import model_validator
 
-from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE, AuthorizationDetail
-from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, AUTHORIZATION_DETAILS_CTX, \
-    CLIENT_ID_CTX, \
-    ENTITY_ID_CTX, NONCE_CTX
+from pyeudiw.openid4vci.models.auhtorization_detail import (
+    OPEN_ID_CREDENTIAL_TYPE,
+    AuthorizationDetail
+)
+from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
+    AUTHORIZATION_DETAILS_CTX,
+    CLIENT_ID_CTX,
+    ENTITY_ID_CTX,
+    NONCE_CTX
+)
 from pyeudiw.openid4vci.utils.date import DateUtils
 
 logger = logging.getLogger(__name__)

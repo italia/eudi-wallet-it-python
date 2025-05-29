@@ -3,8 +3,11 @@ import string
 
 import pytest
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import InvalidRequestException
-from pyeudiw.openid4vci.models.notification_request import NotificationRequest, ACCEPTED_EVENT
+from pyeudiw.openid4vci.models.notification_request import (
+    NotificationRequest,
+    ACCEPTED_EVENT
+)
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 @pytest.mark.parametrize("event_description",[

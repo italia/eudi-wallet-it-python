@@ -4,12 +4,16 @@ from urllib.parse import urlparse
 
 from pydantic import model_validator
 
-from pyeudiw.openid4vci.exceptions.bad_request_exception import \
-  InvalidRequestException
 from pyeudiw.openid4vci.models.auhtorization_detail import AuthorizationDetail
-from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX, CLIENT_ID_CTX, ENDPOINT_CTX, \
+from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+  OpenId4VciBaseModel,
+  CONFIG_CTX,
+  CLIENT_ID_CTX,
+  ENDPOINT_CTX,
   ENTITY_ID_CTX
+)
 from pyeudiw.openid4vci.utils.date import DateUtils
+from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 

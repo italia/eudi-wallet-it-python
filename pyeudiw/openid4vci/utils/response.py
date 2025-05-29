@@ -1,10 +1,18 @@
 import json
 from urllib.parse import urlencode
 
-from satosa.response import BadRequest, Unauthorized, Redirect, ServiceError, Response
+from satosa.response import (
+    BadRequest,
+    Unauthorized,
+    Redirect,
+    ServiceError,
+    Response
+)
 
-from pyeudiw.tools.content_type import APPLICATION_JSON, \
+from pyeudiw.tools.content_type import (
+    APPLICATION_JSON,
     FORM_URLENCODED
+)
 
 
 class ResponseUtils:

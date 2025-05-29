@@ -2,8 +2,10 @@ from typing import List, Optional
 
 from satosa.response import Response
 
-from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import CredentialItem, \
+from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import (
+    CredentialItem,
     DeferredCredentialEndpointResponse
+)
 from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
