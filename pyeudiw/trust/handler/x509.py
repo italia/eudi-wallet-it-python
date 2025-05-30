@@ -150,7 +150,7 @@ class X509Handler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
-        if issuer == self.client_id:
+        if issuer == self.client_id.split(":", 1)[-1]:
             for ca, chain in self.relying_party_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 
