@@ -5,8 +5,9 @@ from satosa.response import (
 )
 
 from build.lib.pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.openid4vci.storage.mongo_storage import MongoStorage
+from pyeudiw.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
@@ -24,28 +25,6 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
         self.config_utils = PyeudiwFrontendConfigUtils(**config)
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
-
-    def __call__(self, context: Context) -> Redirect | Response:
-        return self.endpoint(context)
-
-    def endpoint(self, context: Context) -> Redirect | Response:
-        """
-        Handle the incoming request and return either a Redirect or Response.
-
-        This method must be implemented by subclasses to process the given context
-        and return an appropriate HTTP response, such as a redirect to another
-        URL or a standard HTTP response.
-
-        Args:
-            context (Context): The SATOSA context object containing the request and environment information.
-
-        Returns:
-            Redirect | Response: A Redirect or Response object depending on the logic implemented.
-
-        Raises:
-            NotImplementedError: If the method is not overridden by a subclass.
-        """
-    raise NotImplementedError
 
     @staticmethod
     def _to_request_uri(random_part: str) -> str:
@@ -70,14 +49,14 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
         return context.state["SESSION_ID"]
 
     @property
-    def db_engine(self) -> MongoStorage:
+    def db_engine(self) -> OpenId4VciStorage:
         """
         Lazily initialized access to MongoDB storage engine.
         Returns:
             MongoStorage: The initialized DB engine instance.
         """
         if not self._db_engine:
-            self._db_engine = MongoStorage(self.config["storage"])
+            self._db_engine = DBEngine(self.config["storage"])
 
         try:
             self._db_engine.is_connected
@@ -87,7 +66,7 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
                     e.__class__.__name__,
                     f"OpenID4VCI db storage handling, connection check silently fails and get restored: {e}"
                 )
-            self._db_engine = MongoStorage(self.config["storage"])
+            self._db_engine = DBEngine(self.config["storage"])
 
         return self._db_engine
 
@@ -97,3 +76,25 @@ class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
             return _cid
         else:
             return self._backend_url
+
+    def __call__(self, context: Context) -> Redirect | Response:
+        return self.endpoint(context)
+
+    def endpoint(self, context: Context) -> Redirect | Response:
+        """
+        Handle the incoming request and return either a Redirect or Response.
+
+        This method must be implemented by subclasses to process the given context
+        and return an appropriate HTTP response, such as a redirect to another
+        URL or a standard HTTP response.
+
+        Args:
+            context (Context): The SATOSA context object containing the request and environment information.
+
+        Returns:
+            Redirect | Response: A Redirect or Response object depending on the logic implemented.
+
+        Raises:
+            NotImplementedError: If the method is not overridden by a subclass.
+        """
+    raise NotImplementedError

@@ -1,4 +1,4 @@
-from build.lib.pyeudiw.tools.utils import get_dynamic_class
+from pyeudiw.tools.utils import get_dynamic_class
 
 
 class EndpointsLoader:
