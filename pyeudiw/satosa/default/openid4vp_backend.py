@@ -241,10 +241,16 @@ class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
                 "internal error: something went wrong when creating your authentication request",
                 e500
             )
+        
+        qs_params = getattr(context, "qs_params") or {}
+        client_id_hint = qs_params.get("client_id_hint", None)
+        has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(
+            client_id_hint
+        )
 
         # PAR
         payload = {
-            "client_id": self.client_id,
+            "client_id": client_id_hint if has_client_id_hint else self.client_id,
             "request_uri": f"{self.absolute_request_url}?id={state}",
         }
 

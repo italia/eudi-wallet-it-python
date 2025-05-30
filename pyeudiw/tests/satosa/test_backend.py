@@ -302,6 +302,23 @@ class TestOpenID4VPBackend:
         assert resp.status == "400"
         assert resp.message is not None
 
+    def test_pre_request_with_client_id_hint(self, context):
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+        )
+        context.qs_params = {"client_id_hint": f"openid_federation:{BASE_URL}/OpenID4VP"}
+        resp = self.backend.pre_request_endpoint(context, InternalData())
+
+        assert resp is not None
+        assert resp.status == "302 Found"
+        assert resp.message is not None
+        
+        parsed = urllib.parse.unquote(
+            resp.message, encoding="utf-8", errors="replace"
+        )
+
+        assert "openid_federation:https://example.com/OpenID4VP" in parsed
+
     def test_pre_request_endpoint(self, context):
         internal_data = InternalData()
         context.http_headers = dict(
