@@ -44,11 +44,12 @@ config:
       session:
         timeout: 6
       verify: false
-      timeout: 14
 
   jwt:
     default_sig_alg: ES256 # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
-    default_exp: 90
+    access_token_exp: 90
+    refresh_token_exp: 90
+    par_exp: 90
 
   # private jwk
   metadata_jwks: &metadata_jwks

@@ -81,7 +81,7 @@ class ParHandler(BaseEndpoint):
             self._init_db_session(context, random_part, par_request)
             return ParResponse.to_created_response(
                 self._to_request_uri(random_part),
-                self.config_utils.get_jwt_default_exp()
+                self.config_utils.get_jwt().par_exp
             )
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)

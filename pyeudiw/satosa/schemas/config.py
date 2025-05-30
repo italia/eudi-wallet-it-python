@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator, model_validator
 
 from pyeudiw.federation.schemas.openid_credential_verifier import (
     OpenIDCredentialVerifier,
@@ -31,3 +31,15 @@ class PyeudiwBackendConfig(BaseModel):
 class PyeudiwFrontendConfig(BaseModel):
     jwt: JWTConfig
     metadata: Metadata
+
+    @model_validator(mode="before")
+    def check_config(cls, values):
+        jwt = values.get("jwt")
+        if jwt.access_token_exp:
+            raise ValueError("Field 'jwt.access_token_exp' must be provided and non-empty.")
+        if jwt.refresh_token_exp:
+            raise ValueError("Field 'jwt.refresh_token_exp' must be provided and non-empty.")
+        if jwt.par_exp:
+            raise ValueError("Field 'jwt.par_exp' must be provided and non-empty.")
+
+        return values

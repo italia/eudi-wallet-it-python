@@ -67,17 +67,18 @@ class TokenHandler(BaseEndpoint):
                 CODE_CHALLENGE_CTX: entity.code_challenge
             })
             iat = int(time.time())
+            jwt_config = self.config_utils.get_jwt()
             access_token = AccessToken(
                 iss=self.entity_id,
                 aud=self.entity_id,
-                exp=iat + self.config_utils.get_jwt_default_exp(),
+                exp=iat + jwt_config.access_token_exp,
                 iat=iat,
                 client_id=entity.client_id,
                 sub=entity.client_id,
             )
             return TokenResponse.to_created_response(
                 self._sign_token(access_token, "at+jwt"),
-                self._sign_token(RefreshToken(**access_token.model_dump()), "rt+jwt"),
+                self._sign_token(RefreshToken(**access_token.model_dump(), exp=iat + jwt_config.refresh_token_exp), "rt+jwt"),
                 access_token.exp,
                 entity.authorization_details
             )

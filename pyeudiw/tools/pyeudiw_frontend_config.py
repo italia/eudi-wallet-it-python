@@ -1,5 +1,6 @@
 from typing import Dict
 
+from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.satosa.schemas.metadata import (
     OauthAuthorizationServerMetadata,
@@ -11,8 +12,8 @@ class PyeudiwFrontendConfigUtils:
     def __init__(self, config: dict[str, dict[str, str] | list[str]]):
         self.config = PyeudiwFrontendConfig(**config)
 
-    def get_jwt_default_exp(self) -> int:
-        return self.config.jwt.default_exp
+    def get_jwt(self) -> JWTConfig:
+        return self.config.jwt
 
     def get_jwt_default_sig_alg(self) -> str:
         return self.config.jwt.default_sig_alg
