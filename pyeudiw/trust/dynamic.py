@@ -326,6 +326,21 @@ class CombinedTrustEvaluator(BaseLogger):
                 f"found collision in metadata endpoint: {all_paths}",
             )
         return endpoints
+    
+    def has_client_id(self, client_id: str) -> bool:
+        """
+        Check if the trust source has a client id.
+
+        :param issuer: The issuer
+        :type issuer: str
+
+        :returns: If the trust source has a client id
+        :rtype: bool
+        """
+        for handler in self.handlers:
+            if handler.is_it_me(client_id):
+                return True
+        return False
 
     @staticmethod
     def from_config(
