@@ -224,6 +224,7 @@ config:
       module: pyeudiw.trust.handler.federation
       class: FederationHandler
       config:
+        client_id: 'openid-federation:example.com'
         httpc_params: *httpc_params
         cache_ttl: 0
         entity_configuration_exp: 600
@@ -265,8 +266,7 @@ config:
       module: pyeudiw.trust.handler.x509
       class: X509Handler
       config:
-        # client_id: *client_id
-        client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request. 
+        client_id: 'x509_san_dns:example.com'
         include_issued_jwt_header_param: true # default false; if true, it will include x5c header parameters in the signed presentation request issued by this trust handler
         certificate_authorities:
           ca.example.com: |
