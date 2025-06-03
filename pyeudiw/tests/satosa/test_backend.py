@@ -36,6 +36,7 @@ from pyeudiw.tests.federation.base import (
 from pyeudiw.tests.settings import (
     BASE_URL,
     CONFIG,
+    BACKEND_NAME,
     CREDENTIAL_ISSUER_CONF,
     CREDENTIAL_ISSUER_ENTITY_ID,
     INTERNAL_ATTRIBUTES,
@@ -158,7 +159,7 @@ class TestOpenID4VPBackend:
             INTERNAL_ATTRIBUTES, 
             CONFIG, 
             BASE_URL, 
-            "name"
+            BACKEND_NAME
         )
 
         url_map = self.backend.register_endpoints()
@@ -273,7 +274,7 @@ class TestOpenID4VPBackend:
             request_object=request_object)
     
     def test_backend_init(self):
-        assert self.backend.name == "name"
+        assert self.backend.name == BACKEND_NAME
 
     # TODO: Move to trust evaluation handlers tests
     def test_entity_configuration(self, context):
@@ -306,7 +307,7 @@ class TestOpenID4VPBackend:
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        context.qs_params = {"client_id_hint": f"openid_federation:{BASE_URL}/OpenID4VP"}
+        context.qs_params = {"client_id_hint": f"openid_federation:{BASE_URL}/{BACKEND_NAME}"}
         resp = self.backend.pre_request_endpoint(context, InternalData())
 
         assert resp is not None
