@@ -361,10 +361,15 @@ class CombinedTrustEvaluator(BaseLogger):
        
         for handler_name, handler_config in config.items():
             try:
-                # every trust evaluation method might use their own client id
-                # but a default one always therefore required
-                if not handler_config["config"].get("client_id"):
+                # every trust evaluation method might use their own custom client id prefix
+                # but a client_id, even without a prefix, is always therefore required
+                # and if not provided, the default client_id is used
+                client_id: str = handler_config["config"].get("client_id")
+
+                if not client_id:
                     handler_config["config"]["client_id"] = default_client_id
+                else:
+                    handler_config["config"]["client_id"] = f"{client_id.strip().split(':')[0]}:{default_client_id}"
 
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],
