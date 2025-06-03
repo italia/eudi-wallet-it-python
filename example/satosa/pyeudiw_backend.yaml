@@ -224,7 +224,7 @@ config:
       module: pyeudiw.trust.handler.federation
       class: FederationHandler
       config:
-        client_id: 'openid-federation:example.com'
+        client_id: 'openid_federation:http://example.com'
         httpc_params: *httpc_params
         cache_ttl: 0
         entity_configuration_exp: 600
