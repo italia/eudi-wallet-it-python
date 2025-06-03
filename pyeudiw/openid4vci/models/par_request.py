@@ -36,7 +36,7 @@ class ParRequest(OpenId4VciBaseModel):
 
   @model_validator(mode='after')
   def check_par_request(self) -> "ParRequest":
-    config = self.get_config().get_oauth_authorization_server()
+    config = self.get_config_utils().get_oauth_authorization_server()
     req_client_id = self.get_ctx(CLIENT_ID_CTX)
     endpoint = self.get_ctx(ENDPOINT_CTX)
     self.validate_iss(req_client_id, endpoint)

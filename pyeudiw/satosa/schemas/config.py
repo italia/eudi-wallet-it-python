@@ -35,11 +35,11 @@ class PyeudiwFrontendConfig(BaseModel):
     @model_validator(mode="before")
     def check_config(cls, values):
         jwt = values.get("jwt")
-        if jwt.access_token_exp:
+        if not jwt["access_token_exp"]:
             raise ValueError("Field 'jwt.access_token_exp' must be provided and non-empty.")
-        if jwt.refresh_token_exp:
+        if not jwt["refresh_token_exp"]:
             raise ValueError("Field 'jwt.refresh_token_exp' must be provided and non-empty.")
-        if jwt.par_exp:
+        if not jwt["par_exp"]:
             raise ValueError("Field 'jwt.par_exp' must be provided and non-empty.")
 
         return values

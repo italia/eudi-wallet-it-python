@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
@@ -27,11 +28,14 @@ class OpenId4VciBaseModel(BaseModel):
         else:
             self._context = {}
 
-    def get_config(self) -> PyeudiwFrontendConfigUtils:
+    def get_config(self) -> PyeudiwFrontendConfig:
         config_obj = self.get_ctx(CONFIG_CTX)
-        if isinstance(config_obj, PyeudiwFrontendConfigUtils):
+        if isinstance(config_obj, PyeudiwFrontendConfig):
             return config_obj
-        return PyeudiwFrontendConfigUtils(**config_obj)
+        return PyeudiwFrontendConfig(**config_obj)
+
+    def get_config_utils(self) -> PyeudiwFrontendConfigUtils:
+        return PyeudiwFrontendConfigUtils(self.get_ctx(CONFIG_CTX))
 
     def get_ctx(self, path: str) -> Any:
         if not self._context or path not in self._context:

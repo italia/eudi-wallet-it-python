@@ -47,9 +47,33 @@ config:
 
   jwt:
     default_sig_alg: ES256 # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
-    access_token_exp: 90
-    refresh_token_exp: 90
-    par_exp: 90
+    default_enc_alg: RSA-OAEP
+    default_enc_enc: A256CBC-HS512
+    default_exp: 6         # minutes
+    enc_alg_supported:
+      - RSA-OAEP
+      - RSA-OAEP-256
+      - ECDH-ES
+      - ECDH-ES+A128KW
+      - ECDH-ES+A192KW
+      - ECDH-ES+A256KW
+    enc_enc_supported:
+      - A128CBC-HS256
+      - A192CBC-HS384
+      - A256CBC-HS512
+      - A128GCM
+      - A192GCM
+      - A256GCM
+    sig_alg_supported:
+      - RS256
+      - RS384
+      - RS512
+      - ES256
+      - ES384
+      - ES512
+    access_token_exp: 90 # minutes
+    refresh_token_exp: 120 # minutes
+    par_exp: 90 # minutes
 
   # private jwk
   metadata_jwks: &metadata_jwks

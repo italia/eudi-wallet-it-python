@@ -3,40 +3,14 @@ import pytest
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
+from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context(authorization_servers =[]):
+    MOCK_PYEUDIW_FRONTEND_CONFIG["metadata"]["openid_credential_issuer"]["authorization_servers"] = authorization_servers
     return {
-        CONFIG_CTX: PyeudiwFrontendConfig(**{
-            "jwt": {
-                "default_exp":60,
-                "default_sig_alg": "ES256"
-            },
-            "metadata": {
-                "oauth_authorization_server": {
-                    "response_types_supported": ["code"],
-                    "response_modes_supported": [
-                        "form_post.jwt",
-                        "query"
-                    ],
-                    "code_challenge_methods_supported": ["S256"],
-                    "scopes_supported": ["scope1", "scope2", "openid"]
-                },
-                "openid_credential_issuer" : {
-                    "credential_configurations_supported": {
-                        "PDA1Credential" :{
-                            "id": "eudiw.pda1.se"
-                        },
-                        "EHICCredential":{
-                            "id": "eudiw.ehic.se"
-                        }
-                    },
-                    "authorization_servers": authorization_servers,
-                    "credential_issuer":"",
-                }
-            }
-        })
+        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG)
     }
 
 @pytest.mark.parametrize("credential_issuer", ["", "  ", None])

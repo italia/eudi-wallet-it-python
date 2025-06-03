@@ -61,7 +61,7 @@ class AuthorizationCode(OpenId4VciBaseModel):
         """
         self.authorization_server = self.strip(self.authorization_server)
         self.check_missing_parameter(self.authorization_server, "grants.authorization_server", CREDENTIAL_OFFER_ENDPOINT)
-        if self.authorization_server not in self.get_config().get_openid_credential_issuer().authorization_servers:
+        if self.authorization_server not in self.get_config_utils().get_openid_credential_issuer().authorization_servers:
             logger.error(f"invalid 'grants.authorization_server' {self.authorization_server} in request `credential_offer` endpoint")
             raise InvalidRequestException("invalid `grants.authorization_server` parameter")
 
@@ -129,7 +129,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
             InvalidRequestException: If the list is empty or contains unsupported IDs.
         """
         self.check_missing_parameter(self.credential_configuration_ids, "credential_configuration_ids", CREDENTIAL_OFFER_ENDPOINT)
-        credential_configurations_supported = self.get_config().get_credential_configurations_supported()
+        credential_configurations_supported = self.get_config_utils().get_credential_configurations_supported()
         supported_ids = [ccs.id for ccs in credential_configurations_supported.values()]
         for req_id in self.credential_configuration_ids:
             if req_id not in supported_ids:

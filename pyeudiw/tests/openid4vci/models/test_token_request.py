@@ -2,6 +2,7 @@ from hashlib import sha256, sha512
 
 import pytest
 
+from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.models.token_request import (
     TokenRequest,
     CODE_CHALLENGE_CTX,
@@ -9,6 +10,7 @@ from pyeudiw.openid4vci.models.token_request import (
     REDIRECT_URI_CTX
 )
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
+from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
@@ -21,39 +23,13 @@ def get_valid_context(code_verifier="testverifier", redirect_uri="https://client
         case _:
             raise NotImplementedError(f"{challenge_method} not supported in test context")
 
+    MOCK_PYEUDIW_FRONTEND_CONFIG["metadata"]["oauth_authorization_server"]["scopes_supported"] = scopes_supported
+
     return {
         CODE_CHALLENGE_CTX: code_challenge,
         CODE_CHALLENGE_METHOD_CTX: challenge_method,
         REDIRECT_URI_CTX: redirect_uri,
-        "config": PyeudiwFrontendConfig(**{
-            "jwt": {
-                "default_exp":60,
-                "default_sig_alg": "ES256"
-            },
-            "metadata": {
-                "oauth_authorization_server": {
-                    "response_types_supported": ["code"],
-                    "response_modes_supported": [
-                        "form_post.jwt",
-                        "query"
-                    ],
-                    "code_challenge_methods_supported": ["S256"],
-                    "scopes_supported": scopes_supported
-                },
-                "openid_credential_issuer" : {
-                    "credential_configurations_supported": {
-                        "PDA1Credential" :{
-                            "id": "eudiw.pda1.se"
-                        },
-                        "EHICCredential":{
-                            "id": "eudiw.ehic.se"
-                        }
-                    },
-                    "authorization_servers": [],
-                    "credential_issuer":"",
-                }
-            }
-        })
+        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG)
     }
 
 def test_token_request_valid_authorization_code_grant():

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
@@ -9,8 +9,11 @@ from pyeudiw.satosa.schemas.metadata import (
 )
 
 class PyeudiwFrontendConfigUtils:
-    def __init__(self, config: dict[str, dict[str, str] | list[str]]):
-        self.config = PyeudiwFrontendConfig(**config)
+    def __init__(self, config: Any):
+        if isinstance(config, PyeudiwFrontendConfig):
+            self.config = config
+        else:
+            self.config = PyeudiwFrontendConfig(**config)
 
     def get_jwt(self) -> JWTConfig:
         return self.config.jwt
@@ -25,4 +28,4 @@ class PyeudiwFrontendConfigUtils:
         return self.config.metadata.openid_credential_issuer
 
     def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration]:
-        return self.config.get_openid_credential_issuer().credential_configurations_supported
+        return self.get_openid_credential_issuer().credential_configurations_supported

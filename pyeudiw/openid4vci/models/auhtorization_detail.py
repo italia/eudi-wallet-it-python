@@ -27,8 +27,7 @@ class AuthorizationDetail(OpenId4VciBaseModel):
     def validate_credential_configuration_id(self, endpoint: str):
         self.credential_configuration_id = self.strip(self.credential_configuration_id)
         self.check_missing_parameter(self.credential_configuration_id, "authorization_details.credential_configuration_id", endpoint)
-
-        credential_configurations_supported = self.get_config().get_credential_configurations_supported()
+        credential_configurations_supported = self.get_config_utils().get_credential_configurations_supported()
         if self.credential_configuration_id not in [ccs.id for ccs in credential_configurations_supported.values()]:
             logger.error(f"invalid credential_configuration_ids {self.credential_configuration_id} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `authorization_details.credential_configuration_id` parameter")

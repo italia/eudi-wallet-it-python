@@ -12,6 +12,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
 )
 from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
+from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 
@@ -20,35 +21,7 @@ def get_valid_context():
         ENDPOINT_CTX: "par",
         CLIENT_ID_CTX: "client-123",
         ENTITY_ID_CTX: "entity-123",
-        CONFIG_CTX: PyeudiwFrontendConfig(**{
-            "jwt": {
-                "default_exp":60,
-                "default_sig_alg": "ES256"
-            },
-            "metadata": {
-                "oauth_authorization_server": {
-                    "response_types_supported": ["code"],
-                    "response_modes_supported": [
-                        "form_post.jwt",
-                        "query"
-                    ],
-                    "code_challenge_methods_supported": ["S256"],
-                    "scopes_supported": ["scope1", "scope2", "openid"]
-                },
-                "openid_credential_issuer" : {
-                    "credential_configurations_supported": {
-                        "PDA1Credential" :{
-                            "id": "eudiw.pda1.se"
-                        },
-                        "EHICCredential":{
-                            "id": "eudiw.ehic.se"
-                        }
-                    },
-                    "authorization_servers": [],
-                    "credential_issuer":"",
-                }
-            }
-        })
+        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG)
     }
 
 @pytest.mark.parametrize("value", ["", "  ", None])
