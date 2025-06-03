@@ -340,31 +340,6 @@ config:
                   locale: it-IT
                 - name: Driving privilege details
                   locale: en-US
-
-
-            - path:
-                - personal_administrative_number
-              display:
-                - name: Codice Fiscale
-                  locale: it-IT
-                - name: Tax Identification Number
-                  locale: en-US
-
-            - path:
-                - constant_attendance_allowance
-              display:
-                - name: Diritto accompagnatore
-                  locale: it-IT
-                - name: Constant attendance allowance
-                  locale: en-US
-
-            - path:
-                - link_qr_code
-              display:
-                - name: Link QR Code
-                  locale: it-IT
-                - name: Link QR Code
-                  locale: en-US
         mso_mdoc_mDL:
           format: mso_mdoc
           scope: mDL
