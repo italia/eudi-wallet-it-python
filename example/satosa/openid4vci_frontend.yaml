@@ -469,6 +469,45 @@ config:
       contacts:
         - informazioni@example.it
         - protocollo@pec.example.it
+    openid_credential_verifier:
+      application_type: web
+      client_id: https://eaa-provider.example.org
+      client_name: Organization Name
+      contacts:
+        - informazioni@example.it
+        - protocollo@pec.example.it
+      request_uris:
+        - https://eaa-provider.example.org/request_uri
+      response_uris:
+        - https://eaa-provider.example.org/response_uri
+      default_acr_values:
+        - https://trust-registry.eid-wallet.example.it/loa/substantial
+        - https://trust-registry.eid-wallet.example.it/loa/high
+      request_object_signing_alg_values_supported:
+        - ES256
+        - ES384
+        - ES512
+      authorization_signed_response_alg:
+        - ES256
+        - ES384
+        - ES512
+      authorization_encrypted_response_alg:
+        - RSA-OAEP-256
+      authorization_encrypted_response_enc:
+        - A128CBC-HS256
+        - A192CBC-HS384
+        - A256CBC-HS512
+        - A128GCM
+        - A192GCM
+        - A256GCM
+      vp_formats:
+        dc+sd-jwt:
+          sd-jwt_alg_values:
+            - ES256
+            - ES384
+            - ES512
+      jwks: *metadata_jwks
+
 
   trust:
     federation:
