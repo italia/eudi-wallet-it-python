@@ -644,6 +644,25 @@ config:
         private_keys: *metadata_jwks
 
   # Mongodb database configuration
+  user_storage:
+      storage:
+        module: pyeudiw.storage.user_storage
+        class: UserStorage
+        init_params:
+          url: mongodb://satosa-mongo:27017
+          conf:
+            db_name: eudiw
+            db_sessions_collection: sessions
+            db_trust_attestations_collection: trust_attestations
+            db_trust_anchors_collection: trust_anchors
+            db_trust_sources_collection: trust_sources
+            data_ttl: 63072000 # 2 years
+          connection_params:
+            username: !ENV MONGODB_USERNAME
+            password: !ENV MONGODB_PASSWORD
+
+
+  # Mongodb database configuration
   storage:
     mongo_db:
       cache:
