@@ -30,6 +30,6 @@ class PyeudiwFrontendConfigUtils:
     def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration]:
         ccs = self.get_openid_credential_issuer().credential_configurations_supported
         return {
-            k: CredentialConfiguration(**k)
+            k: CredentialConfiguration(id=k)
             for k, v in ccs.items()
         }

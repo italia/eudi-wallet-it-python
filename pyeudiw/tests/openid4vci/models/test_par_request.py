@@ -437,7 +437,7 @@ def test_invalid_authorization_details_credential_configuration_id(value):
 def test_missing_redirect_uri(value):
     authorization_details = {
         "type": OPEN_ID_CREDENTIAL_TYPE,
-        "credential_configuration_id": "eudiw.pda1.se"
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
     payload = {
         "iss": "client-123",
@@ -470,7 +470,7 @@ def test_missing_redirect_uri(value):
 def test_invalid_redirect_uri(value):
     authorization_details = {
         "type": OPEN_ID_CREDENTIAL_TYPE,
-        "credential_configuration_id": "eudiw.pda1.se"
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
     payload = {
         "iss": "client-123",
@@ -495,7 +495,7 @@ def test_invalid_redirect_uri(value):
 def test_missing_jti(value):
     authorization_details = {
         "type": OPEN_ID_CREDENTIAL_TYPE,
-        "credential_configuration_id": "eudiw.pda1.se"
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
     payload = {
         "iss": "client-123",
@@ -523,7 +523,7 @@ def test_missing_jti(value):
 def test_invalid_jti(value):
     authorization_details = {
         "type": OPEN_ID_CREDENTIAL_TYPE,
-        "credential_configuration_id": "eudiw.pda1.se"
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
     payload = {
         "iss": "client-123",

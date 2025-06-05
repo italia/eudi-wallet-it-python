@@ -67,7 +67,7 @@ def test_invalid_credential_configuration_ids(credential_configuration_ids):
 def test_missing_grants():
     payload = {
         "credential_issuer": "https://example.com/my-path",
-        "credential_configuration_ids": ["eudiw.pda1.se"]
+        "credential_configuration_ids": ["dc_sd_jwt_EuropeanDisabilityCard"]
     }
 
     with pytest.raises(InvalidRequestException, match="missing `grants` parameter"):
@@ -117,7 +117,7 @@ def test_invalid_grants_authorization_server_when_not_expected():
 def test_valid_credential_offer_request():
     payload = {
         "credential_issuer": "https://example.com/my-path",
-        "credential_configuration_ids": ["eudiw.pda1.se"],
+        "credential_configuration_ids": ["dc_sd_jwt_EuropeanDisabilityCard"],
         "grants": {
             "issuer_state": "issuer_state_test",
             "authorization_server": "server"
