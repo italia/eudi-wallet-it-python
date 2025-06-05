@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from pydantic import BaseModel
 
@@ -13,7 +13,7 @@ class CredentialConfiguration(BaseModel):
     id: str
 
 class OpenidCredentialIssuerMetadata(BaseModel):
-    credential_configurations_supported: Dict[str, CredentialConfiguration]
+    credential_configurations_supported: dict
     authorization_servers: Optional[List[Optional[str]]] = None
     credential_issuer: Optional[str]
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, root_validator, model_validator
+from pydantic import BaseModel, model_validator
 
 from pyeudiw.federation.schemas.openid_credential_verifier import (
     OpenIDCredentialVerifier,
@@ -6,12 +6,12 @@ from pyeudiw.federation.schemas.openid_credential_verifier import (
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
-from pyeudiw.satosa.schemas.endpoint import EndpointsConfig
+from pyeudiw.satosa.schemas.endpoint import EndpointsConfig, EndpointDefConfig
 from pyeudiw.satosa.schemas.metadata import Metadata
 from pyeudiw.satosa.schemas.response import ResponseConfig
 from pyeudiw.satosa.schemas.ui import UiConfig
 from pyeudiw.satosa.schemas.user_attributes import UserAttributesConfig
-from pyeudiw.storage.schemas.storage import Storage
+from pyeudiw.storage.schemas.storage import Storage, UserStorage
 from pyeudiw.trust.model import TrustModuleConfiguration_T
 
 
@@ -31,6 +31,8 @@ class PyeudiwBackendConfig(BaseModel):
 class PyeudiwFrontendConfig(BaseModel):
     jwt: JWTConfig
     metadata: Metadata
+    user_storage: UserStorage
+    endpoints: dict[str, EndpointDefConfig]
 
     @model_validator(mode="before")
     def check_config(cls, values):

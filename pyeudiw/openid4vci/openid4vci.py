@@ -39,7 +39,7 @@ class OpenID4VCIFrontend(FrontendModule):
     """
     el = EndpointsLoader(self.config, self.base_url, self.name)
     url_map = []
-    for path, inst in el.endpoint_instances:
+    for path, inst in el.endpoint_instances.items():
       url_map.append((f"{self.name}/{path}", inst))
 
     logger.debug(f"Loaded OpenID4VCI endpoints: {url_map}")

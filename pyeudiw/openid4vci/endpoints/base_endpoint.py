@@ -4,14 +4,13 @@ from satosa.response import (
     Response
 )
 
-from build.lib.pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
-class BaseEndpoint(BaseLogger, BaseHTTPErrorHandler):
+class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
 
     def __init__(self, config: dict, base_url: str, name: str):
         """

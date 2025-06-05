@@ -19,3 +19,6 @@ class MongoDbConfig(BaseModel):
 
 class Storage(BaseModel):
     mongo_db: MongoDbConfig
+
+class UserStorage(BaseModel):
+    storage: StorageConfig
