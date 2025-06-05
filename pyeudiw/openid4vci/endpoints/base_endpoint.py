@@ -7,21 +7,24 @@ from satosa.response import (
 from pyeudiw.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
 class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
 
-    def __init__(self, config: dict, base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """
         Initialize the OpenID4VCI endpoints class.
         Args:
             config (dict): The configuration dictionary.
+            internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
         self.config = config
-        self.config_utils = PyeudiwFrontendConfigUtils(**config)
+        self.config_utils = PyeudiwFrontendConfigUtils(config)
+        self.internal_attributes = internal_attributes
         self._db_engine = None
         self._backend_url = f"{base_url}/{name}"
 
@@ -96,4 +99,4 @@ class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
         Raises:
             NotImplementedError: If the method is not overridden by a subclass.
         """
-    raise NotImplementedError
+        raise NotImplementedError

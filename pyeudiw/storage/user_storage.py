@@ -51,12 +51,18 @@ class UserStorage(BaseStorage):
             )
 
     def get_by_fiscal_code(self, fiscal_code: str) -> UserEntity:
+        return self.get_by_field("personal_administrative_number",fiscal_code)
+
+    def get_by_field(self, field_name: str, field_value: str) -> UserEntity:
+        query = {field_name: field_value}
+        return self.get_by_fields(query)
+
+    def get_by_fields(self, query: dict) -> UserEntity:
         self._connect()
-        query = {"personal_administrative_number": fiscal_code}
         document = self.sessions.find_one(query)
 
         if document is None:
-            raise ValueError(f"User with fiscal_code {fiscal_code} not found.")
+            raise ValueError(f"User with {query} not found.")
 
         return UserEntity(**document)
 

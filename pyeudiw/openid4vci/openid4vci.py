@@ -26,6 +26,7 @@ class OpenID4VCIFrontend(FrontendModule):
        name: str,
   ):
     FrontendModule.__init__(self, auth_req_callback_func, internal_attributes, base_url, name)
+    self.internal_attributes = internal_attributes
     self.config = config
     self.base_url = base_url
     self.name = name
@@ -37,10 +38,14 @@ class OpenID4VCIFrontend(FrontendModule):
     :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
     :raise ValueError: if more than one backend is configured
     """
-    el = EndpointsLoader(self.config, self.base_url, self.name)
+    el = EndpointsLoader(self.config, self.internal_attributes, self.base_url, self.name)
     url_map = []
     for path, inst in el.endpoint_instances.items():
       url_map.append((f"{self.name}/{path}", inst))
 
     logger.debug(f"Loaded OpenID4VCI endpoints: {url_map}")
     return url_map
+
+  def handle_authn_response(self, context: Context, internal_resp: InternalData) -> None:
+    #TODO: handle interal data from backend response for mapping with internal_attributes
+    pass

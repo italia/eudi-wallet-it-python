@@ -48,15 +48,16 @@ SD_SPEC_TEMPLATE = {
 
 class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
-    def __init__(self, config: dict, base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """
-        Initialize the nonce endpoint class.
+        Initialize the credentials endpoints class.
         Args:
             config (dict): The configuration dictionary.
+            internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
-        super().__init__(config, base_url, name)
+        super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self._db_user_engine = None
 
@@ -65,9 +66,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             validate_request_method(context.request_method, ["POST"])
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(context)
-
             entity = self.db_engine.get_by_session_id(self._get_session_id(context))
-
             self.validate_request(context, entity)
             return self.to_response(context, entity)
 
@@ -114,7 +113,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
     def issue_sd_jwt(self, context: Context) -> dict:
         now = iat_now()
-        exp = exp_from_now(self.config_utils.get_jwt_default_exp())
+        exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         entity = self.db_engine.get_by_session_id(self._get_session_id(context))
         claims = {
             "iss": entity.client_id,
@@ -122,16 +121,15 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             "exp": exp
         }
 
-        #todo: retrieve user data
-        user = self.db_user_storage_engine.get_by_fiscal_code("")
+        #todo: retrieve user data from 'handle_authn_response'
+        attributes = {}
+        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(attributes))
 
         user_data = user.model_dump()
         user_data["unique_id"] = uuid4()
         user_data["tax_id_code"] = f"TINIT-{user.personal_administrative_number}"
 
-        json_template = json.dumps(SD_SPEC_TEMPLATE)
-        json_filled = json_template.format(**user_data)
-        specification = json.loads(json_filled)
+        specification = self._loader(SD_SPEC_TEMPLATE, user_data)
 
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
@@ -142,9 +140,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         holder_key = new_ec_key(ec_crv, alg=ec_alg)
 
         #todo: handle additional_headers
-        additional_headers = {}
-        additional_headers['kid'] = issuer_key["kid"]
-
+        additional_headers = {'kid': issuer_key["kid"]}
 
         sdjwt_at_issuer = SDJWTIssuer(
             user_claims=specification,
@@ -154,4 +150,41 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             extra_header_parameters=additional_headers
         )
 
-        return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
+        return {
+            "jws": sdjwt_at_issuer.serialized_sd_jwt,
+            "issuance": sdjwt_at_issuer.sd_jwt_issuance
+        }
+
+    @staticmethod
+    def _loader(template: dict, data: dict):
+        json_template = json.dumps(template)
+        json_filled = json_template.format(**data)
+        return json.loads(json_filled)
+
+    def _extract_lookup_identifiers(self, attributes: dict):
+        """
+        Map user attributes to the internal lookup keys for database queries.
+
+        Args:
+            attributes (dict): The context containing user attributes.
+
+        Returns:
+            dict: A dictionary with DB lookup keys and their matched context user attributes values.
+        """
+        lookup_params = {}
+
+        #TODO: normalize or manage different source with backend as `openid4vci`
+        ia_openid4vci = {
+            attr: sources['openid4vci']
+            for attr, sources in self.internal_attributes["attributes"].items()
+            if 'openid4vci' in sources
+        }
+
+        for db_field_name, possible_saml_names in ia_openid4vci:
+            for saml_name in possible_saml_names:
+                value = attributes.get(saml_name)
+                if value:
+                    lookup_params[db_field_name] = value[0] if isinstance(value, list) else value
+                    break  # Stop at first match
+
+        return {k: v for k, v in lookup_params.items() if v is not None}

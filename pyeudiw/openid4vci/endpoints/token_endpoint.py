@@ -34,15 +34,16 @@ from pyeudiw.tools.validation import (
 
 class TokenHandler(BaseEndpoint):
 
-    def __init__(self, config: dict, base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """
         Initialize the token endpoint class.
         Args:
             config (dict): The configuration dictionary.
+            internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
-        super().__init__(config, base_url, name)
+        super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
 
     def endpoint(self, context: Context):

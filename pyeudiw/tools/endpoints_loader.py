@@ -9,6 +9,7 @@ class EndpointsLoader:
     def __init__(
             self,
             config: dict[str, dict[str, str] | list[str]],
+            internal_attributes: dict[str, dict[str, str | list[str]]],
             base_url: str,
             name: str
     ):
@@ -34,7 +35,7 @@ class EndpointsLoader:
                     and e.get("class", None)
             ):
                 endpoint_class = get_dynamic_class(e["module"], e["class"])
-                endpoint_instances[e["path"].lstrip("/")] = endpoint_class(config, base_url, name)
+                endpoint_instances[e["path"].lstrip("/")] = endpoint_class(config, internal_attributes, base_url, name)
 
         self.endpoint_instances = endpoint_instances
 
