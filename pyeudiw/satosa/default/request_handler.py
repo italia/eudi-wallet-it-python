@@ -135,7 +135,14 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         except Exception:
             metadata = None
 
-        wallet_metadata = WalletMetadata(**context.request)
+        try:
+            wallet_metadata = WalletMetadata(**context.request)
+        except Exception as e:
+            self._log_warning(context, f"wallet metadata not provided or invalid: {e}")
+            wallet_metadata = WalletMetadata(
+                wallet_metadata=None,
+                wallet_nonce=None,
+            )
 
         data = build_authorization_request_claims(
             self.client_id,
