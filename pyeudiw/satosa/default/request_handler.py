@@ -9,6 +9,7 @@ from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QU
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.openid4vp.schemas.wallet_metadata import WalletMetadata
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -134,9 +135,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         except Exception:
             metadata = None
 
-        wallet_nonce = None
-        if context.request and hasattr(context.request, "get"):
-            wallet_nonce = context.request.get("wallet_nonce", None)
+        wallet_metadata = WalletMetadata(**context.request)
 
         data = build_authorization_request_claims(
             self.client_id,
@@ -145,7 +144,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             self.config["authorization"],
             metadata=metadata,
             submission_data=self._build_submission_data(),
-            wallet_nonce=wallet_nonce,
+            wallet_nonce=wallet_metadata.wallet_nonce,
         )
 
         if _aud := self.config["authorization"].get("aud"):
@@ -153,11 +152,10 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
 
         try:
             document_id = document["document_id"]
-            data_copy = copy(data)
 
-            if context.request is not None and "wallet_metadata" in context.request:
-                # if wallet metadata is present, add it to the request object
-                data_copy["wallet_metadata"] = context.request["wallet_metadata"]
+            data_copy = copy(data)
+            if wallet_metadata.wallet_metadata:
+                data_copy["wallet_metadata"] = wallet_metadata.wallet_metadata.model_dump()
 
             self.db_engine.update_request_object(document_id, data_copy)
 
