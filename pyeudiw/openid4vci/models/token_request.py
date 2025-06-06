@@ -78,10 +78,10 @@ class TokenRequest(OpenId4VciBaseModel):
     if is_authorization_code_grant:
       self.check_missing_parameter(self.code_verifier, "code_verifier", TOKEN_ENDPOINT)
 
-      match self.get_ctx(CODE_CHALLENGE_METHOD_CTX):
-        case "s256":
+      match self.get_ctx(CODE_CHALLENGE_METHOD_CTX).upper():
+        case "S256":
           code_verifier_encode = sha256(self.code_verifier.encode('utf-8')).hexdigest()
-        case "s512":
+        case "S512":
           code_verifier_encode = sha512(self.code_verifier.encode('utf-8')).hexdigest()
         case _:
           logger.error(
