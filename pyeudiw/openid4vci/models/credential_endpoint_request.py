@@ -14,7 +14,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX,
     NONCE_CTX
 )
-from pyeudiw.openid4vci.utils.date import DateUtils
+from pyeudiw.tools.date import is_valid_unix_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class ProofJWT(OpenId4VciBaseModel):
 
     def validate_iat(self):
         self.check_invalid_parameter(
-            not DateUtils.is_valid_unix_timestamp(self.iat),
+            not is_valid_unix_timestamp(self.iat),
             self.iat, "proof.jwt.iat", CREDENTIAL_ENDPOINT
         )
 

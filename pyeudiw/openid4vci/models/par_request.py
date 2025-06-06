@@ -12,7 +12,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
   ENDPOINT_CTX,
   ENTITY_ID_CTX
 )
-from pyeudiw.openid4vci.utils.date import DateUtils
+from pyeudiw.tools.date import is_valid_unix_timestamp
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
@@ -44,11 +44,11 @@ class ParRequest(OpenId4VciBaseModel):
     self.validate_state(endpoint)
     self.validate_client_id(req_client_id, endpoint)
 
-    if not DateUtils.is_valid_unix_timestamp(self.exp):
+    if not is_valid_unix_timestamp(self.exp):
       logger.error(f"invalid exp {self.exp} in request `{endpoint}` endpoint")
       raise InvalidRequestException("invalid `exp` parameter")
 
-    if not DateUtils.is_valid_unix_timestamp(self.iat):
+    if not is_valid_unix_timestamp(self.iat):
       logger.error(f"invalid iat {self.iat} in request `{endpoint}` endpoint")
       raise InvalidRequestException("invalid `iat` parameter")
 
