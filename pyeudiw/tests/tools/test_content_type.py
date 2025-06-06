@@ -7,7 +7,7 @@ from pyeudiw.tools.content_type import (
 def test_is_application_json():
     assert is_application_json("application/json")
     assert is_application_json("application/json; charset=utf-8")
-    assert is_application_json("text/plain")
+    assert not is_application_json("text/plain")
 
 def test_is_form_urlencoded():
     assert is_form_urlencoded("application/x-www-form-urlencoded")
