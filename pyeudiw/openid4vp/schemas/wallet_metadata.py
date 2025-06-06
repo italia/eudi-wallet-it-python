@@ -21,3 +21,6 @@ class VPFormatsSupported(BaseModel):
 class WalletMetadata(BaseModel):
     wallet_metadata: Optional[VPFormatsSupported] = None
     wallet_nonce: Optional[str] = None
+    authorization_endpoint: Optional[str] = None
+    response_types_supported: Optional[List[str]] = None
+    response_modes_supported: Optional[List[str]] = None
