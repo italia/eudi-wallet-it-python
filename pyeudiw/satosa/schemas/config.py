@@ -6,6 +6,7 @@ from pyeudiw.federation.schemas.openid_credential_verifier import (
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
+from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.satosa.schemas.endpoint import EndpointsConfig, EndpointDefConfig
 from pyeudiw.satosa.schemas.metadata import Metadata
 from pyeudiw.satosa.schemas.response import ResponseConfig
@@ -33,6 +34,7 @@ class PyeudiwFrontendConfig(BaseModel):
     metadata: Metadata
     user_storage: UserStorage
     endpoints: dict[str, EndpointDefConfig]
+    credential_configurations: CredentialConfigurationsConfig
 
     @model_validator(mode="before")
     def check_config(cls, values):

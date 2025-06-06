@@ -16,6 +16,7 @@ from pyeudiw.tools.content_type import (
     FORM_URLENCODED
 )
 from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.validation import (
     validate_content_type,
     validate_request_method
@@ -45,7 +46,7 @@ class AuthorizationHandler(BaseEndpoint):
         """
         global entity
         try:
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+            entity = self.db_engine.get_by_session_id(get_session_id(context))
             validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)

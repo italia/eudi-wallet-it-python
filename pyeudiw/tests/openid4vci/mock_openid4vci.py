@@ -121,5 +121,8 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
                 }
             }
         }
+    },
+    "credential_configurations": {
+        "lookup_source":"openid4vci"
     }
 }

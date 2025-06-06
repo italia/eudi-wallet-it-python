@@ -28,6 +28,7 @@ class OpenId4VCIEntity(BaseModel):
   c_nonce: str = None
   finalized: bool = False
   internal_response: None
+  attributes: dict
 
   @staticmethod
   def new_entity(context: Context, request_uri_part: str, par_request: ParRequest):

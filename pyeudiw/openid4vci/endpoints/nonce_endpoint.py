@@ -14,6 +14,7 @@ from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
+from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.validation import (
     validate_content_type,
     validate_request_method
@@ -48,7 +49,7 @@ class NonceHandler(BaseEndpoint):
             if context.request.body:
                 return self._handle_400(context, "Request body must be empty for nonce endpoint")
             c_nonce = str(uuid4())
-            self.db_engine.update_nonce_by_session_id(self._get_session_id(context), c_nonce)
+            self.db_engine.update_nonce_by_session_id(get_session_id(context), c_nonce)
             return NonceResponse.to_response(c_nonce)
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)

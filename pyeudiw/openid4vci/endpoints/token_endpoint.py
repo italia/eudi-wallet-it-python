@@ -25,6 +25,7 @@ from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
+from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.validation import (
     validate_content_type,
     validate_request_method,
@@ -60,7 +61,7 @@ class TokenHandler(BaseEndpoint):
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
             validate_oauth_client_attestation(context)
             decoded_request = self.jws_helper.verify(context.request.body.decode("utf-8"))
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+            entity = self.db_engine.get_by_session_id(get_session_id(context))
             TokenRequest.model_validate(**decoded_request, context = {
                 CONFIG_CTX: self.config_utils,
                 REDIRECT_URI_CTX: entity.redirect_uri,

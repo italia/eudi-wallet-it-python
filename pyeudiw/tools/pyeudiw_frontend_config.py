@@ -2,11 +2,13 @@ from typing import Dict, Any
 
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
+from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.satosa.schemas.metadata import (
     OauthAuthorizationServerMetadata,
     OpenidCredentialIssuerMetadata,
     CredentialConfiguration
 )
+
 
 class PyeudiwFrontendConfigUtils:
     def __init__(self, config: Any):
@@ -33,3 +35,6 @@ class PyeudiwFrontendConfigUtils:
             k: CredentialConfiguration(id=k)
             for k, v in ccs.items()
         }
+
+    def get_credential_configurations(self) -> CredentialConfigurationsConfig:
+        return self.config.credential_configurations

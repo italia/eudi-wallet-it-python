@@ -48,11 +48,24 @@ class OpenId4VciStorage(MongoStorage):
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
-        return self.update(self.get_by_session_id(session_id).document_id, updated_data={
+        return self._update(self.get_by_session_id(session_id).document_id, updated_data={
             "nonce": c_nonce
         })
 
-    def update(self, document_id: str, updated_data: dict) -> UpdateResult:
+    def update_attributes_by_session_id(self, session_id: str, attributes: dict) -> UpdateResult:
+        """
+        Update the nonce value of a session based on the session ID.
+
+        :param session_id: The session ID identifying the session document.
+        :param c_nonce: The new nonce value to set.
+        :return: The result of the update operation.
+        :raises: ValueError if the document cannot be updated.
+        """
+        return self._update(self.get_by_session_id(session_id).document_id, updated_data={
+            "attributes": attributes
+        })
+
+    def _update(self, document_id: str, updated_data: dict) -> UpdateResult:
         """
         Update a document in the session collection with new data.
 

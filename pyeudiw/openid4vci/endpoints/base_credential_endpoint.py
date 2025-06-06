@@ -14,6 +14,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.user_storage import UserStorage
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 from pyeudiw.tools.exceptions import InvalidScopeException, InvalidRequestException
+from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.tools.validation import validate_request_method, validate_content_type, validate_oauth_client_attestation
 
@@ -26,21 +27,21 @@ ALG_TO_CRV = {
 SD_SPEC_TEMPLATE = {
     'user_claims': {
         'unique_id': '{unique_id}',
-        'given_name': '{given_name}',
-        'family_name': '{family_name}',
-        'birthdate': '{birth_date}',
+        'given_name': '{name}',
+        'family_name': '{surname}',
+        'birthdate': '{dateOfBirth}',
         'place_of_birth': {
-            'country': '{birth_country}',
-            'locality': '{birth_locality}'
+            'country': '{countyOfBirth}',
+            'locality': '{placeOfBirth}'
         },
         'tax_id_code': '{tax_id_code}'
     },
     'holder_disclosed_claims': {
-        'given_name': '{given_name}',
-        'family_name': '{family_name}',
+        'given_name': '{name}',
+        'family_name': '{surname}',
         'place_of_birth': {
-            'country': '{birth_country}',
-            'locality': '{birth_locality}'
+            'country': '{countyOfBirth}',
+            'locality': '{placeOfBirth}'
         }
     },
     'key_binding': True
@@ -66,7 +67,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             validate_request_method(context.request_method, ["POST"])
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(context)
-            entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+            entity = self.db_engine.get_by_session_id(get_session_id(context))
             self.validate_request(context, entity)
             return self.to_response(context, entity)
 
@@ -114,20 +115,18 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
     def issue_sd_jwt(self, context: Context) -> dict:
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
-        entity = self.db_engine.get_by_session_id(self._get_session_id(context))
+        entity = self.db_engine.get_by_session_id(get_session_id(context))
         claims = {
             "iss": entity.client_id,
             "iat": now,
             "exp": exp
         }
 
-        #todo: retrieve user data from 'handle_authn_response'
-        attributes = {}
-        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(attributes))
+        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
 
         user_data = user.model_dump()
         user_data["unique_id"] = uuid4()
-        user_data["tax_id_code"] = f"TINIT-{user.personal_administrative_number}"
+        user_data["tax_id_code"] = f"TINIT-{user.fiscal_code}"
 
         specification = self._loader(SD_SPEC_TEMPLATE, user_data)
 
@@ -173,11 +172,11 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         """
         lookup_params = {}
 
-        #TODO: normalize or manage different source with backend as `openid4vci`
+        lookup_source = self.config_utils.get_credential_configurations().lookup_source
         ia_openid4vci = {
-            attr: sources['openid4vci']
+            attr: sources[lookup_source]
             for attr, sources in self.internal_attributes["attributes"].items()
-            if 'openid4vci' in sources
+            if lookup_source in sources
         }
 
         for db_field_name, possible_saml_names in ia_openid4vci:

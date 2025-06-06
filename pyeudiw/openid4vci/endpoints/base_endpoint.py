@@ -4,9 +4,8 @@ from satosa.response import (
     Response
 )
 
-from pyeudiw.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
+from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
@@ -25,7 +24,7 @@ class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
         self.config = config
         self.config_utils = PyeudiwFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
-        self._db_engine = None
+        self.db_engine = OpenId4VciEngine.db_engine
         self._backend_url = f"{base_url}/{name}"
 
     @staticmethod
@@ -38,39 +37,6 @@ class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
             str: A full URN request_uri string.
         """
         return f"urn:ietf:params:oauth:request_uri:{random_part}"
-
-    @staticmethod
-    def _get_session_id(context: Context) -> str:
-        """
-        Extract the session ID from the SATOSA context.
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            str: The session ID.
-        """
-        return context.state["SESSION_ID"]
-
-    @property
-    def db_engine(self) -> OpenId4VciStorage:
-        """
-        Lazily initialized access to MongoDB storage engine.
-        Returns:
-            MongoStorage: The initialized DB engine instance.
-        """
-        if not self._db_engine:
-            self._db_engine = DBEngine(self.config["storage"])
-
-        try:
-            self._db_engine.is_connected
-        except Exception as e:
-            if getattr(self, "_db_engine", None):
-                self._log_error(
-                    e.__class__.__name__,
-                    f"OpenID4VCI db storage handling, connection check silently fails and get restored: {e}"
-                )
-            self._db_engine = DBEngine(self.config["storage"])
-
-        return self._db_engine
 
     @property
     def entity_id(self) -> str:
