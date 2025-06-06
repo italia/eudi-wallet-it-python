@@ -480,6 +480,36 @@ class TestOpenID4VPBackend:
         # test status endpoint
         msg = json.loads(response_endpoint.message)
 
+        resp_code = msg['redirect_uri'].split('=')[1]
+        session_id = context.state.get("SESSION_ID", None)
+
+        state = self.backend.response_code_helper.recover_state(resp_code)
+
+        assert state is not None
+
+        finalized_session = self.backend.db_engine.get_by_state_and_session_id(
+            state=state, session_id=session_id
+        )
+
+        assert finalized_session is not None
+        assert 'internal_response' in finalized_session
+        assert finalized_session['internal_response'] is not None
+        assert 'attributes' in finalized_session['internal_response']
+        assert finalized_session['internal_response']['attributes'] is not None
+        assert 'edupersontargetedid' in finalized_session['internal_response']['attributes']
+        assert 'spidcode' in finalized_session['internal_response']['attributes']
+        assert len(finalized_session['internal_response']['attributes']['edupersontargetedid']) == 1
+        assert len(finalized_session['internal_response']['attributes']['spidcode']) == 1
+
+        context.request_method = "GET"
+        context.qs_params = {"response_code": resp_code}
+
+        response = self.backend.get_response_endpoint(context)
+
+        assert response.status == "200"
+        assert response.message
+        assert "Authentication successful" in response.message
+
         context.request_method = "GET"
         context.qs_params = {"id": state}
         status_endpoint = self.backend.status_endpoint(context)
