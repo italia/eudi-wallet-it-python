@@ -2,7 +2,10 @@ import json
 from satosa.response import Created
 
 from pyeudiw.openid4vci.models.par_response import ParResponse
-from pyeudiw.tools.content_type import APPLICATION_JSON, ContentTypeUtils
+from pyeudiw.tools.content_type import (
+    APPLICATION_JSON,
+    get_content_type_header
+)
 
 
 def test_to_created_response():
@@ -12,7 +15,7 @@ def test_to_created_response():
     response = ParResponse.to_created_response(request_uri, expires_in)
 
     assert isinstance(response, Created)
-    assert ContentTypeUtils.get_content_type_header(response.headers) == APPLICATION_JSON
+    assert get_content_type_header(response.headers) == APPLICATION_JSON
 
     data = json.loads(response.message)
     assert data["request_uri"] == request_uri
