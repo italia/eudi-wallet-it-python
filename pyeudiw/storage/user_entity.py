@@ -14,7 +14,7 @@ class UserEntity(BaseModel):
         name (str): The user's given (first) name.
         surname (str): The user's family (last) name.
         dateOfBirth (str): The user's date of birth in ISO format (YYYY-MM-DD).
-        personal_administrative_number (str): The user's unique personal identifier, such as a fiscal code.
+        fiscal_code (str): The user's unique personal identifier, such as a fiscal code.
         countyOfBirth (str): The ISO country code of the user's place of birth (e.g., "IT").
         placeOfBirth (str): The locality (city, town) where the user was born.
         portrait (Optional[str]): An optional base64-encoded image of the user's portrait.
