@@ -50,8 +50,14 @@ def test_validate_oauth_client_attestation_valid():
 
 @pytest.mark.parametrize("headers", [
     {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": "valid"},
+    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": "valid"},
+    {"OAuth-Client-Attestation-PoP": "valid"},
     {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": ""},
-    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": ""}
+    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": None},
+    {"OAuth-Client-Attestation": "valid"},
+    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": ""},
+    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": None},
+    {}
 ])
 def test_validate_oauth_client_attestation_invalid(headers):
     context = Context()

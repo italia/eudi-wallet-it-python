@@ -10,6 +10,9 @@ from pyeudiw.tools.content_type import (
 )
 from pyeudiw.tools.exceptions import InvalidRequestException
 
+OAUTH_CLIENT_ATTESTATION_POP_HEADER = "OAuth-Client-Attestation-PoP"
+OAUTH_CLIENT_ATTESTATION_HEADER = "OAuth-Client-Attestation"
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,6 +55,9 @@ def validate_oauth_client_attestation(context: Context):
     Raises:
         InvalidRequestException: If required headers are missing.
     """
-    if not context.http_headers["OAuth-Client-Attestation"] or not context.http_headers["OAuth-Client-Attestation-PoP"]:
-        logger.error(f"Missing r{'OAuth-Client-Attestation' if not context.http_headers['OAuth-Client-Attestation'] else 'OAuth-Client-Attestation-PoP'} header for `par` endpoint")
+    header_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
+    header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
+    if not header_attestation or not header_pop:
+        header_value = OAUTH_CLIENT_ATTESTATION_HEADER if not header_attestation else OAUTH_CLIENT_ATTESTATION_POP_HEADER
+        logger.error(f"Missing r{header_value} header for `par` endpoint")
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
