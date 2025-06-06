@@ -1046,6 +1046,7 @@ class TestOpenID4VPBackend:
         assert document
 
         assert document["request_object"]["wallet_metadata"] == {
+            "client_id_prefixes_supported": None,
             "vp_formats_supported": {
                 "dc+sd-jwt": {
                     "sd-jwt_alg_values": ["ES256"],

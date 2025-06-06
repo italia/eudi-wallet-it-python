@@ -16,7 +16,7 @@ _default_supported_algorithms = Literal[
 
 class VPFormatsSupported(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[_default_supported_algorithms]]]
-                
+    client_id_prefixes_supported: Optional[List[str]] = None
 
 class WalletMetadata(BaseModel):
     wallet_metadata: Optional[VPFormatsSupported] = None
