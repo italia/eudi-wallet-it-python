@@ -96,7 +96,6 @@ class TokenHandler(BaseEndpoint):
     def _sign_token(self, token: BaseModel, typ: str):
         jws_headers = {
             "typ": typ,
-            "alg": self.config_utils.get_jwt_default_sig_alg,
         }
         return self.jws_helper.sign(
             protected=jws_headers,
