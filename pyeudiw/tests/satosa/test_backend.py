@@ -480,6 +480,36 @@ class TestOpenID4VPBackend:
         # test status endpoint
         msg = json.loads(response_endpoint.message)
 
+        resp_code = msg['redirect_uri'].split('=')[1]
+        session_id = context.state.get("SESSION_ID", None)
+
+        state = self.backend.response_code_helper.recover_state(resp_code)
+
+        assert state is not None
+
+        finalized_session = self.backend.db_engine.get_by_state_and_session_id(
+            state=state, session_id=session_id
+        )
+
+        assert finalized_session is not None
+        assert 'internal_response' in finalized_session
+        assert finalized_session['internal_response'] is not None
+        assert 'attributes' in finalized_session['internal_response']
+        assert finalized_session['internal_response']['attributes'] is not None
+        assert 'edupersontargetedid' in finalized_session['internal_response']['attributes']
+        assert 'spidcode' in finalized_session['internal_response']['attributes']
+        assert len(finalized_session['internal_response']['attributes']['edupersontargetedid']) == 1
+        assert len(finalized_session['internal_response']['attributes']['spidcode']) == 1
+
+        context.request_method = "GET"
+        context.qs_params = {"response_code": resp_code}
+
+        response = self.backend.get_response_endpoint(context)
+
+        assert response.status == "200"
+        assert response.message
+        assert "Authentication successful" in response.message
+
         context.request_method = "GET"
         context.qs_params = {"id": state}
         status_endpoint = self.backend.status_endpoint(context)
@@ -894,6 +924,138 @@ class TestOpenID4VPBackend:
         # assert state_endpoint_response.message
         # msg = json.loads(state_endpoint_response.message)
         # assert msg["response"] == "Authentication successful"
+
+    def test_request_endpoint_post(self, context):
+        internal_data = InternalData()
+        context.http_headers = dict(
+            HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+        )
+        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
+        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
+
+        jwshelper = JWSHelper(PRIVATE_JWK)
+
+        wia = jwshelper.sign(
+            plain_dict=WALLET_INSTANCE_ATTESTATION,
+            protected={
+                "trust_chain": trust_chain_wallet,
+                "x5c": [],
+            },
+        )
+
+        dpop_wia = wia
+
+        dpop_proof = DPoPIssuer(
+            htu=CONFIG["metadata"]["request_uris"][0],
+            token=dpop_wia,
+            private_jwk=PRIVATE_JWK,
+        ).proof
+
+        context.http_headers = dict(
+            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
+        )
+
+        context.qs_params = {"id": state}
+
+        # put a trust attestation related itself into the storage
+        # this then is used as trust_chain header parameter in the signed
+        # request object
+        db_engine_inst = DBEngine(CONFIG["storage"])
+
+        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+            "FederationHandler"
+        )
+        assert _fedback
+
+        _es = {
+            "exp": EXP,
+            "iat": NOW,
+            "iss": "https://trust-anchor.example.org",
+            "sub": self.backend.client_id,
+            "jwks": _fedback.entity_configuration_as_dict["jwks"],
+        }
+        ta_signer = JWS(_es, alg="ES256", typ="application/entity-statement+jwt")
+
+        its_trust_chain = [
+            _fedback.entity_configuration,
+            ta_signer.sign_compact([ta_jwk]),
+        ]
+        db_engine_inst.add_or_update_trust_attestation(
+            entity_id=self.backend.client_id,
+            attestation=its_trust_chain,
+            exp=datetime.datetime.now().isoformat(),
+        )
+        # End RP trust chain
+
+        context.request_method = "POST"
+        context.request = {
+            "wallet_metadata": {
+                "vp_formats_supported": {
+                    "dc+sd-jwt": {
+                        "sd-jwt_alg_values": ["ES256"],
+                        "kb-jwt_alg_values": ["ES256"]
+                    }
+                }
+            },
+            "wallet_nonce": "qPmxiNFCR3QTm19POc8u"
+        }
+        request_uri = CONFIG["metadata"]["request_uris"][0]
+        context.request_uri = request_uri
+
+        req_resp = self.backend.request_endpoint(context)
+        req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers})"
+        obtained_content_types = list(
+            map(
+                lambda header_name_value_pair: header_name_value_pair[1],
+                filter(
+                    lambda header_name_value_pair: header_name_value_pair[0].lower()
+                    == "content-type",
+                    req_resp.headers,
+                ),
+            )
+        )
+        assert req_resp
+        assert (
+            req_resp.status == "200"
+        ), f"invalid status in request object response {req_resp_str}"
+        assert (
+            len(obtained_content_types) > 0
+        ), f"missing Content-Type in request object response {req_resp_str}"
+        assert (
+            obtained_content_types[0] == "application/oauth-authz-req+jwt"
+        ), f"invalid Content-Type in request object response {req_resp_str}"
+        assert (
+            req_resp.message
+        ), f"invalid message in request object response {req_resp_str}"
+        request_object_jwt = req_resp.message
+
+        header = decode_jwt_header(request_object_jwt)
+        payload = decode_jwt_payload(request_object_jwt)
+        assert header["alg"]
+        assert header["kid"]
+        assert header["typ"] == "oauth-authz-req+jwt"
+        assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
+        assert payload["client_id"] == CONFIG["metadata"]["client_id"]
+        assert (
+            payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
+        )
+        assert payload["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
+
+        document = db_engine_inst.get_by_session_id(context.state["SESSION_ID"])
+
+        assert document
+
+        assert document["request_object"]["wallet_metadata"] == {
+            "client_id_prefixes_supported": None,
+            "vp_formats_supported": {
+                "dc+sd-jwt": {
+                    "sd-jwt_alg_values": ["ES256"],
+                    "kb-jwt_alg_values": ["ES256"]
+                }
+            }
+        }
+
+        assert document["request_object"]["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
 
     def test_trust_parameters_in_response(self, context):
         internal_data = InternalData()

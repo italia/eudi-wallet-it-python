@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 from urllib.parse import quote_plus, urlencode
 
 from pyeudiw.openid4vp.schemas.response import ResponseMode
@@ -26,8 +27,9 @@ def build_authorization_request_claims(
     response_uri: str,
     authorization_config: dict,
     nonce: str = "",
-    metadata: dict = None,
-    submission_data: dict = None
+    metadata: Optional[dict] = None,
+    submission_data: Optional[dict] = None,
+    wallet_nonce: Optional[str] = None,
 ) -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
@@ -47,6 +49,11 @@ def build_authorization_request_claims(
     :type nonce: str
     :param metadata: optional metadata to be included in the request object
     :type metadata: dict
+    :param submission_data: optional data to be included in the request object
+        for duckle presentation
+    :type submission_data: dict
+    :param wallet_nonce: optional nonce to be used by the wallet.
+    :type wallet_nonce: str
     :raises KeyError: if authorization_config misses mandatory configuration options
     :returns: a dictionary with the *complete* set of jar jwt playload claims
     :rtype: dict
@@ -89,4 +96,8 @@ def build_authorization_request_claims(
             claims["presentation_definition"] = authorization_config[
                 "presentation_definition"
             ]
+
+    if wallet_nonce:
+        claims["wallet_nonce"] = wallet_nonce
+
     return claims
