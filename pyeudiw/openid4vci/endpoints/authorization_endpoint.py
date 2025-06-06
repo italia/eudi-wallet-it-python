@@ -12,7 +12,7 @@ from pyeudiw.openid4vci.models.authorization_request import (
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
-    FORM_URLENCODED
+    FORM_URLENCODED, APPLICATION_JSON
 )
 from pyeudiw.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.session import get_session_id
@@ -51,6 +51,7 @@ class AuthorizationHandler(BaseEndpoint):
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
                 auth_req = parse_qs(context.request.body.decode("utf-8"))
             else:
+                validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
                 auth_req = dict(context.request.query)
 
             AuthorizationRequest.model_validate(

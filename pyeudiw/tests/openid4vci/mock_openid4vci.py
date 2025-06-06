@@ -1,3 +1,12 @@
+import uuid
+
+from satosa.context import Context
+
+from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
+from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
+from pyeudiw.tools.validation import OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER
+
 MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "endpoints": {
         "par": {
@@ -122,7 +131,52 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
             }
         }
     },
+    "metadata_jwks": [
+        {
+            "kty": "EC",
+            "d": "i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc",
+            "use": "sig",
+            "crv": "P-256",
+            "kid": "f10aca0992694b3581f6f699bfc8a2c6cc687725",
+            "x": "jE2RpcQbFQxKpMqehahgZv6smmXD0i/LTP2QRzMADk4",
+            "y": "qkMx5iqt5PhPu5tfctS6HsP+FmLgrxfrzUV2GwMQuh8",
+            "alg": "ES256"
+        }
+    ],
     "credential_configurations": {
         "lookup_source":"openid4vci"
     }
 }
+
+MOCK_INTERNAL_ATTRIBUTES = {}
+MOCK_BASE_URL = "example.com"
+MOCK_NAME = "openid4vcimock"
+
+def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
+    return OpenId4VCIEntity(
+        document_id = str(uuid.uuid4()),
+        request_uri_part = "request_uri_part",
+        state="xyz456",
+        session_id="sessionid",
+        remote_flow_typ=RemoteFlowType.SAME_DEVICE,
+        client_id = "client123",
+        code_challenge = "code_challenge",
+        code_challenge_method = "S256",
+        redirect_uri="https://client.com",
+        authorization_details=[]
+    )
+
+def get_mocked_satosa_context(method ="POST", content_type = FORM_URLENCODED, headers=None) -> Context:
+    if headers is None:
+        headers = {
+            HTTP_CONTENT_TYPE_HEADER: content_type,
+            OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid-pop",
+            OAUTH_CLIENT_ATTESTATION_HEADER: "valid"
+        }
+    context = Context()
+    context.request_method = method
+    context.http_headers = headers
+    context.state = {
+        "SESSION_ID": "sessionid"
+    }
+    return context

@@ -57,7 +57,7 @@ class OpenId4VciStorage(MongoStorage):
         Update the nonce value of a session based on the session ID.
 
         :param session_id: The session ID identifying the session document.
-        :param c_nonce: The new nonce value to set.
+        :param attributes: The attributes value to set.
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
