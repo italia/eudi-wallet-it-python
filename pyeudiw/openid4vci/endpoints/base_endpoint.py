@@ -5,12 +5,12 @@ from satosa.response import (
 )
 
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
-from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
+from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
-class BaseEndpoint(BaseHTTPErrorHandler, BaseLogger):
+class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

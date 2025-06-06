@@ -5,7 +5,7 @@ from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
 
 
-class BaseHTTPErrorHandler(BaseLogger):
+class BaseHTTPResponseHandler(BaseLogger):
     def _serialize_error(
         self,
         context: Context,
@@ -169,3 +169,8 @@ class BaseHTTPErrorHandler(BaseLogger):
         """
 
         return self._handle_40X("3", "expired", context, description, exc)
+
+    @staticmethod
+    def _handle_204():
+        return JsonResponse(status=204)
+

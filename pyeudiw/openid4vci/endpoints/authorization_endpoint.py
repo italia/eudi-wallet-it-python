@@ -1,7 +1,7 @@
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 
 from satosa.context import Context
-from satosa.response import Response
+from satosa.response import Response, Redirect
 
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.authorization_request import (
@@ -10,7 +10,6 @@ from pyeudiw.openid4vci.models.authorization_request import (
     CLIENT_ID_CTX
 )
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
-from pyeudiw.openid4vci.utils.response import ResponseUtils
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
@@ -64,15 +63,30 @@ class AuthorizationHandler(BaseEndpoint):
                 iss=self.entity_id,
             ).to_redirect_response(entity.redirect_uri)
         except InvalidRequestException as e:
-            #TODO: move utils fore redirect response
-            return ResponseUtils.to_invalid_request_redirect(
-                getattr(entity, "redirect_uri", None), e.message, getattr(entity, "state", None))
+            return self._to_error_redirect(
+                getattr(entity, "redirect_uri", None),
+                "invalid_request",
+                e.message,
+                getattr(entity, "state", None))
         except Exception as e:
             self._log_error(
                 e.__class__.__name__,
                 f"Error during invoke authorization endpoint: {e}"
             )
-            #TODO: move utils fore redirect response
-            return ResponseUtils.to_server_error_redirect(
-                getattr(entity, "redirect_uri", None),"error during invoke authorization endpoint",
+            return self._to_error_redirect(
+                getattr(entity, "redirect_uri", None),
+                "server_error",
+                "error during invoke authorization endpoint",
                 getattr(entity, "state", None))
+
+    @staticmethod
+    def _to_error_redirect(url:str, error:str, desc: str, state: str):
+        params = {
+            "error": error,
+            "error_description": desc
+        }
+        if state is not None:
+            params["state"] = state
+        return Redirect(
+            f"{url}?{urlencode(params)}",
+            content = FORM_URLENCODED)
