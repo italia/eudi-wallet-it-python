@@ -4,7 +4,10 @@ from uuid import uuid4
 from satosa.response import Redirect
 
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
-from pyeudiw.tools.content_type import ContentTypeUtils, FORM_URLENCODED
+from pyeudiw.tools.content_type import (
+  FORM_URLENCODED,
+  get_content_type_header
+)
 
 
 def test_to_redirect_response_without_code():
@@ -17,7 +20,7 @@ def test_to_redirect_response_without_code():
   response = response_data.to_redirect_response("https://test.url")
 
   assert isinstance(response, Redirect)
-  assert ContentTypeUtils.get_content_type_header(response.headers) == FORM_URLENCODED
+  assert get_content_type_header(response.headers) == FORM_URLENCODED
   redirect_url = urlparse(response.message)
   query = parse_qs(redirect_url.query)
   assert query.get("state", [None])[0] == "mystate"
@@ -36,7 +39,7 @@ def test_to_redirect_response_with_code():
   response = response_data.to_redirect_response("https://test.url")
 
   assert isinstance(response, Redirect)
-  assert ContentTypeUtils.get_content_type_header(response.headers) == FORM_URLENCODED
+  assert get_content_type_header(response.headers) == FORM_URLENCODED
   redirect_url = urlparse(response.message)
   query = parse_qs(redirect_url.query)
   assert query.get("state", [None])[0] == "mystate"

@@ -2,7 +2,12 @@ import logging
 
 from satosa.context import Context
 
-from pyeudiw.tools.content_type import FORM_URLENCODED, ContentTypeUtils, APPLICATION_JSON
+from pyeudiw.tools.content_type import (
+    FORM_URLENCODED,
+    APPLICATION_JSON,
+    is_form_urlencoded,
+    is_application_json
+)
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
@@ -18,11 +23,11 @@ def validate_content_type(content_type_header: str, accepted_content_type: str):
         InvalidRequestException: If the header does not match.
     """
     if (accepted_content_type == FORM_URLENCODED
-            and not ContentTypeUtils.is_form_urlencoded(content_type_header)):
+            and not is_form_urlencoded(content_type_header)):
         logger.error(f"Invalid content-type for check `{FORM_URLENCODED}`: {content_type_header}")
         raise InvalidRequestException("invalid content-type")
     elif (accepted_content_type == APPLICATION_JSON
-          and not ContentTypeUtils.is_application_json(content_type_header)):
+          and not is_application_json(content_type_header)):
         logger.error(f"Invalid content-type for check `{APPLICATION_JSON}`: {content_type_header}")
         raise InvalidRequestException("invalid content-type")
 
