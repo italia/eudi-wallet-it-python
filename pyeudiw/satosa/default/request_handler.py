@@ -2,14 +2,14 @@ from typing import Any
 
 from satosa.context import Context
 
-from pyeudiw.jwk import JWK
-from pyeudiw.jwk.parse import parse_b64der
+from copy import copy
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.openid4vp.schemas.wallet_metadata import WalletMetadata
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -20,39 +20,110 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
     def request_endpoint(self, context: Context, *args) -> Response:
         self._log_function_debug("request_endpoint", context, "args", args)
 
-        try:
-            state = context.qs_params["id"]
+        if context.request_method == "GET":
+            try:
+                state = context.qs_params["id"]
 
-            if not state:
-                raise ValueError("state is missing")
-        except Exception as e400:
-            return self._handle_400(
-                context, 
-                "request error: missing or invalid parameter [id]",
-                e400
-            )
+                if not state:
+                    raise ValueError("state is missing")
+            except Exception as e400:
+                return self._handle_400(
+                    context, 
+                    "request error: missing or invalid parameter [id]",
+                    e400
+                )
+            
+            try:
+                document = self.db_engine.get_by_state(state)
+                if not document:
+                    raise ValueError("session not found")
+            except ValueError as e401:
+                return self._handle_401(
+                    context, 
+                    "session error: cannot find the session associated to the state",
+                    e401
+                )
+            except Exception as e500:
+                return self._handle_500(
+                    context,
+                    "session error: cannot retrieve the session",
+                    e500,
+                )
+
+        else:
+            try:
+                if not context.state or "SESSION_ID" not in context.state:
+                    raise ValueError("session_id is missing")
+                
+                session_id = context.state["SESSION_ID"]
+
+                if not session_id:
+                    raise ValueError("session_id is missing")
+            except Exception as e400:
+                return self._handle_400(
+                    context, 
+                    "request error: missing or invalid parameter [SESSION_ID]",
+                    e400
+                )
+            
+            try:
+                document = self.db_engine.get_by_session_id(session_id)
+                if not document:
+                    raise ValueError("session not found")
+            except ValueError as e401:
+                return self._handle_401(
+                    context, 
+                    "session error: cannot find the session associated to the session_id",
+                    e401
+                )
+            except Exception as e500:
+                return self._handle_500(
+                    context,
+                    "session error: cannot retrieve the session",
+                    e500,
+                )
         
         try:
-            metadata = self.trust_evaluator.get_metadata(self.client_id)
+            client_metadata = self.trust_evaluator.get_metadata(self.client_id)
         except Exception:
-            metadata = None
+            client_metadata = None
+
+        if context.request_method == "POST":
+            try:
+                wallet_metadata = WalletMetadata(**context.request)
+            except Exception as e:
+                self._log_warning(context, f"wallet metadata not provided or invalid: {e}")
+                wallet_metadata = WalletMetadata(
+                    wallet_metadata=None,
+                    wallet_nonce=None,
+                )
+        else:
+            wallet_metadata = WalletMetadata(
+                wallet_metadata=None,
+                wallet_nonce=None,
+            )
 
         data = build_authorization_request_claims(
             self.client_id,
-            state,
+            document["state"],
             self.absolute_response_url,
             self.config["authorization"],
-            metadata=metadata,
-            submission_data=self._build_submission_data()
+            client_metadata=client_metadata,
+            submission_data=self._build_submission_data(),
+            wallet_nonce=wallet_metadata.wallet_nonce,
         )
 
         if _aud := self.config["authorization"].get("aud"):
             data["aud"] = _aud
         # take the session created in the pre-request authz endpoint
         try:
-            document = self.db_engine.get_by_state(state)
             document_id = document["document_id"]
-            self.db_engine.update_request_object(document_id, data)
+
+            data_copy = copy(data)
+            if wallet_metadata.wallet_metadata:
+                data_copy["wallet_metadata"] = wallet_metadata.wallet_metadata.model_dump()
+
+            self.db_engine.update_request_object(document_id, data_copy)
 
         except ValueError as e401:
             return self._handle_401(
@@ -60,7 +131,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
                 "session error: cannot find the session associated to the state",
                 e401
             )
-        except (Exception, BaseException) as e500:
+        except Exception as e500:
             return self._handle_500(
                 context,
                 "session error: cannot update the session",
