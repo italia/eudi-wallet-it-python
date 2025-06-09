@@ -1,5 +1,6 @@
 from urllib.parse import parse_qs, urlencode
 
+from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response, Redirect
 
@@ -12,7 +13,8 @@ from pyeudiw.openid4vci.models.authorization_request import (
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
-    FORM_URLENCODED, APPLICATION_JSON
+    FORM_URLENCODED,
+    APPLICATION_JSON
 )
 from pyeudiw.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.session import get_session_id
@@ -49,13 +51,16 @@ class AuthorizationHandler(BaseEndpoint):
             validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-                auth_req = parse_qs(context.request.body.decode("utf-8"))
+                auth_req = self._get_body(context)
             else:
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-                auth_req = dict(context.request.query)
+                auth_req = parse_qs(context.request.qs_params)
+
+            if not auth_req:
+                raise InvalidRequestException("missing authorization request")
 
             AuthorizationRequest.model_validate(
-                **auth_req, context = {
+                auth_req, context = {
                     PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
                     CLIENT_ID_CTX: entity.client_id
                 })
@@ -63,11 +68,11 @@ class AuthorizationHandler(BaseEndpoint):
                 state=entity.state,
                 iss=self.entity_id,
             ).to_redirect_response(entity.redirect_uri)
-        except InvalidRequestException as e:
+        except (InvalidRequestException, ValidationError, TypeError) as e:
             return self._to_error_redirect(
                 getattr(entity, "redirect_uri", None),
                 "invalid_request",
-                e.message,
+                self._handle_validate_request_error(e, 'authorization'),
                 getattr(entity, "state", None))
         except Exception as e:
             self._log_error(

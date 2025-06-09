@@ -1,4 +1,6 @@
+import json
 from unittest.mock import Mock
+from urllib.parse import urlparse, parse_qs
 
 import pytest
 from satosa.response import Response
@@ -77,8 +79,35 @@ def test_invalid_content_type_for_GET_method(authorization_handler, content_type
         "invalid content-type"
     )
 
+@pytest.mark.parametrize("req,err_descr", [
+    ({}, "missing authorization request"),
+    ({"client_id": "", "request_uri": ""}, "missing `client_id` parameter"),
+    ({"client_id": " ", "request_uri": " "}, "missing `client_id` parameter"),
+    ({"client_id": None, "request_uri": None}, "invalid `client_id` parameter"),
+    ({"client_id": "", "request_uri": None}, "invalid `request_uri` parameter"),
+    ({"client_id": None, "request_uri": ""}, "invalid `client_id` parameter"),
+    ({"client_id": "client123", "request_uri": " "}, "missing `request_uri` parameter"),
+    ({"client_id": "123", "request_uri": "urn:ietf:params:oauth:request_uri:request_uri_part"}, "invalid `client_id` parameter"),
+    ({"client_id": "client123", "request_uri": "request_uri_part"}, "invalid `request_uri` parameter"),
+])
+def test_invalid_authorization_request_in_POST(authorization_handler, req, err_descr: str):
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context = get_mocked_satosa_context()
+    context.request = json.dumps(req)
+    _assert_invalid_request(
+        authorization_handler.endpoint(context),
+        err_descr
+    )
+
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '302 Found'
-    assert result.message == (f'https://client.com?error=invalid_request'
-                              f'&error_description={error_desc.replace(" ", "+")}'
-                              f'&state=xyz456')
+    result_message_url = urlparse(result.message)
+    actual_params = parse_qs(result_message_url.query)
+    assert 'error' in actual_params
+    assert actual_params['error'] == ['invalid_request']
+
+    assert 'error_description' in actual_params
+    assert actual_params['error_description'] == [error_desc]
+
+    assert 'state' in actual_params
+    assert actual_params['state'] == ['xyz456']

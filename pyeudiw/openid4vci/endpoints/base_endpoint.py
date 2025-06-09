@@ -1,3 +1,7 @@
+import json
+import re
+
+from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import (
     Redirect,
@@ -7,6 +11,7 @@ from satosa.response import (
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
@@ -27,6 +32,33 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         self.db_engine = OpenId4VciEngine.db_engine
         self._backend_url = f"{base_url}/{name}"
 
+    def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
+        if isinstance(e, InvalidRequestException):
+            return e.message
+        elif isinstance(e, TypeError):
+            match = re.search(r"got an unexpected keyword argument '([^']+)'", str(e))
+            if match:
+                parameter_name = match.group(1)
+                self._log_error(
+                    e.__class__.__name__,
+                    f"missing {parameter_name} in request `{endpoint_name}` endpoint"
+                )
+                return f"missing `{parameter_name}` parameter"
+            else:
+                return "invalid request"
+        elif isinstance(e, ValidationError):
+            errors = e.errors()
+            for err in errors:
+                parameter_name = err['loc'][0]
+                self._log_error(
+                    e.__class__.__name__,
+                    f"invalid {parameter_name} in request `{endpoint_name}` endpoint"
+                )
+                return f"invalid `{parameter_name}` parameter"
+            return "invalid request"
+        else:
+            raise e
+
     @staticmethod
     def _to_request_uri(random_part: str) -> str:
         """
@@ -37,6 +69,15 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
             str: A full URN request_uri string.
         """
         return f"urn:ietf:params:oauth:request_uri:{random_part}"
+
+    @staticmethod
+    def _get_body(context: Context):
+        """
+          Retrieve body from the HTTP request.
+        """
+        if context.request == '{}':
+            return None
+        return json.loads(context.request)
 
     @property
     def entity_id(self) -> str:
