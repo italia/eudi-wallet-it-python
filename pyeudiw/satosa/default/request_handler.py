@@ -31,16 +31,16 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             )
         
         try:
-            metadata = self.trust_evaluator.get_metadata(self.client_id)
+            client_metadata = self.trust_evaluator.get_metadata(self.client_id)
         except Exception:
-            metadata = None
+            client_metadata = None
 
         data = build_authorization_request_claims(
             self.client_id,
             state,
             self.absolute_response_url,
             self.config["authorization"],
-            metadata=metadata,
+            client_metadata=client_metadata,
             submission_data=self._build_submission_data()
         )
 
@@ -131,9 +131,9 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             )
         
         try:
-            metadata = self.trust_evaluator.get_metadata(self.client_id)
+            client_metadata = self.trust_evaluator.get_metadata(self.client_id)
         except Exception:
-            metadata = None
+            client_metadata = None
 
         try:
             wallet_metadata = WalletMetadata(**context.request)
@@ -149,7 +149,7 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             document["state"],
             self.absolute_response_url,
             self.config["authorization"],
-            metadata=metadata,
+            client_metadata=client_metadata,
             submission_data=self._build_submission_data(),
             wallet_nonce=wallet_metadata.wallet_nonce,
         )
