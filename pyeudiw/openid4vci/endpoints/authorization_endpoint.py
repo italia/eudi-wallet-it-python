@@ -8,7 +8,10 @@ from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.authorization_request import (
     AuthorizationRequest,
     PAR_REQUEST_URI_CTX,
-    CLIENT_ID_CTX
+)
+from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+    ENDPOINT_CTX,
+    CLIENT_ID_CTX,
 )
 from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.tools.content_type import (
@@ -23,6 +26,7 @@ from pyeudiw.tools.validation import (
     validate_request_method
 )
 
+AUTHORIZATION_ENDPOINT = "authorization"
 
 class AuthorizationHandler(BaseEndpoint):
 
@@ -54,13 +58,14 @@ class AuthorizationHandler(BaseEndpoint):
                 auth_req = self._get_body(context)
             else:
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-                auth_req = parse_qs(context.request.qs_params)
+                auth_req = context.qs_params
 
             if not auth_req:
                 raise InvalidRequestException("missing authorization request")
 
             AuthorizationRequest.model_validate(
                 auth_req, context = {
+                    ENDPOINT_CTX: AUTHORIZATION_ENDPOINT,
                     PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
                     CLIENT_ID_CTX: entity.client_id
                 })
@@ -72,7 +77,7 @@ class AuthorizationHandler(BaseEndpoint):
             return self._to_error_redirect(
                 getattr(entity, "redirect_uri", None),
                 "invalid_request",
-                self._handle_validate_request_error(e, 'authorization'),
+                self._handle_validate_request_error(e, AUTHORIZATION_ENDPOINT),
                 getattr(entity, "state", None))
         except Exception as e:
             self._log_error(

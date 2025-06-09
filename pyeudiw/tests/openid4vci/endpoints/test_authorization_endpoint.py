@@ -14,6 +14,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     get_mocked_satosa_context,
     get_mocked_openid4vpi_entity
 )
+from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
 @pytest.fixture
@@ -94,6 +95,32 @@ def test_invalid_authorization_request_in_POST(authorization_handler, req, err_d
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
     context = get_mocked_satosa_context()
     context.request = json.dumps(req)
+    _assert_invalid_request(
+        authorization_handler.endpoint(context),
+        err_descr
+    )
+
+@pytest.mark.parametrize("client_id,request_uri,,err_descr", [
+    ("", "", "missing authorization request"),
+    ("", None, "missing authorization request"),
+    (None, "", "missing authorization request"),
+    (None, None,  "missing authorization request"),
+    ("", None,  "missing authorization request"),
+    (None, "",  "missing authorization request"),
+    (" ", " ", "missing `client_id` parameter"),
+    ("client123", " ", "missing `request_uri` parameter"),
+    ("123", "urn:ietf:params:oauth:request_uri:request_uri_part", "invalid `client_id` parameter"),
+    ("client123", "request_uri_part", "invalid `request_uri` parameter"),
+])
+def test_invalid_authorization_request_in_GET(authorization_handler, client_id, request_uri, err_descr: str):
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    qs_params = {}
+    if client_id:
+        qs_params.update({"client_id" : client_id})
+    if request_uri:
+        qs_params.update({"request_uri" : request_uri})
+    context.qs_params = qs_params
     _assert_invalid_request(
         authorization_handler.endpoint(context),
         err_descr

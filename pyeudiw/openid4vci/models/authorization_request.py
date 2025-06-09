@@ -4,14 +4,14 @@ from pydantic import model_validator
 
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
   OpenId4VciBaseModel,
-  CLIENT_ID_CTX
+  CLIENT_ID_CTX,
+  ENDPOINT_CTX
 )
 from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 
 PAR_REQUEST_URI_CTX = "par_request_uri"
-AUTHORIZATION_ENDPOINT = "authorization"
 
 class AuthorizationRequest(OpenId4VciBaseModel):
   """
@@ -34,20 +34,21 @@ class AuthorizationRequest(OpenId4VciBaseModel):
 
   @model_validator(mode='after')
   def check_authorization_request(self) -> "AuthorizationRequest":
-    self.validate_client_id()
-    self.validate_request_uri()
+    endpoint = self.get_ctx(ENDPOINT_CTX)
+    self.validate_client_id(endpoint)
+    self.validate_request_uri(endpoint)
     return self
 
-  def validate_client_id(self):
+  def validate_client_id(self, endpoint: str):
     self.client_id = self.strip(self.client_id)
-    self.check_missing_parameter(self.client_id, "client_id", AUTHORIZATION_ENDPOINT)
+    self.check_missing_parameter(self.client_id, "client_id", endpoint)
     if self.client_id != self.get_ctx(CLIENT_ID_CTX):
       logger.error(f"invalid request `client_id` {self.client_id} in `authorization` endpoint")
       raise InvalidRequestException("invalid `client_id` parameter")
 
-  def validate_request_uri(self):
+  def validate_request_uri(self, endpoint: str):
     self.request_uri = self.strip(self.request_uri)
-    self.check_missing_parameter(self.request_uri, "request_uri", AUTHORIZATION_ENDPOINT)
+    self.check_missing_parameter(self.request_uri, "request_uri", endpoint)
     if self.get_ctx(PAR_REQUEST_URI_CTX) != self.request_uri:
       logger.error("Invalid `request_uri` in request `authorization` endpoint")
       raise InvalidRequestException("invalid `request_uri` parameter")
