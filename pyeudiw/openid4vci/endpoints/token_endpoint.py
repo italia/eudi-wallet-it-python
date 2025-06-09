@@ -3,6 +3,7 @@ import time
 from pydantic import BaseModel
 from satosa.context import Context
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
@@ -29,7 +30,8 @@ from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.validation import (
     validate_content_type,
     validate_request_method,
-    validate_oauth_client_attestation
+    validate_oauth_client_attestation,
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 
 
@@ -60,9 +62,9 @@ class TokenHandler(BaseEndpoint):
             validate_request_method(context.request_method, ["POST"])
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
             validate_oauth_client_attestation(context)
-            decoded_request = self.jws_helper.verify(context.request.body.decode("utf-8"))
+            self.jws_helper.verify(self._get_oauth_client_attestation(context))
             entity = self.db_engine.get_by_session_id(get_session_id(context))
-            TokenRequest.model_validate(**decoded_request, context = {
+            TokenRequest.model_validate(self._get_body(context), context = {
                 CONFIG_CTX: self.config_utils,
                 REDIRECT_URI_CTX: entity.redirect_uri,
                 CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
@@ -84,8 +86,8 @@ class TokenHandler(BaseEndpoint):
                 access_token.exp,
                 entity.authorization_details
             )
-        except (InvalidRequestException, InvalidScopeException) as e:
-            return self._handle_400(context, e.message, e)
+        except (InvalidRequestException, InvalidScopeException, JWSVerificationError) as e:
+            return self._handle_400(context, self._handle_validate_request_error(e, "token"), e)
         except Exception as e:
             self._log_error(
                 e.__class__.__name__,
@@ -101,3 +103,12 @@ class TokenHandler(BaseEndpoint):
             protected=jws_headers,
             plain_dict=token.model_dump()
         )
+
+    @staticmethod
+    def _get_oauth_client_attestation(context: Context):
+        """
+          Retrieve oauth client attestation pop header
+        """
+        if not context.http_headers:
+            return None
+        return context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)

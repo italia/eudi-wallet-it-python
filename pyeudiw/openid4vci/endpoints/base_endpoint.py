@@ -8,10 +8,14 @@ from satosa.response import (
     Response
 )
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.tools.exceptions import (
+    InvalidRequestException,
+    InvalidScopeException
+)
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
@@ -33,8 +37,14 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         self._backend_url = f"{base_url}/{name}"
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
-        if isinstance(e, InvalidRequestException):
+        if isinstance(e, InvalidRequestException) or isinstance(e, InvalidScopeException):
             return e.message
+        elif isinstance(e, JWSVerificationError):
+            self._log_error(
+                e.__class__.__name__,
+                f"{str(e)} in`{endpoint_name}` endpoint"
+            )
+            return "Not a valid JWS format"
         elif isinstance(e, TypeError):
             match = re.search(r"got an unexpected keyword argument '([^']+)'", str(e))
             if match:

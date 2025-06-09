@@ -152,6 +152,18 @@ MOCK_INTERNAL_ATTRIBUTES = {}
 MOCK_BASE_URL = "example.com"
 MOCK_NAME = "openid4vcimock"
 
+INVALID_ATTESTATION_HEADERS = [
+    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": "valid"},
+    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": "valid"},
+    {"OAuth-Client-Attestation-PoP": "valid"},
+    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": ""},
+    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": None},
+    {"OAuth-Client-Attestation": "valid"},
+    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": ""},
+    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": None},
+    {}
+]
+
 def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
     return OpenId4VCIEntity(
         document_id = str(uuid.uuid4()),
