@@ -27,13 +27,12 @@ def build_authorization_request_claims(
     response_uri: str,
     authorization_config: dict,
     nonce: str = "",
-    metadata: Optional[dict] = None,
+    client_metadata: Optional[dict] = None,
     submission_data: Optional[dict] = None,
     wallet_nonce: Optional[str] = None,
 ) -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
-    :param submission_data: data for manage custom claims in particular token
     :param client_id: the client identifier (who issue the jar token)
     :type client_id: str
     :param state: request session identifier
@@ -47,10 +46,12 @@ def build_authorization_request_claims(
     :param nonce: optional nonce to be inserted in the request object; if not \
         set, a new cryptographically safe uuid v4 nonce is generated.
     :type nonce: str
-    :param metadata: optional metadata to be included in the request object
-    :type metadata: dict
-    :param submission_data: optional data to be included in the request object
-        for duckle presentation
+    :param client_metadata: optional client_metadata to be included in the request object
+    :type client_metadata: dict
+    :param submission_data: optional submission data, such as the duckle query, \
+        to be included in the request object.
+        If this parameter is set, the duckle data is used to build the request object
+        else the presentation definition retrocompatibility is used.
     :type submission_data: dict
     :param wallet_nonce: optional nonce to be used by the wallet.
     :type wallet_nonce: str
@@ -86,8 +87,8 @@ def build_authorization_request_claims(
     if submission_data and submission_data["typo"] == DUCKLE_PRESENTATION:
         claims[DUCKLE_QUERY_KEY] = submission_data[DUCKLE_QUERY_KEY]
     else:
-        if metadata:
-            claims["client_metadata"] = metadata
+        if client_metadata:
+            claims["client_metadata"] = client_metadata
 
         if authorization_config.get("scopes"):
             claims["scope"] = " ".join(authorization_config["scopes"])
