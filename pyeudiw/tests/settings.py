@@ -340,7 +340,7 @@ CONFIG = {
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"x509_san_dns:...",
+                "client_id": f"x509_san_dns:{BASE_URL}",
                 "include_issued_jwt_header_param": True,
                 "relying_party_certificate_chains_by_ca": {
                     "ca.example.com": DEFAULT_X509_CHAIN,
