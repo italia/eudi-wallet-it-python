@@ -25,7 +25,7 @@ def build_authorization_request_claims(
     client_id: str,
     state: str,
     response_uri: str,
-    authorization_config: dict,
+    default_claims: dict,
     nonce: str = "",
     client_metadata: Optional[dict] = None,
     submission_data: Optional[dict] = None,
@@ -39,10 +39,13 @@ def build_authorization_request_claims(
     :type state: str
     :param response_uri: endpoint accepting authorization responses
     :type response_uri: str
-    :param authorization_config: backend configuration concerning \
-        authorization request, should satisfy \
-        pyeudiw.satosa.schemas.authorization.AuthorizationConfig
-    :type authorization_config: dict
+    :param default_claims: a dictionary with the default claims to be used in the request object.
+        It must contain the following mandatory keys:
+        - "expiration_time": the expiration time in minutes of the request object
+        - "response_mode": the response mode to be used in the request object
+        - "auth_iss_id": the issuer identifier of the authorization server
+        - "aud": the audience of the request object
+    :type default_claims: dict
     :param nonce: optional nonce to be inserted in the request object; if not \
         set, a new cryptographically safe uuid v4 nonce is generated.
     :type nonce: str
@@ -61,15 +64,15 @@ def build_authorization_request_claims(
     """
 
     nonce = nonce or str(uuid.uuid4())
-    if authorization_config.get("auth_iss_id"):
-        _iss =  authorization_config["auth_iss_id"]
+    if default_claims.get("auth_iss_id"):
+        _iss =  default_claims["auth_iss_id"]
     else:
         _iss = client_id
         
     claims = {
         "client_id_scheme": "http",  # that's federation.
         "client_id": client_id,
-        "response_mode": authorization_config.get(
+        "response_mode": default_claims.get(
             "response_mode", ResponseMode.direct_post_jwt
         ),
         "response_type": "vp_token",
@@ -78,10 +81,10 @@ def build_authorization_request_claims(
         "state": state,
         "iss": _iss,
         "iat": iat_now(),
-        "exp": exp_from_now(minutes=authorization_config["expiration_time"]),
+        "exp": exp_from_now(minutes=default_claims["expiration_time"]),
     }
 
-    if _aud := authorization_config.get("aud"):
+    if _aud := default_claims.get("aud"):
         claims["aud"] = _aud
 
     if submission_data and submission_data["typo"] == DUCKLE_PRESENTATION:
@@ -90,11 +93,11 @@ def build_authorization_request_claims(
         if client_metadata:
             claims["client_metadata"] = client_metadata
 
-        if authorization_config.get("scopes"):
-            claims["scope"] = " ".join(authorization_config["scopes"])
+        if default_claims.get("scopes"):
+            claims["scope"] = " ".join(default_claims["scopes"])
         # backend configuration validation should check that at least PE or DCQL must be configured within the authz request conf
-        if authorization_config.get("presentation_definition"):
-            claims["presentation_definition"] = authorization_config[
+        if default_claims.get("presentation_definition"):
+            claims["presentation_definition"] = default_claims[
                 "presentation_definition"
             ]
 
