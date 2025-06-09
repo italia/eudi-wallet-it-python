@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from urllib.parse import urlparse, parse_qs
 
 import pytest
-from mako.runtime import Context
+from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.authorization_endpoint import AuthorizationHandler
@@ -16,7 +16,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     get_mocked_openid4vpi_entity,
     get_pyeudiw_frontend_config_with_openid_credential_issuer
 )
-from pyeudiw.tools.content_type import APPLICATION_JSON
+from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
 from pyeudiw.tools.validation import is_valid_uuid
 
 
@@ -34,10 +34,11 @@ def context() -> Context:
     "PUT",
     "DELETE"
 ])
-def test_invalid_request_method(authorization_handler, method):
+def test_invalid_request_method(authorization_handler, context, method):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context.request_method = method
     _assert_invalid_request(
-        authorization_handler.endpoint(get_mocked_satosa_context(method=method)),
+        authorization_handler.endpoint(context),
         "invalid request method"
     )
 
@@ -54,13 +55,11 @@ def test_invalid_request_method(authorization_handler, method):
     "application/soap+xml",
     "application/json"
 ])
-def test_invalid_content_type_for_POST_method(authorization_handler, content_type):
+def test_invalid_content_type_for_POST_method(authorization_handler, context, content_type):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     _assert_invalid_request(
-        authorization_handler.endpoint(get_mocked_satosa_context(
-            method="POST",
-            content_type=content_type
-        )),
+        authorization_handler.endpoint(context),
         "invalid content-type"
     )
 
@@ -77,13 +76,12 @@ def test_invalid_content_type_for_POST_method(authorization_handler, content_typ
     "application/soap+xml",
     "application/x-www-form-urlencoded"
 ])
-def test_invalid_content_type_for_GET_method(authorization_handler, content_type):
+def test_invalid_content_type_for_GET_method(authorization_handler, context, content_type):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context.request_method = "GET"
+    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     _assert_invalid_request(
-        authorization_handler.endpoint(get_mocked_satosa_context(
-            method="GET",
-            content_type=content_type
-        )),
+        authorization_handler.endpoint(context),
         "invalid content-type"
     )
 
@@ -118,9 +116,9 @@ def test_invalid_authorization_request_in_POST(authorization_handler, context, r
     ("123", "urn:ietf:params:oauth:request_uri:request_uri_part", "invalid `client_id` parameter"),
     ("client123", "request_uri_part", "invalid `request_uri` parameter"),
 ])
-def test_invalid_authorization_request_in_GET(authorization_handler, client_id, request_uri, err_descr: str):
+def test_invalid_authorization_request_in_GET(authorization_handler, context, client_id, request_uri, err_descr: str):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    _get_context(context)
     qs_params = {}
     if client_id:
         qs_params.update({"client_id" : client_id})
@@ -132,9 +130,9 @@ def test_invalid_authorization_request_in_GET(authorization_handler, client_id, 
         err_descr
     )
 
-def test_valid_authorization_request_in_GET(authorization_handler):
+def test_valid_authorization_request_in_GET(authorization_handler, context):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    _get_context(context)
     context.qs_params = {
         "client_id" : "client123",
         "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
@@ -144,12 +142,12 @@ def test_valid_authorization_request_in_GET(authorization_handler):
         'example.com/openid4vcimock'
     )
 
-def test_valid_authorization_request_in_GET_with_credential_issuer():
+def test_valid_authorization_request_in_GET_with_credential_issuer(context):
     config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
     authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     authorization_handler.db_engine = Mock()
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    _get_context(context)
     context.qs_params = {
         "client_id" : "client123",
         "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
@@ -170,7 +168,7 @@ def test_valid_authorization_request_in_POST(authorization_handler, context):
         'example.com/openid4vcimock'
     )
 
-def test_valid_authorization_request_in_GET_with_credential_issuer(context):
+def test_valid_authorization_request_in__with_credential_issuer(context):
     config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
     authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     authorization_handler.db_engine = Mock()
@@ -212,3 +210,7 @@ def _assert_response(result: Response, issuer: str):
 
     assert 'state' in actual_params
     assert actual_params['state'] == ['xyz456']
+
+def _get_context(context: Context):
+    context.request_method = "GET"
+    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = APPLICATION_JSON

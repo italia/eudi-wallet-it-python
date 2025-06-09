@@ -1,3 +1,4 @@
+import copy
 import uuid
 
 from satosa.context import Context
@@ -195,8 +196,10 @@ def get_mocked_satosa_context(method ="POST", content_type = FORM_URLENCODED, he
 
 def get_pyeudiw_frontend_config_with_openid_credential_issuer(openid_credential_issuer = None):
     if openid_credential_issuer:
-        metadata = MOCK_PYEUDIW_FRONTEND_CONFIG.get("metadata", {})
+        config = copy.deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+        metadata = config.get("metadata", {})
         openid_issuer = metadata.get("openid_credential_issuer", {})
-        openid_issuer["credential_issuer"] = "https://example.com/issuer"
+        openid_issuer["credential_issuer"] = openid_credential_issuer
+        return config
 
     return MOCK_PYEUDIW_FRONTEND_CONFIG
