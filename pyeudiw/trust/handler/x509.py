@@ -67,7 +67,7 @@ class X509Handler(TrustHandlerInterface):
 
             found_client_id = False
 
-            client_id_dns = self.client_id.split("://")[-1].split("/")[0]
+            client_id_dns = self.client_id.split(":")[-1].split("://")[-1].split("/")[0]
 
             for cert in v[:-1]:
                 if get_x509_info(cert) == client_id_dns:
@@ -150,7 +150,7 @@ class X509Handler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
-        if issuer == self.client_id.split(":", 1)[-1]:
+        if issuer.split("://")[-1].split("/")[0] == self.client_id.split(":", 1)[-1]:
             for ca, chain in self.relying_party_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 
