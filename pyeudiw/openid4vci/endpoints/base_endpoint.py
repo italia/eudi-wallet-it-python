@@ -77,6 +77,8 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         """
         if context.request == '{}':
             return None
+        if isinstance(context.request, dict):
+            return context.request
         return json.loads(context.request)
 
     @property

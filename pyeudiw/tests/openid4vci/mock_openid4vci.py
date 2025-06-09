@@ -180,3 +180,11 @@ def get_mocked_satosa_context(method ="POST", content_type = FORM_URLENCODED, he
         "SESSION_ID": "sessionid"
     }
     return context
+
+def get_pyeudiw_frontend_config_with_openid_credential_issuer(openid_credential_issuer = None):
+    if openid_credential_issuer:
+        metadata = MOCK_PYEUDIW_FRONTEND_CONFIG.get("metadata", {})
+        openid_issuer = metadata.get("openid_credential_issuer", {})
+        openid_issuer["credential_issuer"] = "https://example.com/issuer"
+
+    return MOCK_PYEUDIW_FRONTEND_CONFIG

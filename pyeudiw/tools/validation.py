@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from satosa.context import Context
 
@@ -61,3 +62,15 @@ def validate_oauth_client_attestation(context: Context):
         header_value = OAUTH_CLIENT_ATTESTATION_HEADER if not header_attestation else OAUTH_CLIENT_ATTESTATION_POP_HEADER
         logger.error(f"Missing r{header_value} header for `par` endpoint")
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
+
+def is_valid_uuid(value: str) -> bool:
+    """
+    Method that check if given str is a valid uuid
+    :param value: string to validate as uuid
+    :return: validation result
+    """
+    try:
+        uuid.UUID(value)
+        return True
+    except (ValueError, TypeError):
+        return False

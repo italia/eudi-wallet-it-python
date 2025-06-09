@@ -3,6 +3,7 @@ from unittest.mock import Mock
 from urllib.parse import urlparse, parse_qs
 
 import pytest
+from mako.runtime import Context
 from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.authorization_endpoint import AuthorizationHandler
@@ -12,9 +13,11 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     MOCK_NAME,
     MOCK_BASE_URL,
     get_mocked_satosa_context,
-    get_mocked_openid4vpi_entity
+    get_mocked_openid4vpi_entity,
+    get_pyeudiw_frontend_config_with_openid_credential_issuer
 )
 from pyeudiw.tools.content_type import APPLICATION_JSON
+from pyeudiw.tools.validation import is_valid_uuid
 
 
 @pytest.fixture
@@ -22,6 +25,10 @@ def authorization_handler() -> AuthorizationHandler:
     handler = AuthorizationHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     handler.db_engine = Mock()
     return handler
+
+@pytest.fixture()
+def context() -> Context:
+    return get_mocked_satosa_context()
 
 @pytest.mark.parametrize("method", [
     "PUT",
@@ -91,9 +98,8 @@ def test_invalid_content_type_for_GET_method(authorization_handler, content_type
     ({"client_id": "123", "request_uri": "urn:ietf:params:oauth:request_uri:request_uri_part"}, "invalid `client_id` parameter"),
     ({"client_id": "client123", "request_uri": "request_uri_part"}, "invalid `request_uri` parameter"),
 ])
-def test_invalid_authorization_request_in_POST(authorization_handler, req, err_descr: str):
+def test_invalid_authorization_request_in_POST(authorization_handler, context, req, err_descr: str):
     authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-    context = get_mocked_satosa_context()
     context.request = json.dumps(req)
     _assert_invalid_request(
         authorization_handler.endpoint(context),
@@ -126,6 +132,58 @@ def test_invalid_authorization_request_in_GET(authorization_handler, client_id, 
         err_descr
     )
 
+def test_valid_authorization_request_in_GET(authorization_handler):
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    context.qs_params = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    _assert_response(
+        authorization_handler.endpoint(context),
+        'example.com/openid4vcimock'
+    )
+
+def test_valid_authorization_request_in_GET_with_credential_issuer():
+    config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
+    authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    authorization_handler.db_engine = Mock()
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context = get_mocked_satosa_context(method ="GET", content_type = APPLICATION_JSON)
+    context.qs_params = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    _assert_response(
+        authorization_handler.endpoint(context),
+        "https://example.com/issuer"
+    )
+
+def test_valid_authorization_request_in_POST(authorization_handler, context):
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context.request = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    _assert_response(
+        authorization_handler.endpoint(context),
+        'example.com/openid4vcimock'
+    )
+
+def test_valid_authorization_request_in_GET_with_credential_issuer(context):
+    config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
+    authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    authorization_handler.db_engine = Mock()
+    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    context.request = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    _assert_response(
+        authorization_handler.endpoint(context),
+        "https://example.com/issuer"
+    )
+
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '302 Found'
     result_message_url = urlparse(result.message)
@@ -135,6 +193,22 @@ def _assert_invalid_request(result: Response, error_desc: str):
 
     assert 'error_description' in actual_params
     assert actual_params['error_description'] == [error_desc]
+
+    assert 'state' in actual_params
+    assert actual_params['state'] == ['xyz456']
+
+def _assert_response(result: Response, issuer: str):
+    assert result.status == '302 Found'
+    result_message_url = urlparse(result.message)
+    assert result_message_url.scheme == "https"
+    assert result_message_url.hostname == "client.com"
+
+    actual_params = parse_qs(result_message_url.query)
+    assert 'code' in actual_params
+    assert True == is_valid_uuid(actual_params['code'][0])
+
+    assert 'iss' in actual_params
+    assert actual_params['iss'] == [issuer]
 
     assert 'state' in actual_params
     assert actual_params['state'] == ['xyz456']
