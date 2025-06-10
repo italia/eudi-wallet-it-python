@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from uuid import uuid4
 
 from cryptojwt.jwk.ec import new_ec_key
+from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response
 
@@ -71,8 +72,8 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             self.validate_request(context, entity)
             return self.to_response(context, entity)
 
-        except (InvalidRequestException, InvalidScopeException) as e:
-            return self._handle_400(context, e.message, e)
+        except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
+            return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
         except Exception as e:
             self._log_error(
                 e.__class__.__name__,
