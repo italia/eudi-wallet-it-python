@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from pydantic import BaseModel
-from responses import Response
+from satosa.response import Response
 
 from pyeudiw.tools.content_type import APPLICATION_JSON
 
