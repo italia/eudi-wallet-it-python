@@ -1,6 +1,9 @@
 import time
 
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    ValidationError
+)
 from satosa.context import Context
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
@@ -18,6 +21,7 @@ from pyeudiw.openid4vci.models.token_request import (
     CODE_CHALLENGE_METHOD_CTX
 )
 from pyeudiw.openid4vci.models.token_response import TokenResponse
+from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
@@ -34,6 +38,8 @@ from pyeudiw.tools.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 
+REFRESH_TOKEN_TYP = "rt+jwt"
+ACCESS_TOKEN_TYP = "at+jwt"
 
 class TokenHandler(BaseEndpoint):
 
@@ -65,28 +71,19 @@ class TokenHandler(BaseEndpoint):
             self.jws_helper.verify(self._get_oauth_client_attestation(context))
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             TokenRequest.model_validate(self._get_body(context), context = {
-                CONFIG_CTX: self.config_utils,
+                CONFIG_CTX: self.config,
                 REDIRECT_URI_CTX: entity.redirect_uri,
                 CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
                 CODE_CHALLENGE_CTX: entity.code_challenge
             })
             iat = int(time.time())
-            jwt_config = self.config_utils.get_jwt()
-            access_token = AccessToken(
-                iss=self.entity_id,
-                aud=self.entity_id,
-                exp=iat + jwt_config.access_token_exp,
-                iat=iat,
-                client_id=entity.client_id,
-                sub=entity.client_id,
-            )
             return TokenResponse.to_created_response(
-                self._sign_token(access_token, "at+jwt"),
-                self._sign_token(RefreshToken(**access_token.model_dump(), exp=iat + jwt_config.refresh_token_exp), "rt+jwt"),
-                access_token.exp,
+                self._to_token(iat, entity, ACCESS_TOKEN_TYP),
+                self._to_token(iat, entity, REFRESH_TOKEN_TYP),
+                iat + self.config_utils.get_jwt().access_token_exp,
                 entity.authorization_details
             )
-        except (InvalidRequestException, InvalidScopeException, JWSVerificationError) as e:
+        except (InvalidRequestException, InvalidScopeException, JWSVerificationError, ValidationError, TypeError) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "token"), e)
         except Exception as e:
             self._log_error(
@@ -95,7 +92,32 @@ class TokenHandler(BaseEndpoint):
             )
             return self._handle_500(context, "error during invoke token endpoint", e)
 
-    def _sign_token(self, token: BaseModel, typ: str):
+    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: str) -> str:
+        match typ:
+          case "at+jwt":
+            exp = iat + self.config_utils.get_jwt().access_token_exp
+          case "rt+jwt":
+            exp = iat + self.config_utils.get_jwt().refresh_token_exp
+          case _:
+            self._log_error(
+                self.__class__.__name__,
+                            f"unexpected typ {typ} for token ")
+            raise Exception(f"Invalid token typ {typ}")
+        token = AccessToken(
+            iss=self.entity_id,
+            aud=self.entity_id,
+            exp=exp,
+            iat=iat,
+            client_id=entity.client_id,
+            sub=entity.client_id,
+        )
+        if typ == REFRESH_TOKEN_TYP:
+            token = RefreshToken(**token.model_dump())
+
+        return self._sign_token(token, typ)
+
+
+    def _sign_token(self, token: BaseModel, typ: str) -> str:
         jws_headers = {
             "typ": typ,
         }

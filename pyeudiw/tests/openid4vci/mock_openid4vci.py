@@ -173,7 +173,7 @@ def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
         session_id="sessionid",
         remote_flow_typ=RemoteFlowType.SAME_DEVICE,
         client_id = "client123",
-        code_challenge = "code_challenge",
+        code_challenge = "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043", # as sha256("code_verifier".encode('utf-8')).hexdigest()
         code_challenge_method = "S256",
         redirect_uri="https://client.com",
         authorization_details=[]
