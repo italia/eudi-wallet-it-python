@@ -3,10 +3,7 @@ from typing import cast
 
 from pydantic import model_validator
 
-from pyeudiw.openid4vci.models.auhtorization_detail import (
-    OPEN_ID_CREDENTIAL_TYPE,
-    AuthorizationDetail
-)
+from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
     AUTHORIZATION_DETAILS_CTX,
@@ -166,12 +163,12 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
         return self
 
     def validate_credential_id(self):
-        auth_det_req = cast(list[AuthorizationDetail], self.get_ctx(AUTHORIZATION_DETAILS_CTX))
+        auth_det_req = cast(list[dict], self.get_ctx(AUTHORIZATION_DETAILS_CTX))
         self.credential_identifier = self.strip(self.credential_identifier)
         self.credential_configuration_id = self.strip(self.credential_configuration_id)
 
         has_openid_credential = any(
-            ad.credential_configuration_id == OPEN_ID_CREDENTIAL_TYPE
+            ad.get("type") == OPEN_ID_CREDENTIAL_TYPE
             for ad in auth_det_req
         )
 
@@ -180,8 +177,8 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
             self.check_unexpected_parameter(self.credential_configuration_id, "credential_configuration_id", CREDENTIAL_ENDPOINT)
             valid_identifiers = []
             for ad in auth_det_req:
-                if ad.credential_configuration_id == OPEN_ID_CREDENTIAL_TYPE:
-                    valid_identifiers.extend(ad.credential_identifiers)
+                if ad.get("type") == OPEN_ID_CREDENTIAL_TYPE:
+                    valid_identifiers.extend(ad.get("credential_identifiers"))
             self.check_invalid_parameter(
                 self.credential_identifier not in valid_identifiers,
                 self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
