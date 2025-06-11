@@ -2,6 +2,7 @@ import time
 from uuid import uuid4
 
 import pytest
+import datetime
 
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.authorization_request import CLIENT_ID_CTX
@@ -115,7 +116,7 @@ def test_invalid_client_id(value):
         ParRequest.model_validate(payload, context=get_valid_context())
 
 
-@pytest.mark.parametrize("value", [123, None])
+@pytest.mark.parametrize("value", [0, None])
 def test_invalid_exp(value):
     payload = {
         "iss": "client-123",
@@ -144,15 +145,15 @@ def test_invalid_iat(value):
     with pytest.raises(InvalidRequestException, match="invalid `iat` parameter"):
         ParRequest.model_validate(payload, context=get_valid_context())
 
-@pytest.mark.parametrize("value", [123, None])
-def test_expired_token(value):
+def test_expired_token():
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 390,
-        "exp": int(time.time())
+        "iat": now,
+        "exp": now + 329
     }
 
     with pytest.raises(InvalidRequestException, match="expired token"):
@@ -160,13 +161,14 @@ def test_expired_token(value):
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_response_type(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time())
+        "iat": now + 29,
+        "exp": now + 30
     }
     if value is not None:
         payload["response_type"] = value
@@ -177,13 +179,14 @@ def test_empty_or_missing_response_type(value):
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_client_id(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": value
     }
     with pytest.raises(InvalidRequestException, match="invalid `response_type` parameter"):
@@ -191,13 +194,14 @@ def test_invalid_client_id(value):
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_response_mode(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code"
     }
     if value is not None:
@@ -208,13 +212,14 @@ def test_empty_or_missing_response_mode(value):
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_response_mode(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": value
     }
@@ -223,13 +228,14 @@ def test_invalid_response_mode(value):
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_code_challenge(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query"
     }
@@ -241,13 +247,14 @@ def test_empty_or_missing_code_challenge(value):
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_code_challenge_method(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -260,13 +267,14 @@ def test_empty_or_missing_code_challenge_method(value):
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_code_challenge_method(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -278,13 +286,14 @@ def test_invalid_code_challenge_method(value):
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_scope(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -298,13 +307,14 @@ def test_empty_or_missing_scope(value):
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "scope1, pippo"])
 def test_invalid_code_challenge_method(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -317,13 +327,14 @@ def test_invalid_code_challenge_method(value):
 
 @pytest.mark.parametrize("value", [None, []])
 def test_empty_or_missing_authorization_details(value):
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -343,13 +354,14 @@ def test_missing_authorization_details_type(value):
     authorization_details = {}
     if value is not None:
         authorization_details["type"] = value
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now +30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -366,13 +378,14 @@ def test_invalid_authorization_details_type(value):
     authorization_details = {
         "type": value
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -391,13 +404,14 @@ def test_missing_authorization_credential_configuration_id(value):
     }
     if value is not None:
         authorization_details["credential_configuration_id"] = value
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -415,13 +429,14 @@ def test_invalid_authorization_details_credential_configuration_id(value):
         "type": OPEN_ID_CREDENTIAL_TYPE,
         "credential_configuration_id": value
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -439,13 +454,14 @@ def test_missing_redirect_uri(value):
         "type": OPEN_ID_CREDENTIAL_TYPE,
         "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -472,13 +488,14 @@ def test_invalid_redirect_uri(value):
         "type": OPEN_ID_CREDENTIAL_TYPE,
         "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -497,13 +514,14 @@ def test_missing_jti(value):
         "type": OPEN_ID_CREDENTIAL_TYPE,
         "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
@@ -525,13 +543,14 @@ def test_invalid_jti(value):
         "type": OPEN_ID_CREDENTIAL_TYPE,
         "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
         "state": "A" * 32,
         "client_id": "client-123",
-        "iat": int(time.time()) - 90,
-        "exp": int(time.time()),
+        "iat": now + 29,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",

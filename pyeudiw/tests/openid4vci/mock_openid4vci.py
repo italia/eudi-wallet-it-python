@@ -153,6 +153,62 @@ MOCK_INTERNAL_ATTRIBUTES = {}
 MOCK_BASE_URL = "example.com"
 MOCK_NAME = "openid4vcimock"
 
+INVALID_METHOD_FOR_POST_REQ =[
+    "GET",
+    "PUT",
+    "DELETE",
+    "PATCH"
+]
+
+INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED = [
+    "application/json",
+    "application/xml",
+    "application/pdf",
+    "application/zip",
+    "application/octet-stream",
+    "application/x-pem-file",
+    "application/jwt",
+    "application/pkcs10",
+    "application/pkcs7-mime",
+    "application/ld+json",
+    "application/vnd.api+json",
+    "text/plain",
+    "text/html",
+    "text/css",
+    "text/csv",
+    "text/xml",
+    "image/png",
+    "image/jpeg",
+    "image/svg+xml",
+    "audio/mpeg",
+    "video/mp4"
+]
+
+INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON = [
+    "text/plain",
+    "text/html",
+    "text/css",
+    "text/csv",
+    "text/xml",
+    "application/xml",
+    "application/x-www-form-urlencoded",
+    "multipart/form-data",
+    "application/pdf",
+    "application/zip",
+    "application/octet-stream",
+    "image/png",
+    "image/jpeg",
+    "image/svg+xml",
+    "audio/mpeg",
+    "video/mp4",
+    "application/x-pem-file",
+    "application/jwt",
+    "application/pkcs10",
+    "application/pkcs7-mime",
+    "application/ld+json",
+    "application/vnd.api+json"
+]
+
 INVALID_ATTESTATION_HEADERS = [
     {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": "valid"},
     {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": "valid"},

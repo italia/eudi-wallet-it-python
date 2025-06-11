@@ -1,3 +1,4 @@
+import datetime
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
@@ -9,11 +10,13 @@ from pyeudiw.openid4vci.endpoints.credential_endpoint import CredentialHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
+    INVALID_ATTESTATION_HEADERS,
+    INVALID_METHOD_FOR_POST_REQ,
+    INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
-    INVALID_ATTESTATION_HEADERS,
     get_mocked_satosa_context,
     get_mocked_openid4vpi_entity
 )
@@ -24,7 +27,7 @@ from pyeudiw.tools.content_type import (
 
 VALID_PROOF = {
     "proof_type": "jwt",
-    "jwt": "eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0In0.eyJpc3MiOiJjbGllbnQxMjMiLCJhdWQiOiJodHRwczovL2NyZWRlbnRpYWwtaXNzdWVyLmV4YW1wbGUuY29tIiwiaWF0IjoxNzE4MDAwMDAwLCJub25jZSI6InJhbmRvbS1ub25jZS1hYmMxMjMifQ.MEUCIQDHtfKmiTY5PqdxRjUvmGJMIhOWzTq4OKSZYNS+5RQ65AIgMI8PaBUdc8ZtNWa4Q13DYZQvRkA8oRObYGlzrdZq5h0"
+    "jwt": "my_jwt"
 }
 
 @pytest.fixture
@@ -34,8 +37,8 @@ def valid_request_proof_jwt():
         "typ": JWT_PROOF_TYP,
         "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
         "iss": "client123",
-        "aud": "https://credential-issuer.example.com",
-        "iat":1718000000,
+        "aud": "example.com/openid4vcimock",
+        "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
         "nonce": "random-nonce-abc123"
     }
 
@@ -66,11 +69,7 @@ def credential_handler() -> CredentialHandler:
 def context() -> Context:
     return get_mocked_satosa_context(content_type = APPLICATION_JSON)
 
-@pytest.mark.parametrize("method", [
-    "GET",
-    "PUT",
-    "DELETE"
-])
+@pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(credential_handler, context, method):
     context.request_method = method
     _assert_invalid_request(
@@ -78,18 +77,7 @@ def test_invalid_request_method(credential_handler, context, method):
         "invalid request method"
     )
 
-@pytest.mark.parametrize("content_type", [
-    "content_type",
-    "multipart/form-data",
-    "text/plain",
-    "application/xml",
-    "application/octet-stream",
-    "application/ld+json",
-    "text/html",
-    "application/jose",
-    "application/jwt",
-    "application/soap+xml"
-])
+@pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON)
 def test_invalid_content_type(credential_handler, context, content_type):
     context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     _assert_invalid_request(
@@ -188,6 +176,51 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
         credential_handler.endpoint(context),
         error_desc
     )
+
+
+@pytest.mark.parametrize("value,error_desc", [
+    ({"alg": "", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.alg` parameter"),
+    ({"alg": None, "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "invalid `alg` parameter"),
+    ({"alg": " ", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.alg` parameter"),
+    ({"typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.alg` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.iss` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": None, "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "invalid `iss` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": " ", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.iss` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.iss` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "randomiss", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "invalid `proof.jwt.iss` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.aud` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": None, "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "invalid `aud` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": " ", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.aud` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "missing `proof.jwt.aud` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "randomaud", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-nonce-abc123"}, "invalid `proof.jwt.aud` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) - 30000, "nonce": "random-nonce-abc123"}, "invalid `proof.jwt.iat` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": None, "nonce": "random-nonce-abc123"}, "invalid `iat` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": 0, "nonce": "random-nonce-abc123"}, "invalid `proof.jwt.iat` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "nonce": "random-nonce-abc123"}, "invalid `proof.jwt.iat` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": ""}, "missing `proof.jwt.nonce` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": None}, "invalid `nonce` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": " "}, "missing `proof.jwt.nonce` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30}, "missing `proof.jwt.nonce` parameter"),
+    ({"alg": "ES256", "typ": JWT_PROOF_TYP, "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}', "iss": "client123", "aud": "example.com/openid4vcimock", "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30, "nonce": "random-random-nonce-abc123"}, "invalid `proof.jwt.nonce` parameter")
+])
+def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_without_open_id_credential,
+                                          value, error_desc):
+    context.request = request_without_open_id_credential
+    mock_jws_helper_verify = patch(
+        "pyeudiw.jwt.jws_helper.JWSHelper.verify",
+        return_value=value,
+    )
+    mock_jws_helper_verify.start()
+    entity = deepcopy(get_mocked_openid4vpi_entity())
+    entity.c_nonce = "random-nonce-abc123"
+    credential_handler.db_engine.get_by_session_id.return_value = entity
+    result = credential_handler.endpoint(context)
+    mock_jws_helper_verify.stop()
+    _assert_invalid_request(
+        result,
+        error_desc
+    )
+
 
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '400'

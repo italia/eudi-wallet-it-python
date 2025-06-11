@@ -16,11 +16,12 @@ from pyeudiw.openid4vci.models.token_request import (
 )
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
+    INVALID_ATTESTATION_HEADERS,
+    INVALID_METHOD_FOR_POST_REQ,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
-    INVALID_ATTESTATION_HEADERS,
     get_mocked_satosa_context,
     get_mocked_openid4vpi_entity
 )
@@ -69,11 +70,7 @@ def token_handler() -> TokenHandler:
 def context() -> Context:
     return get_mocked_satosa_context()
 
-@pytest.mark.parametrize("method", [
-    "GET",
-    "PUT",
-    "DELETE"
-])
+@pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(token_handler, context, method):
     context.request_method = method
     _assert_invalid_request(

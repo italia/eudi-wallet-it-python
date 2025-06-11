@@ -44,7 +44,7 @@ class ParRequest(OpenId4VciBaseModel):
     self.validate_state(endpoint)
     self.validate_client_id(req_client_id, endpoint)
 
-    if not is_valid_unix_timestamp(self.exp):
+    if not is_valid_unix_timestamp(self.exp, None):
       logger.error(f"invalid exp {self.exp} in request `{endpoint}` endpoint")
       raise InvalidRequestException("invalid `exp` parameter")
 
