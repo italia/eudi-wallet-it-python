@@ -38,8 +38,8 @@ from pyeudiw.tools.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 
-REFRESH_TOKEN_TYP = "rt+jwt"
-ACCESS_TOKEN_TYP = "at+jwt"
+REFRESH_TOKEN_TYP = "rt+jwt" #nosec B105
+ACCESS_TOKEN_TYP = "at+jwt" #nosec B105
 
 class TokenHandler(BaseEndpoint):
 
