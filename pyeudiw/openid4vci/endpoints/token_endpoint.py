@@ -1,4 +1,5 @@
 import time
+from enum import Enum
 
 from pydantic import (
     BaseModel,
@@ -38,8 +39,10 @@ from pyeudiw.tools.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 
-REFRESH_TOKEN_TYP = "rt+jwt" #nosec B105
-ACCESS_TOKEN_TYP = "at+jwt" #nosec B105
+
+class TokenTypsEnum(Enum):
+    REFRESH_TOKEN_TYP = "rt+jwt" #nosec B105
+    ACCESS_TOKEN_TYP = "at+jwt" #nosec B105
 
 class TokenHandler(BaseEndpoint):
 
@@ -78,8 +81,8 @@ class TokenHandler(BaseEndpoint):
             })
             iat = int(time.time())
             return TokenResponse.to_created_response(
-                self._to_token(iat, entity, ACCESS_TOKEN_TYP),
-                self._to_token(iat, entity, REFRESH_TOKEN_TYP),
+                self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP),
+                self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP),
                 iat + self.config_utils.get_jwt().access_token_exp,
                 entity.authorization_details
             )
@@ -92,11 +95,11 @@ class TokenHandler(BaseEndpoint):
             )
             return self._handle_500(context, "error during invoke token endpoint", e)
 
-    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: str) -> str:
+    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum) -> str:
         match typ:
-          case "at+jwt":
+          case TokenTypsEnum.ACCESS_TOKEN_TYP:
             exp = iat + self.config_utils.get_jwt().access_token_exp
-          case "rt+jwt":
+          case TokenTypsEnum.REFRESH_TOKEN_TYP:
             exp = iat + self.config_utils.get_jwt().refresh_token_exp
           case _:
             self._log_error(
@@ -111,10 +114,10 @@ class TokenHandler(BaseEndpoint):
             client_id=entity.client_id,
             sub=entity.client_id,
         )
-        if typ == REFRESH_TOKEN_TYP:
+        if typ == TokenTypsEnum.REFRESH_TOKEN_TYP:
             token = RefreshToken(**token.model_dump())
 
-        return self._sign_token(token, typ)
+        return self._sign_token(token, typ.value)
 
 
     def _sign_token(self, token: BaseModel, typ: str) -> str:

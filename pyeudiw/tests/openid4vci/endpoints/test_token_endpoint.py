@@ -6,11 +6,7 @@ import pytest
 from satosa.context import Context
 from satosa.response import Response
 
-from pyeudiw.openid4vci.endpoints.token_endpoint import (
-    TokenHandler,
-    ACCESS_TOKEN_TYP,
-    REFRESH_TOKEN_TYP
-)
+from pyeudiw.openid4vci.endpoints.token_endpoint import TokenHandler, TokenTypsEnum
 from pyeudiw.openid4vci.models.token_request import (
     AUTHORIZATION_CODE_GRANT,
     REFRESH_TOKEN_GRANT
@@ -37,9 +33,9 @@ from pyeudiw.tools.validation import (
 
 def mock_sign(*args, **kwargs):
     typ = kwargs.get("protected", {}).get("typ")
-    if typ == ACCESS_TOKEN_TYP:
+    if typ == TokenTypsEnum.ACCESS_TOKEN_TYP.value:
         return "fake.access.token"
-    elif typ == REFRESH_TOKEN_TYP:
+    elif typ == TokenTypsEnum.REFRESH_TOKEN_TYP.value:
         return "fake.refresh.token"
     else:
         return "unknown.typ.token"
