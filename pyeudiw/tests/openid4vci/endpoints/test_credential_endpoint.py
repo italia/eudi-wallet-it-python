@@ -207,21 +207,16 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
 ])
 def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_without_open_id_credential,
                                           value, error_desc):
-    context.request = request_without_open_id_credential
-    mock_jws_helper_verify = patch(
-        "pyeudiw.jwt.jws_helper.JWSHelper.verify",
-        return_value=value,
-    )
-    mock_jws_helper_verify.start()
-    entity = deepcopy(get_mocked_openid4vpi_entity())
-    entity.c_nonce = "random-nonce-abc123"
-    credential_handler.db_engine.get_by_session_id.return_value = entity
-    result = credential_handler.endpoint(context)
-    mock_jws_helper_verify.stop()
-    _assert_invalid_request(
-        result,
-        error_desc
-    )
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = value):
+        context.request = request_without_open_id_credential
+        entity = deepcopy(get_mocked_openid4vpi_entity())
+        entity.c_nonce = "random-nonce-abc123"
+        credential_handler.db_engine.get_by_session_id.return_value = entity
+        result = credential_handler.endpoint(context)
+        _assert_invalid_request(
+            result,
+            error_desc
+        )
 
 def side_effect(fields):
     if fields == {'fiscal_code': 'RSSMRA80A01H501T'}:
@@ -255,34 +250,28 @@ def test_request_with_open_id_credential(credential_handler, context, request_wi
     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
 def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
-    mock_jws_helper_verify = patch(
-        "pyeudiw.jwt.jws_helper.JWSHelper.verify",
-        return_value=valid_request_proof_jwt,
-    )
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = valid_request_proof_jwt):
+        entity.c_nonce = "random-nonce-abc123"
+        entity.attributes = {
+            "name": ["Mario"],
+            "surname": ["Rossi"],
+            "fiscal_number": ["RSSMRA80A01H501T"],
+            "birthdate": ["1980-01-01"],
+            "place_of_birth": ["Roma"],
+            "gender": ["M"]
+        }
+        db_user_mock = MagicMock()
+        db_user_mock.get_by_fields.side_effect = side_effect
 
-    entity.c_nonce = "random-nonce-abc123"
-    entity.attributes = {
-        "name": ["Mario"],
-        "surname": ["Rossi"],
-        "fiscal_number": ["RSSMRA80A01H501T"],
-        "birthdate": ["1980-01-01"],
-        "place_of_birth": ["Roma"],
-        "gender": ["M"]
-    }
-    db_user_mock = MagicMock()
-    db_user_mock.get_by_fields.side_effect = side_effect
+        credential_handler._db_user_engine = db_user_mock
+        credential_handler.db_engine.get_by_session_id.return_value = entity
+        result = credential_handler.endpoint(context)
 
-    credential_handler._db_user_engine = db_user_mock
-
-    mock_jws_helper_verify.start()
-    credential_handler.db_engine.get_by_session_id.return_value = entity
-
-    result = credential_handler.endpoint(context)
-    assert result.status == '200 OK'
-    response = json.loads(result.message)
-    assert response["credentials"] is not None
-    assert isinstance(response["credentials"], list)
-    assert len(response["credentials"]) == 1
+        assert result.status == '200 OK'
+        response = json.loads(result.message)
+        assert response["credentials"] is not None
+        assert isinstance(response["credentials"], list)
+        assert len(response["credentials"]) == 1
 
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '400'

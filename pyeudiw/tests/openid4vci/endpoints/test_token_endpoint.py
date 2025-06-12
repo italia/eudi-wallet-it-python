@@ -1,6 +1,6 @@
 import json
 from copy import deepcopy
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, patch
 
 import pytest
 from satosa.context import Context
@@ -73,9 +73,10 @@ def context() -> Context:
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(token_handler, context, method):
-    context.request_method = method
+    ctx = deepcopy(context)
+    ctx.request_method = method
     _assert_invalid_request(
-        token_handler.endpoint(context),
+        token_handler.endpoint(ctx),
         "invalid request method"
     )
 
@@ -92,9 +93,10 @@ def test_invalid_request_method(token_handler, context, method):
     "application/soap+xml"
 ])
 def test_invalid_content_type(token_handler, context, content_type):
-    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
+    ctx = deepcopy(context)
+    ctx.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     _assert_invalid_request(
-        token_handler.endpoint(context),
+        token_handler.endpoint(ctx),
         "invalid content-type"
     )
 
@@ -112,10 +114,10 @@ def test_invalid_oauth_client_attestation(token_handler, headers):
     "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJub3QtcmVhbCIsImV4cCI6MTY4MDAwMDAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 ])
 def test_invalid_jwt_oauth_client_attestation_pop(token_handler, context, pop):
-    contx = deepcopy(context)
-    contx.http_headers[OAUTH_CLIENT_ATTESTATION_POP_HEADER] = pop
+    ctx = deepcopy(context)
+    ctx.http_headers[OAUTH_CLIENT_ATTESTATION_POP_HEADER] = pop
     _assert_invalid_request(
-        token_handler.endpoint(contx),
+        token_handler.endpoint(ctx),
         "Not a valid JWS format"
     )
 
@@ -127,50 +129,45 @@ def test_invalid_jwt_oauth_client_attestation_pop(token_handler, context, pop):
     (" ", "missing `grant_type` parameter")
 ])
 def test_invalid_request_grant_type(token_handler, context, value, err_descr):
-    req = {
-        "grant_type": value,
-        "code": "abc123",
-        "redirect_uri": "https://client.example.com/callback",
-        "code_verifier": "s256_code_verifier_sample",
-        "refresh_token": "refresh_token_value",
-        "scope": "openid profile email"
-    }
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-
-    context.request = req
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        err_descr
-    )
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        context.request = {
+            "grant_type": value,
+            "code": "abc123",
+            "redirect_uri": "https://client.example.com/callback",
+            "code_verifier": "s256_code_verifier_sample",
+            "refresh_token": "refresh_token_value",
+            "scope": "openid profile email"
+        }
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            err_descr
+        )
 
 @pytest.mark.parametrize("value", ["", None, " "])
 def test_invalid_request_code_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code, value):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_authorization_code["code"] = value
-    context.request = valid_request_authorization_code
+        valid_request_authorization_code["code"] = value
+        context.request = valid_request_authorization_code
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "missing `code` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "missing `code` parameter"
+        )
 
 def test_invalid_request_code_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_refresh_token["code"] = "value"
-    context.request = valid_request_refresh_token
+        valid_request_refresh_token["code"] = "value"
+        context.request = valid_request_refresh_token
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "unexpected `code` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "unexpected `code` parameter"
+        )
 
 
 @pytest.mark.parametrize("value,err_descr", [
@@ -180,30 +177,28 @@ def test_invalid_request_code_with_grant_type_refresh_token(token_handler, conte
     ("test ", "Invalid `redirect_uri`"),
 ])
 def test_invalid_request_redirect_uri_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code, value, err_descr):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_authorization_code["redirect_uri"] = value
-    context.request = valid_request_authorization_code
+        valid_request_authorization_code["redirect_uri"] = value
+        context.request = valid_request_authorization_code
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        err_descr
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            err_descr
+        )
 
 def test_invalid_request_redirect_uri_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_refresh_token["redirect_uri"] = "value"
-    context.request = valid_request_refresh_token
+        valid_request_refresh_token["redirect_uri"] = "value"
+        context.request = valid_request_refresh_token
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "unexpected `redirect_uri` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "unexpected `redirect_uri` parameter"
+        )
 
 @pytest.mark.parametrize("value,err_descr", [
     ("" , "missing `code_verifier` parameter"),
@@ -212,70 +207,65 @@ def test_invalid_request_redirect_uri_with_grant_type_refresh_token(token_handle
     ("test ", "Invalid `code_verifier`"),
 ])
 def test_invalid_request_code_verifier_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code, value, err_descr):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_authorization_code["code_verifier"] = value
-    context.request = valid_request_authorization_code
+        valid_request_authorization_code["code_verifier"] = value
+        context.request = valid_request_authorization_code
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        err_descr
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            err_descr
+        )
 
 def test_invalid_request_code_verifier_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_refresh_token["code_verifier"] = "value"
-    context.request = valid_request_refresh_token
+        valid_request_refresh_token["code_verifier"] = "value"
+        context.request = valid_request_refresh_token
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "unexpected `code_verifier` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "unexpected `code_verifier` parameter"
+        )
 
 def test_invalid_refresh_token_with_grant_type_c(token_handler, context, valid_request_authorization_code):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_authorization_code["refresh_token"] = "value"
-    context.request = valid_request_authorization_code
+        valid_request_authorization_code["refresh_token"] = "value"
+        context.request = valid_request_authorization_code
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "unexpected `refresh_token` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "unexpected `refresh_token` parameter"
+        )
 
 @pytest.mark.parametrize("value", ["", None, " "])
 def test_invalid_request_refresh_token_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token, value):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_refresh_token["refresh_token"] = value
-    context.request = valid_request_refresh_token
+        valid_request_refresh_token["refresh_token"] = value
+        context.request = valid_request_refresh_token
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "missing `refresh_token` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "missing `refresh_token` parameter"
+        )
 
 def test_invalid_scopes_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_authorization_code["scope"] = "value"
-    context.request = valid_request_authorization_code
+        valid_request_authorization_code["scope"] = "value"
+        context.request = valid_request_authorization_code
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        "unexpected `scope` parameter"
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            "unexpected `scope` parameter"
+        )
 
 
 @pytest.mark.parametrize("value,err_descr", [
@@ -284,47 +274,46 @@ def test_invalid_scopes_with_grant_type_authorization_code(token_handler, contex
     ("test scope2", "invalid scope value 'test'"),
 ])
 def test_invalid_request_scope_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token, value, err_descr):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.verify.return_value = None
-    token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None):
+        token_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
 
-    valid_request_refresh_token["scope"] = value
-    context.request = valid_request_refresh_token
+        valid_request_refresh_token["scope"] = value
+        context.request = valid_request_refresh_token
 
-    _assert_invalid_request(
-        token_handler.endpoint(context),
-        err_descr
-    )
+        _assert_invalid_request(
+            token_handler.endpoint(context),
+            err_descr
+        )
 
 def test_valid_request_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.sign.side_effect = mock_sign
-    entity = get_mocked_openid4vpi_entity()
-    token_handler.db_engine.get_by_session_id.return_value = entity
+    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.sign", side_effect = mock_sign),
+          patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None)):
+        entity = get_mocked_openid4vpi_entity()
+        token_handler.db_engine.get_by_session_id.return_value = entity
 
-    context.request = valid_request_authorization_code
+        context.request = valid_request_authorization_code
 
-    _assert_valid_request(
-        token_handler.endpoint(context),
-        entity,
-        "fake.access.token",
-        "fake.refresh.token"
-    )
+        _assert_valid_request(
+            token_handler.endpoint(context),
+            entity,
+            "fake.access.token",
+            "fake.refresh.token"
+        )
 
 def test_valid_request_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
-    token_handler.jws_helper = MagicMock()
-    token_handler.jws_helper.sign.side_effect = mock_sign
-    entity = get_mocked_openid4vpi_entity()
-    token_handler.db_engine.get_by_session_id.return_value = entity
+    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.sign", side_effect = mock_sign),
+          patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None)):
+        entity = get_mocked_openid4vpi_entity()
+        token_handler.db_engine.get_by_session_id.return_value = entity
 
-    context.request = valid_request_refresh_token
+        context.request = valid_request_refresh_token
 
-    _assert_valid_request(
-        token_handler.endpoint(context),
-        entity,
-        "fake.access.token",
-        "fake.refresh.token"
-    )
+        _assert_valid_request(
+            token_handler.endpoint(context),
+            entity,
+            "fake.access.token",
+            "fake.refresh.token"
+        )
 
 def _assert_valid_request(result: Response, entity: OpenId4VCIEntity, exp_access_token:str, exp_refresh_token: str):
     assert result.status == '201 Created'
