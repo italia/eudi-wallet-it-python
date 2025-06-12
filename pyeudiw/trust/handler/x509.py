@@ -53,6 +53,8 @@ class X509Handler(TrustHandlerInterface):
         private_keys_thumbprints = [key_from_jwk_dict(key, private=False).thumbprint("SHA-256") for key in private_keys]
         certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
 
+        has_a_valid_chain = False
+
         for k, v in relying_party_certificate_chains_by_ca.items():
             root_dns_name = get_x509_info(v[-1])
             
@@ -67,7 +69,7 @@ class X509Handler(TrustHandlerInterface):
 
             found_client_id = False
 
-            client_id_dns = self.client_id.split("://")[-1].split("/")[0]
+            client_id_dns = self.client_id.split(":")[-1].split("://")[-1].split("/")[0]
 
             for cert in v[:-1]:
                 if get_x509_info(cert) == client_id_dns:
@@ -77,6 +79,8 @@ class X509Handler(TrustHandlerInterface):
             if not found_client_id:
                 logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}); the chain will be removed")
                 continue
+
+            has_a_valid_chain = True
 
             pem_type = get_certificate_type(v[0])
 
@@ -105,6 +109,11 @@ class X509Handler(TrustHandlerInterface):
                 logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
                 continue            
 
+        if not has_a_valid_chain and "localhost" not in self.client_id:
+            raise InvalidTrustHandlerConfiguration(
+                f"No valid x509 certificate chains found in the configuration for client {self.client_id}. "
+            )
+        
         self.private_keys = private_keys
 
     def _verify_chain(self, x5c: list[str], crls: list[CRLHelper]) -> bool:
@@ -150,7 +159,7 @@ class X509Handler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
-        if issuer == self.client_id:
+        if issuer.split("://")[-1].split("/")[0] == self.client_id.split(":", 1)[-1]:
             for ca, chain in self.relying_party_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 

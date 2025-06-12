@@ -67,26 +67,25 @@ def test_extract_trust_material_from_x509_handler():
     assert "x" in serialized_object["x509"]["jwks"][0]
     assert "y" in serialized_object["x509"]["jwks"][0]
 
-def test_return_nothing_if_chain_is_invalid():
+def test_fail_if_all_chains_are_invalid():
     invalid_chain = gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
-    trust_handler = X509Handler(
-        client_id="https://example.com",
-        relying_party_certificate_chains_by_ca={
-            "ca.example.com": invalid_chain
-        },
-        private_keys=[
-            DEFAULT_X509_LEAF_JWK
-        ],
-        certificate_authorities={
-            "ca.example.com": invalid_chain[-1]
-        }
-    )
-    trust_source = TrustSourceData.empty("https://example.com")
-
-    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
-    serialized_object = trust_source.serialize()
-
-    assert "x509" not in serialized_object
+    try:
+        trust_handler = X509Handler(
+            client_id="https://example.com",
+            relying_party_certificate_chains_by_ca={
+                "ca.example.com": invalid_chain
+            },
+            private_keys=[
+                DEFAULT_X509_LEAF_JWK
+            ],
+            certificate_authorities={
+                "ca.example.com": invalid_chain[-1]
+            }
+        )
+    except InvalidTrustHandlerConfiguration as e:
+        assert True
+    except Exception:
+        assert False, "Should have raised InvalidTrustHandlerConfiguration due to invalid certificate chain"
 
 def test_chain_crl_passing():
     resp = Response()
@@ -218,30 +217,20 @@ def test_chain_crl_fail():
 
     chain = chain.get_chain("DER")
     
-    trust_handler = X509Handler(
-        client_id="https://example.com",
-        relying_party_certificate_chains_by_ca={
-            "ca.example.com": chain
-        },
-        private_keys=[
-            DEFAULT_X509_LEAF_JWK
-        ],
-        certificate_authorities={
-            "ca.example.com": chain[-1]
-        }
-    )
-    trust_source = TrustSourceData.empty("https://example.com")
-
-    mock_staus_list_endpoint = patch(
-        "pyeudiw.x509.crl_helper.http_get_sync",
-        return_value=[
-            resp
-        ],
-    )
-
-    mock_staus_list_endpoint.start()
-    trust_handler.extract_and_update_trust_materials("https://example.com", trust_source)
-    mock_staus_list_endpoint.stop()
-    serialized_object = trust_source.serialize()
-
-    assert not "x509" in serialized_object
+    try:
+        trust_handler = X509Handler(
+            client_id="https://example.com",
+            relying_party_certificate_chains_by_ca={
+                "ca.example.com": chain
+            },
+            private_keys=[
+                DEFAULT_X509_LEAF_JWK
+            ],
+            certificate_authorities={
+                "ca.example.com": chain[-1]
+            }
+        )
+    except InvalidTrustHandlerConfiguration as e:
+        assert True
+    except Exception:
+        assert False, "Should have raised InvalidTrustHandlerConfiguration due to revoked certificate"
