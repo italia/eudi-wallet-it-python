@@ -149,7 +149,32 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     }
 }
 
-MOCK_INTERNAL_ATTRIBUTES = {}
+MOCK_INTERNAL_ATTRIBUTES = {
+    "attributes": {
+        "mail": {
+            "openid4vci": ["mail", "email"]
+        },
+        "name": {
+            "openid4vci": ["given_name"]
+        },
+        "surname": {
+            "openid4vci": ["family_name"]
+        },
+        "placeOfBirth": {
+            "openid4vci": ["placeOfBirth"]
+        },
+        "countyOfBirth": {
+            "openid4vci": ["countyOfBirth"]
+        },
+        "dateOfBirth": {
+            "openid4vci": ["dateOfBirth"]
+        },
+        "fiscal_code": {
+            "openid4vci": ["fiscal_code", "fiscal_number"]
+        }
+    }
+}
+
 MOCK_BASE_URL = "example.com"
 MOCK_NAME = "openid4vcimock"
 

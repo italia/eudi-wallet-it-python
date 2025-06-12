@@ -1,4 +1,5 @@
 import datetime
+import json
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
@@ -9,6 +10,7 @@ from satosa.response import Response
 from pyeudiw.openid4vci.endpoints.credential_endpoint import CredentialHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
+from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
@@ -221,6 +223,66 @@ def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_w
         error_desc
     )
 
+def side_effect(fields):
+    if fields == {'fiscal_code': 'RSSMRA80A01H501T'}:
+        return UserEntity(**{
+            "name": "Mario",
+            "surname": "Rossi",
+            "fiscal_code":"RSSMRA80A01H501T",
+            "dateOfBirth":"1980-01-01",
+            "placeOfBirth": "Roma",
+            "countyOfBirth": "IT",
+            "mail": "mario.rossi@example.com"
+        })
+    pytest.fail(f"Unexpected lookup fields: {fields}")
+
+def test_request_without_open_id_credential(credential_handler, context, request_without_open_id_credential, valid_request_proof_jwt):
+    context.request = request_without_open_id_credential
+    entity = deepcopy(get_mocked_openid4vpi_entity())
+    _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
+
+
+def test_request_with_open_id_credential(credential_handler, context, request_with_open_id_credential, valid_request_proof_jwt):
+    context.request = request_with_open_id_credential
+    entity = deepcopy(get_mocked_openid4vpi_entity())
+    entity.authorization_details = [
+        {
+            "type": OPEN_ID_CREDENTIAL_TYPE,
+            "credential_configuration_id": "credential_configuration_id_test",
+            "credential_identifiers": ["cred1", "cred2", "example_credential_id_123"]
+        }
+    ]
+    _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
+
+def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
+    mock_jws_helper_verify = patch(
+        "pyeudiw.jwt.jws_helper.JWSHelper.verify",
+        return_value=valid_request_proof_jwt,
+    )
+
+    entity.c_nonce = "random-nonce-abc123"
+    entity.attributes = {
+        "name": ["Mario"],
+        "surname": ["Rossi"],
+        "fiscal_number": ["RSSMRA80A01H501T"],
+        "birthdate": ["1980-01-01"],
+        "place_of_birth": ["Roma"],
+        "gender": ["M"]
+    }
+    db_user_mock = MagicMock()
+    db_user_mock.get_by_fields.side_effect = side_effect
+
+    credential_handler._db_user_engine = db_user_mock
+
+    mock_jws_helper_verify.start()
+    credential_handler.db_engine.get_by_session_id.return_value = entity
+
+    result = credential_handler.endpoint(context)
+    assert result.status == '200 OK'
+    response = json.loads(result.message)
+    assert response["credentials"] is not None
+    assert isinstance(response["credentials"], list)
+    assert len(response["credentials"]) == 1
 
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '400'

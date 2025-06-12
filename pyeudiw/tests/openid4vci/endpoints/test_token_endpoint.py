@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from unittest.mock import Mock, MagicMock
 
 import pytest
@@ -111,9 +112,10 @@ def test_invalid_oauth_client_attestation(token_handler, headers):
     "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJub3QtcmVhbCIsImV4cCI6MTY4MDAwMDAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 ])
 def test_invalid_jwt_oauth_client_attestation_pop(token_handler, context, pop):
-    context.http_headers[OAUTH_CLIENT_ATTESTATION_POP_HEADER] = pop
+    contx = deepcopy(context)
+    contx.http_headers[OAUTH_CLIENT_ATTESTATION_POP_HEADER] = pop
     _assert_invalid_request(
-        token_handler.endpoint(context),
+        token_handler.endpoint(contx),
         "Not a valid JWS format"
     )
 

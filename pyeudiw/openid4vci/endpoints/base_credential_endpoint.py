@@ -2,7 +2,6 @@ import json
 from abc import ABC, abstractmethod
 from uuid import uuid4
 
-from cryptojwt.jwk.ec import new_ec_key
 from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response
@@ -19,34 +18,30 @@ from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.tools.validation import validate_request_method, validate_content_type, validate_oauth_client_attestation
 
-ALG_TO_CRV = {
-    "ES256": "P-256",
-    "ES384": "P-384",
-    "ES512": "P-521",
-}
-
-SD_SPEC_TEMPLATE = {
-    'user_claims': {
-        'unique_id': '{unique_id}',
-        'given_name': '{name}',
-        'family_name': '{surname}',
-        'birthdate': '{dateOfBirth}',
-        'place_of_birth': {
-            'country': '{countyOfBirth}',
-            'locality': '{placeOfBirth}'
-        },
-        'tax_id_code': '{tax_id_code}'
-    },
-    'holder_disclosed_claims': {
-        'given_name': '{name}',
-        'family_name': '{surname}',
-        'place_of_birth': {
-            'country': '{countyOfBirth}',
-            'locality': '{placeOfBirth}'
-        }
-    },
-    'key_binding': True
-}
+SD_SPEC_TEMPLATE = '''
+    {{
+      "holder_disclosed_claims": {{
+        "family_name": "{surname}",
+        "given_name": "{name}",
+        "place_of_birth": {{
+          "country": "{countyOfBirth}",
+          "locality": "{placeOfBirth}"
+        }}
+      }},
+      "key_binding": true,
+      "user_claims": {{
+        "birthdate": "{dateOfBirth}",
+        "family_name": "{surname}",
+        "given_name": "{name}",
+        "place_of_birth": {{
+          "country": "{countyOfBirth}",
+          "locality": "{placeOfBirth}"
+        }},
+        "tax_id_code": "{tax_id_code}",
+        "unique_id": "{unique_id}"
+      }}
+    }}
+'''
 
 class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
@@ -134,20 +129,12 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
 
-        ec_alg = self.config_utils.get_jwt_default_sig_alg()
-        ec_crv = ALG_TO_CRV.get(ec_alg)
-        issuer_key = new_ec_key(ec_crv, alg=ec_alg)
-        holder_key = new_ec_key(ec_crv, alg=ec_alg)
-
-        #todo: handle additional_headers
-        additional_headers = {'kid': issuer_key["kid"]}
+        issuer_keys =  self.config["metadata_jwks"]
 
         sdjwt_at_issuer = SDJWTIssuer(
             user_claims=specification,
-            issuer_keys=[issuer_key],
-            holder_key=holder_key,
+            issuer_keys=issuer_keys,
             add_decoy_claims=use_decoys,
-            extra_header_parameters=additional_headers
         )
 
         return {
@@ -156,9 +143,10 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         }
 
     @staticmethod
-    def _loader(template: dict, data: dict):
-        json_template = json.dumps(template)
-        json_filled = json_template.format(**data)
+    def _loader(template: dict|str, data: dict):
+        if isinstance(template, dict):
+            template = json.dumps(template)
+        json_filled = template.format(**data)
         return json.loads(json_filled)
 
     def _extract_lookup_identifiers(self, attributes: dict):
@@ -180,7 +168,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             if lookup_source in sources
         }
 
-        for db_field_name, possible_saml_names in ia_openid4vci:
+        for db_field_name, possible_saml_names in ia_openid4vci.items():
             for saml_name in possible_saml_names:
                 value = attributes.get(saml_name)
                 if value:

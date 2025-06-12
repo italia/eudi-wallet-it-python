@@ -70,5 +70,5 @@ class CredentialHandler(BaseCredentialEndpoint):
         """
         cred = self.issue_sd_jwt(context)
         return CredentialEndpointResponse.to_response([
-            CredentialItem(**cred["issuance"])
+            CredentialItem(credential = cred["issuance"])
         ])

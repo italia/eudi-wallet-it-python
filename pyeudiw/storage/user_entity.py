@@ -25,5 +25,5 @@ class UserEntity(BaseModel):
     fiscal_code: str
     countyOfBirth: str
     placeOfBirth: str
-    portrait: Optional[str]
+    portrait: Optional[str] = None
     mail: str
