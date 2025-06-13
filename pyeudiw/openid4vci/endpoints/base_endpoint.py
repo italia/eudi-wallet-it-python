@@ -88,9 +88,11 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         """
         if not context.request or context.request == '{}':
             return None
-        if isinstance(context.request, dict):
+        if isinstance(context.request, dict) or isinstance(context.request, set):
             return context.request
-        return json.loads(context.request)
+        try: parsed = json.loads(context.request)
+        except (json.JSONDecodeError, TypeError): parsed = context.request
+        return parsed
 
     @property
     def entity_id(self) -> str:

@@ -46,7 +46,7 @@ class NonceHandler(BaseEndpoint):
         try:
             validate_request_method(context.request_method, ["POST"])
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            if context.request.body:
+            if self._get_body(context):
                 return self._handle_400(context, "Request body must be empty for nonce endpoint")
             c_nonce = str(uuid4())
             self.db_engine.update_nonce_by_session_id(get_session_id(context), c_nonce)
