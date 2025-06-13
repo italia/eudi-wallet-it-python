@@ -18,6 +18,7 @@ from pyeudiw.tools.exceptions import (
 )
 from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
+REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 
 class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
@@ -78,7 +79,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         Returns:
             str: A full URN request_uri string.
         """
-        return f"urn:ietf:params:oauth:request_uri:{random_part}"
+        return f"{REQUEST_URI_PREFIX}:{random_part}"
 
     @staticmethod
     def _get_body(context: Context):

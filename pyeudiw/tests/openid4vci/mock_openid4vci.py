@@ -262,7 +262,8 @@ def get_mocked_satosa_context(method ="POST", content_type = FORM_URLENCODED, he
         headers = {
             HTTP_CONTENT_TYPE_HEADER: content_type,
             OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid-pop",
-            OAUTH_CLIENT_ATTESTATION_HEADER: "valid"
+            OAUTH_CLIENT_ATTESTATION_HEADER: "valid",
+            "HTTP_USER_AGENT": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         }
     context = Context()
     context.request_method = method
