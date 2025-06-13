@@ -118,11 +118,8 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
                 "conf": {
-                    "db_name": "eudiw",
-                    "db_sessions_collection": "sessions",
-                    "db_trust_attestations_collection": "trust_attestations",
-                    "db_trust_anchors_collection": "trust_anchors",
-                    "db_trust_sources_collection": "trust_sources",
+                    "db_name": "eudiw_user",
+                    "db_users_collection": "users",
                     "data_ttl": 63072000
                 },
                 "connection_params": {

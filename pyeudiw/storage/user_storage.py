@@ -38,16 +38,7 @@ class UserStorage(BaseStorage):
             self.client = pymongo.MongoClient(self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.sessions = getattr(
-                self.db, self.storage_conf["db_sessions_collection"]
-            )
-            self.trust_attestations = getattr(
-                self.db, self.storage_conf["db_trust_attestations_collection"]
-            )
-            self.trust_anchors = getattr(
-                self.db, self.storage_conf["db_trust_anchors_collection"]
-            )
-            self.trust_sources = getattr(
-                self.db, self.storage_conf["db_trust_sources_collection"]
+                self.db, self.storage_conf["db_users_collection"]
             )
 
     def get_by_fiscal_code(self, fiscal_code: str) -> UserEntity:
