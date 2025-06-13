@@ -284,3 +284,14 @@ def get_pyeudiw_frontend_config_with_openid_credential_issuer(openid_credential_
         return config
 
     return MOCK_PYEUDIW_FRONTEND_CONFIG
+
+REMOVE = object()  # special value for remove object
+def mock_deserialized_overridable(base: dict, overrides=None):
+    result = base.copy()
+    if overrides:
+        for k, v in overrides.items():
+            if v is REMOVE:
+                result.pop(k, None)  # remove key if exist
+            else:
+                result[k] = v
+    return result

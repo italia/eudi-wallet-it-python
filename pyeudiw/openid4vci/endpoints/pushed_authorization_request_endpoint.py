@@ -1,6 +1,6 @@
 import secrets
-from urllib.parse import parse_qs
 
+from pydantic import ValidationError
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
@@ -57,11 +57,10 @@ class ParHandler(BaseEndpoint):
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
             validate_oauth_client_attestation(context)
 
-            body = context.request.body.decode("utf-8")
-            data = parse_qs(body)
+            data = self._get_body(context) or {}
 
-            client_id = data.get("client_id", [None])[0]
-            request = data.get("request", [None])[0]
+            client_id = data.get("client_id", "").strip()
+            request = data.get("request", "").strip()
 
             if not client_id or not request:
                 self._log_error(
@@ -72,9 +71,9 @@ class ParHandler(BaseEndpoint):
 
             decoded_request = self.jws_helper.verify(request)
             par_request = ParRequest.model_validate(
-                **decoded_request, context = {
+                decoded_request, context = {
                     ENDPOINT_CTX: "par",
-                    CONFIG_CTX: self.config_utils,
+                    CONFIG_CTX: self.config,
                     CLIENT_ID_CTX: client_id,
                     ENTITY_ID_CTX: self.entity_id
                 })
@@ -84,8 +83,8 @@ class ParHandler(BaseEndpoint):
                 self._to_request_uri(random_part),
                 self.config_utils.get_jwt().par_exp
             )
-        except (InvalidRequestException, InvalidScopeException) as e:
-            return self._handle_400(context, e.message, e)
+        except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
+            return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
         except Exception as e:
             self._log_error(
                 e.__class__.__name__,

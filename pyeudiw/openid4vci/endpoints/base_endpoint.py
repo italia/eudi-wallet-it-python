@@ -85,7 +85,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         """
           Retrieve body from the HTTP request.
         """
-        if context.request == '{}':
+        if not context.request or context.request == '{}':
             return None
         if isinstance(context.request, dict):
             return context.request
