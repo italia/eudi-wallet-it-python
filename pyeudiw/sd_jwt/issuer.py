@@ -47,8 +47,15 @@ class SDJWTIssuer(SDJWTCommon):
         self._user_claims = user_claims
         if not isinstance(issuer_keys, list):
             issuer_keys = [issuer_keys]
+        for key in issuer_keys:
+            if not isinstance(key, dict):
+                raise ValueError("Not valid jwk dict instance for one or more issuer_keys")
         self._issuer_keys = issuer_keys
+
+        if holder_key and not isinstance(holder_key, dict):
+            raise ValueError("Not valid jwk dict instance for holder_key")
         self._holder_key = holder_key
+
         self._sign_alg = sign_alg or DEFAULT_SIGNING_ALG
         self._add_decoy_claims = add_decoy_claims
         self._extra_header_parameters = extra_header_parameters
