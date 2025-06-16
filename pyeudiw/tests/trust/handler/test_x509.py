@@ -15,7 +15,7 @@ def test_wrong_configuration_must_fail():
     try:
         X509Handler(
             client_id="https://test.com",
-            relying_party_certificate_chains_by_ca={},
+            leaf_certificate_chains_by_ca={},
             private_keys=[],
             certificate_authorities={}
         )
@@ -26,7 +26,7 @@ def test_wrong_configuration_must_fail():
     try:
         X509Handler(
             client_id="https://test.com",
-            relying_party_certificate_chains_by_ca={
+            leaf_certificate_chains_by_ca={
                 "example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")
             },
             private_keys=[],
@@ -42,7 +42,7 @@ def test_extract_trust_material_from_x509_handler():
 
     trust_handler = X509Handler(
         client_id="example.com",
-        relying_party_certificate_chains_by_ca={
+        leaf_certificate_chains_by_ca={
             "ca.example.com": chain
         },
         private_keys=[
@@ -72,7 +72,7 @@ def test_fail_if_all_chains_are_invalid():
     try:
         trust_handler = X509Handler(
             client_id="https://example.com",
-            relying_party_certificate_chains_by_ca={
+            leaf_certificate_chains_by_ca={
                 "ca.example.com": invalid_chain
             },
             private_keys=[
@@ -131,7 +131,7 @@ def test_chain_crl_passing():
     
     trust_handler = X509Handler(
         client_id="example.com",
-        relying_party_certificate_chains_by_ca={
+        leaf_certificate_chains_by_ca={
             "ca.example.com": chain
         },
         private_keys=[
@@ -220,7 +220,7 @@ def test_chain_crl_fail():
     try:
         trust_handler = X509Handler(
             client_id="https://example.com",
-            relying_party_certificate_chains_by_ca={
+            leaf_certificate_chains_by_ca={
                 "ca.example.com": chain
             },
             private_keys=[

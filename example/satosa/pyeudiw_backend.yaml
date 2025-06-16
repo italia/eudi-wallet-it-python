@@ -283,7 +283,7 @@ config:
             AwIDRwAwRAIgafkpE88vVHf1AoNrRvqLNaiRwdw569kUbhwVrbXN7dYCIH0OkXvk
             tX5+FvfFc70mO+2FvYtOV0U4pruy8e807ATO
             -----END CERTIFICATE-----
-        relying_party_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
+        leaf_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
             ca.example.com:
               - |
                 -----BEGIN CERTIFICATE-----

@@ -35,7 +35,7 @@ class X509Handler(TrustHandlerInterface):
     def __init__(
         self, 
         client_id: str, 
-        relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
+        leaf_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         certificate_authorities: dict[str, Union[bytes, str]] = {},
         include_issued_jwt_header_param: bool = False,
@@ -45,17 +45,17 @@ class X509Handler(TrustHandlerInterface):
         self.certificate_authorities = certificate_authorities
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
-        if not relying_party_certificate_chains_by_ca:
+        if not leaf_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
 
-        self.relying_party_certificate_chains_by_ca = {}
+        self.leaf_certificate_chains_by_ca = {}
 
         private_keys_thumbprints = [key_from_jwk_dict(key, private=False).thumbprint("SHA-256") for key in private_keys]
         certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
 
         has_a_valid_chain = False
 
-        for k, v in relying_party_certificate_chains_by_ca.items():
+        for k, v in leaf_certificate_chains_by_ca.items():
             root_dns_name = get_x509_info(v[-1])
             
             if not root_dns_name in k:
@@ -102,7 +102,7 @@ class X509Handler(TrustHandlerInterface):
             chain = to_der_list(v)
 
             if verify_x509_attestation_chain(chain):
-                self.relying_party_certificate_chains_by_ca[k] = chain
+                self.leaf_certificate_chains_by_ca[k] = chain
             else:
                 logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
                 continue         
@@ -160,7 +160,7 @@ class X509Handler(TrustHandlerInterface):
     ) -> TrustSourceData:
         # Return the first valid chain
         if issuer.split("://")[-1].split("/")[0] == self.client_id.split(":", 1)[-1]:
-            for ca, chain in self.relying_party_certificate_chains_by_ca.items():
+            for ca, chain in self.leaf_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 
                 if not self._verify_chain(chain, crls):
