@@ -9,7 +9,6 @@ from satosa.response import (
 )
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
-from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.exceptions import (
@@ -34,7 +33,6 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         self.config = config
         self.config_utils = PyeudiwFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
-        self.db_engine = OpenId4VciEngine.db_engine
         self._backend_url = f"{base_url}/{name}"
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):

@@ -1,4 +1,4 @@
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import urlencode
 
 from pydantic import ValidationError
 from satosa.context import Context
@@ -9,11 +9,12 @@ from pyeudiw.openid4vci.models.authorization_request import (
     AuthorizationRequest,
     PAR_REQUEST_URI_CTX,
 )
+from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CLIENT_ID_CTX,
 )
-from pyeudiw.openid4vci.models.authorization_response import AuthorizationResponse
+from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED,
@@ -40,6 +41,7 @@ class AuthorizationHandler(BaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
+        self.db_engine = OpenId4VciEngine.db_engine
 
     def endpoint(self, context: Context) -> Response:
         """

@@ -8,6 +8,7 @@ from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.storage.db_engine import DBEngine
@@ -56,6 +57,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
+        self.db_engine = OpenId4VciEngine.db_engine
         self._db_user_engine = None
 
     def endpoint(self, context: Context) -> Response:

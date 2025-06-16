@@ -52,6 +52,11 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
             "module": "pyeudiw.openid4vci.endpoints.notification_endpoint",
             "class": "NotificationHandler",
             "path": "/notification"
+        },
+        "metadata_endpoint": {
+            "module": "pyeudiw.openid4vci.endpoints.metadata_endpoint",
+            "class": "MetadataHandler",
+            "path": "/.well-known/openid-federation"
         }
     },
     "jwt": {
@@ -97,13 +102,13 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
             "code_challenge_methods_supported": ["S256"],
             "scopes_supported": ["scope1", "scope2", "openid"]
         },
-        "openid_credential_issuer" : {
+        "openid_credential_issuer": {
             "credential_configurations_supported": {
-                "dc_sd_jwt_EuropeanDisabilityCard" :{
+                "dc_sd_jwt_EuropeanDisabilityCard": {
                     "format": "dc+sd-jwt",
                     "scope": "EuropeanDisabilityCard"
                 },
-                "dc_sd_jwt_mDL":{
+                "dc_sd_jwt_mDL": {
                     "scope": "mDL",
                     "cryptographic_binding_methods_supported": [
                         "jwk"
@@ -111,7 +116,7 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
                 }
             },
             "authorization_servers": [],
-            "credential_issuer":"",
+            "credential_issuer": "",
         }
     },
     "user_storage": {
@@ -145,7 +150,9 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
         }
     ],
     "credential_configurations": {
-        "lookup_source":"openid4vci"
+        "lookup_source": "openid4vci",
+        "entity_configuration_exp": 800,
+        "entity_default_sig_alg": "ES256"
     }
 }
 

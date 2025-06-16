@@ -5,6 +5,7 @@ from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.content_type import APPLICATION_JSON, ENTITY_STATEMENT_JWT
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
@@ -89,16 +90,9 @@ class MetadataHandler(BaseEndpoint):
         Returns:
             A Response object.
         """
-
-        if context.qs_params.get("format", "") == "json":
-            return Response(
-                json.dumps(self.entity_configuration_as_dict),
-                status="200",
-                content="application/json",
-            )
-        else:
-            return Response(
-                self.entity_configuration,
-                status="200",
-                content="application/entity-statement+jwt",
-            )
+        is_json = context.qs_params.get("format", "") == "json"
+        return Response(
+            json.dumps(self.entity_configuration_as_dict) if is_json else self.entity_configuration,
+            status="200",
+            content=APPLICATION_JSON if is_json else ENTITY_STATEMENT_JWT
+        )

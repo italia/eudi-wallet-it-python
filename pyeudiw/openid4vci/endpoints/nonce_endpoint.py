@@ -6,6 +6,7 @@ from satosa.response import Response
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
+from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON
@@ -34,6 +35,7 @@ class NonceHandler(BaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
+        self.db_engine = OpenId4VciEngine.db_engine
 
     def endpoint(self, context: Context) -> Response:
         """
