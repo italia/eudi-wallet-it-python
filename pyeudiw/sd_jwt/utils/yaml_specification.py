@@ -1,5 +1,6 @@
 import sys
 import yaml
+import yaml as sd_yaml
 from io import TextIOWrapper
 from pyeudiw.sd_jwt.common import SDObj
 from typing import Union
@@ -53,6 +54,15 @@ class _SDKeyTag(yaml.YAMLObject):
                     node
                 )
             )
+
+
+def sd_constructor(loader, node):
+    return loader.construct_scalar(node)
+
+sd_yaml.add_constructor("!sd", sd_constructor, Loader=sd_yaml.FullLoader)
+
+def yaml_load_specification_with_placeholder(file_buffer: TextIOWrapper):
+    return sd_yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec
 
 def yaml_load_specification(file_buffer: TextIOWrapper):
     return yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec

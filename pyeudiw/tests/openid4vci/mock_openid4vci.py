@@ -152,9 +152,28 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "credential_configurations": {
         "lookup_source": "openid4vci",
         "entity_configuration_exp": 800,
-        "entity_default_sig_alg": "ES256"
+        "entity_default_sig_alg": "ES256",
+        "credential_specification_template": """
+            holder_disclosed_claims:
+                !sd given_name: "{{name}}"
+                !sd family_name: "{{surname}}"
+                !sd place_of_birth:
+                    country: "{{countyOfBirth}}"
+                    locality: "{{placeOfBirth}}"
+            key_binding: true
+            user_claims:
+                !sd birthdate: "{{dateOfBirth}}"
+                !sd family_name: "{{surname}}"
+                !sd given_name: "{{name}}"
+                !sd place_of_birth:
+                    country: "{{countyOfBirth}}"
+                    locality: "{{placeOfBirth}}"
+                !sd tax_id_code: "TINIT-{{fiscal_code}}"
+                !sd unique_id: "{{unique_id}}"
+        """
     }
 }
+
 
 MOCK_INTERNAL_ATTRIBUTES = {
     "attributes": {

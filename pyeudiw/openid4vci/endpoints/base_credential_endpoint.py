@@ -2,6 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from uuid import uuid4
 
+from jinja2 import Template
 from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response
@@ -16,36 +17,13 @@ from pyeudiw.satosa.utils.validation import (
     validate_oauth_client_attestation
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification_with_placeholder
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.user_storage import UserStorage
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 from pyeudiw.tools.exceptions import InvalidScopeException, InvalidRequestException
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
-SD_SPEC_TEMPLATE = '''
-    {{
-      "holder_disclosed_claims": {{
-        "family_name": "{surname}",
-        "given_name": "{name}",
-        "place_of_birth": {{
-          "country": "{countyOfBirth}",
-          "locality": "{placeOfBirth}"
-        }}
-      }},
-      "key_binding": true,
-      "user_claims": {{
-        "birthdate": "{dateOfBirth}",
-        "family_name": "{surname}",
-        "given_name": "{name}",
-        "place_of_birth": {{
-          "country": "{countyOfBirth}",
-          "locality": "{placeOfBirth}"
-        }},
-        "tax_id_code": "{tax_id_code}",
-        "unique_id": "{unique_id}"
-      }}
-    }}
-'''
 
 class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
@@ -62,6 +40,10 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciEngine.db_engine
         self._db_user_engine = None
+        specification_template = self.config_utils.get_credential_configurations().credential_specification_template
+        if not specification_template:
+            raise ValueError("Missing `credential_configurations.credential_specification_template` config")
+        self.specification_template = specification_template
 
     def endpoint(self, context: Context) -> Response:
         try:
@@ -127,10 +109,8 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
         user_data = user.model_dump()
         user_data["unique_id"] = uuid4()
-        user_data["tax_id_code"] = f"TINIT-{user.fiscal_code}"
 
-        specification = self._loader(SD_SPEC_TEMPLATE, user_data)
-
+        specification = self._loader(user_data)
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
 
@@ -147,11 +127,12 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             "issuance": sdjwt_at_issuer.sd_jwt_issuance
         }
 
-    @staticmethod
-    def _loader(template: dict|str, data: dict):
-        if isinstance(template, dict):
-            template = json.dumps(template)
-        json_filled = template.format(**data)
+    def _loader(self, data: dict):
+        template = json.dumps(
+            yaml_load_specification_with_placeholder(self.specification_template)
+        )
+        template = Template(template)
+        json_filled = template.render(**data)
         return json.loads(json_filled)
 
     def _extract_lookup_identifiers(self, attributes: dict):

@@ -71,6 +71,14 @@ def credential_handler() -> CredentialHandler:
 def context() -> Context:
     return get_mocked_satosa_context(content_type = APPLICATION_JSON)
 
+def test_missing_credential_specification_template_raises():
+    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+    config["credential_configurations"].pop("credential_specification_template", None)
+
+    with pytest.raises(ValueError,
+                       match="Missing `credential_configurations.credential_specification_template` config"):
+        CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(credential_handler, context, method):
     context.request_method = method

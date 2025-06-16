@@ -14,3 +14,4 @@ class CredentialConfigurationsConfig(BaseModel):
         {"oauth_authorization_server": "issuer"},
         {"openid_credential_issuer": "credential_issuer"},
     ])
+    credential_specification_template: Optional[str] = None
