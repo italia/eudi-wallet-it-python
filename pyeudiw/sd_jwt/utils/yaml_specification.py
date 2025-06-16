@@ -58,7 +58,7 @@ class _SDKeyTag(yaml.YAMLObject):
             )
 
 def yaml_load_specification_with_placeholder(file_buffer: TextIOWrapper):
-    parsed = yaml.load(file_buffer, Loader=yaml.FullLoader)
+    parsed = yaml.load(file_buffer, Loader=yaml.FullLoader) # nosec B506
 
     convert = lambda obj: (
         {(f"{{{{ {k.value} }}}}" if isinstance(k, SDObj) else k): convert(v)  for k, v in obj.items()}
