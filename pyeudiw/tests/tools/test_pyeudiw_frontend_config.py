@@ -1,6 +1,7 @@
 import pytest
 
 from pyeudiw.jwt.schemas.jwt import JWTConfig
+from pyeudiw.openid4vci.utils.config import Openid4VciFrontendConfigUtils
 from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.satosa.schemas.metadata import (
     OauthAuthorizationServerMetadata,
@@ -8,7 +9,6 @@ from pyeudiw.satosa.schemas.metadata import (
     CredentialConfiguration
 )
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
-from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def mock_config_dict():
 
 @pytest.fixture
 def config_utils(mock_config_dict):
-    return PyeudiwFrontendConfigUtils(mock_config_dict)
+    return Openid4VciFrontendConfigUtils(mock_config_dict)
 
 
 def test_get_jwt(config_utils):
@@ -40,7 +40,18 @@ def test_get_oauth_authorization_server(config_utils):
 def test_get_openid_credential_issuer(config_utils):
     issuer_metadata = config_utils.get_openid_credential_issuer()
     assert isinstance(issuer_metadata, OpenidCredentialIssuerMetadata)
-    assert issuer_metadata.credential_issuer == ""
+    assert issuer_metadata.credential_configurations_supported == {
+        "dc_sd_jwt_EuropeanDisabilityCard": {
+            "format": "dc+sd-jwt",
+            "scope": "EuropeanDisabilityCard"
+        },
+        "dc_sd_jwt_mDL": {
+            "scope": "mDL",
+            "cryptographic_binding_methods_supported": [
+                "jwk"
+            ]
+        }
+    }
 
 
 def test_get_credential_configurations_supported(config_utils):

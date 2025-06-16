@@ -2,6 +2,7 @@ from hashlib import sha256, sha512
 
 import pytest
 
+from pyeudiw.openid4vci.models.config import PyeudiwFrontendConfig
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.models.token_request import (
     TokenRequest,
@@ -9,7 +10,6 @@ from pyeudiw.openid4vci.models.token_request import (
     CODE_CHALLENGE_METHOD_CTX,
     REDIRECT_URI_CTX
 )
-from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
 from pyeudiw.federation.schemas.openid_credential_verifier import (
     OpenIDCredentialVerifier,
@@ -6,13 +6,11 @@ from pyeudiw.federation.schemas.openid_credential_verifier import (
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
-from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
-from pyeudiw.satosa.schemas.endpoint import EndpointsConfig, EndpointDefConfig
-from pyeudiw.satosa.schemas.metadata import Metadata
+from pyeudiw.satosa.schemas.endpoint import EndpointsConfig
 from pyeudiw.satosa.schemas.response import ResponseConfig
 from pyeudiw.satosa.schemas.ui import UiConfig
 from pyeudiw.satosa.schemas.user_attributes import UserAttributesConfig
-from pyeudiw.storage.schemas.storage import Storage, UserStorage
+from pyeudiw.storage.schemas.storage import Storage
 from pyeudiw.trust.model import TrustModuleConfiguration_T
 
 
@@ -29,21 +27,3 @@ class PyeudiwBackendConfig(BaseModel):
     storage: Storage
     metadata: OpenIDCredentialVerifier
 
-class PyeudiwFrontendConfig(BaseModel):
-    jwt: JWTConfig
-    metadata: Metadata
-    user_storage: UserStorage
-    endpoints: dict[str, EndpointDefConfig]
-    credential_configurations: CredentialConfigurationsConfig
-
-    @model_validator(mode="before")
-    def check_config(cls, values):
-        jwt = values.get("jwt")
-        if not jwt["access_token_exp"]:
-            raise ValueError("Field 'jwt.access_token_exp' must be provided and non-empty.")
-        if not jwt["refresh_token_exp"]:
-            raise ValueError("Field 'jwt.refresh_token_exp' must be provided and non-empty.")
-        if not jwt["par_exp"]:
-            raise ValueError("Field 'jwt.par_exp' must be provided and non-empty.")
-
-        return values

@@ -1,18 +1,18 @@
+import datetime
 import time
 from uuid import uuid4
 
 import pytest
-import datetime
 
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.authorization_request import CLIENT_ID_CTX
+from pyeudiw.openid4vci.models.config import PyeudiwFrontendConfig
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     CONFIG_CTX,
     ENDPOINT_CTX,
     ENTITY_ID_CTX
 )
 from pyeudiw.openid4vci.models.par_request import ParRequest
-from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 

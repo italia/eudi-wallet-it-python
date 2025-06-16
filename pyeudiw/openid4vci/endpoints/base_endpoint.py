@@ -9,13 +9,13 @@ from satosa.response import (
 )
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.openid4vci.utils.config import Openid4VciFrontendConfigUtils
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
-from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 
@@ -31,7 +31,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
             name (str): The name of the SATOSA module to append to the URL.
         """
         self.config = config
-        self.config_utils = PyeudiwFrontendConfigUtils(config)
+        self.config_utils = Openid4VciFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
         self._backend_url = f"{base_url}/{name}"
 

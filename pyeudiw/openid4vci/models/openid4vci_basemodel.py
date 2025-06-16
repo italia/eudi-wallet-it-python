@@ -3,9 +3,9 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
+from pyeudiw.openid4vci.models.config import PyeudiwFrontendConfig
+from pyeudiw.openid4vci.utils.config import Openid4VciFrontendConfigUtils
 from pyeudiw.tools.exceptions import InvalidRequestException
-from pyeudiw.tools.pyeudiw_frontend_config import PyeudiwFrontendConfigUtils
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
@@ -34,8 +34,8 @@ class OpenId4VciBaseModel(BaseModel):
             return config_obj
         return PyeudiwFrontendConfig(**config_obj)
 
-    def get_config_utils(self) -> PyeudiwFrontendConfigUtils:
-        return PyeudiwFrontendConfigUtils(self.get_ctx(CONFIG_CTX))
+    def get_config_utils(self) -> Openid4VciFrontendConfigUtils:
+        return Openid4VciFrontendConfigUtils(self.get_ctx(CONFIG_CTX))
 
     def get_ctx(self, path: str) -> Any:
         if not self._context or path not in self._context:

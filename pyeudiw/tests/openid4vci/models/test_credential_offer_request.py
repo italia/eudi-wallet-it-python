@@ -1,8 +1,8 @@
 import pytest
 
+from pyeudiw.openid4vci.models.config import PyeudiwFrontendConfig
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.satosa.schemas.config import PyeudiwFrontendConfig
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 from pyeudiw.tools.exceptions import InvalidRequestException
 
