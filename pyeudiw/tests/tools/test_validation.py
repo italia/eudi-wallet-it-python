@@ -1,4 +1,8 @@
+import json
+
 import pytest
+from cryptojwt import JWS
+from cryptojwt.jwk.ec import new_ec_key
 from satosa.context import Context
 
 from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
@@ -9,6 +13,13 @@ from pyeudiw.tools.validation import (
     validate_oauth_client_attestation
 )
 
+
+@pytest.fixture
+def valid_oauth_client_attestation_jwt():
+    ec_key = new_ec_key(crv="P-256", use="sig", kid="ec1")
+    payload = {"cnf": ec_key.serialize(private=False)}
+    jws = JWS(json.dumps(payload), alg="ES256")
+    return jws.sign_compact([ec_key])
 
 def test_validate_content_type_form_urlencoded_valid():
     validate_content_type("application/x-www-form-urlencoded", FORM_URLENCODED)
@@ -39,13 +50,16 @@ def test_validate_request_method_invalid(method):
         validate_request_method(method, ["GET", "POST"])
 
 
-def test_validate_oauth_client_attestation_valid():
+def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_jwt):
     context = Context()
     context.http_headers = {
-        "OAuth-Client-Attestation": "header1",
+        "OAuth-Client-Attestation": valid_oauth_client_attestation_jwt,
         "OAuth-Client-Attestation-PoP": "header2"
     }
-    validate_oauth_client_attestation(context)
+    result = validate_oauth_client_attestation(context)
+    assert isinstance(result, dict)
+    assert "thumbprint" in result
+    assert result["thumbprint"]
 
 
 @pytest.mark.parametrize("headers", [

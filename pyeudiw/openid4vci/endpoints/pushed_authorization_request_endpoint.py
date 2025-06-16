@@ -55,7 +55,7 @@ class ParHandler(BaseEndpoint):
         try:
             validate_request_method(context.request_method, ["POST"])
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            validate_oauth_client_attestation(context)
+            oauth_attestation = validate_oauth_client_attestation(context)
 
             data = self._get_body(context) or {}
 
@@ -68,6 +68,13 @@ class ParHandler(BaseEndpoint):
                     f"invalid request parameters for `par` endpoint, missing {'client_id' if not client_id else 'request'}"
                 )
                 return self._handle_400(context, "invalid request parameters")
+
+            if oauth_attestation["thumbprint"] != client_id:
+                self._log_error(
+                    CLASS_NAME,
+                    "invalid client_id parameter for `par`, value not matching with thumbprint of `OAuth-Client-Attestation-PoP`"
+                )
+                return self._handle_400(context, "invalid `client_id` parameters")
 
             decoded_request = self.jws_helper.verify(request)
             par_request = ParRequest.model_validate(

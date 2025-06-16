@@ -1,8 +1,12 @@
 import logging
 import uuid
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.tools.content_type import (
     FORM_URLENCODED,
     APPLICATION_JSON,
@@ -48,20 +52,44 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-def validate_oauth_client_attestation(context: Context):
+def validate_oauth_client_attestation(context: Context) -> dict:
     """
-    Validate that OAuth-Client-Attestation headers are present.
+    Validates the presence and correctness of OAuth-Client-Attestation headers in the request.
+
+    This function checks that both the `OAuth-Client-Attestation` and
+    `OAuth-Client-Attestation-PoP` headers are present in the incoming HTTP request
+    and verifies their cryptographic validity according to the
+    Attestation-based Client Authentication specification.
+
     Args:
-        context (Context): The SATOSA context.
+        context (Context): The SATOSA context containing the HTTP request.
+
+    Returns:
+        str: The client_id (thumbprint of the JWK) extracted from the attestation JWT.
+
     Raises:
-        InvalidRequestException: If required headers are missing.
+        InvalidRequestException: If any required header is missing, malformed, or fails verification.
     """
     header_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
     header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
     if not header_attestation or not header_pop:
         header_value = OAUTH_CLIENT_ATTESTATION_HEADER if not header_attestation else OAUTH_CLIENT_ATTESTATION_POP_HEADER
-        logger.error(f"Missing r{header_value} header for `par` endpoint")
+        logger.error(f"Missing {header_value} header")
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
+    try:
+        payload = decode_jwt_payload(header_attestation)
+        cnf = payload["cnf"]
+        JWSHelper(cnf).verify(header_attestation)
+        return {
+            "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
+        }
+    except Exception as e:
+        logger.error(
+            f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
+            f"during {OAUTH_CLIENT_ATTESTATION_HEADER} header validation: {e}"
+        )
+        raise InvalidRequestException("Invalid Wallet Attestation JWT header")
+
 
 def is_valid_uuid(value: str) -> bool:
     """

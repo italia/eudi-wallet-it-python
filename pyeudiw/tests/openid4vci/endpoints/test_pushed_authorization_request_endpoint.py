@@ -19,23 +19,26 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     MOCK_NAME,
     REMOVE,
     mock_deserialized_overridable,
+    mock_valid_oauth_client_attestation_jwt,
     get_mocked_satosa_context
 )
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
-MOCK_PAR_REQUEST = {
+_MOCK_VALID_OAUTH_CLIENT_ATTESTATION_JWT = mock_valid_oauth_client_attestation_jwt()
+_MOCK_VALID_THUMBPRINT = "b'i5blIsZsKuQAl93ygTPpa_PrZCQZ47Bw9MGPIK-RNnM'"
+_MOCK_PAR_REQUEST = {
     "request": "request.valid.jwt",
-    "client_id": "urn:example:wallet:12345"
+    "client_id": _MOCK_VALID_THUMBPRINT
 }
 
-MOCK_REQUEST_DESERIALIZED = {
-    "iss": "urn:example:wallet:12345",
+_MOCK_REQUEST_DESERIALIZED = {
+    "iss": _MOCK_VALID_THUMBPRINT,
     "aud": "example.com/openid4vcimock",
     "exp": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 39,
     "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
     "response_type": "code",
     "response_mode": "query",
-    "client_id": "urn:example:wallet:12345",
+    "client_id": _MOCK_VALID_THUMBPRINT,
     "state": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
     "code_challenge": "Xz1T-ZG_i_zMEZtEXAMPLE5pYssH",
     "code_challenge_method": "S256",
@@ -45,7 +48,7 @@ MOCK_REQUEST_DESERIALIZED = {
         "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"
     }],
     "redirect_uri": "https://wallet.example.org/callback",
-    "jti": "urn:example:wallet:12345:9a3be9c2-0d2c-4670-a413-fd6b86a59a32",
+    "jti": f"{_MOCK_VALID_THUMBPRINT}:9a3be9c2-0d2c-4670-a413-fd6b86a59a32",
     "issuer_state": "b5d6b6c1-98ec-4af2-a2b4-23484d9f1e1d"
 }
 
@@ -55,7 +58,7 @@ def par_handler() -> ParHandler:
 
 @pytest.fixture
 def context() -> Context:
-    return get_mocked_satosa_context()
+    return get_mocked_satosa_context(oauth_client_attestation_header = _MOCK_VALID_OAUTH_CLIENT_ATTESTATION_JWT)
 
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
@@ -106,7 +109,7 @@ def test_invalid_request(par_handler, context,
 
 
 def _mock_request_deserialized(overrides=None):
-    return mock_deserialized_overridable(MOCK_REQUEST_DESERIALIZED, overrides)
+    return mock_deserialized_overridable(_MOCK_REQUEST_DESERIALIZED, overrides)
 
 @pytest.mark.parametrize("decoded_request, error_desc", [
     # invalid iss
@@ -207,16 +210,22 @@ def _mock_request_deserialized(overrides=None):
 ])
 def test_invalid_request_deserialized(par_handler, context,
                                       decoded_request, error_desc):
-    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = decoded_request):
-        context.request = MOCK_PAR_REQUEST
+    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = decoded_request),
+          patch("pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation", return_value = {
+              "thumbprint": _MOCK_VALID_THUMBPRINT
+          })):
+        context.request = _MOCK_PAR_REQUEST
         _assert_invalid_request(
             par_handler.endpoint(context),
             error_desc
         )
 
 def test_valid_request(par_handler, context):
-    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = _mock_request_deserialized()):
-        context.request = MOCK_PAR_REQUEST
+    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = _mock_request_deserialized()),
+          patch("pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation", return_value = {
+              "thumbprint": _MOCK_VALID_THUMBPRINT
+          })):
+        context.request = _MOCK_PAR_REQUEST
         par_handler.db_engine = MagicMock()
         result = par_handler.endpoint(context)
 

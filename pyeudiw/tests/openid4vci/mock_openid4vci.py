@@ -1,6 +1,9 @@
 import copy
+import json
 import uuid
 
+from cryptojwt import JWS
+from cryptojwt.jwk.ec import new_ec_key
 from satosa.context import Context
 
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
@@ -243,6 +246,12 @@ INVALID_ATTESTATION_HEADERS = [
     {}
 ]
 
+def mock_valid_oauth_client_attestation_jwt(crv="P-256", use="sig", kid="ec1", alg="ES256"):
+    ec_key = new_ec_key(crv=crv, use=use, kid=kid)
+    payload = {"cnf": ec_key.serialize(private=False)}
+    jws = JWS(json.dumps(payload), alg=alg)
+    return jws.sign_compact([ec_key])
+
 def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
     return OpenId4VCIEntity(
         document_id = str(uuid.uuid4()),
@@ -257,14 +266,15 @@ def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
         authorization_details=[]
     )
 
-def get_mocked_satosa_context(method ="POST", content_type = FORM_URLENCODED, headers=None) -> Context:
+def get_mocked_satosa_context(method="POST", content_type=FORM_URLENCODED, headers=None,
+                              oauth_client_attestation_header=mock_valid_oauth_client_attestation_jwt()) -> Context:
     if headers is None:
         headers = {
-            HTTP_CONTENT_TYPE_HEADER: content_type,
-            OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid-pop",
-            OAUTH_CLIENT_ATTESTATION_HEADER: "valid",
-            "HTTP_USER_AGENT": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
-        }
+                HTTP_CONTENT_TYPE_HEADER: content_type,
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid-pop",
+                OAUTH_CLIENT_ATTESTATION_HEADER: oauth_client_attestation_header,
+                "HTTP_USER_AGENT": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+            }
     context = Context()
     context.request_method = method
     context.http_headers = headers
