@@ -478,7 +478,7 @@ config:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
     entity_configuration_exp: 800
     entity_default_sig_alg: *default_sig_alg
-    credential_specification_template:
+    credential_specification_template: |
       holder_disclosed_claims:
         !sd given_name: "{{name}}"
         !sd family_name: "{{surname}}"
