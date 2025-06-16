@@ -36,6 +36,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.notification_endpoint
       class: NotificationHandler
       path: '/notification'
+    metadata_endpoint:
+      module: pyeudiw.openid4vci.endpoints.metadata_endpoint
+      class: MetadataHandler
+      path: '/.well-known/openid-federation'
 
   network:
     httpc_params: &httpc_params
@@ -46,7 +50,7 @@ config:
       verify: false
 
   jwt:
-    default_sig_alg: ES256 # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
+    default_sig_alg: &default_sig_alg ES256  # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
     default_enc_alg: RSA-OAEP
     default_enc_enc: A256CBC-HS512
     default_exp: 6         # minutes
@@ -89,7 +93,7 @@ config:
   #This is the configuration for the relaying party metadata
   metadata:
     oauth_authorization_server:
-      issuer: https://eaa-provider.example.org
+      issuer: https://eaa-provider.example.org # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>"
       pushed_authorization_request_endpoint: /as/par
       authorization_endpoint: /authorize
       token_endpoint: /token
@@ -510,6 +514,8 @@ config:
   # this is the custom configuration for credential management.
   credential_configurations:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
+    entity_configuration_exp: 800
+    entity_default_sig_alg: *default_sig_alg
 
   trust:
     federation:
