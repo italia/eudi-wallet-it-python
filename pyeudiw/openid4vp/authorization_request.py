@@ -84,7 +84,7 @@ def build_authorization_request_claims(
         "exp": exp_from_now(minutes=default_claims["expiration_time"]),
     }
 
-    if _aud := default_claims.get("aud"):
+    if _aud := default_claims.get("aud", "https://self-issued.me/v2"):
         claims["aud"] = _aud
 
     if submission_data and submission_data["typo"] == DUCKLE_PRESENTATION:
