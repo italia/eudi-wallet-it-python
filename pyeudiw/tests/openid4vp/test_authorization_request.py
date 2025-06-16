@@ -76,7 +76,7 @@ def test_build_authorization_request_claims():
 
     claims = build_authorization_request_claims(client_id, state, response_uri, config)
 
-    assert "aud" not in claims
+    assert "aud" in claims
     assert "nonce" in claims
     assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
@@ -84,6 +84,7 @@ def test_build_authorization_request_claims():
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
+    assert claims["aud"] == "https://self-issued.me/v2"
 
     # case 1: config with aud
     config_aud = {
