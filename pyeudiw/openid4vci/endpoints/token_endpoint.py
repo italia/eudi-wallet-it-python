@@ -1,4 +1,3 @@
-import time
 from enum import Enum
 
 from pydantic import (
@@ -33,6 +32,7 @@ from pyeudiw.tools.exceptions import (
     InvalidScopeException
 )
 from pyeudiw.tools.session import get_session_id
+from pyeudiw.tools.utils import iat_now
 from pyeudiw.tools.validation import (
     validate_content_type,
     validate_request_method,
@@ -81,7 +81,7 @@ class TokenHandler(BaseEndpoint):
                 CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
                 CODE_CHALLENGE_CTX: entity.code_challenge
             })
-            iat = int(time.time())
+            iat = iat_now()
             return TokenResponse.to_created_response(
                 self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP),
                 self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP),
