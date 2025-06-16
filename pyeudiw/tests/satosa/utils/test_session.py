@@ -1,6 +1,6 @@
 from satosa.context import Context
 
-from pyeudiw.tools.session import get_session_id
+from pyeudiw.satosa.utils.session import get_session_id
 
 
 def test_get_session_id():

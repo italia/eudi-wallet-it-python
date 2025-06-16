@@ -23,6 +23,7 @@ from pyeudiw.openid4vci.models.token_request import (
 from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
@@ -31,7 +32,6 @@ from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
-from pyeudiw.tools.session import get_session_id
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.tools.validation import (
     validate_content_type,
