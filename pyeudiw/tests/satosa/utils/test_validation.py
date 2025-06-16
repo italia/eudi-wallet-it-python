@@ -7,6 +7,8 @@ from satosa.context import Context
 
 from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.validation import (
+    OAUTH_CLIENT_ATTESTATION_HEADER,
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
     validate_request_method,
     validate_oauth_client_attestation
@@ -53,8 +55,8 @@ def test_validate_request_method_invalid(method):
 def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_jwt):
     context = Context()
     context.http_headers = {
-        "OAuth-Client-Attestation": valid_oauth_client_attestation_jwt,
-        "OAuth-Client-Attestation-PoP": "header2"
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
     }
     result = validate_oauth_client_attestation(context)
     assert isinstance(result, dict)
@@ -63,14 +65,14 @@ def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_
 
 
 @pytest.mark.parametrize("headers", [
-    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": ""},
-    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": None},
-    {"OAuth-Client-Attestation": "valid"},
-    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": ""},
-    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": None},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
     {}
 ])
 def test_validate_oauth_client_attestation_invalid(headers):

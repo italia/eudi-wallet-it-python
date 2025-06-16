@@ -261,14 +261,14 @@ INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON = [
 ]
 
 INVALID_ATTESTATION_HEADERS = [
-    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation-PoP": "valid"},
-    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": ""},
-    {"OAuth-Client-Attestation": "valid", "OAuth-Client-Attestation-PoP": None},
-    {"OAuth-Client-Attestation": "valid"},
-    {"OAuth-Client-Attestation": "", "OAuth-Client-Attestation-PoP": ""},
-    {"OAuth-Client-Attestation": None, "OAuth-Client-Attestation-PoP": None},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
     {}
 ]
 

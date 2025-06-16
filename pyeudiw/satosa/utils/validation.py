@@ -14,8 +14,8 @@ from pyeudiw.tools.content_type import (
     is_application_json
 )
 
-OAUTH_CLIENT_ATTESTATION_POP_HEADER = "OAuth-Client-Attestation-PoP"
-OAUTH_CLIENT_ATTESTATION_HEADER = "OAuth-Client-Attestation"
+OAUTH_CLIENT_ATTESTATION_POP_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION_POP"
+OAUTH_CLIENT_ATTESTATION_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION"
 
 logger = logging.getLogger(__name__)
 
