@@ -9,7 +9,7 @@ from satosa.response import Response
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_request_method, validate_content_type,

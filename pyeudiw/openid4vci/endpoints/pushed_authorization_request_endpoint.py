@@ -14,7 +14,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
 from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vci.models.par_response import ParResponse
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,

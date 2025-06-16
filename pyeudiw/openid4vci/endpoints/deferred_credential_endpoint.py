@@ -5,7 +5,7 @@ from pyeudiw.openid4vci.endpoints.base_credential_endpoint import BaseCredential
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse, \
     CredentialItem
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 
 
 class DeferredCredentialHandler(BaseCredentialEndpoint):

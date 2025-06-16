@@ -15,7 +15,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX,
     NONCE_CTX
 )
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 
 
 class CredentialHandler(BaseCredentialEndpoint):

@@ -1,6 +1,6 @@
 from pymongo.results import UpdateResult
 
-from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
 
 
