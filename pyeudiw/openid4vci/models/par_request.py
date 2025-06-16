@@ -12,8 +12,8 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
   ENDPOINT_CTX,
   ENTITY_ID_CTX
 )
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.date import is_valid_unix_timestamp
-from pyeudiw.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 

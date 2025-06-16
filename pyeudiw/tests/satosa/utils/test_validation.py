@@ -5,13 +5,13 @@ from cryptojwt import JWS
 from cryptojwt.jwk.ec import new_ec_key
 from satosa.context import Context
 
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
     validate_oauth_client_attestation
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
-from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 @pytest.fixture

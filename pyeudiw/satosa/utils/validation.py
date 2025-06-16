@@ -6,13 +6,13 @@ from satosa.context import Context
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.content_type import (
     FORM_URLENCODED,
     APPLICATION_JSON,
     is_form_urlencoded,
     is_application_json
 )
-from pyeudiw.tools.exceptions import InvalidRequestException
 
 OAUTH_CLIENT_ATTESTATION_POP_HEADER = "OAuth-Client-Attestation-PoP"
 OAUTH_CLIENT_ATTESTATION_HEADER = "OAuth-Client-Attestation"

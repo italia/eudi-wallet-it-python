@@ -13,8 +13,8 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX
 )
 from pyeudiw.openid4vci.models.par_request import ParRequest
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
-from pyeudiw.tools.exceptions import InvalidRequestException
 
 
 def get_valid_context():

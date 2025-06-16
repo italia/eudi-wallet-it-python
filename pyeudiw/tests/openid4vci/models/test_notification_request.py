@@ -7,7 +7,7 @@ from pyeudiw.openid4vci.models.notification_request import (
     NotificationRequest,
     ACCEPTED_EVENT
 )
-from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 
 
 @pytest.mark.parametrize("event_description",[

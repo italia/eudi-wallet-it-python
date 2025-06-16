@@ -7,6 +7,10 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.openid4vci.tools.exceptions import (
+    InvalidRequestException,
+    InvalidScopeException
+)
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
@@ -15,10 +19,6 @@ from pyeudiw.satosa.utils.validation import (
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON
-)
-from pyeudiw.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
 )
 
 

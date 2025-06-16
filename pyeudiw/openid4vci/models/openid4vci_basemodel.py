@@ -4,8 +4,8 @@ from typing import Any
 from pydantic import BaseModel
 
 from pyeudiw.openid4vci.models.config import PyeudiwFrontendConfig
-from pyeudiw.openid4vci.utils.config import Openid4VciFrontendConfigUtils
-from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.openid4vci.tools.config import Openid4VciFrontendConfigUtils
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"

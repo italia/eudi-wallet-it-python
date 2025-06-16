@@ -11,6 +11,7 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.openid4vci.tools.exceptions import InvalidScopeException, InvalidRequestException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_request_method, validate_content_type,
@@ -21,7 +22,6 @@ from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification_with
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.user_storage import UserStorage
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
-from pyeudiw.tools.exceptions import InvalidScopeException, InvalidRequestException
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 

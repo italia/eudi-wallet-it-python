@@ -1,6 +1,6 @@
 import pytest
 
-from pyeudiw.tools.exceptions import (
+from pyeudiw.openid4vci.tools.exceptions import (
   InvalidRequestException,
   InvalidScopeException
 )

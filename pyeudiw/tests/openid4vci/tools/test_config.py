@@ -1,7 +1,7 @@
 import pytest
 
 from pyeudiw.jwt.schemas.jwt import JWTConfig
-from pyeudiw.openid4vci.utils.config import Openid4VciFrontendConfigUtils
+from pyeudiw.openid4vci.tools.config import Openid4VciFrontendConfigUtils
 from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.satosa.schemas.metadata import (
     OauthAuthorizationServerMetadata,

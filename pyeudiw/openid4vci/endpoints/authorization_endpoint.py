@@ -15,6 +15,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
 )
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
@@ -25,7 +26,6 @@ from pyeudiw.tools.content_type import (
     FORM_URLENCODED,
     APPLICATION_JSON
 )
-from pyeudiw.tools.exceptions import InvalidRequestException
 
 AUTHORIZATION_ENDPOINT = "authorization"
 

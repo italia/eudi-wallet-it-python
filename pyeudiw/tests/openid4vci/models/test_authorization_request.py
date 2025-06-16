@@ -6,7 +6,8 @@ from pyeudiw.openid4vci.models.authorization_request import (
     PAR_REQUEST_URI_CTX
 )
 from pyeudiw.openid4vci.models.openid4vci_basemodel import ENDPOINT_CTX
-from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
+
 
 @pytest.fixture
 def valid_context():

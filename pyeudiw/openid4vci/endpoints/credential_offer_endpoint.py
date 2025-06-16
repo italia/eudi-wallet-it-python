@@ -3,6 +3,10 @@ from satosa.context import Context
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
+from pyeudiw.openid4vci.tools.exceptions import (
+    InvalidRequestException,
+    InvalidScopeException
+)
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method
@@ -10,10 +14,6 @@ from pyeudiw.satosa.utils.validation import (
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON
-)
-from pyeudiw.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
 )
 
 

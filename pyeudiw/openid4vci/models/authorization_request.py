@@ -3,11 +3,11 @@ import logging
 from pydantic import model_validator
 
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
-  OpenId4VciBaseModel,
-  CLIENT_ID_CTX,
-  ENDPOINT_CTX
+    OpenId4VciBaseModel,
+    CLIENT_ID_CTX,
+    ENDPOINT_CTX
 )
-from pyeudiw.tools.exceptions import InvalidRequestException
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 
