@@ -660,7 +660,7 @@ config:
       init_params:
         url: mongodb://satosa-mongo:27017
         conf:
-          db_name: eudiw_user
+          db_name: eid_user
           db_users_collection: users
           data_ttl: 63072000 # 2 years
         connection_params:
