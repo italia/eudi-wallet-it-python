@@ -80,8 +80,6 @@ class X509Handler(TrustHandlerInterface):
                 logger.error(f"Invalid x509 leaf certificate using CA {k}. Unmatching client id ({client_id}); the chain will be removed")
                 continue
 
-            has_a_valid_chain = True
-
             pem_type = get_certificate_type(v[0])
 
             if not pem_type in private_keys[0]["kty"]:
@@ -107,9 +105,11 @@ class X509Handler(TrustHandlerInterface):
                 self.relying_party_certificate_chains_by_ca[k] = chain
             else:
                 logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
-                continue            
+                continue         
 
-        if not has_a_valid_chain and "localhost" not in self.client_id:
+            has_a_valid_chain = True   
+
+        if not has_a_valid_chain:
             raise InvalidTrustHandlerConfiguration(
                 f"No valid x509 certificate chains found in the configuration for client {self.client_id}. "
             )
