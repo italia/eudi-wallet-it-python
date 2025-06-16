@@ -14,7 +14,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CLIENT_ID_CTX,
 )
-from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
+from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,

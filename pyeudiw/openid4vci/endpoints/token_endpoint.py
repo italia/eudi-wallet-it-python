@@ -21,7 +21,7 @@ from pyeudiw.openid4vci.models.token_request import (
     CODE_CHALLENGE_METHOD_CTX
 )
 from pyeudiw.openid4vci.models.token_response import TokenResponse
-from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
+from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
