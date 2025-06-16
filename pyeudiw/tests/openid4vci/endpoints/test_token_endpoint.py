@@ -12,6 +12,9 @@ from pyeudiw.openid4vci.models.token_request import (
     REFRESH_TOKEN_GRANT
 )
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.satosa.utils.validation import (
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER
+)
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
@@ -25,9 +28,6 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
-)
-from pyeudiw.tools.validation import (
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 
 

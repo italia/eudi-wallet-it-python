@@ -6,6 +6,10 @@ from satosa.response import (
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
+from pyeudiw.satosa.utils.validation import (
+    validate_content_type,
+    validate_request_method
+)
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON
@@ -13,10 +17,6 @@ from pyeudiw.tools.content_type import (
 from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
-)
-from pyeudiw.tools.validation import (
-    validate_content_type,
-    validate_request_method
 )
 
 

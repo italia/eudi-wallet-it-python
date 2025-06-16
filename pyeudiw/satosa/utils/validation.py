@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
@@ -89,16 +88,3 @@ def validate_oauth_client_attestation(context: Context) -> dict:
             f"during {OAUTH_CLIENT_ATTESTATION_HEADER} header validation: {e}"
         )
         raise InvalidRequestException("Invalid Wallet Attestation JWT header")
-
-
-def is_valid_uuid(value: str) -> bool:
-    """
-    Method that check if given str is a valid uuid
-    :param value: string to validate as uuid
-    :return: validation result
-    """
-    try:
-        uuid.UUID(value)
-        return True
-    except (ValueError, TypeError):
-        return False

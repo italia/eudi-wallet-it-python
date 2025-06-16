@@ -15,6 +15,11 @@ from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vci.models.par_response import ParResponse
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
+from pyeudiw.satosa.utils.validation import (
+    validate_content_type,
+    validate_request_method,
+    validate_oauth_client_attestation
+)
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
@@ -22,11 +27,6 @@ from pyeudiw.tools.content_type import (
 from pyeudiw.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
-)
-from pyeudiw.tools.validation import (
-    validate_content_type,
-    validate_request_method,
-    validate_oauth_client_attestation
 )
 
 CLASS_NAME = "ParHandler.pushed_authorization_request_endpoint"

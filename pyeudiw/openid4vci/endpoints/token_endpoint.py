@@ -24,6 +24,12 @@ from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.openid4vci_engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.openid4vci_entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.session import get_session_id
+from pyeudiw.satosa.utils.validation import (
+    validate_content_type,
+    validate_request_method,
+    validate_oauth_client_attestation,
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER
+)
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED
@@ -33,12 +39,6 @@ from pyeudiw.tools.exceptions import (
     InvalidScopeException
 )
 from pyeudiw.tools.utils import iat_now
-from pyeudiw.tools.validation import (
-    validate_content_type,
-    validate_request_method,
-    validate_oauth_client_attestation,
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER
-)
 
 
 class TokenTypsEnum(Enum):

@@ -1,4 +1,5 @@
 import json
+import uuid
 from unittest.mock import Mock
 from urllib.parse import urlparse, parse_qs
 
@@ -17,7 +18,6 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     get_pyeudiw_frontend_config_with_openid_credential_issuer
 )
 from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
-from pyeudiw.tools.validation import is_valid_uuid
 
 
 @pytest.fixture
@@ -203,7 +203,7 @@ def _assert_response(result: Response, issuer: str):
 
     actual_params = parse_qs(result_message_url.query)
     assert 'code' in actual_params
-    assert True == is_valid_uuid(actual_params['code'][0])
+    assert True == _is_valid_uuid(actual_params['code'][0])
 
     assert 'iss' in actual_params
     assert actual_params['iss'] == [issuer]
@@ -214,3 +214,7 @@ def _assert_response(result: Response, issuer: str):
 def _get_context(context: Context):
     context.request_method = "GET"
     context.http_headers[HTTP_CONTENT_TYPE_HEADER] = APPLICATION_JSON
+
+def _is_valid_uuid(value: str) -> bool:
+    try: return bool(uuid.UUID(value))
+    except (ValueError, TypeError): return False
