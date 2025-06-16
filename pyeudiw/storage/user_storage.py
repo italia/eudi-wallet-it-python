@@ -37,12 +37,12 @@ class UserStorage(BaseStorage):
         if not self.is_connected:
             self.client = pymongo.MongoClient(self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
-            self.sessions = getattr(
+            self.users = getattr(
                 self.db, self.storage_conf["db_users_collection"]
             )
 
     def get_by_fiscal_code(self, fiscal_code: str) -> UserEntity:
-        return self.get_by_field("personal_administrative_number",fiscal_code)
+        return self.get_by_field("fiscal_code",fiscal_code)
 
     def get_by_field(self, field_name: str, field_value: str) -> UserEntity:
         query = {field_name: field_value}
@@ -50,7 +50,7 @@ class UserStorage(BaseStorage):
 
     def get_by_fields(self, query: dict) -> UserEntity:
         self._connect()
-        document = self.sessions.find_one(query)
+        document = self.users.find_one(query)
 
         if document is None:
             raise ValueError(f"User with {query} not found.")
@@ -65,9 +65,9 @@ class UserStorage(BaseStorage):
         self._connect()
 
         if not ttl:
-            if self.sessions.index_information().get("creation_date_1"):
-                self.sessions.drop_index("creation_date_1")
+            if self.users.index_information().get("creation_date_1"):
+                self.users.drop_index("creation_date_1")
         else:
-            self.sessions.create_index(
+            self.users.create_index(
                 [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
             )

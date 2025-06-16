@@ -108,7 +108,7 @@ attributes:
   expirationDate:
     saml: [expirationDate]
   fiscal_code:
-    openid4vci: [fiscal_code]
+    openid4vci: [personal_administrative_number]
 # user identification mapping
 user_id_from_attrs: [edupersontargetedid]
 user_id_to_attr: spidcode

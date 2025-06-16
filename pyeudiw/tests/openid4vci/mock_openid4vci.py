@@ -170,7 +170,7 @@ MOCK_INTERNAL_ATTRIBUTES = {
             "openid4vci": ["dateOfBirth"]
         },
         "fiscal_code": {
-            "openid4vci": ["fiscal_code", "fiscal_number"]
+            "openid4vci": ["fiscal_code", "fiscal_number", "personal_administrative_number"]
         }
     }
 }
