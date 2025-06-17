@@ -1,10 +1,9 @@
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import satosa.context
 import satosa.response
 
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.storage.db_engine import DBEngine
 
 
 class TrustHandlerInterface:
@@ -133,6 +132,13 @@ class TrustHandlerInterface:
         :rtype: bool
         """
         raise NotImplementedError
+    
+    def get_client_id(self) -> Optional[str]:
+        """
+        Return the client ID associated with this trust evaluator.
+        This is typically used for OAuth2 or OpenID Connect flows.
+        """
+        return getattr(self, 'client_id', None)
 
     def is_it_me(self, client_id: str) -> bool:
         """
@@ -140,7 +146,7 @@ class TrustHandlerInterface:
         the argument client_id refers to the implementation itself as a
         *member* of the trust framework.
         """
-        return client_id == self.client_id
+        return client_id == self.get_client_id()
 
     @property
     def name(self) -> str:
