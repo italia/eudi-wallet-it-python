@@ -42,7 +42,7 @@ class MetadataHandler(BaseEndpoint):
         metadata = self.config.get("metadata", {})
         [
             self._ensure_credential_issuer(metadata, metadata_key, issuer_key)
-            for mapping_config in self.config_utils.get_credential_configurations().ensure_credential_issuer
+            for mapping_config in self.credential_configuration.ensure_credential_issuer
             if isinstance(mapping_config, dict)
             for metadata_key, issuer_key in mapping_config.items()
         ]
@@ -52,7 +52,7 @@ class MetadataHandler(BaseEndpoint):
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
         ec_payload = {
-            "exp": exp_from_now(minutes=self.config_utils.get_credential_configurations().entity_configuration_exp),
+            "exp": exp_from_now(minutes=self.credential_configuration.entity_configuration_exp),
             "iat": iat_now(),
             "iss": self.entity_id,
             "sub": self.entity_id,
@@ -75,7 +75,7 @@ class MetadataHandler(BaseEndpoint):
         jwshelper = JWSHelper(_jwk)
         return jwshelper.sign(
             protected={
-                "alg": self.config_utils.get_credential_configurations().entity_default_sig_alg,
+                "alg": self.credential_configuration.entity_default_sig_alg,
                 "kid": _jwk["kid"],
                 "typ": "entity-statement+jwt",
             },
@@ -96,3 +96,16 @@ class MetadataHandler(BaseEndpoint):
             status="200",
             content=APPLICATION_JSON if is_json else ENTITY_STATEMENT_JWT
         )
+
+    def _validate_configs(self):
+        credential_configuration = self.config_utils.get_credential_configurations()
+        if not credential_configuration:
+            self._validate_required_configs([
+                ("credential_configurations", credential_configuration),
+            ])
+        self._validate_required_configs([
+            ("credential_configurations.entity_default_sig_alg", credential_configuration.entity_default_sig_alg),
+            ("credential_configurations.entity_configuration_exp", credential_configuration.entity_configuration_exp),
+        ])
+
+        self.credential_configuration = credential_configuration

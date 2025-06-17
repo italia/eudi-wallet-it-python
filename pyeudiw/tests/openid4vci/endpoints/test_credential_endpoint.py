@@ -5,20 +5,28 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from satosa.context import Context
-from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.credential_endpoint import CredentialHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
 from pyeudiw.storage.user_entity import UserEntity
+from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
+    do_test_missing_configurations_raises,
+    do_test_invalid_request_method,
+    do_test_invalid_content_type,
+    do_test_invalid_oauth_client_attestation,
+    assert_invalid_request_application_json
+)
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_CREDENTIAL_CONFIGURATIONS,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
+    mock_deserialized_overridable,
     get_mocked_satosa_context,
     get_mocked_openid4vpi_entity
 )
@@ -71,37 +79,28 @@ def credential_handler() -> CredentialHandler:
 def context() -> Context:
     return get_mocked_satosa_context(content_type = APPLICATION_JSON)
 
-def test_missing_credential_specification_template_raises():
-    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
-    config["credential_configurations"].pop("credential_specification_template", None)
+def _mock_configurations(overrides=None):
+    return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
 
-    with pytest.raises(ValueError,
-                       match="Missing `credential_configurations.credential_specification_template` config"):
-        CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+_removed_credential_specification_template = {k: v for k, v in deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS).items() if k != "credential_specification_template"}
+@pytest.mark.parametrize("config, missing_fields", [
+    (_mock_configurations({"credential_configurations": _removed_credential_specification_template}), ["credential_configurations.credential_specification_template"]),
+])
+def test_missing_configurations_raises(config, missing_fields):
+    do_test_missing_configurations_raises(CredentialHandler, config, missing_fields)
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(credential_handler, context, method):
-    context.request_method = method
-    _assert_invalid_request(
-        credential_handler.endpoint(context),
-        "invalid request method"
-    )
+    do_test_invalid_request_method(credential_handler, context, method)
 
 @pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON)
 def test_invalid_content_type(credential_handler, context, content_type):
-    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
-    _assert_invalid_request(
-        credential_handler.endpoint(context),
-        "invalid content-type"
-    )
+    do_test_invalid_content_type(credential_handler, context, content_type)
 
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_invalid_oauth_client_attestation(credential_handler, headers):
     headers[HTTP_CONTENT_TYPE_HEADER] = APPLICATION_JSON
-    _assert_invalid_request(
-        credential_handler.endpoint(get_mocked_satosa_context(headers=headers)),
-        "Missing Wallet Attestation JWT header"
-    )
+    do_test_invalid_oauth_client_attestation(credential_handler, headers)
 
 @pytest.mark.parametrize("credential_configuration_id,credential_identifier,error_desc", [
     ("", "", "missing `credential_configuration_id` parameter"),
@@ -121,7 +120,7 @@ def test_invalid_request_credential_id_without_openid_credential_in_auth_details
 
     context.request = req
 
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         credential_handler.endpoint(context),
         error_desc
     )
@@ -153,7 +152,7 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
 
     context.request = req
 
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         credential_handler.endpoint(context),
         error_desc
     )
@@ -167,7 +166,7 @@ def test_request_invalid_prof_type(credential_handler, context, value, error_des
     req = deepcopy(request_without_open_id_credential)
     req["proof"]["proof_type"] = value
     context.request = req
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         credential_handler.endpoint(context),
         error_desc
     )
@@ -182,7 +181,7 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
     req = deepcopy(request_without_open_id_credential)
     req["proof"]["jwt"] = value
     context.request = req
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         credential_handler.endpoint(context),
         error_desc
     )
@@ -221,7 +220,7 @@ def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_w
         entity.c_nonce = "random-nonce-abc123"
         credential_handler.db_engine.get_by_session_id.return_value = entity
         result = credential_handler.endpoint(context)
-        _assert_invalid_request(
+        assert_invalid_request_application_json(
             result,
             error_desc
         )
@@ -280,7 +279,3 @@ def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt,
         assert response["credentials"] is not None
         assert isinstance(response["credentials"], list)
         assert len(response["credentials"]) == 1
-
-def _assert_invalid_request(result: Response, error_desc: str):
-    assert result.status == '400'
-    assert result.message == f'{{"error": "invalid_request", "error_description": "{error_desc}"}}'

@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any
 
 from pydantic import ValidationError
 from satosa.context import Context
@@ -34,6 +35,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
         self._backend_url = f"{base_url}/{name}"
+        self._validate_configs()
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
         if isinstance(e, InvalidRequestException) or isinstance(e, InvalidScopeException):
@@ -101,6 +103,29 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
     def __call__(self, context: Context) -> Redirect | Response:
         return self.endpoint(context)
+
+    def _validate_configs(self):
+        """
+        Hook method to be optionally overridden by subclasses for endpoint-specific config validation.
+        """
+        pass  # Default no-op. Subclasses should override if needed.
+
+    @staticmethod
+    def _validate_required_configs(fields: list[tuple[str, Any]]):
+        """
+        Validates that the given configuration fields are non-empty.
+
+        Args:
+            fields (list of tuple): A list of (field_name, field_value) pairs to validate.
+
+        Raises:
+            ValueError: If any field is None or falsy.
+        """
+        missing_fields = [name for name, value in fields if not value]
+        if missing_fields:
+            raise ValueError(
+                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
+            )
 
     def endpoint(self, context: Context) -> Redirect | Response:
         """

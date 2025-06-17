@@ -120,3 +120,20 @@ class ParHandler(BaseEndpoint):
                 f"Error while initializing session with state {entity.state} and {entity.session_id}: {e500}"
             )
             raise e500
+
+    def _validate_configs(self):
+        self._validate_required_configs([
+            ("jwt.par_exp", self.config_utils.get_jwt().par_exp),
+            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported())
+        ])
+        oauth_authorization_server = self.config_utils.get_oauth_authorization_server()
+        if not oauth_authorization_server:
+            self._validate_required_configs([
+                ("metadata.oauth_authorization_server", self.config_utils.get_oauth_authorization_server())
+            ])
+        self._validate_required_configs([
+            ("metadata.oauth_authorization_server.response_types_supported", oauth_authorization_server.response_types_supported),
+            ("metadata.oauth_authorization_server.response_modes_supported", oauth_authorization_server.response_modes_supported),
+            ("metadata.oauth_authorization_server.code_challenge_methods_supported", oauth_authorization_server.code_challenge_methods_supported),
+        ])
+

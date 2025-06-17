@@ -139,3 +139,17 @@ class TokenHandler(BaseEndpoint):
         if not context.http_headers:
             return None
         return context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
+
+    def _validate_configs(self):
+        self._validate_required_configs([
+            ("jwt.access_token_exp", self.config_utils.get_jwt().access_token_exp),
+            ("jwt.refresh_token_exp", self.config_utils.get_jwt().refresh_token_exp),
+        ])
+        oauth_authorization_server = self.config_utils.get_oauth_authorization_server()
+        if not oauth_authorization_server:
+            self._validate_required_configs([
+                ("metadata.oauth_authorization_server", oauth_authorization_server),
+            ])
+        self._validate_required_configs([
+            ("metadata.oauth_authorization_server.scopes_supported", oauth_authorization_server.scopes_supported),
+        ])

@@ -41,8 +41,10 @@ class Openid4VciFrontendConfigUtils:
     def get_openid_credential_issuer(self) -> OpenidCredentialIssuerMetadata:
         return self.config.metadata.openid_credential_issuer
 
-    def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration]:
+    def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration] | None:
         ccs = self.get_openid_credential_issuer().credential_configurations_supported
+        if not ccs:
+            return None
         return {
             k: CredentialConfiguration(id=k)
             for k, v in ccs.items()

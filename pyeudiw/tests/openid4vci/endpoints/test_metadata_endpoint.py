@@ -6,8 +6,16 @@ from satosa.context import Context
 
 from pyeudiw.jwt.utils import base64_urldecode
 from pyeudiw.openid4vci.endpoints.metadata_endpoint import MetadataHandler
+from pyeudiw.tests.openid4vci.endpoints.endpoints_test import do_test_missing_configurations_raises
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_ENDPOINTS_CONFIG,
+    MOCK_JWT_CONFIG,
+    MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
+    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+    MOCK_USER_STORAGE_CONFIG,
+    MOCK_METADATA_JWKS_CONFIG,
+    MOCK_CREDENTIAL_CONFIGURATIONS,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
@@ -38,6 +46,32 @@ _DEFAULT_ISSUER_FROM_STANDARD_CONFIG = {
     "openid_credential_issuer": f"{MOCK_BASE_URL}/{MOCK_NAME}",
     "oauth_authorization_server_issuer": f"{MOCK_BASE_URL}/{MOCK_NAME}"
 }
+
+def _mock_configurations(field: list[str] | str):
+    config = {
+        "endpoints": MOCK_ENDPOINTS_CONFIG,
+        "jwt": MOCK_JWT_CONFIG,
+        "metadata": {
+            "oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
+            "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG
+        },
+        "user_storage": MOCK_USER_STORAGE_CONFIG,
+        "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
+    }
+    if field != "credential_configurations":
+        credential_configurations = deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS)
+        [credential_configurations.pop(f, None) for f in ([field] if isinstance(field, str) else field)]
+        config["credential_configurations"] = credential_configurations
+    return config
+
+@pytest.mark.parametrize("config, missing_fields", [
+    (_mock_configurations("credential_configurations"), ["credential_configurations"]),
+    (_mock_configurations("entity_default_sig_alg"), ["credential_configurations.entity_default_sig_alg"]),
+    (_mock_configurations("entity_configuration_exp"), ["credential_configurations.entity_configuration_exp"]),
+    (_mock_configurations(["entity_configuration_exp", "entity_default_sig_alg"]), ["credential_configurations.entity_default_sig_alg", "credential_configurations.entity_configuration_exp"])
+])
+def test_missing_configurations(config, missing_fields):
+    do_test_missing_configurations_raises(MetadataHandler, config, missing_fields)
 
 def test_endpoint_returns_json_with_ensured_credential_issuer(metadata_handler, context):
     _run_endpoint_returns_json_test(metadata_handler, context, _DEFAULT_ISSUER_FROM_STANDARD_CONFIG)

@@ -1,19 +1,30 @@
 import datetime
 import json
+from copy import deepcopy
 from unittest.mock import patch, MagicMock
 
 import pytest
 from satosa.context import Context
-from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.base_endpoint import REQUEST_URI_PREFIX
 from pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint import ParHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
+from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
+    do_test_missing_configurations_raises,
+    do_test_invalid_request_method,
+    do_test_invalid_content_type,
+    do_test_invalid_oauth_client_attestation,
+    JWS_HELPER_VERIFY_TARGET,
+    assert_invalid_request_application_json
+)
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED,
     INVALID_ATTESTATION_HEADERS,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_JWT_CONFIG,
+    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+    MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_BASE_URL,
     MOCK_NAME,
@@ -30,6 +41,8 @@ _MOCK_PAR_REQUEST = {
     "request": "request.valid.jwt",
     "client_id": _MOCK_VALID_THUMBPRINT
 }
+
+_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = "pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation"
 
 _MOCK_REQUEST_DESERIALIZED = {
     "iss": _MOCK_VALID_THUMBPRINT,
@@ -60,30 +73,42 @@ def par_handler() -> ParHandler:
 def context() -> Context:
     return get_mocked_satosa_context(oauth_client_attestation_header = _MOCK_VALID_OAUTH_CLIENT_ATTESTATION_JWT)
 
+def _mock_configurations(overrides=None):
+    return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
+def _mock_configuration_removed_oauth_authorization_server_param(field: str):
+    metadata_config = { "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG}
+    if field != "oauth_authorization_server":
+        with_removed_field = { k: v for k, v in deepcopy(MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG).items() if k != field }
+        metadata_config["oauth_authorization_server"] = with_removed_field
+    return _mock_configurations({"metadata": metadata_config})
+
+_removed_par_exp = {k: v for k, v in deepcopy(MOCK_JWT_CONFIG).items() if k != "par_exp"}
+_removed_credential_configurations_supported ={ k: v for k, v in deepcopy(MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG).items() if k != "credential_configurations_supported" }
+@pytest.mark.parametrize("config, missing_fields", [
+    (_mock_configurations({"jwt": _removed_par_exp}), ["jwt.par_exp"]),
+    (_mock_configurations({"metadata": {"openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG}}), ["metadata.oauth_authorization_server"]),
+    (_mock_configurations({"metadata": {"oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG, "openid_credential_issuer": _removed_credential_configurations_supported}}), ["metadata.openid_credential_issuer.credential_configurations_supported"]),
+    (_mock_configuration_removed_oauth_authorization_server_param("response_types_supported"), ["metadata.oauth_authorization_server.response_types_supported"]),
+    (_mock_configuration_removed_oauth_authorization_server_param("response_modes_supported"), ["metadata.oauth_authorization_server.response_modes_supported"]),
+    (_mock_configuration_removed_oauth_authorization_server_param("code_challenge_methods_supported"), ["metadata.oauth_authorization_server.code_challenge_methods_supported"]),
+    (_mock_configuration_removed_oauth_authorization_server_param("oauth_authorization_server"), ["metadata.oauth_authorization_server"]),
+    (_mock_configurations({"jwt": _removed_par_exp, "metadata": {"oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG, "openid_credential_issuer": _removed_credential_configurations_supported}}), ["jwt.par_exp", "metadata.openid_credential_issuer.credential_configurations_supported"])
+])
+def test_missing_configurations(config, missing_fields):
+    do_test_missing_configurations_raises(ParHandler, config, missing_fields)
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(par_handler, context, method):
-    context.request_method = method
-    _assert_invalid_request(
-        par_handler.endpoint(context),
-        "invalid request method"
-    )
+    do_test_invalid_request_method(par_handler, context, method)
 
 @pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED)
 def test_invalid_content_type(par_handler, context, content_type):
-    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
-    _assert_invalid_request(
-        par_handler.endpoint(context),
-        "invalid content-type"
-    )
+    do_test_invalid_content_type(par_handler, context, content_type)
 
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_invalid_oauth_client_attestation(par_handler, headers):
     headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
-    _assert_invalid_request(
-        par_handler.endpoint(get_mocked_satosa_context(headers=headers)),
-        "Missing Wallet Attestation JWT header"
-    )
+    do_test_invalid_oauth_client_attestation(par_handler, headers)
 
 @pytest.mark.parametrize("client_id, request_par", [
     (None, None),
@@ -102,7 +127,7 @@ def test_invalid_request(par_handler, context,
         req["request"] = request_par
 
     context.request = req
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         par_handler.endpoint(context),
         "invalid request parameters"
     )
@@ -210,19 +235,19 @@ def _mock_request_deserialized(overrides=None):
 ])
 def test_invalid_request_deserialized(par_handler, context,
                                       decoded_request, error_desc):
-    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = decoded_request),
-          patch("pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation", return_value = {
+    with (patch(JWS_HELPER_VERIFY_TARGET, return_value = decoded_request),
+          patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value = {
               "thumbprint": _MOCK_VALID_THUMBPRINT
           })):
         context.request = _MOCK_PAR_REQUEST
-        _assert_invalid_request(
+        assert_invalid_request_application_json(
             par_handler.endpoint(context),
             error_desc
         )
 
 def test_valid_request(par_handler, context):
-    with (patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = _mock_request_deserialized()),
-          patch("pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation", return_value = {
+    with (patch(JWS_HELPER_VERIFY_TARGET, return_value = _mock_request_deserialized()),
+          patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value = {
               "thumbprint": _MOCK_VALID_THUMBPRINT
           })):
         context.request = _MOCK_PAR_REQUEST
@@ -234,8 +259,3 @@ def test_valid_request(par_handler, context):
         assert response["request_uri"] is not None
         assert response["request_uri"].startswith(REQUEST_URI_PREFIX)
         assert response["expires_in"] == 90
-
-
-def _assert_invalid_request(result: Response, error_desc: str):
-    assert result.status == '400'
-    assert result.message == f'{{"error": "invalid_request", "error_description": "{error_desc}"}}'

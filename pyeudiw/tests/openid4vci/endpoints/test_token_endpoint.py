@@ -15,19 +15,26 @@ from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
+from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
+    do_test_invalid_content_type,
+    do_test_invalid_request_method, do_test_invalid_oauth_client_attestation, do_test_missing_configurations_raises
+)
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_ENDPOINTS_CONFIG,
+    MOCK_JWT_CONFIG,
+    MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
+    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+    MOCK_USER_STORAGE_CONFIG,
+    MOCK_METADATA_JWKS_CONFIG,
+    MOCK_CREDENTIAL_CONFIGURATIONS,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
     get_mocked_satosa_context,
     get_mocked_openid4vpi_entity
-)
-from pyeudiw.tools.content_type import (
-    HTTP_CONTENT_TYPE_HEADER,
-    FORM_URLENCODED
 )
 
 
@@ -69,12 +76,61 @@ def context() -> Context:
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(token_handler, context, method):
-    ctx = deepcopy(context)
-    ctx.request_method = method
-    _assert_invalid_request(
-        token_handler.endpoint(ctx),
-        "invalid request method"
-    )
+    do_test_invalid_request_method(token_handler, context, method)
+
+def _mock_configurations(field: str):
+    config = {
+        "endpoints": MOCK_ENDPOINTS_CONFIG,
+        "jwt": MOCK_JWT_CONFIG,
+        "metadata": {
+            "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+            "oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG
+        },
+        "user_storage": MOCK_USER_STORAGE_CONFIG,
+        "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
+        "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
+    }
+    match field:
+        case "access_token_exp":
+            jwt = deepcopy(MOCK_JWT_CONFIG)
+            jwt.pop("access_token_exp", None)
+            config["jwt"] = jwt
+        case "refresh_token_exp":
+            jwt = deepcopy(MOCK_JWT_CONFIG)
+            jwt.pop("refresh_token_exp", None)
+            config["jwt"] = jwt
+        case "access_token_exp,refresh_token_exp":
+            jwt = deepcopy(MOCK_JWT_CONFIG)
+            jwt.pop("access_token_exp", None)
+            jwt.pop("refresh_token_exp", None)
+            config["jwt"] = jwt
+        case "oauth_authorization_server":
+            config["metadata"] = {
+                "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+            }
+        case "oauth_authorization_server.scopes_supported":
+            oauth_authorization_server = deepcopy(MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG)
+            oauth_authorization_server.pop("scopes_supported", None)
+            config["metadata"]["oauth_authorization_server"] = oauth_authorization_server
+        case "oauth_authorization_server.scopes_supported[]":
+            oauth_authorization_server = deepcopy(MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG)
+            oauth_authorization_server["scopes_supported"] = []
+            config["metadata"]["oauth_authorization_server"] = oauth_authorization_server
+        case _:
+            config = config
+    return config
+
+@pytest.mark.parametrize("config, missing_fields", [
+    (_mock_configurations("access_token_exp"), ["jwt.access_token_exp"]),
+    (_mock_configurations("refresh_token_exp"), ["jwt.refresh_token_exp"]),
+    (_mock_configurations("oauth_authorization_server"), ["metadata.oauth_authorization_server"]),
+    (_mock_configurations("oauth_authorization_server.scopes_supported"), ["metadata.oauth_authorization_server.scopes_supported"]),
+    (_mock_configurations("oauth_authorization_server.scopes_supported[]"), ["metadata.oauth_authorization_server.scopes_supported"]),
+    (_mock_configurations("access_token_exp,refresh_token_exp"), ["jwt.access_token_exp", "jwt.refresh_token_exp"])
+])
+def test_missing_configurations(config, missing_fields):
+    do_test_missing_configurations_raises(TokenHandler, config, missing_fields)
+
 
 @pytest.mark.parametrize("content_type", [
     "content_type",
@@ -89,21 +145,11 @@ def test_invalid_request_method(token_handler, context, method):
     "application/soap+xml"
 ])
 def test_invalid_content_type(token_handler, context, content_type):
-    ctx = deepcopy(context)
-    ctx.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
-    _assert_invalid_request(
-        token_handler.endpoint(ctx),
-        "invalid content-type"
-    )
-
+    do_test_invalid_content_type(token_handler, context, content_type)
 
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_invalid_oauth_client_attestation(token_handler, headers):
-    headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
-    _assert_invalid_request(
-        token_handler.endpoint(get_mocked_satosa_context(headers=headers)),
-        "Missing Wallet Attestation JWT header"
-    )
+    do_test_invalid_oauth_client_attestation(token_handler, headers)
 
 @pytest.mark.parametrize("pop", [
     "valid-pop",

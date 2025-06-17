@@ -40,10 +40,6 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciEngine.db_engine
         self._db_user_engine = None
-        specification_template = self.config_utils.get_credential_configurations().credential_specification_template
-        if not specification_template:
-            raise ValueError("Missing `credential_configurations.credential_specification_template` config")
-        self.specification_template = specification_template
 
     def endpoint(self, context: Context) -> Response:
         try:
@@ -162,3 +158,18 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
                     break  # Stop at first match
 
         return {k: v for k, v in lookup_params.items() if v is not None}
+
+
+    def _validate_configs(self):
+        missing_fields = []
+
+        specification_template = self.config_utils.get_credential_configurations().credential_specification_template
+        if not specification_template:
+            missing_fields.append("credential_configurations.credential_specification_template")
+
+        self.specification_template = specification_template
+
+        if missing_fields:
+            raise ValueError(
+                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
+            )

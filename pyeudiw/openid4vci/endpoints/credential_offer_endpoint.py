@@ -53,3 +53,9 @@ class CredentialOfferHandler(BaseEndpoint):
                 f"Error during invoke credential_offer endpoint: {e}"
             )
             return self._handle_500(context, "error during invoke credential_offer endpoint", e)
+
+    def _validate_configs(self):
+        self._validate_required_configs([
+            ("metadata.oauth_authorization_server", self.config_utils.get_oauth_authorization_server()),
+            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported())
+        ])

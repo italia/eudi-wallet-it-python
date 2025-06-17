@@ -4,9 +4,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from satosa.context import Context
-from satosa.response import Response
 
 from pyeudiw.openid4vci.endpoints.nonce_endpoint import NonceHandler
+from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
+    do_test_invalid_request_method,
+    do_test_invalid_content_type,
+    assert_invalid_request_application_json
+)
 from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
@@ -33,19 +37,12 @@ def context() -> Context:
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
 def test_invalid_request_method(nonce_handler, context, method):
-    context.request_method = method
-    _assert_invalid_request(
-        nonce_handler.endpoint(context),
-        "invalid request method"
-    )
+    do_test_invalid_request_method(nonce_handler,context, method)
 
 @pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON)
 def test_invalid_content_type(nonce_handler, context, content_type):
     context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
-    _assert_invalid_request(
-        nonce_handler.endpoint(context),
-        "invalid content-type"
-    )
+    do_test_invalid_content_type(nonce_handler, context, content_type)
 
 @pytest.mark.parametrize("request_nonce", [
     {"body":["is_present"]},
@@ -55,7 +52,7 @@ def test_invalid_content_type(nonce_handler, context, content_type):
 ])
 def test_invalid_request(nonce_handler, context, request_nonce):
     context.request = request_nonce
-    _assert_invalid_request(
+    assert_invalid_request_application_json(
         nonce_handler.endpoint(context),
         "Request body must be empty for nonce endpoint"
     )
@@ -77,8 +74,3 @@ def test_valid_request(nonce_handler, context):
         r"[0-9a-f]{12}$",
         re.IGNORECASE
     ).fullmatch(c_nonce)
-
-
-def _assert_invalid_request(result: Response, error_desc: str):
-    assert result.status == '400'
-    assert result.message == f'{{"error": "invalid_request", "error_description": "{error_desc}"}}'
