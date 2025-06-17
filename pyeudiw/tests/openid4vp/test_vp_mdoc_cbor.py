@@ -26,9 +26,10 @@ trust_ev = CombinedTrustEvaluator.from_config(
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"{BASE_URL}/OpenID4VP",
-                "relying_party_certificate_chains_by_ca":{
-                    "ca.example.com": DEFAULT_X509_CHAIN,
+                "client_id": f"x509_san_dns:{BASE_URL.split('://')[-1]}",
+                "include_issued_jwt_header_param": True,
+                "leaf_certificate_chains_by_ca": {
+                    f"ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
                     "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),

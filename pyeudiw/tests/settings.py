@@ -14,6 +14,7 @@ BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
 AUTH_ENDPOINT = "https://example.com/auth"
 CLIENT_ID = "client_id"
+BACKEND_NAME = "OpenID4VP"
 
 
 def base64url_to_int(val):
@@ -287,6 +288,7 @@ CONFIG = {
             "module": "pyeudiw.trust.handler.federation",
             "class": "FederationHandler",
             "config": {
+                "client_id": f"openid_federation:{BASE_URL}/{BACKEND_NAME}",
                 "entity_configuration_exp": 600,
                 "metadata": _METADATA,
                 "metadata_type": "openid_credential_verifier",
@@ -338,10 +340,10 @@ CONFIG = {
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"{BASE_URL}/OpenID4VP",
+                "client_id": f"x509_san_dns:{BASE_URL.split('://')[-1]}",
                 "include_issued_jwt_header_param": True,
-                "relying_party_certificate_chains_by_ca": {
-                    "ca.example.com": DEFAULT_X509_CHAIN,
+                "leaf_certificate_chains_by_ca": {
+                    f"ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
                     "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),

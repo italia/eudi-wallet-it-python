@@ -35,7 +35,7 @@ class X509Handler(TrustHandlerInterface):
     def __init__(
         self, 
         client_id: str, 
-        relying_party_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
+        leaf_certificate_chains_by_ca: dict[str, Union[list[bytes], list[str]]],
         private_keys: list[dict[str, str]],
         certificate_authorities: dict[str, Union[bytes, str]] = {},
         include_issued_jwt_header_param: bool = False,
@@ -45,15 +45,17 @@ class X509Handler(TrustHandlerInterface):
         self.certificate_authorities = certificate_authorities
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
-        if not relying_party_certificate_chains_by_ca:
+        if not leaf_certificate_chains_by_ca:
             raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
 
-        self.relying_party_certificate_chains_by_ca = {}
+        self.leaf_certificate_chains_by_ca = {}
 
         private_keys_thumbprints = [key_from_jwk_dict(key, private=False).thumbprint("SHA-256") for key in private_keys]
         certificate_authorities_thumbprint = [parse_certificate(ca).thumbprint for ca in certificate_authorities.values()]
 
-        for k, v in relying_party_certificate_chains_by_ca.items():
+        has_a_valid_chain = False
+
+        for k, v in leaf_certificate_chains_by_ca.items():
             root_dns_name = get_x509_info(v[-1])
             
             if not root_dns_name in k:
@@ -67,7 +69,7 @@ class X509Handler(TrustHandlerInterface):
 
             found_client_id = False
 
-            client_id_dns = self.client_id.split("://")[-1].split("/")[0]
+            client_id_dns = self.client_id.split(":")[-1].split("://")[-1].split("/")[0]
 
             for cert in v[:-1]:
                 if get_x509_info(cert) == client_id_dns:
@@ -100,11 +102,18 @@ class X509Handler(TrustHandlerInterface):
             chain = to_der_list(v)
 
             if verify_x509_attestation_chain(chain):
-                self.relying_party_certificate_chains_by_ca[k] = chain
+                self.leaf_certificate_chains_by_ca[k] = chain
             else:
                 logger.error(f"Invalid x509 certificate chain using CA {k}. Chain validation failed, the chain will be removed")
-                continue            
+                continue         
 
+            has_a_valid_chain = True   
+
+        if not has_a_valid_chain:
+            raise InvalidTrustHandlerConfiguration(
+                f"No valid x509 certificate chains found in the configuration for client {self.client_id}. "
+            )
+        
         self.private_keys = private_keys
 
     def _verify_chain(self, x5c: list[str], crls: list[CRLHelper]) -> bool:
@@ -150,8 +159,8 @@ class X509Handler(TrustHandlerInterface):
         self, issuer: str, trust_source: TrustSourceData
     ) -> TrustSourceData:
         # Return the first valid chain
-        if issuer == self.client_id:
-            for ca, chain in self.relying_party_certificate_chains_by_ca.items():
+        if issuer.split("://")[-1].split("/")[0] == self.client_id.split(":", 1)[-1]:
+            for ca, chain in self.leaf_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 
                 if not self._verify_chain(chain, crls):
