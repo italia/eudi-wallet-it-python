@@ -36,8 +36,6 @@ class SDJWTCommon:
 
     COMBINED_SERIALIZATION_FORMAT_SEPARATOR = "~"
 
-    unsafe_randomness = False
-
     def __init__(self, serialization_format):
         if serialization_format not in ("compact", "json"):
             raise ValueError(f"Unknown serialization format: {serialization_format}")
@@ -113,17 +111,7 @@ class SDJWTCommon:
         :return: The salt.
         :rtype: str
         """
-        if self.unsafe_randomness:
-            # This is not cryptographically secure, but it is deterministic
-            # and allows for repeatable output for the generation of the examples.
-            logger.warning(
-                "Using unsafe randomness is not suitable for production use."
-            )
-            return self._base64url_encode(
-                bytes(random.getrandbits(8) for _ in range(16))
-            )
-        else:
-            return self._base64url_encode(secrets.token_bytes(16))
+        return self._base64url_encode(secrets.token_bytes(16))
 
     def _create_hash_mappings(self, disclosurses_list: List) -> None:
         """
