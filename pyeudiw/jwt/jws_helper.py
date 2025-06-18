@@ -182,7 +182,7 @@ class JWSHelper(JWHelperInterface):
         # Case 0: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
-            if not signing_kid:
+            if not signing_key:
                 raise JWEEncryptionError(
                     f"signing forced by using key with {signing_kid=}, but no such key is available"
                 )
