@@ -165,6 +165,16 @@ class JWSHelper(JWHelperInterface):
         signing_kid: str = "",
         signing_algs: list[str] = [],
     ) -> dict:
+        """
+        Select a signing key based on the provided headers and optional parameters.
+        This method attempts to find a suitable signing key from the initialized JWKS.
+
+        :param headers: A tuple containing the protected and unprotected headers.
+        :param signing_kid: Optional key ID to force the selection of a specific signing key.
+        :param signing_algs: Optional list of algorithms to force the selection of a signing key.
+        :returns: A dictionary representing the selected signing key.
+        :raises JWEEncryptionError: If no suitable signing key is found or if the key cannot be used for signing.
+        """
         if len(self.jwks) == 0:
             raise JWEEncryptionError(
                 "signing error: no key available for signature; note that {'alg':'none'} is not supported"
