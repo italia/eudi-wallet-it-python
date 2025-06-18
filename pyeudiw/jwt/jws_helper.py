@@ -179,7 +179,7 @@ class JWSHelper(JWHelperInterface):
             raise JWEEncryptionError(
                 "signing error: no key available for signature; note that {'alg':'none'} is not supported"
             )
-        # Case 0: key forced by the user
+        # Case 1: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
             if not signing_key:
@@ -187,6 +187,8 @@ class JWSHelper(JWHelperInterface):
                     f"signing forced by using key with {signing_kid=}, but no such key is available"
                 )
             return signing_key.to_dict()
+        
+        # Case 2: key forced by the user by a list of alg
         if signing_algs:
             signing_key: dict | None = None
             for alg in signing_algs:
@@ -200,15 +202,16 @@ class JWSHelper(JWHelperInterface):
                     f"signing forced by using algs {signing_algs}, but no such key is available"
                 )
 
+        # Case 3: only one key
         if signing_key := self._select_signing_key_by_uniqueness():
             return signing_key
-        # Case 2: only one *singing* key
+        # Case 4: only one *signing* key
         if signing_key := self._select_key_by_use(use="sig"):
             return signing_key
-        # Case 3: match key by kid
+        # Case 5: match key by kid
         if signing_key := self._select_key_by_kid(headers):
             return signing_key
-        # Case 4: match key by x5c
+        # Case 6: match key by x5c
         if signing_key := self._select_key_by_x5c(headers):
             return signing_key
         raise JWSSigningError(
