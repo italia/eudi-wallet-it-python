@@ -204,6 +204,20 @@ class JWSHelper(JWHelperInterface):
         if len(candidate_signing_keys) == 1:
             return candidate_signing_keys[0]
         return None
+    
+    def _select_key_by_sig_alg(self, alg: str) -> dict | None:
+        """
+        Select a key based on the signature algorithm.
+        This is a helper method to find a key that matches the given signature algorithm.
+        """
+        candidate_signing_keys: list[dict] = []
+        for key in self.jwks:
+            key_d: dict[str, Any] = key.to_dict()
+            if alg == DEFAULT_SIG_KTY_MAP.get(key_d.get("kty", ""), ""):
+                candidate_signing_keys.append(key_d)
+        if len(candidate_signing_keys) == 1:
+            return candidate_signing_keys[0]
+        return None
 
     def _select_key_by_kid(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
         if not headers:
