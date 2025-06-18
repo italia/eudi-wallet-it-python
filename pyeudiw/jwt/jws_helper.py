@@ -160,7 +160,10 @@ class JWSHelper(JWHelperInterface):
         )
 
     def _select_signing_key(
-        self, headers: tuple[dict, dict], signing_kid: str = ""
+        self, 
+        headers: tuple[dict, dict], 
+        signing_kid: str = "",
+        signing_algs: list[str] = [],
     ) -> dict:
         if len(self.jwks) == 0:
             raise JWEEncryptionError(
@@ -174,7 +177,19 @@ class JWSHelper(JWHelperInterface):
                     f"signing forced by using key with {signing_kid=}, but no such key is available"
                 )
             return signing_key.to_dict()
-        # Case 1: only one key
+        if signing_algs:
+            signing_key: dict | None = None
+            for alg in signing_algs:
+                if signing_key := self._select_key_by_sig_alg(alg):
+                    break
+
+            if signing_key:
+                return signing_key
+            else:
+                raise JWEEncryptionError(
+                    f"signing forced by using algs {signing_algs}, but no such key is available"
+                )
+
         if signing_key := self._select_signing_key_by_uniqueness():
             return signing_key
         # Case 2: only one *singing* key
