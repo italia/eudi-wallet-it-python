@@ -12,6 +12,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     MOCK_ENDPOINTS_CONFIG,
     MOCK_JWT_CONFIG,
     MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
+    MOCK_TRUST_CONFIG,
     MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
     MOCK_USER_STORAGE_CONFIG,
     MOCK_METADATA_JWKS_CONFIG,
@@ -57,6 +58,7 @@ def _mock_configurations(field: list[str] | str):
         },
         "user_storage": MOCK_USER_STORAGE_CONFIG,
         "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
+        "trust": MOCK_TRUST_CONFIG
     }
     if field != "credential_configurations":
         credential_configurations = deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS)
@@ -66,7 +68,6 @@ def _mock_configurations(field: list[str] | str):
 
 @pytest.mark.parametrize("config, missing_fields", [
     (_mock_configurations("credential_configurations"), ["credential_configurations"]),
-    (_mock_configurations("entity_default_sig_alg"), ["credential_configurations.entity_default_sig_alg"]),
 ])
 def test_missing_configurations(config, missing_fields):
     do_test_missing_configurations_raises(MetadataHandler, config, missing_fields)
@@ -91,7 +92,7 @@ def test_endpoint_returns_jwt(metadata_handler, context):
     assert get_content_type_header(response.headers) == ENTITY_STATEMENT_JWT
     jwt_parts = response.message.split('.')
     header = json.loads(base64_urldecode(jwt_parts[0]))
-    assert header["alg"] == MOCK_PYEUDIW_FRONTEND_CONFIG["credential_configurations"]["entity_default_sig_alg"]
+    assert header["alg"] == "ES256"
     assert header["kid"] == MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"][0]["kid"]
     assert header["typ"] == "entity-statement+jwt"
 

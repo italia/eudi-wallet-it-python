@@ -11,6 +11,15 @@ from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.utils.validation import OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
+MOCK_TRUST_CONFIG = {
+    "federation": {
+        "config": {
+            "entity_configuration_exp": 600,
+            "default_sig_alg": "RS256"
+        }
+    }
+}
+
 MOCK_METADATA_JWKS_CONFIG = [
     {
         "kty": "EC",
@@ -93,7 +102,6 @@ MOCK_ENDPOINTS_CONFIG = {
 
 MOCK_CREDENTIAL_CONFIGURATIONS = {
     "lookup_source": "openid4vci",
-    "entity_default_sig_alg": "ES256",
     "credential_specification": {
         "dc_sd_jwt_mDL": {
             "template": """
@@ -218,13 +226,7 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "user_storage": MOCK_USER_STORAGE_CONFIG,
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
-    "trust": {
-        "federation": {
-            "config":{
-                "entity_configuration_exp":600
-            }
-        }
-    }
+    "trust": MOCK_TRUST_CONFIG
 }
 
 MOCK_INTERNAL_ATTRIBUTES = {

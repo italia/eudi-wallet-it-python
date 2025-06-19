@@ -20,9 +20,9 @@ class MetadataHandler(BaseEndpoint):
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+        self.federation_config = config.get("trust", {}).get("federation", {}).get("config", {})
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
-        self.federation_config = self.config.get("trust", {}).get("federation", {}).get("config", {})
 
     def _ensure_credential_issuer(self, metadata: dict, metadata_key: str, issuer_key:str):
         metadata_val = metadata.get(metadata_key)
@@ -67,7 +67,7 @@ class MetadataHandler(BaseEndpoint):
         jwshelper = JWSHelper(_jwk)
         return jwshelper.sign(
             protected={
-                "alg": self.credential_configuration.entity_default_sig_alg,
+                "alg": self.federation_config.get("default_sig_alg"),
                 "kid": _jwk["kid"],
                 "typ": "entity-statement+jwt",
             },
@@ -95,8 +95,5 @@ class MetadataHandler(BaseEndpoint):
             self._validate_required_configs([
                 ("credential_configurations", credential_configuration),
             ])
-        self._validate_required_configs([
-            ("credential_configurations.entity_default_sig_alg", credential_configuration.entity_default_sig_alg),
-        ])
 
         self.credential_configuration = credential_configuration

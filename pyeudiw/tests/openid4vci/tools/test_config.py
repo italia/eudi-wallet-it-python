@@ -54,7 +54,9 @@ def test_get_openid_credential_issuer(config_utils):
         'mso_mdoc_mDL': {
             'cryptographic_binding_methods_supported': ['cose_key'],
             'format': 'mso_mdoc',
-            'scope': 'mDL'}
+            'scope': 'mDL',
+            'doctype': 'org.iso.18013.5.1.mDL'
+        }
     }
 
 
