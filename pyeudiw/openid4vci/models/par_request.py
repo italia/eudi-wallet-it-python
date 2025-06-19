@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from pydantic import model_validator
@@ -28,8 +28,8 @@ class ParRequest(OpenId4VciBaseModel):
   state: str = None
   code_challenge: str = None
   code_challenge_method: str = None
-  scope: str = None
-  authorization_details: List[AuthorizationDetail] = None
+  scope: Optional[str] = None
+  authorization_details: Optional[List[AuthorizationDetail]] = None
   redirect_uri: str = None
   jti: str = None
   issuer_state: str = None
@@ -61,27 +61,31 @@ class ParRequest(OpenId4VciBaseModel):
     self.validate_code_challenge(endpoint)
     self.validate_code_challenge_method(config.code_challenge_methods_supported, endpoint)
     self.validate_scope(config.scopes_supported, endpoint)
+    self.validate_authorization_details(endpoint)
+    if not self.scope and (not self.authorization_details or len(self.authorization_details) == 0):
+      raise InvalidRequestException("Missing `scope` and `authorization_details` in `par` endpoint")
+
     self.validate_redirect_uri(endpoint)
     self.validate_jti(endpoint)
-    self.validate_authorization_details(endpoint)
     return self
 
   def validate_authorization_details(self, endpoint: str):
-    self.check_missing_parameter(self.authorization_details, "authorization_details", endpoint)
-    for ad in self.authorization_details:
-      AuthorizationDetail.model_validate(ad, context = {
-        CONFIG_CTX: self.get_config(),
-      })
+    if self.authorization_details:
+      for ad in self.authorization_details:
+        AuthorizationDetail.model_validate(ad, context = {
+          CONFIG_CTX: self.get_config(),
+          ENDPOINT_CTX: endpoint
+        })
 
 
   def validate_scope(self, scopes_supported: list[str], endpoint: str):
     self.scope = self.strip(self.scope)
-    self.check_missing_parameter(self.scope, "scope", endpoint)
-    scopes = self.scope.split(" ")
-    for s in scopes:
-      if s not in scopes_supported:
-        logger.error(f"invalid scope value '{s}' in `{endpoint}` endpoint")
-        raise InvalidRequestException("invalid `scope` parameter")
+    if self.scope:
+      scopes = self.scope.split(" ")
+      for s in scopes:
+        if s not in scopes_supported:
+          logger.error(f"invalid scope value '{s}' in `{endpoint}` endpoint")
+          raise InvalidRequestException("invalid `scope` parameter")
 
 
   def validate_code_challenge(self, endpoint: str):

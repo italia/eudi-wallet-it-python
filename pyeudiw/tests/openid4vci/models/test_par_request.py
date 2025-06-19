@@ -284,27 +284,6 @@ def test_invalid_code_challenge_method(value):
     with pytest.raises(InvalidRequestException, match="invalid `code_challenge_method` parameter"):
         ParRequest.model_validate(payload, context=get_valid_context())
 
-@pytest.mark.parametrize("value", ["", "  ", None])
-def test_empty_or_missing_scope(value):
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {
-        "iss": "client-123",
-        "aud": "entity-123",
-        "state": "A" * 32,
-        "client_id": "client-123",
-        "iat": now + 29,
-        "exp": now +30,
-        "response_type": "code",
-        "response_mode": "query",
-        "code_challenge": "code_challenge_test",
-        "code_challenge_method": "S256",
-    }
-    if value is not None:
-        payload["scope"] = value
-
-    with pytest.raises(InvalidRequestException, match="missing `scope` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
-
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "scope1, pippo"])
 def test_invalid_code_challenge_method(value):
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
@@ -325,8 +304,16 @@ def test_invalid_code_challenge_method(value):
     with pytest.raises(InvalidRequestException, match="invalid `scope` parameter"):
         ParRequest.model_validate(payload, context=get_valid_context())
 
-@pytest.mark.parametrize("value", [None, []])
-def test_empty_or_missing_authorization_details(value):
+
+@pytest.mark.parametrize("authorization_details, scope", [
+    ([], None),
+    (None, None),
+    (None, ""),
+    (None, " "),
+    ([], ""),
+    ([], " "),
+])
+def test_empty_or_missing_authorization_details(authorization_details, scope):
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
@@ -334,19 +321,21 @@ def test_empty_or_missing_authorization_details(value):
         "state": "A" * 32,
         "client_id": "client-123",
         "iat": now + 29,
-        "exp": now +30,
+        "exp": now + 30,
         "response_type": "code",
         "response_mode": "query",
         "code_challenge": "code_challenge_test",
         "code_challenge_method": "S256",
-        "scope": "scope1",
         "redirect_uri": "https://client.example.org/cb",
         "jti": "client-123" + str(uuid4())
     }
-    if value is not None:
-        payload["authorization_details"] = value
 
-    with pytest.raises(InvalidRequestException, match="missing `authorization_details` parameter"):
+    if authorization_details is not None:
+        payload["authorization_details"] = authorization_details
+    if scope is not None:
+        payload["scope"] = scope
+
+    with pytest.raises(InvalidRequestException, match="Missing `scope` and `authorization_details` in `par` endpoint"):
         ParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])

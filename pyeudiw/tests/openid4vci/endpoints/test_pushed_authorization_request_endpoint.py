@@ -199,13 +199,6 @@ def _mock_request_deserialized(overrides=None):
     (_mock_request_deserialized({"code_challenge_method": " "}), "missing `code_challenge_method` parameter"),
     (_mock_request_deserialized({"code_challenge_method": REMOVE}), "missing `code_challenge_method` parameter"),
     (_mock_request_deserialized({"code_challenge_method": "code_challenge_method"}), "invalid `code_challenge_method` parameter"),
-    # invalid scope
-    (_mock_request_deserialized({"scope": ""}), "missing `scope` parameter"),
-    (_mock_request_deserialized({"scope": None}), "invalid `scope` parameter"),
-    (_mock_request_deserialized({"scope": " "}), "missing `scope` parameter"),
-    (_mock_request_deserialized({"scope": REMOVE}), "missing `scope` parameter"),
-    (_mock_request_deserialized({"scope": "scope_invalid"}), "invalid `scope` parameter"),
-    (_mock_request_deserialized({"scope": "scope1 scope_invalid"}), "invalid `scope` parameter"),
     # invalid redirect_uri
     (_mock_request_deserialized({"redirect_uri": ""}), "missing `redirect_uri` parameter"),
     (_mock_request_deserialized({"redirect_uri": None}), "invalid `redirect_uri` parameter"),
@@ -222,12 +215,12 @@ def _mock_request_deserialized(overrides=None):
     (_mock_request_deserialized({"jti": REMOVE}), "missing `jti` parameter"),
     (_mock_request_deserialized({"jti": "invalid_jti"}), "invalid `jti` parameter"),
     (_mock_request_deserialized({"jti": "urn:example:wallet:12345"}), "invalid `jti` parameter"),
-    # invalid authorization_details
-    (_mock_request_deserialized({"authorization_details": ""}), "invalid `authorization_details` parameter"),
-    (_mock_request_deserialized({"authorization_details": None}), "invalid `authorization_details` parameter"),
-    (_mock_request_deserialized({"authorization_details": " "}), "invalid `authorization_details` parameter"),
-    (_mock_request_deserialized({"authorization_details": REMOVE}), "missing `authorization_details` parameter"),
-    (_mock_request_deserialized({"authorization_details": []}), "missing `authorization_details` parameter"),
+    # invalid authorization_details and scope
+    (_mock_request_deserialized({"scope": "","authorization_details": ""}), "invalid `authorization_details` parameter"),
+    (_mock_request_deserialized({"scope": None,"authorization_details": None}), "Missing `scope` and `authorization_details` in `par` endpoint"),
+    (_mock_request_deserialized({"scope": " ","authorization_details": " "}), "invalid `authorization_details` parameter"),
+    (_mock_request_deserialized({"scope": REMOVE,"authorization_details": REMOVE}), "Missing `scope` and `authorization_details` in `par` endpoint"),
+    (_mock_request_deserialized({"scope": None,"authorization_details": []}), "Missing `scope` and `authorization_details` in `par` endpoint"),
     (_mock_request_deserialized({"authorization_details": [{"type": OPEN_ID_CREDENTIAL_TYPE}]}), "missing `authorization_details.credential_configuration_id` parameter"),
     (_mock_request_deserialized({"authorization_details": [{"credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"}]}), "missing `authorization_details.type` parameter"),
     (_mock_request_deserialized({"authorization_details": [{"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "invalid_credential_configuration_id"}]}), "invalid `authorization_details.credential_configuration_id` parameter"),
