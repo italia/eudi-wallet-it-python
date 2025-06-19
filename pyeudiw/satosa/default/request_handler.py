@@ -9,7 +9,8 @@ from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QU
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.utils.response import Response
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.openid4vp.schemas.wallet_metadata import WalletMetadata
+from pyeudiw.openid4vp.schemas.wallet_metadata import WalletPostRequest
+from pyeudiw.jwt.exceptions import JWSSigningError
 
 
 class RequestHandler(RequestHandlerInterface, BaseLogger):
@@ -90,15 +91,15 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
 
         if context.request_method == "POST":
             try:
-                wallet_metadata = WalletMetadata(**context.request)
+                wallet_post_request = WalletPostRequest(**context.request)
             except Exception as e:
                 self._log_warning(context, f"wallet metadata not provided or invalid: {e}")
-                wallet_metadata = WalletMetadata(
+                wallet_post_request = WalletPostRequest(
                     wallet_metadata=None,
                     wallet_nonce=None,
                 )
         else:
-            wallet_metadata = WalletMetadata(
+            wallet_post_request = WalletPostRequest(
                 wallet_metadata=None,
                 wallet_nonce=None,
             )
@@ -110,8 +111,9 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             self.config["authorization"],
             client_metadata=client_metadata,
             submission_data=self._build_submission_data(),
-            wallet_nonce=wallet_metadata.wallet_nonce,
+            wallet_nonce=wallet_post_request.wallet_nonce,
         )
+
 
         if _aud := self.config["authorization"].get("aud"):
             data["aud"] = _aud
@@ -120,8 +122,8 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
             document_id = document["document_id"]
 
             data_copy = copy(data)
-            if wallet_metadata.wallet_metadata:
-                data_copy["wallet_metadata"] = wallet_metadata.wallet_metadata.model_dump()
+            if wallet_post_request.wallet_metadata:
+                data_copy["wallet_metadata"] = wallet_post_request.wallet_metadata.model_dump()
 
             self.db_engine.update_request_object(document_id, data_copy)
 
@@ -152,16 +154,25 @@ class RequestHandler(RequestHandlerInterface, BaseLogger):
         else:
             helper = JWSHelper(self.default_metadata_private_jwk)
 
+        alg_values_supported = (wallet_post_request.wallet_metadata.alg_values_supported if wallet_post_request.wallet_metadata else []) or []
+
         try:
             request_object_jwt = helper.sign(
                 data,
                 protected=_protected_jwt_headers,
+                signing_algs=alg_values_supported,
             )
             self._log_debug(context, f"created request object {request_object_jwt}")
             return Response(
                 message=request_object_jwt,
                 status="200",
                 content=RequestHandler._RESP_CONTENT_TYPE,
+            )
+        except JWSSigningError as e400:
+            return self._handle_400(
+                context,
+                "request error: cannot sign the request object, possibly due to a non supported algorithm",
+                e400,
             )
         except Exception as e500:
             return self._handle_500(
