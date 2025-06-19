@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 from satosa.response import Created
@@ -22,7 +22,7 @@ class TokenResponse(BaseModel):
   refresh_token: str
   token_type: str
   expires_in: int
-  authorization_details: List[AuthorizationDetail] = None
+  authorization_details: Optional[List[AuthorizationDetail]] = None
 
   @staticmethod
   def to_created_response(access_token: str, refresh_token: str, expires_in: int, authorization_details: List[AuthorizationDetail]) -> Created:
@@ -36,7 +36,9 @@ class TokenResponse(BaseModel):
       refresh_token=refresh_token,
       token_type="DPOP", # nosec B106
       expires_in=expires_in,
-      authorization_details=authorization_details
+      authorization_details= None
+      if not authorization_details and len(authorization_details) == 0
+      else authorization_details
     )
     return Created(
       message=data.model_dump_json(),

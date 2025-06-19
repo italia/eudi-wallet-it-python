@@ -18,7 +18,8 @@ from pyeudiw.openid4vci.models.token_request import (
     TokenRequest,
     REDIRECT_URI_CTX,
     CODE_CHALLENGE_CTX,
-    CODE_CHALLENGE_METHOD_CTX
+    CODE_CHALLENGE_METHOD_CTX,
+    SCOPE_CTX
 )
 from pyeudiw.openid4vci.models.token_response import TokenResponse
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
@@ -79,14 +80,21 @@ class TokenHandler(BaseEndpoint):
                 CONFIG_CTX: self.config,
                 REDIRECT_URI_CTX: entity.redirect_uri,
                 CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
-                CODE_CHALLENGE_CTX: entity.code_challenge
+                CODE_CHALLENGE_CTX: entity.code_challenge,
+                SCOPE_CTX: entity.scope
             })
             iat = iat_now()
+            authorization_details = entity.authorization_details
+            if authorization_details or len(authorization_details) > 0:
+                for ad in authorization_details:
+                    ad.credential_identifiers = self.config_utils.get_credential_configurations_supported(
+                        ad.credential_configuration_id).scope
+
             return TokenResponse.to_created_response(
                 self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP),
                 self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP),
                 iat + self.config_utils.get_jwt().access_token_exp,
-                entity.authorization_details
+                authorization_details
             )
         except (InvalidRequestException, InvalidScopeException, JWSVerificationError, ValidationError, TypeError) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "token"), e)

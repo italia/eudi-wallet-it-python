@@ -364,7 +364,9 @@ def _assert_valid_request(result: Response, entity: OpenId4VCIEntity, exp_access
     assert response["refresh_token"] ==  exp_refresh_token
     assert response["token_type"] == "DPOP"
     assert isinstance(response["expires_in"], int)
-    assert response["authorization_details"] == entity.authorization_details
+    assert response["authorization_details"] == None \
+        if not entity.authorization_details and len(entity.authorization_details) == 0 \
+        else entity.authorization_details
 
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '400'

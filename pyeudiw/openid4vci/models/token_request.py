@@ -15,6 +15,7 @@ REFRESH_TOKEN_GRANT = "refresh_token" # nosec B105
 REDIRECT_URI_CTX = "redirect_uri"
 CODE_CHALLENGE_METHOD_CTX = "code_challenge_method"
 CODE_CHALLENGE_CTX = "code_challenge"
+SCOPE_CTX = "scope"
 
 TOKEN_ENDPOINT = "token" # nosec B105
 
@@ -61,9 +62,14 @@ class TokenRequest(OpenId4VciBaseModel):
       self.check_unexpected_parameter(self.scope, "scope", TOKEN_ENDPOINT)
     elif self.scope:
       scopes = self.scope.split(" ")
+      par_scope_ctx = self.get_ctx(SCOPE_CTX)
+      par_scopes = par_scope_ctx.split(" ") if par_scope_ctx is not None else None
       for s in scopes:
         if s not in self.get_config().metadata.oauth_authorization_server.scopes_supported:
           logger.error(f"invalid scope value '{s}' in `token` endpoint")
+          raise InvalidRequestException(f"invalid scope value '{s}'")
+        elif par_scopes and (s not in par_scopes):
+          logger.error(f"invalid scope in `token` endpoint: value '{s}' not present in previous `par` endpoint")
           raise InvalidRequestException(f"invalid scope value '{s}'")
 
   def validate_refresh_token(self, is_authorization_code_grant):

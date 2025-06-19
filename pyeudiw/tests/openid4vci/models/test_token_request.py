@@ -8,7 +8,7 @@ from pyeudiw.openid4vci.models.token_request import (
     TokenRequest,
     CODE_CHALLENGE_CTX,
     CODE_CHALLENGE_METHOD_CTX,
-    REDIRECT_URI_CTX
+    REDIRECT_URI_CTX, SCOPE_CTX
 )
 from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tests.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
@@ -29,7 +29,8 @@ def get_valid_context(code_verifier="testverifier", redirect_uri="https://client
         CODE_CHALLENGE_CTX: code_challenge,
         CODE_CHALLENGE_METHOD_CTX: challenge_method,
         REDIRECT_URI_CTX: redirect_uri,
-        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG)
+        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG),
+        SCOPE_CTX: scopes_supported[0]
     }
 
 def test_token_request_valid_authorization_code_grant():
@@ -75,7 +76,7 @@ def test_token_request_valid_refresh_token_grant():
     payload = {
         "grant_type": "refresh_token",
         "refresh_token": "some-refresh-token",
-        "scope": "scope1 openid"
+        "scope": "scope1"
     }
     req = TokenRequest.model_validate(payload, context= get_valid_context(
         scopes_supported = ["scope1", "scope2", "openid"]
