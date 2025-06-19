@@ -553,7 +553,7 @@ config:
       module: pyeudiw.trust.handler.x509
       class: X509Handler
       config:
-        client_id: "x509_san_dns:localhost"
+        client_id: "x509_san_dns:localhost" # for openid4vci is intended as issuer id
         certificate_authorities:
           ca.example.com: |
             -----BEGIN CERTIFICATE-----
