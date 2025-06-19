@@ -56,6 +56,7 @@ class JWSHelper(JWHelperInterface):
         serialization_format: SerializationFormat = "compact",
         signing_kid: str = "",
         kid_in_header: bool = True,
+        signing_algs: list[str] = [],
         **kwargs,
     ) -> str:
         """Generate a signed JWS with the given payload and header.
@@ -104,7 +105,7 @@ class JWSHelper(JWHelperInterface):
             unprotected = {}
 
         # Select the signing key
-        signing_key = self._select_signing_key((protected, unprotected), signing_kid)
+        signing_key = self._select_signing_key((protected, unprotected), signing_kid, signing_algs)
 
         if signing_key["kty"] == "oct":
             raise JWSSigningError(f"Key {signing_key['kid']} is a symmetric key")
@@ -188,7 +189,7 @@ class JWSHelper(JWHelperInterface):
             return signing_key.to_dict()
         
         # Case 2: key forced by the user by a list of alg
-        if signing_algs:
+        if len(signing_algs) > 0:
             signing_key: dict | None = None
             for alg in signing_algs:
                 if signing_key := self._select_key_by_sig_alg(alg):
@@ -237,13 +238,11 @@ class JWSHelper(JWHelperInterface):
         Select a key based on the signature algorithm.
         This is a helper method to find a key that matches the given signature algorithm.
         """
-        candidate_signing_keys: list[dict] = []
         for key in self.jwks:
             key_d: dict[str, Any] = key.to_dict()
             if alg == DEFAULT_SIG_KTY_MAP.get(key_d.get("kty", ""), ""):
-                candidate_signing_keys.append(key_d)
-        if len(candidate_signing_keys) == 1:
-            return candidate_signing_keys[0]
+                return key_d
+            
         return None
 
     def _select_key_by_kid(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
