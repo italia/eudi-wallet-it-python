@@ -12,7 +12,6 @@ from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwt.exceptions import (
-    JWEEncryptionError,
     JWSSigningError,
     JWSVerificationError,
     LifetimeException,
@@ -173,17 +172,17 @@ class JWSHelper(JWHelperInterface):
         :param signing_kid: Optional key ID to force the selection of a specific signing key.
         :param signing_algs: Optional list of algorithms to force the selection of a signing key.
         :returns: A dictionary representing the selected signing key.
-        :raises JWEEncryptionError: If no suitable signing key is found or if the key cannot be used for signing.
+        :raises JWSSigningError: If no suitable signing key is found or if the key cannot be used for signing.
         """
         if len(self.jwks) == 0:
-            raise JWEEncryptionError(
+            raise JWSSigningError(
                 "signing error: no key available for signature; note that {'alg':'none'} is not supported"
             )
         # Case 1: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
             if not signing_key:
-                raise JWEEncryptionError(
+                raise JWSSigningError(
                     f"signing forced by using key with {signing_kid=}, but no such key is available"
                 )
             return signing_key.to_dict()
@@ -198,7 +197,7 @@ class JWSHelper(JWHelperInterface):
             if signing_key:
                 return signing_key
             else:
-                raise JWEEncryptionError(
+                raise JWSSigningError(
                     f"signing forced by using algs {signing_algs}, but no such key is available"
                 )
 
