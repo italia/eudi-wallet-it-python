@@ -22,5 +22,5 @@ def from_jwk_to_mso_mdoc_private_key(jwk_key: dict) -> dict:
         'D': base64_urldecode(jwk_key["d"]),
     }
     if jwk_key["kid"]:
-        mso_mdoc_private_key["KID"] = jwk_key["kid"]
+        mso_mdoc_private_key["KID"] = jwk_key["kid"].encode("utf-8")
     return mso_mdoc_private_key

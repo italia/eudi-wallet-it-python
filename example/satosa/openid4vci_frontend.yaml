@@ -476,9 +476,9 @@ config:
   # this is the custom configuration for credential management.
   credential_configurations:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
-    entity_default_sig_alg: *default_sig_alg
     credential_specification:
       mso_mdoc_mDL:
+        expiry_days: 365
         template: |
           org.iso.18013.5.1:
             given_name: "{{name}}"
@@ -553,8 +553,7 @@ config:
       module: pyeudiw.trust.handler.x509
       class: X509Handler
       config:
-        # client_id: *client_id
-        client_id_scheme: x509_san_dns # this will be prepended in the client id scheme used in the request.
+        client_id: "x509_san_dns:localhost"
         certificate_authorities:
           ca.example.com: |
             -----BEGIN CERTIFICATE-----

@@ -1,4 +1,3 @@
-from aiohttp.web_fileresponse import content_type
 from satosa.context import Context
 from satosa.response import Response
 
@@ -74,5 +73,5 @@ class CredentialHandler(BaseCredentialEndpoint):
         """
         return CredentialEndpointResponse.to_response([
             CredentialItem(credential = cred)
-            for cred in self.build_credential(content_type, credential_id)
+            for cred in self.build_credential(context, credential_id)
         ])
