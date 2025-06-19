@@ -18,6 +18,16 @@ class CredentialConfiguration(BaseModel):
     id: str
     format: str
     scope: str
+    doctype: Optional[str] = None
+
+    @staticmethod
+    def map(id: str, config_dict: dict):
+        return CredentialConfiguration(
+            id=id,
+            format=config_dict["format"],
+            scope=config_dict["scope"],
+            doctype=config_dict.get("doctype"),
+        )
 
 class OpenidCredentialIssuerMetadata(BaseModel):
     credential_configurations_supported: Optional[dict] = None

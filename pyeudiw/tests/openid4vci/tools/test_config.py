@@ -50,19 +50,24 @@ def test_get_openid_credential_issuer(config_utils):
             "cryptographic_binding_methods_supported": [
                 "jwk"
             ]
-        }
+        },
+        'mso_mdoc_mDL': {
+            'cryptographic_binding_methods_supported': ['cose_key'],
+            'format': 'mso_mdoc',
+            'scope': 'mDL'}
     }
 
 
 def test_get_credential_configurations_supported(config_utils):
     result = config_utils.get_credential_configurations_supported()
     assert isinstance(result, dict)
-    assert set(result.keys()) == {"dc_sd_jwt_EuropeanDisabilityCard", "dc_sd_jwt_mDL"}
+    assert set(result.keys()) == {'dc_sd_jwt_mDL', 'mso_mdoc_mDL', 'dc_sd_jwt_EuropeanDisabilityCard'}
     for k, v in result.items():
         assert isinstance(v, CredentialConfiguration)
         assert v.id == k
         assert v.scope is not None
         assert v.format is not None
+        assert v.doctype == ("org.iso.18013.5.1.mDL" if v.id == 'mso_mdoc_mDL' else None)
 
 
 def test_get_credential_configurations(config_utils):

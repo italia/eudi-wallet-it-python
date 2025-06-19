@@ -46,7 +46,7 @@ class Openid4VciFrontendConfigUtils:
         if not ccs:
             return None
         return {
-            k: CredentialConfiguration(id=k, format=v["format"], scope=v["scope"])
+            k: CredentialConfiguration.map(k, v)
             for k, v in ccs.items()
         }
 

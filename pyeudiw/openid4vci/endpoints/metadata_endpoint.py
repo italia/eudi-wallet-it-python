@@ -22,15 +22,7 @@ class MetadataHandler(BaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
-
-    @property
-    def authority_hints(self):
-        return (
-            self.config.get("trust", {})
-            .get("federation", {})
-            .get("config", {})
-            .get("authority_hints", [])
-        )
+        self.federation_config = self.config.get("trust", {}).get("federation", {}).get("config", {})
 
     def _ensure_credential_issuer(self, metadata: dict, metadata_key: str, issuer_key:str):
         metadata_val = metadata.get(metadata_key)
@@ -52,13 +44,13 @@ class MetadataHandler(BaseEndpoint):
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
         ec_payload = {
-            "exp": exp_from_now(minutes=self.credential_configuration.entity_configuration_exp),
+            "exp": exp_from_now(minutes=self.federation_config.get("entity_configuration_exp")),
             "iat": iat_now(),
             "iss": self.entity_id,
             "sub": self.entity_id,
             "jwks": {"keys": self.metadata_jwks},
             "metadata": self.metadata,
-            "authority_hints": self.authority_hints,
+            "authority_hints": self.federation_config.get("authority_hints", []),
         }
         return ec_payload
 
@@ -105,7 +97,6 @@ class MetadataHandler(BaseEndpoint):
             ])
         self._validate_required_configs([
             ("credential_configurations.entity_default_sig_alg", credential_configuration.entity_default_sig_alg),
-            ("credential_configurations.entity_configuration_exp", credential_configuration.entity_configuration_exp),
         ])
 
         self.credential_configuration = credential_configuration

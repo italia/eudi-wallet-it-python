@@ -93,10 +93,29 @@ MOCK_ENDPOINTS_CONFIG = {
 
 MOCK_CREDENTIAL_CONFIGURATIONS = {
     "lookup_source": "openid4vci",
-    "entity_configuration_exp": 800,
     "entity_default_sig_alg": "ES256",
     "credential_specification": {
         "dc_sd_jwt_mDL": {
+            "template": """
+                holder_disclosed_claims:
+                    !sd given_name: "{{name}}"
+                    !sd family_name: "{{surname}}"
+                    !sd place_of_birth:
+                        country: "{{countyOfBirth}}"
+                        locality: "{{placeOfBirth}}"
+                key_binding: true
+                user_claims:
+                    !sd birthdate: "{{dateOfBirth}}"
+                    !sd family_name: "{{surname}}"
+                    !sd given_name: "{{name}}"
+                    !sd place_of_birth:
+                        country: "{{countyOfBirth}}"
+                        locality: "{{placeOfBirth}}"
+                    !sd tax_id_code: "TINIT-{{fiscal_code}}"
+                    !sd unique_id: "{{unique_id}}"
+            """
+        },
+        "mso_mdoc_mDL": {
             "template": """
                 holder_disclosed_claims:
                     !sd given_name: "{{name}}"
@@ -130,6 +149,14 @@ MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG = {
             "scope": "mDL",
             "cryptographic_binding_methods_supported": [
                 "jwk"
+            ]
+        },
+        "mso_mdoc_mDL": {
+            "doctype": "org.iso.18013.5.1.mDL",
+            "format": "mso_mdoc",
+            "scope": "mDL",
+            "cryptographic_binding_methods_supported": [
+                "cose_key"
             ]
         }
     },
@@ -190,7 +217,14 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     },
     "user_storage": MOCK_USER_STORAGE_CONFIG,
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
-    "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS
+    "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
+    "trust": {
+        "federation": {
+            "config":{
+                "entity_configuration_exp":600
+            }
+        }
+    }
 }
 
 MOCK_INTERNAL_ATTRIBUTES = {

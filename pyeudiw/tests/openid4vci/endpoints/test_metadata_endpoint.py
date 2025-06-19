@@ -67,8 +67,6 @@ def _mock_configurations(field: list[str] | str):
 @pytest.mark.parametrize("config, missing_fields", [
     (_mock_configurations("credential_configurations"), ["credential_configurations"]),
     (_mock_configurations("entity_default_sig_alg"), ["credential_configurations.entity_default_sig_alg"]),
-    (_mock_configurations("entity_configuration_exp"), ["credential_configurations.entity_configuration_exp"]),
-    (_mock_configurations(["entity_configuration_exp", "entity_default_sig_alg"]), ["credential_configurations.entity_default_sig_alg", "credential_configurations.entity_configuration_exp"])
 ])
 def test_missing_configurations(config, missing_fields):
     do_test_missing_configurations_raises(MetadataHandler, config, missing_fields)
