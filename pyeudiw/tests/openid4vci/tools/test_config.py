@@ -36,7 +36,6 @@ def test_get_oauth_authorization_server(config_utils):
     assert isinstance(auth_metadata, OauthAuthorizationServerMetadata)
     assert auth_metadata.response_types_supported == ["code"]
 
-
 def test_get_openid_credential_issuer(config_utils):
     issuer_metadata = config_utils.get_openid_credential_issuer()
     assert isinstance(issuer_metadata, OpenidCredentialIssuerMetadata)
@@ -46,6 +45,7 @@ def test_get_openid_credential_issuer(config_utils):
             "scope": "EuropeanDisabilityCard"
         },
         "dc_sd_jwt_mDL": {
+            "format": "dc+sd-jwt",
             "scope": "mDL",
             "cryptographic_binding_methods_supported": [
                 "jwk"
@@ -61,6 +61,8 @@ def test_get_credential_configurations_supported(config_utils):
     for k, v in result.items():
         assert isinstance(v, CredentialConfiguration)
         assert v.id == k
+        assert v.scope is not None
+        assert v.format is not None
 
 
 def test_get_credential_configurations(config_utils):

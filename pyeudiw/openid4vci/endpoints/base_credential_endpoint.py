@@ -1,17 +1,24 @@
 import json
 from abc import ABC, abstractmethod
+from typing import Any
 from uuid import uuid4
 
 from jinja2 import Template
 from pydantic import ValidationError
+from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.openid4vci.tools.exceptions import InvalidScopeException, InvalidRequestException
+from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key
+from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
+from pyeudiw.satosa.schemas.metadata import CredentialConfigurationFormatEnum
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_request_method, validate_content_type,
@@ -37,7 +44,9 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
-        self.jws_helper = JWSHelper(self.config["metadata_jwks"])
+        self._metadata_jwks = self.config["metadata_jwks"]
+        self.jws_helper = JWSHelper(self._metadata_jwks)
+        self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(self._metadata_jwks[0])
         self.db_engine = OpenId4VciEngine.db_engine
         self._db_user_engine = None
 
@@ -47,8 +56,11 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(context)
             entity = self.db_engine.get_by_session_id(get_session_id(context))
-            self.validate_request(context, entity)
-            return self.to_response(context, entity)
+            req = self.validate_request(context, entity)
+            credential_id = None
+            if isinstance(req, CredentialEndpointRequest):
+                credential_id = req.credential_identifier or req.credential_configuration_id
+            return self.to_response(context, entity, credential_id)
 
         except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
@@ -84,37 +96,69 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         return self._db_user_engine
 
     @abstractmethod
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity):
+    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
         pass
 
     @abstractmethod
-    def to_response(self, context: Context, entity: OpenId4VCIEntity) -> Response:
+    def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
         pass
 
-    def issue_sd_jwt(self, context: Context) -> dict:
+    def build_credential(self, context: Context, credential_id: str | None) -> list[str]:
+        credential_list = []
+        entity = self.db_engine.get_by_session_id(get_session_id(context))
+        if credential_id:
+            return [self._build_credential(entity, credential_id)]
+        else:
+            pass #todo: manage deferred
+
+        return credential_list
+
+    def _build_credential(self, entity: OpenId4VCIEntity, cred_key: str):
+        config = self.config_utils.get_credential_configurations_supported()[cred_key]
+        credential = self.specification[cred_key]
+        user_data = self._retrieve_user_data(entity)
+        match config.format:
+            case CredentialConfigurationFormatEnum.SD_JWT:
+                return self._issue_sd_jwt(user_data, entity, credential.template)["issuance"]
+            case CredentialConfigurationFormatEnum.MSO_MDOC:
+                return self._issue_mso_mdoc(user_data, entity, credential.template)
+            case _:
+                self._log_error(
+                    self.__class__.__name__,
+                    f"unexpected credential_configurations_supported format {config.format}")
+                raise Exception(f"Invalid credential_configurations_supported format {config.format}")
+
+    def _issue_mso_mdoc(self, user_data: dict[str, Any], entity: OpenId4VCIEntity, template) -> Any:
+        mdoci = MdocCborIssuer(
+            private_key=self._mso_mdoc_private_key,
+            alg=self._mso_mdoc_private_key['ALG']
+        )
+        mdoci.new(
+            doctype="eu.europa.ec.eudiw.pid.1",
+            data=self._loader(user_data, template),
+            validity={
+                "issuance_date": "2024-12-31",
+                "expiry_date": "2050-12-31"
+            }
+        )
+        pass
+
+    def _issue_sd_jwt(self, user_data: dict[str, Any] , entity: OpenId4VCIEntity, template) -> dict:
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
-        entity = self.db_engine.get_by_session_id(get_session_id(context))
         claims = {
             "iss": entity.client_id,
             "iat": now,
             "exp": exp
         }
 
-        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
-
-        user_data = user.model_dump()
-        user_data["unique_id"] = uuid4()
-
-        specification = self._loader(user_data)
+        specification = self._loader(user_data, template)
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
 
-        issuer_keys =  self.config["metadata_jwks"]
-
         sdjwt_at_issuer = SDJWTIssuer(
             user_claims=specification,
-            issuer_keys=issuer_keys,
+            issuer_keys=self._metadata_jwks,
             add_decoy_claims=use_decoys,
         )
 
@@ -123,9 +167,16 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             "issuance": sdjwt_at_issuer.sd_jwt_issuance
         }
 
-    def _loader(self, data: dict):
+    def _retrieve_user_data(self, entity) ->  dict[str, Any]:
+        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
+        user_data = user.model_dump()
+        user_data["unique_id"] = uuid4()
+        return user_data
+
+    @staticmethod
+    def _loader(data: dict, template):
         template = json.dumps(
-            yaml_load_specification_with_placeholder(self.specification_template)
+            yaml_load_specification_with_placeholder(template)
         )
         template = Template(template)
         json_filled = template.render(**data)
@@ -161,15 +212,9 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
 
     def _validate_configs(self):
-        missing_fields = []
-
-        specification_template = self.config_utils.get_credential_configurations().credential_specification_template
-        if not specification_template:
-            missing_fields.append("credential_configurations.credential_specification_template")
-
-        self.specification_template = specification_template
-
-        if missing_fields:
-            raise ValueError(
-                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
-            )
+        specification = self.config_utils.get_credential_configurations().credential_specification
+        self._validate_required_configs([
+            ("credential_configurations.credential_specification", specification),
+            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported())
+        ])
+        self.specification = specification

@@ -21,21 +21,23 @@ class OpenId4VCIEntity(BaseModel):
   remote_flow_typ: str
   request_uri_part: str
   redirect_uri: str
-  authorization_details: List[AuthorizationDetail] = None
+  authorization_details: Optional[List[AuthorizationDetail]] = None
+  scope: Optional[str] = None
   c_nonce: str = None
   finalized: bool = False
   attributes: Optional[dict] = None
 
   @staticmethod
   def new_entity(context: Context, request_uri_part: str, par_request: ParRequest):
-    return OpenId4VCIEntity(
-        request_uri_part = request_uri_part,
-        state=par_request.state,
-        session_id=context.state["SESSION_ID"],
-        remote_flow_typ=detect_flow_typ(context).value,
-        client_id = par_request.client_id,
-        code_challenge = par_request.code_challenge,
-        code_challenge_method = par_request.code_challenge_method,
-        redirect_uri=par_request.redirect_uri,
-        authorization_details=par_request.authorization_details
-    )
+      return OpenId4VCIEntity(
+          request_uri_part=request_uri_part,
+          state=par_request.state,
+          session_id=context.state["SESSION_ID"],
+          remote_flow_typ=detect_flow_typ(context).value,
+          client_id=par_request.client_id,
+          code_challenge=par_request.code_challenge,
+          code_challenge_method=par_request.code_challenge_method,
+          redirect_uri=par_request.redirect_uri,
+          authorization_details=par_request.authorization_details,
+          scope=par_request.scope
+      )

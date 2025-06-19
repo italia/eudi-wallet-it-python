@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -9,8 +10,14 @@ class OauthAuthorizationServerMetadata(BaseModel):
     code_challenge_methods_supported: Optional[List[str]] = None
     scopes_supported: Optional[List[str]] = None
 
+class CredentialConfigurationFormatEnum(Enum):
+    SD_JWT = "dc+sd-jwt" #nosec B105
+    MSO_MDOC = "mso_mdoc" #nosec B105
+
 class CredentialConfiguration(BaseModel):
     id: str
+    format: str
+    scope: str
 
 class OpenidCredentialIssuerMetadata(BaseModel):
     credential_configurations_supported: Optional[dict] = None

@@ -1,3 +1,4 @@
+from aiohttp.web_fileresponse import content_type
 from satosa.context import Context
 from satosa.response import Response
 
@@ -10,6 +11,7 @@ from pyeudiw.openid4vci.models.credential_endpoint_request import (
 from pyeudiw.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import CredentialItem
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
     AUTHORIZATION_DETAILS_CTX,
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
@@ -27,7 +29,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         A Response object.
     """
 
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity):
+    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
         """
         Validate a POST request to the credential endpoint.
 
@@ -45,6 +47,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context = {
             AUTHORIZATION_DETAILS_CTX: entity.authorization_details
         })
+
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
         ProofJWT.model_validate(
             proof_jws_helper.verify(c_req.proof.jwt), context = {
@@ -52,8 +55,9 @@ class CredentialHandler(BaseCredentialEndpoint):
                 ENTITY_ID_CTX: self.entity_id,
                 NONCE_CTX: entity.c_nonce
             })
+        return c_req
 
-    def to_response(self, context: Context, entity: OpenId4VCIEntity) -> Response:
+    def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
         """
         Generate a response containing the issued credential.
 
@@ -68,7 +72,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
-        cred = self.issue_sd_jwt(context)
         return CredentialEndpointResponse.to_response([
-            CredentialItem(credential = cred["issuance"])
+            CredentialItem(credential = cred)
+            for cred in self.build_credential(content_type, credential_id)
         ])

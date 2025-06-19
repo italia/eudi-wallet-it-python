@@ -11,6 +11,7 @@ from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX,
     NONCE_CTX
 )
+from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.date import is_valid_unix_timestamp
 
 logger = logging.getLogger(__name__)
@@ -166,6 +167,9 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
         auth_det_req = cast(list[dict], self.get_ctx(AUTHORIZATION_DETAILS_CTX))
         self.credential_identifier = self.strip(self.credential_identifier)
         self.credential_configuration_id = self.strip(self.credential_configuration_id)
+
+        if self.credential_identifier and self.credential_configuration_id:
+            raise InvalidRequestException("`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint")
 
         has_openid_credential = any(
             ad.get("type") == OPEN_ID_CREDENTIAL_TYPE

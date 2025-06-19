@@ -81,7 +81,7 @@ config:
 
   # private jwk
   metadata_jwks: &metadata_jwks
-    - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests
+    - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests as mso_mdoc too
       d: i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc
       use: sig
       crv: P-256
@@ -478,23 +478,41 @@ config:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
     entity_configuration_exp: 800
     entity_default_sig_alg: *default_sig_alg
-    credential_specification_template: |
-      holder_disclosed_claims:
-        !sd given_name: "{{name}}"
-        !sd family_name: "{{surname}}"
-        !sd place_of_birth:
-          country: "{{countyOfBirth}}"
-          locality: "{{placeOfBirth}}"
-      key_binding: true
-      user_claims:
-        !sd birthdate: "{{dateOfBirth}}"
-        !sd family_name: "{{surname}}"
-        !sd given_name: "{{name}}"
-        !sd place_of_birth:
-          country: "{{countyOfBirth}}"
-          locality: "{{placeOfBirth}}"
-        !sd tax_id_code: "TINIT-{{fiscal_code}}"
-        !sd unique_id: "{{unique_id}}"
+    credential_specification:
+      mso_mdoc_mDL:
+        template: |
+          org.iso.18013.5.1:
+            given_name: "{{name}}"
+            family_name: "{{surname}}"
+            birthdate: "{{dateOfBirth}}"
+            place_of_birth:
+              country: "{{countyOfBirth}}"
+              locality: "{{placeOfBirth}}"
+          org.iso.18013.5.1.it:
+            verification.evidence:
+              organization_name: "Motorizzazione Civile"
+              organization_id: "m_inf"
+              country_code: "it"
+              verification.trust_framework: "eidas"
+              verification.assurance_level: "high"
+      dc_sd_jwt_mDL:
+        template: |
+            holder_disclosed_claims:
+              !sd given_name: "{{name}}"
+              !sd family_name: "{{surname}}"
+              !sd place_of_birth:
+                country: "{{countyOfBirth}}"
+                locality: "{{placeOfBirth}}"
+            key_binding: true
+            user_claims:
+              !sd birthdate: "{{dateOfBirth}}"
+              !sd family_name: "{{surname}}"
+              !sd given_name: "{{name}}"
+              !sd place_of_birth:
+                country: "{{countyOfBirth}}"
+                locality: "{{placeOfBirth}}"
+              !sd tax_id_code: "TINIT-{{fiscal_code}}"
+              !sd unique_id: "{{unique_id}}"
 
   trust:
     federation:

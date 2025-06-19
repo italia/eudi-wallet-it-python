@@ -23,6 +23,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
     MOCK_CREDENTIAL_CONFIGURATIONS,
+    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
     MOCK_BASE_URL,
@@ -82,9 +83,11 @@ def context() -> Context:
 def _mock_configurations(overrides=None):
     return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
 
-_removed_credential_specification_template = {k: v for k, v in deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS).items() if k != "credential_specification_template"}
+_removed_credential_specification_template = {k: v for k, v in deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS).items() if k != "credential_specification"}
+_removed_credential_configurations_supported = {k: v for k, v in deepcopy(MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG).items() if k != "credential_configurations_supported"}
 @pytest.mark.parametrize("config, missing_fields", [
-    (_mock_configurations({"credential_configurations": _removed_credential_specification_template}), ["credential_configurations.credential_specification_template"]),
+    (_mock_configurations({"credential_configurations": _removed_credential_specification_template}), ["credential_configurations.credential_specification"]),
+    (_mock_configurations({"metadata": {"openid_credential_issuer": _removed_credential_configurations_supported}}), ["metadata.openid_credential_issuer.credential_configurations_supported"]),
 ])
 def test_missing_configurations_raises(config, missing_fields):
     do_test_missing_configurations_raises(CredentialHandler, config, missing_fields)
@@ -106,7 +109,7 @@ def test_invalid_oauth_client_attestation(credential_handler, headers):
     ("", "", "missing `credential_configuration_id` parameter"),
     (None, "", "missing `credential_configuration_id` parameter"),
     (" ", "", "missing `credential_configuration_id` parameter"),
-    ("credential_configuration_id", "credential_identifier", "unexpected `credential_identifier` parameter"),
+    ("credential_configuration_id", "credential_identifier", "`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint"),
 ])
 def test_invalid_request_credential_id_without_openid_credential_in_auth_details(
         credential_handler, context,
@@ -129,7 +132,7 @@ def test_invalid_request_credential_id_without_openid_credential_in_auth_details
     ("", "", "missing `credential_identifier` parameter"),
     (None, "", "missing `credential_identifier` parameter"),
     (" ", "", "missing `credential_identifier` parameter"),
-    ("cred1", "cred_config_id", "unexpected `credential_configuration_id` parameter"),
+    ("cred1", "cred_config_id", "`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint"),
     ("cred21", None, "invalid `credential_identifier` parameter"),
 ])
 def test_invalid_request_credential_id_with_openid_credential_in_auth_details(

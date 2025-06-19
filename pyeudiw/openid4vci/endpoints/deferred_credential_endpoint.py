@@ -5,6 +5,7 @@ from pyeudiw.openid4vci.endpoints.base_credential_endpoint import BaseCredential
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
 from pyeudiw.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse, \
     CredentialItem
+from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
 
 
@@ -17,7 +18,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         A Response object.
     """
 
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity):
+    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
         """
         Validate a POST request to the deferred credential endpoint.
 
@@ -32,9 +33,9 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
-        DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
+        return DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
 
-    def to_response(self, context: Context, entity: OpenId4VCIEntity) -> Response:
+    def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
         """
         Generate a response containing the issued credential.
 
@@ -49,7 +50,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
-        cred = self.issue_sd_jwt(context)
         return DeferredCredentialEndpointResponse.to_response([
-            CredentialItem(**cred["issuance"])
+            CredentialItem(credential = cred)
+            for cred in self.build_credential(context, credential_id)
         ])
