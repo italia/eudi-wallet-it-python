@@ -5,7 +5,7 @@ from satosa.context import Context
 from satosa.response import Redirect
 from satosa.state import State
 
-from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.satosa.backend.openid4vp import OpenID4VPBackend
 from pyeudiw.satosa.interfaces.request_handler import RequestHandlerInterface
 from pyeudiw.satosa.interfaces.response_handler import ResponseHandlerInterface
 from pyeudiw.satosa.utils.response import JsonResponse
