@@ -1,3 +1,5 @@
+import secrets
+
 from datetime import datetime, timedelta
 from ssl import DER_cert_to_PEM_cert
 
@@ -5,7 +7,12 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from cryptography.hazmat.primitives.serialization import Encoding
-from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import serialization
+from cryptography.x509.oid import NameOID, ObjectIdentifier
+
+
+# Define custom OIDs
+REGISTRATION_NUMBER_OID = ObjectIdentifier("2.5.4.5") # it is the serial Number referenced in 
 
 from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
@@ -15,13 +22,44 @@ from pyeudiw.x509.verify import (
 )
 
 
+def create_authority_key_identifier(issuer_cert):
+    # Get the SKI from the issuer's certificate
+    ski = issuer_cert.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_KEY_IDENTIFIER)
+    
+    return x509.AuthorityKeyIdentifier(
+        key_identifier=ski.value.digest,
+        authority_cert_issuer=None,
+        authority_cert_serial_number=None
+    )
+
+
+def generate_serial_number():
+    """
+        According to ETSI EN 319 412-6
+    """
+    # Generate 64 bits (8 bytes) of random data
+    random_bytes = secrets.token_bytes(8)
+    
+    # Convert to integer
+    random_int = int.from_bytes(random_bytes, byteorder='big')
+    
+    # Ensure it's less than 2^159
+    max_value = 2**159 - 1
+    serial_number = random_int % max_value
+    
+    # Ensure it's greater than 0
+    if serial_number == 0:
+        serial_number = 1
+    
+    return serial_number
+
 def gen_chain(
-        date: datetime = datetime.now(), 
-        ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
+        date: datetime = datetime.now(),
+        ca_cn: str = "Example IT-Wallet Trust Anchor",
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
+        leaf_cn: str = "leaf.example.org",
         leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "leaf.example.org",
+        leaf_uri: str = "https://leaf.example.org/that-app",
         leaf_private_key: ec.EllipticCurvePrivateKey = None
     ) -> list[bytes]:
     # Generate a private key for the CA
@@ -49,15 +87,10 @@ def gen_chain(
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        ca_cn
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example CA"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
+                    x509.NameAttribute(NameOID.COMMON_NAME, ca_cn),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Example CA"),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME, "IT"),
+                    x509.NameAttribute(NameOID.EMAIL_ADDRESS, "contact@example.com")
                 ]
             )
         )
@@ -130,6 +163,11 @@ def gen_chain(
             ),
             critical=True
         )
+        # ETSI EN 319 412-6 AuthorityKeyIdentifier extension shall be present, and shall be identical to the subjectKeyIdentifier field.
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(ca_private_key.public_key()),
+            critical=False
+        )
         .sign(ca_private_key, hashes.SHA256())
     )
 
@@ -139,15 +177,11 @@ def gen_chain(
         .subject_name(
             x509.Name(
                 [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        "https://intermediate.example.net"
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example INT"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
+                    x509.NameAttribute(NameOID.COMMON_NAME, "intermediate.example.net"),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Example CA Intermediate"),
+                    x509.NameAttribute(NameOID.COUNTRY_NAME, "IT"),
+                    x509.NameAttribute(NameOID.EMAIL_ADDRESS, "contact@example.net"),
+                    x509.NameAttribute(REGISTRATION_NUMBER_OID, f"{generate_serial_number()}"),
                 ]
             )
         )
@@ -202,6 +236,14 @@ def gen_chain(
             ),
             critical=True
         )
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(intermediate_private_key.public_key()),
+            critical=False
+        )
+        .add_extension(
+            create_authority_key_identifier(ca),  # Use CA's SKI
+            critical=False
+        )
         .sign(ca_private_key, hashes.SHA256())
     )
 
@@ -220,6 +262,8 @@ def gen_chain(
                     x509.NameAttribute(NameOID.COUNTRY_NAME,
                         "IT"
                     ),
+                    x509.NameAttribute(NameOID.EMAIL_ADDRESS, "contact@example.org"),
+                    x509.NameAttribute(REGISTRATION_NUMBER_OID, f"{generate_serial_number()}"),
                 ]
             )
         )
@@ -257,7 +301,7 @@ def gen_chain(
                 x509.DistributionPoint(
                     full_name=[
                         x509.UniformResourceIdentifier(
-                            f"https://leaf.example.com/crl/leaf.example.com.crl"
+                            f"https://leaf.example.org/crl/leaf.example.com.crl"
                         )
                     ],
                     relative_name=None,
@@ -270,8 +314,8 @@ def gen_chain(
         .add_extension(
             x509.NameConstraints(
                 permitted_subtrees=[
-                    x509.UniformResourceIdentifier(f"https://leaf.example.com"),
-                    x509.DNSName("leaf.example.com"),
+                    x509.UniformResourceIdentifier(f"https://leaf.example.org"),
+                    x509.DNSName("leaf.example.org"),
                 ],
                 excluded_subtrees=[
                     x509.DNSName("localhost"),
@@ -283,6 +327,14 @@ def gen_chain(
                 ]
             ),
             critical=True
+        )
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(leaf_private_key.public_key()),
+            critical=False
+        )
+        .add_extension(
+            create_authority_key_identifier(intermediate),  # Use intermediate's SKI
+            critical=False
         )
         .sign(intermediate_private_key, hashes.SHA256())
     )
