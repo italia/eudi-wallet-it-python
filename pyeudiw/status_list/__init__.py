@@ -114,3 +114,29 @@ def generate_status_list(
         return status_list
 
     return cbor2.dumps(status_list)
+
+def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
+    """
+    Convert an array of status objects to a bitstring.
+
+    :param status_array: The array of status objects.
+    :type status_array: list[dict]
+    :param bit_size: The size of each bit in the bitstring.
+    :type bit_size: int
+    
+    :return: The resulting bitstring.
+    :rtype: bytes
+    """
+
+    status_array = sorted(status_array, key=lambda x: x["incremental_id"])
+
+    bitstring: int = 0
+    for status in status_array:
+        if status["revoked"] == True:
+            bitstring |= 1 << (status["incremental_id"] - 1)
+        elif status["revoked"] == False:
+            bitstring &= ~(1 << (status["incremental_id"] - 1))
+
+    bit_length = len(status_array)
+    byte_length = (bit_length + 7) // 8
+    return bitstring.to_bytes(byte_length, byteorder='big', signed=False)
