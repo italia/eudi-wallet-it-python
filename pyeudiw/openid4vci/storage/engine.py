@@ -17,8 +17,8 @@ class OpenId4VciEngine:
                 of the storage engine.
     """
 
-    def __init__(self):
-        self._storage = self.config["storage"]
+    def __init__(self, config: dict):
+        self._storage = config["storage"]
         self._db_engine = None
 
     @property

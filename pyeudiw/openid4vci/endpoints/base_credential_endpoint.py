@@ -59,7 +59,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
         self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(self._metadata_jwks[0])
-        self.db_engine = OpenId4VciEngine.db_engine
+        self.db_engine = OpenId4VciEngine(config).db_engine
         self._db_user_engine = None
 
     def endpoint(self, context: Context) -> Response:

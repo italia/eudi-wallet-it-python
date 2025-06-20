@@ -32,7 +32,7 @@ class OpenID4VCIFrontend(FrontendModule):
     self.config = config
     self.base_url = base_url
     self.name = name
-    self.db_engine = OpenId4VciEngine.db_engine
+    self.db_engine = OpenId4VciEngine(config).db_engine
 
   def register_endpoints(self, *kwargs):
     """

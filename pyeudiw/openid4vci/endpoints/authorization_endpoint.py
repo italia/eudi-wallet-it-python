@@ -41,7 +41,7 @@ class AuthorizationHandler(BaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
-        self.db_engine = OpenId4VciEngine.db_engine
+        self.db_engine = OpenId4VciEngine(config).db_engine
 
     def endpoint(self, context: Context) -> Response:
         """
