@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import ValidationError
 from satosa.context import Context
@@ -22,7 +22,7 @@ REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 
 class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, auth_callback: Callable[[Context, Any], Response] | None = None):
         """
         Initialize the OpenID4VCI endpoints class.
         Args:
@@ -30,10 +30,12 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
+            auth_callback (Callable, optional): A callback function to handle authorization requests. Defaults to None.
         """
         self.config = config
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
+        self._auth_callback = auth_callback
         self._backend_url = f"{base_url}/{name}"
         self._validate_configs()
 
