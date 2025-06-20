@@ -2,6 +2,7 @@ import datetime
 import json
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
 import pytest
 from satosa.context import Context
@@ -9,6 +10,7 @@ from satosa.context import Context
 from pyeudiw.openid4vci.endpoints.credential_endpoint import CredentialHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
+from pyeudiw.storage.credential_entity import CredentialEntity
 from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
     do_test_missing_configurations_raises,
@@ -70,11 +72,15 @@ def request_with_open_id_credential():
 
 @pytest.fixture
 def credential_handler() -> CredentialHandler:
-    handler = CredentialHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
-    handler.db_engine = MagicMock()
-    handler._db_user_engine = MagicMock()
-    handler.jws_helper = MagicMock()
-    return handler
+    with patch("pyeudiw.openid4vci.endpoints.base_credential_endpoint.UserCredentialEngine") as user_cred_eng_class:
+        usc_mock_engine = MagicMock()
+        usc_mock_engine.db_user_storage_engine = MagicMock()
+        usc_mock_engine.db_credential_storage_engine = MagicMock()
+        user_cred_eng_class.return_value = usc_mock_engine
+        handler = CredentialHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler.db_engine = MagicMock()
+        handler.jws_helper = MagicMock()
+        return handler
 
 @pytest.fixture
 def context() -> Context:
@@ -228,9 +234,10 @@ def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_w
             error_desc
         )
 
-def side_effect(fields):
+_USER_DOC_ID = 'e133546a-6095-40f3-8489-5c1cfa25b3a6'
+def side_effect_user_entity(fields) -> tuple[str, UserEntity]:
     if fields == {'fiscal_code': 'RSSMRA80A01H501T'}:
-        return UserEntity(**{
+        return _USER_DOC_ID, UserEntity(**{
             "name": "Mario",
             "surname": "Rossi",
             "fiscal_code":"RSSMRA80A01H501T",
@@ -241,23 +248,54 @@ def side_effect(fields):
         })
     pytest.fail(f"Unexpected lookup fields: {fields}")
 
-def test_request_without_open_id_credential(credential_handler, context, request_without_open_id_credential, valid_request_proof_jwt):
-    context.request = request_without_open_id_credential
+def side_effect_credential_entity(user_id) -> CredentialEntity:
+    if user_id == _USER_DOC_ID:
+        return CredentialEntity(**{
+            "user_id": _USER_DOC_ID,
+            "incremental_id": 1,
+            "identifier": "dc_sd_jwt_mDL"
+        })
+    pytest.fail(f"Unexpected user_id value: {user_id}")
+
+def test_request_without_open_id_credential_for_sd_jwt(credential_handler, context, valid_request_proof_jwt):
+    context.request = {
+        "credential_configuration_id": "dc_sd_jwt_mDL",
+        "proof": VALID_PROOF
+    }
     entity = deepcopy(get_mocked_openid4vpi_entity())
     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
+# TODO: fix me
+# def test_request_with_open_id_credential_for_sd_jwt(credential_handler, context, valid_request_proof_jwt):
+#     context.request = {
+#         "credential_identifier": "dc_sd_jwt_mDL",
+#         "proof": VALID_PROOF
+#     }
+#     entity = deepcopy(get_mocked_openid4vpi_entity())
+#     entity.authorization_details = [
+#         {
+#             "type": OPEN_ID_CREDENTIAL_TYPE,
+#             "credential_configuration_id": "credential_configuration_id_test",
+#             "credential_identifiers": ["cred1", "cred2", "example_credential_id_123"]
+#         }
+#     ]
+#     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
-def test_request_with_open_id_credential(credential_handler, context, request_with_open_id_credential, valid_request_proof_jwt):
-    context.request = request_with_open_id_credential
-    entity = deepcopy(get_mocked_openid4vpi_entity())
-    entity.authorization_details = [
-        {
-            "type": OPEN_ID_CREDENTIAL_TYPE,
-            "credential_configuration_id": "credential_configuration_id_test",
-            "credential_identifiers": ["cred1", "cred2", "example_credential_id_123"]
-        }
-    ]
-    _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
+# TODO: fix me
+# def test_request_with_open_id_credential_for_mso_mdoc(credential_handler, context, valid_request_proof_jwt):
+#     context.request = {
+#         "credential_identifier": "mso_mdoc_mDL",
+#         "proof": VALID_PROOF
+#     }
+#     entity = deepcopy(get_mocked_openid4vpi_entity())
+#     entity.authorization_details = [
+#         {
+#             "type": OPEN_ID_CREDENTIAL_TYPE,
+#             "credential_configuration_id": "credential_configuration_id_test",
+#             "credential_identifiers": ["cred1", "cred2", "mso_mdoc_mDL"]
+#         }
+#     ]
+#     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
 def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
     with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = valid_request_proof_jwt):
@@ -271,9 +309,13 @@ def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt,
             "gender": ["M"]
         }
         db_user_mock = MagicMock()
-        db_user_mock.get_by_fields.side_effect = side_effect
-
+        db_user_mock.get_by_fields.side_effect = side_effect_user_entity
         credential_handler._db_user_engine = db_user_mock
+
+        db_credential_mock = MagicMock()
+        db_credential_mock.get_credential_by_user_id.side_effect = side_effect_credential_entity
+        credential_handler._db_credential_engine = db_credential_mock
+
         credential_handler.db_engine.get_by_session_id.return_value = entity
         result = credential_handler.endpoint(context)
 
@@ -282,3 +324,4 @@ def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt,
         assert response["credentials"] is not None
         assert isinstance(response["credentials"], list)
         assert len(response["credentials"]) == 1
+

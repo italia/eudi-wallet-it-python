@@ -132,9 +132,9 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
 
     bitstring: int = 0
     for status in status_array:
-        if status["revoked"] == True:
+        if status["revoked"]:
             bitstring |= 1 << (status["incremental_id"] - 1)
-        elif status["revoked"] == False:
+        elif not status["revoked"]:
             bitstring &= ~(1 << (status["incremental_id"] - 1))
 
     bit_length = len(status_array)

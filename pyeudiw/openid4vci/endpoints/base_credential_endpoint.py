@@ -30,8 +30,8 @@ from pyeudiw.satosa.utils.validation import (
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification_with_placeholder
-from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.user_storage import UserStorage
+from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
+from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_mdoc_template
 from pyeudiw.tools.utils import iat_now, exp_from_now
@@ -60,7 +60,9 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         self.jws_helper = JWSHelper(self._metadata_jwks)
         self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(self._metadata_jwks[0])
         self.db_engine = OpenId4VciEngine(config).db_engine
-        self._db_user_engine = None
+        _user_credential_engine = UserCredentialEngine(config)
+        self._db_user_engine = _user_credential_engine.db_user_storage_engine
+        self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
 
     def endpoint(self, context: Context) -> Response:
         try:
@@ -84,29 +86,6 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             return self._handle_500(context, "error during invoke credential endpoint", e)
 
 
-    @property
-    def db_user_storage_engine(self) -> UserStorage:
-        """
-        Lazily initialized access to MongoDB storage engine.
-        Returns:q
-            MongoStorage: The initialized DB engine instance.
-        """
-        user_storage_config = self.config["user_storage"]
-        if not self._db_user_engine:
-            self._db_user_engine = DBEngine(user_storage_config)
-
-        try:
-            self._db_user_engine.is_connected
-        except Exception as e:
-            if getattr(self, "_db_engine", None):
-                self._log_error(
-                    e.__class__.__name__,
-                    f"OpenID4VCI db user_storage handling, connection check silently fails and get restored: {e}"
-                )
-            self._db_user_engine = DBEngine(user_storage_config)
-
-        return self._db_user_engine
-
     @abstractmethod
     def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
         pass
@@ -118,29 +97,29 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
     def build_credential(self, context: Context, credential_id: str | None) -> list[str]:
         credential_list = []
         entity = self.db_engine.get_by_session_id(get_session_id(context))
-        user_data = self._retrieve_user_data(entity)
+        user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
         if credential_id:
-            return [self._build_credential(entity, user_data, credential_id)]
+            return [self._build_credential(entity, user, credential_id)]
         else:
             pass #todo: manage deferred
 
         return credential_list
 
-    def _build_credential(self, entity: OpenId4VCIEntity, user_data: dict[str, Any], cred_key: str) -> str:
+    def _build_credential(self, opendid4vci_entity: OpenId4VCIEntity, user_entity: tuple[str, UserEntity], cred_key: str) -> str:
         config = self.config_utils.get_credential_configurations_supported()[cred_key]
         credential = self.specification[cred_key]
         match config.format:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
-                return self._issue_sd_jwt(user_data, entity, credential.template)["issuance"]
+                return self._issue_sd_jwt(user_entity, opendid4vci_entity, credential.template)["issuance"]
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
-                return self._issue_mso_mdoc(user_data, credential, config)
+                return self._issue_mso_mdoc(user_entity, credential, config)
             case _:
                 self._log_error(
                     self.__class__.__name__,
                     f"unexpected credential_configurations_supported format {config.format}")
                 raise Exception(f"Invalid credential_configurations_supported format {config.format}")
 
-    def _issue_mso_mdoc(self, user_data: dict[str, Any], credential: CredentialSpecificationConfig, config: CredentialConfiguration) -> str:
+    def _issue_mso_mdoc(self, user_entity: tuple[str, UserEntity], credential: CredentialSpecificationConfig, config: CredentialConfiguration) -> str:
         mdoci = MdocCborIssuer(
             private_key=self._mso_mdoc_private_key,
             alg=self._mso_mdoc_private_key['ALG']
@@ -148,7 +127,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         issuance_date = datetime.date.today()
         mdoci.new(
             doctype=config.doctype,
-            data=self._loader(user_data, credential.template, CredentialConfigurationFormatEnum.MSO_MDOC.value),
+            data=self._loader(user_entity, credential.template, CredentialConfigurationFormatEnum.MSO_MDOC.value),
             validity={
                 "issuance_date": issuance_date.isoformat(),
                 "expiry_date": (issuance_date + timedelta(credential.expiry_days)).isoformat()
@@ -156,7 +135,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
         )
         return mdoci.dumps().decode()
 
-    def _issue_sd_jwt(self, user_data: dict[str, Any] , entity: OpenId4VCIEntity, template) -> dict:
+    def _issue_sd_jwt(self, user_entity: tuple[str, UserEntity] , entity: OpenId4VCIEntity, template) -> dict:
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         claims = {
@@ -164,8 +143,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             "iat": now,
             "exp": exp
         }
-
-        specification = self._loader(user_data, template, CredentialConfigurationFormatEnum.SD_JWT.value)
+        specification = self._loader(user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value)
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
 
@@ -180,26 +158,49 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
             "issuance": sdjwt_at_issuer.sd_jwt_issuance
         }
 
-    def _retrieve_user_data(self, entity) ->  dict[str, Any]:
-        user = self.db_user_storage_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
+
+    @staticmethod
+    def _retrieve_user_data(user_entity: tuple[str, UserEntity] | UserEntity) ->  dict[str, Any]:
+        if isinstance(user_entity, UserEntity):
+            user = user_entity
+        else:
+            _, user = user_entity
+
         user_data = user.model_dump()
         user_data["unique_id"] = uuid4()
         return user_data
 
-    def _loader(self, user_data: dict, template, credential_type: str):
+    def _loader(self, user_entity: tuple[str, UserEntity], template, credential_type: str) -> dict:
+        user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 template = json.dumps(
                     yaml_load_specification_with_placeholder(template)
                 )
                 template = Template(template)
+                user_data = self._retrieve_user_data(user_data)
                 json_filled = template.render(**user_data)
-                return json.loads(json_filled)
+                data = json.loads(json_filled)
+                data["status"] = self._build_status_list_payload(user_id)
+                return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
-                return render_mso_mdoc_template(template, user_data, FIELD_TRANSFORMS)
+                data = render_mso_mdoc_template(template, user_data.model_dump(), FIELD_TRANSFORMS)
+                data["status"] = self._build_status_list_payload(user_id)
+                return data
             case _:
                 self._log_error(self.__class__.__name__, f"unexpected template format {credential_type}")
                 raise Exception(f"Invalid credential_configurations_supported format {credential_type}")
+
+    def _build_status_list_payload(self, user_id: str):
+        credential = self._db_credential_engine.get_credential_by_user_id(user_id)
+        status_path = self.config_utils.get_credential_configurations().status_list_path
+        status_path = status_path.lstrip("/")
+        return {
+            "status_list": {
+                "idx": credential.incremental_id,
+                "uri": f"{self._backend_url}/{status_path}/{credential.incremental_id}"
+            }
+        }
 
     def _extract_lookup_identifiers(self, attributes: dict):
         """
@@ -231,9 +232,16 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
 
     def _validate_configs(self):
-        specification = self.config_utils.get_credential_configurations().credential_specification
+        credential_config = self.config_utils.get_credential_configurations()
+        if not credential_config:
+            self._validate_required_configs([
+                ("credential_configurations", credential_config),
+            ])
+
+        specification = credential_config.credential_specification
         self._validate_required_configs([
             ("credential_configurations.credential_specification", specification),
-            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported())
+            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported()),
+            ("credential_configurations.status_list_path", credential_config.status_list_path),
         ])
         self.specification = specification

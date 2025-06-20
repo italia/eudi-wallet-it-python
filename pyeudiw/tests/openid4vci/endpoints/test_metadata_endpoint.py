@@ -15,6 +15,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
     MOCK_TRUST_CONFIG,
     MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
     MOCK_USER_STORAGE_CONFIG,
+    MOCK_CREDENTIAL_STORAGE_CONFIG,
     MOCK_METADATA_JWKS_CONFIG,
     MOCK_CREDENTIAL_CONFIGURATIONS,
     MOCK_INTERNAL_ATTRIBUTES,
@@ -57,6 +58,7 @@ def _mock_configurations(field: list[str] | str):
             "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG
         },
         "user_storage": MOCK_USER_STORAGE_CONFIG,
+        "credential_storage": MOCK_CREDENTIAL_STORAGE_CONFIG,
         "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
         "trust": MOCK_TRUST_CONFIG
     }

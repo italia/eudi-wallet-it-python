@@ -15,3 +15,4 @@ class CredentialConfigurationsConfig(BaseModel):
         {"openid_credential_issuer": "credential_issuer"},
     ])
     credential_specification: Optional[Dict[str, CredentialSpecificationConfig]] = None
+    status_list_path: Optional[str] = None
