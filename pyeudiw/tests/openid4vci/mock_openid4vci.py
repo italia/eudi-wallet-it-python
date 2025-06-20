@@ -34,19 +34,42 @@ MOCK_METADATA_JWKS_CONFIG = [
 ]
 
 MOCK_USER_STORAGE_CONFIG = {
-    "storage": {
-        "module": "pyeudiw.storage.user_storage",
-        "class": "UserStorage",
-        "init_params": {
-            "url": "mongodb://satosa-mongo:27017",
-            "conf": {
-                "db_name": "eid_user",
-                "db_users_collection": "users",
-                "data_ttl": 63072000
-            },
-            "connection_params": {
-                "username": "user",
-                "password": "psw"
+    "mongo_db": {
+        "storage": {
+            "module": "pyeudiw.storage.user_storage",
+            "class": "UserStorage",
+            "init_params": {
+                "url": "mongodb://satosa-mongo:27017",
+                "conf": {
+                    "db_name": "eid_user",
+                    "db_users_collection": "users",
+                    "data_ttl": 63072000
+                },
+                "connection_params": {
+                    "username": "user",
+                    "password": "psw"
+                }
+            }
+        }
+    }
+}
+
+MOCK_CREDENTIAL_STORAGE_CONFIG ={
+    "mongo_db": {
+        "storage": {
+            "module": "pyeudiw.storage.credential_storage",
+            "class": "CredentialStorage",
+            "init_params": {
+                "url": "mongodb://satosa-mongo:27017",
+                "conf": {
+                    "db_name": "eid_credential",
+                    "db_users_collection": "credentials",
+                    "data_ttl": 63072000
+                },
+                "connection_params": {
+                    "username": "user",
+                    "password": "psw"
+                }
             }
         }
     }
@@ -102,6 +125,7 @@ MOCK_ENDPOINTS_CONFIG = {
 
 MOCK_CREDENTIAL_CONFIGURATIONS = {
     "lookup_source": "openid4vci",
+    "status_list_path": "/status",
     "credential_specification": {
         "dc_sd_jwt_mDL": {
             "template": """
@@ -264,6 +288,7 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
         "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG
     },
     "user_storage": MOCK_USER_STORAGE_CONFIG,
+    "credential_storage": MOCK_CREDENTIAL_STORAGE_CONFIG,
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
     "trust": MOCK_TRUST_CONFIG,

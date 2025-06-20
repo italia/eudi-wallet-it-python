@@ -40,6 +40,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.metadata_endpoint
       class: MetadataHandler
       path: '/.well-known/openid-federation'
+    status_list_endpoint:
+      module: pyeudiw.openid4vci.endpoints.status_list_endpoint
+      class: StatusListHandler
+      path: '/status' &status_list_endpoint_path
 
   network:
     httpc_params: &httpc_params
@@ -476,6 +480,7 @@ config:
   # this is the custom configuration for credential management.
   credential_configurations:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
+    status_list_path: *status_list_endpoint_path
     credential_specification:
       mso_mdoc_mDL:
         expiry_days: 365
@@ -654,19 +659,33 @@ config:
 
   # Mongodb database configuration
   user_storage:
-    storage:
-      module: pyeudiw.storage.user_storage
-      class: UserStorage
-      init_params:
-        url: mongodb://satosa-mongo:27017
-        conf:
-          db_name: eid_user
-          db_users_collection: users
-          data_ttl: 63072000 # 2 years
-        connection_params:
-          username: !ENV MONGODB_USERNAME
-          password: !ENV MONGODB_PASSWORD
-
+    mongo_db:
+      storage:
+        module: pyeudiw.storage.user_storage
+        class: UserStorage
+        init_params:
+          url: mongodb://satosa-mongo:27017
+          conf:
+            db_name: eid_user
+            db_users_collection: users
+            data_ttl: 63072000 # 2 years
+          connection_params:
+            username: !ENV MONGODB_USERNAME
+            password: !ENV MONGODB_PASSWORD
+  credential_storage:
+    mongo_db:
+      storage:
+        module: pyeudiw.storage.credential_storage
+        class: CredentialStorage
+        init_params:
+          url: mongodb://satosa-mongo:27017
+          conf:
+            db_name: eid_credential
+            db_credentials_collection: credentials
+            data_ttl: 63072000 # 2 years
+          connection_params:
+            username: !ENV MONGODB_USERNAME
+            password: !ENV MONGODB_PASSWORD
 
   # Mongodb database configuration
   storage:
