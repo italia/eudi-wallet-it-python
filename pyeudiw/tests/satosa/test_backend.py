@@ -1008,6 +1008,7 @@ class TestOpenID4VPBackend:
         context.request_method = "POST"
         context.request = {
             "wallet_metadata": {
+                "alg_values_supported": ["ES256"],
                 "vp_formats_supported": {
                     "dc+sd-jwt": {
                         "sd-jwt_alg_values": ["ES256"],
@@ -1050,6 +1051,7 @@ class TestOpenID4VPBackend:
         header = decode_jwt_header(request_object_jwt)
         payload = decode_jwt_payload(request_object_jwt)
         assert header["alg"]
+        assert header["alg"] == "ES256"
         assert header["kid"]
         assert header["typ"] == "oauth-authz-req+jwt"
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
@@ -1065,6 +1067,7 @@ class TestOpenID4VPBackend:
 
         assert document["request_object"]["wallet_metadata"] == {
             "client_id_prefixes_supported": None,
+            "alg_values_supported": ["ES256"],
             "vp_formats_supported": {
                 "dc+sd-jwt": {
                     "sd-jwt_alg_values": ["ES256"],
@@ -1074,6 +1077,26 @@ class TestOpenID4VPBackend:
         }
 
         assert document["request_object"]["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
+
+        context.request = {
+            "wallet_metadata": {
+                "alg_values_supported": ["RS256"],
+                "vp_formats_supported": {
+                    "dc+sd-jwt": {
+                        "sd-jwt_alg_values": ["ES256"],
+                        "kb-jwt_alg_values": ["ES256"]
+                    }
+                }
+            },
+            "wallet_nonce": "qPmxiNFCR3QTm19POc8u"
+        }
+
+        
+        req_resp = self.backend.request_endpoint(context)
+        
+        assert req_resp
+        assert req_resp.status == "400"
+
 
     def test_trust_parameters_in_response(self, context):
         internal_data = InternalData()
