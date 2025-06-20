@@ -15,8 +15,8 @@ class PreRequestHandler(BaseEndpoint):
             self, 
             config: dict, 
             internal_attributes: dict[str, dict[str, str | list[str]]], 
-            base_url: 
-            str, name: str
+            base_url: str, 
+            name: str
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
