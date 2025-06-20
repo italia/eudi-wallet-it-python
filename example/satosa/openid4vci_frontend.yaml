@@ -481,19 +481,24 @@ config:
         expiry_days: 365
         template: |
           org.iso.18013.5.1:
-            given_name: "{{name}}"
             family_name: "{{surname}}"
-            birthdate: "{{dateOfBirth}}"
-            place_of_birth:
-              country: "{{countyOfBirth}}"
-              locality: "{{placeOfBirth}}"
+            given_name: "{{name}}"
+            birth_date: "{{dateOfBirth}}"
+            expiry_date: "{{expiryDate}}"
+            issue_date: "{{issueDate}}"
+            issuing_country: "{{issuingCountry}}"
+            issuing_authority: "{{issuingAuthority}}"
+            document_number: "{{documentNumber}}"
+            un_distinguishing_sign: "I"
+            portrait: !!binary "{{portrait_b64}}"
+            driving_privileges: "{{driving_privileges}}"
           org.iso.18013.5.1.it:
             verification.evidence:
-              organization_name: "Motorizzazione Civile"
-              organization_id: "m_inf"
-              country_code: "it"
-              verification.trust_framework: "eidas"
-              verification.assurance_level: "high"
+              organization_name: "{{verification.organization_name}}"
+              organization_id: "{{verification.organization_id}}"
+              country_code: "{{verification.country_code}}"
+            verification.trust_framework: "{{trust_framework}}"
+            verification.assurance_level: "{{assurance_level}}"
       dc_sd_jwt_mDL:
         template: |
             holder_disclosed_claims:

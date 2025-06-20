@@ -44,7 +44,7 @@ class ParHandler(BaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-        self.db_engine = OpenId4VciEngine.db_engine
+        self.db_engine = OpenId4VciEngine(config).db_engine
 
     def endpoint(self, context: Context):
         """

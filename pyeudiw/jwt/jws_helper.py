@@ -12,7 +12,6 @@ from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwt.exceptions import (
-    JWEEncryptionError,
     JWSSigningError,
     JWSVerificationError,
     LifetimeException,
@@ -57,6 +56,7 @@ class JWSHelper(JWHelperInterface):
         serialization_format: SerializationFormat = "compact",
         signing_kid: str = "",
         kid_in_header: bool = True,
+        signing_algs: list[str] = [],
         **kwargs,
     ) -> str:
         """Generate a signed JWS with the given payload and header.
@@ -105,7 +105,7 @@ class JWSHelper(JWHelperInterface):
             unprotected = {}
 
         # Select the signing key
-        signing_key = self._select_signing_key((protected, unprotected), signing_kid)
+        signing_key = self._select_signing_key((protected, unprotected), signing_kid, signing_algs)
 
         if signing_key["kty"] == "oct":
             raise JWSSigningError(f"Key {signing_key['kid']} is a symmetric key")
@@ -160,30 +160,58 @@ class JWSHelper(JWHelperInterface):
         )
 
     def _select_signing_key(
-        self, headers: tuple[dict, dict], signing_kid: str = ""
+        self, 
+        headers: tuple[dict, dict], 
+        signing_kid: str = "",
+        signing_algs: list[str] = [],
     ) -> dict:
+        """
+        Select a signing key based on the provided headers and optional parameters.
+        This method attempts to find a suitable signing key from the initialized JWKS.
+
+        :param headers: A tuple containing the protected and unprotected headers.
+        :param signing_kid: Optional key ID to force the selection of a specific signing key.
+        :param signing_algs: Optional list of algorithms to force the selection of a signing key.
+        :returns: A dictionary representing the selected signing key.
+        :raises JWSSigningError: If no suitable signing key is found or if the key cannot be used for signing.
+        """
         if len(self.jwks) == 0:
-            raise JWEEncryptionError(
+            raise JWSSigningError(
                 "signing error: no key available for signature; note that {'alg':'none'} is not supported"
             )
-        # Case 0: key forced by the user
+        # Case 1: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
-            if not signing_kid:
-                raise JWEEncryptionError(
+            if not signing_key:
+                raise JWSSigningError(
                     f"signing forced by using key with {signing_kid=}, but no such key is available"
                 )
             return signing_key.to_dict()
-        # Case 1: only one key
+        
+        # Case 2: key forced by the user by a list of alg
+        if len(signing_algs) > 0:
+            signing_key: dict | None = None
+            for alg in signing_algs:
+                if signing_key := self._select_key_by_sig_alg(alg):
+                    break
+
+            if signing_key:
+                return signing_key
+            else:
+                raise JWSSigningError(
+                    f"signing forced by using algs {signing_algs}, but no such key is available"
+                )
+
+        # Case 3: only one key
         if signing_key := self._select_signing_key_by_uniqueness():
             return signing_key
-        # Case 2: only one *singing* key
+        # Case 4: only one *signing* key
         if signing_key := self._select_key_by_use(use="sig"):
             return signing_key
-        # Case 3: match key by kid
+        # Case 5: match key by kid
         if signing_key := self._select_key_by_kid(headers):
             return signing_key
-        # Case 4: match key by x5c
+        # Case 6: match key by x5c
         if signing_key := self._select_key_by_x5c(headers):
             return signing_key
         raise JWSSigningError(
@@ -203,6 +231,18 @@ class JWSHelper(JWHelperInterface):
                 candidate_signing_keys.append(key_d)
         if len(candidate_signing_keys) == 1:
             return candidate_signing_keys[0]
+        return None
+    
+    def _select_key_by_sig_alg(self, alg: str) -> dict | None:
+        """
+        Select a key based on the signature algorithm.
+        This is a helper method to find a key that matches the given signature algorithm.
+        """
+        for key in self.jwks:
+            key_d: dict[str, Any] = key.to_dict()
+            if alg == DEFAULT_SIG_KTY_MAP.get(key_d.get("kty", ""), ""):
+                return key_d
+            
         return None
 
     def _select_key_by_kid(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
