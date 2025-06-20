@@ -216,6 +216,46 @@ MOCK_JWT_CONFIG = {
     "par_exp": 90
 }
 
+MOCK_STORAGE_CONFIG = {
+    "storage": {
+        "mongo_db": {
+            "cache": {
+                "module": "pyeudiw.storage.mongo_cache",
+                "class": "MongoCache",
+                "init_params": {
+                    "url": "mongodb://satosa-mongo:27017",
+                    "conf": {
+                        "db_name": "eudiw"
+                    },
+                    "connection_params": {
+                        "username": "user",
+                        "password": "psw"
+                    }
+                }
+            },
+            "storage": {
+                "module": "pyeudiw.storage.mongo_storage",
+                "class": "MongoStorage",
+                "init_params": {
+                    "url": "mongodb://satosa-mongo:27017",
+                    "conf": {
+                        "db_name": "eudiw",
+                        "db_sessions_collection": "sessions",
+                        "db_trust_attestations_collection": "trust_attestations",
+                        "db_trust_anchors_collection": "trust_anchors",
+                        "db_trust_sources_collection": "trust_sources",
+                        "data_ttl": 63072000
+                    },
+                    "connection_params": {
+                        "username": "user",
+                        "password": "psw"
+                    }
+                }
+            }
+        }
+    }
+}
+
 MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "endpoints": MOCK_ENDPOINTS_CONFIG,
     "jwt": MOCK_JWT_CONFIG,
@@ -226,7 +266,8 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "user_storage": MOCK_USER_STORAGE_CONFIG,
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
-    "trust": MOCK_TRUST_CONFIG
+    "trust": MOCK_TRUST_CONFIG,
+    "storage": MOCK_STORAGE_CONFIG
 }
 
 MOCK_INTERNAL_ATTRIBUTES = {
