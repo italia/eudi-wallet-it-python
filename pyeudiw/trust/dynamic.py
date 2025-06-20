@@ -290,7 +290,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.policies
 
-    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> list[dict]:
+    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, Any]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
 

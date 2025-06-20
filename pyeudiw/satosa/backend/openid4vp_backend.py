@@ -24,7 +24,7 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 
-class OpenID4VPBackend(OpenID4VPBackendInterface, BaseLogger):
+class BackendHandler(OpenID4VPBackendInterface, BaseLogger):
     def __init__(
         self,
         auth_callback_func: Callable[[Context, InternalData], Response],

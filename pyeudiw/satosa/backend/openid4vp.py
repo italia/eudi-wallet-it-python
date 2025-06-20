@@ -4,13 +4,13 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Response
 
-from pyeudiw.satosa.default.openid4vp_backend import OpenID4VPBackend as OID4VP
-from pyeudiw.satosa.default.request_handler import RequestHandler
-from pyeudiw.satosa.default.response_handler import ResponseHandler
+from pyeudiw.satosa.backend.openid4vp_backend import BackendHandler
+from pyeudiw.satosa.backend.request_handler import RequestHandler
+from pyeudiw.satosa.backend.response_handler import ResponseHandler
 from pyeudiw.tools.utils import get_dynamic_class
 
 
-class OpenID4VPBackend(RequestHandler, ResponseHandler, OID4VP):
+class OpenID4VPBackend(RequestHandler, ResponseHandler, BackendHandler):
     """
     A backend module (acting as a OpenID4VP SP).
     """

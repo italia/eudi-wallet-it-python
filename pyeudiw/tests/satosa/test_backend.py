@@ -18,7 +18,7 @@ from satosa.state import State
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
-from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.satosa.backend.openid4vp import OpenID4VPBackend
 from pyeudiw.storage.base_storage import TrustType
 from pyeudiw.storage.db_engine import DBEngine, TrustType
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
