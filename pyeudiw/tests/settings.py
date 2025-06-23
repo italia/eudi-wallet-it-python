@@ -136,11 +136,31 @@ CONFIG = {
         "authorization_error_template": "authorization_error.html"
     },
     "endpoints": {
-        "pre_request": "/pre-request",
-        "response": "/response-uri",
-        "request": "/request-uri",
-        "status": "/status-uri",
-        "get_response": "/get-response",
+        "pre_request":{ 
+            "module": "pyeudiw.openid4vp.endpoints.pre_request_endpoint",
+            "class": "PreRequestHandler",
+            "path": "/pre-request",
+        },
+        "response": {
+            "module": "pyeudiw.openid4vp.endpoints.response_endpoint",
+            "class": "ResponseHandler",
+            "path": "/response",
+        },
+        "request": {
+            "module": "pyeudiw.openid4vp.endpoints.request_endpoint",
+            "class": "RequestHandler",
+            "path": "/request",
+        },
+        "status": {
+            "module": "pyeudiw.openid4vp.endpoints.status_endpoint",
+            "class": "StatusHandler",
+            "path": "/status",
+        },
+        "get_response": {
+            "module": "pyeudiw.openid4vp.endpoints.get_response_endpoint",
+            "class": "GetResponseHandler",
+            "path": "/get-response",
+        },
     },
     "response_code": {
         "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
