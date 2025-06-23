@@ -3,6 +3,7 @@ from typing import Optional, List, Dict
 from pydantic import BaseModel, Field
 
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
+from pyeudiw.satosa.schemas.status_list import StatusListConfig
 
 
 class CredentialConfigurationsConfig(BaseModel):
@@ -15,4 +16,4 @@ class CredentialConfigurationsConfig(BaseModel):
         {"openid_credential_issuer": "credential_issuer"},
     ])
     credential_specification: Optional[Dict[str, CredentialSpecificationConfig]] = None
-    status_list_path: Optional[str] = None
+    status_list: Optional[StatusListConfig] = None

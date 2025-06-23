@@ -193,7 +193,7 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
     def _build_status_list_payload(self, user_id: str):
         credential = self._db_credential_engine.get_credential_by_user_id(user_id)
-        status_path = self.config_utils.get_credential_configurations().status_list_path
+        status_path = self.config_utils.get_credential_configurations().status_list.path
         status_path = status_path.lstrip("/")
         return {
             "status_list": {
@@ -233,15 +233,23 @@ class BaseCredentialEndpoint(ABC, BaseEndpoint):
 
     def _validate_configs(self):
         credential_config = self.config_utils.get_credential_configurations()
-        if not credential_config:
-            self._validate_required_configs([
-                ("credential_configurations", credential_config),
-            ])
+        self._validate_required_configs([
+            ("credential_configurations", credential_config),
+        ])
 
         specification = credential_config.credential_specification
         self._validate_required_configs([
             ("credential_configurations.credential_specification", specification),
             ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported()),
-            ("credential_configurations.status_list_path", credential_config.status_list_path),
         ])
+
+        status_list = credential_config.status_list
+        self._validate_required_configs([
+            ("credential_configurations.status_list", status_list),
+        ])
+
+        self._validate_required_configs([
+            ("credential_configurations.status_list.path", credential_config.status_list.path)
+        ])
+
         self.specification = specification

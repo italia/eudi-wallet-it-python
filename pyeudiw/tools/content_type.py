@@ -1,9 +1,12 @@
 HTTP_CONTENT_TYPE_HEADER = "HTTP_CONTENT_TYPE"
 CONTENT_TYPE_HEADER = "content-type"
+ACCEPT_HEADER = "accept"
 CACHE_CONTROL_HEADER = "Cache-Control"
 APPLICATION_JSON = "application/json"
 FORM_URLENCODED = "application/x-www-form-urlencoded"
 ENTITY_STATEMENT_JWT = "application/entity-statement+jwt"
+STATUS_LIST_CWT = "application/statuslist+cwt"
+STATUS_LIST_JWT = "application/statuslist+jwt"
 
 def is_application_json(content_type: str) -> bool:
   """
@@ -42,3 +45,16 @@ def get_content_type_header(headers: list[tuple[str, str]]) -> str | None:
       str | None: The value of the Content-Type header if present, None otherwise.
   """
   return next((v for k, v in headers if k.lower() == CONTENT_TYPE_HEADER), None)
+
+
+def get_accept_header(headers: list[tuple[str, str]]) -> str | None:
+  """
+  Retrieve the Accept header value from a list of HTTP headers.
+
+  Args:
+      headers (list[tuple[str, str]]): A list of header key-value pairs.
+
+  Returns:
+      str | None: The value of the Accept header if present, None otherwise.
+  """
+  return next((v for k, v in headers if k.lower() == ACCEPT_HEADER), None)

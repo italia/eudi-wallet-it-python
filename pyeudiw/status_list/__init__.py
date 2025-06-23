@@ -1,7 +1,12 @@
-import zlib
-import cbor2
 from binascii import unhexlify
-from typing import Literal, Union, Optional
+import zlib
+from binascii import hexlify
+from binascii import unhexlify
+from typing import Literal, Union
+from typing import Tuple, Optional
+
+import cbor2
+
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 
@@ -36,6 +41,66 @@ def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, byt
         return True, header, payload, bits, status_list
     except Exception:
         return False, {}, {}, 0, b""
+
+
+def encode_cwt_status_list_token(
+        payload_parts: Tuple[dict, dict, dict],
+        bit_size: int = 1,
+        status_list: Optional[bytes] = None
+) -> bytes:
+    """
+    Encode a CWT status list token.
+
+    :param payload_parts: A tuple (protected_header, unprotected_header, payload_dict).
+    :type payload_parts: tuple[dict, dict, dict]
+    :param bit_size: Number of bits in the status list (default: 1).
+    :type bit_size: int
+    :param status_list: Raw status list as bytes (optional).
+    :type status_list: Optional[bytes]
+
+    :return: The encoded CWT status list token (CBOR-encoded, hexlified).
+    :rtype: bytes
+
+    :raises ValueError: If no status list is provided via the payload or parameters.
+    """
+    protected_header, unprotected_header, payload_dict = payload_parts
+
+    # Copy to avoid mutating the original
+    payload_with_status_list = payload_dict.copy()
+
+    # Handle embedded status list if present
+    if "status_list" in payload_with_status_list:
+        status_info = payload_with_status_list.pop("status_list")
+
+        if not isinstance(status_info, dict) or "bits" not in status_info or "lst" not in status_info:
+            raise ValueError("Invalid 'status_list' field: must contain 'bits' and 'lst'")
+
+        status_bits = status_info["bits"]
+        lst_raw = status_info["lst"]
+        status_lst = zlib.compress(lst_raw if isinstance(lst_raw, bytes) else lst_raw.encode())
+
+    elif status_list is not None:
+        status_bits = bit_size
+        status_lst = zlib.compress(status_list)
+    else:
+        raise ValueError("No status list found in payload and no external status_list provided.")
+
+    # Set CBOR-specific key
+    payload_with_status_list[65533] = {
+        "bits": status_bits,
+        "lst": status_lst
+    }
+
+    # Encode headers and payload
+    encoded_protected = cbor2.dumps(protected_header)
+    encoded_payload = cbor2.dumps(payload_with_status_list)
+
+    # Wrap in CBOR tag for CWT
+    cwt_array = [encoded_protected, unprotected_header, encoded_payload]
+    tagged_cwt = cbor2.CBORTag(61, cwt_array)
+
+    return hexlify(cbor2.dumps(tagged_cwt))
+
 
 def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
     """

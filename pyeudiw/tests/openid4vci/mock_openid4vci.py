@@ -125,7 +125,11 @@ MOCK_ENDPOINTS_CONFIG = {
 
 MOCK_CREDENTIAL_CONFIGURATIONS = {
     "lookup_source": "openid4vci",
-    "status_list_path": "/status",
+    "status_list": {
+        "path": "/status",
+        "exp": 90,
+        "ttl": 43200,
+    },
     "credential_specification": {
         "dc_sd_jwt_mDL": {
             "template": """
