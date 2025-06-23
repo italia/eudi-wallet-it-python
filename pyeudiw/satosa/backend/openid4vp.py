@@ -1,82 +1,49 @@
+import logging
 from typing import Callable
 
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Response
 
-from pyeudiw.satosa.backend.openid4vp_backend import BackendHandler
-from pyeudiw.satosa.backend.request_handler import RequestHandler
-from pyeudiw.satosa.backend.response_handler import ResponseHandler
-from pyeudiw.tools.utils import get_dynamic_class
+from satosa.backends.base import BackendModule
+from pyeudiw.tools.endpoints_loader import EndpointsLoader
 
+logger = logging.getLogger(__name__)
 
-class OpenID4VPBackend(RequestHandler, ResponseHandler, BackendHandler):
-    """
-    A backend module (acting as a OpenID4VP SP).
-    """
-
-    def __new__(
-        cls,
-        auth_callback_func: Callable[[Context, InternalData], Response],
-        internal_attributes: dict[str, dict[str, str | list[str]]],
-        config: dict[str, dict[str, str] | list[str]],
-        base_url: str,
-        name: str,
-    ):
+class OpenID4VPBackend(BackendModule):
+    def __init__(
+            self,
+            auth_req_callback_func: Callable[[Context, InternalData], Response],
+            internal_attributes: dict[str, dict[str, str | list[str]]],
+            config: dict[str, dict[str, str] | list[str]],
+            base_url: str,
+            name: str,
+        ) -> None:
         """
-        Create a backend dynamically.
-
-        :param auth_callback_func: Callback should be called by the module after the authorization
-        in the backend is done.
-        :type auth_callback_func: Callable[[Context, InternalData], Response]
-        :param internal_attributes: Mapping dictionary between SATOSA internal attribute names and
-        the names returned by underlying IdP's/OP's as well as what attributes the calling SP's and
-        RP's expects namevice.
-        :type internal_attributes: dict[str, dict[str, str | list[str]]]
-        :param config: Configuration parameters for the module.
-        :type config: dict[str, dict[str, str] | list[str]]
-        :param base_url: base url of the service
-        :type base_url: str
-        :param name: name of the plugin
-        :type name: str
-
-        :returns: The class instance
-        :rtype: object
+        Initialize the OpenID4VP backend module.
+        
+        :param auth_req_callback_func: Function to handle authentication requests.
+        :param internal_attributes: Internal attributes mapping.
+        :param config: Configuration dictionary for the backend.
+        :param base_url: Base URL for the backend.
+        :param name: Name of the backend module.
         """
+        super().__init__(auth_req_callback_func, internal_attributes, base_url, name)
+        self.config = config
+        self.base_url = base_url
+        self.name = name
 
-        dynamic_backend_conf = config.get("endpoints", None)
+    def register_endpoints(self, **kwargs):
+        """
+        See super class satosa.backends.base.BackendModule
+        :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
+        :raise ValueError: if more than one backend is configured
+        """
+        el = EndpointsLoader(
+            self.config, self.internal_attributes, self.base_url, self.name, self.auth_callback_func, self.converter)
+        url_map = []
+        for path, inst in el.endpoint_instances.items():
+            url_map.append((f"{self.name}/{path}", inst))
 
-        request_backend_conf = dynamic_backend_conf.get("request", None)
-
-        tmp_bases = list(cls.__bases__)
-
-        if (
-            isinstance(request_backend_conf, dict)
-            and request_backend_conf.get("module", None)
-            and request_backend_conf.get("class", None)
-        ):
-
-            request_backend = get_dynamic_class(
-                request_backend_conf["module"], request_backend_conf["class"]
-            )
-
-            tmp_bases[0] = request_backend
-
-        response_handler_conf = dynamic_backend_conf.get("response", None)
-
-        if (
-            isinstance(response_handler_conf, dict)
-            and response_handler_conf.get("module", None)
-            and response_handler_conf.get("class", None)
-        ):
-
-            response_handler = get_dynamic_class(
-                response_handler_conf["module"], response_handler_conf["class"]
-            )
-
-            tmp_bases[1] = response_handler
-
-        cls.__bases__ = tuple(tmp_bases)
-        obj = super(OpenID4VPBackend, cls).__new__(cls)
-
-        return obj
+        logger.debug(f"Loaded OpenID4VP endpoints: {url_map}")
+        return url_map
