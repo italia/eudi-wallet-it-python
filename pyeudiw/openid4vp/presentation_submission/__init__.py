@@ -93,10 +93,14 @@ class PresentationSubmissionHandler:
         """
         descriptor_map_len = len(submission["descriptor_map"])
 
-        parsed_tokens = [None] * descriptor_map_len
+        parsed_tokens: list[dict] = [{} for _ in range(descriptor_map_len)]
         
         for descriptor in submission["descriptor_map"]:
-            handler = self.handlers.get(descriptor['format'])            
+            handler = self.handlers.get(descriptor['format'])
+
+            if not handler:
+                raise MissingHandler(f"Handler for format '{descriptor['format']}' not found.")
+
             position = self._extract_position(descriptor['path'])
 
             try:
