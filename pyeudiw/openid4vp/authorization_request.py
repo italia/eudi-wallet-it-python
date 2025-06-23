@@ -70,7 +70,7 @@ def build_authorization_request_claims(
         _iss = client_id
         
     claims = {
-        "client_id_scheme": "http",  # that's federation.
+        "client_id_scheme": authorization_config.get("client_id_scheme", "http"),
         "client_id": client_id,
         "response_mode": default_claims.get(
             "response_mode", ResponseMode.direct_post_jwt
