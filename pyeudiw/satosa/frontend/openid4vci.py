@@ -34,7 +34,7 @@ class OpenID4VCIFrontend(FrontendModule):
     self.name = name
     self.db_engine = OpenId4VciEngine(config).db_engine
 
-  def register_endpoints(self, *kwargs):
+  def register_endpoints(self, backend_names, **kwargs):
     """
     See super class satosa.frontends.base.FrontendModule
     :type backend_names: list[str]
