@@ -8,6 +8,7 @@ from satosa.response import (
     Redirect,
     Response
 )
+from satosa.attribute_mapping import AttributeMapper
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.openid4vci.tools.config import Openid4VciFrontendConfigUtils
@@ -22,7 +23,14 @@ REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 
 class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, auth_callback: Callable[[Context, Any], Response] | None = None):
+    def __init__(
+            self, 
+            config: dict, 
+            internal_attributes: dict[str, dict[str, str | list[str]]], 
+            base_url: str, 
+            name: str, 
+            auth_callback: Callable[[Context, Any], Response] | None = None,
+            converter: AttributeMapper | None = None):
         """
         Initialize the OpenID4VCI endpoints class.
         Args:
@@ -36,6 +44,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self.internal_attributes = internal_attributes
         self._auth_callback = auth_callback
+        self._converter = converter
         self._backend_url = f"{base_url}/{name}"
         self._validate_configs()
 
