@@ -12,7 +12,7 @@ class BaseVPParser(ABC):
         self.trust_evaluator = trust_evaluator
 
     @abstractmethod
-    def parse(self) -> Dict[str, Any]:
+    def parse(self, token: str) -> Dict[str, Any]:
         """Parses a Verifiable Presentation token."""
         pass
 
