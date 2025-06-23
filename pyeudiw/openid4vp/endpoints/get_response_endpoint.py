@@ -1,7 +1,8 @@
-
+from typing import Callable
 from satosa.context import Context
-from satosa.response import Redirect, Response
 from satosa.internal import InternalData
+from satosa.response import Redirect, Response
+from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
@@ -15,7 +16,9 @@ class GetResponseHandler(BaseEndpoint):
             config: dict, 
             internal_attributes: dict[str, dict[str, str | list[str]]], 
             base_url: str, 
-            name: str
+            name: str,
+            auth_callback_func: Callable[[Context, InternalData], Response],
+            converter: AttributeMapper
         ) -> None:
         """
         Initialize the GetRequestHandler with the given configuration, internal attributes, base URL, and name.
@@ -27,7 +30,7 @@ class GetResponseHandler(BaseEndpoint):
 
         :raises ValueError: If storage settings are not configured.
         """
-        super().__init__(config, internal_attributes, base_url, name)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
         self.storage_settings = self.config.get("storage", {})
         if not self.storage_settings:

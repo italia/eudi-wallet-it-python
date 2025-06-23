@@ -1,7 +1,10 @@
 from copy import copy
 from typing import Any
+from typing import Callable
 from satosa.context import Context
+from satosa.internal import InternalData
 from satosa.response import Response
+from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.exceptions import JWSSigningError
@@ -21,7 +24,9 @@ class RequestHandler(BaseEndpoint):
             config: dict, 
             internal_attributes: dict[str, dict[str, str | list[str]]], 
             base_url: str, 
-            name: str
+            name: str,
+            auth_callback_func: Callable[[Context, InternalData], Response],
+            converter: AttributeMapper
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -34,7 +39,7 @@ class RequestHandler(BaseEndpoint):
         :raises ValueError: If storage or QR code settings are not configured.
         """
 
-        super().__init__(config, internal_attributes, base_url, name)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
         if self.config["authorization"].get("client_id"):
             self.client_id = self.config["authorization"]["client_id"] 

@@ -7,6 +7,11 @@ from dataclasses import asdict
 from satosa.context import Context
 from satosa.response import Redirect
 from satosa.internal import AuthenticationInformation, InternalData
+from typing import Callable
+from satosa.context import Context
+from satosa.internal import InternalData
+from satosa.response import Response
+from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.storage.db_engine import DBEngine
@@ -51,8 +56,16 @@ class ResponseHandler(BaseEndpoint):
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str) -> None:
-        super().__init__(config, internal_attributes, base_url, name)
+    def __init__(
+            self, 
+            config: dict, 
+            internal_attributes: dict[str, dict[str, str | list[str]]], 
+            base_url: str, 
+            name: str,
+            auth_callback_func: Callable[[Context, InternalData], Response],
+            converter: AttributeMapper
+        ) -> None:
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
         if self.config["authorization"].get("client_id"):
             self.client_id = self.config["authorization"]["client_id"] 
