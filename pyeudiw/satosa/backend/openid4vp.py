@@ -64,6 +64,8 @@ class OpenID4VPBackend(BackendModule):
             mode = trust_caching_mode
         )
 
+        self.endpoints = {}
+
     def register_endpoints(self, **kwargs):
         """
         See super class satosa.backends.base.BackendModule
@@ -82,6 +84,9 @@ class OpenID4VPBackend(BackendModule):
         )
 
         url_map.extend(metadata_map)
+
+        for path, inst in url_map:
+            self.endpoints[f"{path.split('/')[-1].replace('-', '_').replace('$', '')}"] = inst
         
         logger.debug(f"Loaded OpenID4VP endpoints: {url_map}")
         return url_map
