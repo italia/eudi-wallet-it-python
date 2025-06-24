@@ -44,7 +44,7 @@ class PreRequestHandler(BaseEndpoint):
         else:
             self.client_id = f"{base_url}/{name}"
 
-        self.absolute_request_url = f"{self.client_id}/request"
+        self.absolute_request_url = f"{self.client_id}/request-uri"
         self.absolute_status_url = f"{self.client_id}/status"
 
         self.storage_settings = self.config.get("storage", {})

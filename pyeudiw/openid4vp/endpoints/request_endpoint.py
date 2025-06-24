@@ -42,7 +42,7 @@ class RequestHandler(VPBaseEndpoint):
 
         super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
-        self.absolute_response_url = f"{self.client_id}/response"
+        self.absolute_response_url = f"{self.client_id}/response-uri"
 
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
         self.trust_evaluator = trust_evaluator
