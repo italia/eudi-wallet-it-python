@@ -168,10 +168,8 @@ class ResponseHandler(VPBaseEndpoint):
         else:
             return JsonResponse({}, status="200")
 
-    def response_endpoint(
-        self, context: Context, *args: tuple
-    ) -> Redirect | JsonResponse:
-        self._log_function_debug("response_endpoint", context, "args", args)
+    def endpoint(self, context: Context) -> Redirect | JsonResponse:
+        self._log_function_debug("response_endpoint", context)
 
         # parse and eventually decrypt jwt in response
         try:
