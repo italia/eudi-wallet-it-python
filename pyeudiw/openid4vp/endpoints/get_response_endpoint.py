@@ -5,6 +5,7 @@ from satosa.response import Redirect, Response
 from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
@@ -18,7 +19,8 @@ class GetResponseHandler(BaseEndpoint):
             base_url: str, 
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper
+            converter: AttributeMapper,
+            trust_evaluator: CombinedTrustEvaluator
         ) -> None:
         """
         Initialize the GetRequestHandler with the given configuration, internal attributes, base URL, and name.

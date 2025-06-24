@@ -9,12 +9,12 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.exceptions import JWSSigningError
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
-from pyeudiw.tools.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.openid4vp.schemas.wallet_metadata import WalletPostRequest
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 
-class RequestHandler(BaseEndpoint):
+class RequestHandler(VPBaseEndpoint):
 
     _REQUEST_OBJECT_TYP = "oauth-authz-req+jwt"
     _RESP_CONTENT_TYPE = f"application/{_REQUEST_OBJECT_TYP}"
@@ -26,7 +26,8 @@ class RequestHandler(BaseEndpoint):
             base_url: str, 
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper
+            converter: AttributeMapper,
+            trust_evaluator: CombinedTrustEvaluator
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -41,36 +42,10 @@ class RequestHandler(BaseEndpoint):
 
         super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
-        if self.config["authorization"].get("client_id"):
-            self.client_id = self.config["authorization"]["client_id"] 
-        elif self.config["metadata"].get("client_id"):
-            self.client_id = self.config["metadata"]["client_id"]
-        else:
-            self.client_id = f"{base_url}/{name}"
-
         self.absolute_response_url = f"{self.client_id}/response"
 
-        self.storage_settings = self.config.get("storage", {})
-        if not self.storage_settings:
-            raise ValueError(
-                "Storage settings are not configured. Please check your configuration."
-            )
-        
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
-
-        # Initialize the database engine
-        self.db_engine = DBEngine(self.storage_settings)
-
-        # This loads all the configured trust evaluation mechanisms
-        trust_configuration = self.config.get("trust", {})
-        trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
-
-        self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, 
-            self.db_engine, 
-            default_client_id = self.client_id, 
-            mode = trust_caching_mode
-        )
+        self.trust_evaluator = trust_evaluator
 
 
     def endpoint(self, context: Context) -> Response:

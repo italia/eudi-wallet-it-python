@@ -22,7 +22,7 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
-from pyeudiw.tools.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.presentation_definition.parser_validator import ParserValidator
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
@@ -51,7 +51,7 @@ from pyeudiw.openid4vp.authorization_response import (
     detect_response_mode,
 )
 
-class ResponseHandler(BaseEndpoint):
+class ResponseHandler(VPBaseEndpoint):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
     _ACCEPTED_ISSUER_METADATA_TYPE = "openid_credential_issuer"
@@ -63,16 +63,10 @@ class ResponseHandler(BaseEndpoint):
             base_url: str, 
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper
+            converter: AttributeMapper,
+            trust_evaluator: CombinedTrustEvaluator
         ) -> None:
         super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
-
-        if self.config["authorization"].get("client_id"):
-            self.client_id = self.config["authorization"]["client_id"] 
-        elif self.config["metadata"].get("client_id"):
-            self.client_id = self.config["metadata"]["client_id"]
-        else:
-            self.client_id = f"{base_url}/{name}"
 
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
 
@@ -80,22 +74,11 @@ class ResponseHandler(BaseEndpoint):
             self.config["response_code"]["sym_key"]
         )
 
-        self.storage_settings = self.config.get("storage", {})
-        if not self.storage_settings:
-            raise ValueError(
-                "Storage settings are not configured. Please check your configuration."
-            )
-
-        # Initialize the database engine
-        self.db_engine = DBEngine(self.storage_settings)
-
         # This loads all the configured trust evaluation mechanisms
         trust_configuration = self.config.get("trust", {})
         trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
         
-        self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, self.db_engine, default_client_id = self.client_id, mode = trust_caching_mode
-        )
+        self.trust_evaluator = trust_evaluator
 
         self.vp_token_parser = PresentationSubmissionHandler(
             self.load_credential_presentation_handlers()

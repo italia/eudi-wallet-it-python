@@ -21,7 +21,8 @@ class PreRequestHandler(BaseEndpoint):
             base_url: str, 
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper
+            converter: AttributeMapper,
+            trust_evaluator: CombinedTrustEvaluator
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -68,12 +69,7 @@ class PreRequestHandler(BaseEndpoint):
         trust_configuration = self.config.get("trust", {})
         trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
         
-        self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, 
-            self.db_engine, 
-            default_client_id = self.client_id, 
-            mode = trust_caching_mode
-        )
+        self.trust_evaluator = trust_evaluator
     
     def endpoint(self, context: Context) -> Response:
         """

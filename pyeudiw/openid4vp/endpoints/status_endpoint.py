@@ -5,12 +5,12 @@ from satosa.response import Redirect, Response
 from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.tools.utils import iat_now
 from satosa.response import Redirect, Response
-from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
-from pyeudiw.tools.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 
-class StatusHandler(BaseEndpoint):
+class StatusHandler(VPBaseEndpoint):
 
     def __init__(
             self, 
@@ -19,7 +19,8 @@ class StatusHandler(BaseEndpoint):
             base_url: str, 
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper
+            converter: AttributeMapper,
+            trust_evaluator: CombinedTrustEvaluator
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -34,23 +35,7 @@ class StatusHandler(BaseEndpoint):
 
         super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
-        if self.config["authorization"].get("client_id"):
-            self.client_id = self.config["authorization"]["client_id"] 
-        elif self.config["metadata"].get("client_id"):
-            self.client_id = self.config["metadata"]["client_id"]
-        else:
-            self.client_id = f"{base_url}/{name}"
-
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
-
-        self.storage_settings = self.config.get("storage", {})
-        if not self.storage_settings:
-            raise ValueError(
-                "Storage settings are not configured. Please check your configuration."
-            )
-
-        # Initialize the database engine
-        self.db_engine = DBEngine(self.storage_settings)
 
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]
