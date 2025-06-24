@@ -1,6 +1,6 @@
 from satosa.context import Context
 
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException, InvalidScopeException
 from pyeudiw.satosa.utils.validation import validate_request_method, validate_content_type
 from pyeudiw.status_list import array_to_bitstring
@@ -8,7 +8,7 @@ from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 
 
-class StatusListHandler(BaseEndpoint):
+class StatusListHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

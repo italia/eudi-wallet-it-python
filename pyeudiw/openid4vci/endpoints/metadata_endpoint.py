@@ -4,12 +4,12 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.tools.content_type import APPLICATION_JSON, ENTITY_STATEMENT_JWT
 from pyeudiw.tools.utils import exp_from_now, iat_now
 
 
-class MetadataHandler(BaseEndpoint):
+class MetadataHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

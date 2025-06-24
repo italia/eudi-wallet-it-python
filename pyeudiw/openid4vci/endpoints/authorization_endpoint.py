@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response, Redirect
 
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.models.authorization_request import (
     AuthorizationRequest,
     PAR_REQUEST_URI_CTX,
@@ -29,7 +29,7 @@ from pyeudiw.tools.content_type import (
 
 AUTHORIZATION_ENDPOINT = "authorization"
 
-class AuthorizationHandler(BaseEndpoint):
+class AuthorizationHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

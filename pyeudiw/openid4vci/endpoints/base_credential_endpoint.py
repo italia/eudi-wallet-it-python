@@ -12,7 +12,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
@@ -44,7 +44,7 @@ FIELD_TRANSFORMS = {
     }
 }
 
-class BaseCredentialEndpoint(ABC, BaseEndpoint):
+class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

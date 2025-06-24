@@ -22,7 +22,7 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.openid4vp.schemas.response import ResponseMode
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.presentation_definition.parser_validator import ParserValidator
 from pyeudiw.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException

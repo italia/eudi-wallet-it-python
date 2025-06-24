@@ -9,7 +9,7 @@ from pyeudiw.openid4vp.utils import detect_flow_typ
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_url
 
 class PreRequestHandler(BaseEndpoint):

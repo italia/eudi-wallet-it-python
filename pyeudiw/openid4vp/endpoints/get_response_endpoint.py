@@ -6,7 +6,7 @@ from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 
 class GetResponseHandler(BaseEndpoint):

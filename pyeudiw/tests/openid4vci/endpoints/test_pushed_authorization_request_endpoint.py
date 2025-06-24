@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from satosa.context import Context
 
-from pyeudiw.openid4vci.endpoints.base_endpoint import REQUEST_URI_PREFIX
+from pyeudiw.tools.base_endpoint import REQUEST_URI_PREFIX
 from pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint import ParHandler
 from pyeudiw.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (

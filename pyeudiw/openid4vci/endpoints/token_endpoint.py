@@ -8,7 +8,7 @@ from satosa.context import Context
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.models.token import (
     AccessToken,
@@ -46,7 +46,7 @@ class TokenTypsEnum(Enum):
     REFRESH_TOKEN_TYP = "rt+jwt" #nosec B105
     ACCESS_TOKEN_TYP = "at+jwt" #nosec B105
 
-class TokenHandler(BaseEndpoint):
+class TokenHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

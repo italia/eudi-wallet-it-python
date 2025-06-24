@@ -103,10 +103,6 @@ class BackendHandler(OpenID4VPBackendInterface, BaseLogger):
         # This loads all the configured trust evaluation mechanisms
         trust_configuration = self.config.get("trust", {})
         trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
-
-        AnchorsLoader.load_anchors(
-            self.db_engine, config.get("trust_anchors", [])
-        )
         
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
             trust_configuration, self.db_engine, default_client_id = self.client_id, mode = trust_caching_mode

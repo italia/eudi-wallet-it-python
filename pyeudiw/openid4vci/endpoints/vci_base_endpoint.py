@@ -18,10 +18,11 @@ from pyeudiw.openid4vci.tools.exceptions import (
 )
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 
-class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
+class VCIBaseEndpoint(BaseEndpoint):
 
     def __init__(
             self, 
@@ -40,12 +41,8 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
             name (str): The name of the SATOSA module to append to the URL.
             auth_callback (Callable, optional): A callback function to handle authorization requests. Defaults to None.
         """
-        self.config = config
+        super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.config_utils = Openid4VciFrontendConfigUtils(config)
-        self.internal_attributes = internal_attributes
-        self._auth_callback = auth_callback
-        self._converter = converter
-        self._backend_url = f"{base_url}/{name}"
         self._validate_configs()
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
@@ -111,48 +108,3 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
             return _cid
         else:
             return self._backend_url
-
-    def __call__(self, context: Context) -> Redirect | Response:
-        return self.endpoint(context)
-
-    def _validate_configs(self):
-        """
-        Hook method to be optionally overridden by subclasses for endpoint-specific config validation.
-        """
-        pass  # Default no-op. Subclasses should override if needed.
-
-    @staticmethod
-    def _validate_required_configs(fields: list[tuple[str, Any]]):
-        """
-        Validates that the given configuration fields are non-empty.
-
-        Args:
-            fields (list of tuple): A list of (field_name, field_value) pairs to validate.
-
-        Raises:
-            ValueError: If any field is None or falsy.
-        """
-        missing_fields = [name for name, value in fields if not value]
-        if missing_fields:
-            raise ValueError(
-                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
-            )
-
-    def endpoint(self, context: Context) -> Redirect | Response:
-        """
-        Handle the incoming request and return either a Redirect or Response.
-
-        This method must be implemented by subclasses to process the given context
-        and return an appropriate HTTP response, such as a redirect to another
-        URL or a standard HTTP response.
-
-        Args:
-            context (Context): The SATOSA context object containing the request and environment information.
-
-        Returns:
-            Redirect | Response: A Redirect or Response object depending on the logic implemented.
-
-        Raises:
-            NotImplementedError: If the method is not overridden by a subclass.
-        """
-        raise NotImplementedError

@@ -9,7 +9,7 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.jwt.exceptions import JWSSigningError
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.openid4vp.schemas.wallet_metadata import WalletPostRequest
 from pyeudiw.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY

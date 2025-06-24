@@ -1,6 +1,6 @@
 from satosa.context import Context
 
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.tools.exceptions import (
@@ -17,7 +17,7 @@ from pyeudiw.tools.content_type import (
 )
 
 
-class CredentialOfferHandler(BaseEndpoint):
+class CredentialOfferHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

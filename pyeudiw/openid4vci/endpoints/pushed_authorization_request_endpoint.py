@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CONFIG_CTX,
@@ -31,7 +31,7 @@ from pyeudiw.tools.content_type import (
 
 CLASS_NAME = "ParHandler.pushed_authorization_request_endpoint"
 
-class ParHandler(BaseEndpoint):
+class ParHandler(VCIBaseEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """

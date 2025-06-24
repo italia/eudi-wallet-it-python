@@ -8,7 +8,7 @@ from satosa.response import Redirect, Response
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
-from pyeudiw.openid4vci.endpoints.base_endpoint import BaseEndpoint
+from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 class StatusHandler(BaseEndpoint):
 
