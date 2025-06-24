@@ -1,4 +1,3 @@
-from binascii import unhexlify
 import zlib
 from binascii import hexlify
 from binascii import unhexlify
@@ -198,9 +197,11 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     bitstring: int = 0
     for status in status_array:
         if status["revoked"]:
-            bitstring |= 1 << (status["incremental_id"] - 1)
-        elif not status["revoked"]:
-            bitstring &= ~(1 << (status["incremental_id"] - 1))
+            # Set bit to 1 if revoked
+            bitstring |= 1 << (len(status_array) - status["incremental_id"])
+        else:
+            # Clear bit to 0 if not revoked
+            bitstring &= ~(1 << (len(status_array) - status["incremental_id"]))
 
     bit_length = len(status_array)
     byte_length = (bit_length + 7) // 8
