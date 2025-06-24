@@ -18,17 +18,23 @@ class EndpointsLoader:
             internal_attributes: dict[str, dict[str, str | list[str]]],
             base_url: str,
             name: str,
-            auth_callback_func: Callable[[Context, InternalData], Response],
+            auth_callback_func: Callable[[Context, InternalData], Response] | None = None,
             converter: AttributeMapper | None = None
     ):
         """
         Create a backend/frontend dynamically.
         :param config: Configuration parameters for the module.
         :type config: dict[str, Any]
+        :param internal_attributes: Internal attributes mapping.
+        :type internal_attributes: dict[str, dict[str, str | list[str]]]
         :param base_url: base url of the service
         :type base_url: str
         :param name: name of the plugin
         :type name: str
+        :param auth_callback_func: Function to handle authentication requests.
+        :type auth_callback_func: Callable[[Context, InternalData], Response] | None
+        :param converter: An instance of AttributeMapper for attribute conversion.
+        :type converter: AttributeMapper | None
 
         :returns: The class instance
         :rtype: object
