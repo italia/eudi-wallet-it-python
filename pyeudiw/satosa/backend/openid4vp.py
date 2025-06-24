@@ -9,6 +9,7 @@ from satosa.backends.base import BackendModule
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +91,8 @@ class OpenID4VPBackend(BackendModule):
         
         logger.debug(f"Loaded OpenID4VP endpoints: {url_map}")
         return url_map
+    
+    def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface | None:
+        for i in self.trust_evaluator.handlers:
+            if i.__class__.__name__ == class_name:
+                return i
