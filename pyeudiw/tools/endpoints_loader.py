@@ -48,12 +48,12 @@ class EndpointsLoader:
         if not isinstance(endpoints, dict):
             raise ValueError("Endpoints configuration must be a dictionary")
         
-        module = config.get("module", None)
-        class_name = config.get("class", None)
-        path = config.get("path", None)
-
         endpoint_instances = {}
         for e in endpoints.values():
+            module = e.get("module", None)
+            class_name = e.get("class", None)
+            path = e.get("path", None)
+
             if module and class_name and path:
                 endpoint_class = get_dynamic_class(module, class_name)
                 endpoint_instances[path.lstrip("/")] = endpoint_class(
