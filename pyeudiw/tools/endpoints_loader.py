@@ -14,7 +14,7 @@ class EndpointsLoader:
 
     def __init__(
             self,
-            config: dict[str, dict[str, str] | list[str]],
+            config: dict[str, Any],
             internal_attributes: dict[str, dict[str, str | list[str]]],
             base_url: str,
             name: str,
@@ -24,7 +24,7 @@ class EndpointsLoader:
         """
         Create a backend/frontend dynamically.
         :param config: Configuration parameters for the module.
-        :type config: dict[str, dict[str, str] | list[str]]
+        :type config: dict[str, Any]
         :param base_url: base url of the service
         :type base_url: str
         :param name: name of the plugin
@@ -34,23 +34,30 @@ class EndpointsLoader:
         :rtype: object
         """
 
-        endpoints: dict[str, Any] | None = config.get("endpoints", None)
+        endpoints = config.get("endpoints", None)
 
         if not endpoints:
             raise ValueError("No endpoints configured in the OpenID4VCI config")
         
         if not isinstance(endpoints, dict):
             raise ValueError("Endpoints configuration must be a dictionary")
+        
+        module = config.get("module", None)
+        class_name = config.get("class", None)
+        path = config.get("path", None)
 
         endpoint_instances = {}
         for e in endpoints.values():
-            if (
-                    isinstance(e, dict)
-                    and e.get("module", None)
-                    and e.get("class", None)
-            ):
-                endpoint_class = get_dynamic_class(e["module"], e["class"])
-                endpoint_instances[e["path"].lstrip("/")] = endpoint_class(config, internal_attributes, base_url, name, auth_callback_func, converter)
+            if module and class_name and path:
+                endpoint_class = get_dynamic_class(module, class_name)
+                endpoint_instances[path.lstrip("/")] = endpoint_class(
+                    config,
+                    internal_attributes,
+                    base_url,
+                    name,
+                    auth_callback_func,
+                    converter
+                )
 
         self.endpoint_instances = endpoint_instances
 
