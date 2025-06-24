@@ -123,13 +123,14 @@ MOCK_ENDPOINTS_CONFIG = {
     }
 }
 
+MOCK_STATUS_LIST_CONFIG = {
+    "path": "/status",
+    "exp": 90,
+    "ttl": 43200,
+}
 MOCK_CREDENTIAL_CONFIGURATIONS = {
     "lookup_source": "openid4vci",
-    "status_list": {
-        "path": "/status",
-        "exp": 90,
-        "ttl": 43200,
-    },
+    "status_list": MOCK_STATUS_LIST_CONFIG,
     "credential_specification": {
         "dc_sd_jwt_mDL": {
             "template": """
@@ -450,13 +451,26 @@ def get_pyeudiw_frontend_config_with_openid_credential_issuer(openid_credential_
 
     return MOCK_PYEUDIW_FRONTEND_CONFIG
 
-REMOVE = object()  # special value for remove object
+REMOVE = object()  # special value to remove keys
+
 def mock_deserialized_overridable(base: dict, overrides=None):
-    result = base.copy()
+    import copy
+    def set_or_remove(d: dict, path: list[str], value):
+        *parents, last = path
+        current = d
+        for p in parents:
+            current = current.setdefault(p, {})  # crea i dict intermedi se mancanti
+
+        if value is REMOVE:
+            current.pop(last, None)
+        else:
+            current[last] = value
+
+    result = copy.deepcopy(base)
+
     if overrides:
         for k, v in overrides.items():
-            if v is REMOVE:
-                result.pop(k, None)  # remove key if exist
-            else:
-                result[k] = v
+            path = k.split(".")
+            set_or_remove(result, path, v)
+
     return result

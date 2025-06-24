@@ -80,7 +80,8 @@ class StatusListHandler(VCIBaseEndpoint):
                     self._log_error(
                         self.__class__.__name__,
                         f"unexpected accept header {accept_header} ")
-                    raise InvalidRequestException(f"Invalid accept header {accept_header}")
+                    raise InvalidRequestException(
+                        f"{'Invalid accept header' if accept_header is not None else 'Missing accept header'}")
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
@@ -99,18 +100,28 @@ class StatusListHandler(VCIBaseEndpoint):
         status_path = status_path.lstrip("/")
         iat = iat_now()
         credentials = self._db_credential_engine.get_all_sorted_by_incremental_id()
+        if not credentials or len(credentials) == 0:
+            lst = ''
+        else:
+            bit_bytes = array_to_bitstring(credentials)
+            lst = bin(int.from_bytes(bit_bytes, 'big'))[2:].zfill(len(credentials))
         return {
                 "exp": iat + self.status_list.exp,
                 "iat": iat,
                 "status_list": {
                     "bits": 1,
-                    "lst": array_to_bitstring(credentials)
+                    "lst": lst
                 },
                 "sub": f"{self._backend_url}/{status_path}/1",
                 "ttl": self.status_list.ttl
             }
 
     def _validate_configs(self):
+        cred_config = self.config_utils.get_credential_configurations()
+        self._validate_required_configs([
+                ("credential_configurations", cred_config),
+            ])
+
         status_list = self.config_utils.get_credential_configurations().status_list
         self._validate_required_configs([
                 ("credential_configurations.status_list", status_list),
