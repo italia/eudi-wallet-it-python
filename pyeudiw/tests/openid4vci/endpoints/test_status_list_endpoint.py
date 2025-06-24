@@ -1,9 +1,9 @@
 from copy import deepcopy
 from unittest.mock import patch
 
-import jwt
 import pytest
 from satosa.context import Context
+from pyeudiw.jwt.jws_helper import JWSHelper
 
 from pyeudiw.openid4vci.endpoints.status_list_endpoint import StatusListHandler
 from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
@@ -98,12 +98,13 @@ def should_return_status_list(status_list_handler, context: Context, accept_head
     result = status_list_handler.endpoint(ctx)
     assert result.status == '200 OK'
     if accept_header == STATUS_LIST_JWT:
-        credential = jwt.decode(result.message, options={"verify_signature": False})
+        credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(result.message)
     elif  accept_header == STATUS_LIST_CWT:
         credential = {}
     else:
         pytest.fail(f"Unexpected accept header value: {accept_header}")
     assert credential is not None
+    assert isinstance(credential, dict)
     assert credential["sub"] == f'{MOCK_BASE_URL}/{MOCK_NAME}{MOCK_STATUS_LIST_CONFIG["path"]}/1'
     assert credential["ttl"] == MOCK_STATUS_LIST_CONFIG["ttl"]
     assert credential["exp"] - credential["iat"] == MOCK_STATUS_LIST_CONFIG["exp"]
