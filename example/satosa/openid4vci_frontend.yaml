@@ -480,7 +480,10 @@ config:
   # this is the custom configuration for credential management.
   credential_configurations:
     lookup_source: openid4vci #this key is the same one found in `internal_attributes.yaml`, used for lookup filter for attributes
-    status_list_path: *status_list_endpoint_path
+    status_list:
+      path: *status_list_endpoint_path
+      exp: 90 # minutes
+      ttl: 43200
     credential_specification:
       mso_mdoc_mDL:
         expiry_days: 365
@@ -522,6 +525,7 @@ config:
                 locality: "{{placeOfBirth}}"
               !sd tax_id_code: "TINIT-{{fiscal_code}}"
               !sd unique_id: "{{unique_id}}"
+
 
   trust:
     federation:
