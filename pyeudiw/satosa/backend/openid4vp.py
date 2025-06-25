@@ -75,9 +75,11 @@ class OpenID4VPBackend(BackendModule):
         """
         el = EndpointsLoader(
             self.config, self.internal_attributes, self.base_url, self.name, self.auth_callback_func, self.converter, self.trust_evaluator)
+        
         url_map = []
+
         for path, inst in el.endpoint_instances.items():
-            url_map.append((f"{self.name}/{path}", inst))
+            url_map.append((f"^{self.name}/{path}$", inst))
 
 
         metadata_map = self.trust_evaluator.build_metadata_endpoints(
