@@ -3,12 +3,9 @@ import re
 from typing import Any, Callable
 
 from pydantic import ValidationError
-from satosa.context import Context
-from satosa.response import (
-    Redirect,
-    Response
-)
 from satosa.attribute_mapping import AttributeMapper
+from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.openid4vci.tools.config import Openid4VciFrontendConfigUtils
@@ -16,11 +13,11 @@ from pyeudiw.openid4vci.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
-from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
-from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
+GET_ACCEPTED_METHODS = ["GET"]
+POST_ACCEPTED_METHODS = ["POST"]
 
 class VCIBaseEndpoint(BaseEndpoint):
 

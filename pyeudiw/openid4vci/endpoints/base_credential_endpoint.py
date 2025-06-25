@@ -12,7 +12,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
@@ -66,7 +66,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def endpoint(self, context: Context) -> Response:
         try:
-            validate_request_method(context.request_method, ["POST"])
+            validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(context)
             entity = self.db_engine.get_by_session_id(get_session_id(context))
