@@ -14,6 +14,8 @@ from pyeudiw.satosa.utils.validation import (
     validate_content_type
 )
 from pyeudiw.status_list import (
+    STATUS_LIST_CWT,
+    STATUS_LIST_JWT,
     array_to_bitstring,
     encode_cwt_status_list_token
 )
@@ -21,8 +23,6 @@ from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON,
-    STATUS_LIST_JWT,
-    STATUS_LIST_CWT,
     get_accept_header
 )
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key
@@ -34,6 +34,13 @@ class AcceptHeaderEnum(Enum):
     STATUS_LIST_CWT = STATUS_LIST_CWT
 
 _STATUS_LIST_BITS = 1
+
+_PAYLOAD_CWT_KEYS = {
+   "exp": 6,
+   "iat": 4,
+   "sub": 2,
+   "ttl": 65534
+}
 
 class StatusListHandler(VCIBaseEndpoint):
 
@@ -67,16 +74,16 @@ class StatusListHandler(VCIBaseEndpoint):
                     return Response(
                         message=self.jws_helper.sign(
                             protected=jws_headers,
-                            plain_dict=payload
+                            plain_dict= self._build_status_list_payload()
                         ),
                         content=APPLICATION_JSON,
                     )
                 case AcceptHeaderEnum.STATUS_LIST_CWT.value:
-                    protected_header = {
-                        16: self._handle_header(STATUS_LIST_CWT)
-                    }
-                    payload_parts = (protected_header, {}, payload)
-                    token = encode_cwt_status_list_token(payload_parts)
+                    lst = payload["status_list"]["lst"].encode("utf-8")
+                    del payload["status_list"]
+                    payload_parts = ({}, {}, payload)
+                    token = encode_cwt_status_list_token(payload_parts, _STATUS_LIST_BITS, lst, _PAYLOAD_CWT_KEYS)
+                    print(token)
                     return Response(
                         message=token.decode(),
                         content=APPLICATION_JSON,

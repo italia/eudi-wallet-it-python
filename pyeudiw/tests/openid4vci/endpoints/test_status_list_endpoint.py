@@ -1,11 +1,13 @@
+import zlib
 from copy import deepcopy
 from unittest.mock import patch
 
 import pytest
 from satosa.context import Context
-from pyeudiw.jwt.jws_helper import JWSHelper
 
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.openid4vci.endpoints.status_list_endpoint import StatusListHandler
+from pyeudiw.status_list import STATUS_LIST_CWT, STATUS_LIST_JWT, decode_cwt_status_list_token
 from pyeudiw.tests.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_request_method,
     do_test_missing_configurations_raises,
@@ -25,8 +27,7 @@ from pyeudiw.tests.openid4vci.mock_openid4vci import (
 )
 from pyeudiw.tools.content_type import (
     APPLICATION_JSON,
-    ACCEPT_HEADER,
-    STATUS_LIST_JWT, STATUS_LIST_CWT
+    ACCEPT_HEADER
 )
 
 _BASE_PATH = "pyeudiw.openid4vci.endpoints.status_list_endpoint"
@@ -90,6 +91,14 @@ def test_should_return_status_list_jwt_without_credentials(status_list_handler, 
     should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, [],
                               {'bits': 1, 'lst': ''})
 
+def test_should_return_status_list_cwt_credentials(status_list_handler, context):
+     should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, status_array,
+                               {'bits': 1, 'lst': '01010'})
+
+def test_should_return_status_list_cwt_without_credentials(status_list_handler, context):
+    should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, [],
+                              {'bits': 1, 'lst': ''})
+
 def should_return_status_list(status_list_handler, context: Context, accept_header: str, status_list: list[dict],
                               expected_status_list: dict):
     status_list_handler._db_credential_engine.get_all_sorted_by_incremental_id.return_value = status_list
@@ -100,7 +109,17 @@ def should_return_status_list(status_list_handler, context: Context, accept_head
     if accept_header == STATUS_LIST_JWT:
         credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(result.message)
     elif  accept_header == STATUS_LIST_CWT:
-        credential = {}
+        cwt = decode_cwt_status_list_token(result.message)
+        credential = {
+            "exp": cwt[2]["exp"],
+            "sub": cwt[2]["sub"],
+            "ttl": cwt[2]["ttl"],
+            "iat": cwt[2]["iat"],
+            "status_list": {
+                "bits": cwt[2][65533]["bits"],
+                "lst": zlib.decompress(cwt[2][65533]["lst"]).decode()
+            },
+        }
     else:
         pytest.fail(f"Unexpected accept header value: {accept_header}")
     assert credential is not None
@@ -108,4 +127,5 @@ def should_return_status_list(status_list_handler, context: Context, accept_head
     assert credential["sub"] == f'{MOCK_BASE_URL}/{MOCK_NAME}{MOCK_STATUS_LIST_CONFIG["path"]}/1'
     assert credential["ttl"] == MOCK_STATUS_LIST_CONFIG["ttl"]
     assert credential["exp"] - credential["iat"] == MOCK_STATUS_LIST_CONFIG["exp"]
-    assert credential["status_list"] == expected_status_list
+    assert credential["status_list"]["bits"] == expected_status_list["bits"]
+    assert credential["status_list"]["lst"] == expected_status_list["lst"]
