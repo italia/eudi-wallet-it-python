@@ -12,35 +12,35 @@ config:
       module: pyeudiw.openid4vci.endpoints.credential_offer_endpoint
       class: CredentialOfferHandler
       path: '/credential'
-    authorization_endpoint:
+    authorization:
       module: pyeudiw.openid4vci.endpoints.authorization_endpoint
       class: AuthorizationHandler
       path: '/authorization'
-    token_endpoint:
+    token:
       module: pyeudiw.openid4vci.endpoints.token_endpoint
       class: TokenHandler
       path: '/token'
-    nonce_endpoint:
+    nonce:
       module: pyeudiw.openid4vci.endpoints.nonce_endpoint
       class: NonceHandler
       path: '/nonce-endpoint'
-    credential_endpoint:
+    credential:
       module: pyeudiw.openid4vci.endpoints.credential_endpoint
       class: CredentialHandler
       path: '/credential'
-    deferred_credential_endpoint:
-      module: pyeudiw.openid4vci.endpoints.deferred_credential_endpoint
-      class: DeferredCredentialHandler
-      path: '/deferred-credential'
-    notification_endpoint:
-      module: pyeudiw.openid4vci.endpoints.notification_endpoint
-      class: NotificationHandler
-      path: '/notification'
-    metadata_endpoint:
+#    deferred_credential:
+#      module: pyeudiw.openid4vci.endpoints.deferred_credential_endpoint
+#      class: DeferredCredentialHandler
+#      path: '/deferred-credential'
+#    notification:
+#      module: pyeudiw.openid4vci.endpoints.notification_endpoint
+#      class: NotificationHandler
+#      path: '/notification'
+    metadata:
       module: pyeudiw.openid4vci.endpoints.metadata_endpoint
       class: MetadataHandler
       path: '/.well-known/openid-federation'
-    status_list_endpoint:
+    status_list:
       module: pyeudiw.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
       path: '/status' &status_list_endpoint_path
@@ -51,7 +51,6 @@ config:
         ssl: true
       session:
         timeout: 6
-      verify: false
 
   jwt:
     default_sig_alg: &default_sig_alg ES256  # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
