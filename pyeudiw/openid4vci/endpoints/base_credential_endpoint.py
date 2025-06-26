@@ -193,12 +193,10 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def _build_status_list_payload(self, user_id: str):
         credential = self._db_credential_engine.get_credential_by_user_id(user_id)
-        status_path = self.config_utils.get_credential_configurations().status_list.path
-        status_path = status_path.lstrip("/")
         return {
             "status_list": {
                 "idx": credential.incremental_id,
-                "uri": f"{self._backend_url}/{status_path}/{credential.incremental_id}"
+                "uri": f"{self.status_endpoint}/{credential.incremental_id}"
             }
         }
 
