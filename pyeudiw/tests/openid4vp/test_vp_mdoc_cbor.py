@@ -1,3 +1,4 @@
+import os
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
@@ -5,12 +6,78 @@ from pyeudiw.storage.db_engine import DBEngine
 from requests import Response
 from unittest.mock import patch
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
-from pyeudiw.tests.settings import (
-    CONFIG,
-    BASE_URL,
-    DEFAULT_X509_CHAIN,
-    jwk
+from cryptography.hazmat.primitives.asymmetric import ec
+from pyeudiw.tests.x509.test_x509 import gen_chain
+
+BASE_URL = "https://example.com"
+AUTHZ_PAGE = "example.com"
+AUTH_ENDPOINT = "https://example.com/auth"
+CLIENT_ID = "client_id"
+BACKEND_NAME = "OpenID4VP"
+
+
+def base64url_to_int(val):
+    import base64
+    import binascii
+    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
+
+
+jwk = {
+    "kty": "EC",
+    "d": "i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc",
+    "use": "sig",
+    "crv": "P-256",
+    "kid": "SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk",
+    "x": "Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI",
+    "y": "IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA",
+    "alg": "ES256"
+}
+
+_d = base64url_to_int(jwk['d'])
+_x = base64url_to_int(jwk['x'])
+_y = base64url_to_int(jwk['y'])
+private_key = ec.EllipticCurvePrivateNumbers(
+    private_value=_d,
+    public_numbers=ec.EllipticCurvePublicNumbers(
+        x=_x,
+        y=_y,
+        curve=ec.SECP256R1()
+    )
+).private_key()
+
+DEFAULT_X509_CHAIN = gen_chain(
+    leaf_dns="example.com",
+    leaf_private_key=private_key
 )
+
+STORAGE_CONFIG = {
+    "mongo_db": {
+        "cache": {
+            "module": "pyeudiw.storage.mongo_cache",
+            "class": "MongoCache",
+            "init_params": {
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "conf": {"db_name": "eudiw"},
+                "connection_params": {},
+            },
+        },
+        "storage": {
+            "module": "pyeudiw.storage.mongo_storage",
+            "class": "MongoStorage",
+            "init_params": {
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "conf": {
+                    "db_name": "test-eudiw",
+                    "db_sessions_collection": "sessions",
+                    "db_trust_attestations_collection": "trust_attestations",
+                    "db_trust_anchors_collection": "trust_anchors",
+                    "db_trust_sources_collection": "trust_sources",
+                },
+                "connection_params": {},
+            },
+        },
+    }
+}
 
 trust_ev = CombinedTrustEvaluator.from_config(
     {
@@ -55,7 +122,7 @@ trust_ev = CombinedTrustEvaluator.from_config(
             }
         },
     },
-    DBEngine(CONFIG["storage"]),
+    DBEngine(STORAGE_CONFIG),
     default_client_id="default-client-id",
 )
 
