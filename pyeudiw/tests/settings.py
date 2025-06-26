@@ -1,10 +1,11 @@
 import os
 import pathlib
+import datetime
 
 from cryptojwt.jwk.ec import new_ec_key
+from pyeudiw.x509.chain_builder import ChainBuilder
 
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.x509.test_x509 import gen_chain
 from ssl import DER_cert_to_PEM_cert
 
 from pyeudiw.tests.federation.base import ta_jwk
@@ -45,10 +46,42 @@ private_key = ec.EllipticCurvePrivateNumbers(
     )
 ).private_key()
 
-DEFAULT_X509_CHAIN = gen_chain(
-    leaf_dns="example.com",
-    leaf_private_key=private_key
+chain = ChainBuilder()
+chain.gen_certificate(
+    cn="ca.example.com",
+    org_name="Example CA",
+    country_name="IT",
+    dns="ca.example.com",
+    date=datetime.datetime.now(),
+    uri="https://ca.example.com",
+    crl_distr_point="http://ca.example.com/crl.pem",
+    ca=True,
+    path_length=1,
 )
+chain.gen_certificate(
+    cn="intermediate.example.com",
+    org_name="Example Intermediate",
+    country_name="IT",
+    dns="intermediate.example.com",
+    uri="https://intermediate.example.com",
+    date=datetime.datetime.now(),
+    ca=True,
+    path_length=0,
+)
+chain.gen_certificate(
+    cn="example.com",
+    org_name="Example Leaf",
+    country_name="IT",
+    dns="example.com",
+    uri="https://example.com",
+    date=datetime.datetime.now(),
+    private_key=private_key,
+    ca=False,
+    path_length=None,
+)
+
+DEFAULT_X509_CHAIN = chain.get_chain("DER")
+
 DEFAULT_X509_LEAF_JWK = jwk
 DEFAULT_X509_LEAF_PRIVATE_KEY = private_key
 
