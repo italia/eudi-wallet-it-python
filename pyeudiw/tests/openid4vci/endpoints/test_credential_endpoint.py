@@ -2,7 +2,6 @@ import datetime
 import json
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
-from uuid import uuid4
 
 import pytest
 from satosa.context import Context
