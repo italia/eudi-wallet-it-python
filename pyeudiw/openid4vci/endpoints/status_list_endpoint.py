@@ -4,7 +4,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, GET_ACCEPTED_METHODS
 from pyeudiw.openid4vci.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
@@ -13,13 +13,16 @@ from pyeudiw.satosa.utils.validation import (
     validate_request_method,
     validate_content_type
 )
-from pyeudiw.status_list import array_to_bitstring, encode_cwt_status_list_token
+from pyeudiw.status_list import (
+    STATUS_LIST_CWT,
+    STATUS_LIST_JWT,
+    array_to_bitstring,
+    encode_cwt_status_list_token
+)
 from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON,
-    STATUS_LIST_JWT,
-    STATUS_LIST_CWT,
     get_accept_header
 )
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key
@@ -29,6 +32,15 @@ from pyeudiw.tools.utils import iat_now
 class AcceptHeaderEnum(Enum):
     STATUS_LIST_JWT = STATUS_LIST_JWT
     STATUS_LIST_CWT = STATUS_LIST_CWT
+
+_STATUS_LIST_BITS = 1
+
+_PAYLOAD_CWT_KEYS = {
+   "exp": 6,
+   "iat": 4,
+   "sub": 2,
+   "ttl": 65534
+}
 
 class StatusListHandler(VCIBaseEndpoint):
 
@@ -50,7 +62,7 @@ class StatusListHandler(VCIBaseEndpoint):
 
     def endpoint(self, context: Context):
         try:
-            validate_request_method(context.request_method, ["GET"])
+            validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             accept_header = get_accept_header(context.http_headers)
             payload = self._build_status_list_payload()
@@ -62,16 +74,16 @@ class StatusListHandler(VCIBaseEndpoint):
                     return Response(
                         message=self.jws_helper.sign(
                             protected=jws_headers,
-                            plain_dict=payload
+                            plain_dict= self._build_status_list_payload()
                         ),
                         content=APPLICATION_JSON,
                     )
                 case AcceptHeaderEnum.STATUS_LIST_CWT.value:
-                    protected_header = {
-                        16: self._handle_header(STATUS_LIST_CWT)
-                    }
-                    payload_parts = (protected_header, {}, payload)
-                    token = encode_cwt_status_list_token(payload_parts)
+                    lst = payload["status_list"]["lst"].encode("utf-8")
+                    del payload["status_list"]
+                    payload_parts = ({}, {}, payload)
+                    token = encode_cwt_status_list_token(payload_parts, _STATUS_LIST_BITS, lst, _PAYLOAD_CWT_KEYS)
+                    print(token)
                     return Response(
                         message=token.decode(),
                         content=APPLICATION_JSON,
@@ -95,7 +107,7 @@ class StatusListHandler(VCIBaseEndpoint):
     def _handle_header(accepted_header: str):
         return accepted_header.removeprefix("application/")
 
-    def _build_status_list_payload(self):
+    def _build_status_list_payload(self) -> dict:
         status_path = self.status_list.path
         status_path = status_path.lstrip("/")
         iat = iat_now()
@@ -109,7 +121,7 @@ class StatusListHandler(VCIBaseEndpoint):
                 "exp": iat + self.status_list.exp,
                 "iat": iat,
                 "status_list": {
-                    "bits": 1,
+                    "bits": _STATUS_LIST_BITS,
                     "lst": lst
                 },
                 "sub": f"{self._backend_url}/{status_path}/1",

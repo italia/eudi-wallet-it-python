@@ -4,7 +4,7 @@ from satosa.response import (
 )
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.notification_request import NotificationRequest
 from pyeudiw.openid4vci.tools.exceptions import (
     InvalidRequestException,
@@ -43,7 +43,7 @@ class NotificationHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
-            validate_request_method(context.request_method, ["POST"])
+            validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             NotificationRequest.model_validate(**context.request.body.decode("utf-8"))
             return self._handle_204()

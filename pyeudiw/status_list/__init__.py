@@ -1,15 +1,20 @@
 import zlib
 from binascii import hexlify
 from binascii import unhexlify
-from typing import Literal, Union
-from typing import Tuple, Optional
+from typing import Literal, Union, Tuple, Any
+from typing import Optional
 
 import cbor2
+from pycose.keys import CoseKey
+from pycose.messages import Sign1Message
 
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 
 StatusListFormat = Literal["jwt", "cwt"]
+
+STATUS_LIST_CWT = "application/statuslist+cwt"
+STATUS_LIST_JWT = "application/statuslist+jwt"
 
 def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, bytes]:
     """
@@ -41,65 +46,63 @@ def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, byt
     except Exception:
         return False, {}, {}, 0, b""
 
-
-def encode_cwt_status_list_token(
-        payload_parts: Tuple[dict, dict, dict],
-        bit_size: int = 1,
-        status_list: Optional[bytes] = None
-) -> bytes:
+def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: int, status_list: bytes,
+                                 payload_map: dict | None = None, private_key: dict | None = None, ) -> bytes:
     """
-    Encode a CWT status list token.
+    Encodes a CWT (CBOR Web Token) representing a status list with optional key signing.
 
-    :param payload_parts: A tuple (protected_header, unprotected_header, payload_dict).
-    :type payload_parts: tuple[dict, dict, dict]
-    :param bit_size: Number of bits in the status list (default: 1).
-    :type bit_size: int
-    :param status_list: Raw status list as bytes (optional).
-    :type status_list: Optional[bytes]
+    Args:
+        payload_parts (Tuple[dict, dict, dict]): A tuple containing three dictionaries
+            representing the protected header, unprotected header, and payload.
+        bits (int): The number of bits representing the length of the status list.
+        status_list (bytes): A byte string representing the status list bitstring.
+        payload_map (dict | None): An optional dictionary mapping keys in the payload
+            to their desired output names. If None, no mapping is applied.
+        private_key (dict | None, optional): An optional dictionary representing the
+            private key to sign the token. If None, the token is not signed.
 
-    :return: The encoded CWT status list token (CBOR-encoded, hexlified).
-    :rtype: bytes
+    Returns:
+        bytes: The encoded CWT token as a byte string.
 
-    :raises ValueError: If no status list is provided via the payload or parameters.
+    Note:
+        The function applies `payload_map` recursively to the payload dictionary if provided,
+        replacing keys according to the map.
     """
-    protected_header, unprotected_header, payload_dict = payload_parts
+    # Compress the status list
+    compressed_status_list = zlib.compress(status_list)
 
-    # Copy to avoid mutating the original
-    payload_with_status_list = payload_dict.copy()
+    # Insert the 'decoded_status_list' structure into the payload under claim key 65533
+    payload = payload_parts[2]
 
-    # Handle embedded status list if present
-    if "status_list" in payload_with_status_list:
-        status_info = payload_with_status_list.pop("status_list")
+    if not payload_map:
+        payload = _replace_keys(payload, payload_map)
 
-        if not isinstance(status_info, dict) or "bits" not in status_info or "lst" not in status_info:
-            raise ValueError("Invalid 'status_list' field: must contain 'bits' and 'lst'")
-
-        status_bits = status_info["bits"]
-        lst_raw = status_info["lst"]
-        status_lst = zlib.compress(lst_raw if isinstance(lst_raw, bytes) else lst_raw.encode())
-
-    elif status_list is not None:
-        status_bits = bit_size
-        status_lst = zlib.compress(status_list)
-    else:
-        raise ValueError("No status list found in payload and no external status_list provided.")
-
-    # Set CBOR-specific key
-    payload_with_status_list[65533] = {
-        "bits": status_bits,
-        "lst": status_lst
+    payload[65533] = {
+        "bits": bits,
+        "lst": compressed_status_list,
     }
 
-    # Encode headers and payload
-    encoded_protected = cbor2.dumps(protected_header)
-    encoded_payload = cbor2.dumps(payload_with_status_list)
+    phdr = payload_parts[0]
+    if 16 not in phdr:
+        phdr[16] = STATUS_LIST_CWT
 
-    # Wrap in CBOR tag for CWT
-    cwt_array = [encoded_protected, unprotected_header, encoded_payload]
-    tagged_cwt = cbor2.CBORTag(61, cwt_array)
+    uhdr = payload_parts[1]
+    if 16 not in uhdr:
+        uhdr[16] = STATUS_LIST_CWT
 
-    return hexlify(cbor2.dumps(tagged_cwt))
+    mso = Sign1Message(
+        phdr=phdr,
+        uhdr=uhdr,
+        payload=cbor2.dumps(payload, canonical=True)
+    )
 
+    if private_key:
+        mso.key = CoseKey.from_dict(private_key)
+
+    return hexlify(mso.encode(
+        tag=(private_key is not None),
+        sign=(private_key is not None)
+    ))
 
 def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
     """
@@ -114,12 +117,12 @@ def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, b
 
     try:
         data = cbor2.loads(unhexlify(token))
-        header = cbor2.loads(data.value[0])
+        header = _loads_cbor_data(data, 0)
 
         if header[16] != "application/statuslist+cwt":
             raise ValueError("Invalid token type")
-        
-        payload = cbor2.loads(data.value[2])
+
+        payload = _loads_cbor_data(data, 2)
 
         decoded_status_list = payload[65533]
 
@@ -129,7 +132,7 @@ def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, b
         return True, header, payload, bits, status_list
     except Exception:
         return False, {}, {}, 0, b""
-    
+
 def _compress_bitstring(bitstring: bytes) -> bytes:
     """
     Compress a bitstring using zlib.
@@ -206,3 +209,45 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     bit_length = len(status_array)
     byte_length = (bit_length + 7) // 8
     return bitstring.to_bytes(byte_length, byteorder='big', signed=False)
+
+def _replace_keys(input_dict: dict, field_map: dict) -> dict:
+    """
+   Recursively replaces keys in a dictionary according to a given mapping.
+
+   Args:
+       input_dict (dict): The input dictionary whose keys need to be replaced.
+       field_map (dict): A mapping of original keys to their replacement keys.
+
+   Returns:
+       dict: A new dictionary with keys replaced based on `field_map`. If a key is
+             not found in `field_map`, it remains unchanged. The function processes
+             nested dictionaries recursively.
+
+   Example:
+       input_dict = {"name": "Alice", "info": {"age": 30, "city": "Rome"}}
+       field_map = {"name": "fullName", "age": "years"}
+
+       _replace_keys(input_dict, field_map)
+       # Returns: {"fullName": "Alice", "info": {"years": 30, "city": "Rome"}}
+   """
+    return {field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v)
+            for k, v in input_dict.items()}
+
+def _loads_cbor_data(data: Any, index: int):
+    """
+    Load and decode CBOR data at a specific index from a list or CBOR tag container.
+
+    This helper function handles both CBOR-encoded lists and CBOR tag objects with a `.value`
+    attribute containing a list. It returns the decoded CBOR object at the specified index.
+
+    Args:
+        data (Any): A list of CBOR-encoded byte strings or a CBOR tag object with a `.value` attribute (e.g., `cbor2.CBORTag`).
+        index (int): The index of the CBOR-encoded item to decode.
+
+    Returns:
+        Any: The Python object resulting from CBOR decoding the selected item.
+    """
+    if isinstance(data, list):
+        return cbor2.loads(data[index])
+    else:
+        return cbor2.loads(data.value[index])

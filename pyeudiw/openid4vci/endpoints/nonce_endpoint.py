@@ -4,7 +4,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.openid4vci.tools.exceptions import (
@@ -46,7 +46,7 @@ class NonceHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
-            validate_request_method(context.request_method, ["POST"])
+            validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             if self._get_body(context):
                 return self._handle_400(context, "Request body must be empty for nonce endpoint")

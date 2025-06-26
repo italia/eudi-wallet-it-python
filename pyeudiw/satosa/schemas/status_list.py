@@ -1,8 +1,6 @@
-from typing import Optional, List, Dict
+from typing import Optional
 
 from pydantic import BaseModel, Field
-
-from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
 
 
 class StatusListConfig(BaseModel):

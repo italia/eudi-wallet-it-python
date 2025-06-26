@@ -1,6 +1,6 @@
 from satosa.context import Context
 
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, GET_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.tools.exceptions import (
@@ -39,7 +39,7 @@ class CredentialOfferHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
-            validate_request_method(context.request_method, ["GET"])
+            validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             CredentialOfferRequest.model_validate(
                 context.request.query, context = {

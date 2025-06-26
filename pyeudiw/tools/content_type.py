@@ -5,8 +5,7 @@ CACHE_CONTROL_HEADER = "Cache-Control"
 APPLICATION_JSON = "application/json"
 FORM_URLENCODED = "application/x-www-form-urlencoded"
 ENTITY_STATEMENT_JWT = "application/entity-statement+jwt"
-STATUS_LIST_CWT = "application/statuslist+cwt"
-STATUS_LIST_JWT = "application/statuslist+jwt"
+
 
 def is_application_json(content_type: str) -> bool:
   """

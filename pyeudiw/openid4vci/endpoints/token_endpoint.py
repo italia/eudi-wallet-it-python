@@ -8,7 +8,7 @@ from satosa.context import Context
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.openid4vci.models.token import (
     AccessToken,
@@ -71,7 +71,7 @@ class TokenHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
-            validate_request_method(context.request_method, ["POST"])
+            validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
             validate_oauth_client_attestation(context)
             self.jws_helper.verify(self._get_oauth_client_attestation(context))
