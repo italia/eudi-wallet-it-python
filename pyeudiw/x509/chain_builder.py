@@ -146,7 +146,7 @@ class ChainBuilder:
         :rtype: list[bytes] | list[str]
         """
         return [
-            cert.public_bytes(Encoding.DER if encoding == "DER" else "PEM") 
+            cert.public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM) 
             for cert in self.chain
         ]
     
@@ -157,4 +157,4 @@ class ChainBuilder:
         :return: The CA certificate
         :rtype: bytes | str
         """
-        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else "PEM")
+        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM)
