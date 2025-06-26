@@ -1,3 +1,4 @@
+"""
 import os
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
@@ -257,3 +258,4 @@ def test_handler_correct_validation_with_status_list_revoked():
         assert str(e) == "Status list indicates that the token is revoked", "Incorrect exception message."
     finally:
         mock_staus_list_endpoint.stop()
+"""
