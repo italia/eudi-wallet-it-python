@@ -8,6 +8,7 @@ from pyeudiw.x509.verify import (
     verify_x509_attestation_chain,
     get_trust_anchor_from_x5c
 )
+from cryptography import x509
 
 def gen_chain(
         date: datetime = datetime.now(), 
@@ -29,6 +30,11 @@ def gen_chain(
         crl_distr_point="http://ca.example.com/crl.pem",
         ca=True,
         path_length=1,
+        excluded_subtrees=[
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.DNSName("127.0.0.1")
+        ]
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
@@ -39,6 +45,11 @@ def gen_chain(
         date=date,
         ca=True,
         path_length=0,
+        excluded_subtrees=[
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.DNSName("127.0.0.1")
+        ]
     )
     chain.gen_certificate(
         cn=leaf_cn,
@@ -49,7 +60,16 @@ def gen_chain(
         date=date,
         ca=False,
         path_length=None,
-        private_key=leaf_private_key
+        private_key=leaf_private_key,
+        permitted_subtrees=[
+            x509.UniformResourceIdentifier(f"https://leaf.example.com"),
+            x509.DNSName("leaf.example.com"),
+        ],
+        excluded_subtrees=[
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.DNSName("127.0.0.1")
+        ]
     )
 
     return chain.get_chain("DER")

@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 from datetime import datetime, timedelta
 from typing import Literal
+from cryptography import x509
 
 
 class ChainBuilder:
@@ -26,7 +27,9 @@ class ChainBuilder:
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
         crl_distr_point: str | None = None,
         not_valid_before: datetime = datetime.now() - timedelta(days=1),
-        not_valid_after: datetime = datetime.now() + timedelta(days=365)
+        not_valid_after: datetime = datetime.now() + timedelta(days=365),
+        excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -55,6 +58,10 @@ class ChainBuilder:
         :type not_valid_before: datetime
         :param not_valid_after: End date of the certificate validity
         :type not_valid_after: datetime
+        :param excluded_subtrees: List of DNS names to exclude from the certificate
+        :type excluded_subtrees: list[str]
+        :param permitted_subtrees: List of DNS names to permit in the certificate
+        :type permitted_subtrees: list[str]
 
         :return: None
         """
@@ -118,6 +125,15 @@ class ChainBuilder:
                     ]
                 ),
                 critical=False
+            )
+
+        if excluded_subtrees or permitted_subtrees:
+            cert = cert.add_extension(
+                x509.NameConstraints(
+                    permitted_subtrees=permitted_subtrees,
+                    excluded_subtrees=excluded_subtrees
+                ),
+                critical=True
             )
 
         cert = cert.add_extension(
