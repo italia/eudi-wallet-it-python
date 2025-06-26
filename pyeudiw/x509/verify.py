@@ -61,12 +61,10 @@ def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bo
         return True
     except crypto.Error as e:
         _message = f"cert's chain result invalid for the following reason -> {e}"
-        logging.error(pems)
         logging.warning(LOG_ERROR.format(_message))
         return False
     except Exception as e:
         _message = f"cert's chain cannot be validated for error -> {e}"
-        logging.error(pems)
         logging.warning(LOG_ERROR.format(e))
         return False
 
