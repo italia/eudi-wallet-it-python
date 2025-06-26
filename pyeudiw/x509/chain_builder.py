@@ -19,7 +19,6 @@ class ChainBuilder:
         org_name: str,
         country_name: str,
         dns: str,
-        date: datetime,
         uri: str,
         ca: bool,
         path_length: int | None,
@@ -43,8 +42,6 @@ class ChainBuilder:
         :type country_name: str
         :param dns: DNS Name
         :type dns: str
-        :param date: Date of the certificate
-        :type date: datetime
         :param private_key: Private key to use for signing the certificate
         :type private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None
         :param ca: Whether the certificate is a CA certificate
@@ -60,9 +57,9 @@ class ChainBuilder:
         :param not_valid_after: End date of the certificate validity
         :type not_valid_after: datetime
         :param excluded_subtrees: List of DNS names to exclude from the certificate
-        :type excluded_subtrees: list[str]
+        :type excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
         :param permitted_subtrees: List of DNS names to permit in the certificate
-        :type permitted_subtrees: list[str]
+        :type permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
 
         :return: None
         """
