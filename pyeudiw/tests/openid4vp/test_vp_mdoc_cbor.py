@@ -1,6 +1,5 @@
-"""
 import os
-from ssl import DER_cert_to_PEM_cert
+import datetime
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from pyeudiw.storage.db_engine import DBEngine
@@ -8,7 +7,7 @@ from requests import Response
 from unittest.mock import patch
 from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from cryptography.hazmat.primitives.asymmetric import ec
-from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.x509.chain_builder import ChainBuilder
 
 def base64url_to_int(val):
     import base64
@@ -39,10 +38,42 @@ private_key = ec.EllipticCurvePrivateNumbers(
     )
 ).private_key()
 
-DEFAULT_X509_CHAIN = gen_chain(
-    leaf_dns="leaf.example.com",
-    leaf_private_key=private_key
+chain = ChainBuilder()
+chain.gen_certificate(
+    cn="ca.example.com",
+    org_name="Example CA",
+    country_name="IT",
+    dns="ca.example.com",
+    date=datetime.datetime.now(),
+    uri="https://ca.example.com",
+    crl_distr_point="http://ca.example.com/crl.pem",
+    ca=True,
+    path_length=1,
 )
+chain.gen_certificate(
+    cn="intermediate.example.com",
+    org_name="Example Intermediate",
+    country_name="IT",
+    dns="intermediate.example.com",
+    uri="https://intermediate.example.com",
+    date=datetime.datetime.now(),
+    ca=True,
+    path_length=0,
+)
+chain.gen_certificate(
+    cn="example.com",
+    org_name="Example Leaf",
+    country_name="IT",
+    dns="example.com",
+    uri="https://example.com",
+    date=datetime.datetime.now(),
+    private_key=private_key,
+    ca=False,
+    path_length=None,
+)
+
+chain_der = chain.get_chain("DER")
+ca_der = chain.get_ca("DER")
 
 STORAGE_CONFIG = {
     "mongo_db": {
@@ -87,13 +118,13 @@ trust_ev = CombinedTrustEvaluator.from_config(
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"x509_san_dns:leaf.example.com",
+                "client_id": f"x509_san_dns:example.com",
                 "include_issued_jwt_header_param": True,
                 "leaf_certificate_chains_by_ca": {
-                    f"ca.example.com": DEFAULT_X509_CHAIN,
+                    f"ca.example.com": chain_der,
                 },
                 "certificate_authorities": {
-                    "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),
+                    "ca.example.com": ca_der,
                     "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n"
                 },
                 "private_keys": [
@@ -258,4 +289,3 @@ def test_handler_correct_validation_with_status_list_revoked():
         assert str(e) == "Status list indicates that the token is revoked", "Incorrect exception message."
     finally:
         mock_staus_list_endpoint.stop()
-"""
