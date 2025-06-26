@@ -11,7 +11,7 @@ from pyeudiw.x509.verify import (
 from cryptography import x509
 
 def gen_chain(
-        date: datetime = datetime.now(), 
+        date: datetime| None = None, 
         ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
         ca_dns: str = "ca.example.com",
         leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
@@ -19,23 +19,22 @@ def gen_chain(
         leaf_uri: str = "leaf.example.org",
         leaf_private_key: Any = None
     ) -> list[bytes]:
-    chain = ChainBuilder()
-    chain.gen_certificate(
-        cn=ca_cn,
-        org_name="Example CA",
-        country_name="IT",
-        dns=ca_dns,
-        date=date,
-        uri="https://ca.example.com",
-        crl_distr_point="http://ca.example.com/crl.pem",
-        ca=True,
-        path_length=1,
-        excluded_subtrees=[
+
+    ca_cert_params = {
+        "cn": ca_cn,
+        "org_name":"Example CA",
+        "country_name":"IT",
+        "dns":ca_dns,
+        "uri":"https://ca.example.com",
+        "crl_distr_point":"http://ca.example.com/crl.pem",
+        "ca": True,
+        "path_length": 1,
+        "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
         ],
-        key_usage=x509.KeyUsage(
+        "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
             key_encipherment=True,
@@ -46,22 +45,22 @@ def gen_chain(
             encipher_only=False,
             decipher_only=False
         )
-    )
-    chain.gen_certificate(
-        cn="intermediate.example.com",
-        org_name="Example Intermediate",
-        country_name="IT",
-        dns="intermediate.example.com",
-        uri="https://intermediate.example.com",
-        date=date,
-        ca=True,
-        path_length=0,
-        excluded_subtrees=[
+    }
+
+    intermediate_cert_params = {
+        "cn": "intermediate.example.com",
+        "org_name": "Example Intermediate",
+        "country_name": "IT",
+        "dns": "intermediate.example.com",
+        "uri": "https://intermediate.example.com",
+        "ca": True,
+        "path_length": 0,
+        "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
         ],
-        key_usage=x509.KeyUsage(
+        "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
             key_encipherment=True,
@@ -71,28 +70,29 @@ def gen_chain(
             data_encipherment=False,
             encipher_only=False,
             decipher_only=False
-        )
-    )
-    chain.gen_certificate(
-        cn=leaf_cn,
-        org_name="Example Leaf",
-        country_name="IT",
-        dns=leaf_dns,
-        uri=leaf_uri,
-        date=date,
-        ca=False,
-        path_length=None,
-        private_key=leaf_private_key,
-        permitted_subtrees=[
+        ),
+        "crl_distr_point": "https://intermediate.example.net/crl/intermediate.example.net.crl"
+    }
+
+    leaf_cert_params = {
+        "cn": leaf_cn,
+        "org_name": "Example Leaf",
+        "country_name": "IT",
+        "dns": leaf_dns,
+        "uri": leaf_uri,
+        "ca": False,
+        "path_length": None,
+        "private_key": leaf_private_key,
+        "permitted_subtrees": [
             x509.UniformResourceIdentifier(f"https://leaf.example.com"),
             x509.DNSName("leaf.example.com"),
         ],
-        excluded_subtrees=[
+        "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
         ],
-        key_usage=x509.KeyUsage(
+        "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
             key_encipherment=True,
@@ -102,8 +102,18 @@ def gen_chain(
             data_encipherment=False,
             encipher_only=False,
             decipher_only=False
-        )
-    )
+        ),
+        "crl_distr_point": "https://leaf.example.com/crl/leaf.example.com.crl"
+    }
+
+    if date:
+        ca_cert_params["not_valid_before"] = date
+        ca_cert_params["not_valid_after"] = date.replace(year=date.year + 1)
+
+    chain = ChainBuilder()
+    chain.gen_certificate(**ca_cert_params)
+    chain.gen_certificate(**intermediate_cert_params)
+    chain.gen_certificate(**leaf_cert_params)
 
     return chain.get_chain("DER")
 
@@ -112,6 +122,9 @@ def chain_to_pem(chain: list[bytes]) -> str:
     pems = [DER_cert_to_PEM_cert(cert) for cert in chain]
     return "\n".join(pems)
 
+def test_valid_chain_invalid_date():
+    chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
+    assert not verify_x509_attestation_chain(chain)
 
 def test_valid_chain():
     chain = gen_chain()

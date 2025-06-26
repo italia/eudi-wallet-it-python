@@ -44,7 +44,6 @@ chain.gen_certificate(
     org_name="Example CA",
     country_name="IT",
     dns="ca.example.com",
-    date=datetime.datetime.now(),
     uri="https://ca.example.com",
     crl_distr_point="http://ca.example.com/crl.pem",
     ca=True,
@@ -56,7 +55,6 @@ chain.gen_certificate(
     country_name="IT",
     dns="intermediate.example.com",
     uri="https://intermediate.example.com",
-    date=datetime.datetime.now(),
     ca=True,
     path_length=0,
 )
@@ -66,7 +64,6 @@ chain.gen_certificate(
     country_name="IT",
     dns="example.com",
     uri="https://example.com",
-    date=datetime.datetime.now(),
     private_key=private_key,
     ca=False,
     path_length=None,
