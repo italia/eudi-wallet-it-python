@@ -79,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-            name: pyeudiw-logs-${{ matrix.python-version }}
+            name: pyeudiw-logs-${{ matrix.python-version }}${{ github.run_id }}
             path: logs/
       - name: Bandit Security Scan
         run: |
