@@ -94,6 +94,24 @@ class OpenID4VPBackend(BackendModule):
         logger.debug(f"Loaded OpenID4VP endpoints: {url_map}")
         return url_map
     
+    def start_auth(self, context: Context, internal_request) -> Response:
+        """
+        This is the start up function of the backend authorization.
+
+        :type context: satosa.context.Context
+        :type internal_request: satosa.internal.InternalData
+        :rtype satosa.response.Response
+
+        :param context: the request context
+        :param internal_request: Information about the authorization request
+        :return: response
+        """
+        pre_request_endpoint = self.endpoints.get("pre_request")
+        if not pre_request_endpoint:
+            raise ValueError("No pre-request endpoint configured in the OpenID4VP backend")
+
+        return pre_request_endpoint(context)
+
     def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface | None:
         for i in self.trust_evaluator.handlers:
             if i.__class__.__name__ == class_name:
