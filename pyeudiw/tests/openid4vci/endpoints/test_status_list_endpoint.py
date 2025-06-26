@@ -111,10 +111,10 @@ def should_return_status_list(status_list_handler, context: Context, accept_head
     elif  accept_header == STATUS_LIST_CWT:
         cwt = decode_cwt_status_list_token(result.message)
         credential = {
-            "exp": cwt[2]["exp"],
-            "sub": cwt[2]["sub"],
-            "ttl": cwt[2]["ttl"],
-            "iat": cwt[2]["iat"],
+            "exp": cwt[2][6],
+            "sub": cwt[2][2],
+            "ttl": cwt[2][65534],
+            "iat": cwt[2][4],
             "status_list": {
                 "bits": cwt[2][65533]["bits"],
                 "lst": zlib.decompress(cwt[2][65533]["lst"]).decode()

@@ -31,16 +31,17 @@ To install the OpenID4VCI SATOSA frontend you just need to:
 
 ##### Endpoints
 
-| Parameter                         | Description                                                                                                                               |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| config.endpoints.par              | The endpoint for the pushed authorization request to get a `request_uri` used in later authorization flows.                               |
-| config.endpoints.credential_offer | The endpoint that initiating the issuance flow by informing wallet about available credentials.                                           |
-| config.endpoints.authorization    | The endpoint with standard OAuth 2.0 where the user authenticates and authorizes the issuance of credentials.                             |
-| config.endpoints.token            | The endpoint for issues access tokens to the Wallet after successful authorization.                                                       |
-| config.endpoints.nonce            | The endpoint that provides a one-time-use nonce to the wallet, used to generate a proof of possession.                                    |
-| config.endpoints.credential       | The endpoint where the wallet sends a request to receive one or more verifiable credentials.                                              |
-| config.endpoints.metadata         | The endpoint that provides configuration metadata about the issuer, including supported credential formats, proof, methods and endpoints. |
-| config.endpoints.status_list      | The endpoint that serves status list that allow Wallets or Verifiers to check the current status of issued credentials.                   |
+| Parameter                                | Description                                                                                                                               |
+|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| config.endpoints.par                     | The endpoint for the pushed authorization request to get a `request_uri` used in later authorization flows.                               |
+| config.endpoints.credential_offer        | The endpoint that initiating the issuance flow by informing wallet about available credentials.                                           |
+| config.endpoints.credential_offer_qrcode | The endpoint that initiating the issuance flow by informing wallet about available credentials with qrcode scanner.                       |
+| config.endpoints.authorization           | The endpoint with standard OAuth 2.0 where the user authenticates and authorizes the issuance of credentials.                             |
+| config.endpoints.token                   | The endpoint for issues access tokens to the Wallet after successful authorization.                                                       |
+| config.endpoints.nonce                   | The endpoint that provides a one-time-use nonce to the wallet, used to generate a proof of possession.                                    |
+| config.endpoints.credential              | The endpoint where the wallet sends a request to receive one or more verifiable credentials.                                              |
+| config.endpoints.metadata                | The endpoint that provides configuration metadata about the issuer, including supported credential formats, proof, methods and endpoints. |
+| config.endpoints.status_list             | The endpoint that serves status list that allow Wallets or Verifiers to check the current status of issued credentials.                   |
 
 Each endpoint value is structured according to the format described above, for example:
 
@@ -59,6 +60,17 @@ This structure is mandatory to dynamically expose the endpoints.
 
 The listed endpoints are the ones currently implemented. By properly configuring the yaml endpoint configuration
 section, it's possible to override them or add new ones.
+
+### QR Code Configuration
+
+| Key               | Description                                                                                           | Example Value                      |
+|-------------------|-------------------------------------------------------------------------------------------------------|------------------------------------|
+| `ui_template`     | Name of the HTML template used for rendering the QR code UI                                           | `"qr_code.html"`                   |
+| `size`            | Size of the QR code in pixels                                                                         | `250`                              |
+| `color`           | Hex color code for the QR code                                                                        | `"#000000"`                        |
+| `expiration_time` | Expiration time of the QR code in seconds                                                             | `120`                              |
+| `logo_path`       | Relative path to the logo image, used in the center of the QR code (relative to `static_storage_url`) | `"wallet-it/wallet-icon-blue.svg"` |
+
 
 ##### JWT
 

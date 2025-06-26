@@ -1,10 +1,11 @@
 import secrets
 
-from pydantic import ValidationError
 from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
+from pyeudiw.openid4vci.endpoints.authorization_request_flow_endpoint import BaseAuthorizationRequestFlowEndpoint
+from pyeudiw.openid4vci.endpoints.vci_base_endpoint import POST_ACCEPTED_METHODS
 from pyeudiw.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CONFIG_CTX,
@@ -15,10 +16,6 @@ from pyeudiw.openid4vci.models.par_request import ParRequest
 from pyeudiw.openid4vci.models.par_response import ParResponse
 from pyeudiw.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.openid4vci.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
-)
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
@@ -31,7 +28,7 @@ from pyeudiw.tools.content_type import (
 
 CLASS_NAME = "ParHandler.pushed_authorization_request_endpoint"
 
-class ParHandler(VCIBaseEndpoint):
+class ParHandler(BaseAuthorizationRequestFlowEndpoint):
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
         """
@@ -45,63 +42,49 @@ class ParHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciEngine(config).db_engine
+    
+    def validate_request(self, context: Context) -> Response | OpenId4VCIEntity:
+        validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
+        validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
+        oauth_attestation = validate_oauth_client_attestation(context)
 
-    def endpoint(self, context: Context):
-        """
-        Handle a POST request to the pushed_authorization_endpoint (PAR).
-        Args:
-            context (Context): The SATOSA context.
-        Returns:
-            A Response object.
-        """
-        try:
-            validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            oauth_attestation = validate_oauth_client_attestation(context)
+        data = self._get_body(context) or {}
 
-            data = self._get_body(context) or {}
+        client_id = data.get("client_id", "").strip()
+        request = data.get("request", "").strip()
 
-            client_id = data.get("client_id", "").strip()
-            request = data.get("request", "").strip()
-
-            if not client_id or not request:
-                self._log_error(
-                    CLASS_NAME,
-                    f"invalid request parameters for `par` endpoint, missing {'client_id' if not client_id else 'request'}"
-                )
-                return self._handle_400(context, "invalid request parameters")
-
-            if oauth_attestation["thumbprint"] != client_id:
-                self._log_error(
-                    CLASS_NAME,
-                    "invalid client_id parameter for `par`, value not matching with thumbprint of `OAuth-Client-Attestation-PoP`"
-                )
-                return self._handle_400(context, "invalid `client_id` parameters")
-
-            decoded_request = self.jws_helper.verify(request)
-            par_request = ParRequest.model_validate(
-                decoded_request, context = {
-                    ENDPOINT_CTX: "par",
-                    CONFIG_CTX: self.config,
-                    CLIENT_ID_CTX: client_id,
-                    ENTITY_ID_CTX: self.entity_id
-                })
-            random_part = secrets.token_hex(16)
-            self._init_db_session(context, random_part, par_request)
-            return ParResponse.to_created_response(
-                self._to_request_uri(random_part),
-                self.config_utils.get_jwt().par_exp
-            )
-        except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
-            return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
-        except Exception as e:
+        if not client_id or not request:
             self._log_error(
-                e.__class__.__name__,
-                f"Error during invoke par endpoint: {e}"
+                CLASS_NAME,
+                f"invalid request parameters for `par` endpoint, missing {'client_id' if not client_id else 'request'}"
             )
-            return self._handle_500(context, "error during invoke par endpoint", e)
+            return self._handle_400(context, "invalid request parameters")
 
-    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
+        if oauth_attestation["thumbprint"] != client_id:
+            self._log_error(
+                CLASS_NAME,
+                "invalid client_id parameter for `par`, value not matching with thumbprint of `OAuth-Client-Attestation-PoP`"
+            )
+            return self._handle_400(context, "invalid `client_id` parameters")
+
+        decoded_request = self.jws_helper.verify(request)
+        par_request = ParRequest.model_validate(
+            decoded_request, context = {
+                ENDPOINT_CTX: "par",
+                CONFIG_CTX: self.config,
+                CLIENT_ID_CTX: client_id,
+                ENTITY_ID_CTX: self.entity_id
+            })
+        random_part = secrets.token_hex(16)
+        return self._init_db_session(context, random_part, par_request)
+
+    def to_response(self, context: Context, entity: OpenId4VCIEntity) -> Response:
+        return ParResponse.to_created_response(
+            self._to_request_uri(entity.request_uri_part),
+            self.config_utils.get_jwt().par_exp
+        )
+
+    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest) -> OpenId4VCIEntity:
         """
         Initialize a new DB session for a credential issuance flow.
         Args:
@@ -120,6 +103,7 @@ class ParHandler(VCIBaseEndpoint):
                 f"Error while initializing session with state {entity.state} and {entity.session_id}: {e500}"
             )
             raise e500
+        return entity
 
     def _validate_configs(self):
         self._validate_required_configs([

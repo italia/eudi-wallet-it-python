@@ -105,3 +105,12 @@ class VCIBaseEndpoint(BaseEndpoint):
             return _cid
         else:
             return self._backend_url
+
+    @property
+    def status_endpoint(self) -> str | None:
+        try:
+            status_path = self.config_utils.get_credential_configurations().status_list.path
+            status_path = status_path.lstrip("/")
+            return f"{self._backend_url}/{status_path}"
+        except AttributeError:
+            return None

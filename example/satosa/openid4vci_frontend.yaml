@@ -12,6 +12,10 @@ config:
       module: pyeudiw.openid4vci.endpoints.credential_offer_endpoint
       class: CredentialOfferHandler
       path: '/credential'
+    credential_offer_qrcode:
+      module: pyeudiw.openid4vci.endpoints.credential_offer_qrcode_endpoint
+      class: CredentialOfferQrCodeHandler
+      path: '/credential-qrcode'
     authorization:
       module: pyeudiw.openid4vci.endpoints.authorization_endpoint
       class: AuthorizationHandler
@@ -44,6 +48,13 @@ config:
       module: pyeudiw.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
       path: '/status' &status_list_endpoint_path
+
+  qrcode:
+    ui_template: "qr_code.html"
+    size: 250 # px
+    color: '#000000'  # hex
+    expiration_time: 120 # seconds
+    logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
 
   network:
     httpc_params: &httpc_params

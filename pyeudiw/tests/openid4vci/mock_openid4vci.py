@@ -285,8 +285,17 @@ MOCK_STORAGE_CONFIG = {
     }
 }
 
+MOCK_QR_CODE_CONFIG = {
+    "ui_template": "qr_code.html",
+    "size": 250,
+    "color": "#000000",
+    "expiration_time": 120,
+    "logo_path": "wallet-it/wallet-icon-blue.svg"
+}
+
 MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "endpoints": MOCK_ENDPOINTS_CONFIG,
+    "qrcode": MOCK_QR_CODE_CONFIG,
     "jwt": MOCK_JWT_CONFIG,
     "metadata": {
         "oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
