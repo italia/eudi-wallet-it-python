@@ -5,7 +5,6 @@ import re
 from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
 
 import pem
-import traceback
 from typing import Optional
 from cryptography import x509
 from cryptography.x509 import load_der_x509_certificate
