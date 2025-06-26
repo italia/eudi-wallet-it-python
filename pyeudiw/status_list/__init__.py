@@ -5,7 +5,11 @@ from typing import Literal, Union, Tuple, Any
 from typing import Optional
 
 import cbor2
-from pycose.keys import CoseKey
+import cose.keys.curves as curves
+import pycose.algorithms
+from cose.keys import CoseKey
+from pycose.headers import Algorithm, KID
+from pycose.keys import EC2Key
 from pycose.messages import Sign1Message
 
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
@@ -74,7 +78,7 @@ def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: i
     # Insert the 'decoded_status_list' structure into the payload under claim key 65533
     payload = payload_parts[2]
 
-    if not payload_map:
+    if payload_map:
         payload = _replace_keys(payload, payload_map)
 
     payload[65533] = {
@@ -85,19 +89,27 @@ def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: i
     phdr = payload_parts[0]
     if 16 not in phdr:
         phdr[16] = STATUS_LIST_CWT
-
-    uhdr = payload_parts[1]
-    if 16 not in uhdr:
-        uhdr[16] = STATUS_LIST_CWT
+        if private_key:
+            kid = bytes.fromhex(private_key["KID"].decode("utf-8"))
+            phdr.setdefault(KID, kid)
+            phdr.setdefault(Algorithm, pycose.algorithms.Es256)
 
     mso = Sign1Message(
         phdr=phdr,
-        uhdr=uhdr,
+        uhdr=payload_parts[1],
         payload=cbor2.dumps(payload, canonical=True)
     )
-
     if private_key:
-        mso.key = CoseKey.from_dict(private_key)
+        private_d = private_key["D"]
+        kid = phdr[KID]
+        if private_key["KTY"] == "EC2":
+            mso.key = EC2Key(
+                crv=getattr(curves, private_key["CURVE"].replace("_", ""), None),
+                d=private_d,
+                optional_params={"KID": kid}
+            )
+        else:
+            mso.key = CoseKey.from_dict(private_key)
 
     return hexlify(mso.encode(
         tag=(private_key is not None),

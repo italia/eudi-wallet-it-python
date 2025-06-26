@@ -82,8 +82,7 @@ class StatusListHandler(VCIBaseEndpoint):
                     lst = payload["status_list"]["lst"].encode("utf-8")
                     del payload["status_list"]
                     payload_parts = ({}, {}, payload)
-                    token = encode_cwt_status_list_token(payload_parts, _STATUS_LIST_BITS, lst, _PAYLOAD_CWT_KEYS)
-                    print(token)
+                    token = encode_cwt_status_list_token(payload_parts, _STATUS_LIST_BITS, lst, _PAYLOAD_CWT_KEYS,self._mso_mdoc_private_key)
                     return Response(
                         message=token.decode(),
                         content=APPLICATION_JSON,
