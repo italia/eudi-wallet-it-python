@@ -9,13 +9,6 @@ from pyeudiw.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from cryptography.hazmat.primitives.asymmetric import ec
 from pyeudiw.tests.x509.test_x509 import gen_chain
 
-BASE_URL = "https://example.com"
-AUTHZ_PAGE = "example.com"
-AUTH_ENDPOINT = "https://example.com/auth"
-CLIENT_ID = "client_id"
-BACKEND_NAME = "OpenID4VP"
-
-
 def base64url_to_int(val):
     import base64
     import binascii
@@ -46,7 +39,7 @@ private_key = ec.EllipticCurvePrivateNumbers(
 ).private_key()
 
 DEFAULT_X509_CHAIN = gen_chain(
-    leaf_dns="example.com",
+    leaf_dns="leaf.example.com",
     leaf_private_key=private_key
 )
 
@@ -93,7 +86,7 @@ trust_ev = CombinedTrustEvaluator.from_config(
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"x509_san_dns:{BASE_URL.split('://')[-1]}",
+                "client_id": f"x509_san_dns:leaf.example.com",
                 "include_issued_jwt_header_param": True,
                 "leaf_certificate_chains_by_ca": {
                     f"ca.example.com": DEFAULT_X509_CHAIN,
