@@ -29,7 +29,8 @@ class ChainBuilder:
         not_valid_before: datetime = datetime.now() - timedelta(days=1),
         not_valid_after: datetime = datetime.now() + timedelta(days=365),
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
-        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None
+        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        key_usage: x509.KeyUsage | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -134,6 +135,11 @@ class ChainBuilder:
                     excluded_subtrees=excluded_subtrees
                 ),
                 critical=True
+            )
+        
+        if key_usage:
+            cert = cert.add_extension(
+                key_usage, True
             )
 
         cert = cert.add_extension(

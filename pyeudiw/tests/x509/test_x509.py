@@ -34,7 +34,18 @@ def gen_chain(
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
-        ]
+        ],
+        key_usage=x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        )
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
@@ -49,7 +60,18 @@ def gen_chain(
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
-        ]
+        ],
+        key_usage=x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        )
     )
     chain.gen_certificate(
         cn=leaf_cn,
@@ -69,7 +91,18 @@ def gen_chain(
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
             x509.DNSName("127.0.0.1")
-        ]
+        ],
+        key_usage=x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        )
     )
 
     return chain.get_chain("DER")
