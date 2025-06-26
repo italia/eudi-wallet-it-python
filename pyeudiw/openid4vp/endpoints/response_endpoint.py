@@ -2,19 +2,17 @@ import json
 import logging
 import hashlib
 from datetime import datetime, timezone
-from typing import Any, Union
+from typing import Any, Union, Callable
 from dataclasses import asdict
 from satosa.context import Context
 from satosa.response import Redirect
 from satosa.internal import AuthenticationInformation, InternalData
-from typing import Callable
 from satosa.context import Context
-from satosa.internal import InternalData
 from satosa.response import Response
+from satosa.internal import InternalData
 from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.storage.exceptions import StorageWriteError
