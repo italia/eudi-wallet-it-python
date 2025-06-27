@@ -4,10 +4,10 @@ from typing import Dict, Any
 from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
 from pyeudiw.duckle_ql.credential import CredentialsRequest
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
-from pyeudiw.satosa.backends.openid4vp import InvalidVPToken
-from pyeudiw.satosa.backends.openid4vp import VpMDocCbor
-from pyeudiw.satosa.backends.openid4vp import VpVcSdJwtParserVerifier
+from pyeudiw.satosa.backends.openid4vp.exceptions import InvalidVPToken
 from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
+from pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 EXP_CLAIM = "exp"

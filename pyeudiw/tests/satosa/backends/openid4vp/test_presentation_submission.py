@@ -15,17 +15,17 @@ mock_format_config = {
     "formats": [
         {
             "format": "ldp_vp",
-            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+            "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
             "class": "MockLdpVpHandler"
         },
         {
             "format": "jwt_vp_json",
-            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+            "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
             "class": "MockJwtVpJsonHandler"
         },
         {
             "format": "fail_parser",
-            "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+            "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
             "class": "MockFailingParser"
         }
     ],
