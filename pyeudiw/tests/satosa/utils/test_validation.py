@@ -5,7 +5,7 @@ from cryptojwt import JWS
 from cryptojwt.jwk.ec import new_ec_key
 from satosa.context import Context
 
-from pyeudiw.openid4vci.tools.exceptions import InvalidRequestException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_HEADER,
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,

@@ -1,4 +1,4 @@
-module: pyeudiw.satosa.frontend.openid4vci.OpenID4VCIFrontend
+module: pyeudiw.satosa.frontends.openid4vci.openid4vci.OpenID4VCIFrontend
 name: OpenID4VCI
 
 config:
@@ -9,43 +9,43 @@ config:
       class: ParHandler
       path: '/par'
     credential_offer:
-      module: pyeudiw.openid4vci.endpoints.credential_offer_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint
       class: CredentialOfferHandler
       path: '/credential'
     credential_offer_qrcode:
-      module: pyeudiw.openid4vci.endpoints.credential_offer_qrcode_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint
       class: CredentialOfferQrCodeHandler
       path: '/credential-qrcode'
     authorization:
-      module: pyeudiw.openid4vci.endpoints.authorization_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint
       class: AuthorizationHandler
       path: '/authorization'
     token:
-      module: pyeudiw.openid4vci.endpoints.token_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint
       class: TokenHandler
       path: '/token'
     nonce:
-      module: pyeudiw.openid4vci.endpoints.nonce_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint
       class: NonceHandler
       path: '/nonce-endpoint'
     credential:
-      module: pyeudiw.openid4vci.endpoints.credential_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint
       class: CredentialHandler
       path: '/credential'
 #    deferred_credential:
-#      module: pyeudiw.openid4vci.endpoints.deferred_credential_endpoint
+#      module: pyeudiw.satosa.frontends.openid4vci.endpoints.deferred_credential_endpoint
 #      class: DeferredCredentialHandler
 #      path: '/deferred-credential'
 #    notification:
-#      module: pyeudiw.openid4vci.endpoints.notification_endpoint
+#      module: pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint
 #      class: NotificationHandler
 #      path: '/notification'
     metadata:
-      module: pyeudiw.openid4vci.endpoints.metadata_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint
       class: MetadataHandler
       path: '/.well-known/openid-federation'
     status_list:
-      module: pyeudiw.openid4vci.endpoints.status_list_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
       path: '/status' &status_list_endpoint_path
 
@@ -64,7 +64,7 @@ config:
         timeout: 6
 
   jwt:
-    default_sig_alg: &default_sig_alg ES256  # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
+    default_sig_alg: ES256  # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
     default_enc_alg: RSA-OAEP
     default_enc_enc: A256CBC-HS512
     default_exp: 6         # minutes

@@ -22,10 +22,10 @@ To install the OpenID4VCI SATOSA frontend you just need to:
 
 #### Top-Level
 
-| Parameter | Description                                         | Example value                                         |
-|-----------|-----------------------------------------------------|-------------------------------------------------------|
-| module    | The name of the module that implements the frontend | pyeudiw.satosa.frontend.openid4vci.OpenID4VCIFrontend |
-| name      | The name of the frontend                            | OpenID4VCI                                            |
+| Parameter | Description                                         | Example value                                                     |
+|-----------|-----------------------------------------------------|-------------------------------------------------------------------|
+| module    | The name of the module that implements the frontend | pyeudiw.satosa.frontends.openid4vci.openid4vci.OpenID4VCIFrontend |
+| name      | The name of the frontend                            | OpenID4VCI                                                        |
 
 #### Config
 
@@ -47,7 +47,7 @@ Each endpoint value is structured according to the format described above, for e
 
 ```
     par:
-      module: pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint
       class: ParHandler
       path: '/par'
 ```
