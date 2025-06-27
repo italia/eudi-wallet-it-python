@@ -9,7 +9,7 @@ from satosa.frontends.base import FrontendModule
 from satosa.internal import InternalData
 from satosa.response import Response
 
-from pyeudiw.satosa.frontends.openid4vci import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 
