@@ -30,7 +30,7 @@ from pyeudiw.tools.content_type import (
     ACCEPT_HEADER
 )
 
-_BASE_PATH = "pyeudiw.openid4vci.endpoints.status_list_endpoint"
+_BASE_PATH = "pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint"
 
 @pytest.fixture
 def status_list_handler() -> StatusListHandler:

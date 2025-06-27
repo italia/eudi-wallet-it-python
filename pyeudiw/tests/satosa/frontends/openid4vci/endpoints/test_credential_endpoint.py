@@ -71,7 +71,7 @@ def request_with_open_id_credential():
 
 @pytest.fixture
 def credential_handler() -> CredentialHandler:
-    with patch("pyeudiw.openid4vci.endpoints.base_credential_endpoint.UserCredentialEngine") as user_cred_eng_class:
+    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint.UserCredentialEngine") as user_cred_eng_class:
         usc_mock_engine = MagicMock()
         usc_mock_engine.db_user_storage_engine = MagicMock()
         usc_mock_engine.db_credential_storage_engine = MagicMock()

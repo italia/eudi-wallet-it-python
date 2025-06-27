@@ -42,7 +42,7 @@ _MOCK_PAR_REQUEST = {
     "client_id": _MOCK_VALID_THUMBPRINT
 }
 
-_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = "pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation"
+_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = "pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation"
 
 _MOCK_REQUEST_DESERIALIZED = {
     "iss": _MOCK_VALID_THUMBPRINT,

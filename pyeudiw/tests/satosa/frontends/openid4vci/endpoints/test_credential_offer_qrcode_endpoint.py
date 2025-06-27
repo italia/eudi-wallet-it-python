@@ -26,7 +26,7 @@ from pyeudiw.tools.content_type import (
 
 @pytest.fixture
 def credential_offer_qrcode_handler() -> CredentialOfferQrCodeHandler:
-    with patch("pyeudiw.openid4vci.endpoints.credential_offer_qrcode_endpoint.Jinja2TemplateHandler") as MockTemplateHandler:
+    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint.Jinja2TemplateHandler") as MockTemplateHandler:
         return CredentialOfferQrCodeHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
 
 @pytest.fixture

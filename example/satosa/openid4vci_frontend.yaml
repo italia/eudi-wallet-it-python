@@ -5,7 +5,7 @@ config:
 
   endpoints:
     par:
-      module: pyeudiw.openid4vci.endpoints.pushed_authorization_request_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint
       class: ParHandler
       path: '/par'
     credential_offer:
