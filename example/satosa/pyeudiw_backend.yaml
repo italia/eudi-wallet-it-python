@@ -1,4 +1,4 @@
-module: pyeudiw.satosa.backend.openid4vp.OpenID4VPBackend
+module: pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend
 name: OpenID4VP
 
 config:
@@ -11,23 +11,23 @@ config:
   
   endpoints:
     pre_request:
-      module: pyeudiw.openid4vp.endpoints.pre_request_endpoint
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint
       class: PreRequestHandler
       path: /pre-request
     response:
-      module: pyeudiw.openid4vp.endpoints.response_endpoint
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint
       class: ResponseHandler
       path: /response-uri
     request:
-      module: pyeudiw.openid4vp.endpoints.request_endpoint
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint
       class: RequestHandler
       path: /request-uri
     status:
-      module: pyeudiw.openid4vp.endpoints.status_endpoint
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint
       class: StatusHandler
       path: /status
     get_response:
-      module: pyeudiw.openid4vp.endpoints.get_response_endpoint
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint
       class: GetResponseHandler
       path: /get_response
 
@@ -203,10 +203,10 @@ config:
   credential_presentation_handlers:
     max_submission_size: 4096
     formats:
-      - module: pyeudiw.openid4vp.vp_sd_jwt_vc
+      - module: pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc
         class:  VpVcSdJwtParserVerifier
         format: dc+sd-jwt
-      - module: pyeudiw.openid4vp.vp_mdoc_cbor
+      - module: pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
       - module: pyeudiw.duckle_ql.handler

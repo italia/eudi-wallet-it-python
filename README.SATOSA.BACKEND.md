@@ -23,10 +23,10 @@ To install the OpenID4VP SATOSA backend you just need to:
 
 #### Top-Level
 
-| Parameter | Description                                        | Example value                           |
-| --------- | -------------------------------------------------- | --------------------------------------- |
-| module    | The name of the module that implements the backend | pyeudiw.satosa.backend.OpenID4VPBackend |
-| name      | The name of the backend                            | OpenID4VP                               |
+| Parameter | Description                                        | Example value                                                |
+|-----------|----------------------------------------------------|--------------------------------------------------------------|
+| module    | The name of the module that implements the backend | pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend |
+| name      | The name of the backend                            | OpenID4VP                                                    |
 
 #### Config
 

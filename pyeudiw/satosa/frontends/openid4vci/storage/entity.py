@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from satosa.context import Context
 
-from pyeudiw.openid4vp.utils import detect_flow_typ
+from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import AuthorizationDetail
 from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest
 

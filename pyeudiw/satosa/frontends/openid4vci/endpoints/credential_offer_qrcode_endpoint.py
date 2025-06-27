@@ -1,7 +1,7 @@
 from satosa.context import Context
 from satosa.response import Response
 
-from pyeudiw.openid4vp.schemas.flow import RemoteFlowType
+from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_request_flow_endpoint import \
     BaseAuthorizationRequestFlowEndpoint
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import GET_ACCEPTED_METHODS
