@@ -2,12 +2,12 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
-from pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_request_flow_endpoint import \
-    BaseAuthorizationRequestFlowEndpoint
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import GET_ACCEPTED_METHODS
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import GET_ACCEPTED_METHODS, VCIBaseEndpoint
+from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException, InvalidScopeException
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
@@ -20,7 +20,7 @@ from pyeudiw.tools.content_type import (
 )
 
 
-class CredentialOfferQrCodeHandler(BaseAuthorizationRequestFlowEndpoint):
+class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
     """
     Handle a GET request to the credential_offer_qrcode endpoint.
     Args:
@@ -42,19 +42,40 @@ class CredentialOfferQrCodeHandler(BaseAuthorizationRequestFlowEndpoint):
         self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui_template"])
         self.db_engine = OpenId4VciEngine(config).db_engine
 
-    def validate_request(self, context: Context) -> OpenId4VCIEntity:
-        validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
-        validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-        entity = self.db_engine.get_by_session_id(get_session_id(context))
-        if entity.remote_flow_typ != RemoteFlowType.CROSS_DEVICE:
-            self._log_error(
-                self.__class__.__name__,
-                f"Cannot use qr code, flow type {entity.remote_flow_typ} not valid!"
-            )
-            raise InvalidRequestException("Cannot use qr code, flow type not valid!")
-        return entity
 
-    def to_response(self, context: Context, entity: OpenId4VCIEntity) -> Response:
+    def endpoint(self, context: Context):
+        """
+        Handle a GET request to the credential_offer_qrcode endpoint.
+        Args:
+            context (Context): The SATOSA context.
+        Returns:
+            A Response object.
+        """
+        try:
+            validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
+            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+            CredentialOfferRequest.model_validate(
+                context.request.query, context = {
+                    CONFIG_CTX: self.config_utils
+                })
+            entity = self.db_engine.get_by_session_id(get_session_id(context))
+            if entity.remote_flow_typ != RemoteFlowType.CROSS_DEVICE:
+                self._log_error(
+                    self.__class__.__name__,
+                    f"Cannot use qr code, flow type {entity.remote_flow_typ} not valid!"
+                )
+                raise InvalidRequestException("Cannot use qr code, flow type not valid!")
+            return self.to_qr_code_response(entity)
+        except (InvalidRequestException, InvalidScopeException) as e:
+            return self._handle_400(context, e.message, e)
+        except Exception as e:
+            self._log_error(
+                e.__class__.__name__,
+                f"Error during invoke credential_offer endpoint: {e}"
+            )
+            return self._handle_500(context, "error during invoke credential_offer endpoint", e)
+
+    def to_qr_code_response(self, entity: OpenId4VCIEntity) -> Response:
         result = self.qrcode_template.qrcode_page.render(
             {
                 "qrcode_color": self.qrcode_settings["color"],

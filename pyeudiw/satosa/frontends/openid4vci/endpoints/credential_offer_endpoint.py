@@ -1,3 +1,4 @@
+from satosa.response import Response
 from satosa.context import Context
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, GET_ACCEPTED_METHODS
@@ -45,6 +46,7 @@ class CredentialOfferHandler(VCIBaseEndpoint):
                 context.request.query, context = {
                     CONFIG_CTX: self.config_utils
                 })
+            return Response(status="204 No Content")
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:

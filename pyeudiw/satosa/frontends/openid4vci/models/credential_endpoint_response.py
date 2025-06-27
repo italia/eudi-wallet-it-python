@@ -44,8 +44,7 @@ class CredentialEndpointResponse(DeferredCredentialEndpointResponse):
                 - payload
         """
         data = CredentialEndpointResponse(credentials = credentials)
-        response = Response(
+        return Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,
         )
-        return response
