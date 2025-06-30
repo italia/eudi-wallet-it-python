@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import List, Union
 
-from pydantic import BaseModel, HttpUrl, PositiveInt
+from pydantic import BaseModel, HttpUrl
 
 from pyeudiw.jwk.schemas.public import JwksSchema
-from pyeudiw.openid4vp.schemas.vp_formats import VpFormats
+from pyeudiw.satosa.backends.openid4vp.schemas.vp_formats import VpFormats
 
 
 class AcrValuesSupported(str, Enum):

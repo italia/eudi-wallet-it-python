@@ -75,6 +75,12 @@ jobs:
           # pytest --cov=pyeudiw --cov-fail-under=90 pyeudiw
           pytest --cov=pyeudiw pyeudiw
           coverage report -m --skip-covered
+      - name: Upload logs artifact if tests fail
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+            name: pyeudiw-logs-${{ matrix.python-version }}${{ github.run_id }}
+            path: logs/
       - name: Bandit Security Scan
         run: |
           bandit -r -x pyeudiw/tests* pyeudiw/*

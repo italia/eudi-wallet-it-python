@@ -1,8 +1,11 @@
 import sys
-import yaml
 from io import TextIOWrapper
-from pyeudiw.sd_jwt.common import SDObj
 from typing import Union
+
+import yaml
+
+from pyeudiw.sd_jwt.common import SDObj
+
 
 class _SDKeyTag(yaml.YAMLObject):
     """
@@ -53,6 +56,19 @@ class _SDKeyTag(yaml.YAMLObject):
                     node
                 )
             )
+
+def yaml_load_specification_with_placeholder(file_buffer: TextIOWrapper):
+    parsed = yaml.load(file_buffer, Loader=yaml.FullLoader) # nosec B506
+
+    convert = lambda obj: (
+        {(f"{{{{ {k.value} }}}}" if isinstance(k, SDObj) else k): convert(v)  for k, v in obj.items()}
+        if isinstance(obj, dict)
+        else [convert(i) for i in obj]
+        if isinstance(obj, list)
+        else (f"{{{{ {obj.value} }}}}" if isinstance(obj, SDObj) else obj)
+    )
+
+    return convert(parsed)
 
 def yaml_load_specification(file_buffer: TextIOWrapper):
     return yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec

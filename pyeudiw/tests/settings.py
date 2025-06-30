@@ -1,14 +1,13 @@
 import os
 import pathlib
-
-from cryptojwt.jwk.ec import new_ec_key
-
-from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.tests.x509.test_x509 import gen_chain
 from ssl import DER_cert_to_PEM_cert
 
-from pyeudiw.tests.federation.base import ta_jwk
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptojwt.jwk.ec import new_ec_key
+
+from pyeudiw.tests.federation.base import ta_jwk
+from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.tools.utils import exp_from_now, iat_now
 
 BASE_URL = "https://example.com"
 AUTHZ_PAGE = "example.com"
@@ -19,7 +18,6 @@ BACKEND_NAME = "OpenID4VP"
 
 def base64url_to_int(val):
     import base64
-    import binascii
     return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
 
 jwk = {
@@ -49,6 +47,7 @@ DEFAULT_X509_CHAIN = gen_chain(
     leaf_dns="example.com",
     leaf_private_key=private_key
 )
+
 DEFAULT_X509_LEAF_JWK = jwk
 DEFAULT_X509_LEAF_PRIVATE_KEY = private_key
 
@@ -136,11 +135,31 @@ CONFIG = {
         "authorization_error_template": "authorization_error.html"
     },
     "endpoints": {
-        "pre_request": "/pre-request",
-        "response": "/response-uri",
-        "request": "/request-uri",
-        "status": "/status-uri",
-        "get_response": "/get-response",
+        "pre_request":{ 
+            "module": "pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint",
+            "class": "PreRequestHandler",
+            "path": "/pre-request",
+        },
+        "response": {
+            "module": "pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint",
+            "class": "ResponseHandler",
+            "path": "/response",
+        },
+        "request": {
+            "module": "pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint",
+            "class": "RequestHandler",
+            "path": "/request",
+        },
+        "status": {
+            "module": "pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint",
+            "class": "StatusHandler",
+            "path": "/status",
+        },
+        "get_response": {
+            "module": "pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint",
+            "class": "GetResponseHandler",
+            "path": "/get-response",
+        },
     },
     "response_code": {
         "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
@@ -430,13 +449,13 @@ CONFIG = {
         "max_submission_size": 4096,
         "formats": [
             {
-                "module": "pyeudiw.openid4vp.vp_sd_jwt_vc",
+                "module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc",
                 "class": "VpVcSdJwtParserVerifier",
                 "format": "dc+sd-jwt",
                 "config": {}
             },
             {
-                "module": "pyeudiw.openid4vp.vp_mdoc_cbor",
+                "module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor",
                 "class": "VpMDocCbor",
                 "format": "mso_mdoc",
             }

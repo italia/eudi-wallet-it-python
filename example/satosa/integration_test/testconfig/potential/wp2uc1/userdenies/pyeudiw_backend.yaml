@@ -12,17 +12,26 @@ config:
     authorization_error_template: "authorization_error.html"
   
   endpoints:
-    pre_request: '/pre-request'
-    request:
-      module: pyeudiw.satosa.default.request_handler
-      class: RequestHandler
-      path: '/request-uri'
+    pre_request:
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint
+      class: PreRequestHandler
+      path: /pre-request
     response:
-      module: pyeudiw.satosa.default.response_handler
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint
       class: ResponseHandler
-      path: '/response-uri'
-    status: '/status'
-    get_response: '/get-response'
+      path: /response-uri
+    request:
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint
+      class: RequestHandler
+      path: /request-uri
+    status:
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint
+      class: StatusHandler
+      path: /status
+    get_response:
+      module: pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint
+      class: GetResponseHandler
+      path: /get_response
 
   qrcode:
     size: 250 # px
@@ -192,10 +201,10 @@ config:
   credential_presentation_handlers:
     max_submission_size: 4096
     formats:
-      - module: pyeudiw.openid4vp.vp_sd_jwt_vc
+      - module: pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc
         class:  VpVcSdJwtParserVerifier
         format: dc+sd-jwt
-      - module: pyeudiw.openid4vp.vp_mdoc_cbor
+      - module: pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
 

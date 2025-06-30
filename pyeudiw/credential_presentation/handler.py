@@ -31,7 +31,7 @@ class CredentialPresentationHandlers:
             ImportError: If there is an issue with loading the required handler modules or classes.
         """
         self.max_submission_size = config.max_submission_size or 4096
-        from pyeudiw.openid4vp.presentation_submission import BaseVPParser
+        from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
         self.handlers: dict[str, BaseVPParser] = {}
         self.trust_evaluator = config.trust_evaluator
 
