@@ -12,19 +12,21 @@ to the [Italian Wallet implementation profile](https://italia.github.io/eid-wall
 
 The toolchain contains the following components:
 
-| Name | Description |
-| :--- | --- |
-| __jwk__ | JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517). | 
-| __jwt__ | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
-| __tools.qrcode__ | QRCodes creation | 
-| __oauth2.dpop__ | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop) |
-| __federation__ | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html) |
-| __x509__ | Trust evaluation mechanism using X.509 PKI, according to [RFC5280](https://datatracker.ietf.org/doc/html/rfc5280) |
-| __trust__ | trust handlers bringing multiple evaluation mechanisms |
-| __satosa.backend__ | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
-| __openid4vp__ | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html) |
-| __sd_jwt__ | Issuance and verification of SD-JWT(-VC) according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/) |
-| __status_list__ | Credential revocation check mechanisms according to [Token Status List](https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/) |
+| Name                | Description                                                                                                                                                                                                                            |
+|:--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| __jwk__             | JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517).                                                                                                                                              | 
+| __jwt__             | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
+| __tools.qrcode__    | QRCodes creation                                                                                                                                                                                                                       | 
+| __oauth2.dpop__     | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop)                                  |
+| __federation__      | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html)                                                                                                         |
+| __x509__            | Trust evaluation mechanism using X.509 PKI, according to [RFC5280](https://datatracker.ietf.org/doc/html/rfc5280)                                                                                                                      |
+| __trust__           | trust handlers bringing multiple evaluation mechanisms                                                                                                                                                                                 |
+| __satosa.backend__  | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                       |
+| __satosa.frontend__ | SATOSA Issuer frontend, according to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                            |
+| __openid4vp__       | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                                   |
+| __openid4vci__      | Classes and schemas related to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                                                   |
+| __sd_jwt__          | Issuance and verification of SD-JWT(-VC) according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/)                                                            |
+| __status_list__     | Credential revocation check mechanisms according to [Token Status List](https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/)                                                                                                |
 
 
 ## Setup
@@ -63,7 +65,7 @@ In the [docs/](docs) folder there are some common example for some specific task
 
 
 ### Build the Documentation
-For generate the documentaation enter in the terminal the following commands. 
+For generate the documentation enter in the terminal the following commands. 
 The last argument is the exclude path, unit tests are then excluded from the API documentation.
 
 ````
@@ -87,15 +89,18 @@ Please read [this README](example/README.Wordpress.md) to get a fully working Wo
 
 [SaToSa](https://github.com/IdentityPython/SATOSA) is a general purpose IAM 
 proxy solution that allows interoperability between different entities that implements different
-authentication protocols such as SAML2, OpenID Connect and OAuth2. This project offers a SaToSa
-backend to enable the OpenID4VP protocol. 
+authentication protocols such as SAML2, OpenID Connect and OAuth2. This project offers: 
+- a SaToSa backend to enable the OpenID4VP protocol; 
+- a SaToSa frontend to enable the OpenID4VCI protocol. 
 
 There is a SaToSa distribution, created by the Developers Italia community, pre-configured to facilitate integration with the Italian National Digital Identity Systems,
 it is [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid).
 
 <img src="docs/gallery/iam-proxy.svg" width="512">
 
-Please read this [README](README.SATOSA.md) any details about how to configure SaToSa with the OpenID4VP Relying Party backend.
+Please refer to the dedicate README files for details on how to configure SaToSa with the respective components:
+- [OpenID4VP Relying Party backend](README.SATOSA.BACKEND.md);
+- [OpenID4VCI Issuer fronted](README.SATOSA.FRONTEND.md).
 
 ## Executing Tests Using Preexisting MongoDb Instances
 

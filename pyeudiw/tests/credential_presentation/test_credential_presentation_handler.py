@@ -23,7 +23,7 @@ def valid_config():
             "formats": [
                 {
                     "format": "mock_format",
-                    "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+                    "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
                     "class": "MockLdpVpHandler"
                 }
             ]
@@ -62,7 +62,7 @@ def test_missing_class_raises(trust_evaluator):
             "formats": [
                 {
                     "format": "invalid",
-                    "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+                    "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
                     "class": "NonExistentHandler"
                 }
             ]
@@ -108,7 +108,7 @@ def test_class_not_subclass_of_base_raises(trust_evaluator):
             "formats": [
                 {
                     "format": "not_subclass",
-                    "module": "pyeudiw.tests.openid4vp.mock_parser_handlers",
+                    "module": "pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers",
                     "class": "NotASubclass"
                 }
             ]
@@ -121,7 +121,7 @@ def test_class_not_subclass_of_base_raises(trust_evaluator):
             config=invalid_config,
             trust_evaluator=trust_evaluator
         )
-    assert "Class 'NotASubclass' not found in module 'pyeudiw.tests.openid4vp.mock_parser_handlers' for format 'not_subclass'." in str(exc.value)
+    assert "Class 'NotASubclass' not found in module 'pyeudiw.tests.satosa.backends.openid4vp.mock_parser_handlers' for format 'not_subclass'." in str(exc.value)
 
 
 def test_empty_formats_raises(trust_evaluator):
