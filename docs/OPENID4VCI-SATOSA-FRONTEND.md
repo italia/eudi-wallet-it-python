@@ -3,19 +3,19 @@
 To install the OpenID4VCI SATOSA frontend you just need to:
 
 1. install this package and the extra dependencies: `pip install pyeudiw[satosa]`
-2. copy and customize [example/satosa/openid4vci_frontend.yaml](example/satosa/openid4vci_frontend.yaml)
+2. copy and customize [example/satosa/openid4vci_frontend.yaml](../example/satosa/openid4vci_frontend.yaml)
 3. include the fronted configuration in your satosa configuration
 4. customize the file `internal_attributes.yaml` used in your deployment, enabling the `openid4ci` protocol.
-   See [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml) as example.
+   See [example/satosa/internal_attributes.yaml](../example/satosa/internal_attributes.yaml) as example.
 5. start Satosa.
 
 ## Frontend configuration
 
-1. Customize [example/satosa/openid4vci_frontend.yaml](example/satosa/openid4vci_frontend.yaml), then copy it in your
+1. Customize [example/satosa/openid4vci_frontend.yaml](../example/satosa/openid4vci_frontend.yaml), then copy it in your
    satosa `plugins/frontend` project folder. Example `plugins/frontend/openid4vci_frontend.yaml`;
 2. Add `  - "plugins/frontend/openid4vci_frontend.yaml"` in your SATOSA `proxy_conf.yaml` file, within the section
    `FRONTEND_MODULES`;
-3. Customize [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml), then copy it the path
+3. Customize [example/satosa/internal_attributes.yaml](../example/satosa/internal_attributes.yaml), then copy it the path
    your have configured in your `proxy_conf.yaml` file.
 
 ### Frontend Configuration Parameters
