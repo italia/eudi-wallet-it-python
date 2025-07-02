@@ -94,14 +94,15 @@ config:
     par_exp: 90 # mandatory expiration time, in minutes, for the JWT token returned by the `par` endpoint
 
   # private jwk
+  # WARNING: change these keys in production env. Keep these keys unchanged can pose a serious security risk.
   metadata_jwks: &metadata_jwks
     - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests as mso_mdoc too
-      d: i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc
+      d: k4nb1q6LkgaOMoey-zSiOHrglqGJjJPmpjLzBNjkSJw
       use: sig
       crv: P-256
-      kid: f10aca0992694b3581f6f699bfc8a2c6cc687725
-      x: jE2RpcQbFQxKpMqehahgZv6smmXD0i/LTP2QRzMADk4
-      y: qkMx5iqt5PhPu5tfctS6HsP+FmLgrxfrzUV2GwMQuh8
+      kid: xudKGCld__2Guq9a-VL-xul_WMmnZ97upc9HzJO8S2A
+      x: US49y2eVSIx7F2q8YMP__vZLl7Un65rs09G4ap7MmTo
+      y: WlghCihL8PXw9Fi9xk67pvcyGupFXHf-9KgxEC_KEwU
       alg: ES256
 
   #This is the configuration for the relaying party metadata
