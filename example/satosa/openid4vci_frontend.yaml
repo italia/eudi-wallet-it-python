@@ -89,9 +89,9 @@ config:
       - ES256
       - ES384
       - ES512
-    access_token_exp: 90 # minutes
-    refresh_token_exp: 120 # minutes
-    par_exp: 90 # minutes
+    access_token_exp: 90 # mandatory expiration time, in minutes, for the JWT access token returned by the `token` endpoint
+    refresh_token_exp: 120 # mandatory expiration time, in minutes, for the JWT refresh token returned by the `token` endpoint
+    par_exp: 90 # mandatory expiration time, in minutes, for the JWT token returned by the `par` endpoint
 
   # private jwk
   metadata_jwks: &metadata_jwks
