@@ -47,7 +47,7 @@ config:
     status_list:
       module: pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
-      path: '/status' &status_list_endpoint_path
+      path: &status_list_endpoint_path '/status'
 
   qrcode:
     ui_template: "qr_code.html"
