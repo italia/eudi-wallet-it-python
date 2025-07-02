@@ -99,7 +99,7 @@ it is [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid).
 <img src="docs/gallery/iam-proxy.svg" width="512">
 
 Please refer to the dedicate README files for details on how to configure SaToSa with the respective components:
-- [OpenID4VP Relying Party backend](README.SATOSA.BACKEND.md);
+- [OpenID4VP Relying Party backend](docs/OPENID4VP-SATOSA-BACKEND.md);
 - [OpenID4VCI Issuer fronted](docs/OPENID4VCI-SATOSA-FRONTEND.md).
 
 ## Executing Tests Using Preexisting MongoDb Instances
