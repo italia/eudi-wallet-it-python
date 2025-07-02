@@ -672,6 +672,8 @@ config:
         private_keys: *metadata_jwks
 
   # Mongodb database configuration
+  # Configuration for retrieving user datas, it stores user attributes required to
+  # generate the requested credential with `credential` endpoint.
   user_storage:
     mongo_db:
       storage:
@@ -686,6 +688,9 @@ config:
           connection_params:
             username: !ENV MONGODB_USERNAME
             password: !ENV MONGODB_PASSWORD
+  # Configuration for retrieving credentials data, it's a storage system used by both
+  # the `credential` and `status_list` endpoints. It maintains the state of each credential in relation to the corresponding
+  # user, supporting status updates such as issuance and revocation.
   credential_storage:
     mongo_db:
       storage:
