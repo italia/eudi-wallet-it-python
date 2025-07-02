@@ -46,7 +46,7 @@ FIELD_TRANSFORMS = {
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the credentials endpoints class.
         Args:
