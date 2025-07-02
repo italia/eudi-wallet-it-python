@@ -604,7 +604,7 @@ config:
             O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
             DTEzMjUtQA==
             -----END CERTIFICATE-----
-        relying_party_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
+        leaf_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
           ca.example.com:
             - |
               -----BEGIN CERTIFICATE-----
@@ -672,7 +672,7 @@ config:
               DTEzMjUtQA==
               -----END CERTIFICATE-----
 
-        private_keys: *metadata_jwks
+        private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
 
   # Mongodb database configuration
   # Configuration for retrieving user datas, it stores user attributes required to
