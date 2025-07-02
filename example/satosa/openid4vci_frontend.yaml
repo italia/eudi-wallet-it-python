@@ -97,12 +97,12 @@ config:
   # WARNING: change these keys in production env. Keep these keys unchanged can pose a serious security risk.
   metadata_jwks: &metadata_jwks
     - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests as mso_mdoc too
-      d: k4nb1q6LkgaOMoey-zSiOHrglqGJjJPmpjLzBNjkSJw
+      d: RdPqPnf9tovUZAFPMh57qvG0JcL60grR9qnRp9GmJX8
       use: sig
       crv: P-256
-      kid: xudKGCld__2Guq9a-VL-xul_WMmnZ97upc9HzJO8S2A
-      x: US49y2eVSIx7F2q8YMP__vZLl7Un65rs09G4ap7MmTo
-      y: WlghCihL8PXw9Fi9xk67pvcyGupFXHf-9KgxEC_KEwU
+      kid: RgecVG1ED-LxhKIEZQ7oFmS9RNGgaE6NrTWrJHcKSEY
+      x: VqA6BYbFbxxL3sl_Su9GrVAneEXQ1IKE7HgqrvudObc
+      y: OOLnXMKUertDJkO3pPRC-sN13XQWkIKKde8e0j6JuQc
       alg: ES256
 
   #This is the configuration for the relaying party metadata
@@ -608,68 +608,56 @@ config:
           ca.example.com:
             - |
               -----BEGIN CERTIFICATE-----
-              MIIDfzCCAmegAwIBAgIUN3niXMK8XOjhIvf6EUD4sz80XIkwDQYJKoZIhvcNAQEL
-              BQAwTjEpMCcGA1UEAwwgaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZXhhbXBsZS5uZXQx
-              FDASBgNVBAoMC0V4YW1wbGUgSU5UMQswCQYDVQQGEwJJVDAeFw0yNTA0MDMxNTQ3
-              NTZaFw0yNjA0MDQxNTQ3NTZaMFcxMTAvBgNVBAMMKENOPWVhZi5leGFtcGxlLmNv
-              bSwgTz1FeGFtcGxlIExlYWYsIEM9SVQxFTATBgNVBAoMDEV4YW1wbGUgTGVhZjEL
-              MAkGA1UEBhMCSVQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCw/qO3
-              VfAkTQkMrHLgHuvcl1vxbptJGhW6fKNYyCXkhp+oXAewmViAIBY95OsAv6LKN2dY
-              LVywe5OpaN2d0Mv6ioRquuqgMDJxWR8VNRMPzX/BWFZTMDDGFAeJPs9NQixXub1U
-              aV8L+R0KlCXkJwrXLHadDUpupY5XX/lacyCc38Sk2bO2RkOcmYp51V245vZ0pbCc
-              tLd9wa9TFdzzsOMDMLa9+BBKhB9cBlvAi3JLo6KcWJScHFG+31ljYhqmMjX7DAMo
-              p5Guo8L59XahZOsyqhgC8gOd/0CMocBsjDurfTX7v55pQwXWFW0DPVd5e8ynTArz
-              +5Kj1WC/W8eEGk7BAgMBAAGjTDBKMAwGA1UdEwEB/wQCMAAwOgYDVR0RBDMwMYIQ
-              bGVhZi5leGFtcGxlLm9yZ4YdaHR0cHM6Ly9leGFtcGxlLmNvbS9PcGVuSUQ0VlAw
-              DQYJKoZIhvcNAQELBQADggEBACF2aoCODW4tziNQs41C9N363xYPt21uIQy0CQ24
-              1hRZ8Ev6yIQ/WORfzciLHZsWizZdS3D5oDY7K+WAgMpDSR0Ah9dXMfJjOxcUib57
-              Zh+YOi443fjU/5/DBHyHgfEvDy1QXXHJuDbgchzAv9u8uY0ibUb/GHy4OKaj9bOI
-              8g6qgZtT2wkfdHQPX+fpwZueTaHhoXJV+JTuE227fIjLZ5ThbvO0xbE3q4I/v+Gu
-              ZZ713LQaG2RwdJWTimJUi6Sro5s0YR6qRGejHmiS1FbJOOG4AAE4PkhkxVogItVE
-              Z4nqCEfD1RT6iwiWyXIYh3cNpWvcE3t4j7e/Su5IhW/Cv2E=
+              MIICsDCCAlagAwIBAgIUGKFK6lGFajbbVYiDh8QWTCr2iGIwCgYIKoZIzj0EAwIw
+              TzEhMB8GA1UEAwwYaW50ZXJtZWRpYXRlLmV4YW1wbGUuY29tMR0wGwYDVQQKDBRF
+              eGFtcGxlIEludGVybWVkaWF0ZTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcwNjI4
+              WhcNMjYwNzAyMTcwNjI4WjBYMTIwMAYDVQQDDClDTj1sZWFmLmV4YW1wbGUuY29t
+              LCBPPUV4YW1wbGUgTGVhZiwgQz1JVDEVMBMGA1UECgwMRXhhbXBsZSBMZWFmMQsw
+              CQYDVQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFagOgWGxW8cS97J
+              f0rvRq1QJ3hF0NSChOx4Kq77nTm3OOLnXMKUertDJkO3pPRC+sN13XQWkIKKde8e
+              0j6JuQejggEFMIIBATAMBgNVHRMBAf8EAjAAMEIGA1UdHwQ7MDkwN6A1oDOGMWh0
+              dHBzOi8vbGVhZi5leGFtcGxlLmNvbS9jcmwvbGVhZi5leGFtcGxlLmNvbS5jcmww
+              cwYDVR0eAQH/BGkwZ6AwMBqGGGh0dHBzOi8vbGVhZi5leGFtcGxlLmNvbTASghBs
+              ZWFmLmV4YW1wbGUuY29toTMwC4IJbG9jYWxob3N0MBeCFWxvY2FsaG9zdC5sb2Nh
+              bGRvbWFpbjALggkxMjcuMC4wLjEwDgYDVR0PAQH/BAQDAgGmMCgGA1UdEQQhMB+G
+              EGxlYWYuZXhhbXBsZS5vcmeCC2V4YW1wbGUuY29tMAoGCCqGSM49BAMCA0gAMEUC
+              IQCUjMZQg1PMy+ju5+mrO1ZlD0uTYBwczUP1BU6mUs5HlgIgFN0IM+OJaTGluTbg
+              lSNNn5hxATP0rFTsScr3l+7ckMY=
+              -----END CERTIFICATE-----
+            - |              
+              -----BEGIN CERTIFICATE-----
+              MIICqzCCAlGgAwIBAgIUGf+IstIE53VGjlAguY2Gf7np2NEwCgYIKoZIzj0EAwIw
+              UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcw
+              NjI4WhcNMjYwNzAyMTcwNjI4WjBPMSEwHwYDVQQDDBhpbnRlcm1lZGlhdGUuZXhh
+              bXBsZS5jb20xHTAbBgNVBAoMFEV4YW1wbGUgSW50ZXJtZWRpYXRlMQswCQYDVQQG
+              EwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAlPEDGBzVotqPPd1Naa9GFc
+              p3gS3bT/APTC0V/a/nnkEmkSoVXg8PgLZFZy4WpYDup+y+MzQVFKab49A1yqbiqj
+              ggEGMIIBAjASBgNVHRMBAf8ECDAGAQH/AgEAMFIGA1UdHwRLMEkwR6BFoEOGQWh0
+              dHBzOi8vaW50ZXJtZWRpYXRlLmV4YW1wbGUubmV0L2NybC9pbnRlcm1lZGlhdGUu
+              ZXhhbXBsZS5uZXQuY3JsMEEGA1UdHgEB/wQ3MDWhMzALgglsb2NhbGhvc3QwF4IV
+              bG9jYWxob3N0LmxvY2FsZG9tYWluMAuCCTEyNy4wLjAuMTAOBgNVHQ8BAf8EBAMC
+              AaYwRQYDVR0RBD4wPIYgaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZXhhbXBsZS5jb22C
+              GGludGVybWVkaWF0ZS5leGFtcGxlLmNvbTAKBggqhkjOPQQDAgNIADBFAiEAnJa+
+              /o0fOpY+ynZXBu3Lqr4fLWlZgiFWMaGzDLX25gICICrMgbnLKfHq+bBi1N2mu6SA
+              J0nOYA9Kw8VY0lAbdzcv
               -----END CERTIFICATE-----
             - |
               -----BEGIN CERTIFICATE-----
-              MIIDRDCCAiygAwIBAgIUUOBXQmkRjQvfhU1YJbMEOMnPxvQwDQYJKoZIhvcNAQEL
-              BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-              Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-              MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBOMSkwJwYDVQQDDCBodHRwczovL2ludGVy
-              bWVkaWF0ZS5leGFtcGxlLm5ldDEUMBIGA1UECgwLRXhhbXBsZSBJTlQxCzAJBgNV
-              BAYTAklUMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsSUAY+mCs1eB
-              /hWKtF0kncwTRn3jgczjZWmUSSBZT3PzqmD9uqlgEBrv2sOGwO4bBDnutCAHhfnl
-              2gXifvg2PJHQWu/g1kVY396K+d91nrqQhUabo2cpEca66t7InPMnXkMR5DG6rNP6
-              l05OLKQIvoTaHzef0rAS4f+5gF7IcRtGq9G8QRnd2lwLmDYRPKY3jp/uvLosOatv
-              Nx5p2XtxETgOSv4GEtjax3jxkMDIIPrHwTJGWwsGvasEI5lQ/G67OjFZjjSaoJ95
-              SSPhXoIydmOmXKDN3GY7ZqT9HntuSzyB3GZ4DMLyOdZdvYvt08hUCJnnY0kGhhtW
-              gW0xb/wyKwIDAQABoxYwFDASBgNVHRMBAf8ECDAGAQH/AgEAMA0GCSqGSIb3DQEB
-              CwUAA4IBAQBAwwumBWSI/guarZsNd8hEOVZ7dWRQDLxfDZB1jKtgqA2jCEbNGwpY
-              41NRRfkTi9EfZXXVdbk9xrjNWVsGdDn/Kh/1/b4uatu2ocRG5R3e2KkZMaK1/Ru2
-              LFP6gvi7i8dvEr8IQqlg+CrEb11CjMXZi36jRZhtSUnUfmUR4hqCN/qzALdiKvHS
-              NpEu0D6x6l7YEhwtpX7bvWdnEzCUrAUltMPO9pZUR1LBSPTCMSd+vUhJw/84EJEg
-              D6Lw8OxzYyzSNOrGTqfplqlHrD/WpI6DB6Yq4Rpefz84AWraGVtZbYAlQMyK1EKS
-              C3Lef0OGQC0anzAXDsGr1As8HdEuSngu
-              -----END CERTIFICATE-----
-            - |
-              -----BEGIN CERTIFICATE-----
-              MIIDYzCCAkugAwIBAgIUHVMNJD9vqAA4mR+QAJyEQFW4kjQwDQYJKoZIhvcNAQEL
-              BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-              Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-              MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxl
-              LmNvbSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQsw
-              CQYDVQQGEwJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMf3zvlY
-              zX1DYgv9QjRusMQjSRNdZi72/ydnxO/cAQ1GsgLZ8ewqIL1CnXtIs6i2F8poUOec
-              g957xk1db6sTqEWXRi5h9IfMUFcd5G7gIbJzjXCiLSVz6m9vZlvqR7BDka1VQhuH
-              rW2xEIE6+F2lWxJ+crimea/c5VlMKBCh+gQldFq3lTu6smGUz8xl8rhleBPgTgZz
-              TO4VuVO1dOb/S4lq9twfVYCTznF9vgaNaNh3la7yjzCf+zpSTGQD8TFO8ws1SZRq
-              O0bkabW8/5XsnwFHLT2LMSPkWMgMD8r+7xef93bvbEy7SA4Hw1Iow2xIIcTDYQ7F
-              77HQ3OjkogHmhrMCAwEAAaMxMC8wEgYDVR0TAQH/BAgwBgEB/wIBATAZBgNVHREE
-              EjAQgg5jYS5leGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEApRUUxw5Dn0wd
-              lFPApjn7n/SZyx5I1XnOHOIk8aWD0KFFa1zsnONlmRDgC8EQ5XKw3nMUwvnCQUR8
-              6FmrqP5gINHdqfvWiitC0eQdDhMhIHvdfUMBicgZ0XDVjDZhD6W9A+IWwR3ySLCf
-              lZHA5JwjYhpAjMYFXwSVZklOre34zJL6CRwgIUKjc9uyGPmlnVRFTUcUqLB9Uq/U
-              dFc7XMPBAbMt1frOJRj6P1OFtubuC0INpEhzivg3+w8bXmpEN6e2hBvIjoNkgnWF
-              O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
-              DTEzMjUtQA==
+              MIICdTCCAhqgAwIBAgIUb+uShZ0JU310L2hAGwwUrwVUnfEwCgYIKoZIzj0EAwIw
+              UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcw
+              NjI4WhcNMjYwNzAyMTcwNjI4WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+              bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
+              VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJoK0aCNaLCcCUqgVMdt
+              vHR3s5Lzoam9pEgShrFBSB8GyiijcxPU5YA4JIDDysEf2Ky/R5w9l57mewCSQNmA
+              XXyjgc0wgcowEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
+              dHRwOi8vY2EuZXhhbXBsZS5jb20vY3JsLnBlbTBBBgNVHR4BAf8ENzA1oTMwC4IJ
+              bG9jYWxob3N0MBeCFWxvY2FsaG9zdC5sb2NhbGRvbWFpbjALggkxMjcuMC4wLjEw
+              DgYDVR0PAQH/BAQDAgGmMDEGA1UdEQQqMCiGFmh0dHBzOi8vY2EuZXhhbXBsZS5j
+              b22CDmNhLmV4YW1wbGUuY29tMAoGCCqGSM49BAMCA0kAMEYCIQChfqu/Kj2LS789
+              AV16eZkDCFcvyIrKQ4fekxAH0XxviAIhAJxrR31Of4nvOvPFT2ui3LxbCqsmbbgO
+              Bm4sifJ4Buxd
               -----END CERTIFICATE-----
 
         private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
