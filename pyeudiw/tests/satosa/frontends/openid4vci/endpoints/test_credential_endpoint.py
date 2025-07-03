@@ -19,6 +19,8 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     assert_invalid_request_application_json
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
+    JWS_HELPER_VERIFY_MODULE,
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
@@ -68,10 +70,11 @@ def request_with_open_id_credential():
         "proof": VALID_PROOF
     }
 
+_CREDENTIAL_BASE_PATH = f"{BASE_PACKAGE}.endpoints.base_credential_endpoint"
 
 @pytest.fixture
 def credential_handler() -> CredentialHandler:
-    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint.UserCredentialEngine") as user_cred_eng_class:
+    with patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class:
         usc_mock_engine = MagicMock()
         usc_mock_engine.db_user_storage_engine = MagicMock()
         usc_mock_engine.db_credential_storage_engine = MagicMock()

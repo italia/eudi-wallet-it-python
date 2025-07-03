@@ -10,6 +10,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_content_type
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     INVALID_METHOD_FOR_GET_REQ,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
@@ -23,10 +24,11 @@ from pyeudiw.tools.content_type import (
     APPLICATION_JSON
 )
 
+_CREDENTIAL_OFFER_QRCODE_BASE_PATH = f"{BASE_PACKAGE}.endpoints.credential_offer_qrcode_endpoint"
 
 @pytest.fixture
 def credential_offer_qrcode_handler() -> CredentialOfferQrCodeHandler:
-    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint.Jinja2TemplateHandler") as MockTemplateHandler:
+    with patch(f"{_CREDENTIAL_OFFER_QRCODE_BASE_PATH}.Jinja2TemplateHandler") as MockTemplateHandler:
         return CredentialOfferQrCodeHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
 
 @pytest.fixture

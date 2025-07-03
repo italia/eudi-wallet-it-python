@@ -11,6 +11,10 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
+BASE_PACKAGE = "pyeudiw.satosa.frontends.openid4vci"
+_JWS_HELPER_MODULE = "pyeudiw.jwt.jws_helper.JWSHelper"
+JWS_HELPER_VERIFY_MODULE = f"{_JWS_HELPER_MODULE}.verify"
+
 MOCK_TRUST_CONFIG = {
     "federation": {
         "config": {
@@ -77,47 +81,47 @@ MOCK_CREDENTIAL_STORAGE_CONFIG ={
 
 MOCK_ENDPOINTS_CONFIG = {
     "par": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint",
         "class": "ParHandler",
         "path": "/par"
     },
     "credential_offer": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.credential_offer_endpoint",
         "class": "CredentialOfferHandler",
         "path": "/credential"
     },
     "authorization_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.authorization_endpoint",
         "class": "AuthorizationHandler",
         "path": "/authorization"
     },
     "token_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.token_endpoint",
         "class": "TokenHandler",
         "path": "/token"
     },
     "nonce_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.nonce_endpoint",
         "class": "NonceHandler",
         "path": "/nonce-endpoint"
     },
     "credential_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.credential_endpoint",
         "class": "CredentialHandler",
         "path": "/credential"
     },
     "deferred_credential_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.deferred_credential_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.deferred_credential_endpoint",
         "class": "DeferredCredentialHandler",
         "path": "/deferred-credential"
     },
     "notification_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.notification_endpoint",
         "class": "NotificationHandler",
         "path": "/notification"
     },
     "metadata_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.metadata_endpoint",
         "class": "MetadataHandler",
         "path": "/.well-known/openid-federation"
     }
