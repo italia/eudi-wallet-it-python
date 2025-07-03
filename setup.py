@@ -43,6 +43,7 @@ setup(
         "pydantic>=2.10,<2.11",
         "pyqrcode>=1.2,<1.3",
         "pem>=23.1,<23.2"
+        "cryptography>=45.0.0,<46.0.0"
     ],
     extra_require={
         "satosa": [

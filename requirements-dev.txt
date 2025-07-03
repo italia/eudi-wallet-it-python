@@ -1,4 +1,4 @@
-pytest
+qpytest
 pytest-mock
 coverage
 pdbpp
@@ -19,5 +19,4 @@ playwright
 freezegun
 pytest-mock
 PyJWT
-cryptography
 cose

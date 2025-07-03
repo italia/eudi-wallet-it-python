@@ -97,20 +97,29 @@ class ChainBuilder:
                 )
             )
         
+        x5c_issuer_names = [
+            x509.NameAttribute(NameOID.COMMON_NAME,
+                cn if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["cn"]
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                org_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["org_name"]
+            ),
+            x509.NameAttribute(NameOID.COUNTRY_NAME,
+                country_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["country_name"]
+            ),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS,
+                email_address if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["email_address"]
+            ),
+        ]
+
+        #  if organization_identifier:
+            #  x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER,
+                #  organization_identifier if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["organization_identifier"]
+            #  )
 
         cert = cert.issuer_name(
             x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        cn if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["cn"]
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        org_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["org_name"]
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        country_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["country_name"]
-                    ),
-                ]
+                x5c_issuer_names
             )
         ) \
         .public_key(private_key.public_key()) \
@@ -164,7 +173,8 @@ class ChainBuilder:
             "cn": cn,
             "org_name": org_name,
             "country_name": country_name,
-            "private_key": private_key
+            "private_key": private_key,
+            "email_address": email_address
         })
 
         self.chain.insert(0, cert)

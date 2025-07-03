@@ -31,7 +31,7 @@ def gen_chain(
         "uri": f"https://{ca_dns}",
         "crl_distr_point": f"https://{ca_dns}/crl.pem",
         "ca": True,
-        "path_length": 1,
+        "path_length": 2,
         "excluded_subtrees": [
             # x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
@@ -58,7 +58,7 @@ def gen_chain(
         "dns": intermediate_dns,
         "uri": f"https://{intermediate_cn}",
         "ca": True,
-        "path_length": 0,
+        "path_length": 1,
         "permitted_subtrees": [
             x509.UniformResourceIdentifier(f"https://{intermediate_dns}"),
             x509.DNSName(intermediate_dns),
@@ -79,7 +79,7 @@ def gen_chain(
             encipher_only=False,
             decipher_only=False
         ),
-        "crl_distr_point": f"https:{intermediate_dns}/crl/{intermediate_dns}.crl",
+        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl",
         "organization_identifier": "02394823904823908423904"
     }
 
@@ -90,8 +90,8 @@ def gen_chain(
         "email_address": f"info@{leaf_dns}",
         "dns": leaf_dns,
         "uri": leaf_uri,
-        "ca": False,
-        "path_length": None,
+        "ca": True,
+        "path_length": 0,
         "private_key": leaf_private_key,
         "permitted_subtrees": [
             x509.UniformResourceIdentifier(f"https://{leaf_dns}"),
