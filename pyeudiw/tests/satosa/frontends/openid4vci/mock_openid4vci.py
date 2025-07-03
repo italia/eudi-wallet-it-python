@@ -286,11 +286,16 @@ MOCK_STORAGE_CONFIG = {
 }
 
 MOCK_QR_CODE_CONFIG = {
-    "ui_template": "qr_code.html",
     "size": 250,
     "color": "#000000",
     "expiration_time": 120,
-    "logo_path": "wallet-it/wallet-icon-blue.svg"
+    "logo_path": "wallet-it/wallet-icon-blue.svg",
+    "ui": {
+        "static_storage_url": "http://localhost:static",
+        "template_folder": "templates",
+        "qrcode_template": "qr_code.html",
+        "authorization_error_template": "authorization_error.html"
+    }
 }
 
 MOCK_PYEUDIW_FRONTEND_CONFIG = {

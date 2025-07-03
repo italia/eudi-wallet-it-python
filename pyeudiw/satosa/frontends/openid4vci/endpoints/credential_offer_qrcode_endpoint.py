@@ -39,7 +39,7 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
-        self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui_template"])
+        self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui"])
         self.db_engine = OpenId4VciEngine(config).db_engine
 
 
@@ -99,8 +99,18 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
             ("qrcode.color", qrcode_settings.get("color")),
             ("qrcode.expiration_time", qrcode_settings.get("expiration_time")),
             ("qrcode.logo_path", qrcode_settings.get("logo_path")),
-            ("qrcode.ui_template", qrcode_settings.get("ui_template")),
         ])
+        ui = qrcode_settings.get("ui")
+        self._validate_required_configs([
+            ("qrcode.ui", ui),
+        ])
+        self._validate_required_configs([
+            ("qrcode.ui.static_storage_url", ui.get("static_storage_url")),
+            ("qrcode.ui.qrcode_template", ui.get("qrcode_template")),
+            ("qrcode.ui.template_folder", ui.get("template_folder")),
+            ("qrcode.ui.authorization_error_template", ui.get("authorization_error_template")),
+        ])
+        self._ui = ui
         credential_configurations = self.config_utils.get_credential_configurations()
         self._validate_required_configs([
             ("credential_configurations", credential_configurations)

@@ -50,7 +50,11 @@ config:
       path: &status_list_endpoint_path '/status'
 
   qrcode:
-    ui_template: "qr_code.html"
+    ui:
+      static_storage_url: !ENV SATOSA_BASE_STATIC
+      template_folder: "templates" # project root
+      qrcode_template: "qr_code.html"
+      authorization_error_template: "authorization_error.html"
     size: 250 # px
     color: '#000000'  # hex
     expiration_time: 120 # seconds

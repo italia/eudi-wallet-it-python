@@ -63,14 +63,16 @@ section, it's possible to override them or add new ones.
 
 ### QR Code Configuration
 
-| Key               | Description                                                                                           | Example Value                      |
-|-------------------|-------------------------------------------------------------------------------------------------------|------------------------------------|
-| `ui_template`     | Name of the HTML template used for rendering the QR code UI                                           | `"qr_code.html"`                   |
-| `size`            | Size of the QR code in pixels                                                                         | `250`                              |
-| `color`           | Hex color code for the QR code                                                                        | `"#000000"`                        |
-| `expiration_time` | Expiration time of the QR code in seconds                                                             | `120`                              |
-| `logo_path`       | Relative path to the logo image, used in the center of the QR code (relative to `static_storage_url`) | `"wallet-it/wallet-icon-blue.svg"` |
-
+| Key                               | Description                                                                                              | Example Value                      |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------|------------------------------------|
+| `size`                            | Size of the QR code in pixels                                                                            | `250`                              |
+| `color`                           | Hex color code for the QR code                                                                           | `"#000000"`                        |
+| `expiration_time`                 | Expiration time of the QR code in seconds                                                                | `120`                              |
+| `logo_path`                       | Relative path to the logo image, used in the center of the QR code (relative to `static_storage_url`)    | `"wallet-it/wallet-icon-blue.svg"` |
+| `ui.static_storage_url`           | Base URL or path for serving static assets (e.g., CSS, JS, images). Can be set via environment variable. | `!ENV SATOSA_BASE_STATIC`          |
+| `ui.template_folder`              | Path to the folder containing HTML templates, relative to the project root.                              | `templates`                        |
+| `ui.qrcode_template`              | Filename of the HTML template used to render a QR code page.                                             | `qr_code.html`                     |
+| `ui.authorization_error_template` | Filename of the HTML template shown when an authorization error occurs.                                  | `authorization_error.html`         |
 
 ##### JWT
 
