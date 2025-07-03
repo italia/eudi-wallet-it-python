@@ -584,84 +584,79 @@ config:
       module: pyeudiw.trust.handler.x509
       class: X509Handler
       config:
-        client_id: "x509_san_dns:localhost" # for openid4vci is intended as issuer id
+        issuer_id: "x509_san_dns:localhost"
         certificate_authorities:
           ca.example.com: |
             -----BEGIN CERTIFICATE-----
-            MIIDYzCCAkugAwIBAgIUHVMNJD9vqAA4mR+QAJyEQFW4kjQwDQYJKoZIhvcNAQEL
-            BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-            Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-            MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxl
-            LmNvbSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQsw
-            CQYDVQQGEwJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMf3zvlY
-            zX1DYgv9QjRusMQjSRNdZi72/ydnxO/cAQ1GsgLZ8ewqIL1CnXtIs6i2F8poUOec
-            g957xk1db6sTqEWXRi5h9IfMUFcd5G7gIbJzjXCiLSVz6m9vZlvqR7BDka1VQhuH
-            rW2xEIE6+F2lWxJ+crimea/c5VlMKBCh+gQldFq3lTu6smGUz8xl8rhleBPgTgZz
-            TO4VuVO1dOb/S4lq9twfVYCTznF9vgaNaNh3la7yjzCf+zpSTGQD8TFO8ws1SZRq
-            O0bkabW8/5XsnwFHLT2LMSPkWMgMD8r+7xef93bvbEy7SA4Hw1Iow2xIIcTDYQ7F
-            77HQ3OjkogHmhrMCAwEAAaMxMC8wEgYDVR0TAQH/BAgwBgEB/wIBATAZBgNVHREE
-            EjAQgg5jYS5leGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEApRUUxw5Dn0wd
-            lFPApjn7n/SZyx5I1XnOHOIk8aWD0KFFa1zsnONlmRDgC8EQ5XKw3nMUwvnCQUR8
-            6FmrqP5gINHdqfvWiitC0eQdDhMhIHvdfUMBicgZ0XDVjDZhD6W9A+IWwR3ySLCf
-            lZHA5JwjYhpAjMYFXwSVZklOre34zJL6CRwgIUKjc9uyGPmlnVRFTUcUqLB9Uq/U
-            dFc7XMPBAbMt1frOJRj6P1OFtubuC0INpEhzivg3+w8bXmpEN6e2hBvIjoNkgnWF
-            O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
-            DTEzMjUtQA==
+            MIICdTCCAhqgAwIBAgIUWZye8GO8BW0VXeEL7ZL7jTuCOGUwCgYIKoZIzj0EAwIw
+            UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+            VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTIw
+            NDEyWhcNMjYwNzAzMTIwNDEyWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+            bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
+            VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOyBquclhNj0elqYjs5e
+            WLrzcOmVqu9wCABJAresk++OLOJ/olo8BGyuxTkbb6Y0gytDmwrznA2VybWzBzN8
+            mpmjgc0wgcowEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
+            dHRwOi8vY2EuZXhhbXBsZS5jb20vY3JsLnBlbTBBBgNVHR4BAf8ENzA1oTMwC4IJ
+            bG9jYWxob3N0MBeCFWxvY2FsaG9zdC5sb2NhbGRvbWFpbjALggkxMjcuMC4wLjEw
+            DgYDVR0PAQH/BAQDAgGmMDEGA1UdEQQqMCiGFmh0dHBzOi8vY2EuZXhhbXBsZS5j
+            b22CDmNhLmV4YW1wbGUuY29tMAoGCCqGSM49BAMCA0kAMEYCIQDXBVE4DcFNyYmT
+            Qyd5cMqy3qnjZx/nLc4aZLVcsynLnQIhAOJJX2WkrpSflLEPI8OKnAFwXG0YY4+5
+            Pwnjzg6TxUf7
             -----END CERTIFICATE-----
         leaf_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
           ca.example.com:
             - |
               -----BEGIN CERTIFICATE-----
-              MIICsDCCAlagAwIBAgIUGKFK6lGFajbbVYiDh8QWTCr2iGIwCgYIKoZIzj0EAwIw
+              MIICrjCCAlOgAwIBAgIUfTiW+s21WdsfTlxXXWTdSX6fLigwCgYIKoZIzj0EAwIw
               TzEhMB8GA1UEAwwYaW50ZXJtZWRpYXRlLmV4YW1wbGUuY29tMR0wGwYDVQQKDBRF
-              eGFtcGxlIEludGVybWVkaWF0ZTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcwNjI4
-              WhcNMjYwNzAyMTcwNjI4WjBYMTIwMAYDVQQDDClDTj1sZWFmLmV4YW1wbGUuY29t
+              eGFtcGxlIEludGVybWVkaWF0ZTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTIwNDEy
+              WhcNMjYwNzAzMTIwNDEyWjBYMTIwMAYDVQQDDClDTj1sZWFmLmV4YW1wbGUuY29t
               LCBPPUV4YW1wbGUgTGVhZiwgQz1JVDEVMBMGA1UECgwMRXhhbXBsZSBMZWFmMQsw
               CQYDVQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFagOgWGxW8cS97J
               f0rvRq1QJ3hF0NSChOx4Kq77nTm3OOLnXMKUertDJkO3pPRC+sN13XQWkIKKde8e
-              0j6JuQejggEFMIIBATAMBgNVHRMBAf8EAjAAMEIGA1UdHwQ7MDkwN6A1oDOGMWh0
-              dHBzOi8vbGVhZi5leGFtcGxlLmNvbS9jcmwvbGVhZi5leGFtcGxlLmNvbS5jcmww
-              cwYDVR0eAQH/BGkwZ6AwMBqGGGh0dHBzOi8vbGVhZi5leGFtcGxlLmNvbTASghBs
-              ZWFmLmV4YW1wbGUuY29toTMwC4IJbG9jYWxob3N0MBeCFWxvY2FsaG9zdC5sb2Nh
-              bGRvbWFpbjALggkxMjcuMC4wLjEwDgYDVR0PAQH/BAQDAgGmMCgGA1UdEQQhMB+G
-              EGxlYWYuZXhhbXBsZS5vcmeCC2V4YW1wbGUuY29tMAoGCCqGSM49BAMCA0gAMEUC
-              IQCUjMZQg1PMy+ju5+mrO1ZlD0uTYBwczUP1BU6mUs5HlgIgFN0IM+OJaTGluTbg
-              lSNNn5hxATP0rFTsScr3l+7ckMY=
+              0j6JuQejggECMIH/MAwGA1UdEwEB/wQCMAAwQgYDVR0fBDswOTA3oDWgM4YxaHR0
+              cHM6Ly9sZWFmLmV4YW1wbGUuY29tL2NybC9sZWFmLmV4YW1wbGUuY29tLmNybDBz
+              BgNVHR4BAf8EaTBnoDAwGoYYaHR0cHM6Ly9sZWFmLmV4YW1wbGUuY29tMBKCEGxl
+              YWYuZXhhbXBsZS5jb22hMzALgglsb2NhbGhvc3QwF4IVbG9jYWxob3N0LmxvY2Fs
+              ZG9tYWluMAuCCTEyNy4wLjAuMTAOBgNVHQ8BAf8EBAMCAaYwJgYDVR0RBB8wHYYQ
+              bGVhZi5leGFtcGxlLm9yZ4IJbG9jYWxob3N0MAoGCCqGSM49BAMCA0kAMEYCIQDI
+              KtWGPGpuX1bK3WGWsbopLLiDd+LALxuKW4VupIQ6XgIhAIm+ZtVDww4C7ioGLuWN
+              kSOGmNUEj6hIofWhKOqfHMR/
               -----END CERTIFICATE-----
-            - |              
+            - |
               -----BEGIN CERTIFICATE-----
-              MIICqzCCAlGgAwIBAgIUGf+IstIE53VGjlAguY2Gf7np2NEwCgYIKoZIzj0EAwIw
+              MIICqjCCAlGgAwIBAgIUJ52Ep0pn4oIT6kmWYxiBagJqXQcwCgYIKoZIzj0EAwIw
               UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
-              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcw
-              NjI4WhcNMjYwNzAyMTcwNjI4WjBPMSEwHwYDVQQDDBhpbnRlcm1lZGlhdGUuZXhh
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTIw
+              NDEyWhcNMjYwNzAzMTIwNDEyWjBPMSEwHwYDVQQDDBhpbnRlcm1lZGlhdGUuZXhh
               bXBsZS5jb20xHTAbBgNVBAoMFEV4YW1wbGUgSW50ZXJtZWRpYXRlMQswCQYDVQQG
-              EwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAlPEDGBzVotqPPd1Naa9GFc
-              p3gS3bT/APTC0V/a/nnkEmkSoVXg8PgLZFZy4WpYDup+y+MzQVFKab49A1yqbiqj
+              EwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABC5kGNtUJ7FqnJzXisuP4xv6
+              ZCfXQEDGGlNxcKCUIwRLf+RZNZ3FfQrrabcnMFLX2KFEaP9aVfTBOx6+cDpnjQaj
               ggEGMIIBAjASBgNVHRMBAf8ECDAGAQH/AgEAMFIGA1UdHwRLMEkwR6BFoEOGQWh0
               dHBzOi8vaW50ZXJtZWRpYXRlLmV4YW1wbGUubmV0L2NybC9pbnRlcm1lZGlhdGUu
               ZXhhbXBsZS5uZXQuY3JsMEEGA1UdHgEB/wQ3MDWhMzALgglsb2NhbGhvc3QwF4IV
               bG9jYWxob3N0LmxvY2FsZG9tYWluMAuCCTEyNy4wLjAuMTAOBgNVHQ8BAf8EBAMC
               AaYwRQYDVR0RBD4wPIYgaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZXhhbXBsZS5jb22C
-              GGludGVybWVkaWF0ZS5leGFtcGxlLmNvbTAKBggqhkjOPQQDAgNIADBFAiEAnJa+
-              /o0fOpY+ynZXBu3Lqr4fLWlZgiFWMaGzDLX25gICICrMgbnLKfHq+bBi1N2mu6SA
-              J0nOYA9Kw8VY0lAbdzcv
+              GGludGVybWVkaWF0ZS5leGFtcGxlLmNvbTAKBggqhkjOPQQDAgNHADBEAiANvrDS
+              /Lj+t87MY1LUa3UUzegAzegbUMvqDgUEkOVDAwIgZBonrMYZs54nYKeXSI2039xG
+              qH67nj2HKZApZuww14w=
               -----END CERTIFICATE-----
             - |
               -----BEGIN CERTIFICATE-----
-              MIICdTCCAhqgAwIBAgIUb+uShZ0JU310L2hAGwwUrwVUnfEwCgYIKoZIzj0EAwIw
+              MIICdTCCAhqgAwIBAgIUWZye8GO8BW0VXeEL7ZL7jTuCOGUwCgYIKoZIzj0EAwIw
               UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
-              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAxMTcw
-              NjI4WhcNMjYwNzAyMTcwNjI4WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTIw
+              NDEyWhcNMjYwNzAzMTIwNDEyWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
               bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
-              VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJoK0aCNaLCcCUqgVMdt
-              vHR3s5Lzoam9pEgShrFBSB8GyiijcxPU5YA4JIDDysEf2Ky/R5w9l57mewCSQNmA
-              XXyjgc0wgcowEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
+              VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOyBquclhNj0elqYjs5e
+              WLrzcOmVqu9wCABJAresk++OLOJ/olo8BGyuxTkbb6Y0gytDmwrznA2VybWzBzN8
+              mpmjgc0wgcowEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
               dHRwOi8vY2EuZXhhbXBsZS5jb20vY3JsLnBlbTBBBgNVHR4BAf8ENzA1oTMwC4IJ
               bG9jYWxob3N0MBeCFWxvY2FsaG9zdC5sb2NhbGRvbWFpbjALggkxMjcuMC4wLjEw
               DgYDVR0PAQH/BAQDAgGmMDEGA1UdEQQqMCiGFmh0dHBzOi8vY2EuZXhhbXBsZS5j
-              b22CDmNhLmV4YW1wbGUuY29tMAoGCCqGSM49BAMCA0kAMEYCIQChfqu/Kj2LS789
-              AV16eZkDCFcvyIrKQ4fekxAH0XxviAIhAJxrR31Of4nvOvPFT2ui3LxbCqsmbbgO
-              Bm4sifJ4Buxd
+              b22CDmNhLmV4YW1wbGUuY29tMAoGCCqGSM49BAMCA0kAMEYCIQDXBVE4DcFNyYmT
+              Qyd5cMqy3qnjZx/nLc4aZLVcsynLnQIhAOJJX2WkrpSflLEPI8OKnAFwXG0YY4+5
+              Pwnjzg6TxUf7
               -----END CERTIFICATE-----
 
         private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
