@@ -29,7 +29,7 @@ def gen_chain(
         "email_address": f"info@{ca_dns}",
         "dns": ca_dns,
         "uri": f"https://{ca_dns}",
-        "crl_distr_point": f"https://{ca_dns}/crl.pem",
+        "crl_distr_point": f"https://{ca_dns}/crl/{ca_dns}.crl",
         "ca": True,
         "path_length": 2,
         "excluded_subtrees": [
