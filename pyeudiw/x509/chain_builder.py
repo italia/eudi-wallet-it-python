@@ -18,6 +18,7 @@ class ChainBuilder:
         cn: str,
         org_name: str,
         country_name: str,
+        email_address: str,
         dns: str,
         uri: str,
         ca: bool,
@@ -29,7 +30,8 @@ class ChainBuilder:
         not_valid_after: datetime = datetime.now() + timedelta(days=365),
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
-        key_usage: x509.KeyUsage | None = None
+        key_usage: x509.KeyUsage | None = None,
+        organization_identifier: str|None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -68,20 +70,30 @@ class ChainBuilder:
                 ec.SECP256R1(),
             )
 
+        x5c_names = [
+            x509.NameAttribute(NameOID.COMMON_NAME,
+                cn
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                org_name
+            ),
+            x509.NameAttribute(NameOID.COUNTRY_NAME,
+                country_name
+            ),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS,
+                email_address
+            )
+        ]
+
+        if organization_identifier:
+            x5c_names.append(
+                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier)
+            )
+        
         cert = x509.CertificateBuilder() \
             .subject_name(
                 x509.Name(
-                    [
-                        x509.NameAttribute(NameOID.COMMON_NAME,
-                            cn
-                        ),
-                        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                            org_name
-                        ),
-                        x509.NameAttribute(NameOID.COUNTRY_NAME,
-                            country_name
-                        ),
-                    ]
+                    x5c_names
                 )
             )
         
