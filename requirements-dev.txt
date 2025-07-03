@@ -1,4 +1,4 @@
-qpytest
+pytest
 pytest-mock
 coverage
 pdbpp
