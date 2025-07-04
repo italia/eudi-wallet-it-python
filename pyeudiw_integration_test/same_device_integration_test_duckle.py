@@ -6,7 +6,7 @@ import urllib.parse
 import requests
 
 from pyeudiw.jwt.utils import decode_jwt_payload
-from .commons import (
+from pyeudiw_integration_test.initializer.commons import (
     ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
@@ -14,8 +14,8 @@ from .commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
-from .commons_duckle import create_authorize_response_duckle, create_verifiable_presentations
-from .settings import TIMEOUT_S
+from pyeudiw_integration_test.initializer.commons_duckle import create_authorize_response_duckle, create_verifiable_presentations
+from pyeudiw_integration_test.initializer.settings import TIMEOUT_S
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
