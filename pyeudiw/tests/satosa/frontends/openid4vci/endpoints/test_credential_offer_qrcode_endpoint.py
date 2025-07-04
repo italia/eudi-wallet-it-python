@@ -10,6 +10,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_content_type
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     INVALID_METHOD_FOR_GET_REQ,
     MOCK_PYEUDIW_FRONTEND_CONFIG,
@@ -23,10 +24,11 @@ from pyeudiw.tools.content_type import (
     APPLICATION_JSON
 )
 
+_CREDENTIAL_OFFER_QRCODE_BASE_PATH = f"{BASE_PACKAGE}.endpoints.credential_offer_qrcode_endpoint"
 
 @pytest.fixture
 def credential_offer_qrcode_handler() -> CredentialOfferQrCodeHandler:
-    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint.Jinja2TemplateHandler") as MockTemplateHandler:
+    with patch(f"{_CREDENTIAL_OFFER_QRCODE_BASE_PATH}.Jinja2TemplateHandler") as MockTemplateHandler:
         return CredentialOfferQrCodeHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
 
 @pytest.fixture
@@ -42,7 +44,11 @@ def _mock_configurations(overrides=None):
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.color": REMOVE}), ["qrcode.color"]),
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.expiration_time": REMOVE}), ["qrcode.expiration_time"]),
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.logo_path": REMOVE}), ["qrcode.logo_path"]),
-    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui_template": REMOVE}), ["qrcode.ui_template"]),
+    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui": REMOVE}), ["qrcode.ui"]),
+    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui.static_storage_url": REMOVE}), ["qrcode.ui.static_storage_url"]),
+    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui.template_folder": REMOVE}), ["qrcode.ui.template_folder"]),
+    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui.qrcode_template": REMOVE}), ["qrcode.ui.qrcode_template"]),
+    (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"qrcode.ui.authorization_error_template": REMOVE}), ["qrcode.ui.authorization_error_template"]),
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"credential_configurations": REMOVE}), ["credential_configurations"]),
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"credential_configurations.status_list": REMOVE}), ["credential_configurations.status_list"]),
     (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG,{"credential_configurations.status_list.path": REMOVE}), ["credential_configurations.status_list.path"]),

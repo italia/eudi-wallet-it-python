@@ -47,10 +47,14 @@ config:
     status_list:
       module: pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
-      path: '/status' &status_list_endpoint_path
+      path: &status_list_endpoint_path '/status'
 
   qrcode:
-    ui_template: "qr_code.html"
+    ui:
+      static_storage_url: !ENV SATOSA_BASE_STATIC
+      template_folder: "templates" # project root
+      qrcode_template: "qr_code.html"
+      authorization_error_template: "authorization_error.html"
     size: 250 # px
     color: '#000000'  # hex
     expiration_time: 120 # seconds
@@ -89,19 +93,20 @@ config:
       - ES256
       - ES384
       - ES512
-    access_token_exp: 90 # minutes
-    refresh_token_exp: 120 # minutes
-    par_exp: 90 # minutes
+    access_token_exp: 90 # mandatory expiration time, in minutes, for the JWT access token returned by the `token` endpoint
+    refresh_token_exp: 120 # mandatory expiration time, in minutes, for the JWT refresh token returned by the `token` endpoint
+    par_exp: 90 # mandatory expiration time, in minutes, for the JWT token returned by the `par` endpoint
 
   # private jwk
+  # WARNING: change these keys in production env. Keep these keys unchanged can pose a serious security risk.
   metadata_jwks: &metadata_jwks
     - kty: EC # Please note: this is the first key [0] and it is used for signing the presentation requests as mso_mdoc too
-      d: i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc
+      d: YbMCJU43_GkbjUlWwTA5LbVvRRmz4788-k4zl2mjwrE
       use: sig
       crv: P-256
-      kid: f10aca0992694b3581f6f699bfc8a2c6cc687725
-      x: jE2RpcQbFQxKpMqehahgZv6smmXD0i/LTP2QRzMADk4
-      y: qkMx5iqt5PhPu5tfctS6HsP+FmLgrxfrzUV2GwMQuh8
+      kid: 2uhBmKZqkmLaPdJjvQ6ll6dsWXr9FGlouTnhg3mUec0
+      x: o8I43oRYmVk5x6Zmq2_Ni--cHD5S81qTD_5cQum2Atk
+      y: RrhbyuxVw6ZXEpbb8H_HyvEyL7rX0UeSZqcvulHuyFQ
       alg: ES256
 
   #This is the configuration for the relaying party metadata
@@ -555,13 +560,15 @@ config:
           - https://trust-anchor.edu:
               -
           - https://trust-anchor.example.org:
-              - kty: RSA
-                d: QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q
-                e: AQAB
-                kid: 9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w
-                n: utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw
-                p: 2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0
-                q: 2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM
+                # WARNING: change these keys in production env. Keep these keys unchanged can pose a serious security risk.
+              - kty: EC,
+                d: WbhdFpNhUTQ7gfh8XUQzMfe8JPVAKAh4qCfHRMqyQE8,
+                use: sig,
+                crv: P-256,
+                kid: 4_6lPScdml0BplAsv8RO0u7B2XnrvusAMpFWNI_QJco,
+                x: aPZam7vAOLAdx3HOAQM3PJgczLS2Od8uIxW755a0T2c,
+                y: cUnLFFz8S_STZmDRYOghxMNJobDCtVQLEyeF_VkJl9Y,
+                alg: ES256
         default_sig_alg: "RS256"
         trust_marks: []
         federation_entity_metadata: *federation_entity_metadata
@@ -577,101 +584,79 @@ config:
       module: pyeudiw.trust.handler.x509
       class: X509Handler
       config:
-        client_id: "x509_san_dns:localhost" # for openid4vci is intended as issuer id
+        issuer_id: "x509_san_dns:localhost"
         certificate_authorities:
           ca.example.com: |
             -----BEGIN CERTIFICATE-----
-            MIIDYzCCAkugAwIBAgIUHVMNJD9vqAA4mR+QAJyEQFW4kjQwDQYJKoZIhvcNAQEL
-            BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-            Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-            MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxl
-            LmNvbSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQsw
-            CQYDVQQGEwJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMf3zvlY
-            zX1DYgv9QjRusMQjSRNdZi72/ydnxO/cAQ1GsgLZ8ewqIL1CnXtIs6i2F8poUOec
-            g957xk1db6sTqEWXRi5h9IfMUFcd5G7gIbJzjXCiLSVz6m9vZlvqR7BDka1VQhuH
-            rW2xEIE6+F2lWxJ+crimea/c5VlMKBCh+gQldFq3lTu6smGUz8xl8rhleBPgTgZz
-            TO4VuVO1dOb/S4lq9twfVYCTznF9vgaNaNh3la7yjzCf+zpSTGQD8TFO8ws1SZRq
-            O0bkabW8/5XsnwFHLT2LMSPkWMgMD8r+7xef93bvbEy7SA4Hw1Iow2xIIcTDYQ7F
-            77HQ3OjkogHmhrMCAwEAAaMxMC8wEgYDVR0TAQH/BAgwBgEB/wIBATAZBgNVHREE
-            EjAQgg5jYS5leGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEApRUUxw5Dn0wd
-            lFPApjn7n/SZyx5I1XnOHOIk8aWD0KFFa1zsnONlmRDgC8EQ5XKw3nMUwvnCQUR8
-            6FmrqP5gINHdqfvWiitC0eQdDhMhIHvdfUMBicgZ0XDVjDZhD6W9A+IWwR3ySLCf
-            lZHA5JwjYhpAjMYFXwSVZklOre34zJL6CRwgIUKjc9uyGPmlnVRFTUcUqLB9Uq/U
-            dFc7XMPBAbMt1frOJRj6P1OFtubuC0INpEhzivg3+w8bXmpEN6e2hBvIjoNkgnWF
-            O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
-            DTEzMjUtQA==
+            MIICMTCCAdegAwIBAgIUFz6Jqc1G5/Ykbl6cM5VGZ+LOnRIwCgYIKoZIzj0EAwIw
+            UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+            VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTY0
+            NDQwWhcNMjYwNzAzMTY0NDQwWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+            bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
+            VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABPomtRSvN+6K9ld74iPp
+            5YWy7Cv2jWcQ7qlx8AnFl9fCEx8qVK0yW0PUp+tDXE7PSELY7YgXnMIyU7xzR0n0
+            fJejgYowgYcwEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
+            dHRwOi8vY2EuZXhhbXBsZS5jb20vY3JsLnBlbTAOBgNVHQ8BAf8EBAMCAaYwMQYD
+            VR0RBCowKIYWaHR0cHM6Ly9jYS5leGFtcGxlLmNvbYIOY2EuZXhhbXBsZS5jb20w
+            CgYIKoZIzj0EAwIDSAAwRQIhAPpXUeGOprVYUqNZX0gC4dbXSUqeTeaqt3WHyBVl
+            wLulAiA3ZUIZHwa0P+xT1TxnED6udHf9+yyFQQEntrw7NdzveQ==
             -----END CERTIFICATE-----
-        relying_party_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
+        leaf_certificate_chains_by_ca: # X.509 chains in PEM format. Please note: Leaf's certificate MUST be related to metadata_jwks[0]
           ca.example.com:
             - |
               -----BEGIN CERTIFICATE-----
-              MIIDfzCCAmegAwIBAgIUN3niXMK8XOjhIvf6EUD4sz80XIkwDQYJKoZIhvcNAQEL
-              BQAwTjEpMCcGA1UEAwwgaHR0cHM6Ly9pbnRlcm1lZGlhdGUuZXhhbXBsZS5uZXQx
-              FDASBgNVBAoMC0V4YW1wbGUgSU5UMQswCQYDVQQGEwJJVDAeFw0yNTA0MDMxNTQ3
-              NTZaFw0yNjA0MDQxNTQ3NTZaMFcxMTAvBgNVBAMMKENOPWVhZi5leGFtcGxlLmNv
-              bSwgTz1FeGFtcGxlIExlYWYsIEM9SVQxFTATBgNVBAoMDEV4YW1wbGUgTGVhZjEL
-              MAkGA1UEBhMCSVQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCw/qO3
-              VfAkTQkMrHLgHuvcl1vxbptJGhW6fKNYyCXkhp+oXAewmViAIBY95OsAv6LKN2dY
-              LVywe5OpaN2d0Mv6ioRquuqgMDJxWR8VNRMPzX/BWFZTMDDGFAeJPs9NQixXub1U
-              aV8L+R0KlCXkJwrXLHadDUpupY5XX/lacyCc38Sk2bO2RkOcmYp51V245vZ0pbCc
-              tLd9wa9TFdzzsOMDMLa9+BBKhB9cBlvAi3JLo6KcWJScHFG+31ljYhqmMjX7DAMo
-              p5Guo8L59XahZOsyqhgC8gOd/0CMocBsjDurfTX7v55pQwXWFW0DPVd5e8ynTArz
-              +5Kj1WC/W8eEGk7BAgMBAAGjTDBKMAwGA1UdEwEB/wQCMAAwOgYDVR0RBDMwMYIQ
-              bGVhZi5leGFtcGxlLm9yZ4YdaHR0cHM6Ly9leGFtcGxlLmNvbS9PcGVuSUQ0VlAw
-              DQYJKoZIhvcNAQELBQADggEBACF2aoCODW4tziNQs41C9N363xYPt21uIQy0CQ24
-              1hRZ8Ev6yIQ/WORfzciLHZsWizZdS3D5oDY7K+WAgMpDSR0Ah9dXMfJjOxcUib57
-              Zh+YOi443fjU/5/DBHyHgfEvDy1QXXHJuDbgchzAv9u8uY0ibUb/GHy4OKaj9bOI
-              8g6qgZtT2wkfdHQPX+fpwZueTaHhoXJV+JTuE227fIjLZ5ThbvO0xbE3q4I/v+Gu
-              ZZ713LQaG2RwdJWTimJUi6Sro5s0YR6qRGejHmiS1FbJOOG4AAE4PkhkxVogItVE
-              Z4nqCEfD1RT6iwiWyXIYh3cNpWvcE3t4j7e/Su5IhW/Cv2E=
+              MIICdzCCAh2gAwIBAgIUVYrg1ljjjT83r6pbjHi2/j5gkY0wCgYIKoZIzj0EAwIw
+              TzEhMB8GA1UEAwwYaW50ZXJtZWRpYXRlLmV4YW1wbGUuY29tMR0wGwYDVQQKDBRF
+              eGFtcGxlIEludGVybWVkaWF0ZTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTY0NDQw
+              WhcNMjYwNzAzMTY0NDQwWjBYMTIwMAYDVQQDDClDTj1sZWFmLmV4YW1wbGUuY29t
+              LCBPPUV4YW1wbGUgTGVhZiwgQz1JVDEVMBMGA1UECgwMRXhhbXBsZSBMZWFmMQsw
+              CQYDVQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKPCON6EWJlZOcem
+              ZqtvzYvvnBw+UvNakw/+XELptgLZRrhbyuxVw6ZXEpbb8H/HyvEyL7rX0UeSZqcv
+              ulHuyFSjgc0wgcowDAYDVR0TAQH/BAIwADBCBgNVHR8EOzA5MDegNaAzhjFodHRw
+              czovL2xlYWYuZXhhbXBsZS5jb20vY3JsL2xlYWYuZXhhbXBsZS5jb20uY3JsMD4G
+              A1UdHgEB/wQ0MDKgMDAahhhodHRwczovL2xlYWYuZXhhbXBsZS5jb20wEoIQbGVh
+              Zi5leGFtcGxlLmNvbTAOBgNVHQ8BAf8EBAMCAaYwJgYDVR0RBB8wHYYQbGVhZi5l
+              eGFtcGxlLm9yZ4IJbG9jYWxob3N0MAoGCCqGSM49BAMCA0gAMEUCIQDHGzkyoZqw
+              /+fXJOpZ3CfRarm/oYnvFyh/bRbh+AqgrgIgZvS4ThK4NNIs/h2iffGM13xpmIzq
+              6lqkCyBfqz25Sj4=
               -----END CERTIFICATE-----
             - |
               -----BEGIN CERTIFICATE-----
-              MIIDRDCCAiygAwIBAgIUUOBXQmkRjQvfhU1YJbMEOMnPxvQwDQYJKoZIhvcNAQEL
-              BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-              Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-              MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBOMSkwJwYDVQQDDCBodHRwczovL2ludGVy
-              bWVkaWF0ZS5leGFtcGxlLm5ldDEUMBIGA1UECgwLRXhhbXBsZSBJTlQxCzAJBgNV
-              BAYTAklUMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsSUAY+mCs1eB
-              /hWKtF0kncwTRn3jgczjZWmUSSBZT3PzqmD9uqlgEBrv2sOGwO4bBDnutCAHhfnl
-              2gXifvg2PJHQWu/g1kVY396K+d91nrqQhUabo2cpEca66t7InPMnXkMR5DG6rNP6
-              l05OLKQIvoTaHzef0rAS4f+5gF7IcRtGq9G8QRnd2lwLmDYRPKY3jp/uvLosOatv
-              Nx5p2XtxETgOSv4GEtjax3jxkMDIIPrHwTJGWwsGvasEI5lQ/G67OjFZjjSaoJ95
-              SSPhXoIydmOmXKDN3GY7ZqT9HntuSzyB3GZ4DMLyOdZdvYvt08hUCJnnY0kGhhtW
-              gW0xb/wyKwIDAQABoxYwFDASBgNVHRMBAf8ECDAGAQH/AgEAMA0GCSqGSIb3DQEB
-              CwUAA4IBAQBAwwumBWSI/guarZsNd8hEOVZ7dWRQDLxfDZB1jKtgqA2jCEbNGwpY
-              41NRRfkTi9EfZXXVdbk9xrjNWVsGdDn/Kh/1/b4uatu2ocRG5R3e2KkZMaK1/Ru2
-              LFP6gvi7i8dvEr8IQqlg+CrEb11CjMXZi36jRZhtSUnUfmUR4hqCN/qzALdiKvHS
-              NpEu0D6x6l7YEhwtpX7bvWdnEzCUrAUltMPO9pZUR1LBSPTCMSd+vUhJw/84EJEg
-              D6Lw8OxzYyzSNOrGTqfplqlHrD/WpI6DB6Yq4Rpefz84AWraGVtZbYAlQMyK1EKS
-              C3Lef0OGQC0anzAXDsGr1As8HdEuSngu
+              MIICZjCCAgygAwIBAgIUdkS8NW1gb+EpEf4TfGo9gnug22UwCgYIKoZIzj0EAwIw
+              UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTY0
+              NDQwWhcNMjYwNzAzMTY0NDQwWjBPMSEwHwYDVQQDDBhpbnRlcm1lZGlhdGUuZXhh
+              bXBsZS5jb20xHTAbBgNVBAoMFEV4YW1wbGUgSW50ZXJtZWRpYXRlMQswCQYDVQQG
+              EwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKByvNynPuIVdmOmguNHc7mo
+              a/LWrobhDg71tvJNrDS+Jlf4LCZUgdUUF0SR9xx63QoKM1gV8x4Dd+rWMtZH5kmj
+              gcIwgb8wEgYDVR0TAQH/BAgwBgEB/wIBADBSBgNVHR8ESzBJMEegRaBDhkFodHRw
+              czovL2ludGVybWVkaWF0ZS5leGFtcGxlLm5ldC9jcmwvaW50ZXJtZWRpYXRlLmV4
+              YW1wbGUubmV0LmNybDAOBgNVHQ8BAf8EBAMCAaYwRQYDVR0RBD4wPIYgaHR0cHM6
+              Ly9pbnRlcm1lZGlhdGUuZXhhbXBsZS5jb22CGGludGVybWVkaWF0ZS5leGFtcGxl
+              LmNvbTAKBggqhkjOPQQDAgNIADBFAiEApaJ9yW166NquLjChDYUTjvgV47cWYWoz
+              H0dfJuT0bKACIDJA0vvf7+hIHnUHMX6q3ajvxe38x/SdY/sIB15TQ7PD
               -----END CERTIFICATE-----
             - |
               -----BEGIN CERTIFICATE-----
-              MIIDYzCCAkugAwIBAgIUHVMNJD9vqAA4mR+QAJyEQFW4kjQwDQYJKoZIhvcNAQEL
-              BQAwUjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwg
-              Qz1JVDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNDAz
-              MTU0NzU2WhcNMjYwNDA0MTU0NzU2WjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxl
-              LmNvbSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQsw
-              CQYDVQQGEwJJVDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMf3zvlY
-              zX1DYgv9QjRusMQjSRNdZi72/ydnxO/cAQ1GsgLZ8ewqIL1CnXtIs6i2F8poUOec
-              g957xk1db6sTqEWXRi5h9IfMUFcd5G7gIbJzjXCiLSVz6m9vZlvqR7BDka1VQhuH
-              rW2xEIE6+F2lWxJ+crimea/c5VlMKBCh+gQldFq3lTu6smGUz8xl8rhleBPgTgZz
-              TO4VuVO1dOb/S4lq9twfVYCTznF9vgaNaNh3la7yjzCf+zpSTGQD8TFO8ws1SZRq
-              O0bkabW8/5XsnwFHLT2LMSPkWMgMD8r+7xef93bvbEy7SA4Hw1Iow2xIIcTDYQ7F
-              77HQ3OjkogHmhrMCAwEAAaMxMC8wEgYDVR0TAQH/BAgwBgEB/wIBATAZBgNVHREE
-              EjAQgg5jYS5leGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEApRUUxw5Dn0wd
-              lFPApjn7n/SZyx5I1XnOHOIk8aWD0KFFa1zsnONlmRDgC8EQ5XKw3nMUwvnCQUR8
-              6FmrqP5gINHdqfvWiitC0eQdDhMhIHvdfUMBicgZ0XDVjDZhD6W9A+IWwR3ySLCf
-              lZHA5JwjYhpAjMYFXwSVZklOre34zJL6CRwgIUKjc9uyGPmlnVRFTUcUqLB9Uq/U
-              dFc7XMPBAbMt1frOJRj6P1OFtubuC0INpEhzivg3+w8bXmpEN6e2hBvIjoNkgnWF
-              O6HVbDnJXTA34/I4snisJfZQ+Z9gln921+2Q27sMvyS7aBqtocDuWB0w3XZ3aCYk
-              DTEzMjUtQA==
+              MIICMTCCAdegAwIBAgIUFz6Jqc1G5/Ykbl6cM5VGZ+LOnRIwCgYIKoZIzj0EAwIw
+              UjEuMCwGA1UEAwwlQ049Y2EuZXhhbXBsZS5jb20sIE89RXhhbXBsZSBDQSwgQz1J
+              VDETMBEGA1UECgwKRXhhbXBsZSBDQTELMAkGA1UEBhMCSVQwHhcNMjUwNzAyMTY0
+              NDQwWhcNMjYwNzAzMTY0NDQwWjBSMS4wLAYDVQQDDCVDTj1jYS5leGFtcGxlLmNv
+              bSwgTz1FeGFtcGxlIENBLCBDPUlUMRMwEQYDVQQKDApFeGFtcGxlIENBMQswCQYD
+              VQQGEwJJVDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABPomtRSvN+6K9ld74iPp
+              5YWy7Cv2jWcQ7qlx8AnFl9fCEx8qVK0yW0PUp+tDXE7PSELY7YgXnMIyU7xzR0n0
+              fJejgYowgYcwEgYDVR0TAQH/BAgwBgEB/wIBATAuBgNVHR8EJzAlMCOgIaAfhh1o
+              dHRwOi8vY2EuZXhhbXBsZS5jb20vY3JsLnBlbTAOBgNVHQ8BAf8EBAMCAaYwMQYD
+              VR0RBCowKIYWaHR0cHM6Ly9jYS5leGFtcGxlLmNvbYIOY2EuZXhhbXBsZS5jb20w
+              CgYIKoZIzj0EAwIDSAAwRQIhAPpXUeGOprVYUqNZX0gC4dbXSUqeTeaqt3WHyBVl
+              wLulAiA3ZUIZHwa0P+xT1TxnED6udHf9+yyFQQEntrw7NdzveQ==
               -----END CERTIFICATE-----
 
-        private_keys: *metadata_jwks
+        private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
 
   # Mongodb database configuration
+  # Configuration for retrieving user datas, it stores user attributes required to
+  # generate the requested credential with `credential` endpoint.
   user_storage:
     mongo_db:
       storage:
@@ -686,6 +671,9 @@ config:
           connection_params:
             username: !ENV MONGODB_USERNAME
             password: !ENV MONGODB_PASSWORD
+  # Configuration for retrieving credentials data, it's a storage system used by both
+  # the `credential` and `status_list` endpoints. It maintains the state of each credential in relation to the corresponding
+  # user, supporting status updates such as issuance and revocation.
   credential_storage:
     mongo_db:
       storage:

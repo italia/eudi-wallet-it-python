@@ -3,19 +3,19 @@
 To install the OpenID4VCI SATOSA frontend you just need to:
 
 1. install this package and the extra dependencies: `pip install pyeudiw[satosa]`
-2. copy and customize [example/satosa/openid4vci_frontend.yaml](example/satosa/openid4vci_frontend.yaml)
+2. copy and customize [example/satosa/openid4vci_frontend.yaml](../example/satosa/openid4vci_frontend.yaml)
 3. include the fronted configuration in your satosa configuration
 4. customize the file `internal_attributes.yaml` used in your deployment, enabling the `openid4ci` protocol.
-   See [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml) as example.
+   See [example/satosa/internal_attributes.yaml](../example/satosa/internal_attributes.yaml) as example.
 5. start Satosa.
 
 ## Frontend configuration
 
-1. Customize [example/satosa/openid4vci_frontend.yaml](example/satosa/openid4vci_frontend.yaml), then copy it in your
+1. Customize [example/satosa/openid4vci_frontend.yaml](../example/satosa/openid4vci_frontend.yaml), then copy it in your
    satosa `plugins/frontend` project folder. Example `plugins/frontend/openid4vci_frontend.yaml`;
 2. Add `  - "plugins/frontend/openid4vci_frontend.yaml"` in your SATOSA `proxy_conf.yaml` file, within the section
    `FRONTEND_MODULES`;
-3. Customize [example/satosa/internal_attributes.yaml](example/satosa/internal_attributes.yaml), then copy it the path
+3. Customize [example/satosa/internal_attributes.yaml](../example/satosa/internal_attributes.yaml), then copy it the path
    your have configured in your `proxy_conf.yaml` file.
 
 ### Frontend Configuration Parameters
@@ -63,14 +63,16 @@ section, it's possible to override them or add new ones.
 
 ### QR Code Configuration
 
-| Key               | Description                                                                                           | Example Value                      |
-|-------------------|-------------------------------------------------------------------------------------------------------|------------------------------------|
-| `ui_template`     | Name of the HTML template used for rendering the QR code UI                                           | `"qr_code.html"`                   |
-| `size`            | Size of the QR code in pixels                                                                         | `250`                              |
-| `color`           | Hex color code for the QR code                                                                        | `"#000000"`                        |
-| `expiration_time` | Expiration time of the QR code in seconds                                                             | `120`                              |
-| `logo_path`       | Relative path to the logo image, used in the center of the QR code (relative to `static_storage_url`) | `"wallet-it/wallet-icon-blue.svg"` |
-
+| Key                               | Description                                                                                              | Example Value                      |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------|------------------------------------|
+| `size`                            | Size of the QR code in pixels                                                                            | `250`                              |
+| `color`                           | Hex color code for the QR code                                                                           | `"#000000"`                        |
+| `expiration_time`                 | Expiration time of the QR code in seconds                                                                | `120`                              |
+| `logo_path`                       | Relative path to the logo image, used in the center of the QR code (relative to `static_storage_url`)    | `"wallet-it/wallet-icon-blue.svg"` |
+| `ui.static_storage_url`           | Base URL or path for serving static assets (e.g., CSS, JS, images). Can be set via environment variable. | `!ENV SATOSA_BASE_STATIC`          |
+| `ui.template_folder`              | Path to the folder containing HTML templates, relative to the project root.                              | `templates`                        |
+| `ui.qrcode_template`              | Filename of the HTML template used to render a QR code page.                                             | `qr_code.html`                     |
+| `ui.authorization_error_template` | Filename of the HTML template shown when an authorization error occurs.                                  | `authorization_error.html`         |
 
 ##### JWT
 
