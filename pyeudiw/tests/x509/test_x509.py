@@ -173,7 +173,7 @@ def test_chain_issuer():
     issuer = get_issuer_from_x5c(chain)
     trust_anchor = get_trust_anchor_from_x5c(chain)
 
-    assert issuer == "leaf.example.org"
+    assert issuer == "leaf.example.it"
     assert trust_anchor == "ca.example.com"
 
 
