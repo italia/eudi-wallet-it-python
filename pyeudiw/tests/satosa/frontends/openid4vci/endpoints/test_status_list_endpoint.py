@@ -14,6 +14,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_content_type, assert_invalid_request_application_json
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     INVALID_METHOD_FOR_GET_REQ,
     MOCK_STATUS_LIST_CONFIG,
@@ -30,11 +31,11 @@ from pyeudiw.tools.content_type import (
     ACCEPT_HEADER
 )
 
-_BASE_PATH = "pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint"
+_STATUS_LIST_BASE_PATH = f"{BASE_PACKAGE}.endpoints.status_list_endpoint"
 
 @pytest.fixture
 def status_list_handler() -> StatusListHandler:
-    with (patch(f"{_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
+    with (patch(f"{_STATUS_LIST_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
           patch("pyeudiw.storage.user_credential_db_engine.CredentialStorage") as credential_storage_mock):
         user_cred_eng_class.db_user_storage_engine = credential_storage_mock.return_value
         handler = StatusListHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)

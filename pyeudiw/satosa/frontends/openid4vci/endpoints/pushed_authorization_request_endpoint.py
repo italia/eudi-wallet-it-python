@@ -33,7 +33,7 @@ CLASS_NAME = "ParHandler.pushed_authorization_request_endpoint"
 
 class ParHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the par endpoints class.
         Args:

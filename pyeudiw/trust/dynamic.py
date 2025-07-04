@@ -363,8 +363,16 @@ class CombinedTrustEvaluator(BaseLogger):
             try:
                 # every trust evaluation method might use their own client id
                 # but a default one always therefore required
-                if not handler_config["config"].get("client_id"):
+                client_id = handler_config["config"].get("client_id")
+                issuer_id = handler_config["config"].get("issuer_id")
+                if client_id and issuer_id:
+                    raise TrustConfigurationError(
+                        f"invalid configuration for {handler_name}: client_id and issuer_id both configurated"
+                    )
+                if not client_id and not issuer_id:
                     handler_config["config"]["client_id"] = default_client_id
+                else:
+                    handler_config["config"]["client_id"] = client_id or issuer_id
 
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],

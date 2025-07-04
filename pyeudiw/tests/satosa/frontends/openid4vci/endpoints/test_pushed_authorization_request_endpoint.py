@@ -14,10 +14,11 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_request_method,
     do_test_invalid_content_type,
     do_test_invalid_oauth_client_attestation,
-    JWS_HELPER_VERIFY_TARGET,
     assert_invalid_request_application_json
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
+    JWS_HELPER_VERIFY_MODULE,
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED,
     INVALID_ATTESTATION_HEADERS,
@@ -42,7 +43,8 @@ _MOCK_PAR_REQUEST = {
     "client_id": _MOCK_VALID_THUMBPRINT
 }
 
-_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = "pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint.validate_oauth_client_attestation"
+_PAR_BASE_PATH = f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint"
+_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = f"{_PAR_BASE_PATH}.validate_oauth_client_attestation"
 
 _MOCK_REQUEST_DESERIALIZED = {
     "iss": _MOCK_VALID_THUMBPRINT,
@@ -228,7 +230,7 @@ def _mock_request_deserialized(overrides=None):
 ])
 def test_invalid_request_deserialized(par_handler, context,
                                       decoded_request, error_desc):
-    with (patch(JWS_HELPER_VERIFY_TARGET, return_value = decoded_request),
+    with (patch(JWS_HELPER_VERIFY_MODULE, return_value = decoded_request),
           patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value = {
               "thumbprint": _MOCK_VALID_THUMBPRINT
           })):
@@ -239,7 +241,7 @@ def test_invalid_request_deserialized(par_handler, context,
         )
 
 def test_valid_request(par_handler, context):
-    with (patch(JWS_HELPER_VERIFY_TARGET, return_value = _mock_request_deserialized()),
+    with (patch(JWS_HELPER_VERIFY_MODULE, return_value = _mock_request_deserialized()),
           patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value = {
               "thumbprint": _MOCK_VALID_THUMBPRINT
           })):

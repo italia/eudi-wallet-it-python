@@ -19,6 +19,8 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     assert_invalid_request_application_json
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    BASE_PACKAGE,
+    JWS_HELPER_VERIFY_MODULE,
     INVALID_ATTESTATION_HEADERS,
     INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
@@ -68,10 +70,12 @@ def request_with_open_id_credential():
         "proof": VALID_PROOF
     }
 
+_CREDENTIAL_BASE_PATH = f"{BASE_PACKAGE}.endpoints.base_credential_endpoint"
 
 @pytest.fixture
 def credential_handler() -> CredentialHandler:
-    with patch("pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint.UserCredentialEngine") as user_cred_eng_class:
+    with (patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
+          patch(f"{_CREDENTIAL_BASE_PATH}.CombinedTrustEvaluator") as trust_evaluator):
         usc_mock_engine = MagicMock()
         usc_mock_engine.db_user_storage_engine = MagicMock()
         usc_mock_engine.db_credential_storage_engine = MagicMock()
@@ -79,6 +83,7 @@ def credential_handler() -> CredentialHandler:
         handler = CredentialHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
         handler.db_engine = MagicMock()
         handler.jws_helper = MagicMock()
+        handler._trust_evaluator = trust_evaluator
         return handler
 
 @pytest.fixture
@@ -222,7 +227,7 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
 ])
 def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_without_open_id_credential,
                                           value, error_desc):
-    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = value):
+    with patch(JWS_HELPER_VERIFY_MODULE, return_value = value):
         context.request = request_without_open_id_credential
         entity = deepcopy(get_mocked_openid4vpi_entity())
         entity.c_nonce = "random-nonce-abc123"
@@ -297,7 +302,7 @@ def test_request_without_open_id_credential_for_sd_jwt(credential_handler, conte
 #     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
 def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
-    with patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = valid_request_proof_jwt):
+    with patch(JWS_HELPER_VERIFY_MODULE, return_value = valid_request_proof_jwt):
         entity.c_nonce = "random-nonce-abc123"
         entity.attributes = {
             "name": ["Mario"],
