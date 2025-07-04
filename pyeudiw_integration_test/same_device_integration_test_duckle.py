@@ -14,7 +14,10 @@ from pyeudiw_integration_test.initializer.commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
-from pyeudiw_integration_test.initializer.commons_duckle import create_authorize_response_duckle, create_verifiable_presentations
+from pyeudiw_integration_test.initializer.commons_duckle import (
+    create_authorize_response_duckle,
+    create_verifiable_presentations
+)
 from pyeudiw_integration_test.initializer.settings import TIMEOUT_S
 
 # put a trust attestation related itself into the storage
