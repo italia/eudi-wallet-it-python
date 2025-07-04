@@ -103,6 +103,7 @@ def test_chain_crl_passing():
         crl_distr_point="http://ca.example.com/crl.pem",
         ca=True,
         path_length=1,
+        email_address="ca.example.com",
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
@@ -112,6 +113,7 @@ def test_chain_crl_passing():
         uri="https://intermediate.example.com",
         ca=True,
         path_length=0,
+        email_address="intermediate.example.com",
     )
     chain.gen_certificate(
         cn="example.com",
@@ -122,6 +124,7 @@ def test_chain_crl_passing():
         private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
         ca=False,
         path_length=None,
+        email_address="example.com",
     )
 
     chain = chain.get_chain("DER")
@@ -187,6 +190,7 @@ def test_chain_crl_fail():
         private_key=ca_key,
         ca=True,
         path_length=1,
+        email_address="ca.example.com",
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
@@ -197,6 +201,7 @@ def test_chain_crl_fail():
         ca=True,
         path_length=0,
         serial_number=44442,
+        email_address="intermediate.example.com",
     )
     chain.gen_certificate(
         cn="example.com",
@@ -207,6 +212,7 @@ def test_chain_crl_fail():
         private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
         ca=False,
         path_length=None,
+        email_address="example.com",
     )
 
     chain = chain.get_chain("DER")
