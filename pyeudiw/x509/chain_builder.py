@@ -112,10 +112,10 @@ class ChainBuilder:
             ),
         ]
 
-        #  if organization_identifier:
-            #  x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER,
-                #  organization_identifier if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["organization_identifier"]
-            #  )
+        if organization_identifier:
+            x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER,
+                organization_identifier if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["organization_identifier"]
+            )
 
         cert = cert.issuer_name(
             x509.Name(
