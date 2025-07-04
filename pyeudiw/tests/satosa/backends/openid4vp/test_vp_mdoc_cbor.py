@@ -49,6 +49,7 @@ chain.gen_certificate(
     crl_distr_point="http://ca.example.com/crl.pem",
     ca=True,
     path_length=1,
+    email_address="ca.example.com",
 )
 chain.gen_certificate(
     cn="intermediate.example.com",
@@ -58,6 +59,7 @@ chain.gen_certificate(
     uri="https://intermediate.example.com",
     ca=True,
     path_length=0,
+    email_address="intermediate.example.com",
 )
 chain.gen_certificate(
     cn="example.com",
@@ -68,6 +70,7 @@ chain.gen_certificate(
     private_key=private_key,
     ca=False,
     path_length=None,
+    email_address="example.com",
 )
 
 chain_der = chain.get_chain("DER")
