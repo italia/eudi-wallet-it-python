@@ -85,12 +85,12 @@ The module `pyeudiw.trust.handler.x509` provides a source of trusted entities ba
 
 #### Configuration Parameters
 
-| Parameter                     | Description                                                                                                                                                                                                                    | Example Value          |
-|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
-| client_id                     | Required identifier. Must match the Subject Alternative Name (SAN) DNS in the leaf certificate. Use x509_san_dns: prefix.                                                                                                      | x509_san_dns:localhost | 
-| certificate_authorities       | It's a list of trusted certificate authorities composed of dict where the key should be (in order) the DNS, the URI or the Distinguished Name (RFC4514) of<br/>the certificate and the value a x509 certificate in PEM Format. |                        |
-| leaf_certificate_chains_by_ca | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks[0]. The certificates are provided in PEM format.                   |                        |
-| private_keys                  | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks. The certificates are provided in PEM format.                      |                        |
+| Parameter                     | Description                                                                                                                                                                                                                            | Example Value          |
+|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
+| client_id (or issuer_id)      | Required identifier. For RP backends, this is called `client_id`; for Satosa frontend it is called `issuer_id`. Its value must match the Subject Alternative Name (SAN) DNS in the leaf certificate, using the `x509_san_dns:` prefix. | x509_san_dns:localhost | 
+| certificate_authorities       | It's a list of trusted certificate authorities composed of dict where the key should be (in order) the DNS, the URI or the Distinguished Name (RFC4514) of<br/>the certificate and the value a x509 certificate in PEM Format.         |                        |
+| leaf_certificate_chains_by_ca | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks[0]. The certificates are provided in PEM format.                           |                        |
+| private_keys                  | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks. The certificates are provided in PEM format.                              |                        |
 
 
 ### Direct Trust for JAR
