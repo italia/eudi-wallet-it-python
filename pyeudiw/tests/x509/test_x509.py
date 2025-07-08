@@ -53,7 +53,7 @@ def gen_chain(
             data_encipherment=False,
             encipher_only=False,
             decipher_only=False
-        )    
+        )
     }
 
     intermediate_cert_params = {
@@ -81,7 +81,7 @@ def gen_chain(
             encipher_only=False,
             decipher_only=False
         ),
-        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl",
+        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl"
     }
 
     leaf_cert_params = {
@@ -111,7 +111,6 @@ def gen_chain(
             decipher_only=False
         ),
         "crl_distr_point": f"https://{leaf_dns}/crl/{leaf_dns}.crl",
-        #"organization_identifier": "40002374772384723894"
     }
 
     if date:
