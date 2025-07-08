@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Literal
 from cryptography import x509
 
-
 class ChainBuilder:
     def __init__(self):
         self.chain = []
@@ -31,7 +30,6 @@ class ChainBuilder:
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         key_usage: x509.KeyUsage | None = None,
-        organization_identifier: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -70,6 +68,8 @@ class ChainBuilder:
                 ec.SECP256R1(),
             )
 
+        cert = x509.CertificateBuilder()
+
         x5c_names = [
             x509.NameAttribute(NameOID.COMMON_NAME,
                 cn
@@ -85,43 +85,21 @@ class ChainBuilder:
             )
         ]
 
-        if organization_identifier:
+        subject_names = x509.Name(x5c_names)
+
+        if org_name:
             x5c_names.append(
-                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier)
+                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, org_name)
             )
         
-        cert = x509.CertificateBuilder() \
-            .subject_name(
-                x509.Name(
-                    x5c_names
-                )
-            )
-        
-        x5c_issuer_names = [
-            x509.NameAttribute(NameOID.COMMON_NAME,
-                cn if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["cn"]
-            ),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                org_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["org_name"]
-            ),
-            x509.NameAttribute(NameOID.COUNTRY_NAME,
-                country_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["country_name"]
-            ),
-            x509.NameAttribute(NameOID.EMAIL_ADDRESS,
-                email_address if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["email_address"]
-            ),
-        ]
+        cert = cert.subject_name(subject_names)
 
-        #if organization_identifier:
-        #    x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER,
-        #        organization_identifier if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["organization_identifier"]
-        #    )
+        if not self.certificates_attributes:
+            issuer_name = subject_names
+        else:
+            issuer_name = self.certificates_attributes[0]["subject"]
 
-        cert = cert.issuer_name(
-            x509.Name(
-                x5c_issuer_names
-            )
-        ) \
+        cert = cert.issuer_name(issuer_name) \
         .public_key(private_key.public_key()) \
         .serial_number(x509.random_serial_number() if not serial_number else serial_number) \
         .not_valid_before(not_valid_before) \
