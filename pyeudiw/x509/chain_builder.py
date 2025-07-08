@@ -152,7 +152,7 @@ class ChainBuilder:
             "org_name": org_name,
             "country_name": country_name,
             "private_key": private_key,
-            "email_address": email_address
+            "subject": cert.subject,
         })
 
         self.chain.insert(0, cert)
