@@ -35,11 +35,11 @@ the format [SD-JWT VC](https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-v
 
 #### Configuration Parameters
 
-| Parameter        | Description                                                             | Example Value              |
-|------------------|-------------------------------------------------------------------------|----------------------------|
-| jwk_endpoint     | Path component of the endpoint where JWT issuer metadata can be fetched | /.well-known/jwt-vc-issuer |
-| cache_ttl        | (Optional) Maximum time (in seconds) of a cached JWK; use 0 to disable  | 60                         |
-| httpc_parameters | (Optional) Parameters of the HTTP connection of the request above       | (see below)                |
+| Parameter        | Description                                                             | Example Value                             |
+|------------------|-------------------------------------------------------------------------|-------------------------------------------|
+| jwk_endpoint     | Path component of the endpoint where JWT issuer metadata can be fetched | /.well-known/jwt-vc-issuer                |
+| cache_ttl        | (Optional) Maximum time (in seconds) of a cached JWK; use 0 to disable  | 60                                        |
+| httpc_parameters | (Optional) Parameters of the HTTP connection of the request above       | See [HTTPC Parameters](#httpc-parameters) |              
 
 #### HTTPC Parameters
 
