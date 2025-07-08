@@ -148,11 +148,8 @@ class ChainBuilder:
         .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
         
         self.certificates_attributes.insert(0, {
-            "cn": cn,
-            "org_name": org_name,
-            "country_name": country_name,
             "private_key": private_key,
-            "subject": cert.subject,
+            "certificate": cert
         })
 
         self.chain.insert(0, cert)
