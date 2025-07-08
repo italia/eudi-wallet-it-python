@@ -25,7 +25,7 @@ def gen_chain(
 
     ca_cert_params = {
         "cn": ca_cn,
-        "org_name": "Example CA",
+        "organization_name": "Example CA",
         "country_name": "IT",
         "email_address": f"info@{ca_dns}",
         "dns": ca_dns,
@@ -58,7 +58,7 @@ def gen_chain(
 
     intermediate_cert_params = {
         "cn": intermediate_cn,
-        "org_name": "Example Intermediate",
+        "organization_name": "Example Intermediate",
         "country_name": "IT",
         "email_address": f"info@{intermediate_dns}",
         "dns": intermediate_dns,
@@ -90,7 +90,7 @@ def gen_chain(
 
     leaf_cert_params = {
         "cn": leaf_cn,
-        "org_name": "Example Leaf",
+        "organization_name": "Example Leaf",
         "country_name": "IT",
         "email_address": f"info@{leaf_dns}",
         "dns": leaf_dns,

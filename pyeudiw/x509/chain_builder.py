@@ -15,7 +15,7 @@ class ChainBuilder:
     def gen_certificate(
         self,
         cn: str,
-        org_name: str,
+        organization_name: str,
         country_name: str,
         email_address: str,
         dns: str,
@@ -30,14 +30,16 @@ class ChainBuilder:
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         key_usage: x509.KeyUsage | None = None,
+        organization_identifier: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
 
         :param cn: Common Name
         :type cn: str
-        :param org_name: Organization Name
-        :type org_name: str
+        :param organization_name: Organization name for the certificate
+        :type organization_name: str
+        :type organization_name: str | None
         :param country_name: Country Name
         :type country_name: str
         :param dns: DNS Name
@@ -60,6 +62,10 @@ class ChainBuilder:
         :type excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
         :param permitted_subtrees: List of DNS names to permit in the certificate
         :type permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
+        :param key_usage: Key usage for the certificate
+        :type key_usage: x509.KeyUsage | None
+        :param organization_identifier: Organization identifier for the certificate
+        :type organization_identifier: str | None
 
         :return: None
         """
@@ -74,23 +80,24 @@ class ChainBuilder:
             x509.NameAttribute(NameOID.COMMON_NAME,
                 cn
             ),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                org_name
-            ),
             x509.NameAttribute(NameOID.COUNTRY_NAME,
                 country_name
             ),
             x509.NameAttribute(NameOID.EMAIL_ADDRESS,
                 email_address
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, 
+                organization_name
             )
         ]
 
         subject_names = x509.Name(x5c_names)
 
-        if org_name:
+        if organization_identifier:
             x5c_names.append(
-                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, org_name)
+                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier)
             )
+
         
         cert = cert.subject_name(subject_names)
 
