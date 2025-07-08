@@ -34,9 +34,9 @@ def gen_chain(
         "ca": True,
         "path_length": None,
         "permitted_subtrees": [
-            x509.DNSName("example.com"),
-            x509.DNSName("example.org"),
-            x509.DNSName("example.it"),
+            x509.DNSName(ca_dns),
+            x509.DNSName(intermediate_dns),
+            x509.DNSName(leaf_dns),
         ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
@@ -65,6 +65,10 @@ def gen_chain(
         "uri": f"https://{intermediate_dns}",
         "ca": True,
         "path_length": None,
+        "permitted_subtrees": [
+            x509.DNSName(intermediate_dns),
+            x509.DNSName(leaf_dns),
+        ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
@@ -94,6 +98,9 @@ def gen_chain(
         "ca": False,
         "path_length": None,
         "private_key": leaf_private_key,
+        "permitted_subtrees": [
+            x509.DNSName(leaf_dns),
+        ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
