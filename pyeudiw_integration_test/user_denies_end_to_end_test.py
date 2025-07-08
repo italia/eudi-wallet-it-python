@@ -9,13 +9,13 @@
 
 import re
 import time
-import requests
 import urllib.parse
 
+import requests
 from playwright.sync_api import sync_playwright, Playwright
-from pyeudiw.jwt.utils import decode_jwt_payload
 
-from commons import (
+from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw_integration_test.initializer.commons import (
     apply_trust_settings,
     create_authorize_error_response_user_denies,
     create_saml_auth_request,
@@ -26,8 +26,7 @@ from commons import (
     verify_request_object_jwt,
     verify_status_login_page
 )
-
-from settings import TIMEOUT_S
+from pyeudiw_integration_test.initializer.settings import TIMEOUT_S
 
 
 def _same_device_extract_request_uri(e: Exception) -> str:
