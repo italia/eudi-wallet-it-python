@@ -97,7 +97,7 @@ class ChainBuilder:
         if not self.certificates_attributes:
             issuer_name = subject_names
         else:
-            issuer_name = self.certificates_attributes[0]["subject"]
+            issuer_name = self.certificates_attributes[0]["certificate"].subject
 
         cert = cert.issuer_name(issuer_name) \
         .public_key(private_key.public_key()) \
