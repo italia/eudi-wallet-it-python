@@ -36,7 +36,6 @@ def gen_chain(
         "permitted_subtrees": [
             x509.DNSName(ca_dns),
             x509.DNSName(intermediate_dns),
-            x509.DNSName(leaf_dns),
         ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
