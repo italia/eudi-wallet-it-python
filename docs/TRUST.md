@@ -66,13 +66,13 @@ expose verifier metadata at the `.well-known/openid-federation` endpoint.
 |----------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------------|
 | client_id                                    | The HTTPS URI where the RP backend is exposed for discovery | `openid_federation:https://localhost/OpenID4VP`                  |
 | metadata_type                                | The type of metadata for federation                         | `openid_credential_verifier`                                     |
-| authority_hints                              | List of authority hints to use for federation               | `[http://127.0.0.1:8000]`                                        |
+| authority_hints                              | List of authority hints to use for federation               | `["https://federation.trust-anchor.example.org", "https://gain.example.edu"]`                                        |
 | trust_anchors                                | List of trust anchors to use for federation                 | (see example above)                                              |
-| default_sig_alg                              | The default signature algorithm to use for the federation   | RS256                                                            |
+| default_sig_alg                              | The default signature algorithm to use for the federation   | ES256                                                            |
 | entity_configuration_exp                     | Time in seconds before entity configuration expires         | `600`                                                            |
 | httpc_params                                 | HTTP connection parameters                                  | `*httpc_params`                                                  |
 | cache_ttl                                    | (Optional) Cache time-to-live in seconds                    | `0`                                                              |
-| federation_entity_metadata.organization_name | The organization name                                       | IAM Proxy Italia OpenID4VP backend policy_uri, tos_uri, logo_uri |
+| federation_entity_metadata.organization_name | The organization name                                       | IAM Proxy Italia OpenID4VP backend|
 | federation_entity_metadata.homepage_uri      | The URI of the homepage                                     | https://developers.italia.it                                     |
 | federation_entity_metadata.policy_uri        | The URI of the policy                                       | https://developers.italia.it/policy.html                         |
 | federation_entity_metadata.tos_uri           | The URI of the TOS                                          | https://developers.italia.it/tos.html                            |
