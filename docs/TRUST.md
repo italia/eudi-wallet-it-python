@@ -92,6 +92,22 @@ The module `pyeudiw.trust.handler.x509` provides a source of trusted entities ba
 | leaf_certificate_chains_by_ca | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks[0]. The certificates are provided in PEM format.                   |                        |
 | private_keys                  | Object containing the X509 chain's relative to the RP under a known CA, listed within the certificate_authorities list. It must be related to metadata_jwks. The certificates are provided in PEM format.                      |                        |
 
+
+### Direct Trust for JAR
+
+The module `pyeudiw.trust.handler.direct_trust_jar` provides a direct trust source for JWTs
+in [JWT Secured Authorization Requests (JAR)](https://datatracker.ietf.org/doc/html/rfc9101).
+
+#### Configuration Parameters
+
+| Parameter    | Description                                                                       | Example Value                             |
+|--------------|-----------------------------------------------------------------------------------|-------------------------------------------|
+| jwk_endpoint | Path component of the endpoint where JAR issuer metadata can be fetched           | /.well-known/jar-issuer                   |
+| jwks         | JSON Web Key Set to use as static trusted keys                                    | *metadata_jwks                            |
+| cache_ttl    | (Optional) Maximum time (in seconds) of a cached JWK; use 0 to disable            | 0                                         |
+| httpc_params | (Optional) Parameters for the HTTP connection                                     | See [HTTPC Parameters](#httpc-parameters) |
+| client_id    | (Optional) Defines the expected identity of the entity presenting the certificate | localhost                                 |
+
 ## Write a Custom Trust Handler Module
 
 Users can define their own trust module by implementing and configuring a class that satisfies the
@@ -166,7 +182,6 @@ The following is an example of the [TrustHandlerInterface](/pyeudiw/trust/handle
 ### Client ID and Default Client ID
 
 The configuration can also define a `client_id` id that is used by default when a method of `CombinedTrustEvaluator` is
-called
-without a `client_id` parameter.
+called without a `client_id` parameter.
 If the `client_id` is not defined in the configuration of the handler, in the phase of initialization of the
 CombinedTrustEvaluator, the client_id is set to `default_client_id`.
