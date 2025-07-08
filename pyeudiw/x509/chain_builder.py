@@ -145,7 +145,22 @@ class ChainBuilder:
             ]),
             critical=False
         ) \
-        .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+            critical=False
+        )
+
+        if self.certificates_attributes:
+            cert = cert.add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    self.certificates_attributes[0]["certificate"].public_key()
+                ),
+                critical=False
+            )
+        
+        cert = cert.sign(
+            private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256()
+        )
         
         self.certificates_attributes.insert(0, {
             "private_key": private_key,
