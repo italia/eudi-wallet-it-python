@@ -9,6 +9,7 @@ from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.x509.chain_builder import ChainBuilder
+from datetime import datetime, timedelta, timezone
 
 
 def base64url_to_int(val):
@@ -199,6 +200,17 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
     mdoci = MdocCborIssuer(
         private_key=PKEY,
         alg="ES256",
+        cert_info={
+            "country_name": "US",
+            "state_or_province_name": "California",
+            "locality_name": "San Francisco",
+            "organization_name": "Micov",
+            "common_name": "My Company",
+            "san_url": "mysite.com",
+            "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
+            "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
+            "san_url": "https://credential-issuer.example.org"
+        }
     )
 
     mdoci.new(

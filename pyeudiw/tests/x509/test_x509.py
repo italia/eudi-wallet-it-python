@@ -1,5 +1,6 @@
 from typing import Any
 from datetime import datetime
+from ipaddress import IPv4Address, IPv4Network
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.verify import (
@@ -31,11 +32,16 @@ def gen_chain(
         "uri": f"https://{ca_dns}",
         "crl_distr_point": f"https://{ca_dns}/crl/{ca_dns}.crl",
         "ca": True,
-        "path_length": 2,
+        "path_length": None,
+        "permitted_subtrees": [
+            x509.DNSName("example.com"),
+            x509.DNSName("example.org"),
+            x509.DNSName("example.it"),
+        ],
         "excluded_subtrees": [
-            # x509.DNSName("localhost"),
+            x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -47,7 +53,7 @@ def gen_chain(
             data_encipherment=False,
             encipher_only=False,
             decipher_only=False
-        )
+        )    
     }
 
     intermediate_cert_params = {
@@ -56,17 +62,13 @@ def gen_chain(
         "country_name": "IT",
         "email_address": f"info@{intermediate_dns}",
         "dns": intermediate_dns,
-        "uri": f"https://{intermediate_cn}",
+        "uri": f"https://{intermediate_dns}",
         "ca": True,
-        "path_length": 1,
-        "permitted_subtrees": [
-            x509.UniformResourceIdentifier(f"https://{intermediate_dns}"),
-            x509.DNSName(intermediate_dns),
-        ],
+        "path_length": None,
         "excluded_subtrees": [
-            # x509.DNSName("localhost"),
+            x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -80,7 +82,6 @@ def gen_chain(
             decipher_only=False
         ),
         "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl",
-        "organization_identifier": "02394823904823908423904"
     }
 
     leaf_cert_params = {
@@ -90,17 +91,13 @@ def gen_chain(
         "email_address": f"info@{leaf_dns}",
         "dns": leaf_dns,
         "uri": leaf_uri,
-        "ca": True,
-        "path_length": 0,
+        "ca": False,
+        "path_length": None,
         "private_key": leaf_private_key,
-        "permitted_subtrees": [
-            x509.UniformResourceIdentifier(f"https://{leaf_dns}"),
-            x509.DNSName(leaf_dns),
-        ],
         "excluded_subtrees": [
-            # x509.DNSName("localhost"),
+            x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -114,7 +111,7 @@ def gen_chain(
             decipher_only=False
         ),
         "crl_distr_point": f"https://{leaf_dns}/crl/{leaf_dns}.crl",
-        "organization_identifier": "40002374772384723894"
+        #"organization_identifier": "40002374772384723894"
     }
 
     if date:

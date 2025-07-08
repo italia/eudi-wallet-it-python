@@ -31,7 +31,7 @@ class ChainBuilder:
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         key_usage: x509.KeyUsage | None = None,
-        organization_identifier: str|None = None
+        organization_identifier: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
