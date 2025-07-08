@@ -17,7 +17,7 @@ Before running a test, ensure that the relevant configuration files (e.g., `pyeu
 This project provides example configurations for each scenario:
 - [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) (sample plugin configuration)
 - [internal_attributes.yaml](./conf/internal_attributes.yaml) (to link modules and handlers, carrying user data and authentication context)
-- Additional static and template files: [static/](./static/), [template/](./template/)
+- Additional static and template files: [static/](./static/), [templates/](./templates/)
 
 Each integration test script may have its own expected configuration files.  
 Check the comments or README of each script for details.
@@ -68,7 +68,7 @@ This project provides multiple integration test scripts, each covering a differe
 |------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `same_device_integration_test.py`        | Simulates a same-device authentication flow with an OpenID4VP relying party.                                                                                                              |
 | `cross_device_integration_test.py`       | Simulates a cross-device authentication flow, e.g., mobile to desktop.                                                                                                                    |
-| `same_device_integration_test_duckle.py` | Simulates a same-device authentication flow with an OpenID4VP relying party.                                                                                                              |
+| `same_device_integration_test_duckle.py` | Simulates a same-device authentication flow with an OpenID4VP relying party and Duckle credentials.                                                                                       |
 | `user_denies_end_to_end_test.py`         | Simulates the end-to-end flow where the user explicitly denies sharing credentials in the wallet, testing the OpenID4VP Authorization Error Response flow (same-device and cross-device). |
 
 > ℹ️ **Note:** Each test may require different config files.  
