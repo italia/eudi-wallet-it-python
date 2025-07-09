@@ -19,5 +19,4 @@ playwright
 freezegun
 pytest-mock
 PyJWT
-cryptography
 cose

@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Literal
 from cryptography import x509
 
-
 class ChainBuilder:
     def __init__(self):
         self.chain = []
@@ -16,8 +15,9 @@ class ChainBuilder:
     def gen_certificate(
         self,
         cn: str,
-        org_name: str,
+        organization_name: str,
         country_name: str,
+        email_address: str,
         dns: str,
         uri: str,
         ca: bool,
@@ -29,15 +29,17 @@ class ChainBuilder:
         not_valid_after: datetime = datetime.now() + timedelta(days=365),
         excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
         permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
-        key_usage: x509.KeyUsage | None = None
+        key_usage: x509.KeyUsage | None = None,
+        organization_identifier: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
 
         :param cn: Common Name
         :type cn: str
-        :param org_name: Organization Name
-        :type org_name: str
+        :param organization_name: Organization name for the certificate
+        :type organization_name: str
+        :type organization_name: str | None
         :param country_name: Country Name
         :type country_name: str
         :param dns: DNS Name
@@ -60,6 +62,10 @@ class ChainBuilder:
         :type excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
         :param permitted_subtrees: List of DNS names to permit in the certificate
         :type permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
+        :param key_usage: Key usage for the certificate
+        :type key_usage: x509.KeyUsage | None
+        :param organization_identifier: Organization identifier for the certificate
+        :type organization_identifier: str | None
 
         :return: None
         """
@@ -68,39 +74,39 @@ class ChainBuilder:
                 ec.SECP256R1(),
             )
 
-        cert = x509.CertificateBuilder() \
-            .subject_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(NameOID.COMMON_NAME,
-                            cn
-                        ),
-                        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                            org_name
-                        ),
-                        x509.NameAttribute(NameOID.COUNTRY_NAME,
-                            country_name
-                        ),
-                    ]
-                )
-            )
-        
+        cert = x509.CertificateBuilder()
 
-        cert = cert.issuer_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        cn if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["cn"]
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        org_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["org_name"]
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        country_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["country_name"]
-                    ),
-                ]
+        x5c_names = [
+            x509.NameAttribute(NameOID.COMMON_NAME,
+                cn
+            ),
+            x509.NameAttribute(NameOID.COUNTRY_NAME,
+                country_name
+            ),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS,
+                email_address
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, 
+                organization_name
             )
-        ) \
+        ]
+
+        subject_names = x509.Name(x5c_names)
+
+        if organization_identifier:
+            x5c_names.append(
+                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier)
+            )
+
+        
+        cert = cert.subject_name(subject_names)
+
+        if not self.certificates_attributes:
+            issuer_name = subject_names
+        else:
+            issuer_name = self.certificates_attributes[0]["certificate"].subject
+
+        cert = cert.issuer_name(issuer_name) \
         .public_key(private_key.public_key()) \
         .serial_number(x509.random_serial_number() if not serial_number else serial_number) \
         .not_valid_before(not_valid_before) \
@@ -146,13 +152,26 @@ class ChainBuilder:
             ]),
             critical=False
         ) \
-        .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+            critical=False
+        )
+
+        if self.certificates_attributes:
+            cert = cert.add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    self.certificates_attributes[0]["certificate"].public_key()
+                ),
+                critical=False
+            )
+        
+        cert = cert.sign(
+            private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256()
+        )
         
         self.certificates_attributes.insert(0, {
-            "cn": cn,
-            "org_name": org_name,
-            "country_name": country_name,
-            "private_key": private_key
+            "private_key": private_key,
+            "certificate": cert
         })
 
         self.chain.insert(0, cert)
