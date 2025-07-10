@@ -1,4 +1,5 @@
 from typing import Optional, Dict, List
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, field_validator
 
@@ -34,6 +35,16 @@ class WalletMetadata(BaseModel):
             return _default_supported_algorithms
         else:
             raise ValueError("Invalid value for alg_values_supported")
+
+    @field_validator("authorization_endpoint", mode="before")
+    def validate_authorization_endpoint(cls, v):
+        try:
+            parsed_redirect_uri = urlparse(v)
+            if not parsed_redirect_uri.scheme or not parsed_redirect_uri.netloc or not parsed_redirect_uri.path:
+                raise ValueError("Invalid value for authorization_endpoint")
+            return v
+        except Exception:
+            raise ValueError("Invalid value for authorization_endpoint")
 
 class WalletPostRequest(BaseModel):
     wallet_metadata: Optional[WalletMetadata] = None

@@ -351,7 +351,8 @@ class ResponseHandler(VPBaseEndpoint):
             )
         
         if flow_type == RemoteFlowType.SAME_DEVICE:
-            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            auth_endpoint = request_session.get("wallet_metadata", {}).get("authorization_endpoint")
+            cb_redirect_uri = f"{auth_endpoint or self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             return JsonResponse({}, status="200")
