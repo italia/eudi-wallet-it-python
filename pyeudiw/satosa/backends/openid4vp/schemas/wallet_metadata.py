@@ -19,6 +19,10 @@ class WalletMetadata(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[str]]]
     alg_values_supported: Optional[List[str]] = None
     client_id_prefixes_supported: Optional[List[str]] = None
+    authorization_endpoint: Optional[str] = None
+    request_object_signing_alg_values_supported: Optional[List[str]] = None
+    response_types_supported: Optional[list[str]] = None
+    response_modes_supported: Optional[list[str]] = None
 
     @field_validator("alg_values_supported", mode="before")
     def validate_alg_values_supported(cls, v):
@@ -34,6 +38,3 @@ class WalletMetadata(BaseModel):
 class WalletPostRequest(BaseModel):
     wallet_metadata: Optional[WalletMetadata] = None
     wallet_nonce: Optional[str] = None
-    authorization_endpoint: Optional[str] = None
-    response_types_supported: Optional[List[str]] = None
-    response_modes_supported: Optional[List[str]] = None
