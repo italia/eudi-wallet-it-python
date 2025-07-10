@@ -72,7 +72,7 @@ class WalletMetadata(BaseModel):
         elif isinstance(v, list):
             return cls._valid_element_list(v, _default_response_types_supported, "response_types_supported")
         elif v is None:
-            return _default_response_types_supported
+            return [_default_response_types_supported]
         else:
             raise ValueError("Invalid value for response_types_supported")
 
@@ -94,7 +94,7 @@ class WalletMetadata(BaseModel):
         if len(v) == 0:
             return [expected_value]
         filtered = [mode for mode in v if mode == expected_value]
-        if not filtered:
+        if not filtered or len(filtered) == 0:
             raise ValueError(f"Invalid value for {field_name}")
         return filtered
 
