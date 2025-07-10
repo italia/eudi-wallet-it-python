@@ -12,7 +12,10 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
-from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import WalletPostRequest
+from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
+    WalletPostRequest,
+    RESPONSE_MODES_SUPPORTED_CTX
+)
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
@@ -127,7 +130,9 @@ class RequestHandler(VPBaseEndpoint):
 
         if context.request_method == "POST":
             try:
-                wallet_post_request = WalletPostRequest(**request)
+                wallet_post_request = WalletPostRequest.model_validate(request, context={
+                    RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get("response_mode", "direct_post_jwt")
+                })
             except Exception as e:
                 self._log_warning(context, f"wallet metadata not provided or invalid: {e}")
                 wallet_post_request = WalletPostRequest(

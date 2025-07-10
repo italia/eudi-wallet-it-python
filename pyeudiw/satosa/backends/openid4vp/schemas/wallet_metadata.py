@@ -3,6 +3,8 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, field_validator
 
+RESPONSE_MODES_SUPPORTED_CTX = "valid_response_mode_supported"
+
 # TODO: Move this to a global file
 _default_supported_algorithms = [
     "RS256",
@@ -45,6 +47,20 @@ class WalletMetadata(BaseModel):
             return v
         except Exception:
             raise ValueError("Invalid value for authorization_endpoint")
+
+    @field_validator("response_modes_supported", mode="before")
+    def validate_response_modes_supported(cls, v, info):
+        valid = (info.context or {}).get(RESPONSE_MODES_SUPPORTED_CTX)
+        if not valid:
+            return [v] if isinstance(v, str) else v
+        elif isinstance(v, str) and v == valid:
+            return [v]
+        elif isinstance(v, list):
+            return [mode for mode in v if mode == valid]
+        elif v is None:
+            return [valid]
+        else:
+            raise ValueError("Invalid value for response_modes_supported")
 
 class WalletPostRequest(BaseModel):
     wallet_metadata: Optional[WalletMetadata] = None
