@@ -18,6 +18,8 @@ _default_supported_algorithms = [
     "PS512",
 ]
 
+_default_response_types_supported = "vp_token"
+
 class WalletMetadata(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[str]]]
     alg_values_supported: Optional[List[str]] = None
@@ -61,6 +63,17 @@ class WalletMetadata(BaseModel):
             return [valid]
         else:
             raise ValueError("Invalid value for response_modes_supported")
+
+    @field_validator("response_types_supported", mode="before")
+    def validate_response_types_supported(cls, v):
+        if isinstance(v, str) and v == _default_response_types_supported:
+            return [v]
+        elif isinstance(v, list):
+            return cls._valid_element_list(v, _default_response_types_supported, "response_types_supported")
+        elif v is None:
+            return _default_response_types_supported
+        else:
+            raise ValueError("Invalid value for response_types_supported")
 
     @staticmethod
     def _valid_element_list(v: list, expected_value: str, field_name: str):

@@ -189,4 +189,29 @@ def test_valid_response_mode_without_context(value):
     metadata = WalletMetadata(**request["wallet_metadata"])
     assert metadata.response_modes_supported == expected_value
 
+@pytest.mark.parametrize("value", [
+    ["vp_token"],
+    "vp_token",
+    ["vp_token", "test"],
+    []
+])
+def test_valid_response_types_supported(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "response_types_supported": value
+        }
+    }
+    expected_value = ["vp_token"]
 
+    wallet_post_request_validate = WalletPostRequest.model_validate(request)
+    assert wallet_post_request_validate.wallet_metadata.response_types_supported == expected_value
+
+    wallet_post_request = WalletPostRequest(**request)
+    assert wallet_post_request.wallet_metadata.response_types_supported == expected_value
+
+    metadata_validate = WalletMetadata.model_validate(request["wallet_metadata"])
+    assert metadata_validate.response_types_supported == expected_value
+
+    metadata = WalletMetadata(**request["wallet_metadata"])
+    assert metadata.response_types_supported == expected_value
