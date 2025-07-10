@@ -120,7 +120,8 @@ def test_authorization_endpoint_invalid(value):
 @pytest.mark.parametrize("value", [
     ["direct_post_jwt"],
     "direct_post_jwt",
-    ["direct_post_jwt", "test"]
+    ["direct_post_jwt", "test"],
+    []
 ])
 def test_valid_response_mode_with_context(value):
     request = {
@@ -138,11 +139,34 @@ def test_valid_response_mode_with_context(value):
     metadata = WalletMetadata.model_validate(request["wallet_metadata"], context=ctx)
     assert metadata.response_modes_supported == ["direct_post_jwt"]
 
+@pytest.mark.parametrize("value", [
+    "invalid_response_mode",
+    ["invalid_response_mode"],
+])
+def test_invalid_response_mode_with_context(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "response_modes_supported": value
+        }
+    }
+    ctx = {
+        RESPONSE_MODES_SUPPORTED_CTX: "direct_post_jwt"
+    }
+    with pytest.raises(ValidationError) as err:
+        WalletMetadata.model_validate(request["wallet_metadata"], context = ctx)
+    assert "Invalid value for response_modes_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletPostRequest.model_validate(request, context = ctx)
+    assert "Invalid value for response_modes_supported" in str(err.value)
+
 
 @pytest.mark.parametrize("value", [
     ["direct_post_jwt"],
     "direct_post_jwt",
-    ["direct_post_jwt", "test"]
+    ["direct_post_jwt", "test"],
+    None,
+    []
 ])
 def test_valid_response_mode_without_context(value):
     request = {

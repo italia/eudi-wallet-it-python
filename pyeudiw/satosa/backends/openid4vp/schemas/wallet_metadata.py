@@ -56,11 +56,20 @@ class WalletMetadata(BaseModel):
         elif isinstance(v, str) and v == valid:
             return [v]
         elif isinstance(v, list):
-            return [mode for mode in v if mode == valid]
+            return cls._valid_element_list(v, valid, "response_modes_supported")
         elif v is None:
             return [valid]
         else:
             raise ValueError("Invalid value for response_modes_supported")
+
+    @staticmethod
+    def _valid_element_list(v: list, expected_value: str, field_name: str):
+        if len(v) == 0:
+            return [expected_value]
+        filtered = [mode for mode in v if mode == expected_value]
+        if not filtered:
+            raise ValueError(f"Invalid value for {field_name}")
+        return filtered
 
 class WalletPostRequest(BaseModel):
     wallet_metadata: Optional[WalletMetadata] = None
