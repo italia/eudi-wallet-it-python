@@ -14,7 +14,8 @@ from pyeudiw.satosa.backends.openid4vp.authorization_request import build_author
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
     WalletPostRequest,
-    RESPONSE_MODES_SUPPORTED_CTX
+    RESPONSE_MODES_SUPPORTED_CTX,
+    VP_FORMATS_SUPPORTED_CTX
 )
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -51,6 +52,9 @@ class RequestHandler(VPBaseEndpoint):
 
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
         self.trust_evaluator = trust_evaluator
+        self._credential_supported_formats = [
+            f["format"] for f in config["credential_presentation_handlers"]["formats"]
+        ]
 
 
     def endpoint(self, context: Context) -> Response:
@@ -131,7 +135,8 @@ class RequestHandler(VPBaseEndpoint):
         if context.request_method == "POST":
             try:
                 wallet_post_request = WalletPostRequest.model_validate(request, context={
-                    RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get("response_mode", "direct_post_jwt")
+                    RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get("response_mode", "direct_post_jwt"),
+                    VP_FORMATS_SUPPORTED_CTX: self._credential_supported_formats
                 })
             except Exception as e:
                 self._log_warning(context, f"wallet metadata not provided or invalid: {e}")

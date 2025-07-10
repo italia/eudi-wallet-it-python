@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
     RESPONSE_MODES_SUPPORTED_CTX,
     WalletMetadata,
-    WalletPostRequest
+    WalletPostRequest, VP_FORMATS_SUPPORTED_CTX
 )
 
 _example_vp_formats_supported = {
@@ -215,3 +215,62 @@ def test_valid_response_types_supported(value):
 
     metadata = WalletMetadata(**request["wallet_metadata"])
     assert metadata.response_types_supported == expected_value
+
+
+@pytest.mark.parametrize("value,expected_value", [
+    ({"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}},
+        {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}}),
+    ({"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}, "other": {"other_alg_values": ["ES256"]}},
+        {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}}),
+    ({"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}, "mso_mdoc": {"mso_mdoc_alg_values": ["ES256"]}},
+        {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}, "mso_mdoc": {"mso_mdoc_alg_values": ["ES256"]}}),
+])
+def test_valid_vp_formats_context(value, expected_value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": value,
+        }
+    }
+    ctx = {
+        VP_FORMATS_SUPPORTED_CTX: ["dc+sd-jwt", "mso_mdoc", "jwt_vc_json"]
+    }
+    assert WalletPostRequest.model_validate(request, context= ctx).wallet_metadata.vp_formats_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"], context=ctx).vp_formats_supported == expected_value
+
+def test_invalid_vp_formats_supported_with_context():
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": {
+                "other": {
+                    "other_alg_values": ["ES256"]
+                }
+            }
+        }
+    }
+    ctx = {
+        VP_FORMATS_SUPPORTED_CTX: ["dc+sd-jwt", "mso_mdoc", "jwt_vc_json"]
+    }
+    with pytest.raises(ValidationError) as err:
+        WalletMetadata.model_validate(request["wallet_metadata"], context = ctx)
+    assert "Invalid value for response_modes_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletPostRequest.model_validate(request, context = ctx)
+    assert "Invalid value for response_modes_supported" in str(err.value)
+
+
+@pytest.mark.parametrize("value", [
+    {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}},
+    {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}, "other": {"other_alg_values": ["ES256"]}},
+    {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}, "mso_mdoc": {"mso_mdoc_alg_values": ["ES256"]}}
+])
+def test_valid_vp_formats_supported_without_context(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": value,
+        }
+    }
+
+    assert WalletPostRequest.model_validate(request).wallet_metadata.vp_formats_supported == value
+    assert WalletPostRequest(**request).wallet_metadata.vp_formats_supported == value
+    assert WalletMetadata.model_validate(request["wallet_metadata"]).vp_formats_supported == value
+    assert WalletMetadata(**request["wallet_metadata"]).vp_formats_supported == value

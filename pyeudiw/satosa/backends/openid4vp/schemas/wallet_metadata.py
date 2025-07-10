@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from pydantic import BaseModel, field_validator
 
 RESPONSE_MODES_SUPPORTED_CTX = "valid_response_mode_supported"
+VP_FORMATS_SUPPORTED_CTX = "valid_vp_formats"
 
 # TODO: Move this to a global file
 _default_supported_algorithms = [
@@ -74,6 +75,19 @@ class WalletMetadata(BaseModel):
             return _default_response_types_supported
         else:
             raise ValueError("Invalid value for response_types_supported")
+
+    @field_validator("vp_formats_supported", mode="before")
+    def validate_vp_formats_supported(cls, v, info):
+        valid = (info.context or {}).get(VP_FORMATS_SUPPORTED_CTX)
+        if not valid:
+            return v
+        else:
+            filtered_vp_formats = {
+                k: v for k, v in v.items() if k in valid
+            }
+            if not filtered_vp_formats:
+                raise ValueError("Invalid value for response_modes_supported")
+            return filtered_vp_formats
 
     @staticmethod
     def _valid_element_list(v: list, expected_value: str, field_name: str):
