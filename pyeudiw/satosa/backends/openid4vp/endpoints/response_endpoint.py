@@ -217,7 +217,11 @@ class ResponseHandler(VPBaseEndpoint):
         presentation_submission = authz_payload.presentation_submission
         try:
             challenge = self._get_verifier_challenge(request_session)
-            parser_validator = ParserValidator(authz_payload.vp_token, self.vp_token_parser.handlers, self.config)
+            request_vp_formats_supported = request_session.get("wallet_metadata", {}).get("vp_formats_supported")
+            vp_token_handlers = self.vp_token_parser.handlers \
+                if not request_vp_formats_supported \
+                else {k: v for k, v in self.vp_token_parser.handlers.items() if k in request_vp_formats_supported}
+            parser_validator = ParserValidator(authz_payload.vp_token, vp_token_handlers , self.config)
             is_presentation_definition = parser_validator.is_active_presentation_definition()
             if is_presentation_definition:
                 parser_validator.validate(challenge["aud"], challenge["nonce"])
