@@ -20,11 +20,12 @@ _default_supported_algorithms = [
 ]
 
 _default_response_types_supported = "vp_token"
+_default_client_id_schemes_supported = "http"
 
 class WalletMetadata(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[str]]]
     alg_values_supported: Optional[List[str]] = None
-    client_id_prefixes_supported: Optional[List[str]] = None
+    client_id_schemes_supported: Optional[List[str]] = None
     authorization_endpoint: Optional[str] = None
     request_object_signing_alg_values_supported: Optional[List[str]] = None
     response_types_supported: Optional[list[str]] = None
@@ -88,6 +89,17 @@ class WalletMetadata(BaseModel):
             if not filtered_vp_formats:
                 raise ValueError("Invalid value for response_modes_supported")
             return filtered_vp_formats
+
+    @field_validator("client_id_schemes_supported", mode="before")
+    def validate_client_id_schemes_supported(cls, v):
+        if isinstance(v, str) and v == _default_client_id_schemes_supported:
+            return [v]
+        elif isinstance(v, list):
+            return cls._valid_element_list(v, _default_client_id_schemes_supported, "client_id_schemes_supported")
+        elif v is None:
+            return [_default_client_id_schemes_supported]
+        else:
+            raise ValueError("Invalid value for client_id_schemes_supported")
 
     @staticmethod
     def _valid_element_list(v: list, expected_value: str, field_name: str):

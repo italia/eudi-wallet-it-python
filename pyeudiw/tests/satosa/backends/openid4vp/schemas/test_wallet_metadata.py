@@ -293,3 +293,49 @@ def test_valid_vp_formats_supported_without_context(value):
     assert WalletPostRequest(**request).wallet_metadata.vp_formats_supported == value
     assert WalletMetadata.model_validate(request["wallet_metadata"]).vp_formats_supported == value
     assert WalletMetadata(**request["wallet_metadata"]).vp_formats_supported == value
+
+@pytest.mark.parametrize("value", [
+    ["http"],
+    "http",
+    ["http", "test"],
+    [],
+    None
+])
+def test_valid_client_id_schemes_supported(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "client_id_schemes_supported": value
+        }
+    }
+    expected_value = ["http"]
+
+    assert WalletPostRequest.model_validate(request).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletPostRequest(**request).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"]).client_id_schemes_supported == expected_value
+    assert  WalletMetadata(**request["wallet_metadata"]).client_id_schemes_supported == expected_value
+
+@pytest.mark.parametrize("value", [
+    ["test"],
+    "test",
+    ["test1", "test"],
+])
+def test_invalid_client_id_schemes_supported(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "client_id_schemes_supported": value
+        }
+    }
+    with pytest.raises(ValidationError) as err:
+        WalletPostRequest.model_validate(request)
+    assert "Invalid value for client_id_schemes_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletPostRequest(**request)
+    assert "Invalid value for client_id_schemes_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletMetadata.model_validate(request["wallet_metadata"])
+    assert "Invalid value for client_id_schemes_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletMetadata(**request["wallet_metadata"])
+    assert "Invalid value for client_id_schemes_supported" in str(err.value)
