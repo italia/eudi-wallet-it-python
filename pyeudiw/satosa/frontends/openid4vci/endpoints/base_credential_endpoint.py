@@ -35,6 +35,7 @@ from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_mdoc_template
 from pyeudiw.tools.utils import iat_now, exp_from_now
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 FIELD_TRANSFORMS = {
     "portrait": {
@@ -46,7 +47,7 @@ FIELD_TRANSFORMS = {
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the credentials endpoints class.
         Args:
@@ -63,6 +64,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         _user_credential_engine = UserCredentialEngine(config)
         self._db_user_engine = _user_credential_engine.db_user_storage_engine
         self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
+        self._trust_evaluator = CombinedTrustEvaluator.from_config(
+            self.config.get("trust", {}),
+            self.db_engine,
+            default_client_id = self.entity_id,
+            mode = self.config.get("trust_caching_mode", "update_first")
+        )
 
     def endpoint(self, context: Context) -> Response:
         try:
@@ -151,6 +158,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             user_claims=specification,
             issuer_keys=self._metadata_jwks,
             add_decoy_claims=use_decoys,
+            extra_header_parameters = self._trust_evaluator.get_jwt_header_trust_parameters(issuer=self.entity_id)
         )
 
         return {

@@ -11,8 +11,6 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
 )
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER
 
-JWS_HELPER_VERIFY_TARGET = "pyeudiw.jwt.jws_helper.JWSHelper.verify"
-
 def assert_invalid_request_application_json(result: Response, error_desc: str):
     assert result.status == '400'
     assert result.message == f'{{"error": "invalid_request", "error_description": "{error_desc}"}}'
