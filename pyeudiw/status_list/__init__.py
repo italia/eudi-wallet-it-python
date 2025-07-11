@@ -5,10 +5,10 @@ from typing import Literal, Union, Tuple, Any
 from typing import Optional
 
 import cbor2
-import cose.keys.curves as curves
 import pycose.algorithms
-from cose.keys import CoseKey
+import pycose.keys.curves as curves
 from pycose.headers import Algorithm, KID
+from pycose.keys import CoseKey
 from pycose.keys import EC2Key
 from pycose.messages import Sign1Message
 
