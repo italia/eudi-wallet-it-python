@@ -6,7 +6,8 @@ from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
     WalletPostRequest,
     RESPONSE_MODES_SUPPORTED_CTX,
     VP_FORMATS_SUPPORTED_CTX,
-    CLIENT_ID_SCHEMES_SUPPORTED_CTX
+    CLIENT_ID_SCHEMES_SUPPORTED_CTX,
+    REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED
 )
 
 _example_vp_formats_supported = {
@@ -363,3 +364,71 @@ def test_valid_client_id_schemes_supported_without_context(value):
     assert WalletPostRequest(**request).wallet_metadata.client_id_schemes_supported == expected_value
     assert WalletMetadata.model_validate(request["wallet_metadata"]).client_id_schemes_supported == expected_value
     assert  WalletMetadata(**request["wallet_metadata"]).client_id_schemes_supported == expected_value
+
+@pytest.mark.parametrize("value,expected_value", [
+    (["RS256"], ["RS256"]),
+    (["RS256", "RS384"], ["RS256", "RS384"]),
+    (["RS256", "test"], ["RS256"]),
+    ("RS256", ["RS256"]),
+    ([], ["RS256", "RS384"]),
+    (None, ["RS256", "RS384"]),
+])
+def test_valid_request_obj_sig_alg_values_supported_with_context(value, expected_value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "request_object_signing_alg_values_supported": value,
+        }
+    }
+    ctx = {
+        REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED: ["RS256", "RS384"]
+    }
+    assert WalletPostRequest.model_validate(request, context= ctx).wallet_metadata.request_object_signing_alg_values_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"], context=ctx).request_object_signing_alg_values_supported == expected_value
+
+@pytest.mark.parametrize("value", [
+    ["test"],
+    "test",
+    ["test1", "test"],
+])
+def test_invalid_request_obj_sig_alg_values_supported_with_context(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "request_object_signing_alg_values_supported": value
+        }
+    }
+    ctx = {
+        REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED: ["RS256", "RS384"]
+    }
+    with pytest.raises(ValidationError) as err:
+        WalletPostRequest.model_validate(request, context = ctx)
+    assert "Invalid value for request_object_signing_alg_values_supported" in str(err.value)
+    with pytest.raises(ValidationError) as err:
+        WalletMetadata.model_validate(request["wallet_metadata"], context = ctx)
+    assert "Invalid value for request_object_signing_alg_values_supported" in str(err.value)
+
+@pytest.mark.parametrize("value", [
+    ["RS256"],
+    ["RS256", "RS384"],
+    "RS256",
+    [],
+    None
+])
+def test_valid_client_id_schemes_supported_without_context(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "request_object_signing_alg_values_supported": value,
+        }
+    }
+    ctx = {
+        REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED: None
+    }
+    expected_value = [value] if isinstance(value, str) else value
+    assert WalletPostRequest.model_validate(request, context= ctx).wallet_metadata.request_object_signing_alg_values_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"], context=ctx).request_object_signing_alg_values_supported == expected_value
+    assert WalletPostRequest.model_validate(request).wallet_metadata.request_object_signing_alg_values_supported == expected_value
+    assert WalletPostRequest(**request).wallet_metadata.request_object_signing_alg_values_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"]).request_object_signing_alg_values_supported == expected_value
+    assert  WalletMetadata(**request["wallet_metadata"]).request_object_signing_alg_values_supported == expected_value

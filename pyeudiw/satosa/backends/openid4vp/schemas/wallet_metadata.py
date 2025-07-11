@@ -6,6 +6,7 @@ from pydantic import BaseModel, field_validator
 RESPONSE_MODES_SUPPORTED_CTX = "valid_response_mode_supported"
 VP_FORMATS_SUPPORTED_CTX = "valid_vp_formats"
 CLIENT_ID_SCHEMES_SUPPORTED_CTX = "valid_client_id_schemes_supported"
+REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED = "valid_request_object_signing_alg_values_supported"
 
 # TODO: Move this to a global file
 _default_supported_algorithms = [
@@ -104,6 +105,20 @@ class WalletMetadata(BaseModel):
             return valid
         else:
             raise ValueError("Invalid value for client_id_schemes_supported")
+
+    @field_validator("request_object_signing_alg_values_supported", mode="before")
+    def validate_request_object_signing_alg_values_supported_supported(cls, v, info):
+        valid = (info.context or {}).get(REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED)
+        if not valid:
+            return [v] if isinstance(v, str) else v
+        elif isinstance(v, str) and v in valid:
+            return [v]
+        elif isinstance(v, list):
+            return cls._valid_element_list(v, valid, "request_object_signing_alg_values_supported")
+        elif v is None:
+            return valid
+        else:
+            raise ValueError("Invalid value for request_object_signing_alg_values_supported")
 
     @staticmethod
     def _valid_element_list(v: list, expected_value: str|list, field_name: str):
