@@ -12,7 +12,13 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
-from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import WalletPostRequest
+from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
+    WalletPostRequest,
+    RESPONSE_MODES_SUPPORTED_CTX,
+    VP_FORMATS_SUPPORTED_CTX,
+    CLIENT_ID_SCHEMES_SUPPORTED_CTX,
+    REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED
+)
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
@@ -48,6 +54,17 @@ class RequestHandler(VPBaseEndpoint):
 
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
         self.trust_evaluator = trust_evaluator
+        self._credential_supported_formats = [
+            f["format"] for f in config["credential_presentation_handlers"]["formats"]
+        ]
+
+        client_id_schemes = []
+        for _, value in config["trust"].items():
+            client_id = value.get("config", {}).get("client_id")
+            if client_id:
+                prefix = client_id.split(":", 1)[0]
+                client_id_schemes.append(prefix)
+        self._client_id_schemes_supported = client_id_schemes if client_id_schemes else None
 
 
     def endpoint(self, context: Context) -> Response:
@@ -127,7 +144,12 @@ class RequestHandler(VPBaseEndpoint):
 
         if context.request_method == "POST":
             try:
-                wallet_post_request = WalletPostRequest(**request)
+                wallet_post_request = WalletPostRequest.model_validate(request, context={
+                    RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get("response_mode", "direct_post_jwt"),
+                    VP_FORMATS_SUPPORTED_CTX: self._credential_supported_formats,
+                    CLIENT_ID_SCHEMES_SUPPORTED_CTX: self._client_id_schemes_supported,
+                    REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED: self.config["jwt"].get("sig_alg_supported")
+                })
             except Exception as e:
                 self._log_warning(context, f"wallet metadata not provided or invalid: {e}")
                 wallet_post_request = WalletPostRequest(
