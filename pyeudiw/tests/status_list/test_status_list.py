@@ -1,10 +1,13 @@
-from pyeudiw.status_list.helper import StatusListTokenHelper
+import pytest
+
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK
 from pyeudiw.status_list.exceptions import (
     PositionOutOfRangeError,
     InvalidTokenFormatError,
 )
+from pyeudiw.status_list.helper import StatusListTokenHelper
+from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK
+
 
 def test_StatusListHelper_jwt_parsing():
     helper = StatusListTokenHelper.from_token(
@@ -92,3 +95,82 @@ def test_StausListHelper_jwt_invalid_token():
         assert True
     except Exception:
         assert False
+
+import zlib
+
+from pycose.headers import KID, Algorithm
+from pycose.messages import Sign1Message
+
+from pyeudiw.status_list import encode_cwt_status_list_token, decode_cwt_status_list_token
+
+@pytest.fixture
+def cwt_payload():
+    return (
+        {'ALG': 'ES256',
+         'CURVE': 'P_256',
+         'D': b'\x8bA\xd0\x8a\xa0\xcf]\xff\x8c\xa8.\xfb\xeb;[\x80\xe0\x88\xf7\xe7\x80F\x17\x14s:\x89\xfb\xbf\xe1\xb6\xd7',
+         'KID': b'f10aca0992694b3581f6f699bfc8a2c6cc687725',
+         'KTY': 'EC2'},
+        1,
+        b"\xff" * 10  # 10 bytes all 1
+    )
+
+def test_encode_cwt_status_list_token_unsigned_and_without_map(cwt_payload):
+    payload_data = {"data": "test"}
+    payload_parts = ({}, {}, payload_data)
+    bits = cwt_payload[1]
+    lst = cwt_payload[2]
+    token_unsigned = encode_cwt_status_list_token(payload_parts, bits, lst)
+    _cwt_token_payload(token_unsigned,
+                       {"bits": bits, "lst": lst},
+                       payload_data)
+
+def test_encode_cwt_status_list_token_unsigned_and_with_map(cwt_payload):
+    payload_data = {"data": "test"}
+    payload_to_decode = {"ttl": 4000}
+    payload_parts = ({}, {}, payload_data | payload_to_decode)
+    bits = cwt_payload[1]
+    lst = cwt_payload[2]
+    token_unsigned = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534})
+    _cwt_token_payload(token_unsigned,
+                       {"bits": bits, "lst": lst},
+                       payload_data | {65534: payload_to_decode["ttl"]})
+
+def test_encode_cwt_status_list_token_signed_and_without_map(cwt_payload):
+    payload_data = {"data": "test"}
+    payload_parts = ({}, {}, payload_data)
+    bits = cwt_payload[1]
+    lst = cwt_payload[2]
+    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, private_key=cwt_payload[0])
+    _cwt_token_payload(token_signed,
+                       {"bits": bits, "lst": lst},
+                       payload_data, payload_parts)
+
+def test_encode_cwt_status_list_token_signed_and_with_map(cwt_payload):
+    payload_data = {"data": "test"}
+    payload_to_decode = {"ttl": 4000}
+    payload_parts = ({}, {}, payload_data | payload_to_decode)
+    bits = cwt_payload[1]
+    lst = cwt_payload[2]
+    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534}, cwt_payload[0])
+    _cwt_token_payload(token_signed,
+                       {"bits": bits, "lst": lst},
+                       payload_data | {65534: payload_to_decode["ttl"]}, payload_parts)
+
+def _cwt_token_payload(token, expected_status_list, payload_data: dict | None = None, payload_parts: tuple | None = None):
+    assert isinstance(token, bytes)
+    decoded_payload = decode_cwt_status_list_token(token)
+    assert 65533 in decoded_payload[2] #check contains status_list
+    assert zlib.decompress(decoded_payload[2][65533]["lst"]) == expected_status_list["lst"]
+    assert decoded_payload[2][65533]["bits"] == expected_status_list["bits"]
+    if payload_data:
+        assert payload_data.items() <= decoded_payload[2].items()
+    assert decoded_payload[1][16] == 'application/statuslist+cwt'
+    if payload_parts:
+        assert KID in payload_parts[0] or b"KID" in payload_parts[0]
+        assert Algorithm in payload_parts[0]
+        msg = Sign1Message.decode(bytes.fromhex(token.decode()))
+        assert isinstance(msg, Sign1Message)
+        assert msg.signature is not None
+        assert len(msg.signature) > 0
+
