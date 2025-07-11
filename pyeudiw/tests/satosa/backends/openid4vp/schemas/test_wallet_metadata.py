@@ -2,9 +2,11 @@ import pytest
 from pydantic import ValidationError
 
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
-    RESPONSE_MODES_SUPPORTED_CTX,
     WalletMetadata,
-    WalletPostRequest, VP_FORMATS_SUPPORTED_CTX
+    WalletPostRequest,
+    RESPONSE_MODES_SUPPORTED_CTX,
+    VP_FORMATS_SUPPORTED_CTX,
+    CLIENT_ID_SCHEMES_SUPPORTED_CTX
 )
 
 _example_vp_formats_supported = {
@@ -294,48 +296,70 @@ def test_valid_vp_formats_supported_without_context(value):
     assert WalletMetadata.model_validate(request["wallet_metadata"]).vp_formats_supported == value
     assert WalletMetadata(**request["wallet_metadata"]).vp_formats_supported == value
 
-@pytest.mark.parametrize("value", [
-    ["http"],
-    "http",
-    ["http", "test"],
-    [],
-    None
+@pytest.mark.parametrize("value,expected_value", [
+    (["openid_federation"], ["openid_federation"]),
+    (["openid_federation", "x509_san_dns"], ["openid_federation", "x509_san_dns"]),
+    (["openid_federation", "test"], ["openid_federation"]),
+    ("openid_federation", ["openid_federation"]),
+    ([], ["openid_federation", "x509_san_dns"]),
+    (None, ["openid_federation", "x509_san_dns"]),
 ])
-def test_valid_client_id_schemes_supported(value):
+def test_valid_client_id_schemes_supported_with_context(value, expected_value):
     request = {
         "wallet_metadata": {
             "vp_formats_supported": _example_vp_formats_supported,
-            "client_id_schemes_supported": value
+            "client_id_schemes_supported": value,
         }
     }
-    expected_value = ["http"]
-
-    assert WalletPostRequest.model_validate(request).wallet_metadata.client_id_schemes_supported == expected_value
-    assert WalletPostRequest(**request).wallet_metadata.client_id_schemes_supported == expected_value
-    assert WalletMetadata.model_validate(request["wallet_metadata"]).client_id_schemes_supported == expected_value
-    assert  WalletMetadata(**request["wallet_metadata"]).client_id_schemes_supported == expected_value
+    ctx = {
+        CLIENT_ID_SCHEMES_SUPPORTED_CTX: ["openid_federation", "x509_san_dns"]
+    }
+    assert WalletPostRequest.model_validate(request, context= ctx).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"], context=ctx).client_id_schemes_supported == expected_value
 
 @pytest.mark.parametrize("value", [
     ["test"],
     "test",
     ["test1", "test"],
 ])
-def test_invalid_client_id_schemes_supported(value):
+def test_invalid_client_id_schemes_supported_with_context(value):
     request = {
         "wallet_metadata": {
             "vp_formats_supported": _example_vp_formats_supported,
             "client_id_schemes_supported": value
         }
     }
+    ctx = {
+        CLIENT_ID_SCHEMES_SUPPORTED_CTX: ["openid_federation", "x509_san_dns"]
+    }
     with pytest.raises(ValidationError) as err:
-        WalletPostRequest.model_validate(request)
+        WalletPostRequest.model_validate(request, context = ctx)
     assert "Invalid value for client_id_schemes_supported" in str(err.value)
     with pytest.raises(ValidationError) as err:
-        WalletPostRequest(**request)
+        WalletMetadata.model_validate(request["wallet_metadata"], context = ctx)
     assert "Invalid value for client_id_schemes_supported" in str(err.value)
-    with pytest.raises(ValidationError) as err:
-        WalletMetadata.model_validate(request["wallet_metadata"])
-    assert "Invalid value for client_id_schemes_supported" in str(err.value)
-    with pytest.raises(ValidationError) as err:
-        WalletMetadata(**request["wallet_metadata"])
-    assert "Invalid value for client_id_schemes_supported" in str(err.value)
+
+@pytest.mark.parametrize("value", [
+    ["openid_federation"],
+    ["openid_federation", "x509_san_dns"],
+    "openid_federation",
+    [],
+    None
+])
+def test_valid_client_id_schemes_supported_without_context(value):
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "client_id_schemes_supported": value,
+        }
+    }
+    ctx = {
+        CLIENT_ID_SCHEMES_SUPPORTED_CTX: None
+    }
+    expected_value = [value] if isinstance(value, str) else value
+    assert WalletPostRequest.model_validate(request, context= ctx).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"], context=ctx).client_id_schemes_supported == expected_value
+    assert WalletPostRequest.model_validate(request).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletPostRequest(**request).wallet_metadata.client_id_schemes_supported == expected_value
+    assert WalletMetadata.model_validate(request["wallet_metadata"]).client_id_schemes_supported == expected_value
+    assert  WalletMetadata(**request["wallet_metadata"]).client_id_schemes_supported == expected_value

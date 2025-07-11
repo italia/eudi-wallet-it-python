@@ -15,7 +15,8 @@ from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseE
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
     WalletPostRequest,
     RESPONSE_MODES_SUPPORTED_CTX,
-    VP_FORMATS_SUPPORTED_CTX
+    VP_FORMATS_SUPPORTED_CTX,
+    CLIENT_ID_SCHEMES_SUPPORTED_CTX
 )
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -55,6 +56,15 @@ class RequestHandler(VPBaseEndpoint):
         self._credential_supported_formats = [
             f["format"] for f in config["credential_presentation_handlers"]["formats"]
         ]
+
+        client_id_schemes = []
+        for _, value in config["trust"].items():
+            config = value.get("config", {})
+            client_id = config.get("client_id")
+            if client_id:
+                prefix = client_id.split(":", 1)[0]
+                client_id_schemes.append(prefix)
+        self._client_id_schemes_supported = client_id_schemes if client_id_schemes else None
 
 
     def endpoint(self, context: Context) -> Response:
@@ -136,7 +146,8 @@ class RequestHandler(VPBaseEndpoint):
             try:
                 wallet_post_request = WalletPostRequest.model_validate(request, context={
                     RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get("response_mode", "direct_post_jwt"),
-                    VP_FORMATS_SUPPORTED_CTX: self._credential_supported_formats
+                    VP_FORMATS_SUPPORTED_CTX: self._credential_supported_formats,
+                    CLIENT_ID_SCHEMES_SUPPORTED_CTX: self._client_id_schemes_supported
                 })
             except Exception as e:
                 self._log_warning(context, f"wallet metadata not provided or invalid: {e}")

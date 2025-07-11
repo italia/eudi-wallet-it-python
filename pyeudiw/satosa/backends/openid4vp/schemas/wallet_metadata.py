@@ -5,6 +5,7 @@ from pydantic import BaseModel, field_validator
 
 RESPONSE_MODES_SUPPORTED_CTX = "valid_response_mode_supported"
 VP_FORMATS_SUPPORTED_CTX = "valid_vp_formats"
+CLIENT_ID_SCHEMES_SUPPORTED_CTX = "valid_client_id_schemes_supported"
 
 # TODO: Move this to a global file
 _default_supported_algorithms = [
@@ -91,21 +92,25 @@ class WalletMetadata(BaseModel):
             return filtered_vp_formats
 
     @field_validator("client_id_schemes_supported", mode="before")
-    def validate_client_id_schemes_supported(cls, v):
-        if isinstance(v, str) and v == _default_client_id_schemes_supported:
+    def validate_client_id_schemes_supported(cls, v, info):
+        valid = (info.context or {}).get(CLIENT_ID_SCHEMES_SUPPORTED_CTX)
+        if not valid:
+            return [v] if isinstance(v, str) else v
+        elif isinstance(v, str) and v in valid:
             return [v]
         elif isinstance(v, list):
-            return cls._valid_element_list(v, _default_client_id_schemes_supported, "client_id_schemes_supported")
+            return cls._valid_element_list(v, valid, "client_id_schemes_supported")
         elif v is None:
-            return [_default_client_id_schemes_supported]
+            return valid
         else:
             raise ValueError("Invalid value for client_id_schemes_supported")
 
     @staticmethod
-    def _valid_element_list(v: list, expected_value: str, field_name: str):
+    def _valid_element_list(v: list, expected_value: str|list, field_name: str):
         if len(v) == 0:
-            return [expected_value]
-        filtered = [mode for mode in v if mode == expected_value]
+            return [expected_value] if isinstance(expected_value, str) else expected_value
+        filtered = [mode for mode in v if
+                    (mode == expected_value if isinstance(expected_value, str) else mode in expected_value)]
         if not filtered or len(filtered) == 0:
             raise ValueError(f"Invalid value for {field_name}")
         return filtered
