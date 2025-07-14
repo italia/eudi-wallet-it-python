@@ -1,5 +1,6 @@
 from typing import Any
 from datetime import datetime
+from ipaddress import IPv4Address, IPv4Network
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.verify import (
@@ -12,27 +13,34 @@ from cryptography import x509
 
 def gen_chain(
         date: datetime| None = None, 
-        ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
+        ca_cn: str = "ca.example.com", 
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
-        leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "leaf.example.org",
+        intermediate_cn: str = "intermediate.example.org", 
+        intermediate_dns: str = "intermediate.example.org",
+        leaf_cn: str = "leaf.example.it", 
+        leaf_dns: str = "leaf.example.it",
+        leaf_uri: str = "leaf.example.it",
         leaf_private_key: Any = None
     ) -> list[bytes]:
 
     ca_cert_params = {
         "cn": ca_cn,
-        "org_name":"Example CA",
-        "country_name":"IT",
-        "dns":ca_dns,
-        "uri":"https://ca.example.com",
-        "crl_distr_point":"http://ca.example.com/crl.pem",
+        "organization_name": "Example CA",
+        "country_name": "IT",
+        "email_address": f"info@{ca_dns}",
+        "dns": ca_dns,
+        "uri": f"https://{ca_dns}",
+        "crl_distr_point": f"https://{ca_dns}/crl/{ca_dns}.crl",
         "ca": True,
-        "path_length": 1,
+        "path_length": None,
+        "permitted_subtrees": [
+            x509.DNSName(ca_dns),
+            x509.DNSName(intermediate_dns),
+        ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -48,17 +56,22 @@ def gen_chain(
     }
 
     intermediate_cert_params = {
-        "cn": "intermediate.example.com",
-        "org_name": "Example Intermediate",
+        "cn": intermediate_cn,
+        "organization_name": "Example Intermediate",
         "country_name": "IT",
-        "dns": "intermediate.example.com",
-        "uri": "https://intermediate.example.com",
+        "email_address": f"info@{intermediate_dns}",
+        "dns": intermediate_dns,
+        "uri": f"https://{intermediate_dns}",
         "ca": True,
         "path_length": 0,
+        "permitted_subtrees": [
+            x509.DNSName(intermediate_dns),
+            x509.DNSName(leaf_dns),
+        ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -71,26 +84,26 @@ def gen_chain(
             encipher_only=False,
             decipher_only=False
         ),
-        "crl_distr_point": "https://intermediate.example.net/crl/intermediate.example.net.crl"
+        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl"
     }
 
     leaf_cert_params = {
         "cn": leaf_cn,
-        "org_name": "Example Leaf",
+        "organization_name": "Example Leaf",
         "country_name": "IT",
+        "email_address": f"info@{leaf_dns}",
         "dns": leaf_dns,
         "uri": leaf_uri,
         "ca": False,
         "path_length": None,
         "private_key": leaf_private_key,
         "permitted_subtrees": [
-            x509.UniformResourceIdentifier(f"https://leaf.example.com"),
-            x509.DNSName("leaf.example.com"),
+            x509.DNSName(leaf_dns),
         ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
-            x509.DNSName("127.0.0.1")
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
         ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
@@ -103,7 +116,7 @@ def gen_chain(
             encipher_only=False,
             decipher_only=False
         ),
-        "crl_distr_point": "https://leaf.example.com/crl/leaf.example.com.crl"
+        "crl_distr_point": f"https://{leaf_dns}/crl/{leaf_dns}.crl",
     }
 
     if date:
@@ -162,7 +175,7 @@ def test_chain_issuer():
     issuer = get_issuer_from_x5c(chain)
     trust_anchor = get_trust_anchor_from_x5c(chain)
 
-    assert issuer == "leaf.example.org"
+    assert issuer == "leaf.example.it"
     assert trust_anchor == "ca.example.com"
 
 
