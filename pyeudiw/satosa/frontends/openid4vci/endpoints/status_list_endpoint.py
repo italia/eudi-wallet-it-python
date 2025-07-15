@@ -44,7 +44,7 @@ _PAYLOAD_CWT_KEYS = {
 
 class StatusListHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the status list endpoint class.
         Args:
