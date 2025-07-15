@@ -954,7 +954,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
 
         status_endpoint = self.backend.endpoints.get("status")
