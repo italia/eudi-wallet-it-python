@@ -1019,9 +1019,9 @@ class TestOpenID4VPBackend:
             payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         )
 
-        datetime_mock = Mock(wraps=datetime.datetime)
-        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
-        with patch("datetime.datetime", new=datetime_mock):
+        datetime_mock = Mock(wraps=datetime)
+        datetime_mock.now.return_value = datetime(2999, 1, 1)
+        with patch("datetime", new=datetime_mock):
             status_endpoint(context)
             state_endpoint_response = status_endpoint(context)
             assert state_endpoint_response.status == "403"
@@ -1098,7 +1098,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
         # End RP trust chain
 
@@ -1226,7 +1226,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
-                expiration_date=datetime.datetime.now(),
+                expiration_date=datetime.now(),
                 trust_chain=trust_chain_wallet,
                 trust_handler_name="FederationHandler",
             )
