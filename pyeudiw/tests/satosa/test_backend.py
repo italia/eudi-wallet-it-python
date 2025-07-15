@@ -1021,7 +1021,7 @@ class TestOpenID4VPBackend:
 
         datetime_mock = Mock(wraps=datetime)
         datetime_mock.now.return_value = datetime(2999, 1, 1)
-        with patch("datetime", new=datetime_mock):
+        with patch("datetime.datetime", new=datetime_mock):
             status_endpoint(context)
             state_endpoint_response = status_endpoint(context)
             assert state_endpoint_response.status == "403"
