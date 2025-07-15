@@ -167,7 +167,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         tuple[str, Callable[[Context, Any], Response]]
     ]:
 
-        metadata_path = f'^{backend_name.strip("/")}/.well-known/openid-federation$'
+        metadata_path = f'{backend_name.strip("/")}/.well-known/openid-federation'
         response = self.entity_configuration
 
         def metadata_response_fn(
