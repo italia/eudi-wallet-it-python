@@ -1,9 +1,9 @@
 import base64
-import datetime
 import json
 import unittest.mock
 import urllib.parse
 import uuid
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -77,6 +77,16 @@ PID_DATA = {
 mdoci = MdocCborIssuer(
     private_key=PKEY,
     alg="ES256",
+    cert_info={
+        "country_name": "US",
+        "state_or_province_name": "California",
+        "locality_name": "San Francisco",
+        "organization_name": "Micov",
+        "common_name": "My Company",
+        "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
+        "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
+        "san_url": "https://credential-issuer.example.org"
+    }
 )
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, additional_headers: dict) -> dict:
@@ -142,7 +152,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 "jwks",
                 jwks=[JWK(key=self.issuer_jwk).as_dict()],
-                expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
+                expiration_date=datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
                 trust_handler_name="DirectTrustSdJwtVc",
             ),
         )

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -196,6 +197,16 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
     mdoci = MdocCborIssuer(
         private_key=PKEY,
         alg="ES256",
+        cert_info={
+            "country_name": "US",
+            "state_or_province_name": "California",
+            "locality_name": "San Francisco",
+            "organization_name": "Micov",
+            "common_name": "My Company",
+            "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
+            "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
+            "san_url": "https://credential-issuer.example.org"
+        }
     )
 
     mdoci.new(
