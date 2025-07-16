@@ -79,7 +79,7 @@ class OpenID4VPBackend(BackendModule):
         url_map = []
 
         for path, inst in el.endpoint_instances.items():
-            url_map.append((f"^{self.name}/{path}$", inst))
+            url_map.append((f"{self.name}/{path}", inst))
 
 
         metadata_map = self.trust_evaluator.build_metadata_endpoints(
