@@ -11,13 +11,17 @@ from saml2.saml import (
 from saml2.sigver import get_xmlsec_binary
 from saml2.metadata import entity_descriptor
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = 'http://pyeudiw_demo.example.org'
 BASE_URL = '{}/saml2'.format(BASE)
 
 IDP_BASEURL = "https://localhost"
 IDP_ENTITYID = f'{IDP_BASEURL}/Saml2IDP/metadata'
+
+def _get_certs_path(file_name: str):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    return f"{parent_dir}{os.path.sep}conf{os.path.sep}certs{os.path.sep}{file_name}"
 
 SAML_CONFIG = {
 
@@ -79,8 +83,8 @@ SAML_CONFIG = {
     },
 
     # Signing
-    'key_file': BASE_DIR + '/certs/private.key',
-    'cert_file': BASE_DIR + '/certs/public.cert',
+    'key_file': _get_certs_path('private.key'),
+    'cert_file': _get_certs_path('public.cert'),
 
     # own metadata settings
     'contact_person': [

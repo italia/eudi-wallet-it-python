@@ -4,14 +4,14 @@ from typing import Literal
 import requests
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
 
-from example.satosa.integration_test.commons import create_issuer_test_data, create_holder_test_data, \
+from integration_test.initializer.commons import create_issuer_test_data, create_holder_test_data, \
     create_issuer_test_data_with_user_claims
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.tests.federation.base import leaf_cred
-from .settings import IDP_BASEURL
+from integration_test.initializer.settings import IDP_BASEURL
 
 ISSUER_CONFIG_FOR_WALLET_ATTESTATION_DATA = {
     "sd_specification": """
