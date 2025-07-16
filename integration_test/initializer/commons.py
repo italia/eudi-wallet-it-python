@@ -32,8 +32,8 @@ from pyeudiw.tests.federation.base import (
 )
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw_integration_test.initializer.saml2_sp import saml2_request
-from pyeudiw_integration_test.initializer.settings import (
+from integration_test.initializer.saml2_sp import saml2_request
+from integration_test.initializer.settings import (
     IDP_BASEURL,
     CONFIG_DB,
     RP_EID,

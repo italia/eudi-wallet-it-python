@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright, Playwright, Page
 
 from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw_integration_test.initializer.commons import (
+from integration_test.initializer.commons import (
     ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
@@ -30,7 +30,7 @@ from pyeudiw_integration_test.initializer.commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
-from pyeudiw_integration_test.initializer.settings import TIMEOUT_S
+from integration_test.initializer.settings import TIMEOUT_S
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
