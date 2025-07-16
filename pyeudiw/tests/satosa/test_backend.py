@@ -1,9 +1,9 @@
 import base64
-import datetime
 import json
 import unittest.mock
 import urllib.parse
 import uuid
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -77,6 +77,16 @@ PID_DATA = {
 mdoci = MdocCborIssuer(
     private_key=PKEY,
     alg="ES256",
+    cert_info={
+        "country_name": "US",
+        "state_or_province_name": "California",
+        "locality_name": "San Francisco",
+        "organization_name": "Micov",
+        "common_name": "My Company",
+        "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
+        "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
+        "san_url": "https://credential-issuer.example.org"
+    }
 )
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, additional_headers: dict) -> dict:
@@ -142,7 +152,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 "jwks",
                 jwks=[JWK(key=self.issuer_jwk).as_dict()],
-                expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
+                expiration_date=datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
                 trust_handler_name="DirectTrustSdJwtVc",
             ),
         )
@@ -944,7 +954,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
 
         status_endpoint = self.backend.endpoints.get("status")
@@ -1009,8 +1019,8 @@ class TestOpenID4VPBackend:
             payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         )
 
-        datetime_mock = Mock(wraps=datetime.datetime)
-        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
+        datetime_mock = Mock(wraps=datetime)
+        datetime_mock.now.return_value = datetime(2999, 1, 1)
         with patch("datetime.datetime", new=datetime_mock):
             status_endpoint(context)
             state_endpoint_response = status_endpoint(context)
@@ -1088,7 +1098,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
         # End RP trust chain
 
@@ -1157,7 +1167,11 @@ class TestOpenID4VPBackend:
         assert document
 
         assert document["request_object"]["wallet_metadata"] == {
-            "client_id_prefixes_supported": None,
+            'authorization_endpoint': None,
+            'request_object_signing_alg_values_supported': None,
+            'response_modes_supported': None,
+            'response_types_supported': None,
+            "client_id_schemes_supported": None,
             "alg_values_supported": ["ES256"],
             "vp_formats_supported": {
                 "dc+sd-jwt": {
@@ -1212,7 +1226,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
-                expiration_date=datetime.datetime.now(),
+                expiration_date=datetime.now(),
                 trust_chain=trust_chain_wallet,
                 trust_handler_name="FederationHandler",
             )
