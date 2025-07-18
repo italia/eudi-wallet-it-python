@@ -1,10 +1,9 @@
 import json
 
 from satosa.context import Context
-from satosa.response import Response
+from pyeudiw.satosa.utils.response import JsonResponse
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
-from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
 class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
@@ -29,12 +28,12 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         return metadata
 
     @property
-    def entity_configuration_as_dict(self) -> dict:
+    def openid_credential_issuer_metadata_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
         ec_payload = self.metadata.get("openid_credential_issuer", {})
         return ec_payload
 
-    def endpoint(self, context: Context) -> Response:
+    def endpoint(self, context: Context) -> JsonResponse:
         """
         Handle request to the metadata endpoint.
         Args:
@@ -42,8 +41,7 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         Returns:
             A Response object.
         """
-        return Response(
-            json.dumps(self.entity_configuration_as_dict),
+        return JsonResponse(
+            message=self.openid_credential_issuer_metadata_as_dict,
             status="200",
-            content=APPLICATION_JSON
         )
