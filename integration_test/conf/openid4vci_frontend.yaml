@@ -45,9 +45,13 @@ config:
       class: MetadataHandler
       path: '.well-known/openid-federation'
     credential_issuer_metadata:
-      module: pyeudiw.satosa.frontends.openid4vci.endpoints.ceredential_issuer_metatadata_endpoint
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metatadata_endpoint
       class: CredentialIssuerMetadataHandler
       path: '.well-known/openid-credential-issuer'
+    oauth_authorization_server_metadata:
+      module: pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metatadata_endpoint
+      class: OauthAuthorizationServerMetadataHandler
+      path: '.well-known/oauth-authorization-server'
     status_list:
       module: pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint
       class: StatusListHandler
