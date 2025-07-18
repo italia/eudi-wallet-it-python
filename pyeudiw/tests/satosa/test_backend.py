@@ -1,28 +1,32 @@
-import os
-import uuid
-import copy
 import base64
-import datetime
 import json
+import unittest.mock
 import urllib.parse
+import uuid
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
-import unittest.mock
 from bs4 import BeautifulSoup
 from cryptojwt.jws.jws import JWS
+from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.state import State
 
+from pyeudiw.jwk import JWK
+from pyeudiw.jwk.parse import parse_pem
+from pyeudiw.jwt.jwe_helper import JWEHelper
+from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop import DPoPIssuer
-from pyeudiw.satosa.backend import OpenID4VPBackend
-from pyeudiw.storage.base_storage import TrustType
+from pyeudiw.satosa.backends.openid4vp.openid4vp import OpenID4VPBackend
+from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.sd_jwt.holder import SDJWTHolder
+from pyeudiw.sd_jwt.issuer import SDJWTIssuer
+from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.storage.db_engine import DBEngine, TrustType
-from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
-from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from pyeudiw.tests.federation.base import (
     EXP,
     NOW,
@@ -45,18 +49,9 @@ from pyeudiw.tests.settings import (
     DEFAULT_X509_CHAIN,
     DEFAULT_X509_LEAF_JWK
 )
-from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
-from pyeudiw.jwk import JWK
-from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
-from pyeudiw.sd_jwt.issuer import SDJWTIssuer
-from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.x509.verify import PEM_cert_to_B64DER_cert, to_pem_list
-from pyeudiw.jwk.parse import parse_pem
 
 PKEY = {
     'KTY': 'EC2',
@@ -82,6 +77,16 @@ PID_DATA = {
 mdoci = MdocCborIssuer(
     private_key=PKEY,
     alg="ES256",
+    cert_info={
+        "country_name": "US",
+        "state_or_province_name": "California",
+        "locality_name": "San Francisco",
+        "organization_name": "Micov",
+        "common_name": "My Company",
+        "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
+        "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
+        "san_url": "https://credential-issuer.example.org"
+    }
 )
 
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, additional_headers: dict) -> dict:
@@ -147,7 +152,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 "jwks",
                 jwks=[JWK(key=self.issuer_jwk).as_dict()],
-                expiration_date=datetime.datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
+                expiration_date=datetime.fromtimestamp(exp_from_now(CONFIG["jwt"]["default_exp"])),
                 trust_handler_name="DirectTrustSdJwtVc",
             ),
         )
@@ -280,7 +285,7 @@ class TestOpenID4VPBackend:
     def test_entity_configuration(self, context):
         context.qs_params = {}
 
-        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+        _fedback = self.backend.get_trust_backend_by_class_name(
             "FederationHandler"
         )
         assert _fedback
@@ -298,7 +303,11 @@ class TestOpenID4VPBackend:
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
         )
-        resp = self.backend.pre_request_endpoint(context, InternalData())
+
+        pre_request = self.backend.endpoints.get("pre_request")
+        assert pre_request is not None, "Pre-request endpoint not found"
+
+        resp = pre_request(context)
         assert resp is not None
         assert resp.status == "400"
         assert resp.message is not None
@@ -308,7 +317,11 @@ class TestOpenID4VPBackend:
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
         context.qs_params = {"client_id_hint": f"openid_federation:{BASE_URL}/{BACKEND_NAME}"}
-        resp = self.backend.pre_request_endpoint(context, InternalData())
+        
+        pre_request = self.backend.endpoints.get("pre_request")
+        assert pre_request is not None, "Pre-request endpoint not found"
+
+        resp = pre_request(context)
 
         assert resp is not None
         assert resp.status == "302 Found"
@@ -325,14 +338,19 @@ class TestOpenID4VPBackend:
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
-        assert pre_request_endpoint
-        assert pre_request_endpoint.status == "200"
-        assert pre_request_endpoint.message
 
-        assert "src='data:image/svg+xml;base64," in pre_request_endpoint.message
+        pre_request = self.backend.endpoints.get("pre_request")
+        assert pre_request is not None, "Pre-request endpoint not found"
 
-        soup = BeautifulSoup(pre_request_endpoint.message, "html.parser")
+        resp = pre_request(context)
+
+        assert resp
+        assert resp.status == "200"
+        assert resp.message
+
+        assert "src='data:image/svg+xml;base64," in resp.message
+
+        soup = BeautifulSoup(resp.message, "html.parser")
         # get the img tag with src attribute starting with data:image/svg+xml;base64,
         img_tag = soup.find(
             lambda tag: tag.name == "img"
@@ -356,17 +374,22 @@ class TestOpenID4VPBackend:
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
-        assert pre_request_endpoint
-        assert "302" in pre_request_endpoint.status
+
+        pre_request = self.backend.endpoints.get("pre_request")
+        assert pre_request is not None, "Pre-request endpoint not found"
+
+        resp = pre_request(context)
+
+        assert resp
+        assert "302" in resp.status
 
         assert (
             f"{CONFIG['authorization']['url_scheme']}://"
-            in pre_request_endpoint.message
+            in resp.message
         )
 
         unquoted = urllib.parse.unquote(
-            pre_request_endpoint.message, encoding="utf-8", errors="replace"
+            resp.message, encoding="utf-8", errors="replace"
         )
         parsed = urllib.parse.urlparse(unquoted)
 
@@ -401,9 +424,13 @@ class TestOpenID4VPBackend:
         }
 
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "400"
-        msg = json.loads(response_endpoint.message)
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+        assert resp.status == "400"
+        msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
 
@@ -414,9 +441,9 @@ class TestOpenID4VPBackend:
         context.request = {
             "response": encrypted_response
         }
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "400"
-        msg = json.loads(response_endpoint.message)
+        resp = response_endpoint(context)
+        assert resp.status == "400"
+        msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
 
@@ -445,9 +472,13 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status.startswith("4")
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+        resp = response_endpoint(context)
+
+        msg = json.loads(resp.message)
+        assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
 
@@ -461,9 +492,9 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status == "400"
+        resp = response_endpoint(context)
+        msg = json.loads(resp.message)
+        assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid authorization response: cannot find the session associated to the state"
 
@@ -477,9 +508,9 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status.startswith("4")
+        resp = response_endpoint(context)
+        msg = json.loads(resp.message)
+        assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
 
@@ -491,17 +522,18 @@ class TestOpenID4VPBackend:
             "response": encrypted_response
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "200"
-        assert "redirect_uri" in response_endpoint.message
+        resp = response_endpoint(context)
+
+        assert resp.status == "200"
+        assert "redirect_uri" in resp.message
 
         # test status endpoint
-        msg = json.loads(response_endpoint.message)
+        msg = json.loads(resp.message)
 
         resp_code = msg['redirect_uri'].split('=')[1]
         session_id = context.state.get("SESSION_ID", None)
 
-        state = self.backend.response_code_helper.recover_state(resp_code)
+        state = response_endpoint.response_code_helper.recover_state(resp_code)
 
         assert state is not None
 
@@ -522,7 +554,11 @@ class TestOpenID4VPBackend:
         context.request_method = "GET"
         context.qs_params = {"response_code": resp_code}
 
-        response = self.backend.get_response_endpoint(context)
+        get_response_endpoint = self.backend.endpoints.get("get_response")
+
+        assert get_response_endpoint is not None, "Get response endpoint not found"
+
+        response = get_response_endpoint(context)
 
         assert response.status == "200"
         assert response.message
@@ -530,10 +566,14 @@ class TestOpenID4VPBackend:
 
         context.request_method = "GET"
         context.qs_params = {"id": state}
-        status_endpoint = self.backend.status_endpoint(context)
+        status_endpoint = self.backend.endpoints.get("status")
 
-        assert status_endpoint.status == "200"
-        assert "redirect_uri" in response_endpoint.message
+        assert status_endpoint is not None, "Status endpoint not found"
+
+        response = status_endpoint(context)
+
+        assert response.status == "200"
+        assert "redirect_uri" in response.message
 
     def test_response_endpoint_no_key_binding_jwt(self, context):
         nonce = str(uuid.uuid4())
@@ -555,9 +595,14 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status == "400"
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+
+        msg = json.loads(resp.message)
+        assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
     
@@ -589,10 +634,14 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        msg = json.loads(response_endpoint.message)
+        response_endpoint = self.backend.endpoints.get("response")
 
-        assert response_endpoint.status == "400"
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+        msg = json.loads(resp.message)
+
+        assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
 
@@ -617,9 +666,13 @@ class TestOpenID4VPBackend:
         }
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "500"
-        msg = json.loads(response_endpoint.message)
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+        assert resp.status == "500"
+        msg = json.loads(resp.message)
         assert msg["error"] == "server_error"
         assert msg["error_description"] == "flow error: unable to identify flow from stored session"
 
@@ -639,15 +692,19 @@ class TestOpenID4VPBackend:
         }
         context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-        
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "200"
-        assert "redirect_uri" in response_endpoint.message
 
-        response_endpoint = self.backend.response_endpoint(context)
+        response_endpoint = self.backend.endpoints.get("response")
 
-        msg = json.loads(response_endpoint.message)
-        assert response_endpoint.status == "400"
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+        assert resp.status == "200"
+        assert "redirect_uri" in resp.message
+
+        resp = response_endpoint(context)
+
+        msg = json.loads(resp.message)
+        assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid authorization response: session already finalized or corrupted"
 
@@ -670,13 +727,25 @@ class TestOpenID4VPBackend:
         }
         context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "200"
-        assert "redirect_uri" in response_endpoint.message
+
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        # Test with x5c chain
+        resp = response_endpoint(context)
+
+        assert resp.status == "200"
+        assert "redirect_uri" in resp.message
 
     def test_status_endpoint_no_session(self, context):
+
+        status_endpoint = self.backend.endpoints.get("status")
+
+        assert status_endpoint is not None, "Status endpoint not found"
+
         # No query string parameters
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -685,7 +754,7 @@ class TestOpenID4VPBackend:
 
         # Invalid state
         context.qs_params = {"id": None}
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -695,7 +764,7 @@ class TestOpenID4VPBackend:
 
         # Unexistent session
         context.qs_params = {"id": str(uuid.uuid4())}
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -737,8 +806,12 @@ class TestOpenID4VPBackend:
         context.request = response_with_error
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
-        response_endpoint = self.backend.response_endpoint(context)
-        assert response_endpoint.status == "200"
+        response_endpoint = self.backend.endpoints.get("response")
+
+        assert response_endpoint is not None, "Response endpoint not found"
+
+        resp = response_endpoint(context)
+        assert resp.status == "200"
 
         doc = self.backend.db_engine.get_by_state(state)
 
@@ -747,8 +820,12 @@ class TestOpenID4VPBackend:
         assert doc["error_response"] == response_with_error
 
     def test_request_endpoint(self, context):
+        status_endpoint = self.backend.endpoints.get("status")
+
+        assert status_endpoint is not None, "Status endpoint not found"
+
         # No session created
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -757,7 +834,7 @@ class TestOpenID4VPBackend:
 
         # Invalid state
         context.qs_params = {"id": None}
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "400"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -766,7 +843,7 @@ class TestOpenID4VPBackend:
 
         # Unexistent session
         context.qs_params = {"id": str(uuid.uuid4())}
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
@@ -780,7 +857,11 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG["metadata"]["request_uris"][0]
         context.request_uri = request_uri
 
-        req_resp = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.endpoints.get("request")
+
+        assert request_endpoint is not None, "Request endpoint not found"
+
+        req_resp = request_endpoint(context)
         req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers}"
         assert req_resp
         assert req_resp.status == "401", f"invalid status in request object response {req_resp_str}"
@@ -791,7 +872,7 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "session error: cannot find the session associated to the state"
 
         context.qs_params = {"id": None}
-        req_resp = self.backend.request_endpoint(context)
+        req_resp = request_endpoint(context)
 
         assert req_resp.status == "400"
         assert req_resp.message
@@ -800,9 +881,8 @@ class TestOpenID4VPBackend:
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "request error: missing or invalid parameter [id]"
 
-
         context.qs_params = {}
-        req_resp = self.backend.request_endpoint(context)
+        req_resp = request_endpoint(context)
 
         assert req_resp.status == "400"
         assert req_resp.message
@@ -816,7 +896,12 @@ class TestOpenID4VPBackend:
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
+
+        pre_request_endpoint = self.backend.endpoints.get("pre_request")
+
+        assert pre_request_endpoint is not None, "Pre-request endpoint not found"
+
+        pre_request_endpoint = pre_request_endpoint(context)
         state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
@@ -848,7 +933,7 @@ class TestOpenID4VPBackend:
         # request object
         db_engine_inst = DBEngine(CONFIG["storage"])
 
-        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+        _fedback = self.backend.get_trust_backend_by_class_name(
             "FederationHandler"
         )
         assert _fedback
@@ -869,17 +954,21 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
-        # End RP trust chain
 
-        state_endpoint_response = self.backend.status_endpoint(context)
+        status_endpoint = self.backend.endpoints.get("status")
+
+        assert status_endpoint is not None, "Status endpoint not found"
+
+        # End RP trust chain
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "201"
         assert state_endpoint_response.message
 
         # Passing wrong state, hence no match state-session_id
         context.qs_params = {"id": "WRONG"}
-        state_endpoint_response = self.backend.status_endpoint(context)
+        state_endpoint_response = status_endpoint(context)
         assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
 
@@ -888,7 +977,11 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG["metadata"]["request_uris"][0]
         context.request_uri = request_uri
 
-        req_resp = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.endpoints.get("request")
+        
+        assert request_endpoint is not None, "Request endpoint not found"
+
+        req_resp = request_endpoint(context)
         req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers})"
         obtained_content_types = list(
             map(
@@ -926,11 +1019,11 @@ class TestOpenID4VPBackend:
             payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         )
 
-        datetime_mock = Mock(wraps=datetime.datetime)
-        datetime_mock.now.return_value = datetime.datetime(2999, 1, 1)
+        datetime_mock = Mock(wraps=datetime)
+        datetime_mock.now.return_value = datetime(2999, 1, 1)
         with patch("datetime.datetime", new=datetime_mock):
-            self.backend.status_endpoint(context)
-            state_endpoint_response = self.backend.status_endpoint(context)
+            status_endpoint(context)
+            state_endpoint_response = status_endpoint(context)
             assert state_endpoint_response.status == "403"
             assert state_endpoint_response.message
             err = json.loads(state_endpoint_response.message)
@@ -944,12 +1037,16 @@ class TestOpenID4VPBackend:
         # assert msg["response"] == "Authentication successful"
 
     def test_request_endpoint_post(self, context):
-        internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
-        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
+
+        pre_request_endpoint = self.backend.endpoints.get("pre_request")
+
+        assert pre_request_endpoint is not None, "Pre-request endpoint not found"
+
+        resp = pre_request_endpoint(context)
+        state = urllib.parse.unquote(resp.message).split("=")[-1]
 
         jwshelper = JWSHelper(PRIVATE_JWK)
 
@@ -980,7 +1077,7 @@ class TestOpenID4VPBackend:
         # request object
         db_engine_inst = DBEngine(CONFIG["storage"])
 
-        _fedback: TrustHandlerInterface = self.backend.get_trust_backend_by_class_name(
+        _fedback = self.backend.get_trust_backend_by_class_name(
             "FederationHandler"
         )
         assert _fedback
@@ -1001,7 +1098,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
-            exp=datetime.datetime.now().isoformat(),
+            exp=datetime.now().isoformat(),
         )
         # End RP trust chain
 
@@ -1021,7 +1118,11 @@ class TestOpenID4VPBackend:
         request_uri = CONFIG["metadata"]["request_uris"][0]
         context.request_uri = request_uri
 
-        req_resp = self.backend.request_endpoint(context)
+        request_endpoint = self.backend.endpoints.get("request")
+
+        assert request_endpoint is not None, "Request endpoint not found"
+
+        req_resp = request_endpoint(context)
         req_resp_str = f"Response(status={req_resp.status}, message={req_resp.message}, headers={req_resp.headers})"
         obtained_content_types = list(
             map(
@@ -1066,7 +1167,11 @@ class TestOpenID4VPBackend:
         assert document
 
         assert document["request_object"]["wallet_metadata"] == {
-            "client_id_prefixes_supported": None,
+            'authorization_endpoint': None,
+            'request_object_signing_alg_values_supported': None,
+            'response_modes_supported': None,
+            'response_types_supported': None,
+            "client_id_schemes_supported": None,
             "alg_values_supported": ["ES256"],
             "vp_formats_supported": {
                 "dc+sd-jwt": {
@@ -1091,20 +1196,23 @@ class TestOpenID4VPBackend:
             "wallet_nonce": "qPmxiNFCR3QTm19POc8u"
         }
 
-        
-        req_resp = self.backend.request_endpoint(context)
-        
+        req_resp = request_endpoint(context)
+
         assert req_resp
         assert req_resp.status == "400"
 
 
     def test_trust_parameters_in_response(self, context):
-        internal_data = InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
-        pre_request_endpoint = self.backend.pre_request_endpoint(context, internal_data)
-        state = urllib.parse.unquote(pre_request_endpoint.message).split("=")[-1]
+
+        pre_request_endpoint = self.backend.endpoints.get("pre_request")
+
+        assert pre_request_endpoint is not None, "Pre-request endpoint not found"
+
+        resp = pre_request_endpoint(context)
+        state = urllib.parse.unquote(resp.message).split("=")[-1]
 
         context.qs_params = {"id": state}
         context.request_method = "GET"
@@ -1118,7 +1226,7 @@ class TestOpenID4VPBackend:
             TrustEvaluationType(
                 attribute_name="trust_chain",
                 jwks=[JWK(key=ta_jwk).as_dict()],
-                expiration_date=datetime.datetime.now(),
+                expiration_date=datetime.now(),
                 trust_chain=trust_chain_wallet,
                 trust_handler_name="FederationHandler",
             )
@@ -1130,7 +1238,12 @@ class TestOpenID4VPBackend:
         )
 
         mocked_jwks_document_endpoint.start()
-        req_resp = self.backend.request_endpoint(context)
+
+        request_endpoint = self.backend.endpoints.get("request")
+
+        assert request_endpoint is not None, "Request endpoint not found"
+
+        req_resp = request_endpoint(context)
         mocked_jwks_document_endpoint.stop()
 
         assert req_resp
@@ -1151,13 +1264,5 @@ class TestOpenID4VPBackend:
         )
 
         assert verification
-
-    def test_handle_error(self, context):
-        error_message = "server_error"
-        error_resp = self.backend._handle_500(context, error_message, Exception())
-        assert error_resp.status == "500"
-        assert error_resp.message
-        err = json.loads(error_resp.message)
-        assert err["error"] == error_message
 
     

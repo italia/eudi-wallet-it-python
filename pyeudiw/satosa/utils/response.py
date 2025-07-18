@@ -19,6 +19,9 @@ class JsonResponse(Response):
         :param kwargs: a dictionary of arguments
         :type kwargs: Any
         """
+
+        kwargs.get("headers", {}).update({"Content-Type": self._content_type})
+
         super().__init__(*args, **kwargs)
 
         if isinstance(self.message, list):
