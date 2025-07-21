@@ -40,23 +40,23 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.9,<1.10",
-        "pydantic>=2.10,<2.11",
+        "pydantic>=2.10.6,<3.0.0",
         "pyqrcode>=1.2,<1.3",
         "pem>=23.1,<23.2"
     ],
     extra_require={
         "satosa": [
-            "Pillow>=10.0.0,<10.1",
+            "Pillow>=11.1.0,<12.0.0",
             "device_detector>=5.0,<6",
             "satosa>=8.4,<8.6",
-            "jinja2>=3.0,<4",
-            "pymongo>=4.4.1,<4.5",
-            "requests>=2.2,<2.4",
+            "jinja2>=3.1.5,<4.0.0",
+            "pymongo>=4.10.1,<5.0.0",
+            "requests>=2.32.3,<3.0.0",
             "pymdoccbor>=0.9.0,<1.0"
         ],
         "federation": [
-            "asyncio>=4,<4.1",
-            "aiohttp>=3.8,<3.9"
+            "asyncio>=3.4.3,<4.0.0",
+            "aiohttp>=3.11.11,<4.0.0"
         ]
     }
 )
