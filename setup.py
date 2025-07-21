@@ -44,7 +44,7 @@ setup(
         "pyqrcode>=1.2,<1.3",
         "pem>=23.1,<23.2"
     ],
-    extra_require={
+    extras_require={
         "satosa": [
             "Pillow>=11.1.0,<12.0.0",
             "device_detector>=5.0,<6",
