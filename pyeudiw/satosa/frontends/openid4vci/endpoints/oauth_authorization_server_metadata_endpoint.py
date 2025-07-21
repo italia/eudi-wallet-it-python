@@ -22,14 +22,9 @@ class OauthAuthorizationServerMetadataHandler(VCIBaseEndpoint):
             raise ValueError("Missing 'oauth_authorization_server' in metadata configuration.")
 
     @property
-    def metadata(self) -> dict:
-        metadata = self.config.get("metadata", {})
-        return metadata
-
-    @property
     def oauth_authorization_server_metadata_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
-        ec_payload = self.metadata.get("oauth_authorization_server", {})
+        ec_payload = self.config.get("metadata", {}).get("oauth_authorization_server", {})
         return ec_payload
 
     def endpoint(self, context: Context) -> JsonResponse:
