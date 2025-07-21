@@ -23,7 +23,7 @@ class OauthAuthorizationServerMetadataHandler(VCIBaseEndpoint):
 
     @property
     def oauth_authorization_server_metadata_as_dict(self) -> dict:
-        """Returns the entity configuration as a dictionary."""
+        """Returns the OAuth authorization server metadata as a dictionary."""
         ec_payload = self.config.get("metadata", {}).get("oauth_authorization_server", {})
         return ec_payload
 
