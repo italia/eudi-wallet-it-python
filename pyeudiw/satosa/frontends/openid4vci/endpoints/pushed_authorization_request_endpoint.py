@@ -60,7 +60,7 @@ class ParHandler(VCIBaseEndpoint):
 
             oauth_attestation = validate_oauth_client_attestation(
                 context,
-                self.dpod_required,
+                self.dpop_required,
                 self.wallet_attestation_required
             )
 

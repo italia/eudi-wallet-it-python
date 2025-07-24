@@ -78,7 +78,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(
                 context, 
-                self.dpod_required,
+                self.dpop_required,
                 self.wallet_attestation_required
             )
             

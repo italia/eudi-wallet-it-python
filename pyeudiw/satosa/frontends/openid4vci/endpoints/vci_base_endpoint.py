@@ -116,7 +116,7 @@ class VCIBaseEndpoint(BaseEndpoint):
             return None
 
     @property
-    def dpod_required(self) -> bool:
+    def dpop_required(self) -> bool:
         """
         Check if DPoD is required.
         Returns:
