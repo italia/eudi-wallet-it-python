@@ -74,16 +74,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def endpoint(self, context: Context) -> Response:
         try:
 
-            interoperability = self.config.get("interoperability", {})
-            wallet_attestation_required = interoperability.get("wallet_attestation_required", True)
-            dpop_required = interoperability.get("dpop_required", True)
-
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
             validate_oauth_client_attestation(
                 context, 
-                dpop_required,
-                wallet_attestation_required
+                self.dpod_required,
+                self.wallet_attestation_required
             )
             
             entity = self.db_engine.get_by_session_id(get_session_id(context))

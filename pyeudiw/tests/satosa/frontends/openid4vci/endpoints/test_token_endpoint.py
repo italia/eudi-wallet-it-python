@@ -337,7 +337,7 @@ def test_valid_request_with_grant_type_authorization_code(token_handler, context
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_valid_with_request_with_grant_type_authorization_code_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
     token_handler = TokenHandler(
-        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"interoperability": {"dpop_required": False, "wallet_attestation_required": False}}),
+        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
         MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     token_handler.db_engine = Mock()
     headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
@@ -366,7 +366,7 @@ def test_valid_request_with_grant_type_refresh_token(token_handler, context, val
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_valid_with_request_with_grant_type_refresh_token_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
     token_handler = TokenHandler(
-        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"interoperability": {"dpop_required": False, "wallet_attestation_required": False}}),
+        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
         MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     token_handler.db_engine = Mock()
     headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED

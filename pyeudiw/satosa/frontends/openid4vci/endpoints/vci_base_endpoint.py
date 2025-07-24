@@ -123,3 +123,12 @@ class VCIBaseEndpoint(BaseEndpoint):
             bool: True if DPoD is required, False otherwise.
         """
         return self.config.get("security", {}).get("dpop_required", True)
+
+    @property
+    def wallet_attestation_required(self) -> bool:
+        """
+        Check if DPoD is required.
+        Returns:
+            bool: True if DPoD is required, False otherwise.
+        """
+        return self.config.get("security", {}).get("wallet_attestation_required", True)
