@@ -58,6 +58,16 @@ class ParHandler(VCIBaseEndpoint):
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
 
+            interoperability = self.config.get("interoperability", {})
+            wallet_attestation_required = interoperability.get("wallet_attestation_required", True)
+            dpop_required = interoperability.get("dpop_required", True)
+
+            oauth_attestation = validate_oauth_client_attestation(
+                context, 
+                dpop_required,
+                wallet_attestation_required
+            )
+
             data = self._get_body(context) or {}
 
             client_id = data.get("client_id", "").strip()
@@ -70,9 +80,8 @@ class ParHandler(VCIBaseEndpoint):
                 )
                 return self._handle_400(context, "invalid request parameters")
 
-            if self.config.get("interoperability", {}).get("dpop_required", True):
-                oauth_attestation = validate_oauth_client_attestation(context)
-                if oauth_attestation["thumbprint"] != client_id:
+            if wallet_attestation_required:
+                if oauth_attestation and oauth_attestation["thumbprint"] != client_id:
                     self._log_error(
                         CLASS_NAME,
                         "invalid client_id parameter for `par`, value not matching with thumbprint of `OAuth-Client-Attestation-PoP`"

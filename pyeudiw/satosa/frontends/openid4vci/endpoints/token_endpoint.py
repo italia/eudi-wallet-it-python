@@ -71,14 +71,21 @@ class TokenHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
+            interoperability = self.config.get("interoperability", {})
+            wallet_attestation_required = interoperability.get("wallet_attestation_required", True)
+            dpop_required = interoperability.get("dpop_required", True)
+
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
+            validate_oauth_client_attestation(
+                context,
+                dpop_required,
+                wallet_attestation_required
+            )
 
-            if self.config.get("interoperability", {}).get("dpop_required", True):
-                validate_oauth_client_attestation(context)
-                oauth_client_attestation = self._get_oauth_client_attestation(context)
-                if oauth_client_attestation:
-                    self.jws_helper.verify(oauth_client_attestation)
+            oauth_client_attestation = self._get_oauth_client_attestation(context)
+            if oauth_client_attestation:
+                self.jws_helper.verify(oauth_client_attestation)
 
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             TokenRequest.model_validate(self._get_body(context), context = {
