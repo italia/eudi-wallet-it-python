@@ -315,7 +315,10 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
     "trust": MOCK_TRUST_CONFIG,
-    "storage": MOCK_STORAGE_CONFIG
+    "storage": MOCK_STORAGE_CONFIG,
+    "interoperability": {
+            "dpop_required": True,
+    }
 }
 
 MOCK_INTERNAL_ATTRIBUTES = {

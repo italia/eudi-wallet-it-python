@@ -13,7 +13,6 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_missing_configurations_raises,
     do_test_invalid_request_method,
     do_test_invalid_content_type,
-    do_test_invalid_oauth_client_attestation,
     assert_invalid_request_application_json
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
@@ -77,6 +76,7 @@ def context() -> Context:
 
 def _mock_configurations(overrides=None):
     return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
+
 def _mock_configuration_removed_oauth_authorization_server_param(field: str):
     metadata_config = { "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG}
     if field != "oauth_authorization_server":
@@ -110,7 +110,12 @@ def test_invalid_content_type(par_handler, context, content_type):
 @pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
 def test_invalid_oauth_client_attestation(par_handler, headers):
     headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
-    do_test_invalid_oauth_client_attestation(par_handler, headers)
+    context = get_mocked_satosa_context(headers=headers)
+    context.request = {"client_id": _MOCK_VALID_THUMBPRINT, "request": "request.valid.jwt"}
+    assert_invalid_request_application_json(
+        par_handler.endpoint(context),
+        "Missing Wallet Attestation JWT header"
+    )
 
 @pytest.mark.parametrize("client_id, request_par", [
     (None, None),
@@ -241,6 +246,20 @@ def test_invalid_request_deserialized(par_handler, context,
         )
 
 def test_valid_request(par_handler, context):
+    _assert_valid_request(par_handler, context)
+
+@pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
+def test_valid_request_with_invalid_oauth_client_attestation_with_dpop_disabled(headers):
+    headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
+    headers["HTTP_USER_AGENT"] = "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+    context = get_mocked_satosa_context(headers=headers)
+    par_handler = ParHandler(
+        _mock_configurations({"interoperability": {"dpop_required": False}}),
+        MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    par_handler.db_engine = MagicMock()
+    _assert_valid_request(par_handler, context)
+
+def _assert_valid_request(par_handler: ParHandler, context: Context):
     with (patch(JWS_HELPER_VERIFY_MODULE, return_value = _mock_request_deserialized()),
           patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value = {
               "thumbprint": _MOCK_VALID_THUMBPRINT
