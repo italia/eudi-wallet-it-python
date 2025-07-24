@@ -663,7 +663,7 @@ config:
 
         private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
 
-  interoperability:
+  security:
     dpop_required: true # this is the flag to enable the DPOD interoperability, if missing it will be set to true by default
 
   # Mongodb database configuration

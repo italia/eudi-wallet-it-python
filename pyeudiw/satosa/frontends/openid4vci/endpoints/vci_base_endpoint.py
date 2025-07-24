@@ -114,3 +114,12 @@ class VCIBaseEndpoint(BaseEndpoint):
             return f"{self._backend_url}/{status_path}"
         except AttributeError:
             return None
+
+    @property
+    def dpod_required(self) -> bool:
+        """
+        Check if DPoD is required.
+        Returns:
+            bool: True if DPoD is required, False otherwise.
+        """
+        return self.config.get("security", {}).get("dpop_required", True)
