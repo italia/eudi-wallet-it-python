@@ -79,7 +79,7 @@ class TokenHandler(VCIBaseEndpoint):
                 self.wallet_attestation_required
             )
 
-            oauth_client_attestation = self._get_oauth_client_attestation(context)
+            oauth_client_attestation = self._get_oauth_client_attestation(context, self.wallet_attestation_required)
             if oauth_client_attestation:
                 self.jws_helper.verify(oauth_client_attestation)
 

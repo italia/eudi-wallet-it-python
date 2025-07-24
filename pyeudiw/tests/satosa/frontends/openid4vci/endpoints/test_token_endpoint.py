@@ -13,7 +13,8 @@ from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import (
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+    OAUTH_CLIENT_ATTESTATION_HEADER
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_content_type,
@@ -334,7 +335,13 @@ def test_invalid_request_scope_with_grant_type_refresh_token(token_handler, cont
 def test_valid_request_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code):
     _assert_test_valid_request_with_grant_type_authorization_code(context, token_handler, valid_request_authorization_code)
 
-@pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
+@pytest.mark.parametrize("headers", [
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+])
 def test_valid_with_request_with_grant_type_authorization_code_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
     token_handler = TokenHandler(
         mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
@@ -363,7 +370,13 @@ def _assert_test_valid_request_with_grant_type_authorization_code(context: Conte
 def test_valid_request_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
     _assert_test_valid_request_with_grant_type_refresh_token(context, token_handler, valid_request_refresh_token)
 
-@pytest.mark.parametrize("headers", INVALID_ATTESTATION_HEADERS)
+@pytest.mark.parametrize("headers", [
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+])
 def test_valid_with_request_with_grant_type_refresh_token_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
     token_handler = TokenHandler(
         mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
