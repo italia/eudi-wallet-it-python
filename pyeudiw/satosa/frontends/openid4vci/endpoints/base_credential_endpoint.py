@@ -75,7 +75,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            if self.config.get("interoperability", {}).get("dpop_required", True):
+            if self.dpod_required:
                 validate_oauth_client_attestation(context)
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             req = self.validate_request(context, entity)

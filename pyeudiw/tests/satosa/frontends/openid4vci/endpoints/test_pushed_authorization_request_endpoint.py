@@ -254,7 +254,7 @@ def test_valid_request_with_invalid_oauth_client_attestation_with_dpop_disabled(
     headers["HTTP_USER_AGENT"] = "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
     context = get_mocked_satosa_context(headers=headers)
     par_handler = ParHandler(
-        _mock_configurations({"interoperability": {"dpop_required": False}}),
+        _mock_configurations({"security": {"dpop_required": False}}),
         MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
     par_handler.db_engine = MagicMock()
     _assert_valid_request(par_handler, context)

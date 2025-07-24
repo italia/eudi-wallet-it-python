@@ -70,7 +70,7 @@ class ParHandler(VCIBaseEndpoint):
                 )
                 return self._handle_400(context, "invalid request parameters")
 
-            if self.config.get("interoperability", {}).get("dpop_required", True):
+            if self.dpod_required:
                 oauth_attestation = validate_oauth_client_attestation(context)
                 if oauth_attestation["thumbprint"] != client_id:
                     self._log_error(

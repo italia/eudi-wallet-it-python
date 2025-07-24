@@ -316,8 +316,8 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
     "trust": MOCK_TRUST_CONFIG,
     "storage": MOCK_STORAGE_CONFIG,
-    "interoperability": {
-            "dpop_required": True,
+    "security": {
+        "dpop_required": True,
     }
 }
 
