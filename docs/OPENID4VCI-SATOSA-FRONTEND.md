@@ -125,13 +125,13 @@ For more deatils on available trust implementations and their configurations, se
 | config.storage.mongo_db.cache.module                                              | The module name for the MongoDB cache                  | pyeudiw.storage.mongo_cache   |
 | config.storage.mongo_db.cache.class                                               | The class name for the MongoDB cache                   | MongoCache                    |
 | config.storage.mongo_db.cache.init_params.url                                     | The URL for the MongoDB connection                     | mongodb://satosa-mongo:27017  |
-| config.storage.mongo_db.cache.init_params.conf.db_name                            | The database name for the MongoDB cache                | eudiw                         |
+| config.storage.mongo_db.cache.init_params.conf.db_name                            | The database name for the MongoDB cache                | pyeudiw_openid4vci            |
 | config.storage.mongo_db.cache.connection_params.username                          | The username for authentication to the database        | satosa                        |
 | config.storage.mongo_db.cache.connection_params.password                          | The password for authentication to the database        | thatpassword                  |
 | config.storage.mongo_db.storage.module                                            | The python module that implements the storage class    | pyeudiw.storage.mongo_storage |
 | config.storage.mongo_db.storage.class                                             | The name of the storage class                          | MongoStorage                  |
 | config.storage.mongo_db.storage.init_params.url                                   | The URL of the mongodb server                          | mongodb://satosa-mongo:27017  |
-| config.storage.mongo_db.storage.init_params.conf.db_name                          | The name of the database to use for storage            | eudiw                         |
+| config.storage.mongo_db.storage.init_params.conf.db_name                          | The name of the database to use for storage            | pyeudiw_openid4vci            |
 | config.storage.mongo_db.storage.init_params.conf.db_sessions_collection           | The name of the collection to store sessions           | sessions                      |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_attestations_collection | The name of the collection to store trust attestations | trust_attestations            |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_anchors_collection      | The name of the collection to store trust anchors      | trust_anchors                 |
@@ -149,7 +149,7 @@ generate the requested credential with `credential` endpoint.
 | config.user_storage.mongo_db.storage.module                                  | The python module that implements the storage class | pyeudiw.storage.user_storage |
 | config.user_storage.mongo_db.storage.class                                   | The name of the storage class                       | UserStorage                  |
 | config.user_storage.mongo_db.storage.init_params.url                         | The URL of the mongodb server                       | mongodb://satosa-mongo:27017 |
-| config.user_storage.mongo_db.storage.init_params.conf.db_name                | The name of the database to use for storage         | eid_user                     |
+| config.user_storage.mongo_db.storage.init_params.conf.db_name                | The name of the database to use for storage         | pyeudiw_openid4vci           |
 | config.user_storage.mongo_db.storage.init_params.conf.db_sessions_collection | The name of the collection to store users           | users                        |
 | config.user_storage.mongo_db.storage.init_params.conf.data_ttl               | The lifetime duration of data in the database       | 63072000                     |
 | config.user_storage.mongo_db.storage.connection_params.username              | The username for authentication to the database     | satosa                       |
@@ -197,7 +197,7 @@ user, supporting status updates such as issuance and revocation.
 | config.credential_storage.mongo_db.storage.module                                  | The python module that implements the storage class | pyeudiw.storage.credential_storage |
 | config.credential_storage.mongo_db.storage.class                                   | The name of the storage class                       | CredentialStorage                  |
 | config.credential_storage.mongo_db.storage.init_params.url                         | The URL of the mongodb server                       | mongodb://satosa-mongo:27017       |
-| config.credential_storage.mongo_db.storage.init_params.conf.db_name                | The name of the database to use for storage         | eid_credential                     |
+| config.credential_storage.mongo_db.storage.init_params.conf.db_name                | The name of the database to use for storage         | pyeudiw_openid4vci                 |
 | config.credential_storage.mongo_db.storage.init_params.conf.db_sessions_collection | The name of the collection to store credentials     | credentials                        |
 | config.credential_storage.mongo_db.storage.init_params.conf.data_ttl               | The lifetime duration of data in the database       | 63072000                           |
 | config.credential_storage.mongo_db.storage.connection_params.username              | The username for authentication to the database     | satosa                             |

@@ -45,7 +45,7 @@ MOCK_USER_STORAGE_CONFIG = {
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
                 "conf": {
-                    "db_name": "eid_user",
+                    "db_name": "pyeudiw_test",
                     "db_users_collection": "users",
                     "data_ttl": 63072000
                 },
@@ -66,7 +66,7 @@ MOCK_CREDENTIAL_STORAGE_CONFIG ={
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
                 "conf": {
-                    "db_name": "eid_credential",
+                    "db_name": "pyeudiw_test",
                     "db_users_collection": "credentials",
                     "data_ttl": 63072000
                 },
@@ -258,7 +258,7 @@ MOCK_STORAGE_CONFIG = {
                 "init_params": {
                     "url": "mongodb://satosa-mongo:27017",
                     "conf": {
-                        "db_name": "eudiw"
+                        "db_name": "pyeudiw_test"
                     },
                     "connection_params": {
                         "username": "user",
@@ -272,7 +272,7 @@ MOCK_STORAGE_CONFIG = {
                 "init_params": {
                     "url": "mongodb://satosa-mongo:27017",
                     "conf": {
-                        "db_name": "eudiw",
+                        "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors",
