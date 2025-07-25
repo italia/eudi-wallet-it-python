@@ -1,7 +1,7 @@
 # This file defines an end-to-end integration test flow without Duckle support.
 #
 # To run this integration test, you need to modify the `pyeudiw_backend.yaml` configuration file
-# by adding the following entries:
+# by removing the following entries:
 #   config.duckle.dcql_query
 #
 # Additionally, you must remove the Duckle handler in the `credential_presentation_handlers` section:
