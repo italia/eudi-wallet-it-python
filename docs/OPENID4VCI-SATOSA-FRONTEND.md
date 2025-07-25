@@ -297,7 +297,7 @@ Root section for security configuration.
 
 | Key                           | Description                                                                                                       |
 |-------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| config.security.dpop_required | This is the flag to enable the DPOD interoperability and validation, if missing it will be set to true by default |
+| config.security.dpop_required | This is the flag to enable the DPOP interoperability and validation, if missing it will be set to true by default. |
 
 ### Environment Variables for Key Configuration
 
