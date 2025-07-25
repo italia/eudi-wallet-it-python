@@ -136,17 +136,17 @@ For more deatils on available trust implementations and their configurations, se
 ##### Storage
 
 | Parameter                                                                         | Description                                            | Example Value                 |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------- |
+|-----------------------------------------------------------------------------------|--------------------------------------------------------|-------------------------------|
 | config.storage.mongo_db.cache.module                                              | The module name for the MongoDB cache                  | pyeudiw.storage.mongo_cache   |
 | config.storage.mongo_db.cache.class                                               | The class name for the MongoDB cache                   | MongoCache                    |
 | config.storage.mongo_db.cache.init_params.url                                     | The URL for the MongoDB connection                     | mongodb://satosa-mongo:27017  |
-| config.storage.mongo_db.cache.init_params.conf.db_name                            | The database name for the MongoDB cache                | eudiw                         |
+| config.storage.mongo_db.cache.init_params.conf.db_name                            | The database name for the MongoDB cache                | pyeudiw_openid4vp             |
 | config.storage.mongo_db.cache.connection_params.username                          | The username for authentication to the database        | satosa                        |
 | config.storage.mongo_db.cache.connection_params.password                          | The password for authentication to the database        | thatpassword                  |
 | config.storage.mongo_db.storage.module                                            | The python module that implements the storage class    | pyeudiw.storage.mongo_storage |
 | config.storage.mongo_db.storage.class                                             | The name of the storage class                          | MongoStorage                  |
 | config.storage.mongo_db.storage.init_params.url                                   | The URL of the mongodb server                          | mongodb://satosa-mongo:27017  |
-| config.storage.mongo_db.storage.init_params.conf.db_name                          | The name of the database to use for storage            | eudiw                         |
+| config.storage.mongo_db.storage.init_params.conf.db_name                          | The name of the database to use for storage            | pyeudiw_openid4vp             |
 | config.storage.mongo_db.storage.init_params.conf.db_sessions_collection           | The name of the collection to store sessions           | sessions                      |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_attestations_collection | The name of the collection to store trust attestations | trust_attestations            |
 | config.storage.mongo_db.storage.init_params.conf.db_trust_anchors_collection      | The name of the collection to store trust anchors      | trust_anchors                 |
