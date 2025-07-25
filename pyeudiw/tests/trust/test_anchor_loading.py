@@ -1,10 +1,11 @@
-from pyeudiw.trust.anchors_loader import AnchorsLoader
-from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.storage.exceptions import EntryNotFound
-from pyeudiw.tests.settings import CONFIG
-from pyeudiw.tests.federation.base import ta_ec_signed
-from pyeudiw.tests.x509.test_x509 import gen_chain
 from ssl import DER_cert_to_PEM_cert
+
+from pyeudiw.storage.db_engine import DBEngine
+from pyeudiw.tests.federation.base import ta_ec_signed
+from pyeudiw.tests.settings import CONFIG
+from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.trust.anchors_loader import AnchorsLoader
+
 
 def test_load_anchors():
     db = DBEngine(CONFIG["storage"])

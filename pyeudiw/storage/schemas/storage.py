@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field, MongoDsn
 
 
@@ -13,9 +15,8 @@ class StorageConfig(BaseModel):
 
 
 class MongoDbConfig(BaseModel):
-    cache: StorageConfig
+    cache: Optional[StorageConfig] = None
     storage: StorageConfig
-
 
 class Storage(BaseModel):
     mongo_db: MongoDbConfig

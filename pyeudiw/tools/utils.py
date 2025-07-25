@@ -11,6 +11,7 @@ from typing import NamedTuple
 import requests
 
 from pyeudiw.tools.http import http_get_async, http_get_sync
+from typing import Type
 
 logger = logging.getLogger(__name__)
 
@@ -123,17 +124,17 @@ def random_token(n=254) -> str:
     return token_hex(n)
 
 
-def get_dynamic_class(module_name: str, class_name: str) -> object:
+def get_dynamic_class(module_name: str, class_name: str) -> Type:
     """
-    Get a class instance dynamically.
+    Get a class type dynamically.
 
     :param module_name: The name of the module
     :type module_name: str
     :param class_name: The name of the class
     :type class_name: str
 
-    :returns: The class instance
-    :rtype: object
+    :returns: The class type
+    :rtype: Type
     """
 
     module = importlib.import_module(module_name)

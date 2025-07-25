@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 from datetime import datetime, timedelta
 from typing import Literal
+from cryptography import x509
 
 
 class ChainBuilder:
@@ -18,7 +19,6 @@ class ChainBuilder:
         org_name: str,
         country_name: str,
         dns: str,
-        date: datetime,
         uri: str,
         ca: bool,
         path_length: int | None,
@@ -26,7 +26,10 @@ class ChainBuilder:
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
         crl_distr_point: str | None = None,
         not_valid_before: datetime = datetime.now() - timedelta(days=1),
-        not_valid_after: datetime = datetime.now() + timedelta(days=365)
+        not_valid_after: datetime = datetime.now() + timedelta(days=365),
+        excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        key_usage: x509.KeyUsage | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
@@ -39,8 +42,6 @@ class ChainBuilder:
         :type country_name: str
         :param dns: DNS Name
         :type dns: str
-        :param date: Date of the certificate
-        :type date: datetime
         :param private_key: Private key to use for signing the certificate
         :type private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None
         :param ca: Whether the certificate is a CA certificate
@@ -55,6 +56,10 @@ class ChainBuilder:
         :type not_valid_before: datetime
         :param not_valid_after: End date of the certificate validity
         :type not_valid_after: datetime
+        :param excluded_subtrees: List of DNS names to exclude from the certificate
+        :type excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
+        :param permitted_subtrees: List of DNS names to permit in the certificate
+        :type permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
 
         :return: None
         """
@@ -120,6 +125,20 @@ class ChainBuilder:
                 critical=False
             )
 
+        if excluded_subtrees or permitted_subtrees:
+            cert = cert.add_extension(
+                x509.NameConstraints(
+                    permitted_subtrees=permitted_subtrees,
+                    excluded_subtrees=excluded_subtrees
+                ),
+                critical=True
+            )
+        
+        if key_usage:
+            cert = cert.add_extension(
+                key_usage, True
+            )
+
         cert = cert.add_extension(
             x509.SubjectAlternativeName([
                 x509.UniformResourceIdentifier(uri),
@@ -146,7 +165,7 @@ class ChainBuilder:
         :rtype: list[bytes] | list[str]
         """
         return [
-            cert.public_bytes(Encoding.DER if encoding == "DER" else "PEM") 
+            cert.public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM) 
             for cert in self.chain
         ]
     
@@ -157,4 +176,4 @@ class ChainBuilder:
         :return: The CA certificate
         :rtype: bytes | str
         """
-        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else "PEM")
+        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM)

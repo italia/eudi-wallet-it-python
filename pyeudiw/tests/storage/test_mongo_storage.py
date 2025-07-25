@@ -11,7 +11,7 @@ class TestMongoStorage:
     def create_storage_instance(self):
         self.storage = MongoStorage(
             {
-                "db_name": "test-eudiw",
+                "db_name": "pyeudiw_test",
                 "db_sessions_collection": "sessions",
                 "db_trust_attestations_collection": "trust_attestations",
                 "db_trust_anchors_collection": "trust_anchors",

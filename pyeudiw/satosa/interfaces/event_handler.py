@@ -1,11 +1,11 @@
 from satosa.backends.base import BackendModule
 
-from pyeudiw.satosa.utils.base_http_error_handler import BaseHTTPErrorHandler
+from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 
 
-class EventHandlerInterface(BackendModule, BaseHTTPErrorHandler, BaseLogger):
+class EventHandlerInterface(BackendModule, BaseHTTPResponseHandler, BaseLogger):
     """
     Interface for event handlers.
     """
