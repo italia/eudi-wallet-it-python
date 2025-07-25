@@ -61,7 +61,8 @@ class ParHandler(VCIBaseEndpoint):
             oauth_attestation = validate_oauth_client_attestation(
                 context,
                 self.dpop_required,
-                self.wallet_attestation_required
+                self.wallet_attestation_required,
+                self.dpop_signing_alg_values_supported
             )
 
             data = self._get_body(context) or {}

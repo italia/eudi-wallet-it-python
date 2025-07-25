@@ -231,21 +231,22 @@ These metadata will be exposed through the `metadata` endpoint.
 
 Configuration of the OAuth Authorization Server metadata.
 
-| YAML Path                                                                        | Description                                                                          |
-|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| config.metadata.oauth_authorization_server.issuer                                | Issuer URL of the authorization server (autopopulated if omitted)                    |
-| config.metadata.oauth_authorization_server.pushed_authorization_request_endpoint | PAR (Pushed Authorization Request) endpoint path                                     |
-| config.metadata.oauth_authorization_server.authorization_endpoint                | Authorization endpoint path                                                          |
-| config.metadata.oauth_authorization_server.token_endpoint                        | Token endpoint path                                                                  |
-| config.metadata.oauth_authorization_server.client_registration_types_supported   | Supported client registration types                                                  |
-| config.metadata.oauth_authorization_server.acr_values_supported                  | Supported ACR (Authentication Context Class Reference) values                        |
-| config.metadata.oauth_authorization_server.scopes_supported                      | List of supported OAuth2 scopes. Mandatory for `par` and `token` endpoints.          |
-| config.metadata.oauth_authorization_server.response_modes_supported              | Supported response modes (e.g., query, form_post.jwt). Mandatory for `par` endpoint. |
-| config.metadata.oauth_authorization_server.response_types_supported              | OAuth2 response types supported. Mandatory for `par` endpoint.                       |
-| config.metadata.oauth_authorization_server.grant_types_supported                 | Supported grant types (e.g., authorization_code)                                     |
-| config.metadata.oauth_authorization_server.token_endpoint_auth_methods_supported | Token endpoint authentication methods                                                |
-| config.metadata.oauth_authorization_server.jwks                                  | JWKS used for signing/verifying messages                                             |
-| config.metadata.oauth_authorization_server.code_challenge_methods_supported      | Supported PKCE methods. Mandatory for `par` endpoint.                                |
+| YAML Path                                                                        | Description                                                                                |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| config.metadata.oauth_authorization_server.issuer                                | Issuer URL of the authorization server (autopopulated if omitted)                          |
+| config.metadata.oauth_authorization_server.pushed_authorization_request_endpoint | PAR (Pushed Authorization Request) endpoint path                                           |
+| config.metadata.oauth_authorization_server.authorization_endpoint                | Authorization endpoint path                                                                |
+| config.metadata.oauth_authorization_server.token_endpoint                        | Token endpoint path                                                                        |
+| config.metadata.oauth_authorization_server.client_registration_types_supported   | Supported client registration types                                                        |
+| config.metadata.oauth_authorization_server.acr_values_supported                  | Supported ACR (Authentication Context Class Reference) values                              |
+| config.metadata.oauth_authorization_server.scopes_supported                      | List of supported OAuth2 scopes. Mandatory for `par` and `token` endpoints.                |
+| config.metadata.oauth_authorization_server.response_modes_supported              | Supported response modes (e.g., query, form_post.jwt). Mandatory for `par` endpoint.       |
+| config.metadata.oauth_authorization_server.response_types_supported              | OAuth2 response types supported. Mandatory for `par` endpoint.                             |
+| config.metadata.oauth_authorization_server.grant_types_supported                 | Supported grant types (e.g., authorization_code)                                           |
+| config.metadata.oauth_authorization_server.token_endpoint_auth_methods_supported | Token endpoint authentication methods                                                      |
+| config.metadata.oauth_authorization_server.jwks                                  | JWKS used for signing/verifying messages                                                   |
+| config.metadata.oauth_authorization_server.code_challenge_methods_supported      | Supported PKCE methods. Mandatory for `par` endpoint.                                      |
+| config.metadata.oauth_authorization_server.dpop_signing_alg_values_supported     | Optional supported algorithm for validate DPoP, if missing every value in cnf is admitted. |
 
 ###### OpenId Credential Issuer
 

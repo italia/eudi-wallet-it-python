@@ -18,7 +18,7 @@ from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
 
 @pytest.fixture
 def valid_oauth_client_attestation_jwt():
-    ec_key = new_ec_key(crv="P-256", use="sig", kid="ec1")
+    ec_key = new_ec_key(crv="P-256", use="sig", kid="ec1", alg="ES256")
     payload = {"cnf": ec_key.serialize(private=False)}
     jws = JWS(json.dumps(payload), alg="ES256")
     return jws.sign_compact([ec_key])
@@ -52,16 +52,36 @@ def test_validate_request_method_invalid(method):
         validate_request_method(method, ["GET", "POST"])
 
 
+def test_validate_oauth_client_attestation_valid_without_dpop_signing_alg_values_supported(valid_oauth_client_attestation_jwt):
+    context = Context()
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
+    }
+    result = validate_oauth_client_attestation(context, True, True, None)
+    assert isinstance(result, dict)
+    assert "thumbprint" in result
+    assert result["thumbprint"]
+
 def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_jwt):
     context = Context()
     context.http_headers = {
         OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
         OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
     }
-    result = validate_oauth_client_attestation(context, True, True)
+    result = validate_oauth_client_attestation(context, True, True, ["ES256", "ES384", "ES512"])
     assert isinstance(result, dict)
     assert "thumbprint" in result
     assert result["thumbprint"]
+
+def test_validate_oauth_client_attestation_valid_with_invalid_dpop_signing_alg_values_supported(valid_oauth_client_attestation_jwt):
+    context = Context()
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
+    }
+    with pytest.raises(InvalidRequestException):
+        validate_oauth_client_attestation(context, True, True, ["ES384", "ES512"])
 
 
 @pytest.mark.parametrize("headers, dpop_required, wallet_attestation_required", [
@@ -79,4 +99,4 @@ def test_validate_oauth_client_attestation_invalid(headers, dpop_required, walle
     context = Context()
     context.http_headers = headers
     with pytest.raises(InvalidRequestException):
-        validate_oauth_client_attestation(context, dpop_required, wallet_attestation_required)
+        validate_oauth_client_attestation(context, dpop_required, wallet_attestation_required, None)
