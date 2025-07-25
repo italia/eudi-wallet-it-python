@@ -52,11 +52,14 @@ setup(
             "jinja2>=3.1.5,<4.0.0",
             "pymongo>=4.10.1,<5.0.0",
             "requests>=2.32.3,<3.0.0",
-            "pymdoccbor>=0.9.0,<1.0"
+            "pymdoccbor>=0.9.0,<2.0.0"
         ],
         "federation": [
             "asyncio>=3.4.3,<4.0.0",
             "aiohttp>=3.11.11,<4.0.0"
+        ],
+        "test": [
+            "pytest-mock",
         ]
     }
 )

@@ -292,6 +292,14 @@ Root section for credential management configuration.
 | config.credential_configurations.status_list.ttl          | Time-to-live for the status list (in minutes). Mandatory in `status_list` endpoint.                                                                                                                                                                                                                                                                                                                                                                        |
 | config.credential_configurations.credential_specification | A dictionary where each key corresponds to a credential type declared in `config.metadata.openid_credential_issuer.credential_configurations_supported` (metadata). Each value includes the `expiry_days` (validity in days) and a `template` for rendering the credential with placeholders in given format present in `config.metadata.openid_credential_issuer.credential_configurations_supported.<cred>.format`.  Mandatory in `credential` endpoint. |
 
+### Security
+Root section for security configuration.
+
+| Key                                         | Description                                                                                                       |
+|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| config.security.dpop_required               | This is the flag to enable the DPOP interoperability and validation, if missing it will be set to true by default |
+| config.security.wallet_attestation_required | This is the flag to enable the wallet_attestation validation, if missing it will be set to true by default        |
+
 ### Environment Variables for Key Configuration
 
 The following environment variables can be used to configure the `metadata_jwks` and `federation_jwks` dynamically.

@@ -550,6 +550,7 @@ config:
               !sd unique_id: "{{unique_id}}"
 
 
+
   trust:
     federation:
       module: pyeudiw.trust.handler.federation
@@ -661,6 +662,10 @@ config:
               -----END CERTIFICATE-----
 
         private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
+
+  security:
+    dpop_required: true # this is the flag to enable the DPOD interoperability, if missing it will be set to true by default
+    wallet_attestation_required: true # this is the flag to enable the wallet attestation interoperability, if missing it will be set to true by default
 
   # Mongodb database configuration
   # Configuration for retrieving user datas, it stores user attributes required to

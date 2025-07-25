@@ -114,3 +114,21 @@ class VCIBaseEndpoint(BaseEndpoint):
             return f"{self._backend_url}/{status_path}"
         except AttributeError:
             return None
+
+    @property
+    def dpop_required(self) -> bool:
+        """
+        Check if DPoD is required.
+        Returns:
+            bool: True if DPoD is required, False otherwise. Defaults to True.
+        """
+        return self.config.get("security", {}).get("dpop_required", True)
+
+    @property
+    def wallet_attestation_required(self) -> bool:
+        """
+        Check if wallet attestation is required.
+        Returns:
+            bool: True if wallet_attestation is required, False otherwise. Defaults to True.
+        """
+        return self.config.get("security", {}).get("wallet_attestation_required", True)

@@ -2,6 +2,7 @@ import logging
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
+from typing import Optional
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
@@ -51,7 +52,7 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-def validate_oauth_client_attestation(context: Context) -> dict:
+def validate_oauth_client_attestation(context: Context, dpop_required: bool, wallet_attestation_required: bool) -> Optional[dict]:
     """
     Validates the presence and correctness of OAuth-Client-Attestation headers in the request.
 
@@ -71,17 +72,20 @@ def validate_oauth_client_attestation(context: Context) -> dict:
     """
     header_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
     header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
-    if not header_attestation or not header_pop:
+    if (not header_attestation and wallet_attestation_required) or (not header_pop and dpop_required):
         header_value = OAUTH_CLIENT_ATTESTATION_HEADER if not header_attestation else OAUTH_CLIENT_ATTESTATION_POP_HEADER
         logger.error(f"Missing {header_value} header")
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
+    
     try:
-        payload = decode_jwt_payload(header_attestation)
-        cnf = payload["cnf"]
-        JWSHelper(cnf).verify(header_attestation)
-        return {
-            "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
-        }
+        if header_attestation:
+            payload = decode_jwt_payload(header_attestation)
+            cnf = payload["cnf"]
+            JWSHelper(cnf).verify(header_attestation)
+            return {
+                "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
+            }
+        return None
     except Exception as e:
         logger.error(
             f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "

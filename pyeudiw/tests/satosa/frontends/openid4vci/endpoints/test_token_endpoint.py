@@ -13,7 +13,8 @@ from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import (
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+    OAUTH_CLIENT_ATTESTATION_HEADER
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_content_type,
@@ -35,8 +36,10 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     MOCK_NAME,
     MOCK_BASE_URL,
     get_mocked_satosa_context,
-    get_mocked_openid4vpi_entity
+    get_mocked_openid4vpi_entity,
+    mock_deserialized_overridable
 )
+from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 
 
 def mock_sign(*args, **kwargs):
@@ -330,6 +333,26 @@ def test_invalid_request_scope_with_grant_type_refresh_token(token_handler, cont
         )
 
 def test_valid_request_with_grant_type_authorization_code(token_handler, context, valid_request_authorization_code):
+    _assert_test_valid_request_with_grant_type_authorization_code(context, token_handler, valid_request_authorization_code)
+
+@pytest.mark.parametrize("headers", [
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+])
+def test_valid_with_request_with_grant_type_authorization_code_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
+    token_handler = TokenHandler(
+        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
+        MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    token_handler.db_engine = Mock()
+    headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
+    headers["HTTP_USER_AGENT"] = "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+    context = get_mocked_satosa_context(headers=headers)
+    _assert_test_valid_request_with_grant_type_authorization_code(context, token_handler, valid_request_authorization_code)
+
+def _assert_test_valid_request_with_grant_type_authorization_code(context: Context, token_handler: TokenHandler, valid_request_authorization_code: dict):
     with (patch("pyeudiw.jwt.jws_helper.JWSHelper.sign", side_effect = mock_sign),
           patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None)):
         entity = get_mocked_openid4vpi_entity()
@@ -345,6 +368,27 @@ def test_valid_request_with_grant_type_authorization_code(token_handler, context
         )
 
 def test_valid_request_with_grant_type_refresh_token(token_handler, context, valid_request_refresh_token):
+    _assert_test_valid_request_with_grant_type_refresh_token(context, token_handler, valid_request_refresh_token)
+
+@pytest.mark.parametrize("headers", [
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
+    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+])
+def test_valid_with_request_with_grant_type_refresh_token_and_invalid_oauth_client_attestation_with_dpop_disabled(headers, valid_request_authorization_code):
+    token_handler = TokenHandler(
+        mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"security": {"dpop_required": False, "wallet_attestation_required": False}}),
+        MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    token_handler.db_engine = Mock()
+    headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
+    headers["HTTP_USER_AGENT"] = "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+    context = get_mocked_satosa_context(headers=headers)
+    _assert_test_valid_request_with_grant_type_refresh_token(context, token_handler, valid_request_authorization_code)
+
+
+def _assert_test_valid_request_with_grant_type_refresh_token(context: Context, token_handler: TokenHandler, valid_request_refresh_token: dict):
     with (patch("pyeudiw.jwt.jws_helper.JWSHelper.sign", side_effect = mock_sign),
           patch("pyeudiw.jwt.jws_helper.JWSHelper.verify", return_value = None)):
         entity = get_mocked_openid4vpi_entity()
@@ -358,6 +402,7 @@ def test_valid_request_with_grant_type_refresh_token(token_handler, context, val
             "fake.access.token",
             "fake.refresh.token"
         )
+
 
 def _assert_valid_request(result: Response, entity: OpenId4VCIEntity, exp_access_token:str, exp_refresh_token: str):
     assert result.status == '201 Created'

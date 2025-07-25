@@ -73,8 +73,16 @@ class TokenHandler(VCIBaseEndpoint):
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            validate_oauth_client_attestation(context)
-            self.jws_helper.verify(self._get_oauth_client_attestation(context))
+            validate_oauth_client_attestation(
+                context,
+                self.dpop_required,
+                self.wallet_attestation_required
+            )
+
+            oauth_client_attestation = self._get_oauth_client_attestation(context, self.wallet_attestation_required)
+            if oauth_client_attestation:
+                self.jws_helper.verify(oauth_client_attestation)
+
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             TokenRequest.model_validate(self._get_body(context), context = {
                 CONFIG_CTX: self.config,
@@ -140,12 +148,17 @@ class TokenHandler(VCIBaseEndpoint):
         )
 
     @staticmethod
-    def _get_oauth_client_attestation(context: Context):
+    def _get_oauth_client_attestation(context: Context, required: bool = True) -> str | None:
         """
           Retrieve oauth client attestation pop header
         """
-        if not context.http_headers:
-            return None
+        if (not context.http_headers
+                or (OAUTH_CLIENT_ATTESTATION_POP_HEADER not in context.http_headers)
+                or (context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER) is None)):
+            if required:
+                raise InvalidRequestException("Missing OAuth-Client-Attestation header")
+            else:
+                return None
         return context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
 
     def _validate_configs(self):
