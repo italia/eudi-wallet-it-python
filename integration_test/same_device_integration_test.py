@@ -16,7 +16,6 @@ import urllib.parse
 
 import requests
 
-from pyeudiw.jwt.utils import decode_jwt_payload
 from integration_test.initializer.commons import (
     ISSUER_CONF,
     setup_test_db_engine,
@@ -28,7 +27,12 @@ from integration_test.initializer.commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
+from integration_test.initializer.deprecatation import show_deprecation_warning
 from integration_test.initializer.settings import TIMEOUT_S
+from pyeudiw.jwt.utils import decode_jwt_payload
+
+# Show deprecation warning for the test
+show_deprecation_warning()
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
