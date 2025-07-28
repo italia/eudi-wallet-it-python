@@ -271,7 +271,7 @@ class JWSHelper(JWHelperInterface):
 
     def verify(
         self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE
-    ) -> str | Any | bytes:
+    ) -> dict | bytes | str | Any:
         """Verify a JWS with one of the initialized keys and validate standard
         standard claims if possible, such as 'iat' and 'exp'.
         Verification of tokens in JSON serialization format is not supported.
@@ -287,7 +287,7 @@ class JWSHelper(JWHelperInterface):
             format or if the signature is invalid
 
         :returns: the decoded payload of the verified tokens.
-        :rtype: str
+        :rtype: dict | bytes | str | Any
         """
 
         try:
@@ -319,14 +319,16 @@ class JWSHelper(JWHelperInterface):
 
         # Validate JWT claims
         try:
-            msg: dict = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
-            validate_jwt_timestamps_claims(msg, tolerance_s)
+            msg = verifier.verify_compact(jwt, [key_from_jwk_dict(verifying_key)])
+
+            if isinstance(msg, dict):
+                validate_jwt_timestamps_claims(msg, tolerance_s)
+
+            return msg
         except LifetimeException as e:
             raise JWSVerificationError(f"Invalid JWT claims: {e}")
         except Exception as e:
             raise JWSVerificationError(f"Error during signature verification: {e}")
-
-        return msg
 
     def _select_verifying_key(self, header: dict) -> dict | None:
         available_keys = [key.to_dict() for key in self.jwks]

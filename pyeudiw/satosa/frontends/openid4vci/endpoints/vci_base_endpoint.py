@@ -144,3 +144,12 @@ class VCIBaseEndpoint(BaseEndpoint):
         if authz_server:
             return authz_server.dpop_signing_alg_values_supported
         return None
+    
+    @property
+    def signed_par_request(self) -> str:
+        """
+        Check if signed par request is required.
+        Returns:
+            str: "true", "false" or "both". Defaults to "true".
+        """
+        return self.config.get("security", {}).get("signed_par_request", "true").lower()
