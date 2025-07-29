@@ -1,6 +1,7 @@
 import datetime
+from typing import Optional, Any
 
-def is_valid_unix_timestamp(ts: int, range=60) -> bool:
+def is_valid_unix_timestamp(ts: Any, range: Optional[int]=60) -> bool:
   """
   Checks if the given value is a valid UNIX timestamp (in seconds).
 
