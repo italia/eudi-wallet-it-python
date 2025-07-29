@@ -12,7 +12,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     ENTITY_ID_CTX
 )
-from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest
+from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequest
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 
@@ -32,7 +32,7 @@ def test_empty_or_missing_iss(value):
         payload["iss"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `iss` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_iss_0", "  test_iss_1", "test_iss_2", " test_iss_3 "])
 def test_invalid_iss(value):
@@ -41,7 +41,7 @@ def test_invalid_iss(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `iss` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_aud(value):
@@ -52,7 +52,7 @@ def test_empty_or_missing_aud(value):
         payload["aud"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `aud` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_aud(value):
@@ -62,7 +62,7 @@ def test_invalid_aud(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `aud` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["", "  ", None])
@@ -75,7 +75,7 @@ def test_empty_or_missing_state(value):
         payload["state"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `state` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", [
     "short123", #too short
@@ -89,7 +89,7 @@ def test_invalid_state(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `state` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_client_id(value):
@@ -102,7 +102,7 @@ def test_empty_or_missing_client_id(value):
         payload["client_id"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `client_id` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_client_id(value):
@@ -113,7 +113,7 @@ def test_invalid_client_id(value):
         "client_id": value
     }
     with pytest.raises(InvalidRequestException, match="invalid `client_id` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", [0, None])
@@ -128,7 +128,7 @@ def test_invalid_exp(value):
         payload["exp"] = value
 
     with pytest.raises(InvalidRequestException, match="invalid `exp` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", [123, None])
 def test_invalid_iat(value):
@@ -143,7 +143,7 @@ def test_invalid_iat(value):
         payload["iat"] = value
 
     with pytest.raises(InvalidRequestException, match="invalid `iat` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 def test_expired_token():
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
@@ -157,7 +157,7 @@ def test_expired_token():
     }
 
     with pytest.raises(InvalidRequestException, match="expired token"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_response_type(value):
@@ -174,7 +174,7 @@ def test_empty_or_missing_response_type(value):
         payload["response_type"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `response_type` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
@@ -190,7 +190,7 @@ def test_invalid_client_id(value):
         "response_type": value
     }
     with pytest.raises(InvalidRequestException, match="invalid `response_type` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_response_mode(value):
@@ -208,7 +208,7 @@ def test_empty_or_missing_response_mode(value):
         payload["response_mode"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `response_mode` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_response_mode(value):
@@ -224,7 +224,7 @@ def test_invalid_response_mode(value):
         "response_mode": value
     }
     with pytest.raises(InvalidRequestException, match="invalid `response_mode` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_code_challenge(value):
@@ -243,7 +243,7 @@ def test_empty_or_missing_code_challenge(value):
         payload["code_challenge"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `code_challenge` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_code_challenge_method(value):
@@ -263,7 +263,7 @@ def test_empty_or_missing_code_challenge_method(value):
         payload["code_challenge_method"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `code_challenge_method` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_code_challenge_method(value):
@@ -282,7 +282,7 @@ def test_invalid_code_challenge_method(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `code_challenge_method` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "scope1, pippo"])
 def test_invalid_code_challenge_method(value):
@@ -302,7 +302,7 @@ def test_invalid_code_challenge_method(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `scope` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("authorization_details, scope", [
@@ -336,7 +336,7 @@ def test_empty_or_missing_authorization_details(authorization_details, scope):
         payload["scope"] = scope
 
     with pytest.raises(InvalidRequestException, match="Missing `scope` and `authorization_details` in `par` endpoint"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_authorization_details_type(value):
@@ -360,7 +360,7 @@ def test_missing_authorization_details_type(value):
     }
 
     with pytest.raises(InvalidRequestException, match="missing `authorization_details.type` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_authorization_details_type(value):
@@ -384,7 +384,7 @@ def test_invalid_authorization_details_type(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `authorization_details.type` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_authorization_credential_configuration_id(value):
@@ -410,7 +410,7 @@ def test_missing_authorization_credential_configuration_id(value):
     }
 
     with pytest.raises(InvalidRequestException, match="missing `authorization_details.credential_configuration_id` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_authorization_details_credential_configuration_id(value):
@@ -435,7 +435,7 @@ def test_invalid_authorization_details_credential_configuration_id(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `authorization_details.credential_configuration_id` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_redirect_uri(value):
@@ -462,7 +462,7 @@ def test_missing_redirect_uri(value):
         payload["redirect_uri"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `redirect_uri` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", [
@@ -495,7 +495,7 @@ def test_invalid_redirect_uri(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `redirect_uri` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_jti(value):
@@ -523,7 +523,7 @@ def test_missing_jti(value):
         payload["jti"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `jti` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "client-123 ", "client-123"])
@@ -551,4 +551,4 @@ def test_invalid_jti(value):
     }
 
     with pytest.raises(InvalidRequestException, match="invalid `jti` parameter"):
-        ParRequest.model_validate(payload, context=get_valid_context())
+        SignedParRequest.model_validate(payload, context=get_valid_context())
