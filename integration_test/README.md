@@ -84,4 +84,8 @@ To execute the integration tests:
     python same_device_integration_test_duckle.py
     python user_denies_end_to_end_test.py
 
+Otherwise, it's possible to run all the tests at once with:
+
+    python runner.py
+
 > ℹ️ **Note:** Before running any test outside of Docker, make sure to set the `PYTHONPATH` to the project root directory.
