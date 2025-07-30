@@ -50,4 +50,5 @@ class OpenID4VCIFrontend(FrontendModule):
     return url_map
 
   def handle_authn_response(self, context: Context, internal_resp: InternalData) -> None:
+    #TODO: never reached, needs to be integrated
     self.db_engine.update_attributes_by_session_id(get_session_id(context), internal_resp.attributes)

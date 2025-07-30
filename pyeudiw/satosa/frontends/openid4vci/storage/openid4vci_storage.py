@@ -3,6 +3,8 @@ from pymongo.results import UpdateResult
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
 
+#TODO: This class is never used. The code inside must be integrated and standardized in the DBEngine class and the MongoStorage class.
+#       It is kept here for reference and future integration.
 
 class OpenId4VciStorage(MongoStorage):
     """
