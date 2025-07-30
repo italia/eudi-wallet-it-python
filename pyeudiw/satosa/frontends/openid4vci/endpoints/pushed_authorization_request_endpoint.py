@@ -151,13 +151,13 @@ class ParHandler(VCIBaseEndpoint):
             )
             return self._handle_500(context, "error during invoke par endpoint", e)
 
-    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
+    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest):
         """
         Initialize a new DB session for a credential issuance flow.
         Args:
             context (Context): The SATOSA context.
             request_uri_part (str): The generated URI part.
-            par_request (ParRequest): The validated request data.
+            par_request (ParRequest | SignedParRequest): The validated request data.
         Raises:
             Exception: If the DB operation fails.
         """
