@@ -1,7 +1,7 @@
 from pyeudiw.satosa.frontends.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
 from pyeudiw.storage.db_engine import DBEngine
 
-class OpenId4VciEngine:
+class OpenId4VciDBEngineHandler:
     """
         Engine for managing OpenID4VCI storage operations.
 
