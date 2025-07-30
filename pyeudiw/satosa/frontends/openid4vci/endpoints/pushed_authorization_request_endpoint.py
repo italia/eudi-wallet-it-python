@@ -101,7 +101,7 @@ class ParHandler(VCIBaseEndpoint):
 
             request = data.get("request", "").strip()
 
-            if request:
+            if request and (self.signed_par_request == "true" or self.signed_par_request == "both"):
                 try:
                     payload = self.jws_helper.verify(request)
 
@@ -126,7 +126,7 @@ class ParHandler(VCIBaseEndpoint):
                         f"invalid request parameter for `par`, invalid JWS: {request}"
                     )
                     return self._handle_400(context, "invalid request parameters")
-            else:
+            elif (self.signed_par_request == "false" or self.signed_par_request == "both"):
                 par_request = ParRequest.model_validate(
                     data, context={
                         ENDPOINT_CTX: "par",
@@ -134,7 +134,13 @@ class ParHandler(VCIBaseEndpoint):
                         CLIENT_ID_CTX: client_id,
                         ENTITY_ID_CTX: self.entity_id
                     })
-            
+            else:
+                self._log_error(
+                    CLASS_NAME,
+                    "invalid request parameters for `par` endpoint, missing request or signed request"
+                )
+                return self._handle_400(context, "invalid request parameters")
+
             random_part = secrets.token_hex(16)
             self._init_db_session(context, random_part, par_request)
 
