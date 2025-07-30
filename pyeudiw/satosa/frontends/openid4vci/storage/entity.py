@@ -23,7 +23,7 @@ class OpenId4VCIEntity(BaseModel):
   redirect_uri: str
   authorization_details: Optional[List[AuthorizationDetail]] = None
   scope: Optional[str] = None
-  c_nonce: str = None
+  c_nonce: Optional[str] = None
   finalized: bool = False
   attributes: Optional[dict] = None
 
