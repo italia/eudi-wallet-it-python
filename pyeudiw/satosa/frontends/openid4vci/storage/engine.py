@@ -22,7 +22,7 @@ class OpenId4VciDBEngineHandler:
         self._db_engine = None
 
     @property
-    def db_engine(self) -> OpenId4VciStorage:
+    def db_engine(self) -> DBEngine:
         """
         Lazily initialized access to MongoDB storage engine.
         Returns:
