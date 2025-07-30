@@ -28,7 +28,9 @@ class OpenId4VCIEntity(BaseModel):
   attributes: Optional[dict] = None
 
   @staticmethod
-  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest):
+      if not context.state:
+          raise ValueError("Invalid context state")
+
       return OpenId4VCIEntity(
           request_uri_part=request_uri_part,
           state=par_request.state,
