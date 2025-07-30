@@ -14,7 +14,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
 )
 from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequest, ParRequest
 from pyeudiw.satosa.frontends.openid4vci.models.par_response import ParResponse
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidRequestException,
@@ -45,7 +45,7 @@ class ParHandler(VCIBaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context):
         """

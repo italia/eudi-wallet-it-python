@@ -5,7 +5,7 @@ from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import GET_ACCEPTED_METHODS, VCIBaseEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException, InvalidScopeException
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
@@ -40,7 +40,7 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui"])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
 
     def endpoint(self, context: Context):
