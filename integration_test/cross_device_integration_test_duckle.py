@@ -7,8 +7,9 @@ import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright, Playwright, Page
 
+from integration_test.initializer.commons import verify_status_login_page
 from integration_test.initializer.commons_duckle import (
-    ISSUER_CONF,
+    DUCKLE_ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
@@ -26,14 +27,6 @@ db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
 STATUS_ENDPOINT_URI_JS = "statusEndpoint()+'?id='+sessionIdentifier()"  # javascript functions that yield the status URI; defined in qrcode.html
-
-
-def _verify_status(login_page: Page, expected_code: int):
-    current_status = login_page.evaluate(
-        f"fetch({STATUS_ENDPOINT_URI_JS}).then(resp => resp.status)"
-    )
-    assert expected_code == current_status
-
 
 def _extract_request_uri(page_content: str) -> str:
     bs = BeautifulSoup(page_content, features="html.parser")
@@ -68,7 +61,7 @@ def run(playwright: Playwright):
     auth_req_url = create_saml_auth_request()
     login_page.goto(auth_req_url)
 
-    _verify_status(login_page, 201)
+    verify_status_login_page(login_page, 201)
 
     request_uri = _extract_request_uri(login_page.content())
 
@@ -83,14 +76,14 @@ def run(playwright: Playwright):
     request_object_claims = decode_jwt_payload(sign_request_obj.text)
     response_uri = request_object_claims["response_uri"]
 
-    _verify_status(login_page, expected_code=202)
+    verify_status_login_page(login_page, expected_code=202)
 
     wallet_response_data = create_authorize_response(
-        request_object_claims["state"],
         create_verifiable_presentations(
             request_object_claims["nonce"],
             request_object_claims["client_id"]
-        )
+        ),
+        request_object_claims["state"],
     )
 
     authz_response = wallet_user_agent.post(
@@ -108,7 +101,7 @@ def run(playwright: Playwright):
     # wait that js polling catches the updated backend status
     print("\n...waiting that the page updates...\n")
     time.sleep(1.0)
-    _verify_status(login_page, 200)
+    verify_status_login_page(login_page, 200)
 
     link_complete_auth = login_page.get_by_role("link")
     link_complete_auth.click(force=True)
@@ -123,9 +116,9 @@ def run(playwright: Playwright):
 
     expected = {
         # https://oidref.com/2.5.4.42
-        "urn:oid:2.5.4.42": ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
+        "urn:oid:2.5.4.42": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
         # https://oidref.com/2.5.4.4
-        "urn:oid:2.5.4.4": ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
+        "urn:oid:2.5.4.4": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
     }
 
     for exp_att_name, exp_att_value in expected.items():
