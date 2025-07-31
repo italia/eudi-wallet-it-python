@@ -6,7 +6,7 @@ SRC="pyeudiw"
 autopep8 -r --in-place $SRC
 autoflake -r --in-place  --remove-unused-variables --expand-star-imports --remove-all-unused-imports $SRC
 
-flake8 $SRC --count --select=E9,F63,F7,F82 --show-source --statistics
+flake8 $SRC --count --select=E9,F63,F7,F82,T100 --show-source --statistics
 
 # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 flake8 $SRC --count --exit-zero --statistics
