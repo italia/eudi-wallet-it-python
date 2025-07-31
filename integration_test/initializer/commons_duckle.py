@@ -63,7 +63,7 @@ ISSUER_CONFIG_FOR_WALLET_ATTESTATION_DATA = {
         !sd wallet_link: "https://user.example.com/wallet/abc123"
         !sd wallet_name: "Mario’s eID Wallet"
     """,
-    "issuer": leaf_cred['sub'],
+    "issuer": duckle_leaf_cred['sub'],
     "default_exp": 1024,
     "key_binding": True
 }
