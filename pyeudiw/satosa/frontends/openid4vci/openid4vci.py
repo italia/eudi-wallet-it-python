@@ -9,7 +9,7 @@ from satosa.frontends.base import FrontendModule
 from satosa.internal import InternalData
 from satosa.response import Response
 
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 
@@ -32,7 +32,7 @@ class OpenID4VCIFrontend(FrontendModule):
     self.config = config
     self.base_url = base_url
     self.name = name
-    self.db_engine = OpenId4VciEngine(config).db_engine
+    self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
   def register_endpoints(self, backend_names, **kwargs):
     """
@@ -50,4 +50,5 @@ class OpenID4VCIFrontend(FrontendModule):
     return url_map
 
   def handle_authn_response(self, context: Context, internal_resp: InternalData) -> None:
+    #TODO: never reached, needs to be integrated
     self.db_engine.update_attributes_by_session_id(get_session_id(context), internal_resp.attributes)

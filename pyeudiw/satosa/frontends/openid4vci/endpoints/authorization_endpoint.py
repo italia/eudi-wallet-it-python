@@ -14,7 +14,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CLIENT_ID_CTX,
 )
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
@@ -41,7 +41,7 @@ class AuthorizationHandler(VCIBaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context) -> Response:
         """

@@ -12,9 +12,9 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
     ENTITY_ID_CTX
 )
-from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest
+from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequest, ParRequest
 from pyeudiw.satosa.frontends.openid4vci.models.par_response import ParResponse
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidRequestException,
@@ -45,7 +45,7 @@ class ParHandler(VCIBaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context):
         """
@@ -56,6 +56,20 @@ class ParHandler(VCIBaseEndpoint):
             A Response object.
         """
         try:
+            if not context.request_method:
+                self._log_error(
+                    CLASS_NAME,
+                    "invalid request parameters for `par` endpoint, missing request method"
+                )
+                return self._handle_500(context, "invalid request parameters", Exception("invalid request parameters"))
+            
+            if not context.http_headers:
+                self._log_error(
+                    CLASS_NAME,
+                    "invalid request parameters for `par` endpoint, missing HTTP headers"
+                )
+                return self._handle_500(context, "invalid request parameters", Exception("invalid request parameters"))
+
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
 
@@ -70,32 +84,7 @@ class ParHandler(VCIBaseEndpoint):
 
             client_id = data.get("client_id", "").strip()
 
-            decoded_request = {}
-
-            if self.signed_par_request == "true" or self.signed_par_request == "both":
-                request = data.get("request", "").strip()
-                try:
-                    payload = self.jws_helper.verify(request)
-
-                    if not isinstance(payload, dict):
-                        self._log_error(
-                            CLASS_NAME,
-                            f"invalid request parameter for `par`, invalid JWS: {request}"
-                        )
-                        return self._handle_400(context, "invalid request parameters")
-
-                    decoded_request.update(payload)
-                except JWSVerificationError:
-                    self._log_error(
-                        CLASS_NAME,
-                        f"invalid request parameter for `par`, invalid JWS: {request}"
-                    )
-                    return self._handle_400(context, "invalid request parameters")
-
-            if self.signed_par_request == "false" or self.signed_par_request == "both":
-                decoded_request.update({k: v for k, v in data.items() if k != "client_id" and k != "request"})
-
-            if not client_id or not decoded_request:
+            if not client_id:
                 self._log_error(
                     CLASS_NAME,
                     f"invalid request parameters for `par` endpoint, missing {'client_id' if not client_id else 'request'}"
@@ -110,20 +99,54 @@ class ParHandler(VCIBaseEndpoint):
                     )
                     return self._handle_400(context, "invalid `client_id` parameters")
 
-            par_request = ParRequest.model_validate(
-                decoded_request, context = {
-                    ENDPOINT_CTX: "par",
-                    CONFIG_CTX: self.config,
-                    CLIENT_ID_CTX: client_id,
-                    ENTITY_ID_CTX: self.entity_id
-                })
-            
+            request = data.get("request", "").strip()
+
+            if request and (self.signed_par_request == "true" or self.signed_par_request == "both"):
+                try:
+                    payload = self.jws_helper.verify(request)
+
+                    if not isinstance(payload, dict):
+                        self._log_error(
+                            CLASS_NAME,
+                            f"invalid request parameter for `par`, invalid JWS: {request}"
+                        )
+                        return self._handle_400(context, "invalid request parameters")
+                    
+                    par_request = SignedParRequest.model_validate(
+                        payload, context={
+                            ENDPOINT_CTX: "par",
+                            CONFIG_CTX: self.config,
+                            CLIENT_ID_CTX: client_id,
+                            ENTITY_ID_CTX: self.entity_id
+                        })
+
+                except JWSVerificationError:
+                    self._log_error(
+                        CLASS_NAME,
+                        f"invalid request parameter for `par`, invalid JWS: {request}"
+                    )
+                    return self._handle_400(context, "invalid request parameters")
+            elif (self.signed_par_request == "false" or self.signed_par_request == "both"):
+                par_request = ParRequest.model_validate(
+                    data, context={
+                        ENDPOINT_CTX: "par",
+                        CONFIG_CTX: self.config,
+                        CLIENT_ID_CTX: client_id,
+                        ENTITY_ID_CTX: self.entity_id
+                    })
+            else:
+                self._log_error(
+                    CLASS_NAME,
+                    "invalid request parameters for `par` endpoint, missing request or signed request"
+                )
+                return self._handle_400(context, "invalid request parameters")
+
             random_part = secrets.token_hex(16)
             self._init_db_session(context, random_part, par_request)
 
             return ParResponse.to_created_response(
                 self._to_request_uri(random_part),
-                self.config_utils.get_jwt().par_exp
+                self.config_utils.get_jwt().par_exp or 0
             )
         except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
@@ -134,19 +157,19 @@ class ParHandler(VCIBaseEndpoint):
             )
             return self._handle_500(context, "error during invoke par endpoint", e)
 
-    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest):
+    def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest):
         """
         Initialize a new DB session for a credential issuance flow.
         Args:
             context (Context): The SATOSA context.
             request_uri_part (str): The generated URI part.
-            par_request (ParRequest): The validated request data.
+            par_request (ParRequest | SignedParRequest): The validated request data.
         Raises:
             Exception: If the DB operation fails.
         """
         entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request)
         try:
-            self.db_engine.init_session(entity)
+            self.db_engine.init_session(entity.session_id, entity.state, entity.remote_flow_typ)
         except Exception as e500:
             self._log_critical(
                 e500.__class__.__name__,

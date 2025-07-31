@@ -7,7 +7,7 @@ from satosa.context import Context
 
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import AuthorizationDetail
-from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest
+from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest, SignedParRequest
 
 
 class OpenId4VCIEntity(BaseModel):
@@ -23,12 +23,15 @@ class OpenId4VCIEntity(BaseModel):
   redirect_uri: str
   authorization_details: Optional[List[AuthorizationDetail]] = None
   scope: Optional[str] = None
-  c_nonce: str = None
+  c_nonce: Optional[str] = None
   finalized: bool = False
   attributes: Optional[dict] = None
 
   @staticmethod
-  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest):
+  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest) -> "OpenId4VCIEntity":
+      if not context.state:
+          raise ValueError("Invalid context state")
+
       return OpenId4VCIEntity(
           request_uri_part=request_uri_part,
           state=par_request.state,

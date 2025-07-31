@@ -15,7 +15,7 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, InvalidRequestException
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
@@ -60,7 +60,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
         self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(self._metadata_jwks[0])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
         _user_credential_engine = UserCredentialEngine(config)
         self._db_user_engine = _user_credential_engine.db_user_storage_engine
         self._db_credential_engine = _user_credential_engine.db_credential_storage_engine

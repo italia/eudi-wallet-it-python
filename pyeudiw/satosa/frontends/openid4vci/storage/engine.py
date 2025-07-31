@@ -1,7 +1,9 @@
-from pyeudiw.satosa.frontends.openid4vci.storage.openid4vci_storage import OpenId4VciStorage
+import logging
 from pyeudiw.storage.db_engine import DBEngine
 
-class OpenId4VciEngine:
+logger = logging.getLogger(__name__)
+
+class OpenId4VciDBEngineHandler:
     """
         Engine for managing OpenID4VCI storage operations.
 
@@ -22,7 +24,7 @@ class OpenId4VciEngine:
         self._db_engine = None
 
     @property
-    def db_engine(self) -> OpenId4VciStorage:
+    def db_engine(self) -> DBEngine:
         """
         Lazily initialized access to MongoDB storage engine.
         Returns:
@@ -35,7 +37,7 @@ class OpenId4VciEngine:
             self._db_engine.is_connected
         except Exception as e:
             if getattr(self, "_db_engine", None):
-                self._log_error(
+                logger.error(
                     e.__class__.__name__,
                     f"OpenID4VCI db storage handling, connection check silently fails and get restored: {e}"
                 )
