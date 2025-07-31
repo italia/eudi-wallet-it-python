@@ -76,7 +76,8 @@ class TokenHandler(VCIBaseEndpoint):
             validate_oauth_client_attestation(
                 context,
                 self.dpop_required,
-                self.wallet_attestation_required
+                self.wallet_attestation_required,
+                self.dpop_signing_alg_values_supported
             )
 
             oauth_client_attestation = self._get_oauth_client_attestation(context, self.wallet_attestation_required)

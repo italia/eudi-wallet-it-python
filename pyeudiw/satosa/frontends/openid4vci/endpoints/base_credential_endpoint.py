@@ -79,7 +79,8 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             validate_oauth_client_attestation(
                 context, 
                 self.dpop_required,
-                self.wallet_attestation_required
+                self.wallet_attestation_required,
+                self.dpop_signing_alg_values_supported
             )
             
             entity = self.db_engine.get_by_session_id(get_session_id(context))

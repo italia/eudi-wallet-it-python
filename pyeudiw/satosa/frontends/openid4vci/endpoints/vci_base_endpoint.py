@@ -132,3 +132,24 @@ class VCIBaseEndpoint(BaseEndpoint):
             bool: True if wallet_attestation is required, False otherwise. Defaults to True.
         """
         return self.config.get("security", {}).get("wallet_attestation_required", True)
+
+    @property
+    def dpop_signing_alg_values_supported(self) -> list[str] | None:
+        """
+        Get the supported DPoP signing algorithms.
+        Returns:
+            list[str]: List of supported DPoP signing algorithms.
+        """
+        authz_server = self.config_utils.get_oauth_authorization_server()
+        if authz_server:
+            return authz_server.dpop_signing_alg_values_supported
+        return None
+    
+    @property
+    def signed_par_request(self) -> str:
+        """
+        Check if signed par request is required.
+        Returns:
+            str: "true", "false" or "both". Defaults to "true".
+        """
+        return self.config.get("security", {}).get("signed_par_request", "true").lower()

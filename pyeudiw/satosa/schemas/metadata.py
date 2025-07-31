@@ -9,6 +9,7 @@ class OauthAuthorizationServerMetadata(BaseModel):
     response_modes_supported: Optional[List[str]] = None
     code_challenge_methods_supported: Optional[List[str]] = None
     scopes_supported: Optional[List[str]] = None
+    dpop_signing_alg_values_supported: Optional[List[str]] = None
 
 class CredentialConfigurationFormatEnum(Enum):
     SD_JWT = "dc+sd-jwt" #nosec B105

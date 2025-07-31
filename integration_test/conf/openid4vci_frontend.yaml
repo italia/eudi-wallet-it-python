@@ -155,6 +155,10 @@ config:
         - ES256
         - ES384
         - ES512
+      dpop_signing_alg_values_supported: # Optional supported algorithm for validate DPoP, if missing every value in cnf is admitted.
+        - ES256
+        - ES384
+        - ES512
       jwks: *metadata_jwks
     openid_credential_issuer: &openid_credential_issuer_metadata
       credential_issuer: https://eaa-provider.example.org # this field if not set will be autopopulated using internal variables base_url and name using the following format: "<base_url>/<name>"
@@ -666,6 +670,7 @@ config:
   security:
     dpop_required: true # this is the flag to enable the DPOD interoperability, if missing it will be set to true by default
     wallet_attestation_required: true # this is the flag to enable the wallet attestation interoperability, if missing it will be set to true by default
+    signed_par_request: "true" # can be "true", "false" or "both", this field is used to enable the signed par request interoperability, if missing it will be set to "true" by default
 
   # Mongodb database configuration
   # Configuration for retrieving user datas, it stores user attributes required to
