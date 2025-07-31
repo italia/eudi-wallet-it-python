@@ -5,9 +5,8 @@ import urllib.parse
 
 import requests
 
-from pyeudiw.jwt.utils import decode_jwt_payload
 from integration_test.initializer.commons_duckle import (
-    ISSUER_CONF,
+    DUCKLE_ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
@@ -17,6 +16,7 @@ from integration_test.initializer.commons_duckle import (
     create_verifiable_presentations
 )
 from integration_test.initializer.settings import TIMEOUT_S
+from pyeudiw.jwt.utils import decode_jwt_payload
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
@@ -65,11 +65,11 @@ response_uri = request_object_claims["response_uri"]
 
 # Provide an authentication response
 wallet_response_data = create_authorize_response(
-    request_object_claims["state"],
     create_verifiable_presentations(
         request_object_claims["nonce"],
         request_object_claims["client_id"]
-    )
+    ),
+    request_object_claims["state"],
 )
 
 authz_response = http_user_agent.post(
@@ -98,9 +98,9 @@ assert attributes
 
 expected = {
     # https://oidref.com/2.5.4.42
-    "urn:oid:2.5.4.42": ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
+    "urn:oid:2.5.4.42": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
     # https://oidref.com/2.5.4.4
-    "urn:oid:2.5.4.4": ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
+    "urn:oid:2.5.4.4": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
 }
 
 for exp_att_name, exp_att_value in expected.items():

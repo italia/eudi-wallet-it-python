@@ -18,8 +18,6 @@ import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright, Playwright, Page
 
-from integration_test.initializer.deprecatation import show_deprecation_warning
-from pyeudiw.jwt.utils import decode_jwt_payload
 from integration_test.initializer.commons import (
     ISSUER_CONF,
     setup_test_db_engine,
@@ -29,9 +27,12 @@ from integration_test.initializer.commons import (
     create_holder_test_data,
     create_issuer_test_data,
     extract_saml_attributes,
-    verify_request_object_jwt
+    verify_request_object_jwt,
+    verify_status_login_page
 )
+from integration_test.initializer.deprecatation import show_deprecation_warning
 from integration_test.initializer.settings import TIMEOUT_S
+from pyeudiw.jwt.utils import decode_jwt_payload
 
 # Show deprecation warning for the test
 show_deprecation_warning()
@@ -42,13 +43,6 @@ db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
 STATUS_ENDPOINT_URI_JS = "statusEndpoint()+'?id='+sessionIdentifier()"  # javascript functions that yield the status URI; defined in qrcode.html
-
-
-def _verify_status(login_page: Page, expected_code: int):
-    current_status = login_page.evaluate(
-        f"fetch({STATUS_ENDPOINT_URI_JS}).then(resp => resp.status)"
-    )
-    assert expected_code == current_status
 
 
 def _extract_request_uri(page_content: str) -> str:
@@ -84,7 +78,7 @@ def run(playwright: Playwright):
     auth_req_url = create_saml_auth_request()
     login_page.goto(auth_req_url)
 
-    _verify_status(login_page, 201)
+    verify_status_login_page(login_page, 201)
 
     request_uri = _extract_request_uri(login_page.content())
 
@@ -99,7 +93,7 @@ def run(playwright: Playwright):
     request_object_claims = decode_jwt_payload(sign_request_obj.text)
     response_uri = request_object_claims["response_uri"]
 
-    _verify_status(login_page, expected_code=202)
+    verify_status_login_page(login_page, expected_code=202)
 
     # Authentication Flow Step 3: wallet provides an authentication response in the response endpoint
     verifiable_credential = create_issuer_test_data()
@@ -130,7 +124,7 @@ def run(playwright: Playwright):
     # wait that js polling catches the updated backend status
     print("\n...waiting that the page updates...\n")
     time.sleep(1.0)
-    _verify_status(login_page, 200)
+    verify_status_login_page(login_page, 200)
 
     link_complete_auth = login_page.get_by_role("link")
     link_complete_auth.click(force=True)
