@@ -3,3 +3,4 @@ ignore = D203,E121,E124,E126,E203,E231,E261,E251,E701,F403,F405,E402
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,*/migrations/*,tests.py,*/tests/*
 max-line-length=180
 max-complexity = 25
+enable-extensions = T100
