@@ -1,4 +1,3 @@
-from cryptojwt.jwk.ec import new_ec_key
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
 
 from integration_test.initializer.commons import *
@@ -7,63 +6,12 @@ NOW = iat_now()
 EXP = exp_from_now(5000)
 
 # Define leaf Credential Issuer
-ec_crv = "P-256"
-ec_alg = "ES256"
-#TODO: Use a proper kid as config.metadata_jwks[crv=ec_crv].kid
-kid="SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk"
-x = "Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI"
-y = "IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA"
-duckle_leaf_cred_jwk_prot = new_ec_key(ec_crv, alg=ec_alg, kid=kid, x=x, y=y)
-set_credential_issuer_jwk_conf(JWK(duckle_leaf_cred_jwk_prot.serialize(private=True)))
-
-duckle_leaf_cred_jwk = new_ec_key(ec_crv, alg=ec_alg, kid=kid, x=x, y=y)
-duckle_leaf_cred = {
-    "exp": EXP,
-    "iat": NOW,
-    "iss": "http://localhost",
-    "sub": "http://localhost",
-    "jwks": {"keys": []},
-    "metadata": {
-        "openid_credential_issuer": {"jwks": {"keys": []}},
-        "federation_entity": {
-            "organization_name": "OpenID Credential Issuer example",
-            "homepage_uri": "https://credential-issuer.example.org/home",
-            "policy_uri": "https://credential-issuer.example.org/policy",
-            "logo_uri": "https://credential-issuer.example.org/static/logo.svg",
-            "contacts": ["tech@credential-issuer.example.org"],
-        },
-    },
-    "authority_hints": ["https://intermediate.eidas.example.org"],
-}
-duckle_leaf_cred["jwks"]["keys"] = [duckle_leaf_cred_jwk.serialize()]
-duckle_leaf_cred["metadata"]["openid_credential_issuer"]["jwks"]["keys"] = [
-    duckle_leaf_cred_jwk.serialize()
-]
-
-DUCKLE_ISSUER_CONF = {
-    "sd_specification": """
-        !sd unique_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        !sd given_name: "Mario"
-        !sd family_name: "Rossi"
-        !sd birthdate: "1980-01-10"
-        !sd place_of_birth:
-            country: "IT"
-            locality: "Rome"
-        !sd tax_id_code: "TINIT-XXXXXXXXXXXXXXXX"
-    """,
-    "issuer": duckle_leaf_cred['sub'],
-    "default_exp": 1024,
-    "key_binding": True
-}
-
-set_issuer_conf(DUCKLE_ISSUER_CONF)
-
 ISSUER_CONFIG_FOR_WALLET_ATTESTATION_DATA = {
     "sd_specification": """
         !sd wallet_link: "https://user.example.com/wallet/abc123"
         !sd wallet_name: "Mario’s eID Wallet"
     """,
-    "issuer": duckle_leaf_cred['sub'],
+    "issuer": leaf_cred['sub'],
     "default_exp": 1024,
     "key_binding": True
 }

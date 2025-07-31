@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright, Playwright, Page
 
 from integration_test.initializer.commons import verify_status_login_page
 from integration_test.initializer.commons_duckle import (
-    DUCKLE_ISSUER_CONF,
+    ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
@@ -116,9 +116,9 @@ def run(playwright: Playwright):
 
     expected = {
         # https://oidref.com/2.5.4.42
-        "urn:oid:2.5.4.42": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
+        "urn:oid:2.5.4.42": ISSUER_CONF["sd_specification"].split("!sd given_name:")[1].split('"')[1].lower(),
         # https://oidref.com/2.5.4.4
-        "urn:oid:2.5.4.4": DUCKLE_ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
+        "urn:oid:2.5.4.4": ISSUER_CONF["sd_specification"].split("!sd family_name:")[1].split('"')[1].lower()
     }
 
     for exp_att_name, exp_att_value in expected.items():
