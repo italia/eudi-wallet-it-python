@@ -1,3 +1,5 @@
+from datetime import timezone, timedelta
+
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
 
 from integration_test.initializer.commons import *
@@ -27,20 +29,29 @@ PKEY = {
 mdoci = MdocCborIssuer(
     private_key=PKEY,
     alg="ES256",
+    cert_info={
+        "country_name": "US",
+        "state_or_province_name": "California",
+        "locality_name": "San Francisco",
+        "organization_name": "Micov",
+        "common_name": "My Company",
+        "not_valid_before": datetime.datetime.now(timezone.utc) - timedelta(days=1),
+        "not_valid_after": datetime.datetime.now(timezone.utc) + timedelta(days=10),
+        "san_url": "https://credential-issuer.example.org"
+    }
 )
 
 def create_verifiable_presentations(request_nonce: str, request_aud: str) -> dict:
     return  {
         "personal id data": create_holder_test_data(create_issuer_test_data(),request_nonce,request_aud),
-        "wallet attestation": create_holder_test_data(create_wallet_attestation_data(),request_nonce,request_aud),
-        #"wallet attestation": create_mso_mdoc(
-        #   {
-        #        "eu.europa.ec.eudiw.pid.1": {
-        #            "wallet_link": "https://user.example.com/wallet/abc123",
-        #            "wallet_name": "Mario’s eID Wallet"
-        #        }
-        #    }
-        #)
+        "wallet attestation": create_mso_mdoc(
+            {
+                "eu.europa.ec.eudiw.pid.1": {
+                    "wallet_link": "https://user.example.com/wallet/abc123",
+                    "wallet_name": "Mario’s eID Wallet"
+                }
+            }
+        ),
     }
 
 def create_wallet_attestation_data() -> dict[Literal["jws"] | Literal["issuance"], str]:
