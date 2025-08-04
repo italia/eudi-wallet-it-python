@@ -262,6 +262,18 @@ class MongoStorage(BaseStorage):
             raise StorageEntryUpdateFailed("Trust Anchor matched count is ZERO")
 
         return document_status
+    
+    def _get_entry_by_key(
+        self, key_label: str, collection: str, key_value: str
+    ) -> dict:
+        db_collection = getattr(self, collection)
+
+        document = db_collection.find_one({key_label: key_value})
+
+        if document is None:
+            raise ValueError(f"Document with {key_label} {key_value} not found.")
+
+        return document
 
     def _update_attestation_metadata(
         self,
@@ -310,6 +322,22 @@ class MongoStorage(BaseStorage):
         entity[trust_name] = trust_entity
 
         return entity
+    
+    def upsert_session(
+        self, session_id: str, data: dict
+    ) -> tuple[str, dict]:
+        return self._upsert_entry(
+            "session_id", self.storage_conf["db_sessions_collection"], {"session_id": session_id, **data}
+        )
+    
+    def search_session_by_field(
+        self, field: str, value: str
+    ) -> dict:
+        self._connect()
+
+        return self._get_entry_by_key(
+            field, self.storage_conf["db_sessions_collection"], value
+        )
 
     def add_trust_attestation(
         self,
