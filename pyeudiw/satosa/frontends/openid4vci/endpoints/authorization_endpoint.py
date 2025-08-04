@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from satosa.context import Context
 from satosa.response import Response, Redirect
 
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
     AuthorizationRequest,
@@ -51,46 +52,91 @@ class AuthorizationHandler(VCIBaseEndpoint):
         Returns:
             A Response object, usually a redirect.
         """
-        global entity
+        entity = None
         try:
-            entity = self.db_engine.get_by_session_id(get_session_id(context))
+            if not context.request_method:
+                self._log_error(
+                    AUTHORIZATION_ENDPOINT,
+                    "missing request method"
+                )
+                raise InvalidRequestException("invalid request method")
+
             validate_request_method(context.request_method, ["POST", "GET"])
             if context.request_method == "POST":
+                if not context.http_headers or HTTP_CONTENT_TYPE_HEADER not in context.http_headers:
+                    self._log_error(
+                        AUTHORIZATION_ENDPOINT,
+                        "missing content-type header"
+                    )
+                    raise InvalidRequestException("invalid content-type")
+                
                 validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
                 auth_req = self._get_body(context)
             else:
-                validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
                 auth_req = context.qs_params
 
             if not auth_req:
                 raise InvalidRequestException("missing authorization request")
+            
+            req_uri = auth_req.get("request_uri", None)
+
+            if not req_uri:
+                raise InvalidRequestException("missing request_uri in authorization request")
+
+            entity = self.db_engine.search_session_by_field("request_uri_part", req_uri.split(":")[-1])
+
+            if not entity:
+                raise InvalidRequestException(f"request_uri `{req_uri}` not found in storage")
+            
+            vci_entity = OpenId4VCIEntity(**entity)
 
             AuthorizationRequest.model_validate(
                 auth_req, context = {
                     ENDPOINT_CTX: AUTHORIZATION_ENDPOINT,
-                    PAR_REQUEST_URI_CTX: self._to_request_uri(entity.request_uri_part),
-                    CLIENT_ID_CTX: entity.client_id
+                    PAR_REQUEST_URI_CTX: self._to_request_uri(entity["request_uri_part"]),
+                    CLIENT_ID_CTX: vci_entity.client_id
                 })
             return AuthorizationResponse(
-                state=entity.state,
+                state=vci_entity.state,
                 iss=self.entity_id,
-            ).to_redirect_response(entity.redirect_uri)
+            ).to_redirect_response(vci_entity.redirect_uri)
         except (InvalidRequestException, ValidationError, TypeError) as e:
-            return self._to_error_redirect(
-                getattr(entity, "redirect_uri", None),
-                "invalid_request",
+            self._log_error(
+                e.__class__.__name__,
+                f"Error during invoke authorization endpoint: {e}"
+            )
+
+            if entity:
+                return self._to_error_redirect(
+                    entity.get("redirect_uri", "") if isinstance(entity, dict) else "",
+                    "invalid_request",
+                    self._handle_validate_request_error(e, AUTHORIZATION_ENDPOINT),
+                    entity.get("state", "") if isinstance(entity, dict) else ""
+                )
+            
+            return self._handle_400(
+                context,
                 self._handle_validate_request_error(e, AUTHORIZATION_ENDPOINT),
-                getattr(entity, "state", None))
+                e
+            )
         except Exception as e:
             self._log_error(
                 e.__class__.__name__,
                 f"Error during invoke authorization endpoint: {e}"
             )
-            return self._to_error_redirect(
-                getattr(entity, "redirect_uri", None),
-                "server_error",
+            if entity:
+                return self._to_error_redirect(
+                    entity.get("redirect_uri", "") if isinstance(entity, dict) else "",
+                    "server_error",
+                    "error during invoke authorization endpoint",
+                    entity.get("state", "") if isinstance(entity, dict) else ""
+                )
+            
+            return self._handle_500(
+                context,
                 "error during invoke authorization endpoint",
-                getattr(entity, "state", None))
+                e
+            )
 
     @staticmethod
     def _to_error_redirect(url:str, error:str, desc: str, state: str):
