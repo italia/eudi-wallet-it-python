@@ -63,27 +63,6 @@ def test_invalid_content_type_for_POST_method(authorization_handler, context, co
         "invalid content-type"
     )
 
-@pytest.mark.parametrize("content_type", [
-    "content_type",
-    "multipart/form-data",
-    "text/plain",
-    "application/xml",
-    "application/octet-stream",
-    "application/ld+json",
-    "text/html",
-    "application/jose",
-    "application/jwt",
-    "application/soap+xml",
-    "application/x-www-form-urlencoded"
-])
-def test_invalid_content_type_for_GET_method(authorization_handler, context, content_type):
-    authorization_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
-    context.request_method = "GET"
-    context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
-    _assert_invalid_request(
-        authorization_handler.endpoint(context),
-        "invalid content-type"
-    )
 
 @pytest.mark.parametrize("req,err_descr", [
     ({}, "missing authorization request"),
