@@ -169,7 +169,7 @@ class ParHandler(VCIBaseEndpoint):
         """
         entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request)
         try:
-            self.db_engine.init_session(entity.session_id, entity.state, entity.remote_flow_typ)
+            self.db_engine.upsert_session(entity.session_id, entity.model_dump())
         except Exception as e500:
             self._log_critical(
                 e500.__class__.__name__,
