@@ -404,7 +404,7 @@ def _assert_test_valid_request_with_grant_type_refresh_token(context: Context, t
         )
 
 
-def _assert_valid_request(result: Response, entity: OpenId4VCIEntity, exp_access_token:str, exp_refresh_token: str):
+def _assert_valid_request(result: Response, entity: dict, exp_access_token:str, exp_refresh_token: str):
     assert result.status == '201 Created'
     response = json.loads(result.message)
     assert response["access_token"] == exp_access_token
@@ -412,8 +412,8 @@ def _assert_valid_request(result: Response, entity: OpenId4VCIEntity, exp_access
     assert response["token_type"] == "DPOP"
     assert isinstance(response["expires_in"], int)
     assert response["authorization_details"] == None \
-        if not entity.authorization_details and len(entity.authorization_details) == 0 \
-        else entity.authorization_details
+        if not entity["authorization_details"] and len(entity["authorization_details"]) == 0 \
+        else entity["authorization_details"]
 
 def _assert_invalid_request(result: Response, error_desc: str):
     assert result.status == '400'

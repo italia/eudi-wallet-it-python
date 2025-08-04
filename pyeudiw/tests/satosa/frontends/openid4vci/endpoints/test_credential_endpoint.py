@@ -149,7 +149,7 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
         credential_handler, context,
         credential_identifier,credential_configuration_id, error_desc):
     entity = deepcopy(get_mocked_openid4vpi_entity())
-    entity.authorization_details = [
+    entity["authorization_details"] = [
         {
             "type": OPEN_ID_CREDENTIAL_TYPE,
             "credential_configuration_id": "credential_configuration_id_test",
@@ -230,7 +230,7 @@ def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_w
     with patch(JWS_HELPER_VERIFY_MODULE, return_value = value):
         context.request = request_without_open_id_credential
         entity = deepcopy(get_mocked_openid4vpi_entity())
-        entity.c_nonce = "random-nonce-abc123"
+        entity["c_nonce"] = "random-nonce-abc123"
         credential_handler.db_engine.get_by_session_id.return_value = entity
         result = credential_handler.endpoint(context)
         assert_invalid_request_application_json(
@@ -303,8 +303,8 @@ def test_request_without_open_id_credential_for_sd_jwt(credential_handler, conte
 
 def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
     with patch(JWS_HELPER_VERIFY_MODULE, return_value = valid_request_proof_jwt):
-        entity.c_nonce = "random-nonce-abc123"
-        entity.attributes = {
+        entity["c_nonce"] = "random-nonce-abc123"
+        entity["attributes"] = {
             "name": ["Mario"],
             "surname": ["Rossi"],
             "fiscal_number": ["RSSMRA80A01H501T"],
