@@ -1,7 +1,7 @@
 # This file defines an end-to-end integration test flow without Duckle support.
 #
 # To run this integration test, you need to modify the `pyeudiw_backend.yaml` configuration file
-# by adding the following entries:
+# by removing the following entries:
 #   config.duckle.dcql_query
 #
 # Additionally, you must remove the Duckle handler in the `credential_presentation_handlers` section:
@@ -16,7 +16,6 @@ import urllib.parse
 
 import requests
 
-from pyeudiw.jwt.utils import decode_jwt_payload
 from integration_test.initializer.commons import (
     ISSUER_CONF,
     setup_test_db_engine,
@@ -28,7 +27,12 @@ from integration_test.initializer.commons import (
     extract_saml_attributes,
     verify_request_object_jwt
 )
+from integration_test.initializer.deprecatation import show_deprecation_warning
 from integration_test.initializer.settings import TIMEOUT_S
+from pyeudiw.jwt.utils import decode_jwt_payload
+
+# Show deprecation warning for the test
+show_deprecation_warning()
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object

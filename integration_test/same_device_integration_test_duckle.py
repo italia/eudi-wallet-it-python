@@ -5,20 +5,18 @@ import urllib.parse
 
 import requests
 
-from pyeudiw.jwt.utils import decode_jwt_payload
-from integration_test.initializer.commons import (
+from integration_test.initializer.commons_duckle import (
     ISSUER_CONF,
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
     extract_saml_attributes,
-    verify_request_object_jwt
-)
-from integration_test.initializer.commons_duckle import (
-    create_authorize_response_duckle,
+    verify_request_object_jwt,
+    create_authorize_response,
     create_verifiable_presentations
 )
 from integration_test.initializer.settings import TIMEOUT_S
+from pyeudiw.jwt.utils import decode_jwt_payload
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
@@ -66,12 +64,12 @@ request_object_claims = decode_jwt_payload(sign_request_obj.text)
 response_uri = request_object_claims["response_uri"]
 
 # Provide an authentication response
-wallet_response_data = create_authorize_response_duckle(
-    request_object_claims["state"],
+wallet_response_data = create_authorize_response(
     create_verifiable_presentations(
         request_object_claims["nonce"],
         request_object_claims["client_id"]
-    )
+    ),
+    request_object_claims["state"],
 )
 
 authz_response = http_user_agent.post(
