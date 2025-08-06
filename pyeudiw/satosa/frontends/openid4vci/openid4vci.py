@@ -41,7 +41,14 @@ class OpenID4VCIFrontend(FrontendModule):
     :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
     :raise ValueError: if more than one backend is configured
     """
-    el = EndpointsLoader(self.config, self.internal_attributes, self.base_url, self.name)
+    el = EndpointsLoader(
+      config=self.config,
+      internal_attributes=self.internal_attributes,
+      base_url=self.base_url,
+      name=self.name,
+      auth_callback_func=self.auth_req_callback_func,
+      converter=self.converter,
+    )
     url_map = []
     for path, inst in el.endpoint_instances.items():
       url_map.append((f"{self.name}/{path}", inst))
