@@ -2,7 +2,9 @@ from urllib.parse import urlencode
 
 from pydantic import ValidationError
 from satosa.context import Context
+from satosa.internal import InternalData
 from satosa.response import Response, Redirect
+from satosa.attribute_mapping import AttributeMapper
 
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
@@ -10,14 +12,12 @@ from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
     AuthorizationRequest,
     PAR_REQUEST_URI_CTX,
 )
-from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
     CLIENT_ID_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
-from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method
@@ -25,14 +25,23 @@ from pyeudiw.satosa.utils.validation import (
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED,
-    APPLICATION_JSON
 )
+from typing import Callable, Any
 
 AUTHORIZATION_ENDPOINT = "authorization"
 
 class AuthorizationHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+            self, 
+            config: dict, 
+            internal_attributes: dict[str, dict[str, str | list[str]]], 
+            base_url: str, 
+            name: str, 
+            auth_callback: Callable[[Context, Any], Response] | None = None, 
+            converter: AttributeMapper | None = None,
+            *args: Any
+        ):
         """
         Initialize the authorization endpoints class.
         Args:
@@ -41,7 +50,7 @@ class AuthorizationHandler(VCIBaseEndpoint):
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
-        super().__init__(config, internal_attributes, base_url, name)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context) -> Response:
@@ -96,10 +105,33 @@ class AuthorizationHandler(VCIBaseEndpoint):
                     PAR_REQUEST_URI_CTX: self._to_request_uri(entity["request_uri_part"]),
                     CLIENT_ID_CTX: vci_entity.client_id
                 })
-            return AuthorizationResponse(
-                state=vci_entity.state,
-                iss=self.entity_id,
-            ).to_redirect_response(vci_entity.redirect_uri)
+            
+            if not self._auth_callback:
+                raise Exception("missing auth_callback for authorization endpoint")
+            
+            internal_req = InternalData(
+                subject_type="pairwise",
+                requester=vci_entity.client_id,
+                requester_name=None,
+            )
+
+            if not self._converter:
+                raise Exception("missing attribute converter for authorization endpoint")
+
+            # TODO: handle attributes based on the backend
+            internal_req.attributes = self._converter.to_internal_filter(
+                "openid",
+                {}
+            )
+
+            context.target_backend = self.config.get("default_target_backend", "spidSaml2")
+            context.internal_data = internal_req
+
+            return self._auth_callback(
+                context,
+                internal_req
+            )
+
         except (InvalidRequestException, ValidationError, TypeError) as e:
             self._log_error(
                 e.__class__.__name__,
