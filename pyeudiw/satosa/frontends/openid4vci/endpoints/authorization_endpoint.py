@@ -22,6 +22,7 @@ from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method
 )
+from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED,
@@ -96,8 +97,13 @@ class AuthorizationHandler(VCIBaseEndpoint):
 
             if not entity:
                 raise InvalidRequestException(f"request_uri `{req_uri}` not found in storage")
-            
+
             vci_entity = OpenId4VCIEntity(**entity)
+
+            old_session_id = vci_entity.session_id
+
+            vci_entity.session_id = get_session_id(context)
+            self.db_engine.upsert_session(old_session_id, vci_entity.model_dump())
 
             AuthorizationRequest.model_validate(
                 auth_req, context = {
