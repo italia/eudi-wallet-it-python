@@ -76,12 +76,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            validate_oauth_client_attestation(
-                context, 
-                self.dpop_required,
-                self.wallet_attestation_required,
-                self.dpop_signing_alg_values_supported
-            )
             
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             req = self.validate_request(context, entity)

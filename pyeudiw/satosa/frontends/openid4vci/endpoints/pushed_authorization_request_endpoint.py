@@ -23,7 +23,8 @@ from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
-    validate_oauth_client_attestation
+    validate_oauth_client_attestation,
+    validate_dpop
 )
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
@@ -73,13 +74,6 @@ class ParHandler(VCIBaseEndpoint):
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
 
-            oauth_attestation = validate_oauth_client_attestation(
-                context,
-                self.dpop_required,
-                self.wallet_attestation_required,
-                self.dpop_signing_alg_values_supported
-            )
-
             data = self._get_body(context) or {}
 
             client_id = data.get("client_id", "").strip()
@@ -92,12 +86,35 @@ class ParHandler(VCIBaseEndpoint):
                 return self._handle_400(context, "invalid request parameters")
 
             if self.wallet_attestation_required:
-                if oauth_attestation and oauth_attestation["thumbprint"] != client_id:
+                try:
+                    oauth_attestation = validate_oauth_client_attestation(
+                        context,
+                        self.dpop_signing_alg_values_supported
+                    )
+                except InvalidRequestException as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during OAuth client attestation validation in `par` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
+
+                if not oauth_attestation or oauth_attestation["thumbprint"] != client_id:
                     self._log_error(
                         CLASS_NAME,
-                        "invalid client_id parameter for `par`, value not matching with thumbprint of `OAuth-Client-Attestation-PoP`"
+                        "invalid request parameters for `par` endpoint, missing OAuth-Client-Attestation-PoP"
                     )
-                    return self._handle_400(context, "invalid `client_id` parameters")
+                    return self._handle_400(context, "invalid request parameters", Exception("invalid request parameters"))
+
+            if self.dpop_required:
+                try:
+                    validate_dpop(context)
+                except InvalidRequestException as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `par` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
+
 
             request = data.get("request", "").strip()
 
