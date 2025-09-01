@@ -58,7 +58,7 @@ def test_validate_oauth_client_attestation_valid_without_dpop_signing_alg_values
         OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
         OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
     }
-    result = validate_oauth_client_attestation(context, True, True, None)
+    result = validate_oauth_client_attestation(context, None)
     assert isinstance(result, dict)
     assert "thumbprint" in result
     assert result["thumbprint"]
@@ -69,7 +69,7 @@ def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_
         OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
         OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
     }
-    result = validate_oauth_client_attestation(context, True, True, ["ES256", "ES384", "ES512"])
+    result = validate_oauth_client_attestation(context, ["ES256", "ES384", "ES512"])
     assert isinstance(result, dict)
     assert "thumbprint" in result
     assert result["thumbprint"]
@@ -81,22 +81,22 @@ def test_validate_oauth_client_attestation_valid_with_invalid_dpop_signing_alg_v
         OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"
     }
     with pytest.raises(InvalidRequestException):
-        validate_oauth_client_attestation(context, True, True, ["ES384", "ES512"])
+        validate_oauth_client_attestation(context, ["ES384", "ES512"])
 
 
-@pytest.mark.parametrize("headers, dpop_required, wallet_attestation_required", [
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid"}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}, True, True),
-    ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}, True, True),
-    ({}, True, True)
+@pytest.mark.parametrize("headers", [
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
+    ({OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid"}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}),
+    ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}),
+    ({})
 ])
-def test_validate_oauth_client_attestation_invalid(headers, dpop_required, wallet_attestation_required):
+def test_validate_oauth_client_attestation_invalid(headers):
     context = Context()
     context.http_headers = headers
     with pytest.raises(InvalidRequestException):
-        validate_oauth_client_attestation(context, dpop_required, wallet_attestation_required, None)
+        validate_oauth_client_attestation(context, None)

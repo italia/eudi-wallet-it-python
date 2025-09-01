@@ -170,7 +170,7 @@ def test_invalid_jwt_oauth_client_attestation_pop(token_handler, context, pop):
 
 @pytest.mark.parametrize("value,err_descr", [
     ("" , "missing `grant_type` parameter"),
-    (None , "invalid `grant_type` parameter"),
+    (None , "invalid request"),
     ("test", "invalid `grant_type`"),
     ("test ", "invalid `grant_type`"),
     (" ", "missing `grant_type` parameter")
