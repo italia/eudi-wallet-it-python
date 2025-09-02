@@ -33,7 +33,7 @@ from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
     validate_oauth_client_attestation,
-    validate_dpop,
+    validate_oauth_client_attestation_pop,
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 from pyeudiw.tools.content_type import (
@@ -77,6 +77,7 @@ class TokenHandler(VCIBaseEndpoint):
             
             if self.wallet_attestation_required:
                 try:
+                    validate_oauth_client_attestation_pop(context)
                     validate_oauth_client_attestation(
                         context,
                         self.dpop_signing_alg_values_supported
@@ -85,17 +86,6 @@ class TokenHandler(VCIBaseEndpoint):
                     self._log_error(
                         e.__class__.__name__,
                         f"Error during OAuth client attestation validation in `par` endpoint: {e}"
-                    )
-                    return self._handle_400(context, str(e), e)
-
-
-            if self.dpop_required:
-                try:
-                    validate_dpop(context)
-                except InvalidRequestException as e:
-                    self._log_error(
-                        e.__class__.__name__,
-                        f"Error during DPoP validation in `par` endpoint: {e}"
                     )
                     return self._handle_400(context, str(e), e)
 
