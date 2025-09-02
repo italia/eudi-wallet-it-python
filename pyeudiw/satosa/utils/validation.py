@@ -53,21 +53,21 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         raise InvalidRequestException("invalid request method")
 
 
-def validate_dpop(context: Context) -> None:
+def validate_oauth_client_attestation_pop(context: Context) -> None:
     """
-    Validates the presence of the DPoP proof in the request headers.
+    Validates the presence of the OAuth-Client-Attestation-PoP header in the request.
     Args:
         context (Context): The SATOSA context containing the HTTP request.
     Raises:
-        InvalidRequestException: If the DPoP proof header is missing.
+        InvalidRequestException: If the OAuth-Client-Attestation-PoP header is missing.
     """
     header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
 
-    #TODO: add dpop validation
+    #TODO: add further validation of the PoP header
 
     if not header_pop:
         logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header")
-        raise InvalidRequestException("Missing DPoP proof JWT header")
+        raise InvalidRequestException("Missing OAuth-Client-Attestation-PoP header")
 
 def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_supported: list[str] | None) -> Optional[dict]:
     """
