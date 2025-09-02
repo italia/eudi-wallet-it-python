@@ -44,7 +44,7 @@ class CredentialHandler(BaseCredentialEndpoint):
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
         c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context = {
-            AUTHORIZATION_DETAILS_CTX: entity["authorization_details"]
+            AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})
         })
 
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
