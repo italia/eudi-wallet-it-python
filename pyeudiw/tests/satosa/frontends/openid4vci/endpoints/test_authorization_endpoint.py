@@ -8,6 +8,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint import AuthorizationHandler
+from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     MOCK_PYEUDIW_FRONTEND_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
@@ -113,57 +114,81 @@ def test_invalid_authorization_request_in_GET(authorization_handler, context, cl
         err_descr
     )
 
-# def test_valid_authorization_request_in_GET(authorization_handler, context):
-#    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
-#    _get_context(context)
-#    context.qs_params = {
-#        "client_id" : "client123",
-#        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
-#    }
-#    _assert_response(
-#        authorization_handler.endpoint(context),
-#        'example.com/openid4vcimock'
-#    )
+def test_valid_authorization_request_in_GET(authorization_handler, context):
+    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
+    _get_context(context)
+    context.qs_params = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    authorization_handler._auth_callback = Mock(return_value=AuthorizationResponse(
+            state="xyz456",
+            iss=authorization_handler.entity_id,
+        ).to_redirect_response("https://client.com/openid4vcimock")
+    )
+    authorization_handler._converter = Mock()
+    _assert_response(
+        authorization_handler.endpoint(context),
+        'example.com/openid4vcimock'
+    )
 
-# def test_valid_authorization_request_in_GET_with_credential_issuer(context):
-#     config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
-#     authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
-#     authorization_handler.db_engine = Mock()
-#     authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
-#     _get_context(context)
-#     context.qs_params = {
-#         "client_id" : "client123",
-#         "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
-#     }
-#     _assert_response(
-#         authorization_handler.endpoint(context),
-#         "https://example.com/issuer"
-#     )
+def test_valid_authorization_request_in_GET_with_credential_issuer(context):
+    config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
+    authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    authorization_handler.db_engine = Mock()
+    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
+    _get_context(context)
+    context.qs_params = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    authorization_handler._auth_callback = Mock(return_value=AuthorizationResponse(
+            state="xyz456",
+            iss=authorization_handler.entity_id,
+        ).to_redirect_response("https://client.com/openid4vcimock")
+    )
+    authorization_handler._converter = Mock()
+    _assert_response(
+        authorization_handler.endpoint(context),
+        "https://example.com/issuer"
+    )
 
-# def test_valid_authorization_request_in_POST(authorization_handler, context):
-#    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
-#    context.request = {
-#        "client_id" : "client123",
-#        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
-#    }
-#    _assert_response(
-#        authorization_handler.endpoint(context),
-#        'example.com/openid4vcimock'
-#    )
+def test_valid_authorization_request_in_POST(authorization_handler, context):
+    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
+    context.request = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    authorization_handler._auth_callback = Mock(return_value=AuthorizationResponse(
+            state="xyz456",
+            iss=authorization_handler.entity_id,
+        ).to_redirect_response("https://client.com/openid4vcimock")
+    )
+    authorization_handler._converter = Mock()
+    _assert_response(
+        authorization_handler.endpoint(context),
+        'example.com/openid4vcimock'
+    )
 
-# def test_valid_authorization_request_in__with_credential_issuer(context):
-#     config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
-#    authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
-#    authorization_handler.db_engine = Mock()
-#    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
-#    context.request = {
-#        "client_id" : "client123",
-#        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
-#    }
-#    _assert_response(
-#        authorization_handler.endpoint(context),
-#        "https://example.com/issuer"
-#    )
+def test_valid_authorization_request_in__with_credential_issuer(context):
+    config = get_pyeudiw_frontend_config_with_openid_credential_issuer("https://example.com/issuer")
+    authorization_handler = AuthorizationHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    authorization_handler.db_engine = Mock()
+    authorization_handler.db_engine.search_session_by_field.return_value = get_mocked_openid4vpi_entity()
+    context.request = {
+        "client_id" : "client123",
+        "request_uri" : "urn:ietf:params:oauth:request_uri:request_uri_part"
+    }
+    authorization_handler._auth_callback = Mock(return_value=AuthorizationResponse(
+            state="xyz456",
+            iss=authorization_handler.entity_id,
+        ).to_redirect_response("https://client.com/openid4vcimock")
+    )
+    authorization_handler._converter = Mock()
+    _assert_response(
+        authorization_handler.endpoint(context),
+        "https://example.com/issuer"
+    )
 
 def _assert_invalid_request_redirect_uri(result: Response, error_desc: str):
     assert result.status == '302 Found'
