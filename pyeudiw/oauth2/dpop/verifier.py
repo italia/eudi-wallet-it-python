@@ -1,68 +1,16 @@
 import base64
 import hashlib
 import logging
-import uuid
 
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.jws_helper import JWSHelper
+
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop.exceptions import InvalidDPoP, InvalidDPoPAth, InvalidDPoPKid
 from pyeudiw.oauth2.dpop.schema import DPoPTokenHeaderSchema, DPoPTokenPayloadSchema
-from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
-
-
-class DPoPIssuer:
-    """
-    Helper class for generate DPoP proofs.
-    """
-
-    def __init__(self, htu: str, token: str, private_jwk: dict):
-        """
-        Generates an instance of DPoPIssuer.
-
-        :param htu: a string representing the htu value.
-        :type htu: str
-        :param token: a string representing the token value.
-        :type token: str
-        :param private_jwk: a dict representing the private JWK of DPoP.
-        :type private_jwk: dict
-        """
-        self.token = token
-        self.private_jwk = private_jwk
-        self.signer = JWSHelper(private_jwk)
-        self.htu = htu
-
-    @property
-    def proof(self):
-        """
-        Generates and returns the DPoP proof.
-
-        :returns: The DPoP proof as a JWT.
-        :rtype: str
-        """
-
-        # Define the payload for the DPoP proof
-        data = {
-            "jti": str(uuid.uuid4()),
-            "htm": "GET",
-            "htu": self.htu,
-            "iat": iat_now(),
-            "ath": base64.urlsafe_b64encode(
-                hashlib.sha256(self.token.encode()).digest()
-            )
-            .rstrip(b"=")
-            .decode(),
-        }
-        jwt = self.signer.sign(
-            data,
-            protected={"typ": "dpop+jwt", "jwk": self.private_jwk.serialize()},
-            kid_in_header=False,
-        )
-        return jwt
-
 
 class DPoPVerifier:
     """
@@ -130,8 +78,11 @@ class DPoPVerifier:
         :rtype: bool
         """
         jws_verifier = JWSHelper(jwks=[self.public_jwk])
+        dpop_valid = False
         try:
-            dpop_valid = jws_verifier.verify(self.proof)
+            dpop_data = jws_verifier.verify(self.proof)
+            if dpop_data is not None:
+                dpop_valid = True
         except KidError as e:
             raise InvalidDPoPKid(
                 ("DPoP proof validation error, " f"kid does not match: {e}")
@@ -159,4 +110,5 @@ class DPoPVerifier:
         _ath = hashlib.sha256(self.dpop_token.encode())
         _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).rstrip(b"=").decode()
         proof_valid = _ath_b64 == payload["ath"]
+        
         return dpop_valid and proof_valid
