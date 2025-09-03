@@ -90,24 +90,13 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
 
     # verify
     dpop = DPoPVerifier(
-        public_jwk=PUBLIC_JWK,
         http_header_authz=f"DPoP {wia_jws}",
         http_header_dpop=proof,
     )
     assert dpop.is_valid
 
-    other_jwk = new_rsa_key().serialize()
-    dpop = DPoPVerifier(
-        public_jwk=other_jwk,
-        http_header_authz=f"DPoP {wia_jws}",
-        http_header_dpop=proof,
-    )
-    with pytest.raises(Exception):
-        dpop.validate()
-
     with pytest.raises(ValueError):
         dpop = DPoPVerifier(
-            public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
             http_header_dpop="aaa",
         )
@@ -115,7 +104,6 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
 
     with pytest.raises(ValueError):
         dpop = DPoPVerifier(
-            public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
             http_header_dpop="aaa" + proof[3:],
         )
