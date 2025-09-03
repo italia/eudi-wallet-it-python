@@ -28,6 +28,7 @@ from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
@@ -86,6 +87,25 @@ class TokenHandler(VCIBaseEndpoint):
                     self._log_error(
                         e.__class__.__name__,
                         f"Error during OAuth client attestation validation in `par` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
+                
+            if self.dpop_required:
+                if not context.http_headers or ("DPoP" not in context.http_headers):
+                    raise InvalidRequestException("Missing DPoP header")
+                
+                dpop = context.http_headers.get("DPoP")
+
+                try:
+                    dpop_verifier = DPoPVerifier(
+                        http_header_dpop=dpop
+                    )
+                    if not dpop_verifier.is_valid:
+                        raise InvalidRequestException("Invalid DPoP proof")
+                except ValueError as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `token` endpoint: {e}"
                     )
                     return self._handle_400(context, str(e), e)
 

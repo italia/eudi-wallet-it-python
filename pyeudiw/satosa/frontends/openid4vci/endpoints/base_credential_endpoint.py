@@ -25,8 +25,8 @@ from pyeudiw.satosa.schemas.metadata import (
 )
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
-    validate_request_method, validate_content_type,
-    validate_oauth_client_attestation
+    validate_request_method, 
+    validate_content_type,
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification_with_placeholder
@@ -36,6 +36,7 @@ from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSO
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_mdoc_template
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 
 FIELD_TRANSFORMS = {
     "portrait": {
@@ -76,6 +77,27 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
+
+            if self.dpop_required:
+                if not context.http_headers or ("DPoP" not in context.http_headers) or ("Authorization" not in context.http_headers):
+                    raise InvalidRequestException("Missing DPoP and/or Authorization header")
+                
+                dpop = context.http_headers.get("DPoP")
+                authz = context.http_headers.get("Authorization")
+                
+                try:
+                    dpop_verifier = DPoPVerifier(
+                        http_header_dpop=dpop,
+                        http_header_authz=authz
+                    )
+                    if not dpop_verifier.is_valid:
+                        raise InvalidRequestException("Invalid DPoP proof")
+                except ValueError as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `token` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
             
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             req = self.validate_request(context, entity)
