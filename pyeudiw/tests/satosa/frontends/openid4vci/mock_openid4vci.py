@@ -454,6 +454,8 @@ def get_mocked_satosa_context(method="POST", content_type=FORM_URLENCODED, heade
                 OAUTH_CLIENT_ATTESTATION_HEADER: oauth_client_attestation_header,
                 "HTTP_USER_AGENT": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
             }
+    elif HTTP_CONTENT_TYPE_HEADER not in headers:
+        headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     context = Context()
     context.request_method = method
     context.http_headers = headers
