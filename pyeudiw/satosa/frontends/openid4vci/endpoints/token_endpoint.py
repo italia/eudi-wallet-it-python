@@ -28,11 +28,13 @@ from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
 )
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
     validate_oauth_client_attestation,
+    validate_oauth_client_attestation_pop,
     OAUTH_CLIENT_ATTESTATION_POP_HEADER
 )
 from pyeudiw.tools.content_type import (
@@ -73,12 +75,39 @@ class TokenHandler(VCIBaseEndpoint):
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
-            validate_oauth_client_attestation(
-                context,
-                self.dpop_required,
-                self.wallet_attestation_required,
-                self.dpop_signing_alg_values_supported
-            )
+            
+            if self.wallet_attestation_required:
+                try:
+                    validate_oauth_client_attestation_pop(context)
+                    validate_oauth_client_attestation(
+                        context,
+                        self.dpop_signing_alg_values_supported
+                    )
+                except InvalidRequestException as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during OAuth client attestation validation in `par` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
+                
+            if self.dpop_required:
+                if not context.http_headers or ("DPoP" not in context.http_headers):
+                    raise InvalidRequestException("Missing DPoP header")
+                
+                dpop = context.http_headers.get("DPoP")
+
+                try:
+                    dpop_verifier = DPoPVerifier(
+                        http_header_dpop=dpop
+                    )
+                    if not dpop_verifier.is_valid:
+                        raise InvalidRequestException("Invalid DPoP proof")
+                except ValueError as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `token` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
 
             oauth_client_attestation = self._get_oauth_client_attestation(context, self.wallet_attestation_required)
             if oauth_client_attestation:

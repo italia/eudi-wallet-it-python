@@ -6,6 +6,8 @@ import pytest
 from satosa.context import Context
 from satosa.response import Response
 
+from cryptojwt.jwk.ec import new_ec_key
+
 from pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint import TokenHandler, TokenTypsEnum
 from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
     AUTHORIZATION_CODE_GRANT,
@@ -40,6 +42,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     mock_deserialized_overridable
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
 
 
 def mock_sign(*args, **kwargs):
@@ -170,7 +173,7 @@ def test_invalid_jwt_oauth_client_attestation_pop(token_handler, context, pop):
 
 @pytest.mark.parametrize("value,err_descr", [
     ("" , "missing `grant_type` parameter"),
-    (None , "invalid `grant_type` parameter"),
+    (None , "invalid request"),
     ("test", "invalid `grant_type`"),
     ("test ", "invalid `grant_type`"),
     (" ", "missing `grant_type` parameter")
@@ -387,6 +390,34 @@ def test_valid_with_request_with_grant_type_refresh_token_and_invalid_oauth_clie
     context = get_mocked_satosa_context(headers=headers)
     _assert_test_valid_request_with_grant_type_refresh_token(context, token_handler, valid_request_authorization_code)
 
+def test_valid_with_request_with_dpop_enabled(valid_request_authorization_code):
+    token_handler = TokenHandler(
+        mock_deserialized_overridable(
+            MOCK_PYEUDIW_FRONTEND_CONFIG, 
+            {
+                "security": {
+                    "dpop_required": True, 
+                    "wallet_attestation_required": False
+                }
+            }
+        ),
+        MOCK_INTERNAL_ATTRIBUTES, 
+        MOCK_BASE_URL, 
+        MOCK_NAME
+    )
+
+    dpop = DPoPIssuer(
+        htu="https://example.org/redirect", 
+        private_jwk=new_ec_key("P-256"), 
+        token=None
+    ).proof
+
+    headers = {"DPoP": dpop}
+    token_handler.db_engine = Mock()
+    headers[HTTP_CONTENT_TYPE_HEADER] = FORM_URLENCODED
+    headers["HTTP_USER_AGENT"] = "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
+    context = get_mocked_satosa_context(headers=headers)
+    _assert_test_valid_request_with_grant_type_refresh_token(context, token_handler, valid_request_authorization_code)
 
 def _assert_test_valid_request_with_grant_type_refresh_token(context: Context, token_handler: TokenHandler, valid_request_refresh_token: dict):
     with (patch("pyeudiw.jwt.jws_helper.JWSHelper.sign", side_effect = mock_sign),
