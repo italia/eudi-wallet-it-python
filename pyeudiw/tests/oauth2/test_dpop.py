@@ -3,7 +3,6 @@ import hashlib
 
 import pytest
 from cryptojwt.jwk.ec import new_ec_key
-from cryptojwt.jwk.rsa import new_rsa_key
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
@@ -65,7 +64,9 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert header["alg"]
 
     new_dpop = DPoPIssuer(
-        htu="https://example.org/redirect", token=wia_jws, private_jwk=private_jwk
+        htu="https://example.org/redirect", 
+        private_jwk=private_jwk, 
+        token=wia_jws
     )
     proof = new_dpop.proof
     assert proof
