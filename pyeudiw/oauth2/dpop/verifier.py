@@ -85,11 +85,9 @@ class DPoPVerifier:
         :rtype: bool
         """
         jws_verifier = JWSHelper(jwks=[self.public_jwk])
-        dpop_valid = False
+        
         try:
-            dpop_data = jws_verifier.verify(self.proof)
-            if dpop_data is not None:
-                dpop_valid = True
+            jws_verifier.verify(self.proof)
         except KidError as e:
             raise InvalidDPoPKid(
                 ("DPoP proof validation error, " f"kid does not match: {e}")
@@ -110,6 +108,6 @@ class DPoPVerifier:
             _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).rstrip(b"=").decode()
             proof_valid = _ath_b64 == payload["ath"]
 
-            return dpop_valid and proof_valid
+            return proof_valid
         
-        return dpop_valid
+        return True
