@@ -3,6 +3,7 @@ import hashlib
 import logging
 import uuid
 
+from typing import Optional
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.tools.utils import iat_now
 
@@ -19,14 +20,14 @@ class DPoPIssuer:
     Helper class for generate DPoP proofs.
     """
 
-    def __init__(self, htu: str, token: str, private_jwk: dict | ECKey | RSAKey):
+    def __init__(self, htu: str, private_jwk: dict | ECKey | RSAKey, token: Optional[str] = None) -> None:
         """
         Generates an instance of DPoPIssuer.
 
         :param htu: a string representing the htu value.
         :type htu: str
         :param token: a string representing the token value.
-        :type token: str
+        :type token: Optional[str]
         :param private_jwk: a dict representing the private JWK of DPoP.
         :type private_jwk: dict | ECKey | RSAKey
         """
@@ -55,12 +56,13 @@ class DPoPIssuer:
             "htm": "GET",
             "htu": self.htu,
             "iat": iat_now(),
-            "ath": base64.urlsafe_b64encode(
-                hashlib.sha256(self.token.encode()).digest()
-            )
-            .rstrip(b"=")
-            .decode(),
         }
+
+        if self.token:
+            data["ath"] = base64.urlsafe_b64encode(
+                hashlib.sha256(self.token.encode()).digest()
+            ).rstrip(b"=").decode()
+
         jwt = self.signer.sign(
             data,
             protected={"typ": "dpop+jwt", "jwk": self.private_jwk.serialize()},
