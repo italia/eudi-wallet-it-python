@@ -52,7 +52,24 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-def validate_oauth_client_attestation(context: Context, dpop_required: bool, wallet_attestation_required: bool, dpop_signing_alg_values_supported: list[str] | None) -> Optional[dict]:
+
+def validate_oauth_client_attestation_pop(context: Context) -> None:
+    """
+    Validates the presence of the OAuth-Client-Attestation-PoP header in the request.
+    Args:
+        context (Context): The SATOSA context containing the HTTP request.
+    Raises:
+        InvalidRequestException: If the OAuth-Client-Attestation-PoP header is missing.
+    """
+    header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
+
+    #TODO: add further validation of the PoP header
+
+    if not header_pop:
+        logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header")
+        raise InvalidRequestException("Missing OAuth-Client-Attestation-PoP header")
+
+def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_supported: list[str] | None) -> Optional[dict]:
     """
     Validates the presence and correctness of OAuth-Client-Attestation headers in the request.
 
@@ -77,10 +94,9 @@ def validate_oauth_client_attestation(context: Context, dpop_required: bool, wal
         InvalidRequestException: If any required header is missing, malformed, or fails verification.
     """
     header_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
-    header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
-    if (not header_attestation and wallet_attestation_required) or (not header_pop and dpop_required):
-        header_value = OAUTH_CLIENT_ATTESTATION_HEADER if not header_attestation else OAUTH_CLIENT_ATTESTATION_POP_HEADER
-        logger.error(f"Missing {header_value} header")
+    
+    if not header_attestation:
+        logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_HEADER} header")
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
     
     try:
@@ -89,9 +105,9 @@ def validate_oauth_client_attestation(context: Context, dpop_required: bool, wal
             cnf = payload["cnf"]
             jws_helper = JWSHelper(cnf)
 
-            if dpop_signing_alg_values_supported and jws_helper.jwks[0].alg not in dpop_signing_alg_values_supported:
+            if pop_signing_alg_values_supported and jws_helper.jwks[0].alg not in pop_signing_alg_values_supported:
                 raise InvalidRequestException(
-                    f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {dpop_signing_alg_values_supported}")
+                    f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {pop_signing_alg_values_supported}")
 
             jws_helper.verify(header_attestation)
 

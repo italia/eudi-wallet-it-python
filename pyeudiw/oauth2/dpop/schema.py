@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, HttpUrl
 
@@ -28,4 +28,4 @@ class DPoPTokenPayloadSchema(BaseModel):
     htm: Literal["GET", "POST", "get", "post"]
     htu: HttpUrl
     iat: int
-    ath: str
+    ath: Optional[str] = None
