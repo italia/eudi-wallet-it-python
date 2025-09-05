@@ -20,7 +20,7 @@ from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
-from pyeudiw.oauth2.dpop import DPoPIssuer
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
 from pyeudiw.satosa.backends.openid4vp.openid4vp import OpenID4VPBackend
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.holder import SDJWTHolder

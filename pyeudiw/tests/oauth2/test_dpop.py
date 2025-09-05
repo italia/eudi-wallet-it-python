@@ -3,11 +3,11 @@ import hashlib
 
 import pytest
 from cryptojwt.jwk.ec import new_ec_key
-from cryptojwt.jwk.rsa import new_rsa_key
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
-from pyeudiw.oauth2.dpop import DPoPIssuer, DPoPVerifier
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 from pyeudiw.tools.utils import iat_now
 
 PRIVATE_JWK_EC = new_ec_key("P-256")
@@ -64,7 +64,9 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert header["alg"]
 
     new_dpop = DPoPIssuer(
-        htu="https://example.org/redirect", token=wia_jws, private_jwk=private_jwk
+        htu="https://example.org/redirect", 
+        private_jwk=private_jwk, 
+        token=wia_jws
     )
     proof = new_dpop.proof
     assert proof
@@ -89,24 +91,13 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
 
     # verify
     dpop = DPoPVerifier(
-        public_jwk=PUBLIC_JWK,
         http_header_authz=f"DPoP {wia_jws}",
         http_header_dpop=proof,
     )
     assert dpop.is_valid
 
-    other_jwk = new_rsa_key().serialize()
-    dpop = DPoPVerifier(
-        public_jwk=other_jwk,
-        http_header_authz=f"DPoP {wia_jws}",
-        http_header_dpop=proof,
-    )
-    with pytest.raises(Exception):
-        dpop.validate()
-
     with pytest.raises(ValueError):
         dpop = DPoPVerifier(
-            public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
             http_header_dpop="aaa",
         )
@@ -114,7 +105,6 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
 
     with pytest.raises(ValueError):
         dpop = DPoPVerifier(
-            public_jwk=PUBLIC_JWK,
             http_header_authz=f"DPoP {wia_jws}",
             http_header_dpop="aaa" + proof[3:],
         )
