@@ -75,8 +75,6 @@ config:
       session:
         timeout: 6
 
-  default_target_backend: "OpenID4VP"
-
   jwt:
     default_sig_alg: ES256  # or RS256. Please note that this signature alg MUST be compliant with the private keys used for the signature. X.509 certificates MUST be therefore ECDSA using ES, and RSA using RS
     default_enc_alg: RSA-OAEP

@@ -124,14 +124,8 @@ class AuthorizationHandler(VCIBaseEndpoint):
             if not self._converter:
                 raise Exception("missing attribute converter for authorization endpoint")
 
-            # TODO: handle attributes based on the backend
-            internal_req.attributes = self._converter.to_internal_filter(
-                "openid",
-                {}
-            )
-
-            context.target_backend = self.config.get("default_target_backend", "spidSaml2")
             context.internal_data = internal_req
+            context.decorate(Context.KEY_TARGET_ENTITYID, "wallet_frontend_authn")
 
             return self._auth_callback(
                 context,
