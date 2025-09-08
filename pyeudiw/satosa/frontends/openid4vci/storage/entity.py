@@ -28,7 +28,8 @@ class OpenId4VCIEntity(BaseModel):
   attributes: Optional[dict] = None
 
   @staticmethod
-  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest) -> "OpenId4VCIEntity":
+  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest,
+                 accepted_referers: Optional[List[str]] = None) -> "OpenId4VCIEntity":
       if not context.state:
           raise ValueError("Invalid context state")
 
@@ -36,7 +37,7 @@ class OpenId4VCIEntity(BaseModel):
           request_uri_part=request_uri_part,
           state=par_request.state,
           session_id=context.state["SESSION_ID"],
-          remote_flow_typ=detect_flow_typ(context).value,
+          remote_flow_typ=detect_flow_typ(context, accepted_referers).value,
           client_id=par_request.client_id,
           code_challenge=par_request.code_challenge,
           code_challenge_method=par_request.code_challenge_method,

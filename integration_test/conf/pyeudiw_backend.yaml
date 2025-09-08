@@ -344,6 +344,14 @@ config:
 
         private_keys: *metadata_jwks
 
+  security:
+    accepted_http_referers: # list of referers that indicate a wallet-originated request. Requests from these URLs will use SAME_DEVICE flow even on desktop.
+      - https://eudi-wallet.example.it
+      - https://eudi-wallet.example.org
+      - https://eudi-wallet.example.com
+      - https://eudi-wallet.example.eu
+      - https://eudi-wallet.example.dev
+
   # Mongodb database configuration
   storage:
     mongo_db:

@@ -177,6 +177,14 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.vp_formats.vc+sd-jwt.sd-jwt_alg_values | VP formats specification algorithms for SD-JWT                                           | [ES256, ES384]                                                   |
 | config.metadata.vp_formats.vc+sd-jwt.kb-jwt_alg_values | VP formats specification algorithms for Key Binding JWT                                  | [ES256, ES384]                                                   |
 
+### Security
+
+Root section for security configuration.
+
+| Key                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| config.security.accepted_http_referers      | A optional list of trusted referer URLs or substrings which, when present in the HTTP_REFERER header of an incoming request, indicate that the request originates from a wallet already holding credentials (e.g., PID). <br/> If a request comes from one of these referers, the system will force the same-device flow (SAME_DEVICE) even if the client is on a desktop or non-mobile device. <br/> This allows use cases where a user already has a credential in their wallet and is scanning a QR code to obtain a new credential, enabling authentication using the existing PID without requiring a cross-device flow. |
+
 ## NginX
 
 Configure an httpd fronted such NginX, an example is available within the `uwsgi_setup` folder of [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid/tree/master/example/uwsgi_setup)
