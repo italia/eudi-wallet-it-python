@@ -47,7 +47,7 @@ class ParHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
-        self.accepted_http_referers = self.config.get("security", {}).get("accepted_http_referers")
+        self.accepted_referer_criteria = self.config.get("security", {}).get("accepted_referer_criteria")
 
     def endpoint(self, context: Context):
         """
@@ -175,7 +175,7 @@ class ParHandler(VCIBaseEndpoint):
         Raises:
             Exception: If the DB operation fails.
         """
-        entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request, self.accepted_http_referers)
+        entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request, self.accepted_referer_criteria)
         try:
             self.db_engine.init_session(entity.session_id, entity.state, entity.remote_flow_typ)
         except Exception as e500:
