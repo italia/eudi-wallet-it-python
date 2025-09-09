@@ -9,7 +9,8 @@ from pyeudiw.tools.mobile import is_smartphone
 
 logger = logging.getLogger(__name__)
 
-def detect_flow_typ(context: Context, referer_criteria: Optional[List[str]] = None) -> RemoteFlowType:
+def detect_flow_typ(context: Context,
+                    force_same_device_flow_referer_criteria: Optional[List[str]] = None) -> RemoteFlowType:
     """
     Identify or guess the remote flow type based on the authentication context.
 
@@ -21,9 +22,9 @@ def detect_flow_typ(context: Context, referer_criteria: Optional[List[str]] = No
 
     :param context: the context of the user authentication
     :type context: Context
-    :param referer_criteria: list of regex patterns (as strings) that, if matched
+    :param force_same_device_flow_referer_criteria: list of regex patterns (as strings) that, if matched
                              against the HTTP_REFERER header, indicate a wallet-originated request
-    :type referer_criteria: Optional[List[str]]
+    :type force_same_device_flow_referer_criteria: Optional[List[str]]
     :returns: the detected remote flow type
     :rtype: RemoteFlowType
     """
@@ -31,10 +32,10 @@ def detect_flow_typ(context: Context, referer_criteria: Optional[List[str]] = No
         logger.info("Flow detected as SAME_DEVICE because User-Agent indicates smartphone.")
         return RemoteFlowType.SAME_DEVICE
 
-    referer = context.http_headers.get("HTTP_REFERER", "")
-
-    if context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site" and referer_criteria:
-        for pattern in referer_criteria:
+    if (context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site"
+            and force_same_device_flow_referer_criteria):
+        referer = context.http_headers.get("HTTP_REFERER", "")
+        for pattern in force_same_device_flow_referer_criteria:
             if re.match(pattern, referer):
                 logger.info(f"Flow detected as SAME_DEVICE because Referer '{referer}' matched regex '{pattern}'.")
                 return RemoteFlowType.SAME_DEVICE

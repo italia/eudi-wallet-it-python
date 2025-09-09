@@ -344,11 +344,10 @@ config:
 
         private_keys: *metadata_jwks
 
-  security:
-    accepted_referer_criteria: # Optional list of regex patterns matched against the HTTP_REFERER header. If the list is empty or the key is missing, no referer-based enforcement is applied and all referers are accepted. If any regex matches, the flow is forced to SAME_DEVICE.
-      - "^https://eudi-wallet\\.example\\.(it|org|com|eu|dev)"
-      - "^https://wallets\\.trusted-domain\\.example\\.it"
-      - "^https://mobile-app\\.[a-z]+\\.example\\.net"
+  force_same_device_flow_referer_criteria: # Optional list of regex patterns matched against the HTTP_REFERER header. If the list is empty or the key is missing, no referer-based enforcement is applied and all referers are accepted. If any regex matches, the flow is forced to SAME_DEVICE.
+    - "^https://eudi-wallet\\.example\\.(it|org|com|eu|dev)"
+    - "^https://wallets\\.trusted-domain\\.example\\.it"
+    - "^https://mobile-app\\.[a-z]+\\.example\\.net"
 
   # Mongodb database configuration
   storage:
