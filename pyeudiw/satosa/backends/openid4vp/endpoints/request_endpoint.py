@@ -9,7 +9,7 @@ from satosa.response import Response
 
 from pyeudiw.jwt.exceptions import JWSSigningError
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.authorization_request import build_authorization_request_claims
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
