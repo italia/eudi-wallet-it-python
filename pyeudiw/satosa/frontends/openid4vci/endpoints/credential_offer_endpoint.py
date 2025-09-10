@@ -20,7 +20,7 @@ from pyeudiw.tools.content_type import (
 
 class CredentialOfferHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the Credential offer endpoints class.
         Args:

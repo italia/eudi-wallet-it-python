@@ -5,7 +5,7 @@ from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import GET_ACCEPTED_METHODS, VCIBaseEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException, InvalidScopeException
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
@@ -29,7 +29,7 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
         A Response object.
     """
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the Credential offer qr code endpoints class.
         Args:
@@ -39,8 +39,8 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
         super().__init__(config, internal_attributes, base_url, name)
-        self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui_template"])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui"])
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
 
     def endpoint(self, context: Context):
@@ -99,8 +99,18 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
             ("qrcode.color", qrcode_settings.get("color")),
             ("qrcode.expiration_time", qrcode_settings.get("expiration_time")),
             ("qrcode.logo_path", qrcode_settings.get("logo_path")),
-            ("qrcode.ui_template", qrcode_settings.get("ui_template")),
         ])
+        ui = qrcode_settings.get("ui")
+        self._validate_required_configs([
+            ("qrcode.ui", ui),
+        ])
+        self._validate_required_configs([
+            ("qrcode.ui.static_storage_url", ui.get("static_storage_url")),
+            ("qrcode.ui.qrcode_template", ui.get("qrcode_template")),
+            ("qrcode.ui.template_folder", ui.get("template_folder")),
+            ("qrcode.ui.authorization_error_template", ui.get("authorization_error_template")),
+        ])
+        self._ui = ui
         credential_configurations = self.config_utils.get_credential_configurations()
         self._validate_required_configs([
             ("credential_configurations", credential_configurations)

@@ -65,12 +65,17 @@ class VCIBaseEndpoint(BaseEndpoint):
         elif isinstance(e, ValidationError):
             errors = e.errors()
             for err in errors:
-                parameter_name = err['loc'][0]
-                self._log_error(
-                    e.__class__.__name__,
-                    f"invalid {parameter_name} in request `{endpoint_name}` endpoint"
-                )
-                return f"invalid `{parameter_name}` parameter"
+                parameter_name = err['loc'][0] if len(err['loc']) > 0 else None
+                if parameter_name:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}"
+                    )
+                else:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid request in `{endpoint_name}` endpoint: {err['msg']}"
+                    )
             return "invalid request"
         else:
             raise e
@@ -114,3 +119,42 @@ class VCIBaseEndpoint(BaseEndpoint):
             return f"{self._backend_url}/{status_path}"
         except AttributeError:
             return None
+
+    @property
+    def dpop_required(self) -> bool:
+        """
+        Check if DPoD is required.
+        Returns:
+            bool: True if DPoD is required, False otherwise. Defaults to True.
+        """
+        return self.config.get("security", {}).get("dpop_required", True)
+
+    @property
+    def wallet_attestation_required(self) -> bool:
+        """
+        Check if wallet attestation is required.
+        Returns:
+            bool: True if wallet_attestation is required, False otherwise. Defaults to True.
+        """
+        return self.config.get("security", {}).get("wallet_attestation_required", True)
+
+    @property
+    def dpop_signing_alg_values_supported(self) -> list[str] | None:
+        """
+        Get the supported DPoP signing algorithms.
+        Returns:
+            list[str]: List of supported DPoP signing algorithms.
+        """
+        authz_server = self.config_utils.get_oauth_authorization_server()
+        if authz_server:
+            return authz_server.dpop_signing_alg_values_supported
+        return None
+    
+    @property
+    def signed_par_request(self) -> str:
+        """
+        Check if signed par request is required.
+        Returns:
+            str: "true", "false" or "both". Defaults to "true".
+        """
+        return self.config.get("security", {}).get("signed_par_request", "true").lower()

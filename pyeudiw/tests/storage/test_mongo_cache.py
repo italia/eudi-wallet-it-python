@@ -10,7 +10,7 @@ class TestMongoCache:
     @pytest.fixture(autouse=True)
     def create_storage_instance(self):
         self.cache = MongoCache(
-            {"db_name": "eudiw"},
+            {"db_name": "pyeudiw_test"},
             f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
             {},
         )

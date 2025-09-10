@@ -3,6 +3,7 @@ import json
 import unittest.mock
 import urllib.parse
 import uuid
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -19,7 +20,7 @@ from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
-from pyeudiw.oauth2.dpop import DPoPIssuer
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
 from pyeudiw.satosa.backends.openid4vp.openid4vp import OpenID4VPBackend
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.holder import SDJWTHolder
@@ -82,6 +83,7 @@ mdoci = MdocCborIssuer(
         "state_or_province_name": "California",
         "locality_name": "San Francisco",
         "organization_name": "Micov",
+        "common_name": "My Company",
         "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
         "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
         "san_url": "https://credential-issuer.example.org"
@@ -1166,7 +1168,11 @@ class TestOpenID4VPBackend:
         assert document
 
         assert document["request_object"]["wallet_metadata"] == {
-            "client_id_prefixes_supported": None,
+            'authorization_endpoint': None,
+            'request_object_signing_alg_values_supported': None,
+            'response_modes_supported': None,
+            'response_types_supported': None,
+            "client_id_schemes_supported": None,
             "alg_values_supported": ["ES256"],
             "vp_formats_supported": {
                 "dc+sd-jwt": {

@@ -6,7 +6,7 @@ from satosa.response import Response
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.nonce_response import NonceResponse
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidRequestException,
     InvalidScopeException
@@ -24,7 +24,7 @@ from pyeudiw.tools.content_type import (
 
 class NonceHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the nonce endpoint class.
         Args:
@@ -35,7 +35,7 @@ class NonceHandler(VCIBaseEndpoint):
         """
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context) -> Response:
         """

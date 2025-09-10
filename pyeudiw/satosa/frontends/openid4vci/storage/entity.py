@@ -7,7 +7,7 @@ from satosa.context import Context
 
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import AuthorizationDetail
-from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest
+from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest, SignedParRequest
 
 
 class OpenId4VCIEntity(BaseModel):
@@ -23,17 +23,21 @@ class OpenId4VCIEntity(BaseModel):
   redirect_uri: str
   authorization_details: Optional[List[AuthorizationDetail]] = None
   scope: Optional[str] = None
-  c_nonce: str = None
+  c_nonce: Optional[str] = None
   finalized: bool = False
   attributes: Optional[dict] = None
 
   @staticmethod
-  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest):
+  def new_entity(context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest,
+                 force_same_device_flow_referer_criteria: Optional[List[str]] = None) -> "OpenId4VCIEntity":
+      if not context.state:
+          raise ValueError("Invalid context state")
+
       return OpenId4VCIEntity(
           request_uri_part=request_uri_part,
           state=par_request.state,
           session_id=context.state["SESSION_ID"],
-          remote_flow_typ=detect_flow_typ(context).value,
+          remote_flow_typ=detect_flow_typ(context, force_same_device_flow_referer_criteria).value,
           client_id=par_request.client_id,
           code_challenge=par_request.code_challenge,
           code_challenge_method=par_request.code_challenge_method,

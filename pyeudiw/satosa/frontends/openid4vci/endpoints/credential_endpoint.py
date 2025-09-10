@@ -28,7 +28,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         A Response object.
     """
 
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
+    def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
         """
         Validate a POST request to the credential endpoint.
 
@@ -38,21 +38,21 @@ class CredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context containing request data.
-            entity (OpenId4VCIEntity): The stored session/entity related to the request.
+            entity (dict): The stored session/entity related to the request.
 
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
         c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context = {
-            AUTHORIZATION_DETAILS_CTX: entity.authorization_details
+            AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})
         })
 
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
         ProofJWT.model_validate(
             proof_jws_helper.verify(c_req.proof.jwt), context = {
-                CLIENT_ID_CTX: entity.client_id,
+                CLIENT_ID_CTX: entity["client_id"],
                 ENTITY_ID_CTX: self.entity_id,
-                NONCE_CTX: entity.c_nonce
+                NONCE_CTX: entity["c_nonce"]
             })
         return c_req
 

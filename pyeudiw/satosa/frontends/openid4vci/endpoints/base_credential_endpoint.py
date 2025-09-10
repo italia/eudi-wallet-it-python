@@ -15,7 +15,7 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
-from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciEngine
+from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, InvalidRequestException
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
@@ -25,8 +25,8 @@ from pyeudiw.satosa.schemas.metadata import (
 )
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
-    validate_request_method, validate_content_type,
-    validate_oauth_client_attestation
+    validate_request_method, 
+    validate_content_type,
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification_with_placeholder
@@ -35,6 +35,8 @@ from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_mdoc_template
 from pyeudiw.tools.utils import iat_now, exp_from_now
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 
 FIELD_TRANSFORMS = {
     "portrait": {
@@ -46,7 +48,7 @@ FIELD_TRANSFORMS = {
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str):
+    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the credentials endpoints class.
         Args:
@@ -59,16 +61,44 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
         self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(self._metadata_jwks[0])
-        self.db_engine = OpenId4VciEngine(config).db_engine
+        self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
         _user_credential_engine = UserCredentialEngine(config)
         self._db_user_engine = _user_credential_engine.db_user_storage_engine
         self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
+        self._trust_evaluator = CombinedTrustEvaluator.from_config(
+            self.config.get("trust", {}),
+            self.db_engine,
+            default_client_id = self.entity_id,
+            mode = self.config.get("trust_caching_mode", "update_first")
+        )
 
     def endpoint(self, context: Context) -> Response:
         try:
+
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            validate_oauth_client_attestation(context)
+
+            if self.dpop_required:
+                if not context.http_headers or ("DPoP" not in context.http_headers) or ("Authorization" not in context.http_headers):
+                    raise InvalidRequestException("Missing DPoP and/or Authorization header")
+                
+                dpop = context.http_headers.get("DPoP")
+                authz = context.http_headers.get("Authorization")
+                
+                try:
+                    dpop_verifier = DPoPVerifier(
+                        http_header_dpop=dpop,
+                        http_header_authz=authz
+                    )
+                    if not dpop_verifier.is_valid:
+                        raise InvalidRequestException("Invalid DPoP proof")
+                except ValueError as e:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `token` endpoint: {e}"
+                    )
+                    return self._handle_400(context, str(e), e)
+            
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             req = self.validate_request(context, entity)
             credential_id = None
@@ -87,7 +117,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
 
     @abstractmethod
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
+    def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
         pass
 
     @abstractmethod
@@ -97,9 +127,19 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def build_credential(self, context: Context, credential_id: str | None) -> list[str]:
         credential_list = []
         entity = self.db_engine.get_by_session_id(get_session_id(context))
-        user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
+
+        if not entity:
+            self._log_error(
+                self.__class__.__name__,
+                "No entity found for the current session."
+            )
+            return credential_list
+        
+        vci_entity = OpenId4VCIEntity(**entity)
+
+        user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(vci_entity.attributes or {}))
         if credential_id:
-            return [self._build_credential(entity, user, credential_id)]
+            return [self._build_credential(vci_entity, user, credential_id)]
         else:
             pass #todo: manage deferred
 
@@ -151,6 +191,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             user_claims=specification,
             issuer_keys=self._metadata_jwks,
             add_decoy_claims=use_decoys,
+            extra_header_parameters = self._trust_evaluator.get_jwt_header_trust_parameters(issuer=self.entity_id)
         )
 
         return {

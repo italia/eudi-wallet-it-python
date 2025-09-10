@@ -11,6 +11,10 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
+BASE_PACKAGE = "pyeudiw.satosa.frontends.openid4vci"
+_JWS_HELPER_MODULE = "pyeudiw.jwt.jws_helper.JWSHelper"
+JWS_HELPER_VERIFY_MODULE = f"{_JWS_HELPER_MODULE}.verify"
+
 MOCK_TRUST_CONFIG = {
     "federation": {
         "config": {
@@ -41,7 +45,7 @@ MOCK_USER_STORAGE_CONFIG = {
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
                 "conf": {
-                    "db_name": "eid_user",
+                    "db_name": "pyeudiw_test",
                     "db_users_collection": "users",
                     "data_ttl": 63072000
                 },
@@ -62,7 +66,7 @@ MOCK_CREDENTIAL_STORAGE_CONFIG ={
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
                 "conf": {
-                    "db_name": "eid_credential",
+                    "db_name": "pyeudiw_test",
                     "db_users_collection": "credentials",
                     "data_ttl": 63072000
                 },
@@ -77,47 +81,47 @@ MOCK_CREDENTIAL_STORAGE_CONFIG ={
 
 MOCK_ENDPOINTS_CONFIG = {
     "par": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint",
         "class": "ParHandler",
         "path": "/par"
     },
     "credential_offer": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.credential_offer_endpoint",
         "class": "CredentialOfferHandler",
         "path": "/credential"
     },
     "authorization_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.authorization_endpoint",
         "class": "AuthorizationHandler",
         "path": "/authorization"
     },
     "token_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.token_endpoint",
         "class": "TokenHandler",
         "path": "/token"
     },
     "nonce_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.nonce_endpoint",
         "class": "NonceHandler",
         "path": "/nonce-endpoint"
     },
     "credential_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.credential_endpoint",
         "class": "CredentialHandler",
         "path": "/credential"
     },
     "deferred_credential_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.deferred_credential_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.deferred_credential_endpoint",
         "class": "DeferredCredentialHandler",
         "path": "/deferred-credential"
     },
     "notification_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.notification_endpoint",
         "class": "NotificationHandler",
         "path": "/notification"
     },
     "metadata_endpoint": {
-        "module": "pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint",
+        "module": f"{BASE_PACKAGE}.endpoints.metadata_endpoint",
         "class": "MetadataHandler",
         "path": "/.well-known/openid-federation"
     }
@@ -254,7 +258,7 @@ MOCK_STORAGE_CONFIG = {
                 "init_params": {
                     "url": "mongodb://satosa-mongo:27017",
                     "conf": {
-                        "db_name": "eudiw"
+                        "db_name": "pyeudiw_test"
                     },
                     "connection_params": {
                         "username": "user",
@@ -268,7 +272,7 @@ MOCK_STORAGE_CONFIG = {
                 "init_params": {
                     "url": "mongodb://satosa-mongo:27017",
                     "conf": {
-                        "db_name": "eudiw",
+                        "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors",
@@ -286,11 +290,16 @@ MOCK_STORAGE_CONFIG = {
 }
 
 MOCK_QR_CODE_CONFIG = {
-    "ui_template": "qr_code.html",
     "size": 250,
     "color": "#000000",
     "expiration_time": 120,
-    "logo_path": "wallet-it/wallet-icon-blue.svg"
+    "logo_path": "wallet-it/wallet-icon-blue.svg",
+    "ui": {
+        "static_storage_url": "http://localhost:static",
+        "template_folder": "templates",
+        "qrcode_template": "qr_code.html",
+        "authorization_error_template": "authorization_error.html"
+    }
 }
 
 MOCK_PYEUDIW_FRONTEND_CONFIG = {
@@ -306,7 +315,10 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
     "credential_configurations": MOCK_CREDENTIAL_CONFIGURATIONS,
     "trust": MOCK_TRUST_CONFIG,
-    "storage": MOCK_STORAGE_CONFIG
+    "storage": MOCK_STORAGE_CONFIG,
+    "security": {
+        "dpop_required": False,
+    }
 }
 
 MOCK_INTERNAL_ATTRIBUTES = {
@@ -419,19 +431,19 @@ def mock_valid_oauth_client_attestation_jwt(crv="P-256", use="sig", kid="ec1", a
     jws = JWS(json.dumps(payload), alg=alg)
     return jws.sign_compact([ec_key])
 
-def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
-    return OpenId4VCIEntity(
-        document_id = str(uuid.uuid4()),
-        request_uri_part = "request_uri_part",
-        state="xyz456",
-        session_id="sessionid",
-        remote_flow_typ=RemoteFlowType.SAME_DEVICE,
-        client_id = "client123",
-        code_challenge = "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043", # as sha256("code_verifier".encode('utf-8')).hexdigest()
-        code_challenge_method = "S256",
-        redirect_uri="https://client.com",
-        authorization_details=[]
-    )
+def get_mocked_openid4vpi_entity() -> dict:
+    return {
+        "document_id": str(uuid.uuid4()),
+        "request_uri_part": "request_uri_part",
+        "state": "xyz456",
+        "session_id": "sessionid",
+        "remote_flow_typ": RemoteFlowType.SAME_DEVICE,
+        "client_id": "client123",
+        "code_challenge": "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043",  # as sha256("code_verifier".encode('utf-8')).hexdigest()
+        "code_challenge_method": "S256",
+        "redirect_uri": "https://client.com",
+        "authorization_details": []
+    }
 
 def get_mocked_satosa_context(method="POST", content_type=FORM_URLENCODED, headers=None,
                               oauth_client_attestation_header=mock_valid_oauth_client_attestation_jwt()) -> Context:
@@ -442,6 +454,8 @@ def get_mocked_satosa_context(method="POST", content_type=FORM_URLENCODED, heade
                 OAUTH_CLIENT_ATTESTATION_HEADER: oauth_client_attestation_header,
                 "HTTP_USER_AGENT": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
             }
+    elif HTTP_CONTENT_TYPE_HEADER not in headers:
+        headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     context = Context()
     context.request_method = method
     context.http_headers = headers

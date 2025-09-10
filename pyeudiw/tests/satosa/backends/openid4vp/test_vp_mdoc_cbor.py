@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone, timedelta
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -84,7 +85,7 @@ STORAGE_CONFIG = {
             "class": "MongoCache",
             "init_params": {
                 "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
-                "conf": {"db_name": "eudiw"},
+                "conf": {"db_name": "pyeudiw_test"},
                 "connection_params": {},
             },
         },
@@ -94,7 +95,7 @@ STORAGE_CONFIG = {
             "init_params": {
                 "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
                 "conf": {
-                    "db_name": "test-eudiw",
+                    "db_name": "pyeudiw_test",
                     "db_sessions_collection": "sessions",
                     "db_trust_attestations_collection": "trust_attestations",
                     "db_trust_anchors_collection": "trust_anchors",
