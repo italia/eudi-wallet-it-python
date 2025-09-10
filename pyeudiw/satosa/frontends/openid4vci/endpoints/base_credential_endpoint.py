@@ -117,7 +117,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
 
     @abstractmethod
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
+    def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
         pass
 
     @abstractmethod
@@ -127,9 +127,19 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def build_credential(self, context: Context, credential_id: str | None) -> list[str]:
         credential_list = []
         entity = self.db_engine.get_by_session_id(get_session_id(context))
-        user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(entity.attributes))
+
+        if not entity:
+            self._log_error(
+                self.__class__.__name__,
+                "No entity found for the current session."
+            )
+            return credential_list
+        
+        vci_entity = OpenId4VCIEntity(**entity)
+
+        user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(vci_entity.attributes or {}))
         if credential_id:
-            return [self._build_credential(entity, user, credential_id)]
+            return [self._build_credential(vci_entity, user, credential_id)]
         else:
             pass #todo: manage deferred
 

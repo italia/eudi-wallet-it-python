@@ -114,15 +114,21 @@ class TokenHandler(VCIBaseEndpoint):
                 self.jws_helper.verify(oauth_client_attestation)
 
             entity = self.db_engine.get_by_session_id(get_session_id(context))
+
+            if not entity:
+                raise InvalidRequestException("session not found")
+            
+            vci_entity = OpenId4VCIEntity(**entity)
+
             TokenRequest.model_validate(self._get_body(context), context = {
                 CONFIG_CTX: self.config,
-                REDIRECT_URI_CTX: entity.redirect_uri,
-                CODE_CHALLENGE_METHOD_CTX: entity.code_challenge_method,
-                CODE_CHALLENGE_CTX: entity.code_challenge,
-                SCOPE_CTX: entity.scope
+                REDIRECT_URI_CTX: vci_entity.redirect_uri,
+                CODE_CHALLENGE_METHOD_CTX: vci_entity.code_challenge_method,
+                CODE_CHALLENGE_CTX: vci_entity.code_challenge,
+                SCOPE_CTX: vci_entity.scope
             })
             iat = iat_now()
-            authorization_details = entity.authorization_details
+            authorization_details = vci_entity.authorization_details
             if authorization_details or len(authorization_details) > 0:
                 for ad in authorization_details:
                     ad.credential_identifiers = self.config_utils.get_credential_configurations_supported(
@@ -144,6 +150,10 @@ class TokenHandler(VCIBaseEndpoint):
             return self._handle_500(context, "error during invoke token endpoint", e)
 
     def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum) -> str:
+
+        if isinstance(entity, dict):
+            entity = OpenId4VCIEntity(**entity)
+
         match typ:
           case TokenTypsEnum.ACCESS_TOKEN_TYP:
             exp = iat + self.config_utils.get_jwt().access_token_exp
@@ -154,6 +164,7 @@ class TokenHandler(VCIBaseEndpoint):
                 self.__class__.__name__,
                             f"unexpected typ {typ} for token ")
             raise Exception(f"Invalid token typ {typ}")
+
         token = AccessToken(
             iss=self.entity_id,
             aud=self.entity_id,

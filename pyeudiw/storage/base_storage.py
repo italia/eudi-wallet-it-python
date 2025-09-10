@@ -411,6 +411,38 @@ class BaseStorage(BaseDB):
         :rtype: Union[dict, None]
         """
         raise NotImplementedError()
+    
+    def upsert_session(
+        self, session_id: str, data: dict
+    ) -> tuple[str, dict]:
+        """
+        Upsert a session by session id.
+
+        :param session_id: the session id.
+        :type session_id: str
+        :param data: the data to upsert.
+        :type data: dict
+
+        :returns: a tuple containing the document id and the updated data.
+        :rtype: tuple[str, dict]
+        """
+        raise NotImplementedError()
+    
+    def search_session_by_field(
+        self, field: str, value: str
+    ) -> dict:
+        """
+        Search for a session by a specific field and value.
+
+        :param field: the field to search by.
+        :type field: str
+        :param value: the value to search for.
+        :type value: str
+
+        :returns: the session data if found, otherwise an empty dict.
+        :rtype: dict
+        """
+        raise NotImplementedError()    
 
     # TODO: create add_or_update for all the write methods
     def add_or_update_trust_attestation(

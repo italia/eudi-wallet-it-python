@@ -431,19 +431,19 @@ def mock_valid_oauth_client_attestation_jwt(crv="P-256", use="sig", kid="ec1", a
     jws = JWS(json.dumps(payload), alg=alg)
     return jws.sign_compact([ec_key])
 
-def get_mocked_openid4vpi_entity() -> OpenId4VCIEntity:
-    return OpenId4VCIEntity(
-        document_id = str(uuid.uuid4()),
-        request_uri_part = "request_uri_part",
-        state="xyz456",
-        session_id="sessionid",
-        remote_flow_typ=RemoteFlowType.SAME_DEVICE,
-        client_id = "client123",
-        code_challenge = "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043", # as sha256("code_verifier".encode('utf-8')).hexdigest()
-        code_challenge_method = "S256",
-        redirect_uri="https://client.com",
-        authorization_details=[]
-    )
+def get_mocked_openid4vpi_entity() -> dict:
+    return {
+        "document_id": str(uuid.uuid4()),
+        "request_uri_part": "request_uri_part",
+        "state": "xyz456",
+        "session_id": "sessionid",
+        "remote_flow_typ": RemoteFlowType.SAME_DEVICE,
+        "client_id": "client123",
+        "code_challenge": "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043",  # as sha256("code_verifier".encode('utf-8')).hexdigest()
+        "code_challenge_method": "S256",
+        "redirect_uri": "https://client.com",
+        "authorization_details": []
+    }
 
 def get_mocked_satosa_context(method="POST", content_type=FORM_URLENCODED, headers=None,
                               oauth_client_attestation_header=mock_valid_oauth_client_attestation_jwt()) -> Context:
