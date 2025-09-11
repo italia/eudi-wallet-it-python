@@ -52,6 +52,7 @@ from pyeudiw.tests.settings import (
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.x509.verify import PEM_cert_to_B64DER_cert, to_pem_list
+from datetime import datetime, timezone, timedelta
 
 PKEY = {
     'KTY': 'EC2',

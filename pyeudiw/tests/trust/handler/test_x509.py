@@ -96,32 +96,35 @@ def test_chain_crl_passing():
     chain = ChainBuilder()
     chain.gen_certificate(
         cn="ca.example.com",
-        org_name="Example CA",
+        organization_name="Example CA",
         country_name="IT",
         dns="ca.example.com",
         uri="https://ca.example.com",
         crl_distr_point="http://ca.example.com/crl.pem",
         ca=True,
         path_length=1,
+        email_address="info@ca.example.com",
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
-        org_name="Example Intermediate",
+        organization_name="Example Intermediate",
         country_name="IT",
         dns="intermediate.example.com",
         uri="https://intermediate.example.com",
         ca=True,
         path_length=0,
+        email_address="info@intermediate.example.com",
     )
     chain.gen_certificate(
         cn="example.com",
-        org_name="Example Leaf",
+        organization_name="Example Leaf",
         country_name="IT",
         dns="example.com",
         uri="https://example.com",
         private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
         ca=False,
         path_length=None,
+        email_address="info@example.com",
     )
 
     chain = chain.get_chain("DER")
@@ -179,7 +182,7 @@ def test_chain_crl_fail():
     chain = ChainBuilder()
     chain.gen_certificate(
         cn="ca.example.com",
-        org_name="Example CA",
+        organization_name="Example CA",
         country_name="IT",
         dns="ca.example.com",
         uri="https://ca.example.com",
@@ -187,26 +190,29 @@ def test_chain_crl_fail():
         private_key=ca_key,
         ca=True,
         path_length=1,
+        email_address="info@ca.example.com",
     )
     chain.gen_certificate(
         cn="intermediate.example.com",
-        org_name="Example Intermediate",
+        organization_name="Example Intermediate",
         country_name="IT",
         dns="intermediate.example.com",
         uri="https://intermediate.example.com",
         ca=True,
         path_length=0,
         serial_number=44442,
+        email_address="info@intermediate.example.com",
     )
     chain.gen_certificate(
         cn="example.com",
-        org_name="Example Leaf",
+        organization_name="Example Leaf",
         country_name="IT",
         dns="example.com",
         uri="https://example.com",
         private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
         ca=False,
         path_length=None,
+        email_address="info@example.com",
     )
 
     chain = chain.get_chain("DER")
