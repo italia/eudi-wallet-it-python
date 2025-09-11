@@ -125,7 +125,6 @@ class AuthorizationHandler(VCIBaseEndpoint):
                 raise Exception("missing attribute converter for authorization endpoint")
 
             context.internal_data = internal_req
-            #context.decorate(Context.KEY_TARGET_ENTITYID, "wallet_frontend_authn")
 
             return self._auth_callback(
                 context,
