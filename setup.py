@@ -40,7 +40,7 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.9,<1.10",
-        "pydantic>=2.10.6,<3.0.0",
+        "pydantic>=2.11.9,<3.0.0",
         "pyqrcode>=1.2,<1.3",
         "pem>=23.1,<23.2",
         "cryptography>=45.0.0,<46.0.0"
