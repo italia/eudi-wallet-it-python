@@ -21,6 +21,7 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3.14",
@@ -46,19 +47,19 @@ setup(
         "pem>=23.1,<23.2",
         "cryptography>=45.0.0,<46.0.0"
     ],
-    extras_require={
+    extras_require = {
         "satosa": [
             "Pillow>=11.1.0,<12.0.0",
-            "device_detector>=5.0,<6",
+            "device_detector>=5.0,<6.0",
             "satosa>=8.4,<8.6",
             "jinja2>=3.1.5,<4.0.0",
             "pymongo>=4.10.1,<5.0.0",
             "requests>=2.32.3,<3.0.0",
-            "pymdoccbor>=0.9.0,<2.0.0"
+            "pymdoccbor>=0.9.0,<2.0.0",
         ],
         "federation": [
             "asyncio>=3.4.3,<4.0.0",
-            "aiohttp>=3.11.11,<4.0.0"
+            "aiohttp>=3.11.11,<4.0.0",
         ],
         "test": [
             "pytest-mock",
