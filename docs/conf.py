@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.abspath('../pyeudiw/'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Pyeudiw'
-copyright = '2023, Giuseppe De Marco'
-author = 'Giuseppe De Marco'
+# copyright = '2023, Giuseppe De Marco'
+author = 'Developers Italia'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

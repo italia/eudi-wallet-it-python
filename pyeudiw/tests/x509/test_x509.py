@@ -19,7 +19,7 @@ def gen_chain(
         intermediate_dns: str = "intermediate.example.org",
         leaf_cn: str = "leaf.example.it", 
         leaf_dns: str = "leaf.example.it",
-        leaf_uri: str = "leaf.example.it",
+        leaf_uri: str = "https://leaf.example.it/openid4vp",
         leaf_private_key: Any = None
     ) -> list[bytes]:
 
@@ -66,7 +66,7 @@ def gen_chain(
         "dns": intermediate_dns,
         "uri": f"https://{intermediate_dns}",
         "ca": True,
-        "path_length": 0,
+        "path_length": 2,
         "permitted_subtrees": [
             x509.DNSName(intermediate_dns),
             x509.DNSName(leaf_dns),
@@ -97,8 +97,8 @@ def gen_chain(
         "email_address": f"info@{leaf_dns}",
         "dns": leaf_dns,
         "uri": leaf_uri,
-        "ca": False,
-        "path_length": None,
+        "ca": True,
+        "path_length": 1,
         "private_key": leaf_private_key,
         "permitted_subtrees": [
             x509.DNSName(leaf_dns),

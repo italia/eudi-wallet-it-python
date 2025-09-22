@@ -252,7 +252,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
     """
     cert_data = load_der_x509_certificate(to_DER_cert(pem_str))
 
-    if not _check_datetime(cert_data.not_valid_after):
+    if not _check_datetime(cert_data.not_valid_after_utc):
         logging.error(LOG_ERROR.format("check datetime failed"))
         return False
 
