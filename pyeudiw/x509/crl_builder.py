@@ -41,7 +41,7 @@ class CRLBuilder():
         self.crl_builder = self.crl_builder.add_revoked_certificate(
             x509.RevokedCertificateBuilder()
                 .serial_number(serial_number)
-                .revocation_date_utc(revocation_date)
+                .revocation_date(revocation_date)
                 .build(default_backend())
         )
 
