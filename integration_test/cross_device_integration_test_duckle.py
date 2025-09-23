@@ -128,7 +128,7 @@ def run(playwright: Playwright):
                 result_index = i
                 break
         assert result_index != -1, f"missing attribute with name=[{exp_att_name}] in result set"
-        obt_att_value = attributes[result_index].contents[0].contents[0]
+        obt_att_value = attributes[result_index]["value"]
         assert exp_att_value == obt_att_value, f"wrong attribute parsing expected {exp_att_value}, obtained {obt_att_value}"
 
     print("TEST PASSED")

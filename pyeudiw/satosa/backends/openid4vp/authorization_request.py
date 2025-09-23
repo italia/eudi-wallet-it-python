@@ -2,7 +2,7 @@ import uuid
 from typing import Optional
 from urllib.parse import quote_plus, urlencode
 
-from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.schemas.response import ResponseMode
 from pyeudiw.tools.utils import exp_from_now, iat_now
 

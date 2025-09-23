@@ -222,8 +222,7 @@ class ResponseHandler(VPBaseEndpoint):
                 if not request_vp_formats_supported \
                 else {k: v for k, v in self.vp_token_parser.handlers.items() if k in request_vp_formats_supported}
             parser_validator = ParserValidator(authz_payload.vp_token, vp_token_handlers , self.config)
-            is_presentation_definition = parser_validator.is_active_presentation_definition()
-            if is_presentation_definition:
+            if parser_validator.is_active_presentation_definition():
                 parser_validator.validate(challenge["aud"], challenge["nonce"])
             else:
                 if isinstance(authz_payload.vp_token, str):

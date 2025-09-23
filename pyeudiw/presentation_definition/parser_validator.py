@@ -4,7 +4,7 @@ from typing import Any
 
 from pyeudiw.duckle_ql.handler import DuckleHandler
 from pyeudiw.exceptions import ValidationError
-from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION
 from pyeudiw.satosa.backends.openid4vp.presentation_submission import MissingHandler
 
 
@@ -53,7 +53,7 @@ class ParserValidator:
     def is_active_presentation_definition(self) -> bool:
         if isinstance(self.token, list):
             return False
-        return self.config.get(DUCKLE_PRESENTATION)
+        return DUCKLE_PRESENTATION in self.config
 
 def _is_jwt(token: str) -> bool:
     parts = token.split(".")

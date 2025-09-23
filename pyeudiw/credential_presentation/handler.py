@@ -2,7 +2,7 @@ import importlib
 from typing import Optional, List
 
 from pyeudiw.credential_presentation.model import CredentialPresentationHandlersConfig
-from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"

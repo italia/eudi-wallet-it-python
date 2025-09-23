@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from satosa.context import Context
+from cryptojwt.jwk.ec import new_ec_key
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint import CredentialHandler
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
@@ -38,6 +39,7 @@ from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     APPLICATION_JSON
 )
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
 
 VALID_PROOF = {
     "proof_type": "jwt",
@@ -80,7 +82,11 @@ def credential_handler() -> CredentialHandler:
         usc_mock_engine.db_user_storage_engine = MagicMock()
         usc_mock_engine.db_credential_storage_engine = MagicMock()
         user_cred_eng_class.return_value = usc_mock_engine
-        handler = CredentialHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+
+        config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+        config["security"]["dpop_required"] = True
+        
+        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
         handler.db_engine = MagicMock()
         handler.jws_helper = MagicMock()
         handler._trust_evaluator = trust_evaluator
@@ -88,7 +94,18 @@ def credential_handler() -> CredentialHandler:
 
 @pytest.fixture
 def context() -> Context:
-    return get_mocked_satosa_context(content_type = APPLICATION_JSON)
+    verifier = DPoPIssuer(
+        htu="https://example.org/redirect",
+        private_jwk=new_ec_key("P-256"),
+        token="valid-token"
+    )
+    return get_mocked_satosa_context(
+        content_type=APPLICATION_JSON,
+        headers={
+            "DPoP": verifier.proof,
+            "Authorization": f"DPoP {verifier.token}"
+        }
+    )
 
 def _mock_configurations(overrides=None):
     return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
@@ -149,7 +166,7 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
         credential_handler, context,
         credential_identifier,credential_configuration_id, error_desc):
     entity = deepcopy(get_mocked_openid4vpi_entity())
-    entity.authorization_details = [
+    entity["authorization_details"] = [
         {
             "type": OPEN_ID_CREDENTIAL_TYPE,
             "credential_configuration_id": "credential_configuration_id_test",
@@ -230,7 +247,7 @@ def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_w
     with patch(JWS_HELPER_VERIFY_MODULE, return_value = value):
         context.request = request_without_open_id_credential
         entity = deepcopy(get_mocked_openid4vpi_entity())
-        entity.c_nonce = "random-nonce-abc123"
+        entity["c_nonce"] = "random-nonce-abc123"
         credential_handler.db_engine.get_by_session_id.return_value = entity
         result = credential_handler.endpoint(context)
         assert_invalid_request_application_json(
@@ -303,8 +320,8 @@ def test_request_without_open_id_credential_for_sd_jwt(credential_handler, conte
 
 def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
     with patch(JWS_HELPER_VERIFY_MODULE, return_value = valid_request_proof_jwt):
-        entity.c_nonce = "random-nonce-abc123"
-        entity.attributes = {
+        entity["c_nonce"] = "random-nonce-abc123"
+        entity["attributes"] = {
             "name": ["Mario"],
             "surname": ["Rossi"],
             "fiscal_number": ["RSSMRA80A01H501T"],

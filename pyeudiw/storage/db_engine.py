@@ -103,6 +103,16 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
             attestation=attestation,
         )
 
+    def upsert_session(
+        self, session_id: str, data: dict
+    ) -> int:
+        return self.write("upsert_session", session_id, data)
+    
+    def search_session_by_field(
+        self, field: str, value: str
+    ) -> dict | None:
+        return self.get("search_session_by_field", field, value)
+
     def set_finalized(self, document_id: str):
         return self.write("set_finalized", document_id)
 

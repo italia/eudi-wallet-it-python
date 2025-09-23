@@ -73,6 +73,7 @@ class PreRequestHandler(BaseEndpoint):
         trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
         
         self.trust_evaluator = trust_evaluator
+        self.force_same_device_flow_referer_criteria = self.config.get("force_same_device_flow_referer_criteria")
     
     def endpoint(self, context: Context) -> Response:
         """
@@ -111,7 +112,7 @@ class PreRequestHandler(BaseEndpoint):
                 "not started with a valid authn request to one of the configured frontend.",
             )
 
-        flow_typ = detect_flow_typ(context)
+        flow_typ = detect_flow_typ(context, self.force_same_device_flow_referer_criteria)
 
         # Init session
         try:

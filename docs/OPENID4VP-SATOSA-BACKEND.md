@@ -177,6 +177,14 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.vp_formats.vc+sd-jwt.sd-jwt_alg_values | VP formats specification algorithms for SD-JWT                                           | [ES256, ES384]                                                   |
 | config.metadata.vp_formats.vc+sd-jwt.kb-jwt_alg_values | VP formats specification algorithms for Key Binding JWT                                  | [ES256, ES384]                                                   |
 
+### Other config
+
+Root section for single configuration parameters.
+
+| Key                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| config.force_same_device_flow_referer_criteria | An optional list of regular expressions that are matched against the HTTP_REFERER header of an incoming request. <br/> If the referer matches one of these regex patterns, the system will force the same-device flow (SAME_DEVICE) even if the client is on a desktop or non-mobile device. <br/> This enables use cases where a wallet instance is provided as Single Page Application (eg: wwWallet). |
+
 ## NginX
 
 Configure an httpd fronted such NginX, an example is available within the `uwsgi_setup` folder of [Satosa-Saml2Spid](https://github.com/italia/Satosa-Saml2Spid/tree/master/example/uwsgi_setup)

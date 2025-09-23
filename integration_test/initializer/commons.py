@@ -5,6 +5,7 @@ import urllib.parse
 from copy import deepcopy
 from io import StringIO
 from typing import Any, Literal
+from xml.etree import ElementTree
 
 import requests
 from bs4 import BeautifulSoup, PageElement
@@ -237,17 +238,26 @@ def create_authorize_response(vp_token: str, state: str, response_uri: str) -> s
     ).encrypt(response)
     return encrypted_response
 
+def extract_saml_attributes(saml_response: str) -> list[Any]:
+    soup = BeautifulSoup(saml_response, "html.parser")
+    saml_input = soup.find("input", {"name": "SAMLResponse"})
+    if not saml_input:
+        raise ValueError("No SAMLResponse found in HTML")
 
-def extract_saml_attributes(saml_response: str) -> set[Any]:
-    soup = BeautifulSoup(saml_response, features="lxml")
-    form = soup.find("form")
-    assert "/saml2" in form["action"]
-    input_tag = soup.find("input")
-    assert input_tag["name"] == "SAMLResponse"
+    saml_base64 = saml_input["value"]
 
-    lowered = base64.b64decode(input_tag["value"]).lower()
-    value = BeautifulSoup(lowered, features="xml")
-    attributes = value.find_all("saml:attribute")
+    saml_xml = base64.b64decode(saml_base64)
+    root = ElementTree.fromstring(saml_xml)
+
+    attributes = []
+    for attr in root.iter():
+        if attr.tag.endswith("Attribute"):
+            name = attr.get("Name")
+            for value_tag in attr:
+                if value_tag.tag.endswith("AttributeValue"):
+                    value_text = value_tag.text.strip() if value_tag.text else ""
+                    attributes.append({"name": name, "value": value_text.lower()})
+
     return attributes
 
 

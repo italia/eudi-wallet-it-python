@@ -65,12 +65,17 @@ class VCIBaseEndpoint(BaseEndpoint):
         elif isinstance(e, ValidationError):
             errors = e.errors()
             for err in errors:
-                parameter_name = err['loc'][0]
-                self._log_error(
-                    e.__class__.__name__,
-                    f"invalid {parameter_name} in request `{endpoint_name}` endpoint"
-                )
-                return f"invalid `{parameter_name}` parameter"
+                parameter_name = err['loc'][0] if len(err['loc']) > 0 else None
+                if parameter_name:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}"
+                    )
+                else:
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid request in `{endpoint_name}` endpoint: {err['msg']}"
+                    )
             return "invalid request"
         else:
             raise e
