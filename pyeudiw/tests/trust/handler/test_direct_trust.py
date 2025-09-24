@@ -10,12 +10,9 @@ from pyeudiw.tests.trust.handler import (
     _generate_response,
     issuer,
 )
+from pyeudiw.tools.utils import is_url
 from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
-from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint, is_url
-from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import (
-    DirectTrustSdJwtVc,
-    build_metadata_issuer_endpoint,
-)
+from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
@@ -34,14 +31,8 @@ def fake_get_http_url(
     
     if urls[0].endswith("vct/.well-known/jwt-vc-issuer"):
         return [_generate_response(issuer, expected_jwk)]
-
-def test_direct_trust_build_issuer_jwk_endpoint():
-    entity_id = "https://credential-issuer.example/vct"
-    well_known_component = "/.well-known/jwt-vc-issuer"
-    expected_url = "https://credential-issuer.example/.well-known/jwt-vc-issuer/vct"
-    obtained_url = build_jwk_issuer_endpoint(entity_id, well_known_component)
-    assert expected_url == obtained_url
-
+    
+    return [_generate_empty_json_ok_response()]
 
 def test_direct_trust_build_issuer_metadata_endpoint():
     @dataclass
@@ -65,7 +56,7 @@ def test_direct_trust_build_issuer_metadata_endpoint():
 
     metadata_endpoint = "/.well-known/openid-credential-issuer"
     for i, case in enumerate(test_cases):
-        obtained = build_metadata_issuer_endpoint(case.entity_id, metadata_endpoint)
+        obtained = DirectTrustSdJwtVc._build_metadata_issuer_endpoint(case.entity_id, metadata_endpoint)
         assert case.expected == obtained, f"failed case {i}: {case.explanation}"
 
 
@@ -114,14 +105,17 @@ def test_direct_trust_jwk():
 
     random_issuer = f"https://{uuid.uuid4()}.issuer.it"
 
-    mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
-        "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
-        return_value=[_generate_response(random_issuer, expected_jwk)],
-    )
-
     mocked_metadata_endpoint = unittest.mock.patch(
         "pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url",
         return_value=[_generate_empty_json_ok_response()],
+    )
+
+    mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
+        "pyeudiw.trust.handler._direct_trust_jwk._DirectTrustJwkHandler._get_jwk_metadata",
+        return_value={
+            "issuer": random_issuer,
+            "jwks": {"keys": [expected_jwk]}
+        }
     )
 
     mocked_metadata_endpoint.start()
@@ -132,7 +126,11 @@ def test_direct_trust_jwk():
         random_issuer, trust_source
     )
 
-    obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
+    direct_trust_sd_jwt_vc = getattr(trust_source, "direct_trust_sd_jwt_vc", None)
+
+    assert direct_trust_sd_jwt_vc is not None, "the trust source does not have the 'direct_trust_sd_jwt_vc' attribute"
+
+    obtained_jwks = direct_trust_sd_jwt_vc.get_jwks()
 
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
     mocked_metadata_endpoint.stop()
@@ -146,8 +144,11 @@ def test_direct_trust_jwk_not_conformat_url():
     issuer = f"https://example-url.issuer.it/vct"
 
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
-        "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
-        side_effect=fake_get_http_url,
+        "pyeudiw.trust.handler._direct_trust_jwk._DirectTrustJwkHandler._get_jwk_metadata",
+        return_value={
+            "issuer": issuer,
+            "jwks": {"keys": [expected_jwk]}
+        }
     )
 
     mocked_issuer_jwt_vc_issuer_endpoint.start()
@@ -157,7 +158,11 @@ def test_direct_trust_jwk_not_conformat_url():
         issuer, trust_source
     )
 
-    obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
+    direct_trust_sd_jwt_vc = getattr(trust_source, "direct_trust_sd_jwt_vc", None)
+
+    assert direct_trust_sd_jwt_vc is not None, "the trust source does not have the 'direct_trust_sd_jwt_vc' attribute"
+
+    obtained_jwks = direct_trust_sd_jwt_vc.get_jwks()
 
     mocked_issuer_jwt_vc_issuer_endpoint.stop()
 

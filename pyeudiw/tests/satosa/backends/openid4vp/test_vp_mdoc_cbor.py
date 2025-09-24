@@ -113,7 +113,6 @@ trust_ev = CombinedTrustEvaluator.from_config(
             "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
             "class": "DirectTrustSdJwtVc",
             "config": {
-                "jwk_endpoint": "/.well-known/jwt-vc-issuer",
                 "httpc_params": {"connection": {"ssl": True}, "session": {"timeout": 6}},
             },
         },
