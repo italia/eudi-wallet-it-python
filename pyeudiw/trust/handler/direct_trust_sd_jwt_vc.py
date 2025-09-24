@@ -16,7 +16,7 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
         metadata_endpoint: str = DEFAULT_OPENID4VCI_METADATA_ENDPOINT,
         cache_ttl: int = 0,
         jwks: list[dict] | None = None,
-        client_id: str = None,
+        client_id: str | None = None,
     ):
         super().__init__(
             httpc_params=httpc_params,
@@ -26,6 +26,10 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
             client_id=client_id,
         )
         self.metadata_endpoint = metadata_endpoint
+
+    @staticmethod
+    def _build_metadata_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
+        return f"{issuer_id.rstrip('/')}/{endpoint_component.lstrip('/')}"
 
     def get_metadata(
         self, issuer: str, trust_source: TrustSourceData
@@ -37,7 +41,7 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
 
         :returns: a dictionary of metadata information
         """
-        url = build_metadata_issuer_endpoint(issuer, self.metadata_endpoint)
+        url = self._build_metadata_issuer_endpoint(issuer, self.metadata_endpoint)
         if self.cache_ttl == 0:
             metadata = get_http_url(
                 url, self.httpc_params, self.http_async_calls
@@ -54,9 +58,3 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
 
         return trust_source
 
-
-# TODO: do you really think that this should be stay here?
-
-
-def build_metadata_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
-    return f"{issuer_id.rstrip('/')}/{endpoint_component.lstrip('/')}"

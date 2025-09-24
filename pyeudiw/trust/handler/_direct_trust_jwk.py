@@ -1,4 +1,3 @@
-import re
 import requests
 from typing import Any, Callable, Literal
 from urllib.parse import urlparse
@@ -33,6 +32,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         httpc_params: connection parameters used to make http requests, if required.
         jwk_endpoint: endpoint component used to publish own public keys or to \
             fetch other entities keys; usually in the form of a /.well-known.
+            If not provided, no endpoint will be published nor queried.
         cache_ttl: maximum cache duration, in seconds.
         jwks: list of private keys (possible none) that are owned by the trust \
             evaluation mechanism and that might be exposes when presenting to \
@@ -45,7 +45,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         cache_ttl: int,
         jwk_endpoint: str | None,
         jwks: list[dict] | None,
-        client_id: str = None,
+        client_id: str | None = None,
     ):
         self.httpc_params = httpc_params
         self.jwk_endpoint = jwk_endpoint
@@ -58,6 +58,17 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             [JWK(key=key) for key in self.jwks]
         except Exception as e:
             raise ValueError("invalid argument: dictionary is not a jwk", e)
+    
+    @staticmethod
+    def _build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
+        if not endpoint_component:
+            return issuer_id
+
+        issuer_id = f"https://{issuer_id.strip('/')}" if not issuer_id.startswith("http") else issuer_id
+
+        baseurl = urlparse(issuer_id)
+        full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}" if conform else f"{baseurl.path}/{endpoint_component.strip('/')}"
+        return baseurl._replace(path=full_endpoint_path).geturl()
 
     def _build_issuing_public_signing_jwks(self) -> list[dict]:
         signing_keys = [key for key in self.jwks if key.get("use", "") != "enc"]
@@ -98,16 +109,20 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         jwks: dict[Literal["keys"], list[dict]] | None = metadata.get("jwks", None)
         jwks_uri: str | None = metadata.get("jwks_uri", None)
-        if (not jwks) and (not jwks_uri):
-            raise InvalidJwkMetadataException(
-                "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]"
-            )
+
         if jwks:
             # get jwks by value
             return jwks
-        jwks_resp = self._get_jwks_by_reference(jwks_uri)
-        if jwks_resp and jwks_resp.status_code == 200:
-            return jwks_resp.json()
+        
+        if jwks_uri:
+            # get jwks by reference
+            jwks_resp = self._get_jwks_by_reference(jwks_uri)
+            if jwks_resp and jwks_resp.status_code == 200:
+                return jwks_resp.json()
+        
+        raise InvalidJwkMetadataException(
+            "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]"
+        )
     
     def _get_url(self, endpoint: str) -> requests.Response:
         if self.cache_ttl:
@@ -129,10 +144,11 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             return {}
         
         endpoints = [
-            build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint),
-            build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint, conform=False),
+            self._build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint),
+            self._build_jwk_issuer_endpoint(issuer_id, self.jwk_endpoint, conform=False),
         ]
 
+        resp: requests.Response | None = None
         for endpoint in endpoints:
             resp = self._get_url(endpoint)
 
@@ -140,7 +156,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
                 return resp.json()
 
         raise InvalidJwkMetadataException(
-            f"failed to fetch valid jwk metadata: obtained {resp}"
+            f"failed to fetch valid jwk metadata: obtained {resp or 'no response'}"
         )
 
     def _get_jwks_by_reference(self, jwks_reference_uri: str) -> requests.Response:
@@ -223,9 +239,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
     
     def validate_trust_material(
             self, 
-            trust_chain: list[str], 
-            trust_source: TrustSourceData,
-            db_engine: DBEngine
+            chain: list[str], 
+            trust_source: TrustSourceData
         ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust material of the trust source.
