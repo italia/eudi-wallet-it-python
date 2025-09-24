@@ -10,7 +10,7 @@ from pyeudiw.jwk import JWK
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
-from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
+from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url, is_url
 from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
@@ -250,29 +250,3 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         return {}
 
-
-def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
-    if not endpoint_component:
-        return issuer_id
-
-    issuer_id = f"https://{issuer_id.strip('/')}" if not issuer_id.startswith("http") else issuer_id
-
-    baseurl = urlparse(issuer_id)
-    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}" if conform else f"{baseurl.path}/{endpoint_component.strip('/')}"
-    return baseurl._replace(path=full_endpoint_path).geturl()
-
-
-# this is the regular expression that django uses for URL validation
-_is_url_regex = re.compile(
-    r'^(?:http|ftp)s?://' # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-    r'localhost|' #localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-    r'(?::\d+)?' # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
-
-def is_url(url: str) -> bool:
-    if not _is_url_regex.search(url):
-        return False
-    return True
