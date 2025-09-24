@@ -5,12 +5,6 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from .commons import DEFAULT_HTTPC_PARAMS, DEFAULT_OPENID4VCI_METADATA_ENDPOINT
 
-DEFAULT_SDJWTVC_METADATA_ENDPOINT = "/.well-known/jwt-vc-issuer"
-"""Default endpoint where issuer keys used for sd-jwt vc are exposed.
-For further reference, see https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-06.html#name-jwt-vc-issuer-metadata
-"""
-
-
 class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
     """DirectTrustSdJwtVc is specialization of _DirectTrustJwkHandler
     used in the context of sd-jwt for verifiable credentials.
@@ -19,7 +13,6 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
     def __init__(
         self,
         httpc_params: dict = DEFAULT_HTTPC_PARAMS,
-        jwk_endpoint: str = DEFAULT_SDJWTVC_METADATA_ENDPOINT,
         metadata_endpoint: str = DEFAULT_OPENID4VCI_METADATA_ENDPOINT,
         cache_ttl: int = 0,
         jwks: list[dict] | None = None,
@@ -27,7 +20,7 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
     ):
         super().__init__(
             httpc_params=httpc_params,
-            jwk_endpoint=jwk_endpoint,
+            jwk_endpoint=None,
             cache_ttl=cache_ttl,
             jwks=jwks,
             client_id=client_id,

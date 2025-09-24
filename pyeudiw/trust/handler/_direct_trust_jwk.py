@@ -42,8 +42,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
     def __init__(
         self,
         httpc_params: dict,
-        jwk_endpoint: str,
         cache_ttl: int,
+        jwk_endpoint: str | None,
         jwks: list[dict] | None,
         client_id: str = None,
     ):
@@ -85,6 +85,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         level as it breaks an assuptions of the internal satosa router and
         there is no way to solve that problem at the satosa backend level.
         """
+        if not self.jwk_endpoint:
+            return ""
+        
         endpoint = f"{backend_name.strip('/')}/{self.jwk_endpoint.strip('/')}"
         return endpoint.strip("/")
 
