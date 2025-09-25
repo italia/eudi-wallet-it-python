@@ -69,10 +69,6 @@ class ResponseHandler(VPBaseEndpoint):
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]
         )
-
-        # This loads all the configured trust evaluation mechanisms
-        trust_configuration = self.config.get("trust", {})
-        trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
         
         self.trust_evaluator = trust_evaluator
 
