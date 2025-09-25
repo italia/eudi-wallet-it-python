@@ -1,6 +1,7 @@
 import json
-
 from satosa.context import Context
+from pyeudiw.tools.utils import iat_now
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.utils.response import JsonResponse
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
@@ -22,6 +23,13 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         if not self.config.get("metadata", {}).get("openid_credential_issuer"):
             raise ValueError("Missing 'openid_credential_issuer' in metadata configuration.")
 
+        jwks = self.config.get("metadata_jwks", [])
+
+        if not jwks:
+            raise ValueError("Missing 'metadata_jwks' in configuration.")
+
+        self.jws_helper = JWSHelper(jwks[0])
+
     @property
     def metadata(self) -> dict:
         metadata = self.config.get("metadata", {})
@@ -32,6 +40,16 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         """Returns the entity configuration as a dictionary."""
         ec_payload = self.metadata.get("openid_credential_issuer", {})
         return ec_payload
+
+    def openid_credential_issuer_metadata_as_jwt(self) -> str:
+        """Returns the entity configuration as a JWT string."""
+
+        metadata = self.openid_credential_issuer_metadata_as_dict
+        metadata["sub"] = metadata.get("credential_issuer")
+        metadata["iss"] = metadata.get("credential_issuer")
+        metadata["iat"] = iat_now()
+
+        return self.jws_helper.sign(metadata)
 
     def endpoint(self, context: Context) -> JsonResponse:
         """
