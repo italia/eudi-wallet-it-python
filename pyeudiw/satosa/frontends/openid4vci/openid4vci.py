@@ -36,6 +36,7 @@ class OpenID4VCIFrontend(FrontendModule):
     self.config = config
     self.base_url = base_url
     self.name = name
+    self.issuer_id = f"{base_url}/{name}"
     self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     trust_configuration: Any = self.config.get("trust", {})
@@ -52,7 +53,7 @@ class OpenID4VCIFrontend(FrontendModule):
     self.trust_evaluator = CombinedTrustEvaluator.from_config(
         trust_configuration,
         self.db_engine,
-        default_client_id=f"{base_url}/{name}",
+        default_issuer_id=self.issuer_id,
         mode=trust_caching_mode_literal
     )
 
