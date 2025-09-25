@@ -14,6 +14,7 @@ from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidScopeException
 )
 from pyeudiw.tools.base_endpoint import BaseEndpoint
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 GET_ACCEPTED_METHODS = ["GET"]
@@ -28,7 +29,8 @@ class VCIBaseEndpoint(BaseEndpoint):
             base_url: str, 
             name: str, 
             auth_callback: Callable[[Context, Any], Response] | None = None,
-            converter: AttributeMapper | None = None):
+            converter: AttributeMapper | None = None,
+            trust_evaluator: CombinedTrustEvaluator | None = None):
         """
         Initialize the OpenID4VCI endpoints class.
         Args:
@@ -37,10 +39,13 @@ class VCIBaseEndpoint(BaseEndpoint):
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
             auth_callback (Callable, optional): A callback function to handle authorization requests. Defaults to None.
+            converter (AttributeMapper, optional): An attribute mapper instance. Defaults to None.
+            trust_evaluator (CombinedTrustEvaluator, optional): A trust evaluator instance. Defaults to None.
         """
         super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self._validate_configs()
+        self.trust_evaluator = trust_evaluator
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
         if isinstance(e, InvalidRequestException) or isinstance(e, InvalidScopeException):
