@@ -131,6 +131,7 @@ class SignedParRequest(OpenId4VciBaseModel):
   redirect_uri: str = None
   jti: str = None
   issuer_state: str = None
+  jws: str = None
 
   @model_validator(mode='after')
   def check_par_request(self) -> "ParRequest":
