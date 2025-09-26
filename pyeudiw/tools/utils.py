@@ -3,7 +3,6 @@ import datetime
 import importlib
 import logging
 import os
-import re
 import time
 from functools import lru_cache
 from secrets import token_hex
@@ -15,14 +14,6 @@ from pyeudiw.tools.http import http_get_async, http_get_sync
 from typing import Type
 
 logger = logging.getLogger(__name__)
-
-_IS_URL_REGEX = re.compile(
-    r'^(?:http|ftp)s?://' # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-    r'localhost|' #localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-    r'(?::\d+)?' # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 def make_timezone_aware(
@@ -255,15 +246,3 @@ def _lru_cached_get_http_url(
     }
     resp: list[requests.Response] = get_http_url([url], httpc_params, http_async)
     return resp[0]
-
-def is_url(url: str) -> bool:
-    """
-    Check if a string is a valid URL.
-    :param url: The string to check
-    :type url: str
-    :returns: True if the string is a valid URL, False otherwise
-    :rtype: bool
-    """
-    if not _IS_URL_REGEX.search(url):
-        return False
-    return True

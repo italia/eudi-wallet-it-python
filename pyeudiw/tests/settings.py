@@ -296,6 +296,7 @@ CONFIG = {
             "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
             "class": "DirectTrustSdJwtVc",
             "config": {
+                "jwk_endpoint": "/.well-known/jwt-vc-issuer",
                 "httpc_params": {
                     "connection": {"ssl": True},
                     "session": {"timeout": 6},
@@ -468,6 +469,7 @@ MODULE_DIRECT_TRUST_CONFIG = {
     "module": "pyeudiw.trust.default.direct_trust_sd_jwt_vc",
     "class": "DirectTrustSdJwtVc",
     "config": {
+        "jwk_endpoint": "/.well-known/jwt-vc-issuer",
         "httpc_params": {"connection": {"ssl": True}, "session": {"timeout": 6}},
     },
 }

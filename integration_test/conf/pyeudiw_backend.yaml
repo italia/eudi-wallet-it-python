@@ -221,6 +221,7 @@ config:
       config:
         cache_ttl: 0
         httpc_params: *httpc_params
+        jwk_endpoint: /.well-known/jwt-vc-issuer
     direct_trust_jar:
       module: pyeudiw.trust.handler.direct_trust_jar
       class: DirectTrustJar

@@ -169,7 +169,7 @@ class TestOpenID4VPBackend:
         )
 
         url_map = self.backend.register_endpoints()
-        assert len(url_map) == 6
+        assert len(url_map) == 7
 
     @pytest.fixture
     def internal_attributes(self):
