@@ -31,6 +31,8 @@ from pyeudiw.tools.content_type import (
     FORM_URLENCODED
 )
 
+from pyeudiw.jwt.helper import is_jwt
+
 CLASS_NAME = "ParHandler.pushed_authorization_request_endpoint"
 
 class ParHandler(VCIBaseEndpoint):
@@ -111,6 +113,13 @@ class ParHandler(VCIBaseEndpoint):
 
             if request and (self.signed_par_request == "true" or self.signed_par_request == "both"):
                 try:
+                    if not is_jwt(request):
+                        self._log_error(
+                            CLASS_NAME,
+                            f"invalid request parameter for `par`, invalid JWS: {request}"
+                        )
+                        return self._handle_400(context, "invalid request parameters")
+                    
                     payload = self.jws_helper.verify(request)
 
                     if not isinstance(payload, dict):
@@ -119,6 +128,8 @@ class ParHandler(VCIBaseEndpoint):
                             f"invalid request parameter for `par`, invalid JWS: {request}"
                         )
                         return self._handle_400(context, "invalid request parameters")
+                    
+                    payload["jws"] = request
                     
                     par_request = SignedParRequest.model_validate(
                         payload, context={
