@@ -1,3 +1,4 @@
+import re
 import json
 from typing import Literal, TypeAlias
 
@@ -17,6 +18,8 @@ from .exceptions import LifetimeException
 
 KeyLike: TypeAlias = ECKey | RSAKey | OKPKey | SYMKey
 SerializationFormat = Literal["compact", "json"]
+
+JWT_REGEX = r'^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$'
 
 
 class JWHelperInterface:
@@ -120,6 +123,21 @@ def is_payload_expired(token_payload: dict) -> bool:
         return True
     return False
 
+def is_jwt(token: str) -> bool:
+    """
+    Check if a string is a JWT.
+
+    :param token: The string to check.
+    :type token: str
+
+    :returns: True if the string is a JWT, False otherwise.
+    :rtype: bool
+    """
+    if not isinstance(token, str):
+        return False
+    if re.match(JWT_REGEX, token):
+        return True
+    return False
 
 def is_jwt_expired(token: str) -> bool:
     """
