@@ -15,7 +15,7 @@ class TrustEvaluationType:
     def __init__(
         self,
         attribute_name: str,
-        expiration_date: int,
+        expiration_date: int | None,
         jwks: list[dict[str, str]] | list[JWK] = [],
         trust_handler_name: str = "",
         crls: list[dict[str, str]] = [],
@@ -27,7 +27,8 @@ class TrustEvaluationType:
         :param attribute_name: The attribute name of the the field that holds the trust parameter data
         :type attribute_name: str
         :param expiration_date: The expiration date in unix timestamp of the trust parameter data
-        :type expiration_date: int
+                                if not provided, the trust parameter data will not expire
+        :type expiration_date: int | None
         :param jwks: The jwks of the trust parameter data
         :type jwks: list[dict[str, str]] | list[JWK], optional
         :param trust_handler_name: The trust handler that handles the trust parameter data
@@ -73,6 +74,8 @@ class TrustEvaluationType:
         :returns: Whether the trust parameter data has expired
         :rtype: bool
         """
+        if self.expiration_date is None:
+            return False
         return iat_now() > self.expiration_date
     
     def get_jwks(self) -> list[dict]:
