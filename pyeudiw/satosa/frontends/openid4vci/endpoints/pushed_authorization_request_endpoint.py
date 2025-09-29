@@ -111,7 +111,7 @@ class ParHandler(VCIBaseEndpoint):
 
             request = data.get("request", "").strip()
 
-            if request self.signed_par_request in ("true", "both"):
+            if request and self.signed_par_request in ("true", "both"):
                 try:
                     if not is_jwt(request):
                         self._log_error(
@@ -145,7 +145,7 @@ class ParHandler(VCIBaseEndpoint):
                         f"invalid request parameter for `par`, invalid JWS: {request}"
                     )
                     return self._handle_400(context, "invalid request parameters")
-            elif (self.signed_par_request == "false" or self.signed_par_request == "both"):
+            elif self.signed_par_request in ("false", "both"):
                 par_request = ParRequest.model_validate(
                     data, context={
                         ENDPOINT_CTX: "par",
