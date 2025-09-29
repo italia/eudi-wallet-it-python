@@ -111,7 +111,7 @@ class ParHandler(VCIBaseEndpoint):
 
             request = data.get("request", "").strip()
 
-            if request and (self.signed_par_request == "true" or self.signed_par_request == "both"):
+            if request self.signed_par_request in ("true", "both"):
                 try:
                     if not is_jwt(request):
                         self._log_error(
