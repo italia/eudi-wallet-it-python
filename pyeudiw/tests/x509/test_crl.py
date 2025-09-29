@@ -2,7 +2,7 @@ from requests import Response
 from cryptography import x509
 from unittest.mock import patch
 from pyeudiw.x509.crl_helper import CRLHelper
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -90,7 +90,8 @@ def test_crl_helper():
     assert helper.is_revoked("1B3652D4A9F1494673D4285F4D81302C33894538")
     assert not helper.is_revoked("1B3652D4A9F1494673D4285F4D81302C33894540")
 
-    assert helper.get_revocation_date("1B3652D4A9F1494673D4285F4D81302C33894538") == datetime(2022, 9, 21, 15, 49, 25)
+    _revocation_date = helper.get_revocation_date("1B3652D4A9F1494673D4285F4D81302C33894538")
+    assert _revocation_date == datetime(2022, 9, 21, 15, 49, 25, tzinfo=timezone.utc)
     assert helper.get_revocation_date("1B3652D4A9F1494673D4285F4D81302C33894540") is None
 
 
