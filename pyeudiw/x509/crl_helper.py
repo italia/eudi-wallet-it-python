@@ -77,7 +77,7 @@ class CRLHelper:
 
         try:
             cert = self.revocation_list.get_revoked_certificate_by_serial_number(serial_number)
-            return cert.revocation_date if cert else None
+            return cert.revocation_date_utc if cert else None
         except Exception as e:
             raise CRLReadError(f"Failed to get revocation date: {e}")
         
