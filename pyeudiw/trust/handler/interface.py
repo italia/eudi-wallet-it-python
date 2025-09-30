@@ -1,7 +1,7 @@
 from typing import Any, Callable, Optional
 
-import satosa.context
-import satosa.response
+from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
@@ -47,7 +47,7 @@ class TrustHandlerInterface:
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[
-        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+        tuple[str, Callable[[Context, Any], Response]]
     ]:
         """
         Expose one or more metadata endpoint required to publish metadata
@@ -59,7 +59,7 @@ class TrustHandlerInterface:
 
         The result of this method is a list of element where each one is of type
         ```
-            tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+            tuple[str, Callable[[Context, Any], Response]]
         ```
         compliant to satosa.backend.BackendModule method register_endpoints, that is:
         1. the first argument is a regxp used for rotuing to that endpoint; while \

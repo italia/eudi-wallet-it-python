@@ -1,4 +1,4 @@
-import satosa.context
+from satosa.context import Context
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
 
@@ -20,7 +20,7 @@ class AuthorizationResponseParser:
     """
 
     def parse_and_validate(
-        self, context: satosa.context.Context
+        self, context: Context
     ) -> AuthorizeResponsePayload:
         """
         Parse (and optionally validate) a satosa http request, wrapped in its own

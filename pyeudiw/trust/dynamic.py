@@ -1,7 +1,8 @@
 import logging
 from typing import Any, Callable, Optional
 
-import satosa.context
+from satosa.context import Context
+from satosa.response import Response
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from typing import Union, Literal
@@ -312,7 +313,7 @@ class CombinedTrustEvaluator(BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[
-        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+        tuple[str, Callable[[Context, Any], Response]]
     ]:
         endpoints = []
         for handler in self.handlers:

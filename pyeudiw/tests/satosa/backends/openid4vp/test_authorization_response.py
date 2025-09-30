@@ -1,7 +1,7 @@
 import json
 
 import pytest
-import satosa.context
+from satosa.context import Context
 from cryptojwt.jwk.rsa import new_rsa_key
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
@@ -33,7 +33,7 @@ def jws_helper():
 def test_direct_post_parser_good_case():
     parser = DirectPostParser()
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -73,7 +73,7 @@ def test_direct_post_response_bad_parse_case():
     # case 0: bad method
     parser = DirectPostParser()
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "GET"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -99,7 +99,7 @@ def test_direct_post_response_bad_parse_case():
         assert False, f"obtained unexpected validation exception: {e}"
 
     # case 1: bad shape
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     ctx.request = {
         "bad_param_name": "bad parameter value",
@@ -123,7 +123,7 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
         CONFIG["jwt"].get("enc_enc_supported", [])
     )
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -157,7 +157,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
         CONFIG["jwt"].get("enc_enc_supported", [])
     )
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "GET"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -187,7 +187,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
         assert False, f"obtained unexpected validation exception: {e}"
 
     # case 1: bad shape
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     ctx.request = {
         "response": jwe_helper.encrypt({"bad_param_name": "bad parameter value"}),
@@ -218,7 +218,7 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
     }
     wrong_helper = JWEHelper(wrong_public_key)
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -262,7 +262,7 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
         CONFIG["jwt"].get("enc_enc_supported", [])
     )
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -296,7 +296,7 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
     wrong_public_key = new_rsa_key()
     wrong_helper = JWSHelper(wrong_public_key)
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
@@ -329,7 +329,7 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
         CONFIG["jwt"].get("enc_alg_supported", []), 
         CONFIG["jwt"].get("enc_enc_supported", []))
 
-    ctx = satosa.context.Context()
+    ctx = Context()
     ctx.request_method = "POST"
     vp_token = "qwe.rty.uio~asd.fgh.jkl"
     state = "123456"
