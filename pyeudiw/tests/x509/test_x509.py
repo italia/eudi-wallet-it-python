@@ -67,10 +67,13 @@ def gen_chain(
         "uri": f"https://{intermediate_dns}",
         "ca": True,
         "path_length": 2,
-        "permitted_subtrees": [
-            x509.DNSName(intermediate_dns),
-            x509.DNSName(leaf_dns),
-        ],
+        # since the CA should not know a priori leave's dns names and allow intermediates to know that
+        # when the CA issues the certificate to a intermediate, it would not put
+        # subtree constraints to intermediate dns name to prevent constraints validation failures
+        #  "permitted_subtrees": [
+            #  x509.DNSName(intermediate_dns),
+            #  x509.DNSName(leaf_dns),
+        #  ],
         "excluded_subtrees": [
             x509.DNSName("localhost"),
             x509.DNSName("localhost.localdomain"),
