@@ -7,15 +7,14 @@ from satosa.internal import InternalData
 from satosa.response import Response, Redirect
 
 from pyeudiw.satosa.backends.openid4vp.authorization_request import build_authorization_request_url
+from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
-from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.tools.base_endpoint import BaseEndpoint
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
-class PreRequestHandler(BaseEndpoint):
+class PreRequestHandler(VPBaseEndpoint):
 
     def __init__(
             self, 
@@ -40,24 +39,8 @@ class PreRequestHandler(BaseEndpoint):
 
         super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
 
-        if self.config["authorization"].get("client_id"):
-            self.client_id = self.config["authorization"]["client_id"] 
-        elif self.config["metadata"].get("client_id"):
-            self.client_id = self.config["metadata"]["client_id"]
-        else:
-            self.client_id = f"{base_url}/{name}"
-
         self.absolute_request_url = f"{self.client_id}/request-uri"
         self.absolute_status_url = f"{self.client_id}/status"
-
-        self.storage_settings = self.config.get("storage", {})
-        if not self.storage_settings:
-            raise ValueError(
-                "Storage settings are not configured. Please check your configuration."
-            )
-
-        # Initialize the database engine
-        self.db_engine = DBEngine(self.storage_settings)
 
         self.qrcode_settings: dict[str, str] = self.config.get("qrcode") or {}
         if not self.qrcode_settings:
@@ -129,7 +112,11 @@ class PreRequestHandler(BaseEndpoint):
                 "internal error: something went wrong when creating your authentication request",
                 e500
             )
-        
+
+        wallet_attestation_invalid = self.wallet_attestation_validation(context)
+        if wallet_attestation_invalid:
+            return wallet_attestation_invalid
+
         qs_params = getattr(context, "qs_params") or {}
         client_id_hint = qs_params.get("client_id_hint", None)
         has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(

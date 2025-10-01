@@ -167,6 +167,10 @@ class ResponseHandler(VPBaseEndpoint):
     def endpoint(self, context: Context) -> Redirect | JsonResponse:
         self._log_function_debug("response_endpoint", context)
 
+        wallet_attestation_invalid = self.wallet_attestation_validation(context)
+        if wallet_attestation_invalid:
+            return wallet_attestation_invalid
+
         # parse and eventually decrypt jwt in response
         try:
             authz_payload = self._parse_authorization_response(context)

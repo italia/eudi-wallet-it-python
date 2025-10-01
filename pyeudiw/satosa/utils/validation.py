@@ -52,22 +52,48 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
+def _validate_client_attestation(header_attestation:str, signing_alg_values_supported: list[str] | None) -> Optional[dict]:
+    if header_attestation:
+        payload = decode_jwt_payload(header_attestation)
+        cnf = payload["cnf"]
+        jws_helper = JWSHelper(cnf)
 
-def validate_oauth_client_attestation_pop(context: Context) -> None:
+        if signing_alg_values_supported and jws_helper.jwks[0].alg not in signing_alg_values_supported:
+            raise InvalidRequestException(
+                f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {signing_alg_values_supported}")
+
+        jws_helper.verify(header_attestation)
+
+        return {
+            "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
+        }
+    return None
+
+def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_values_supported: list[str] | None = None) -> None:
     """
     Validates the presence of the OAuth-Client-Attestation-PoP header in the request.
     Args:
-        context (Context): The SATOSA context containing the HTTP request.
+        :param context: (Context) The SATOSA context containing the HTTP request.
+        :param dpop_signing_alg_values_supported: as list of accepted DPoP signing algorithms.
+            May be empty.
     Raises:
         InvalidRequestException: If the OAuth-Client-Attestation-PoP header is missing.
     """
     header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
 
-    #TODO: add further validation of the PoP header
-
     if not header_pop:
         logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header")
         raise InvalidRequestException("Missing OAuth-Client-Attestation-PoP header")
+
+    if dpop_signing_alg_values_supported:
+        try:
+            _validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
+        except Exception as e:
+            logger.error(
+                f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
+                f"during {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header validation: {e}"
+            )
+            raise InvalidRequestException("Invalid Wallet Attestation JWT header")
 
 def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_supported: list[str] | None) -> Optional[dict]:
     """
@@ -80,10 +106,8 @@ def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_s
     the DPoP proof using the provided list of supported signing algorithms.
 
     Args:
-        context (Context): The SATOSA context containing the HTTP request.
-        dpop_required (bool): Whether a valid DPoP proof is required for the request.
-        wallet_attestation_required (bool): Whether the client attestation is mandatory.
-        dpop_signing_alg_values_supported (list[str]): A list of accepted DPoP signing algorithms.
+        :param context: (Context) The SATOSA context containing the HTTP request.
+        :param pop_signing_alg_values_supported: (list[str]): A list of accepted DPoP signing algorithms.
             May be empty if DPoP is not required.
 
     Returns:
@@ -100,24 +124,11 @@ def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_s
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
     
     try:
-        if header_attestation:
-            payload = decode_jwt_payload(header_attestation)
-            cnf = payload["cnf"]
-            jws_helper = JWSHelper(cnf)
-
-            if pop_signing_alg_values_supported and jws_helper.jwks[0].alg not in pop_signing_alg_values_supported:
-                raise InvalidRequestException(
-                    f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {pop_signing_alg_values_supported}")
-
-            jws_helper.verify(header_attestation)
-
-            return {
-                "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
-            }
-        return None
+        return _validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
     except Exception as e:
         logger.error(
             f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
             f"during {OAUTH_CLIENT_ATTESTATION_HEADER} header validation: {e}"
         )
         raise InvalidRequestException("Invalid Wallet Attestation JWT header")
+
