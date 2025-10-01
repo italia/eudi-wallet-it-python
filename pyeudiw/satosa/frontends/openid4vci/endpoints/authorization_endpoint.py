@@ -1,12 +1,13 @@
+from typing import Callable, Any
 from urllib.parse import urlencode
 
 from pydantic import ValidationError
+from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Response, Redirect
-from satosa.attribute_mapping import AttributeMapper
 
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
     AuthorizationRequest,
@@ -17,17 +18,16 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method
 )
-from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.content_type import (
     HTTP_CONTENT_TYPE_HEADER,
     FORM_URLENCODED,
 )
-from typing import Callable, Any
 
 AUTHORIZATION_ENDPOINT = "authorization"
 

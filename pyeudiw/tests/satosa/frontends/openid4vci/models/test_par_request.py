@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import CLIENT_ID_CTX
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
@@ -13,7 +14,6 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX
 )
 from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequest
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 
 

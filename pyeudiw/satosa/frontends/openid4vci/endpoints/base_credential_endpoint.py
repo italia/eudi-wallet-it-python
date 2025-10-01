@@ -12,12 +12,14 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, InvalidRequestException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
 from pyeudiw.satosa.schemas.metadata import (
     CredentialConfigurationFormatEnum,
@@ -25,7 +27,7 @@ from pyeudiw.satosa.schemas.metadata import (
 )
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
-    validate_request_method, 
+    validate_request_method,
     validate_content_type,
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
@@ -36,7 +38,6 @@ from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSO
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_mdoc_template
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
-from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 
 FIELD_TRANSFORMS = {
     "portrait": {

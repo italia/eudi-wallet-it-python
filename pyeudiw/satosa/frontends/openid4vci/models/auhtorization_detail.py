@@ -3,11 +3,11 @@ from typing import List, Optional
 
 from pydantic import model_validator
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
     ENDPOINT_CTX
 )
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 OPEN_ID_CREDENTIAL_TYPE = "openid_credential"

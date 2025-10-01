@@ -3,6 +3,7 @@ from typing import cast
 
 from pydantic import model_validator
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
@@ -11,7 +12,6 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENTITY_ID_CTX,
     NONCE_CTX
 )
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tools.date import is_valid_unix_timestamp
 
 logger = logging.getLogger(__name__)

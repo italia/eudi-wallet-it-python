@@ -5,6 +5,7 @@ from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     ENDPOINT_CTX,
@@ -16,10 +17,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequ
 from pyeudiw.satosa.frontends.openid4vci.models.par_response import ParResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
-)
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,

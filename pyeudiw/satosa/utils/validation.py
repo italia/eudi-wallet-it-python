@@ -1,13 +1,13 @@
 import logging
+from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
-from typing import Optional
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.tools.content_type import (
     FORM_URLENCODED,
     APPLICATION_JSON,

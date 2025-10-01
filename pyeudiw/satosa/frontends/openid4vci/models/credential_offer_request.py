@@ -4,11 +4,11 @@ from urllib.parse import urlparse
 
 from pydantic import model_validator
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
     CONFIG_CTX
 )
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 
 logger = logging.getLogger(__name__)
 CREDENTIAL_OFFER_ENDPOINT = "credential_offer"
