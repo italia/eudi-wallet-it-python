@@ -11,7 +11,7 @@ from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
     validate_request_method,
-    validate_oauth_client_attestation
+    validate_oauth_client_attestation, validate_oauth_client_attestation_pop
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
 
@@ -83,6 +83,14 @@ def test_validate_oauth_client_attestation_valid_with_invalid_dpop_signing_alg_v
     with pytest.raises(InvalidRequestException):
         validate_oauth_client_attestation(context, ["ES384", "ES512"])
 
+def test_validate_oauth_client_attestation_pop_valid(valid_oauth_client_attestation_jwt):
+    context = Context()
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: "header",
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt
+    }
+    with pytest.raises(InvalidRequestException):
+        validate_oauth_client_attestation_pop(context, ["ES384", "ES512"])
 
 @pytest.mark.parametrize("headers", [
     ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
