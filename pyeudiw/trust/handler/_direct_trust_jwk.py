@@ -11,7 +11,7 @@ from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
-from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 
