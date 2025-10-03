@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, List, Tuple
 
 from satosa.context import Context
 from satosa.response import Response
@@ -25,6 +25,7 @@ class TrustHandlerInterface:
         :returns: The updated trust source
         :rtype: TrustSourceData
         """
+
         raise NotImplementedError
 
     def get_metadata(
@@ -46,51 +47,26 @@ class TrustHandlerInterface:
 
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
-    ) -> list[
-        tuple[str, Callable[[Context, Any], Response]]
-    ]:
+    ) -> List[Tuple[str, Callable[[Context, Any], Response]]]:
         """
-        Expose one or more metadata endpoint required to publish metadata
-        information about *myself* and that are associated to a trust
-        mechanism, such as public keys, configurations, policies, etc.
+        Expose one or more metadata endpoints required to publish metadata
+        information about this handler (for example public keys, configurations,
+        policies, etc.). The endpoints are attached to a backend whose name is the
+        first function argument.
 
-        The endpoint are attached to a backend whose name is equal to
-        the first function argument.
+        The result of this method is a list of elements where each one is of type
+        List[Tuple[str, Callable[[Context, Any], Response]]], compliant with
+        satosa.backend.BackendModule.register_endpoints:
+        1. the first element of the tuple is a regexp used for routing to that endpoint;
+        2. the second element is an HTTP handler that can provide a Response given the Context.
 
-        The result of this method is a list of element where each one is of type
-        ```
-            tuple[str, Callable[[Context, Any], Response]]
-        ```
-        compliant to satosa.backend.BackendModule method register_endpoints, that is:
-        1. the first argument is a regxp used for rotuing to that endpoint; while \
-            not required, due to satosa inernal routing restrictions, the regexp \
-            first path must match the backend.
-        2. the second argument is an http handler that can provide a response given \
-            the information in the context.
+        The entity_uri is the full path component of the exposed satosa module and
+        may be used as issuer value when signing tokens. Due to satosa routing
+        restrictions, exposed endpoints must start with the satosa module name.
 
-        The entity_uri is the full path component of the exposed satosa module.
-        In some context, this also matched the entity id of the module and can be
-        used as issuer value when signing tokens.
-        We assume that the module is exposed to the outside web according to
-        the follwing pattern
-            <scheme>://<host>/<base_path>
-
-        The base path information might be required for appropriate routing. For
-        example, if the satosa entity is known to the outside element of a trust
-        network as
-            http://satosa.example/openid4vp,
-        then some trust frameworks might require to publish a well known information
-        at endpoint
-            http://satosa.exammple/openid4vp/.well-known/protocol-config
-        while other protocols might require to register
-            http://satosa.exammple/.well-known/protocol-config/openid4vp
-
-        However, due to satosa restrictions, the exposed endpoint MUST start with
-        the satosa module name.
-
-        The TrustHandler might not have any associated metadata endpoint, in which case
-        an empty list is returned instead.
+        If the TrustHandler has no associated metadata endpoints, return an empty list.
         """
+    
         return []
     
     def get_handled_trust_material_name(self) -> str:
@@ -111,6 +87,7 @@ class TrustHandlerInterface:
         Some trust evaluation mechanism is not associated to any JWT header
         mechanism, in which case an empty dictionary is returned.
         """
+
         return {}
 
     def validate_trust_material(
@@ -131,6 +108,7 @@ class TrustHandlerInterface:
         :returns: True if the trust chain is valid, False otherwise
         :rtype: bool
         """
+
         raise NotImplementedError
     
     def get_client_id(self) -> Optional[str]:
@@ -138,6 +116,7 @@ class TrustHandlerInterface:
         Return the client ID associated with this trust evaluator.
         This is typically used for OAuth2 or OpenID Connect flows.
         """
+
         return getattr(self, 'client_id', None)
 
     def is_it_me(self, client_id: str) -> bool:
@@ -146,6 +125,7 @@ class TrustHandlerInterface:
         the argument client_id refers to the implementation itself as a
         *member* of the trust framework.
         """
+
         return client_id == self.get_client_id()
 
     @property
@@ -156,6 +136,7 @@ class TrustHandlerInterface:
         :returns: The name of the trust handler
         :rtype: str
         """
+
         return str(self.__class__.__name__)
 
     @property
@@ -166,4 +147,5 @@ class TrustHandlerInterface:
         :returns: The default client id of the trust handler
         :rtype: str
         """
+
         return self.client_id

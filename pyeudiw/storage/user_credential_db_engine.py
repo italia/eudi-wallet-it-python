@@ -4,20 +4,12 @@ from pyeudiw.storage.user_storage import UserStorage
 
 class UserCredentialEngine:
     """
-        Engine for managing User and Credential storage operations.
+    Engine for managing User and Credential storage operations.
 
-        This class provides a wrapper around the configured storage backend,
-        typically a MongoDB-based engine, used for persisting and retrieving
-        user and credential related data. It lazily initializes the DB engine and ensures
-        it is connected when accessed.
-
-        Attributes:
-            _storage (str): The name or URI of the configured storage backend,
-                typically loaded from self.config["storage"].
-            _db_user_engine (UserStorage | None): The lazily initialized instance
-                of the storage engine.
-            _db_credential_engine (CredentialStorage | None): The lazily initialized instance
-                of the storage engine.
+    This class provides a wrapper around the configured storage backend,
+    typically a MongoDB-based engine, used for persisting and retrieving
+    user and credential related data. It lazily initializes the DB engine and ensures
+    it is connected when accessed.
     """
 
     def __init__(self, config: dict):
@@ -30,9 +22,11 @@ class UserCredentialEngine:
     def db_user_storage_engine(self) -> UserStorage:
         """
         Lazily initialized access to MongoDB storage engine.
-        Returns:q
-            MongoStorage: The initialized DB engine instance.
+        
+        Returns:
+            UserStorage: The initialized DB engine instance.
         """
+
         user_storage_config = self.config["user_storage"]
         if not self._db_user_engine:
             self._db_user_engine = DBEngine(user_storage_config)
@@ -54,9 +48,11 @@ class UserCredentialEngine:
     def db_credential_storage_engine(self) -> CredentialStorage:
         """
         Lazily initialized access to MongoDB storage engine.
-        Returns:q
-            MongoStorage: The initialized DB engine instance.
+
+        Returns:
+            CredentialStorage: The initialized DB engine instance.
         """
+
         credential_storage_config = self.config["credential_storage"]
         if not self._db_credential_engine:
             self._db_credential_engine = DBEngine(credential_storage_config)

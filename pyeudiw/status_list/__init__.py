@@ -53,25 +53,25 @@ def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, byt
 def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: int, status_list: bytes,
                                  payload_map: dict | None = None, private_key: dict | None = None, ) -> bytes:
     """
-    Encodes a CWT (CBOR Web Token) representing a status list with optional key signing.
+    Encode a CWT representing a status list and optionally sign it.
 
-    Args:
-        payload_parts (Tuple[dict, dict, dict]): A tuple containing three dictionaries
-            representing the protected header, unprotected header, and payload.
-        bits (int): The number of bits representing the length of the status list.
-        status_list (bytes): A byte string representing the status list bitstring.
-        payload_map (dict | None): An optional dictionary mapping keys in the payload
-            to their desired output names. If None, no mapping is applied.
-        private_key (dict | None, optional): An optional dictionary representing the
-            private key to sign the token. If None, the token is not signed.
+    Compresses the status list and inserts it under claim 65533 in the payload; if
+    a private_key is provided the token will be signed.
 
-    Returns:
-        bytes: The encoded CWT token as a byte string.
-
-    Note:
-        The function applies `payload_map` recursively to the payload dictionary if provided,
-        replacing keys according to the map.
+    :param payload_parts: A tuple containing the protected header, unprotected header, and payload.
+    :type payload_parts: Tuple[dict, dict, dict]
+    :param bits: The number of bits in the status list.
+    :type bits: int
+    :param status_list: The status list as a byte string.
+    :type status_list: bytes
+    :param payload_map: An optional mapping to replace keys in the payload.
+    :type payload_map: dict | None
+    :param private_key: An optional private key for signing the token.
+    :type private_key: dict | None
+    :return: The encoded CWT as a byte string.
+    :rtype: bytes
     """
+
     # Compress the status list
     compressed_status_list = zlib.compress(status_list)
 
@@ -155,6 +155,7 @@ def _compress_bitstring(bitstring: bytes) -> bytes:
     :return: The compressed bitstring.
     :rtype: bytes
     """
+
     compressed_data = zlib.compress(bitstring)
     return base64_urlencode(compressed_data)
 
@@ -179,6 +180,7 @@ def generate_status_list(
     :return: A dictionary containing the status list or a CWT token.
     :rtype: Union[dict, bytes]
     """
+
     compressed_status_list = _compress_bitstring(bitstring)
     
     status_list = {
@@ -224,24 +226,25 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
 
 def _replace_keys(input_dict: dict, field_map: dict) -> dict:
     """
-   Recursively replaces keys in a dictionary according to a given mapping.
+    Recursively replaces keys in a dictionary according to a given mapping.
 
-   Args:
-       input_dict (dict): The input dictionary whose keys need to be replaced.
-       field_map (dict): A mapping of original keys to their replacement keys.
+    Args:
+        input_dict (dict): The input dictionary whose keys need to be replaced.
+        field_map (dict): A mapping of original keys to their replacement keys.
 
-   Returns:
-       dict: A new dictionary with keys replaced based on `field_map`. If a key is
-             not found in `field_map`, it remains unchanged. The function processes
-             nested dictionaries recursively.
+    Returns:
+        dict: A new dictionary with keys replaced based on ``field_map``. If a key is
+            not found in ``field_map``, it remains unchanged. The function processes
+            nested dictionaries recursively.
 
-   Example:
-       input_dict = {"name": "Alice", "info": {"age": 30, "city": "Rome"}}
-       field_map = {"name": "fullName", "age": "years"}
+    Example:
+        input_dict = {"name": "Alice", "info": {"age": 30, "city": "Rome"}}
+        field_map = {"name": "fullName", "age": "years"}
 
-       _replace_keys(input_dict, field_map)
-       # Returns: {"fullName": "Alice", "info": {"years": 30, "city": "Rome"}}
-   """
+        _replace_keys(input_dict, field_map)
+        # Returns: {"fullName": "Alice", "info": {"years": 30, "city": "Rome"}}
+    """
+
     return {field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v)
             for k, v in input_dict.items()}
 
@@ -259,6 +262,7 @@ def _loads_cbor_data(data: Any, index: int):
     Returns:
         Any: The Python object resulting from CBOR decoding the selected item.
     """
+
     if isinstance(data, list):
         return cbor2.loads(data[index])
     else:

@@ -31,6 +31,7 @@ class OpenID4VPBackend(BackendModule):
         :param base_url: Base URL for the backend.
         :param name: Name of the backend module.
         """
+        
         super().__init__(auth_req_callback_func, internal_attributes, base_url, name)
         self.config = config
         self.base_url = base_url
@@ -70,9 +71,11 @@ class OpenID4VPBackend(BackendModule):
     def register_endpoints(self, **kwargs):
         """
         See super class satosa.backends.base.BackendModule
+
         :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
         :raise ValueError: if more than one backend is configured
         """
+
         el = EndpointsLoader(
             self.config, self.internal_attributes, self.base_url, self.name, self.auth_callback_func, self.converter, self.trust_evaluator)
         
@@ -98,14 +101,15 @@ class OpenID4VPBackend(BackendModule):
         """
         This is the start up function of the backend authorization.
 
-        :type context: satosa.context.Context
-        :type internal_request: satosa.internal.InternalData
-        :rtype satosa.response.Response
-
         :param context: the request context
+        :type context: satosa.context.Context
         :param internal_request: Information about the authorization request
+        :type internal_request: satosa.internal.InternalData
+
+        :rtype: satosa.response.Response
         :return: response
         """
+        
         pre_request_endpoint = self.endpoints.get("pre_request")
         if not pre_request_endpoint:
             raise ValueError("No pre-request endpoint configured in the OpenID4VP backend")

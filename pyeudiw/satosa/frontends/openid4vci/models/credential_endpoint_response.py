@@ -12,19 +12,6 @@ from pyeudiw.tools.content_type import APPLICATION_JSON
 class CredentialEndpointResponse(DeferredCredentialEndpointResponse):
     """
     Represents the payload of a Credential Request, supporting both immediate and deferred flows.
-
-    Attributes:
-        claim (Optional[str]): Optional claim associated with the credential.
-        description (Optional[str]): Optional description of the credential.
-        reference (Optional[str]): Optional reference string.
-        credentials (Optional[List[CredentialItem]]): REQUIRED if neither lead_time nor
-            transaction_id are present. MUST NOT be present if lead_time or transaction_id are given.
-        lead_time (Optional[int]): REQUIRED if credentials is not present. Specifies the number
-            of seconds the Wallet needs before requesting the credential.
-        notification_id (Optional[str]): OPTIONAL. MUST NOT be present if `credentials` is not given.
-            Used in Notification Requests to identify a credential.
-        transaction_id (Optional[str]): REQUIRED if `credentials` is not present.
-            MUST NOT be present if `credentials` is given. Used in deferred credential flows.
     """
 
     lead_time: Optional[int] = None

@@ -19,25 +19,22 @@ from pyeudiw.tools.content_type import (
     APPLICATION_JSON
 )
 
-
 class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
     """
     Handle a GET request to the credential_offer_qrcode endpoint.
-    Args:
-        context (Context): The SATOSA context.
-    Returns:
-        A Response object.
     """
 
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the Credential offer qr code endpoints class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name)
         self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
@@ -46,11 +43,13 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context):
         """
         Handle a GET request to the credential_offer_qrcode endpoint.
+
         Args:
             context (Context): The SATOSA context.
         Returns:
             A Response object.
         """
+
         try:
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
