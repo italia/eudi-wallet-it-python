@@ -1,6 +1,7 @@
 import json
-
 from satosa.context import Context
+from pyeudiw.tools.utils import iat_now
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.utils.response import JsonResponse
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
@@ -22,6 +23,16 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         if not self.config.get("metadata", {}).get("openid_credential_issuer"):
             raise ValueError("Missing 'openid_credential_issuer' in metadata configuration.")
 
+        jwks = self.config.get("metadata_jwks", [])
+
+        if not jwks:
+            raise ValueError("Missing 'metadata_jwks' in configuration.")
+
+        self.jws_helper = JWSHelper(jwks[0])
+
+        self.base_url = base_url
+        self.name = name
+
     @property
     def metadata(self) -> dict:
         metadata = self.config.get("metadata", {})
@@ -33,6 +44,26 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         ec_payload = self.metadata.get("openid_credential_issuer", {})
         return ec_payload
 
+    def openid_credential_issuer_metadata_as_jwt(self, x5c: list[str]) -> str:
+        """
+        Returns the entity configuration as a JWT string.
+        
+        Args:
+            x5c (list[str]): The x5c certificate chain to include in the JWT header.
+        Returns:
+            str: The signed JWT string.
+        """
+
+        metadata = self.openid_credential_issuer_metadata_as_dict
+        metadata["sub"] = metadata.get("credential_issuer")
+        metadata["iss"] = metadata.get("credential_issuer")
+        metadata["iat"] = iat_now()
+
+        return self.jws_helper.sign(
+            plain_dict=metadata,
+            unprotected={"x5c": x5c}
+        )
+
     def endpoint(self, context: Context) -> JsonResponse:
         """
         Handle request to the metadata endpoint.
@@ -41,6 +72,17 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         Returns:
             A Response object.
         """
+
+        if self.trust_evaluator:
+            trust_params = self.trust_evaluator.get_jwt_header_trust_parameters(issuer=f"{self.base_url}/{self.name}")
+
+            if trust_params and "x5c" in trust_params:
+                return JsonResponse(
+                    message=self.openid_credential_issuer_metadata_as_jwt(trust_params["x5c"]),
+                    status="200",
+                    content_type="application/jwt"
+                )
+
         return JsonResponse(
             message=self.openid_credential_issuer_metadata_as_dict,
             status="200",

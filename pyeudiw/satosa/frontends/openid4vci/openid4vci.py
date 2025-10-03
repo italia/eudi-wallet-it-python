@@ -2,7 +2,7 @@
 The OpenID4vci (Credential Issuer) frontend module for the satosa proxy
 """
 import logging
-from typing import Callable
+from typing import Callable, Any
 
 from satosa.context import Context
 from satosa.frontends.base import FrontendModule
@@ -15,6 +15,7 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator, UpsertMode
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,26 @@ class OpenID4VCIFrontend(FrontendModule):
     self.config = config
     self.base_url = base_url
     self.name = name
+    self.issuer_id = f"{base_url}/{name}"
     self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
+
+    trust_configuration: Any = self.config.get("trust", {})
+    trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
+
+    if not trust_configuration:
+        raise ValueError("Trust configuration is missing or invalid.")
+
+    if not isinstance(trust_caching_mode, str):
+        raise ValueError("Invalid trust caching mode. Must be one of 'no_cache', 'update_first', or 'use_cache'.")
+
+    trust_caching_mode_literal: UpsertMode = "update_first" if trust_caching_mode.lower() == "update_first" else "cache_first"
+
+    self.trust_evaluator = CombinedTrustEvaluator.from_config(
+        trust_configuration,
+        self.db_engine,
+        default_issuer_id=self.issuer_id,
+        mode=trust_caching_mode_literal
+    )
 
   def register_endpoints(self, backend_names, **kwargs):
     """
@@ -51,6 +71,7 @@ class OpenID4VCIFrontend(FrontendModule):
       name=self.name,
       auth_callback_func=self.auth_req_callback_func,
       converter=self.converter,
+      trust_evaluator=self.trust_evaluator
     )
     url_map = []
     for path, inst in el.endpoint_instances.items():

@@ -344,7 +344,11 @@ class CombinedTrustEvaluator(BaseLogger):
 
     @staticmethod
     def from_config(
-        config: dict, db_engine: DBEngine, default_client_id: str, mode: UpsertMode = "update_first"
+        config: dict, 
+        db_engine: DBEngine, 
+        default_issuer_id: Optional[str] = None,
+        default_client_id: Optional[str] = None,
+        mode: UpsertMode = "update_first"
     ) -> "CombinedTrustEvaluator":
         """
         Create a CombinedTrustEvaluator from a configuration.
@@ -363,16 +367,20 @@ class CombinedTrustEvaluator(BaseLogger):
             try:
                 # every trust evaluation method might use their own client id
                 # but a default one always therefore required
-                client_id = handler_config["config"].get("client_id")
-                issuer_id = handler_config["config"].get("issuer_id")
+                client_id = handler_config["config"].get("client_id") or default_client_id
+                issuer_id = handler_config["config"].get("issuer_id") or default_issuer_id
+
                 if client_id and issuer_id:
                     raise TrustConfigurationError(
                         f"invalid configuration for {handler_name}: client_id and issuer_id both configurated"
                     )
+                               
                 if not client_id and not issuer_id:
-                    handler_config["config"]["client_id"] = default_client_id
-                else:
-                    handler_config["config"]["client_id"] = client_id or issuer_id
+                    raise TrustConfigurationError(
+                        f"invalid configuration for {handler_name}: neither client_id nor issuer_id configurated"
+                    )
+
+                handler_config["config"]["client_id"] = client_id or issuer_id
 
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],
