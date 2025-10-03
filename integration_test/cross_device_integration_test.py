@@ -28,7 +28,10 @@ from integration_test.initializer.commons import (
     create_issuer_test_data,
     extract_saml_attributes,
     verify_request_object_jwt,
-    verify_status_login_page
+    verify_status_login_page,
+    OAUTH_CLIENT_ATTESTATION_HEADER,
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+    valid_oauth_client_attestation_jwt
 )
 from integration_test.initializer.deprecatation import show_deprecation_warning
 from integration_test.initializer.settings import TIMEOUT_S
@@ -44,6 +47,10 @@ db_engine_inst = apply_trust_settings(db_engine_inst)
 
 STATUS_ENDPOINT_URI_JS = "statusEndpoint()+'?id='+sessionIdentifier()"  # javascript functions that yield the status URI; defined in qrcode.html
 
+headers = {
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt(),
+    OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt()
+}
 
 def _extract_request_uri(page_content: str) -> str:
     bs = BeautifulSoup(page_content, features="html.parser")
@@ -64,7 +71,8 @@ def _get_browser_page(playwright: Playwright) -> Page:
     rp_context = rp_browser.new_context(
         ignore_https_errors=True,  # required as otherwise self-signed certificates are not accepted,
         java_script_enabled=True,
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
+        extra_http_headers=headers
     )
     return rp_context.new_page()
 
@@ -113,7 +121,8 @@ def run(playwright: Playwright):
         response_uri,
         verify=False,
         data={"response": wallet_response_data},
-        timeout=TIMEOUT_S
+        timeout=TIMEOUT_S,
+        headers=headers
     )
 
     assert authz_response.status_code == 200

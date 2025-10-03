@@ -11,7 +11,8 @@ from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
     validate_request_method,
-    validate_oauth_client_attestation, validate_oauth_client_attestation_pop
+    validate_oauth_client_attestation,
+    validate_oauth_client_attestation_pop
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
 
