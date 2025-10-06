@@ -174,29 +174,13 @@ def cacheable_get_http_url(
     cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True
 ) -> requests.Response:
     """
-    Make a cached http GET request.
-    The cache duration is UP TO cache_ttl. The actual duration is always
-    below that threshold.
-    The cache is realized with an lru_cache, which does not natively support a
-    time-based cache. To realize it, we exapand the call with a timestamp
-    rounded at the desired time.
-    For example, if the cache_ttl is 1 hour, and we make a request at 14:32,
-    the recorded timestamp will be 14:00 and the cache will be hit for all
-    subsequent requests (with the same parameters) until 14:59.
-    At 15:00, we reach a cache miss and a new value will be inserted.
-
-    The minimum supported time to live is 1 second.
-
-    When the response is not 200, the content of the cache is invalidated
-    in order to not pollute the cache whit 4xx and 5xx responses.
-
-    IMPORTANT: this function has limited support for httpc_params.
-    This is because python does not allow a lru_cache with a dictionary argument.
-    Currently, the only supported arguments are:
-        httpc_params.connection.ssl: bool
-        httpc_params.session.timeout: int
-    and they MUST be defined. When this is not the case, ValueError is raised.
+    Cached HTTP GET with TTL (seconds) implemented via lru_cache.
+    The TTL is enforced by rounding a timestamp argument; entries expire after
+    up to cache_ttl seconds. Minimum TTL is 1 second.
+    Only httpc_params.connection.ssl (bool) and httpc_params.session.timeout (int)
+    are supported and required. Non-200 responses will cause the cache to be cleared.
     """
+
     ssl: bool | None = httpc_params.get("connection", {}).get("ssl", None)
     timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
     if (ssl is None) or (timeout is None):
@@ -236,6 +220,7 @@ def _lru_cached_get_http_url(
     Moreover, a negative HTTP reponse might be cached. It is caller
     responsability to eventually clear the cache when it happens.
     """
+
     # explicitly delete dummy argument timestamp since it is only needed for caching lifetime
     del timestamp
     httpc_params = {

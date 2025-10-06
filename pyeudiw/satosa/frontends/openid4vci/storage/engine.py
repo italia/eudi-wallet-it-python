@@ -27,9 +27,11 @@ class OpenId4VciDBEngineHandler:
     def db_engine(self) -> DBEngine:
         """
         Lazily initialized access to MongoDB storage engine.
-        Returns:
-            MongoStorage: The initialized DB engine instance.
+        
+        :rtype: DBEngine
+        :returns: An instance of the configured storage engine, typically
         """
+
         if not self._db_engine:
             self._db_engine = DBEngine(self._storage)
 

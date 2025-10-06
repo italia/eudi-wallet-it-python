@@ -29,6 +29,7 @@ class VCIBaseEndpoint(BaseEndpoint):
             converter: AttributeMapper | None = None):
         """
         Initialize the OpenID4VCI endpoints class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
@@ -36,6 +37,7 @@ class VCIBaseEndpoint(BaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
             auth_callback (Callable, optional): A callback function to handle authorization requests. Defaults to None.
         """
+
         super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self._validate_configs()
@@ -82,18 +84,21 @@ class VCIBaseEndpoint(BaseEndpoint):
     def _to_request_uri(random_part: str) -> str:
         """
         Generate the full `request_uri` from a random component.
+
         Args:
             random_part (str): The unique identifier to include in the URI.
         Returns:
             str: A full URN request_uri string.
         """
+
         return f"{REQUEST_URI_PREFIX}:{random_part}"
 
     @staticmethod
     def _get_body(context: Context):
         """
-          Retrieve body from the HTTP request.
+        Retrieve body from the HTTP request.
         """
+
         if not context.request or context.request == '{}':
             return None
         if isinstance(context.request, dict) or isinstance(context.request, set):
@@ -122,27 +127,33 @@ class VCIBaseEndpoint(BaseEndpoint):
     def dpop_required(self) -> bool:
         """
         Check if DPoD is required.
+
         Returns:
             bool: True if DPoD is required, False otherwise. Defaults to True.
         """
+
         return self.config.get("security", {}).get("dpop_required", True)
 
     @property
     def wallet_attestation_required(self) -> bool:
         """
         Check if wallet attestation is required.
+
         Returns:
             bool: True if wallet_attestation is required, False otherwise. Defaults to True.
         """
+
         return self.config.get("security", {}).get("wallet_attestation_required", True)
 
     @property
     def dpop_signing_alg_values_supported(self) -> list[str] | None:
         """
         Get the supported DPoP signing algorithms.
+
         Returns:
             list[str]: List of supported DPoP signing algorithms.
         """
+
         authz_server = self.config_utils.get_oauth_authorization_server()
         if authz_server:
             return authz_server.dpop_signing_alg_values_supported
@@ -152,7 +163,9 @@ class VCIBaseEndpoint(BaseEndpoint):
     def signed_par_request(self) -> str:
         """
         Check if signed par request is required.
+        
         Returns:
             str: "true", "false" or "both". Defaults to "true".
         """
+
         return self.config.get("security", {}).get("signed_par_request", "true").lower()

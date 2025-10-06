@@ -52,12 +52,14 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the credentials endpoints class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name)
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
@@ -252,6 +254,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         Returns:
             dict: A dictionary with DB lookup keys and their matched context user attributes values.
         """
+
         lookup_params = {}
 
         lookup_source = self.config_utils.get_credential_configurations().lookup_source

@@ -14,6 +14,7 @@ def build_authorization_request_url(scheme: str, params: dict) -> str:
     The scheme is either the scheme portion of a deeplink, such as "haip" or
     "eudiw", while params is a dictitonary of query parameters not urlencoded.
     """
+
     if "://" not in scheme:
         scheme = scheme + "://"
     query_params = urlencode(params, quote_via=quote_plus)
@@ -33,7 +34,8 @@ def build_authorization_request_claims(
 ) -> dict:
     """
     Primitive function to build the payload claims of the (JAR) authorization request.
-    :param client_id: the client identifier (who issue the jar token)
+
+    :param client_id: the client identifier (who issues the JAR token)
     :type client_id: str
     :param state: request session identifier
     :type state: str
@@ -46,20 +48,20 @@ def build_authorization_request_claims(
         - "auth_iss_id": the issuer identifier of the authorization server
         - "aud": the audience of the request object
     :type default_claims: dict
-    :param nonce: optional nonce to be inserted in the request object; if not \
+    :param nonce: optional nonce to be inserted in the request object; if not
         set, a new cryptographically safe uuid v4 nonce is generated.
     :type nonce: str
     :param client_metadata: optional client_metadata to be included in the request object
     :type client_metadata: dict
-    :param submission_data: optional submission data, such as the duckle query, \
+    :param submission_data: optional submission data, such as the duckle query,
         to be included in the request object.
-        If this parameter is set, the duckle data is used to build the request object
+        If this parameter is set, the duckle data is used to build the request object;
         else the presentation definition retrocompatibility is used.
     :type submission_data: dict
     :param wallet_nonce: optional nonce to be used by the wallet.
     :type wallet_nonce: str
     :raises KeyError: if authorization_config misses mandatory configuration options
-    :returns: a dictionary with the *complete* set of jar jwt playload claims
+    :returns: a dictionary with the *complete* set of JAR JWT payload claims
     :rtype: dict
     """
 

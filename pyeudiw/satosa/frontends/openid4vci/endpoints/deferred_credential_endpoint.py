@@ -14,10 +14,6 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 class DeferredCredentialHandler(BaseCredentialEndpoint):
     """
     Handle a POST request to the deferred_credential endpoint.
-    Args:
-        context (Context): The SATOSA context.
-    Returns:
-        A Response object.
     """
 
     def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
@@ -35,6 +31,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
+
         return DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
 
     def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
@@ -52,6 +49,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
+
         return DeferredCredentialEndpointResponse.to_response([
             CredentialItem(credential = cred)
             for cred in self.build_credential(context, credential_id)

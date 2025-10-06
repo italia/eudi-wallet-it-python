@@ -45,23 +45,27 @@ class AuthorizationHandler(VCIBaseEndpoint):
         ):
         """
         Initialize the authorization endpoints class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
     def endpoint(self, context: Context) -> Response:
         """
         Handle an authorization request, via GET or POST.
+
         Args:
             context (Context): The SATOSA context.
         Returns:
             A Response object, usually a redirect.
         """
+
         entity = None
         try:
             if not context.request_method:

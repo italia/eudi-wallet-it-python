@@ -4,8 +4,7 @@ from urllib.parse import ParseResult, urlparse
 
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.interface import TrustEvaluator
-
-from ..exceptions import InvalidJwkMetadataException
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 
 DEFAULT_ISSUER_JWK_ENDPOINT = "/.well-known/jwt-vc-issuer"
 DEFAULT_METADATA_ENDPOINT = "/.well-known/openid-credential-issuer"
@@ -37,9 +36,7 @@ class DirectTrustSdJwtVc(DirectTrust):
         jwk_endpoint: str = DEFAULT_ISSUER_JWK_ENDPOINT,
         metadata_endpoint: str = DEFAULT_METADATA_ENDPOINT,
     ):
-        if httpc_params is None:
-            self.httpc_params = DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS["httpc_params"]
-        self.httpc_params = httpc_params
+        self.httpc_params = httpc_params or DEFAULT_DIRECT_TRUST_SD_JWC_VC_PARAMS["httpc_params"]
         self.cache_ttl = cache_ttl
         self.jwk_endpoint = jwk_endpoint
         self.metadata_endpoint = metadata_endpoint
@@ -149,6 +146,7 @@ class DirectTrustSdJwtVc(DirectTrust):
             self.cache_ttl, url, self.httpc_params, self.http_async_calls
         ).json()
 
+    @staticmethod
     def build_issuer_jwk_endpoint(
         issuer_id: str, well_known_path_component: str
     ) -> str:
@@ -164,6 +162,7 @@ class DirectTrustSdJwtVc(DirectTrust):
         ).geturl()
         return well_known_url
 
+    @staticmethod
     def build_issuer_metadata_endpoint(
         issuer: str, metadata_path_component: str
     ) -> str:

@@ -25,12 +25,14 @@ class NonceHandler(VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the nonce endpoint class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
@@ -38,11 +40,13 @@ class NonceHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the nonce endpoint.
+        
         Args:
             context (Context): The SATOSA context.
         Returns:
             A Response object.
         """
+
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
