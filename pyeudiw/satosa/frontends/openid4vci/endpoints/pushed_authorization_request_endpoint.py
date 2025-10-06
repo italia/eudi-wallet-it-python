@@ -38,12 +38,14 @@ class ParHandler(VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the par endpoints class.
+        
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
@@ -52,11 +54,13 @@ class ParHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context):
         """
         Handle a POST request to the pushed_authorization_endpoint (PAR).
+
         Args:
             context (Context): The SATOSA context.
         Returns:
             A Response object.
         """
+
         try:
             if not context.request_method:
                 self._log_error(
@@ -168,6 +172,7 @@ class ParHandler(VCIBaseEndpoint):
     def _init_db_session(self, context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest):
         """
         Initialize a new DB session for a credential issuance flow.
+
         Args:
             context (Context): The SATOSA context.
             request_uri_part (str): The generated URI part.
@@ -175,6 +180,7 @@ class ParHandler(VCIBaseEndpoint):
         Raises:
             Exception: If the DB operation fails.
         """
+
         entity = OpenId4VCIEntity.new_entity(context, request_uri_part, par_request, self.force_same_device_flow_referer_criteria)
         try:
             self.db_engine.upsert_session(entity.session_id, entity.model_dump())

@@ -2,7 +2,7 @@ import json
 from typing import TypeVar
 
 import cryptojwt.jwe.exception
-import satosa.context
+from satosa.context import Context
 
 from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwt.exceptions import JWSVerificationError
@@ -42,7 +42,7 @@ def normalize_jsonstring_to_string(s: _S) -> _S:
     return s
 
 
-def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
+def detect_response_mode(context: Context) -> ResponseMode:
     """
     Try to make inference on which response mode type this is based on the
     content of an http request body
@@ -58,7 +58,7 @@ def detect_response_mode(context: satosa.context.Context) -> ResponseMode:
     )
 
 
-def _check_http_post_headers(context: satosa.context.Context) -> None:
+def _check_http_post_headers(context: Context) -> None:
     """
     :raises AuthRespParsingException: if the request in the context does not \
         look like a POST request
@@ -89,7 +89,7 @@ class DirectPostParser(AuthorizationResponseParser):
         pass
 
     def parse_and_validate(
-        self, context: satosa.context.Context
+        self, context: Context
     ) -> AuthorizeResponsePayload:
         _check_http_post_headers(context)
 
@@ -139,7 +139,7 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
         self.enc_enc_supported = enc_enc_supported
 
     def parse_and_validate(
-        self, context: satosa.context.Context
+        self, context: Context
     ) -> AuthorizeResponsePayload:
         _check_http_post_headers(context)
         resp_data_raw: dict = context.request

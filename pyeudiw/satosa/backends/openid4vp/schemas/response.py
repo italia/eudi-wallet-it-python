@@ -42,8 +42,7 @@ class AuthorizeResponseDirectPostJwt:
 @dataclass
 class AuthorizeResponsePayload:
     """
-    AuthorizeResponsePayload is a simple schema class for
-        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters
+    AuthorizeResponsePayload is a simple schema class for https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters
     only for the case when presentation submission is used over DCQL.
 
     This class is a weaker validation than pyeudiw.satosa.backends.openid4vp.schema.ResponseSchema

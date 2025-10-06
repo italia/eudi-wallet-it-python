@@ -14,12 +14,14 @@ class MetadataHandler(VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the OpenID4VCI metadata endpoint class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         self.federation_config = config.get("trust", {}).get("federation", {}).get("config", {})
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
@@ -43,6 +45,7 @@ class MetadataHandler(VCIBaseEndpoint):
     @property
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
+
         ec_payload = {
             "exp": exp_from_now(minutes=self.federation_config.get("entity_configuration_exp")),
             "iat": iat_now(),
@@ -62,6 +65,7 @@ class MetadataHandler(VCIBaseEndpoint):
         :return: The entity configuration
         :rtype: str
         """
+
         data = self.entity_configuration_as_dict
         _jwk = self.metadata_jwks[0]
         jwshelper = JWSHelper(_jwk)
@@ -77,11 +81,13 @@ class MetadataHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context) -> Response:
         """
         Handle request to the metadata endpoint.
+        
         Args:
             context (Context): The SATOSA context.
         Returns:
             A Response object.
         """
+
         is_json = context.qs_params.get("format", "") == "json"
         return Response(
             json.dumps(self.entity_configuration_as_dict) if is_json else self.entity_configuration,

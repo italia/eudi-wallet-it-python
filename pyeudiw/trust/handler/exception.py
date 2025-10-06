@@ -1,2 +1,0 @@
-class InvalidJwkMetadataException(Exception):
-    pass

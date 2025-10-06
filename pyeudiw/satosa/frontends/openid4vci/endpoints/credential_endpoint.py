@@ -22,10 +22,6 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 class CredentialHandler(BaseCredentialEndpoint):
     """
     Handle a POST request to the credential endpoint.
-    Args:
-        context (Context): The SATOSA context.
-    Returns:
-        A Response object.
     """
 
     def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
@@ -43,6 +39,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
+
         c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context = {
             AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})
         })
@@ -71,6 +68,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
+
         return CredentialEndpointResponse.to_response([
             CredentialItem(credential = cred)
             for cred in self.build_credential(context, credential_id)

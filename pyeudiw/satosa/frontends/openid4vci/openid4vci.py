@@ -40,10 +40,12 @@ class OpenID4VCIFrontend(FrontendModule):
   def register_endpoints(self, backend_names, **kwargs):
     """
     See super class satosa.frontends.base.FrontendModule
+
     :type backend_names: list[str]
     :rtype: list[(str, ((satosa.context.Context, Any) -> satosa.response.Response, Any))]
     :raise ValueError: if more than one backend is configured
     """
+  
     el = EndpointsLoader(
       config=self.config,
       internal_attributes=self.internal_attributes,
@@ -60,6 +62,16 @@ class OpenID4VCIFrontend(FrontendModule):
     return url_map
 
   def handle_authn_response(self, context: Context, internal_resp: InternalData):
+    """
+    Handle the authentication response from the backend.
+    
+    Args:
+        context (Context): The SATOSA context.
+        internal_resp (InternalData): The internal response from the backend.
+    Returns:
+        A Response object.
+    """
+
     try:
       session_id = get_session_id(context)
       entity = self.db_engine.search_session_by_field("session_id", session_id)

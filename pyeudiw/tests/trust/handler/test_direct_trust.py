@@ -16,7 +16,7 @@ from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import (
     DirectTrustSdJwtVc,
     build_metadata_issuer_endpoint,
 )
-from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
 from requests import Response
@@ -34,6 +34,7 @@ def fake_get_http_url(
     
     if urls[0].endswith("vct/.well-known/jwt-vc-issuer"):
         return [_generate_response(issuer, expected_jwk)]
+    
 
 def test_direct_trust_build_issuer_jwk_endpoint():
     entity_id = "https://credential-issuer.example/vct"

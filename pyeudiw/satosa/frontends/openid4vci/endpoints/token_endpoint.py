@@ -53,12 +53,14 @@ class TokenHandler(VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the token endpoint class.
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
+
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
@@ -66,12 +68,14 @@ class TokenHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context):
         """
         Handle a POST request to the token endpoint.
+
         Args:
             context (Context): The SATOSA context.
 
         Returns:
             A Response object.
         """
+
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
@@ -191,8 +195,9 @@ class TokenHandler(VCIBaseEndpoint):
     @staticmethod
     def _get_oauth_client_attestation(context: Context, required: bool = True) -> str | None:
         """
-          Retrieve oauth client attestation pop header
+        Retrieve oauth client attestation pop header
         """
+
         if (not context.http_headers
                 or (OAUTH_CLIENT_ATTESTATION_POP_HEADER not in context.http_headers)
                 or (context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER) is None)):
