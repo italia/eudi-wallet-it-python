@@ -1,13 +1,11 @@
-from satosa.response import Response
 from satosa.context import Context
+from satosa.response import Response
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, GET_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
-)
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method

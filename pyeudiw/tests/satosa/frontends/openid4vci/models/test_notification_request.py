@@ -3,11 +3,11 @@ import string
 
 import pytest
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.notification_request import (
     NotificationRequest,
     ACCEPTED_EVENT
 )
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 
 
 @pytest.mark.parametrize("event_description",[

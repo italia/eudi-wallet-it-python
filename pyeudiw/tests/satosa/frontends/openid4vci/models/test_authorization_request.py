@@ -1,12 +1,12 @@
 import pytest
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
     AuthorizationRequest,
     CLIENT_ID_CTX,
     PAR_REQUEST_URI_CTX
 )
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import ENDPOINT_CTX
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 
 
 @pytest.fixture

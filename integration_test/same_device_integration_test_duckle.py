@@ -5,6 +5,11 @@ import urllib.parse
 
 import requests
 
+from integration_test.initializer.commons import (
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+    OAUTH_CLIENT_ATTESTATION_HEADER,
+    valid_oauth_client_attestation_jwt
+)
 from integration_test.initializer.commons_duckle import (
     ISSUER_CONF,
     setup_test_db_engine,
@@ -35,7 +40,9 @@ http_user_agent = requests.Session()
 
 auth_req_url = create_saml_auth_request()
 headers_mobile = {
-    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1"
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1",
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt(),
+    OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt()
 }
 request_uri = ""
 
@@ -74,6 +81,7 @@ wallet_response_data = create_authorize_response(
 
 authz_response = http_user_agent.post(
     response_uri,
+    headers=headers_mobile,
     verify=False,
     data={"response": wallet_response_data},
     timeout=TIMEOUT_S

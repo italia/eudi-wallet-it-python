@@ -4,13 +4,11 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
 from pyeudiw.satosa.frontends.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
-)
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,

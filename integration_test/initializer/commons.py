@@ -9,6 +9,8 @@ from xml.etree import ElementTree
 
 import requests
 from bs4 import BeautifulSoup, PageElement
+from cryptojwt import JWS
+from cryptojwt.jwk.ec import new_ec_key
 from playwright.sync_api import Playwright, Page
 
 from integration_test.initializer.saml2_sp import saml2_request
@@ -41,6 +43,9 @@ from pyeudiw.tests.federation.base import (
 from pyeudiw.tools.utils import exp_from_now
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.model.trust_source import TrustSourceData
+
+OAUTH_CLIENT_ATTESTATION_POP_HEADER = "oauth-client-attestation-pop"
+OAUTH_CLIENT_ATTESTATION_HEADER = "oauth-client-attestation"
 
 CREDENTIAL_ISSUER_JWK = JWK(leaf_cred_jwk_prot.serialize(private=True))
 _CREDENTIAL_ISSUER_JWK_VALUE = None
@@ -317,3 +322,10 @@ def get_new_browser_page(playwright: Playwright) -> Page:
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
     )
     return rp_context.new_page()
+
+def valid_oauth_client_attestation_jwt():
+    ec_key = new_ec_key(crv="P-256", use="sig", alg="ES256")
+    payload = {"cnf": ec_key.serialize(private=False)}
+    jws = JWS(json.dumps(payload), alg="ES256")
+    return jws.sign_compact([ec_key])
+

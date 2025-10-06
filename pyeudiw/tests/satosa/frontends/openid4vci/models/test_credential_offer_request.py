@@ -1,9 +1,9 @@
 import pytest
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
 from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
 
 

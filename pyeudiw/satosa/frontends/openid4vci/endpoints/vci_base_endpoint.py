@@ -8,11 +8,9 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.tools.config import Openid4VciFrontendConfigUtils
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
-    InvalidRequestException,
-    InvalidScopeException
-)
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"

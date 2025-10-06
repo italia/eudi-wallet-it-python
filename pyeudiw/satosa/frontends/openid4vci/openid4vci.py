@@ -9,10 +9,10 @@ from satosa.frontends.base import FrontendModule
 from satosa.internal import InternalData
 from satosa.response import Response
 
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidRequestException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 

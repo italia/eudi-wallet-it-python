@@ -79,40 +79,12 @@ config:
     expiration_time: 5 # minutes
     aud: https://self-issued.me/v2
     response_mode: direct_post
-    presentation_definition:
-      id: global-presentation-definition-id
-      input_descriptors:
-      - id: input-specific-id
-        purpose: Request presentation holding Power of Representation attestation
-        format:
-          dc+sd-jwt: {}
-        constraints:
-          fields:
-          - path:
-            - "$.vct"
-            filter:
-              const: urn:eu.europa.ec.eudi:por:1
-      - id: another-input-specific-id
-        purpose: Request first name and last name claims from PID attestation
-        format:
-          dc+sd-jwt: {}
-        constraints:
-          limit_disclosure: required
-          fields:
-            - path:
-              - "$.vct"
-              filter:
-                type: string
-                pattern: urn:eu.europa.ec.eudi:por:1
-            - path:
-              - "$.family_name"
-            - path:
-              - "$.given_name"
 
   user_attributes:
     unique_identifiers:
       - tax_id_code
       - unique_id
+      - personal_administrative_number
     subject_id_random_value: CHANGEME!
 
   network:

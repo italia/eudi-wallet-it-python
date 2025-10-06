@@ -197,6 +197,9 @@ CONFIG = {
             "EdDSA",
         ],
     },
+    "security" :{
+        "wallet_attestation_required": False,
+    },
     "authorization": {
         "url_scheme": "haip",  # haip://
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
