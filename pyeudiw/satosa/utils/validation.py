@@ -52,9 +52,15 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-def _validate_client_attestation(header_attestation:str, signing_alg_values_supported: list[str] | None) -> Optional[dict]:
-    if header_attestation:
-        payload = decode_jwt_payload(header_attestation)
+def validate_client_attestation(wallet_attestation:str, signing_alg_values_supported: list[str] | None) -> Optional[dict]:
+    """
+    Validates the Wallet Attestation JWT and extracts the confirmation method.
+    :param wallet_attestation: as Wallet Attestation JWT.
+    :param signing_alg_values_supported: as list of accepted signing algorithms.
+    :return: validated attestation info or None if not present.
+    """
+    if wallet_attestation:
+        payload = decode_jwt_payload(wallet_attestation)
         cnf = payload["cnf"]
         jws_helper = JWSHelper(cnf)
 
@@ -62,7 +68,7 @@ def _validate_client_attestation(header_attestation:str, signing_alg_values_supp
             raise InvalidRequestException(
                 f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {signing_alg_values_supported}")
 
-        jws_helper.verify(header_attestation)
+        jws_helper.verify(wallet_attestation)
 
         return {
             "thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))
@@ -87,7 +93,7 @@ def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_val
 
     if dpop_signing_alg_values_supported:
         try:
-            _validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
+            validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
         except Exception as e:
             logger.error(
                 f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
@@ -124,7 +130,7 @@ def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_s
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
     
     try:
-        return _validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
+        return validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
     except Exception as e:
         logger.error(
             f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
