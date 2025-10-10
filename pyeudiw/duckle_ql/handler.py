@@ -1,6 +1,8 @@
 import logging
 from typing import Dict, Any
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
+
 from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
 from pyeudiw.duckle_ql.credential import CredentialsRequest
 from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
@@ -8,6 +10,7 @@ from pyeudiw.satosa.backends.openid4vp.exceptions import InvalidVPToken
 from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
+from pyeudiw.satosa.utils.validation import validate_client_attestation
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 EXP_CLAIM = "exp"
@@ -34,9 +37,14 @@ class DuckleHandler(BaseVPParser):
         :type sig_alg_supported: list[str]
         """
         super().__init__(trust_evaluator, **kwargs)
+        breakpoint()
         if sig_alg_supported is None:
             sig_alg_supported = []
         self.sig_alg_supported = sig_alg_supported
+        self.wallet_attestation_required = kwargs.get("security", {}).get("wallet_attestation_required", True)
+        metadata = kwargs.get("metadata", {})
+        self.client_attestation_pop_signing_alg_values_supported = metadata.get("client_attestation_pop_signing_alg_values_supported")
+        self.client_attestation_signing_alg_values_supported = metadata.get("client_attestation_signing_alg_values_supported")
         self.queries = CredentialsRequest.model_validate_json(kwargs.get(DUCKLE_PRESENTATION, {})[DUCKLE_QUERY_KEY])
 
     def parse(self,  token: dict) -> Dict[str, Any]:
@@ -85,6 +93,7 @@ class DuckleHandler(BaseVPParser):
         :type verifier_nonce: str
         :raises InvalidVPToken: If the signature or claims are invalid.
         """
+        breakpoint()
         credentials = self.queries.credentials
         expected_ids = [credential.id for credential in credentials]
         missing_ids = [id_ for id_ in expected_ids if id_ not in token]
@@ -100,7 +109,19 @@ class DuckleHandler(BaseVPParser):
             token_str = token[cred.id]
             try:
                 if cred.format == VC_SD_JWT_FORMAT or cred.format == DC_SD_JWT_FORMAT:
-                    parser = VpVcSdJwtParserVerifier(self.trust_evaluator, self.sig_alg_supported)
+                    if (cred.id == "wallet attestation"
+                            and self.wallet_attestation_required and cred.format == VC_SD_JWT_FORMAT):
+                        try:
+                            validate_client_attestation(token_str, self.client_attestation_signing_alg_values_supported)
+                            continue
+                        except Exception as e:
+                            logging.error(
+                                f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
+                                f"during wallet attestation validation: {e}"
+                            )
+                            raise e
+                    else:
+                        parser = VpVcSdJwtParserVerifier(self.trust_evaluator, self.sig_alg_supported)
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
                 else:

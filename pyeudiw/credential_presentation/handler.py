@@ -98,10 +98,7 @@ def load_credential_presentation_handlers(
     )
     duckle_handler = next((handler for handler in config_model.formats if handler.class_ == "DuckleHandler"), None)
     if duckle_handler:
-        updated_config = {
-            DUCKLE_PRESENTATION: config.get(DUCKLE_PRESENTATION, {})
-        }
-        duckle_handler.config = add_to_config(updated_config, duckle_handler.config)
+        duckle_handler.config = config
     return CredentialPresentationHandlers(config_model)
 
 
