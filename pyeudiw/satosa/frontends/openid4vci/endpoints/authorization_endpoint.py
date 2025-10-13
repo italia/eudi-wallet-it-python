@@ -55,6 +55,7 @@ class AuthorizationHandler(VCIBaseEndpoint):
 
         super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
+        self.name = name
 
     def endpoint(self, context: Context) -> Response:
         """
@@ -129,6 +130,7 @@ class AuthorizationHandler(VCIBaseEndpoint):
                 raise Exception("missing attribute converter for authorization endpoint")
 
             context.internal_data = internal_req
+            context.target_backend = self.config.get("default_target_authentication_backend", "openid4vp")
 
             return self._auth_callback(
                 context,
