@@ -1,300 +1,149 @@
-from datetime import datetime, timedelta
+from typing import Any
+from datetime import datetime
+from ipaddress import IPv4Address, IPv4Network
 from ssl import DER_cert_to_PEM_cert
-
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import Encoding
-from cryptography.x509.oid import NameOID
-
-from typing import Optional
-
+from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.verify import (
     get_issuer_from_x5c,
     is_der_format,
     verify_x509_attestation_chain,
     get_trust_anchor_from_x5c
 )
-
+from cryptography import x509
 
 def gen_chain(
-        date: datetime = datetime.now(), 
-        ca_cn: str = "CN=ca.example.com, O=Example CA, C=IT", 
+        date: datetime| None = None, 
+        ca_cn: str = "ca.example.com", 
         ca_dns: str = "ca.example.com",
-        leaf_cn: str = "CN=leaf.example.com, O=Example Leaf, C=IT", 
-        leaf_dns: str = "leaf.example.org",
-        leaf_uri: str = "leaf.example.org",
-        leaf_private_key: Optional[ec.EllipticCurvePrivateKey] = None
+        intermediate_cn: str = "intermediate.example.org", 
+        intermediate_dns: str = "intermediate.example.org",
+        leaf_cn: str = "leaf.example.it", 
+        leaf_dns: str = "leaf.example.it",
+        leaf_uri: str = "https://leaf.example.it/openid4vp",
+        leaf_private_key: Any = None
     ) -> list[bytes]:
-    # Generate a private key for the CA
 
+    ca_cert_params = {
+        "cn": ca_cn,
+        "organization_name": "Example CA",
+        "country_name": "IT",
+        "email_address": f"info@{ca_dns}",
+        "dns": ca_dns,
+        "uri": f"https://{ca_dns}",
+        "crl_distr_point": f"https://{ca_dns}/crl/{ca_dns}.crl",
+        "ca": True,
+        "path_length": None,
+        # since the CA should not know a priori leave's dns names and allow intermediates to know that
+        # when the CA issues the certificate to a intermediate, it would not put
+        # subtree constraints to intermediate dns name to prevent constraints validation failures
+        #  "permitted_subtrees": [
+            #  x509.DNSName(ca_dns),
+            #  x509.DNSName(intermediate_dns),
+        #  ],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
+        ],
+        "key_usage": x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        )
+    }
 
-    ca_private_key = ec.generate_private_key(
-        ec.SECP256R1(),
-    )
+    intermediate_cert_params = {
+        "cn": intermediate_cn,
+        "organization_name": "Example Intermediate",
+        "country_name": "IT",
+        "email_address": f"info@{intermediate_dns}",
+        "dns": intermediate_dns,
+        "uri": f"https://{intermediate_dns}",
+        "ca": True,
+        "path_length": 2,
+        # since the CA should not know a priori leave's dns names and allow intermediates to know that
+        # when the CA issues the certificate to a intermediate, it would not put
+        # subtree constraints to intermediate dns name to prevent constraints validation failures
+        #  "permitted_subtrees": [
+            #  x509.DNSName(intermediate_dns),
+            #  x509.DNSName(leaf_dns),
+        #  ],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
+        ],
+        "key_usage": x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        ),
+        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl"
+    }
 
-    # Generate a private key for the intermediate
-    intermediate_private_key = ec.generate_private_key(
-        ec.SECP256R1(),
-    )
+    leaf_cert_params = {
+        "cn": leaf_cn,
+        "organization_name": "Example Leaf",
+        "country_name": "IT",
+        "email_address": f"info@{leaf_dns}",
+        "dns": leaf_dns,
+        "uri": leaf_uri,
+        "ca": True,
+        "path_length": 1,
+        "private_key": leaf_private_key,
+        "permitted_subtrees": [
+            x509.DNSName(leaf_dns),
+        ],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32"))
+        ],
+        "key_usage": x509.KeyUsage(
+            digital_signature=True,
+            key_cert_sign=True,
+            key_encipherment=True,
+            crl_sign=True,
+            key_agreement=False,
+            content_commitment=False,
+            data_encipherment=False,
+            encipher_only=False,
+            decipher_only=False
+        ),
+        "crl_distr_point": f"https://{leaf_dns}/crl/{leaf_dns}.crl",
+    }
 
-    # Generate a private key for the leaf
+    if date:
+        ca_cert_params["not_valid_before"] = date
+        ca_cert_params["not_valid_after"] = date.replace(year=date.year + 1)
 
-    if leaf_private_key is None:
-        leaf_private_key = ec.generate_private_key(
-            ec.SECP256R1(),
-        )
-        
-    # Generate the CA's certificate
-    ca = (
-        x509.CertificateBuilder()
-        .subject_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        ca_cn
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example CA"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
-                ]
-            )
-        )
-        .issuer_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        ca_cn
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example CA"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
-                ]
-            )
-        )
-        .public_key(ca_private_key.public_key())
-        .serial_number(x509.random_serial_number())
-        .not_valid_before(date - timedelta(days=1))
-        .not_valid_after(date + timedelta(days=365))
-        .add_extension(
-            x509.BasicConstraints(ca=True, path_length=2),
-            critical=True,
-        )
-        .add_extension(
-            x509.SubjectAlternativeName([x509.DNSName(ca_dns)]),
-            critical=False
-        )
-        .add_extension(
-            x509.KeyUsage(
-                digital_signature=True,
-                key_cert_sign=True,
-                key_encipherment=True,
-                crl_sign=True,
-                key_agreement=False,
-                content_commitment=False,
-                data_encipherment=False,
-                encipher_only=False,
-                decipher_only=False
-            ), True
-        )
-        .add_extension(
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[
-                        x509.UniformResourceIdentifier(
-                            f"https://ca.example.com/crl/ca.example.com.crl"
-                        )
-                    ],
-                    relative_name=None,
-                    reasons=None,
-                    crl_issuer=None
-                )
-            ]),
-            critical=False
-        )
-        .add_extension(
-            x509.NameConstraints(
-                permitted_subtrees= None,
-                excluded_subtrees=[
-                    x509.DNSName("localhost"),
-                    x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1")
-                ]
-            ),
-            critical=True
-        )
-        .sign(ca_private_key, hashes.SHA256())
-    )
+    chain = ChainBuilder()
+    chain.gen_certificate(**ca_cert_params)
+    chain.gen_certificate(**intermediate_cert_params)
+    chain.gen_certificate(**leaf_cert_params)
 
-    # Generate the intermediate's certificate
-    intermediate = (
-        x509.CertificateBuilder()
-        .subject_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        "https://intermediate.example.net"
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example INT"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
-                ]
-            )
-        )
-        .issuer_name(ca.subject)
-        .public_key(intermediate_private_key.public_key())
-        .serial_number(x509.random_serial_number())
-        .not_valid_before(date - timedelta(days=1))
-        .not_valid_after(date + timedelta(days=365))
-        .add_extension(
-            x509.BasicConstraints(ca=True, path_length=1),
-            critical=True,
-        )
-        .add_extension(
-            x509.KeyUsage(
-                digital_signature=True,
-                key_cert_sign=True,
-                key_encipherment=True,
-                crl_sign=True,
-                key_agreement=False,
-                content_commitment=False,
-                data_encipherment=False,
-                encipher_only=False,
-                decipher_only=False
-            ), True
-        )
-        .add_extension(
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[
-                        x509.UniformResourceIdentifier(
-                            "https://intermediate.example.net/crl/intermediate.example.net.crl"
-                        )
-                    ],
-                    relative_name=None,
-                    reasons=None,
-                    crl_issuer=None
-                )
-            ]),
-            critical=False
-        )
-        .add_extension(
-            x509.NameConstraints(
-                permitted_subtrees=None,
-                excluded_subtrees=[
-                    x509.DNSName("localhost"),
-                    x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1")
-                ]
-            ),
-            critical=True
-        )
-        .sign(ca_private_key, hashes.SHA256())
-    )
-
-    # Generate the leaf's certificate
-    leaf = (
-        x509.CertificateBuilder()
-        .subject_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        leaf_cn
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        "Example Leaf"
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        "IT"
-                    ),
-                ]
-            )
-        )
-        .issuer_name(intermediate.subject)
-        .public_key(leaf_private_key.public_key())
-        .serial_number(x509.random_serial_number())
-        .not_valid_before(date - timedelta(days=1))
-        .not_valid_after(date + timedelta(days=365))
-        .add_extension(
-            x509.BasicConstraints(ca=True, path_length=0),
-            critical=True,
-        )
-        .add_extension(
-            x509.SubjectAlternativeName([
-                x509.DNSName(leaf_dns),
-                x509.UniformResourceIdentifier(leaf_uri),
-            ]),
-            critical=False
-        )
-        .add_extension(
-            x509.KeyUsage(
-                digital_signature=True,
-                key_cert_sign=True,
-                key_encipherment=True,
-                crl_sign=True,
-                key_agreement=False,
-                content_commitment=False,
-                data_encipherment=False,
-                encipher_only=False,
-                decipher_only=False
-            ), True
-        )
-        .add_extension(
-            x509.CRLDistributionPoints([
-                x509.DistributionPoint(
-                    full_name=[
-                        x509.UniformResourceIdentifier(
-                            f"https://leaf.example.com/crl/leaf.example.com.crl"
-                        )
-                    ],
-                    relative_name=None,
-                    reasons=None,
-                    crl_issuer=None
-                )
-            ]),
-            critical=False
-        )
-        .add_extension(
-            x509.NameConstraints(
-                permitted_subtrees=[
-                    x509.UniformResourceIdentifier(f"https://leaf.example.com"),
-                    x509.DNSName("leaf.example.com"),
-                ],
-                excluded_subtrees=[
-                    x509.DNSName("localhost"),
-                    x509.DNSName("localhost.localdomain"),
-                    x509.DNSName("127.0.0.1")
-                ]
-            ),
-            critical=True
-        )
-        .sign(intermediate_private_key, hashes.SHA256())
-    )
-
-    # Here the certificate chain in DER format, then encoded in base64 to use it according to RFC 9360:
-
-    # Create a certificate chain
-    certificate_chain = [
-        leaf.public_bytes(Encoding.DER),
-        intermediate.public_bytes(Encoding.DER),
-        ca.public_bytes(Encoding.DER),
-    ]
-    return certificate_chain
+    return chain.get_chain("DER")
 
 
 def chain_to_pem(chain: list[bytes]) -> str:
     pems = [DER_cert_to_PEM_cert(cert) for cert in chain]
     return "\n".join(pems)
 
+def test_valid_chain_invalid_date():
+    chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
+    assert not verify_x509_attestation_chain(chain)
 
 def test_valid_chain():
     chain = gen_chain()
@@ -304,11 +153,6 @@ def test_valid_chain():
 def test_valid_chain_with_none_exp():
     chain = gen_chain()
     assert verify_x509_attestation_chain(chain)
-
-
-def test_valid_chain_invalid_date():
-    chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
-    assert not verify_x509_attestation_chain(chain)
 
 
 def test_invalid_intermediary_chain():
@@ -337,7 +181,7 @@ def test_chain_issuer():
     issuer = get_issuer_from_x5c(chain)
     trust_anchor = get_trust_anchor_from_x5c(chain)
 
-    assert issuer == "leaf.example.org"
+    assert issuer == "leaf.example.it"
     assert trust_anchor == "ca.example.com"
 
 

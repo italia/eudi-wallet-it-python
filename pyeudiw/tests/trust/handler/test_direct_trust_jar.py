@@ -2,8 +2,7 @@ import json
 from dataclasses import dataclass
 
 import pytest
-import satosa.context
-import satosa.response
+from satosa.context import Context
 
 from pyeudiw.jwk import JWK
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
@@ -165,7 +164,7 @@ def test_direct_trust_metadata_handler(direct_trust_jar, signing_private_key):
     assert endpoint_regexp == "^openid4vp/.well-known/jar-issuer$"
 
     http_handler = registered_methods[0][1]
-    empty_context = satosa.context.Context()
+    empty_context = Context()
     response = http_handler(empty_context, "test")
     assert "200" in response.status
     assert response._content_type == "application/json"

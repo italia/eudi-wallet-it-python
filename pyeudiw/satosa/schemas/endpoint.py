@@ -1,6 +1,6 @@
 from typing import Union
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 
 _CONFIG_ENDPOINT_KEYS = ["module", "class", "path"]
 
@@ -40,3 +40,8 @@ class EndpointsConfig(BaseModel):
             if set(_CONFIG_ENDPOINT_KEYS) != set(v.keys()):
                 raise ValueError(f"Invalid config endpoint structure for {v}")
         return v
+
+class EndpointDefConfig(BaseModel):
+    module: str
+    class_: str = Field(..., alias="class")
+    path: str

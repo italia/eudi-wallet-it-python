@@ -1,7 +1,8 @@
 import logging
 from typing import Any, Callable, Optional
 
-import satosa.context
+from satosa.context import Context
+from satosa.response import Response
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from typing import Union, Literal
@@ -290,7 +291,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         return trust_source.policies
 
-    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> list[dict]:
+    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, Any]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
 
@@ -312,7 +313,7 @@ class CombinedTrustEvaluator(BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[
-        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+        tuple[str, Callable[[Context, Any], Response]]
     ]:
         endpoints = []
         for handler in self.handlers:
@@ -363,8 +364,16 @@ class CombinedTrustEvaluator(BaseLogger):
             try:
                 # every trust evaluation method might use their own client id
                 # but a default one always therefore required
-                if not handler_config["config"].get("client_id"):
+                client_id = handler_config["config"].get("client_id")
+                issuer_id = handler_config["config"].get("issuer_id")
+                if client_id and issuer_id:
+                    raise TrustConfigurationError(
+                        f"invalid configuration for {handler_name}: client_id and issuer_id both configurated"
+                    )
+                if not client_id and not issuer_id:
                     handler_config["config"]["client_id"] = default_client_id
+                else:
+                    handler_config["config"]["client_id"] = client_id or issuer_id
 
                 trust_handler = dynamic_class_loader(
                     handler_config["module"],

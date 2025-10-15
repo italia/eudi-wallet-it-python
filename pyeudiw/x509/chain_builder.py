@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 from datetime import datetime, timedelta
 from typing import Literal
-
+from cryptography import x509
 
 class ChainBuilder:
     def __init__(self):
@@ -15,10 +15,10 @@ class ChainBuilder:
     def gen_certificate(
         self,
         cn: str,
-        org_name: str,
+        organization_name: str,
         country_name: str,
+        email_address: str,
         dns: str,
-        date: datetime,
         uri: str,
         ca: bool,
         path_length: int | None,
@@ -26,21 +26,24 @@ class ChainBuilder:
         private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None = None,
         crl_distr_point: str | None = None,
         not_valid_before: datetime = datetime.now() - timedelta(days=1),
-        not_valid_after: datetime = datetime.now() + timedelta(days=365)
+        not_valid_after: datetime = datetime.now() + timedelta(days=365),
+        excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        key_usage: x509.KeyUsage | None = None,
+        organization_identifier: str | None = None
     ) -> None:
         """
         Generate a certificate and add it to the chain.
 
         :param cn: Common Name
         :type cn: str
-        :param org_name: Organization Name
-        :type org_name: str
+        :param organization_name: Organization name for the certificate
+        :type organization_name: str
+        :type organization_name: str | None
         :param country_name: Country Name
         :type country_name: str
         :param dns: DNS Name
         :type dns: str
-        :param date: Date of the certificate
-        :type date: datetime
         :param private_key: Private key to use for signing the certificate
         :type private_key: ec.EllipticCurvePrivateKey | rsa.RSAPrivateKey | None
         :param ca: Whether the certificate is a CA certificate
@@ -55,6 +58,14 @@ class ChainBuilder:
         :type not_valid_before: datetime
         :param not_valid_after: End date of the certificate validity
         :type not_valid_after: datetime
+        :param excluded_subtrees: List of DNS names to exclude from the certificate
+        :type excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
+        :param permitted_subtrees: List of DNS names to permit in the certificate
+        :type permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier]
+        :param key_usage: Key usage for the certificate
+        :type key_usage: x509.KeyUsage | None
+        :param organization_identifier: Organization identifier for the certificate
+        :type organization_identifier: str | None
 
         :return: None
         """
@@ -63,39 +74,39 @@ class ChainBuilder:
                 ec.SECP256R1(),
             )
 
-        cert = x509.CertificateBuilder() \
-            .subject_name(
-                x509.Name(
-                    [
-                        x509.NameAttribute(NameOID.COMMON_NAME,
-                            cn
-                        ),
-                        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                            org_name
-                        ),
-                        x509.NameAttribute(NameOID.COUNTRY_NAME,
-                            country_name
-                        ),
-                    ]
-                )
-            )
-        
+        cert = x509.CertificateBuilder()
 
-        cert = cert.issuer_name(
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME,
-                        cn if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["cn"]
-                    ),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                        org_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["org_name"]
-                    ),
-                    x509.NameAttribute(NameOID.COUNTRY_NAME,
-                        country_name if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["country_name"]
-                    ),
-                ]
+        x5c_names = [
+            x509.NameAttribute(NameOID.COMMON_NAME,
+                cn
+            ),
+            x509.NameAttribute(NameOID.COUNTRY_NAME,
+                country_name
+            ),
+            x509.NameAttribute(NameOID.EMAIL_ADDRESS,
+                email_address
+            ),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, 
+                organization_name
             )
-        ) \
+        ]
+
+        subject_names = x509.Name(x5c_names)
+
+        if organization_identifier:
+            x5c_names.append(
+                x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier)
+            )
+
+        
+        cert = cert.subject_name(subject_names)
+
+        if not self.certificates_attributes:
+            issuer_name = subject_names
+        else:
+            issuer_name = self.certificates_attributes[0]["certificate"].subject
+
+        cert = cert.issuer_name(issuer_name) \
         .public_key(private_key.public_key()) \
         .serial_number(x509.random_serial_number() if not serial_number else serial_number) \
         .not_valid_before(not_valid_before) \
@@ -120,6 +131,20 @@ class ChainBuilder:
                 critical=False
             )
 
+        if excluded_subtrees or permitted_subtrees:
+            cert = cert.add_extension(
+                x509.NameConstraints(
+                    permitted_subtrees=permitted_subtrees,
+                    excluded_subtrees=excluded_subtrees
+                ),
+                critical=True
+            )
+        
+        if key_usage:
+            cert = cert.add_extension(
+                key_usage, True
+            )
+
         cert = cert.add_extension(
             x509.SubjectAlternativeName([
                 x509.UniformResourceIdentifier(uri),
@@ -127,13 +152,26 @@ class ChainBuilder:
             ]),
             critical=False
         ) \
-        .sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+            critical=False
+        )
+
+        if self.certificates_attributes:
+            cert = cert.add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    self.certificates_attributes[0]["certificate"].public_key()
+                ),
+                critical=False
+            )
+        
+        cert = cert.sign(
+            private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256()
+        )
         
         self.certificates_attributes.insert(0, {
-            "cn": cn,
-            "org_name": org_name,
-            "country_name": country_name,
-            "private_key": private_key
+            "private_key": private_key,
+            "certificate": cert
         })
 
         self.chain.insert(0, cert)
@@ -146,7 +184,7 @@ class ChainBuilder:
         :rtype: list[bytes] | list[str]
         """
         return [
-            cert.public_bytes(Encoding.DER if encoding == "DER" else "PEM") 
+            cert.public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM) 
             for cert in self.chain
         ]
     
@@ -157,4 +195,4 @@ class ChainBuilder:
         :return: The CA certificate
         :rtype: bytes | str
         """
-        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else "PEM")
+        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM)

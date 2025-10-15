@@ -60,7 +60,7 @@ In the realm of pyeudiw, seamless integration with MongoDB is facilitated throug
 These classes not only offer a robust implementation but also serve as tangible representations of the abstract base
 classes, `BaseStorage` and `BaseCache`.
 This classes can be used as references while providing a custom implementation for other databases.
-For a complete list of the MongoDB configuration parameters, see [README.SATOSA.md](/README.SATOSA.md#storage)
+For a complete list of the MongoDB configuration parameters, see [OPENID4VP-SATOSA-BACKEND.md](/docs/OPENID4VP-SATOSA-BACKEND.md#storage) or [OPENID4VCI-SATOSA-FRONTEND.md](/docs/OPENID4VCI-SATOSA-FRONTEND.md#storage)
 
 ### Data Examples in MongoDB
 

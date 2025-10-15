@@ -3,15 +3,15 @@ import requests
 from typing import Any, Callable, Literal
 from urllib.parse import urlparse
 
-import satosa.context
-import satosa.response
+from satosa.context import Context
+from satosa.response import Response
 
 from pyeudiw.jwk import JWK
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
-from pyeudiw.trust.handler.exception import InvalidJwkMetadataException
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 
@@ -149,7 +149,7 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[
-        tuple[str, Callable[[satosa.context.Context, Any], satosa.response.Response]]
+        tuple[str, Callable[[Context, Any], Response]]
     ]:
         if not self.jwk_endpoint:
             return []
@@ -158,8 +158,8 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         response_json = self._build_metadata_with_issuer_jwk(entity_uri)
 
         def metadata_response_fn(
-            ctx: satosa.context.Context, *args
-        ) -> satosa.response.Response:
+            ctx: Context, *args
+        ) -> Response:
             return JsonResponse(message=response_json)
 
         return [(metadata_path, metadata_response_fn)]

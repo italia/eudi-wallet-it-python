@@ -2,7 +2,7 @@ import importlib
 from typing import Optional, List
 
 from pyeudiw.credential_presentation.model import CredentialPresentationHandlersConfig
-from pyeudiw.presentation_definition.utils import DUCKLE_PRESENTATION
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
@@ -31,7 +31,7 @@ class CredentialPresentationHandlers:
             ImportError: If there is an issue with loading the required handler modules or classes.
         """
         self.max_submission_size = config.max_submission_size or 4096
-        from pyeudiw.openid4vp.presentation_submission import BaseVPParser
+        from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
         self.handlers: dict[str, BaseVPParser] = {}
         self.trust_evaluator = config.trust_evaluator
 

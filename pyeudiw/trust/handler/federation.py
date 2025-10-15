@@ -17,14 +17,10 @@ from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.exceptions import MissingProtocolSpecificJwks, UnknownTrustAnchor
+from pyeudiw.trust.handler.commons import DEFAULT_HTTPC_PARAMS
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
-from pyeudiw.federation.statements import (
-    get_entity_configurations,
-    get_entity_statements,
-)
-
-from .commons import DEFAULT_HTTPC_PARAMS
+from pyeudiw.federation.statements import get_entity_configurations
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +102,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         :return: The entity configuration
         :rtype: str
         """
+
         data = self.entity_configuration_as_dict
         _jwk = self.federation_jwks[0]
         jwshelper = JWSHelper(_jwk)
@@ -121,6 +118,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     @property
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
+
         ec_payload = {
             "exp": exp_from_now(minutes=self.entity_configuration_exp),
             "iat": iat_now(),
@@ -167,7 +165,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         tuple[str, Callable[[Context, Any], Response]]
     ]:
 
-        metadata_path = f'^{backend_name.strip("/")}/.well-known/openid-federation$'
+        metadata_path = f'{backend_name.strip("/")}/.well-known/openid-federation'
         response = self.entity_configuration
 
         def metadata_response_fn(
@@ -200,6 +198,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         :returns: If the trust chain is valid
         :rtype: bool
         """
+
         _first_statement = decode_jwt_payload(chain[-1])
         trust_anchor_eid = _first_statement.get('iss', None)
 

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from pyeudiw.satosa.backend import OpenID4VPBackend
+from pyeudiw.satosa.backends.openid4vp.openid4vp import OpenID4VPBackend
 from pyeudiw.tests.settings import BASE_URL, CONFIG, INTERNAL_ATTRIBUTES
 
 

@@ -1,7 +1,7 @@
+import re
 import base64
 import logging
-from datetime import datetime
-import re
+from datetime import datetime, timezone
 from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
 
 import pem
@@ -81,7 +81,7 @@ def _check_datetime(exp: datetime | None):
     if exp is None:
         return True
 
-    if datetime.now() > exp:
+    if datetime.now(timezone.utc) > exp:
         message = f"expired chain date -> {exp}"
         logging.warning(LOG_ERROR.format(message))
         return False
@@ -252,7 +252,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
     """
     cert_data = load_der_x509_certificate(to_DER_cert(pem_str))
 
-    if not _check_datetime(cert_data.not_valid_after):
+    if not _check_datetime(cert_data.not_valid_after_utc):
         logging.error(LOG_ERROR.format("check datetime failed"))
         return False
 
@@ -326,7 +326,8 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """
     der = to_DER_cert(x5c[0])
     cert = load_der_x509_certificate(der)
-    return cert.not_valid_after
+
+    return cert.not_valid_after_utc
 
 def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     """

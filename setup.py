@@ -21,9 +21,10 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     url='https://github.com/italia/eudi-wallet-it-python',
@@ -40,23 +41,27 @@ setup(
     },
     install_requires=[
         "cryptojwt>=1.9,<1.10",
-        "pydantic>=2.10,<2.11",
+        "pydantic>=2.11.9,<3.0.0",
         "pyqrcode>=1.2,<1.3",
-        "pem>=23.1,<23.2"
+        "pem>=23.1,<23.2",
+        "cryptography>=45.0.0,<46.0.0"
     ],
-    extra_require={
+    extras_require = {
         "satosa": [
-            "Pillow>=10.0.0,<10.1",
-            "device_detector>=5.0,<6",
+            "Pillow>=11.1.0,<12.0.0",
+            "device_detector>=5.0,<6.0",
             "satosa>=8.4,<8.6",
-            "jinja2>=3.0,<4",
-            "pymongo>=4.4.1,<4.5",
-            "requests>=2.2,<2.4",
-            "pymdoccbor>=0.9.0,<1.0"
+            "jinja2>=3.1.5,<4.0.0",
+            "pymongo>=4.10.1,<5.0.0",
+            "requests>=2.32.3,<3.0.0",
+            "pymdoccbor>=0.9.0,<2.0.0",
         ],
         "federation": [
-            "asyncio>=4,<4.1",
-            "aiohttp>=3.8,<3.9"
+            "asyncio>=3.4.3,<4.0.0",
+            "aiohttp>=3.11.11,<4.0.0",
+        ],
+        "test": [
+            "pytest-mock",
         ]
     }
 )
