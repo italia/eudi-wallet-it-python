@@ -42,9 +42,6 @@ jobs:
         run: |-
           ./build_docs.sh
 
-      - name: Disable Jekyll #Disable Jekyll, allow to use folder names starting with underscore (for documentation generated via Sphinx)
-        run: touch docs/_build/html/.nojekyll
-
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
