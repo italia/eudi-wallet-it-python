@@ -47,6 +47,17 @@ setup(
         "cryptography>=45.0.0,<46.0.0"
     ],
     extras_require = {
+        "docs": [
+            "satosa>=8.4,<8.6",
+            "pymongo>=4.10.1,<5.0.0",
+            "aiohttp>=3.11.11,<4.0.0",
+            "pymdoccbor>=0.9.0,<2.0.0",
+            "device_detector>=5.0,<6.0",
+            "beautifulsoup4",
+            "pytest",
+            "sphinx",
+            "sphinx_rtd_theme"
+        ],
         "satosa": [
             "Pillow>=11.1.0,<12.0.0",
             "device_detector>=5.0,<6.0",

@@ -62,6 +62,7 @@ class AuthorizeUnmatchedResponse(Exception):
 class InvalidRequestException(Exception):
     """
     Exception raised when a request is invalid according to OpenID4VCI specifications.
+
     Attributes:
         message (str): A human-readable explanation of why the request is invalid.
     """
