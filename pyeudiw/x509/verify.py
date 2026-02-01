@@ -4,7 +4,6 @@ import logging
 from datetime import datetime, timezone
 from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
 
-import pem
 from typing import Optional
 from cryptography import x509
 from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
@@ -20,6 +19,8 @@ LOG_ERROR = "x509 verification failed: {}"
 logger = logging.getLogger(__name__)
 
 _BASE64_RE = re.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
+# PEM block: -----BEGIN LABEL----- ... -----END LABEL----- (no pyOpenSSL/pem dependency)
+_PEM_BLOCK_RE = re.compile(r"-----BEGIN [^-]+-----\n.*?-----END [^-]+-----", re.DOTALL)
 
 
 def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bool:
@@ -223,15 +224,16 @@ def to_PEM_cert(cert: str | bytes) -> str:
 
 def pem_to_pems_list(cert: str) -> list[str]:
     """
-    Convert the x509 certificate chain from PEM to multiple PEMs.
+    Split a string containing one or more PEM blocks (e.g. certificates) into a list of PEM strings.
+    Uses stdlib/re only; no pyOpenSSL or pem dependency.
 
-    :param der: The x509 certificate chain in PEM format
-    :type der: str
+    :param cert: The x509 certificate chain in PEM format (one or more concatenated PEM blocks)
+    :type cert: str
 
-    :returns: The x509 certificate chain in PEM format
+    :returns: The x509 certificate chain as a list of PEM strings
     :rtype: list[str]
     """
-    return [str(cert) for cert in pem.parse(cert)]
+    return _PEM_BLOCK_RE.findall(cert.strip())
 
 
 def to_pem_list(der_list: list[bytes] | list[str]) -> list[str]:
