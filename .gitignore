@@ -165,6 +165,7 @@ cython_debug/
 *.iml
 
 env
+.ci-env
 **/.DS_Store
 
 */wordpress-plugin
