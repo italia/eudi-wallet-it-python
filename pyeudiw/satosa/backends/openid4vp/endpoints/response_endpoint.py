@@ -2,7 +2,7 @@ import hashlib
 import json
 import logging
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Union, Callable
 
 from satosa.attribute_mapping import AttributeMapper
@@ -415,8 +415,13 @@ class ResponseHandler(VPBaseEndpoint):
                     "setting a random one for interop for internal frontends"
                 ),
             )
+            def _json_default(obj: Any):
+                if isinstance(obj, (date, datetime)):
+                    return obj.isoformat()
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
             sub = hashlib.sha256(
-                f"{json.dumps(response).encode()}~{pepper}".encode()
+                f"{json.dumps(response, default=_json_default).encode()}~{pepper}".encode()
             ).hexdigest()
         response["sub"] = [sub]
 
