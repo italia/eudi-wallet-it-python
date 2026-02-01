@@ -33,14 +33,31 @@ class MongoStorage(BaseStorage):
             return False
         try:
             self.client.server_info()
-        except pymongo.errors.InvalidOperation:
+        except (pymongo.errors.InvalidOperation, pymongo.errors.AutoReconnect, OSError):
+            # MongoDB may drop connections under load (e.g. many test workers). Invalidate
+            # so the next _connect() creates a fresh client instead of reusing a dead socket.
+            self._reset_connection()
             return False
 
         return True
 
+    def _reset_connection(self) -> None:
+        """Clear client and db references so the next _connect() creates a fresh connection.
+        Used when MongoDB closes the connection (AutoReconnect / "connection closed"),
+        e.g. under load during pytest runs with multiple DBEngine instances.
+        """
+        self.client = None
+        self.db = None
+        self.sessions = None
+        self.trust_attestations = None
+        self.trust_anchors = None
+        self.trust_sources = None
+
     def _connect(self):
         if not self.is_connected:
-            self.client = pymongo.MongoClient(self.url, **self.connection_params)
+            params = dict(self.connection_params or {})
+            params.setdefault("maxPoolSize", 10)
+            self.client = pymongo.MongoClient(self.url, **params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.sessions = getattr(
                 self.db, self.storage_conf["db_sessions_collection"]
@@ -128,15 +145,25 @@ class MongoStorage(BaseStorage):
         return document_id
 
     def set_session_retention_ttl(self, ttl: int) -> None:
-        self._connect()
+        # Runs in __init__; under load (e.g. second DBEngine in register_endpoints) the
+        # socket can be closed by MongoDB. Retry once with a fresh connection.
+        def _do_set_ttl() -> None:
+            self._connect()
+            if not ttl:
+                if self.sessions.index_information().get("creation_date_1"):
+                    self.sessions.drop_index("creation_date_1")
+            else:
+                self.sessions.create_index(
+                    [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
+                )
 
-        if not ttl:
-            if self.sessions.index_information().get("creation_date_1"):
-                self.sessions.drop_index("creation_date_1")
-        else:
-            self.sessions.create_index(
-                [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
-            )
+        try:
+            _do_set_ttl()
+        except (pymongo.errors.AutoReconnect, OSError) as e:
+            if isinstance(e, OSError) and "connection closed" not in str(e).lower():
+                raise
+            self._reset_connection()
+            _do_set_ttl()
 
     def get_session_retention_ttl(self) -> dict:
         return self.sessions.index_information().get("creation_date_1")

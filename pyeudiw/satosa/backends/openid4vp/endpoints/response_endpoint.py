@@ -2,7 +2,7 @@ import hashlib
 import json
 import logging
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Union, Callable
 
 from satosa.attribute_mapping import AttributeMapper
@@ -14,7 +14,7 @@ from satosa.response import Response
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.presentation_definition.parser_validator import ParserValidator
+from pyeudiw.duckle_ql.parser_validator import ParserValidator
 from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     AuthorizeResponsePayload,
     DirectPostJwtJweParser,
@@ -60,9 +60,10 @@ class ResponseHandler(VPBaseEndpoint):
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
             converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator
+            trust_evaluator: CombinedTrustEvaluator,
+            db_engine=None,
         ) -> None:
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
 
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
 
@@ -226,7 +227,7 @@ class ResponseHandler(VPBaseEndpoint):
                 if not request_vp_formats_supported \
                 else {k: v for k, v in self.vp_token_parser.handlers.items() if k in request_vp_formats_supported}
             parser_validator = ParserValidator(authz_payload.vp_token, vp_token_handlers , self.config)
-            if parser_validator.is_active_presentation_definition():
+            if parser_validator.is_active_duckle_request():
                 parser_validator.validate(challenge["aud"], challenge["nonce"])
             else:
                 if isinstance(authz_payload.vp_token, str):
@@ -414,8 +415,13 @@ class ResponseHandler(VPBaseEndpoint):
                     "setting a random one for interop for internal frontends"
                 ),
             )
+            def _json_default(obj: Any):
+                if isinstance(obj, (date, datetime)):
+                    return obj.isoformat()
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
             sub = hashlib.sha256(
-                f"{json.dumps(response).encode()}~{pepper}".encode()
+                f"{json.dumps(response, default=_json_default).encode()}~{pepper}".encode()
             ).hexdigest()
         response["sub"] = [sub]
 

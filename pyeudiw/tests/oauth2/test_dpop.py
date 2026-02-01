@@ -31,7 +31,6 @@ WALLET_INSTANCE_ATTESTATION = {
         "jwt_vc_json": {"alg_values_supported": ["ES256"]},
     },
     "request_object_signing_alg_values_supported": ["ES256"],
-    "presentation_definition_uri_supported": False,
     "iat": iat_now(),
     "exp": iat_now() + 1024,
 }

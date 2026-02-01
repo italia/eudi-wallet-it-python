@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -40,8 +40,7 @@ class CredentialPresentationHandlersConfig(BaseModel):
     trust_evaluator: CombinedTrustEvaluator
     sig_alg_supported: list[str] = []
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @model_validator(mode="before")
     def validate_formats(cls, values):

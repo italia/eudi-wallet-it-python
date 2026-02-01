@@ -17,8 +17,8 @@ class TestMongoStorage:
                 "db_trust_anchors_collection": "trust_anchors",
                 "db_trust_sources_collection": "trust_source",
             },
-            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
-            {},
+            f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
+            {"serverSelectionTimeoutMS": 15000, "connectTimeoutMS": 10000, "maxPoolSize": 10},
         )
 
     def test_mongo_connection(self):

@@ -1,14 +1,26 @@
-import base64
+"""
+Parser and validator for DCQL (Duckle) Verifiable Presentation requests.
+
+This module provides ParserValidator to detect and validate VP tokens when
+the backend is configured with config.dcql_query (DCQL flow).
+"""
 import logging
 from typing import Any
 
 from pyeudiw.duckle_ql.handler import DuckleHandler
 from pyeudiw.exceptions import ValidationError
-from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION
+from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.presentation_submission import MissingHandler
 
 
 class ParserValidator:
+    """
+    Validates Verifiable Presentation tokens for the DCQL (Duckle) flow.
+
+    Use is_active_duckle_request() to check if the current request is a DCQL request
+    (i.e. config.dcql_query is set). When active, parse() and validate()
+    use the DuckleHandler to process the VP token.
+    """
 
     def __init__(self, token: Any, handlers: dict, config: dict):
         self.token = token
@@ -24,7 +36,7 @@ class ParserValidator:
             verifier_nonce: str
     ) -> None:
         """
-        Validate the presentation definition data using the appropriate handler .
+        Validate the DCQL presentation data using the DuckleHandler.
 
         :raises MissingHandler: If the handler for the format is not found.
         :raises VPTokenDescriptorMapMismatch: If the number of VP tokens does not match the number of descriptors.
@@ -36,31 +48,21 @@ class ParserValidator:
             raise ValidationError(f"Error parsing token at position: {e}")
 
     def _extract_handler(self, handlers: dict):
-        queries_to_handlers = [
-            (DUCKLE_PRESENTATION, DuckleHandler),
-        ]
-
-        for pres, handler_cls, in queries_to_handlers:
-            if self.config.get(pres):
-                for value in handlers.values():
-                    if isinstance(value, handler_cls):
-                        return value
-                raise MissingHandler(f"Handler not found for {pres} tokens!")
+        if self.config.get(DUCKLE_QUERY_KEY):
+            for value in handlers.values():
+                if isinstance(value, DuckleHandler):
+                    return value
+            raise MissingHandler("Handler not found for DCQL tokens!")
 
         logging.error("Handler not defined for current token!")
         return None
 
-    def is_active_presentation_definition(self) -> bool:
+    def is_active_duckle_request(self) -> bool:
+        """
+        Return True if the backend is configured for DCQL (Duckle) flow
+        (config.dcql_query present) and the token is a single object
+        (DCQL VP format), not a list of encoded VPs (PE format).
+        """
         if isinstance(self.token, list):
             return False
-        return DUCKLE_PRESENTATION in self.config
-
-def _is_jwt(token: str) -> bool:
-    parts = token.split(".")
-    return len(parts) == 3
-
-def _decode_base64url(data: str) -> bytes:
-    rem = len(data) % 4
-    if rem > 0:
-        data += '=' * (4 - rem)
-    return base64.urlsafe_b64decode(data)
+        return bool(self.config.get(DUCKLE_QUERY_KEY))

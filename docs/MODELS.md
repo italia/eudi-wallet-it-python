@@ -9,7 +9,9 @@ To install it, simply run:
 $ pip install datamodel-code-generator
 ```
 
-It is possible to generate a file from a remote file without downloading it as follows:
+It is possible to generate a file from a remote file without downloading it as follows.
+
+For legacy Presentation Exchange schema (deprecated; the OpenID4VP backend uses the DCQL/Duckle flow and `dcql_query` instead, see [OPENID4VP-SATOSA-BACKEND.md](OPENID4VP-SATOSA-BACKEND.md)):
 
 ```bash
 $ datamodel-codegen --url https://raw.githubusercontent.com/openid/oid4vc-haip-sd-jwt-vc/main/schemas/presentation_definition.json --output pyeudiw/presentation_exchange/schemas/oid4vc_presentation_definition.py  --output-model-type pydantic_v2.BaseModel

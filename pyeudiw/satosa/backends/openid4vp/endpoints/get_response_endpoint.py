@@ -23,7 +23,8 @@ class GetResponseHandler(BaseEndpoint):
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
             converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator
+            trust_evaluator: CombinedTrustEvaluator,
+            db_engine=None,
         ) -> None:
         """
         Initialize the GetRequestHandler with the given configuration, internal attributes, base URL, and name.
@@ -43,8 +44,8 @@ class GetResponseHandler(BaseEndpoint):
                 "Storage settings are not configured. Please check your configuration."
             )
 
-        # Initialize the database engine
-        self.db_engine = DBEngine(self.storage_settings)
+        # Reuse shared db_engine from backend when provided to avoid multiple MongoClient instances.
+        self.db_engine = db_engine if db_engine is not None else DBEngine(self.storage_settings)
 
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]

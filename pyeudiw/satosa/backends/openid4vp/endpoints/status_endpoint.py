@@ -22,7 +22,8 @@ class StatusHandler(VPBaseEndpoint):
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
             converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator
+            trust_evaluator: CombinedTrustEvaluator,
+            db_engine=None,
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -35,7 +36,7 @@ class StatusHandler(VPBaseEndpoint):
         :raises ValueError: If storage or QR code settings are not configured.
         """
 
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
 
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
 

@@ -69,8 +69,10 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
+# Sphinx documentation (generated in CI, published from _build/html)
 docs/_build/
+docs/rst
+docs/source
 
 # PyBuilder
 .pybuilder/
@@ -170,8 +172,6 @@ env
 */__MACOSX
 
 .DS_Store
-
-docs/rst
 
 # VSCode
 #  VSCode specific settings

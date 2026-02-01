@@ -205,89 +205,8 @@ CONFIG = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
-        "presentation_definition": [
-            {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.sd-jwt.type"],
-                                    },
-                                    {
-                                        "filter": {"type": "object"},
-                                        "path": ["$.sd-jwt.cnf"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.given_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.unique_id"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "jwt": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "sd-jwt",
-                    }
-                ],
-            },
-            {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.doctype"],
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.namespace"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.portrait"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.driving_privileges"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "mDL",
-                    }
-                ],
-            },
-        ],
+        "aud": "https://self-issued.me/v2",
+        "response_mode": "direct_post",
     },
     "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
@@ -425,16 +344,20 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                     "conf": {"db_name": "pyeudiw_test"},
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                     "conf": {
                         "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
@@ -442,7 +365,11 @@ CONFIG = {
                         "db_trust_anchors_collection": "trust_anchors",
                         "db_trust_sources_collection": "trust_sources",
                     },
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
         }
@@ -507,86 +434,35 @@ CONFIG_DIRECT_TRUST = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
-        "presentation_definition": [
+        "aud": "https://self-issued.me/v2",
+        "response_mode": "direct_post",
+    },
+    "dcql_query": {
+        "credentials": [
             {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.sd-jwt.type"],
-                                    },
-                                    {
-                                        "filter": {"type": "object"},
-                                        "path": ["$.sd-jwt.cnf"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.given_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.unique_id"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "jwt": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "sd-jwt",
-                    }
+                "id": "personal id data",
+                "format": "dc+sd-jwt",
+                "meta": {
+                    "vct_values": [
+                        "https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata",
+                    ],
+                },
+                "claims": [
+                    {"path": ["given_name"]},
+                    {"path": ["family_name"]},
                 ],
             },
             {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.doctype"],
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.namespace"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.portrait"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.driving_privileges"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "mDL",
-                    }
+                "id": "wallet attestation",
+                "format": "mso_mdoc",
+                "meta": {
+                    "vct_values": [
+                        "https://itwallet.registry.example.it/WalletAttestation",
+                    ],
+                },
+                "claims": [
+                    {"path": ["wallet_link"]},
+                    {"path": ["wallet_name"]},
                 ],
             },
         ],
@@ -630,23 +506,31 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=15000",
                     "conf": {"db_name": "pyeudiw_test"},
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=15000",
                     "conf": {
                         "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors",
                     },
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
         }
@@ -877,7 +761,6 @@ WALLET_INSTANCE_ATTESTATION = {
         "jwt_vc_json": {"alg_values_supported": ["ES256"]},
     },
     "request_object_signing_alg_values_supported": ["ES256"],
-    "presentation_definition_uri_supported": False,
     "iat": iat_now(),
     "exp": exp_from_now(),
 }
