@@ -4,6 +4,7 @@ coverage
 pdbpp
 pytest-cov
 flake8
+radon
 isort
 autoflake
 bandit
