@@ -1,5 +1,6 @@
+# Dev/lint/tooling only; project deps from: pip install -e ".[satosa,test,docs]"
+setuptools>=70.0.0
 pytest
-pytest-mock
 coverage
 pdbpp
 pytest-cov
@@ -17,7 +18,5 @@ html-linter
 sphinx
 sphinx_rtd_theme
 playwright
-freezegun
-pytest-mock
 PyJWT
 cose

@@ -44,7 +44,7 @@ setup(
         "pydantic>=2.10.6,<3.0.0",
         "pyqrcode>=1.2,<1.3",
         "pem>=23.1,<23.2",
-        "cryptography>=45.0.0,<46.0.0"
+        "cryptography>=45.0.0,<47.0.0"
     ],
     extras_require = {
         "docs": [
