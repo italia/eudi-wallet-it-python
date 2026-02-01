@@ -1,5 +1,3 @@
-import base64
-import json
 from dataclasses import dataclass
 
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload, is_jwt_format

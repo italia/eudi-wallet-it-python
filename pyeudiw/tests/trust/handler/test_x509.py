@@ -82,7 +82,7 @@ def test_fail_if_all_chains_are_invalid():
                 "ca.example.com": invalid_chain[-1]
             }
         )
-    except InvalidTrustHandlerConfiguration as e:
+    except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
         assert False, "Should have raised InvalidTrustHandlerConfiguration due to invalid certificate chain"
@@ -230,7 +230,7 @@ def test_chain_crl_fail():
                 "ca.example.com": chain[-1]
             }
         )
-    except InvalidTrustHandlerConfiguration as e:
+    except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
         assert False, "Should have raised InvalidTrustHandlerConfiguration due to revoked certificate"

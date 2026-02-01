@@ -1,6 +1,6 @@
 from typing import Any
 from datetime import datetime
-from ipaddress import IPv4Address, IPv4Network
+from ipaddress import IPv4Network
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.verify import (

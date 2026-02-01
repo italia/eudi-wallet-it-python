@@ -1,4 +1,3 @@
-import base64
 
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key
 

@@ -52,8 +52,8 @@ class PreRequestHandler(VPBaseEndpoint):
         self.template = Jinja2TemplateHandler(self.config["ui"])
         
         # This loads all the configured trust evaluation mechanisms
-        trust_configuration = self.config.get("trust", {})
-        trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
+        self.config.get("trust", {})
+        self.config.get("trust_caching_mode", "update_first")
         
         self.trust_evaluator = trust_evaluator
         self.force_same_device_flow_referer_criteria = self.config.get("force_same_device_flow_referer_criteria")

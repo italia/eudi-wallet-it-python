@@ -69,7 +69,7 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 pyeudiw --count --show-source --statistics
-          flake8 pyeudiw --count --exit-zero --statistics
+          flake8 pyeudiw --count --exit-zero --statistics --extend-select=E,W,F
       - name: Radon complexity (cyclomatic)
         run: radon cc pyeudiw -a -n B --exclude "*/tests/*" || true
       - name: Radon maintainability index

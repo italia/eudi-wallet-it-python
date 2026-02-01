@@ -1,4 +1,3 @@
-import json
 
 from satosa.context import Context
 from pyeudiw.satosa.utils.response import JsonResponse

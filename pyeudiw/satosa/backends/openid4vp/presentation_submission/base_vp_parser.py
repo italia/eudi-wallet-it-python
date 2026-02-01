@@ -15,7 +15,6 @@ class BaseVPParser(ABC):
     @abstractmethod
     def parse(self, token: str) -> Dict[str, Any]:
         """Parses a Verifiable Presentation token."""
-        pass
 
     @abstractmethod
     def validate(
@@ -25,4 +24,3 @@ class BaseVPParser(ABC):
         verifier_nonce: str
     ) -> bool:
         """Validates the content of a Verifiable Presentation."""
-        pass

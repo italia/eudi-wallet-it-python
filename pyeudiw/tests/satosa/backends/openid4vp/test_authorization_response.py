@@ -317,7 +317,7 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
     try:
         parser.parse_and_validate(ctx)
         assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException as e:
+    except AuthRespParsingException:
         assert True
     except Exception as e:
         assert False, f"obtained unexpected parsing exception: {e}"
@@ -350,7 +350,7 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
     try:
         parser.parse_and_validate(ctx)
         assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException as e:
+    except AuthRespParsingException:
         assert True
     except Exception as e:
         assert False, f"obtained unexpected parsing exception: {e}"

@@ -9,7 +9,6 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 class TrustHandlerInterface:
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("client_id", "default_client_id")
-        pass
 
     def extract_and_update_trust_materials(
         self, issuer: str, trust_source: TrustSourceData

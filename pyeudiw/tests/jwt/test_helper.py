@@ -121,7 +121,7 @@ def test_validate_key_with_jws_header_expect_x5c_fail():
     try:
         _validate_key_with_jws_header(wrong_key, {"x5c": x5c}, {})
         assert False, f"should have encountered exception when validating header 'x5c' for wrong key"
-    except Exception as _:
+    except Exception:
         assert True
 
 def test_validate_key_with_jws_header_expect_kid_fail():
@@ -136,5 +136,5 @@ def test_validate_key_with_jws_header_expect_kid_fail():
     try:
         _validate_key_with_jws_header(key, {"kid": "1234567890"}, {})
         assert False, f"should have encountered exception when validating header 'kid' for wrong key"
-    except Exception as _:
+    except Exception:
         assert True

@@ -336,7 +336,7 @@ class TestOpenID4VPBackend:
         assert "openid_federation:https://example.com/OpenID4VP" in parsed
 
     def test_pre_request_endpoint(self, context):
-        internal_data = InternalData()
+        InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"
         )
@@ -372,7 +372,7 @@ class TestOpenID4VPBackend:
         assert state_div["value"]
 
     def test_pre_request_endpoint_mobile(self, context):
-        internal_data = InternalData()
+        InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
@@ -733,7 +733,7 @@ class TestOpenID4VPBackend:
         session_id = context.state["SESSION_ID"]
         self._initialize_session(nonce, state, session_id)
 
-        issuer_jwk = parse_pem(self.chain[0])
+        parse_pem(self.chain[0])
 
         good_response = self._generate_payload(self.x509_leaf_private_key, self.holder_jwk, nonce, state, self.backend.client_id, x509=True)
 
@@ -909,7 +909,7 @@ class TestOpenID4VPBackend:
         assert msg["error_description"] == "request error: missing or invalid parameter [id]"
 
     def test_request_endpoint(self, context):
-        internal_data = InternalData()
+        InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )

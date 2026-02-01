@@ -1,6 +1,5 @@
 import logging
 import os
-import random
 import secrets
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from dataclasses import dataclass

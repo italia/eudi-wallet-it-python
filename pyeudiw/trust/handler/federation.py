@@ -1,6 +1,5 @@
 import json
 import logging
-import satosa
 from satosa.context import Context
 from typing import Any, Callable, List, Union
 from satosa.response import Response
@@ -12,7 +11,6 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import exp_from_now, iat_now

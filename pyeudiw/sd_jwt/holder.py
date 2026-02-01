@@ -5,7 +5,6 @@ from time import time
 from typing import Dict, List, Optional, Union
 from pyeudiw.jwt.helper import KeyLike
 
-from cryptojwt.jws.jws import JWS
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.sd_jwt import (

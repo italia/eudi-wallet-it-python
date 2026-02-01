@@ -13,7 +13,6 @@ from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
     AUTHORIZATION_CODE_GRANT,
     REFRESH_TOKEN_GRANT
 )
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     OAUTH_CLIENT_ATTESTATION_HEADER
