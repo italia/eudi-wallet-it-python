@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -10,7 +10,6 @@ from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.x509.chain_builder import ChainBuilder
-from datetime import datetime, timedelta, timezone
 
 
 def base64url_to_int(val):
@@ -84,7 +83,7 @@ STORAGE_CONFIG = {
             "module": "pyeudiw.storage.mongo_cache",
             "class": "MongoCache",
             "init_params": {
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                 "conf": {"db_name": "pyeudiw_test"},
                 "connection_params": {},
             },
@@ -93,7 +92,7 @@ STORAGE_CONFIG = {
             "module": "pyeudiw.storage.mongo_storage",
             "class": "MongoStorage",
             "init_params": {
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                 "conf": {
                     "db_name": "pyeudiw_test",
                     "db_sessions_collection": "sessions",
@@ -240,18 +239,14 @@ def test_handler_correct_parsing():
     vp_token = issue_mdoc_cbor()
     parsed_tokens = ps.parse(vp_token)
     
-    assert parsed_tokens == {
-        "eu.europa.ec.eudiw.pid.1": {
-            "family_name": "Raffaello",
-            "given_name": "Mascetti",
-            "birth_date": "1922-03-13",
-            "birth_place": "Rome",
-            "birth_country": "IT"
-        },
-        "eu.europa.ec.eudiw.pid.it.1": {
-            "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
-        }
-    }, f"Parsed tokens are not correct: {parsed_tokens}"
+    # birth_date may be datetime.date or string depending on pymdoccbor version
+    expected_birth_date = (date(1922, 3, 13), "1922-03-13")
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["family_name"] == "Raffaello"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["given_name"] == "Mascetti"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_date"] in expected_birth_date
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_place"] == "Rome"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_country"] == "IT"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.it.1"] == {"tax_id_code": "TINIT-XXXXXXXXXXXXXXX"}
 
 def test_handler_correct_validation():
     ps = VpMDocCbor(

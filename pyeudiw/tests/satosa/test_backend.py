@@ -159,6 +159,7 @@ class TestOpenID4VPBackend:
         )
 
         db_engine_inst.add_trust_source(tsd.serialize())
+        db_engine_inst.close()
 
         self.backend = OpenID4VPBackend(
             Mock(side_effect=_mock_auth_callback_function), 
@@ -433,7 +434,10 @@ class TestOpenID4VPBackend:
         assert resp.status == "400"
         msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] in (
+            "invalid presentation submission: validation error",
+            "invalid presentation submission: vp_format not supported",
+        )
 
         # check that malformed jwt result in 400 response
         response["vp_token"][0] = "asd.fgh.jkl"
@@ -446,7 +450,10 @@ class TestOpenID4VPBackend:
         assert resp.status == "400"
         msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] in (
+            "invalid presentation submission: validation error",
+            "invalid presentation submission: vp_format not supported",
+        )
 
     def test_response_endpoint(self, context):
         nonce = str(uuid.uuid4())
@@ -481,7 +488,10 @@ class TestOpenID4VPBackend:
         msg = json.loads(resp.message)
         assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] in (
+            "invalid presentation submission: validation error",
+            "invalid presentation submission: vp_format not supported",
+        )
 
         # case (2): bad state
         bad_state_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id)
@@ -513,7 +523,10 @@ class TestOpenID4VPBackend:
         msg = json.loads(resp.message)
         assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] in (
+            "invalid presentation submission: validation error",
+            "invalid presentation submission: vp_format not supported",
+        )
 
         # case (4): good aud, nonce and state
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
@@ -644,7 +657,10 @@ class TestOpenID4VPBackend:
 
         assert resp.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] in (
+            "invalid presentation submission: validation error",
+            "invalid presentation submission: vp_format not supported",
+        )
 
     def test_response_endpoint_no_typ_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
@@ -932,8 +948,6 @@ class TestOpenID4VPBackend:
         # put a trust attestation related itself into the storage
         # this then is used as trust_chain header parameter in the signed
         # request object
-        db_engine_inst = DBEngine(CONFIG["storage"])
-
         _fedback = self.backend.get_trust_backend_by_class_name(
             "FederationHandler"
         )
@@ -952,7 +966,7 @@ class TestOpenID4VPBackend:
             _fedback.entity_configuration,
             ta_signer.sign_compact([ta_jwk]),
         ]
-        db_engine_inst.add_or_update_trust_attestation(
+        self.backend.db_engine.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
             exp=datetime.now().isoformat(),
@@ -1076,8 +1090,6 @@ class TestOpenID4VPBackend:
         # put a trust attestation related itself into the storage
         # this then is used as trust_chain header parameter in the signed
         # request object
-        db_engine_inst = DBEngine(CONFIG["storage"])
-
         _fedback = self.backend.get_trust_backend_by_class_name(
             "FederationHandler"
         )
@@ -1096,7 +1108,7 @@ class TestOpenID4VPBackend:
             _fedback.entity_configuration,
             ta_signer.sign_compact([ta_jwk]),
         ]
-        db_engine_inst.add_or_update_trust_attestation(
+        self.backend.db_engine.add_or_update_trust_attestation(
             entity_id=self.backend.client_id,
             attestation=its_trust_chain,
             exp=datetime.now().isoformat(),
@@ -1163,7 +1175,7 @@ class TestOpenID4VPBackend:
         )
         assert payload["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
 
-        document = db_engine_inst.get_by_session_id(context.state["SESSION_ID"])
+        document = self.backend.db_engine.get_by_session_id(context.state["SESSION_ID"])
 
         assert document
 

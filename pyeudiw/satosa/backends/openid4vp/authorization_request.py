@@ -55,8 +55,7 @@ def build_authorization_request_claims(
     :type client_metadata: dict
     :param submission_data: optional submission data, such as the duckle query,
         to be included in the request object.
-        If this parameter is set, the duckle data is used to build the request object;
-        else the presentation definition retrocompatibility is used.
+        If this parameter is set, the duckle data is used to build the request object.
     :type submission_data: dict
     :param wallet_nonce: optional nonce to be used by the wallet.
     :type wallet_nonce: str
@@ -97,11 +96,6 @@ def build_authorization_request_claims(
 
         if default_claims.get("scopes"):
             claims["scope"] = " ".join(default_claims["scopes"])
-        # backend configuration validation should check that at least PE or DCQL must be configured within the authz request conf
-        if default_claims.get("presentation_definition"):
-            claims["presentation_definition"] = default_claims[
-                "presentation_definition"
-            ]
 
     if wallet_nonce:
         claims["wallet_nonce"] = wallet_nonce

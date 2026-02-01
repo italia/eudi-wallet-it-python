@@ -11,11 +11,12 @@ from saml2.saml import (
 from saml2.sigver import get_xmlsec_binary
 from saml2.metadata import entity_descriptor
 
+from integration_test.initializer.settings import IDP_BASEURL
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = 'http://pyeudiw_demo.example.org'
 BASE_URL = '{}/saml2'.format(BASE)
 
-IDP_BASEURL = "https://localhost"
 IDP_ENTITYID = f'{IDP_BASEURL}/Saml2IDP/metadata'
 
 def _get_certs_path(file_name: str):

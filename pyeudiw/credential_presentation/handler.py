@@ -2,7 +2,7 @@ import importlib
 from typing import Optional, List
 
 from pyeudiw.credential_presentation.model import CredentialPresentationHandlersConfig
-from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
@@ -97,10 +97,8 @@ def load_credential_presentation_handlers(
         sig_alg_supported=sig_alg_supported
     )
     duckle_handler = next((handler for handler in config_model.formats if handler.class_ == "DuckleHandler"), None)
-    if duckle_handler:
-        updated_config = {
-            DUCKLE_PRESENTATION: config.get(DUCKLE_PRESENTATION, {})
-        }
+    if duckle_handler and config.get(DUCKLE_QUERY_KEY):
+        updated_config = {DUCKLE_QUERY_KEY: config[DUCKLE_QUERY_KEY]}
         duckle_handler.config = add_to_config(updated_config, duckle_handler.config)
     return CredentialPresentationHandlers(config_model)
 

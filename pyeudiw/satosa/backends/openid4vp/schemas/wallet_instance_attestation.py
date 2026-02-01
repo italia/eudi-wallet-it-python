@@ -52,4 +52,3 @@ class WalletInstanceAttestationPayload(BaseModel):
     response_types_supported: Optional[List[str]] = None
     vp_formats_supported: Optional[VPFormatSchema] = None
     request_object_signing_alg_values_supported: Optional[List[str]] = None
-    presentation_definition_uri_supported: Optional[bool] = None

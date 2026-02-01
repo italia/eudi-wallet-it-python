@@ -17,14 +17,15 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 class PreRequestHandler(VPBaseEndpoint):
 
     def __init__(
-            self, 
-            config: dict, 
-            internal_attributes: dict[str, dict[str, str | list[str]]], 
-            base_url: str, 
+            self,
+            config: dict,
+            internal_attributes: dict[str, dict[str, str | list[str]]],
+            base_url: str,
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
             converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator
+            trust_evaluator: CombinedTrustEvaluator,
+            db_engine=None,
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -36,8 +37,7 @@ class PreRequestHandler(VPBaseEndpoint):
 
         :raises ValueError: If storage or QR code settings are not configured.
         """
-
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
 
         self.absolute_request_url = f"{self.client_id}/request-uri"
         self.absolute_status_url = f"{self.client_id}/status"

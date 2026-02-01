@@ -12,8 +12,8 @@ from pyeudiw.tests.federation.base import (
 from pyeudiw.tools.utils import iat_now, exp_from_now
 
 TIMEOUT_S = 10
-IDP_BASEURL = "https://localhost"
-RP_EID = "https://localhost/OpenID4VP"
+IDP_BASEURL = os.getenv("PYEUDIW_IDP_BASEURL", "https://localhost")
+RP_EID = os.getenv("PYEUDIW_RP_EID", f"{IDP_BASEURL}/OpenID4VP")
 MONGO_AUTH_INLINE = os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')
 MONGO_URL_CONNECTION = f"mongodb://{MONGO_AUTH_INLINE}localhost:27017/?timeoutMS=2000"
 
@@ -66,7 +66,6 @@ WALLET_INSTANCE_ATTESTATION = {
     "request_object_signing_alg_values_supported": [
         "ES256"
     ],
-    "presentation_definition_uri_supported": False,
     "iat": iat_now(),
     "exp": exp_from_now()
 }

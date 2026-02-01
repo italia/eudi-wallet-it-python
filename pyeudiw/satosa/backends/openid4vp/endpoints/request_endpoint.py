@@ -35,7 +35,8 @@ class RequestHandler(VPBaseEndpoint):
             name: str,
             auth_callback_func: Callable[[Context, InternalData], Response],
             converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator
+            trust_evaluator: CombinedTrustEvaluator,
+            db_engine=None,
         ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
@@ -48,7 +49,7 @@ class RequestHandler(VPBaseEndpoint):
         :raises ValueError: If storage or QR code settings are not configured.
         """
 
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter)
+        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
 
         self.absolute_response_url = f"{self.client_id}/response-uri"
 
@@ -250,11 +251,10 @@ class RequestHandler(VPBaseEndpoint):
         return self.config["metadata_jwks"][0]
 
     def _build_submission_data(self) -> dict[str, Any] | None:
-        duckle_presentation_config = self.config.get(DUCKLE_PRESENTATION)
-        if duckle_presentation_config and DUCKLE_QUERY_KEY in duckle_presentation_config:
+        dcql_query = self.config.get(DUCKLE_QUERY_KEY)
+        if dcql_query:
             return {
-                DUCKLE_QUERY_KEY: duckle_presentation_config[DUCKLE_QUERY_KEY],
+                DUCKLE_QUERY_KEY: dcql_query,
                 "typo": DUCKLE_PRESENTATION
             }
-        else:
-            return None
+        return None

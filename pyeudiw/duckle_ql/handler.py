@@ -37,7 +37,11 @@ class DuckleHandler(BaseVPParser):
         if sig_alg_supported is None:
             sig_alg_supported = []
         self.sig_alg_supported = sig_alg_supported
-        self.queries = CredentialsRequest.model_validate_json(kwargs.get(DUCKLE_PRESENTATION, {})[DUCKLE_QUERY_KEY])
+        dcql_value = kwargs.get(DUCKLE_QUERY_KEY) or (kwargs.get(DUCKLE_PRESENTATION) or {}).get(DUCKLE_QUERY_KEY)
+        if isinstance(dcql_value, dict):
+            self.queries = CredentialsRequest.model_validate(dcql_value)
+        else:
+            self.queries = CredentialsRequest.model_validate_json(dcql_value)
 
     def parse(self,  token: dict) -> Dict[str, Any]:
         """
