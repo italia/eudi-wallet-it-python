@@ -11,14 +11,9 @@ from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.session import get_session_id
-from pyeudiw.satosa.utils.validation import (
-    validate_content_type,
-    validate_request_method
-)
-from pyeudiw.tools.content_type import (
-    HTTP_CONTENT_TYPE_HEADER,
-    APPLICATION_JSON
-)
+from pyeudiw.satosa.utils.validation import validate_content_type, validate_request_method
+from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
+
 
 class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
     """
@@ -40,7 +35,6 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
         self.qrcode_template = Jinja2TemplateHandler(self.qrcode_settings["ui"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
 
-
     def endpoint(self, context: Context):
         """
         Handle a GET request to the credential_offer_qrcode endpoint.
@@ -54,25 +48,16 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
         try:
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            CredentialOfferRequest.model_validate(
-                context.request.query, context = {
-                    CONFIG_CTX: self.config_utils
-                })
+            CredentialOfferRequest.model_validate(context.request.query, context={CONFIG_CTX: self.config_utils})
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             if entity.remote_flow_typ != RemoteFlowType.CROSS_DEVICE:
-                self._log_error(
-                    self.__class__.__name__,
-                    f"Cannot use qr code, flow type {entity.remote_flow_typ} not valid!"
-                )
+                self._log_error(self.__class__.__name__, f"Cannot use qr code, flow type {entity.remote_flow_typ} not valid!")
                 raise InvalidRequestException("Cannot use qr code, flow type not valid!")
             return self.to_qr_code_response(entity)
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
-            self._log_error(
-                e.__class__.__name__,
-                f"Error during invoke credential_offer endpoint: {e}"
-            )
+            self._log_error(e.__class__.__name__, f"Error during invoke credential_offer endpoint: {e}")
             return self._handle_500(context, "error during invoke credential_offer endpoint", e)
 
     def to_qr_code_response(self, entity: OpenId4VCIEntity) -> Response:
@@ -91,34 +76,36 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
 
     def _validate_configs(self):
         qrcode_settings = self.config.get("qrcode")
-        self._validate_required_configs([
-            ("qrcode", qrcode_settings),
-        ])
-        self._validate_required_configs([
-            ("qrcode.size", qrcode_settings.get("size")),
-            ("qrcode.color", qrcode_settings.get("color")),
-            ("qrcode.expiration_time", qrcode_settings.get("expiration_time")),
-            ("qrcode.logo_path", qrcode_settings.get("logo_path")),
-        ])
+        self._validate_required_configs(
+            [
+                ("qrcode", qrcode_settings),
+            ]
+        )
+        self._validate_required_configs(
+            [
+                ("qrcode.size", qrcode_settings.get("size")),
+                ("qrcode.color", qrcode_settings.get("color")),
+                ("qrcode.expiration_time", qrcode_settings.get("expiration_time")),
+                ("qrcode.logo_path", qrcode_settings.get("logo_path")),
+            ]
+        )
         ui = qrcode_settings.get("ui")
-        self._validate_required_configs([
-            ("qrcode.ui", ui),
-        ])
-        self._validate_required_configs([
-            ("qrcode.ui.static_storage_url", ui.get("static_storage_url")),
-            ("qrcode.ui.qrcode_template", ui.get("qrcode_template")),
-            ("qrcode.ui.template_folder", ui.get("template_folder")),
-            ("qrcode.ui.authorization_error_template", ui.get("authorization_error_template")),
-        ])
+        self._validate_required_configs(
+            [
+                ("qrcode.ui", ui),
+            ]
+        )
+        self._validate_required_configs(
+            [
+                ("qrcode.ui.static_storage_url", ui.get("static_storage_url")),
+                ("qrcode.ui.qrcode_template", ui.get("qrcode_template")),
+                ("qrcode.ui.template_folder", ui.get("template_folder")),
+                ("qrcode.ui.authorization_error_template", ui.get("authorization_error_template")),
+            ]
+        )
         self._ui = ui
         credential_configurations = self.config_utils.get_credential_configurations()
-        self._validate_required_configs([
-            ("credential_configurations", credential_configurations)
-        ])
-        self._validate_required_configs([
-            ("credential_configurations.status_list", credential_configurations.status_list)
-        ])
-        self._validate_required_configs([
-            ("credential_configurations.status_list.path", credential_configurations.status_list.path)
-        ])
+        self._validate_required_configs([("credential_configurations", credential_configurations)])
+        self._validate_required_configs([("credential_configurations.status_list", credential_configurations.status_list)])
+        self._validate_required_configs([("credential_configurations.status_list.path", credential_configurations.status_list.path)])
         self.qrcode_settings = qrcode_settings

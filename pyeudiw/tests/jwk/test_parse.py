@@ -21,16 +21,14 @@ def test_parse_x5c_keys():
     ]
 
     exp_key_ec = {
-        'kty': 'EC', 
-        'crv': 'P-256', 
-        'x': '4QqX3-dC8gKEyT-hIyhEZOp83x0Esk9YMHXCtxPSP5Y', 
-        'y': 'jE_t_hTljxQFRrt1N3jYZMVct6BqbtNhqJEDgg-0O8Q', 
-        'kid': 'aUXmTpVJrXaBb0L3ZnAnYfQCok6IF8jOoAnQJWkfj3w'
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "4QqX3-dC8gKEyT-hIyhEZOp83x0Esk9YMHXCtxPSP5Y",
+        "y": "jE_t_hTljxQFRrt1N3jYZMVct6BqbtNhqJEDgg-0O8Q",
+        "kid": "aUXmTpVJrXaBb0L3ZnAnYfQCok6IF8jOoAnQJWkfj3w",
     }
 
-    x5c_invalid = [
-        "invalid_x5c"
-    ]
+    x5c_invalid = ["invalid_x5c"]
 
     obt_key = parse_x5c_keys(x5c_rsa)[0].as_dict()
 

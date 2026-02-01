@@ -1,27 +1,23 @@
 from typing import Any
 from datetime import datetime
-from ipaddress import IPv4Address, IPv4Network
+from ipaddress import IPv4Network
 from ssl import DER_cert_to_PEM_cert
 from pyeudiw.x509.chain_builder import ChainBuilder
-from pyeudiw.x509.verify import (
-    get_issuer_from_x5c,
-    is_der_format,
-    verify_x509_attestation_chain,
-    get_trust_anchor_from_x5c
-)
+from pyeudiw.x509.verify import get_issuer_from_x5c, is_der_format, verify_x509_attestation_chain, get_trust_anchor_from_x5c
 from cryptography import x509
 
+
 def gen_chain(
-        date: datetime| None = None, 
-        ca_cn: str = "ca.example.com", 
-        ca_dns: str = "ca.example.com",
-        intermediate_cn: str = "intermediate.example.org", 
-        intermediate_dns: str = "intermediate.example.org",
-        leaf_cn: str = "leaf.example.it", 
-        leaf_dns: str = "leaf.example.it",
-        leaf_uri: str = "https://leaf.example.it/openid4vp",
-        leaf_private_key: Any = None
-    ) -> list[bytes]:
+    date: datetime | None = None,
+    ca_cn: str = "ca.example.com",
+    ca_dns: str = "ca.example.com",
+    intermediate_cn: str = "intermediate.example.org",
+    intermediate_dns: str = "intermediate.example.org",
+    leaf_cn: str = "leaf.example.it",
+    leaf_dns: str = "leaf.example.it",
+    leaf_uri: str = "https://leaf.example.it/openid4vp",
+    leaf_private_key: Any = None,
+) -> list[bytes]:
 
     ca_cert_params = {
         "cn": ca_cn,
@@ -37,14 +33,10 @@ def gen_chain(
         # when the CA issues the certificate to a intermediate, it would not put
         # subtree constraints to intermediate dns name to prevent constraints validation failures
         #  "permitted_subtrees": [
-            #  x509.DNSName(ca_dns),
-            #  x509.DNSName(intermediate_dns),
+        #  x509.DNSName(ca_dns),
+        #  x509.DNSName(intermediate_dns),
         #  ],
-        "excluded_subtrees": [
-            x509.DNSName("localhost"),
-            x509.DNSName("localhost.localdomain"),
-            x509.IPAddress(IPv4Network("127.0.0.1/32"))
-        ],
+        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
@@ -54,8 +46,8 @@ def gen_chain(
             content_commitment=False,
             data_encipherment=False,
             encipher_only=False,
-            decipher_only=False
-        )
+            decipher_only=False,
+        ),
     }
 
     intermediate_cert_params = {
@@ -71,14 +63,10 @@ def gen_chain(
         # when the CA issues the certificate to a intermediate, it would not put
         # subtree constraints to intermediate dns name to prevent constraints validation failures
         #  "permitted_subtrees": [
-            #  x509.DNSName(intermediate_dns),
-            #  x509.DNSName(leaf_dns),
+        #  x509.DNSName(intermediate_dns),
+        #  x509.DNSName(leaf_dns),
         #  ],
-        "excluded_subtrees": [
-            x509.DNSName("localhost"),
-            x509.DNSName("localhost.localdomain"),
-            x509.IPAddress(IPv4Network("127.0.0.1/32"))
-        ],
+        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
@@ -88,9 +76,9 @@ def gen_chain(
             content_commitment=False,
             data_encipherment=False,
             encipher_only=False,
-            decipher_only=False
+            decipher_only=False,
         ),
-        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl"
+        "crl_distr_point": f"https://{intermediate_dns}/crl/{intermediate_dns}.crl",
     }
 
     leaf_cert_params = {
@@ -106,11 +94,7 @@ def gen_chain(
         "permitted_subtrees": [
             x509.DNSName(leaf_dns),
         ],
-        "excluded_subtrees": [
-            x509.DNSName("localhost"),
-            x509.DNSName("localhost.localdomain"),
-            x509.IPAddress(IPv4Network("127.0.0.1/32"))
-        ],
+        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
@@ -120,7 +104,7 @@ def gen_chain(
             content_commitment=False,
             data_encipherment=False,
             encipher_only=False,
-            decipher_only=False
+            decipher_only=False,
         ),
         "crl_distr_point": f"https://{leaf_dns}/crl/{leaf_dns}.crl",
     }
@@ -141,9 +125,11 @@ def chain_to_pem(chain: list[bytes]) -> str:
     pems = [DER_cert_to_PEM_cert(cert) for cert in chain]
     return "\n".join(pems)
 
+
 def test_valid_chain_invalid_date():
     chain = gen_chain(date=datetime.fromisoformat("2021-01-01T00:00:00"))
     assert not verify_x509_attestation_chain(chain)
+
 
 def test_valid_chain():
     chain = gen_chain()

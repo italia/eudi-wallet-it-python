@@ -65,8 +65,7 @@ class SDJWTIssuer(SDJWTCommon):
 
         if len(self._issuer_keys) > 1 and self._serialization_format != "json":
             raise ValueError(
-                f"Multiple issuer keys (here {len(self._issuer_keys)}) are only supported with JSON serialization."
-                f"Keys found: {self._issuer_keys}"
+                f"Multiple issuer keys (here {len(self._issuer_keys)}) are only supported with JSON serialization." f"Keys found: {self._issuer_keys}"
             )
 
         self._check_for_sd_claim(self._user_claims)
@@ -83,9 +82,7 @@ class SDJWTIssuer(SDJWTCommon):
             }
         )
         if self._holder_key:
-            self.sd_jwt_payload["cnf"] = {
-                "jwk": key_from_jwk_dict(self._holder_key).serialize()
-            }
+            self.sd_jwt_payload["cnf"] = {"jwk": key_from_jwk_dict(self._holder_key).serialize()}
 
     def _create_decoy_claim_entry(self) -> str:
         digest = self._b64hash(self._generate_salt().encode("ascii"))
@@ -107,9 +104,7 @@ class SDJWTIssuer(SDJWTCommon):
 
         # For other types, assume that the value can be disclosed.
         elif isinstance(user_claims, SDObj):
-            raise ValueError(
-                f"SDObj found in illegal place. The claim value '{user_claims}' should not be wrapped by SDObj."
-            )
+            raise ValueError(f"SDObj found in illegal place. The claim value '{user_claims}' should not be wrapped by SDObj.")
         return user_claims
 
     def _create_sd_claims_list(self, user_claims: List):
@@ -162,9 +157,7 @@ class SDJWTIssuer(SDJWTCommon):
         # Add decoy claims if requested
         if self._add_decoy_claims:
             sr = secrets.SystemRandom()
-            for _ in range(
-                sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)
-            ):
+            for _ in range(sr.randint(self.DECOY_MIN_ELEMENTS, self.DECOY_MAX_ELEMENTS)):
                 sd_claims[SD_DIGESTS_KEY].append(self._create_decoy_claim_entry())
 
         # Delete the SD_DIGESTS_KEY if it is empty
@@ -199,9 +192,7 @@ class SDJWTIssuer(SDJWTCommon):
             _unprotected_headers = {"kid": key["kid"]} if "kid" in key else None
             if self._serialization_format == "json" and i == 0:
                 _unprotected_headers = _unprotected_headers or {}
-                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [
-                    d.b64 for d in self.ii_disclosures
-                ]
+                _unprotected_headers[JSON_SER_DISCLOSURE_KEY] = [d.b64 for d in self.ii_disclosures]
 
         self.sd_jwt = JWSHelper(jwks=self._issuer_keys)
         self.serialized_sd_jwt = self.sd_jwt.sign(
@@ -213,9 +204,7 @@ class SDJWTIssuer(SDJWTCommon):
 
     def _create_combined(self):
         if self._serialization_format == "compact":
-            self.sd_jwt_issuance = self._combine(
-                self.serialized_sd_jwt, *(d.b64 for d in self.ii_disclosures)
-            )
+            self.sd_jwt_issuance = self._combine(self.serialized_sd_jwt, *(d.b64 for d in self.ii_disclosures))
             self.sd_jwt_issuance += self.COMBINED_SERIALIZATION_FORMAT_SEPARATOR
         else:
             self.sd_jwt_issuance = self.serialized_sd_jwt

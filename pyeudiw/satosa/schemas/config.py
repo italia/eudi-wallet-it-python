@@ -26,4 +26,3 @@ class PyeudiwBackendConfig(BaseModel):
     metadata_jwks: list[JwkSchema]
     storage: Storage
     metadata: OpenIDCredentialVerifier
-

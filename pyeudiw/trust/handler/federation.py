@@ -1,6 +1,5 @@
 import json
 import logging
-import satosa
 from satosa.context import Context
 from typing import Any, Callable, List, Union
 from satosa.response import Response
@@ -12,7 +11,6 @@ from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.satosa.utils.response import JsonResponse
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import exp_from_now, iat_now
@@ -68,25 +66,19 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         self.entity_configuration_exp = entity_configuration_exp
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
-        self.federation_public_jwks = [
-            JWK(i).as_public_dict() for i in self.federation_jwks
-        ]
+        self.federation_public_jwks = [JWK(i).as_public_dict() for i in self.federation_jwks]
 
-        if isinstance(self.metadata["jwks"], dict) and self.metadata["jwks"].get('keys'):
+        if isinstance(self.metadata["jwks"], dict) and self.metadata["jwks"].get("keys"):
             self.metadata["jwks"] = self.metadata["jwks"].pop("keys")
 
         self.metadata_jwks = [JWK(i) for i in self.metadata["jwks"]]
-        self.metadata["jwks"] = {"keys": [
-            i.as_public_dict() for i in self.metadata_jwks
-        ]}
-        
+        self.metadata["jwks"] = {"keys": [i.as_public_dict() for i in self.metadata_jwks]}
+
         self.metadata_policy_resolver = TrustChainPolicy()
-        
+
         for k, v in kwargs.items():
             if not hasattr(self, k):
-                logger.warning(
-                    f"Trust - FederationHandler. {k} was provided in the init but not handled."
-                )
+                logger.warning(f"Trust - FederationHandler. {k} was provided in the init but not handled.")
 
     def extract_and_update_trust_materials(self, issuer, trust_source):
         return trust_source
@@ -98,7 +90,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def entity_configuration(self) -> str:
         """
         Returns the entity configuration as a JWT.
-        
+
         :return: The entity configuration
         :rtype: str
         """
@@ -133,9 +125,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         }
         return ec_payload
 
-    def entity_configuration_endpoint(
-        self, context: Context
-    ) -> Response:
+    def entity_configuration_endpoint(self, context: Context) -> Response:
         """
         Entity Configuration endpoint.
 
@@ -159,36 +149,30 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 content="application/entity-statement+jwt",
             )
 
-    def build_metadata_endpoints(
-        self, backend_name: str, entity_uri: str
-    ) -> list[
-        tuple[str, Callable[[Context, Any], Response]]
-    ]:
+    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[Context, Any], Response]]]:
 
         metadata_path = f'{backend_name.strip("/")}/.well-known/openid-federation'
         response = self.entity_configuration
 
-        def metadata_response_fn(
-            ctx: Context, *args
-        ) -> Response:
+        def metadata_response_fn(ctx: Context, *args) -> Response:
             return JsonResponse(message=response)
 
         return [(metadata_path, metadata_response_fn)]
-    
+
     def get_handled_trust_material_name(self) -> str:
         return FederationHandler._TRUST_PARAMETER_NAME
-        
+
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         tp: dict = trust_source.serialize().get(FederationHandler._TRUST_TYPE, {})
-        if (trust_chain := tp.get(FederationHandler._TRUST_PARAMETER_NAME, None)):
+        if trust_chain := tp.get(FederationHandler._TRUST_PARAMETER_NAME, None):
             return {"trust_chain": trust_chain}
         return {}
-    
+
     def validate_trust_material(
-            self, 
-            chain: list[str], 
-            trust_source: TrustSourceData,
-        ) -> tuple[bool, TrustSourceData]:
+        self,
+        chain: list[str],
+        trust_source: TrustSourceData,
+    ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust chain of the trust source.
 
@@ -200,42 +184,28 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         """
 
         _first_statement = decode_jwt_payload(chain[-1])
-        trust_anchor_eid = _first_statement.get('iss', None)
+        trust_anchor_eid = _first_statement.get("iss", None)
 
         if not trust_anchor_eid:
-            raise UnknownTrustAnchor(
-                "Unknown Trust Anchor: can't find 'iss' in the "
-                f"first entity statement: {_first_statement} "
-            )
-        
-        if not trust_anchor_eid in self.trust_anchors:
-            raise UnknownTrustAnchor(
-                f"Unknown Trust Anchor: '{trust_anchor_eid}' is not "
-                "a recognizable Trust Anchor."
-            )
-        
+            raise UnknownTrustAnchor("Unknown Trust Anchor: can't find 'iss' in the " f"first entity statement: {_first_statement} ")
+
+        if trust_anchor_eid not in self.trust_anchors:
+            raise UnknownTrustAnchor(f"Unknown Trust Anchor: '{trust_anchor_eid}' is not " "a recognizable Trust Anchor.")
+
         if len(self.trust_anchors[trust_anchor_eid]) != 0:
             jwks = self.trust_anchors[trust_anchor_eid]
         else:
             try:
                 trust_anchor = get_entity_configurations(trust_anchor_eid, self.httpc_params, False)
-                decoded_ec = decode_jwt_payload(
-                    trust_anchor['federation']['entity_configuration']
-                )
-                jwks = decoded_ec.get('jwks', {}).get('keys', [])
+                decoded_ec = decode_jwt_payload(trust_anchor["federation"]["entity_configuration"])
+                jwks = decoded_ec.get("jwks", {}).get("keys", [])
             except Exception as e:
-                raise UnknownTrustAnchor(
-                    f"Cannot fetch Trust Anchor '{trust_anchor_eid}' entity configuration: {e}"
-                ) from e
+                raise UnknownTrustAnchor(f"Cannot fetch Trust Anchor '{trust_anchor_eid}' entity configuration: {e}") from e
 
         if not jwks:
-            raise MissingProtocolSpecificJwks(
-                f"Cannot find any jwks in for the Trust Anchor '{trust_anchor_eid}'"
-            )
+            raise MissingProtocolSpecificJwks(f"Cannot find any jwks in for the Trust Anchor '{trust_anchor_eid}'")
 
-        tc = StaticTrustChainValidator(
-            chain, jwks, self.httpc_params
-        )
+        tc = StaticTrustChainValidator(chain, jwks, self.httpc_params)
 
         _is_valid = False
 
@@ -244,28 +214,24 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         except TimeValidationError:
             logger.warning(f"Trust Chain {tc.entity_id} is expired")
         except Exception as e:
-            logger.warning(
-                f"Cannot validate Trust Chain {tc.entity_id} for the following reason: {e}")
+            logger.warning(f"Cannot validate Trust Chain {tc.entity_id} for the following reason: {e}")
 
         db_chain = None
 
         if not _is_valid:
             try:
-                db_chain = getattr(
-                    trust_source, 'federation'
-                ).trust_chain
-                
+                db_chain = getattr(trust_source, "federation").trust_chain
+
                 if StaticTrustChainValidator(db_chain, jwks, self.httpc_params).is_valid:
                     self.is_trusted = True
                     return self.is_trusted, trust_source
-            
 
             except (EntryNotFound, Exception):
                 pass
 
             _is_valid = tc.update()
 
-        leaf_jwks = decode_jwt_payload(chain[0]).get('jwks', {}).get('keys', [])
+        leaf_jwks = decode_jwt_payload(chain[0]).get("jwks", {}).get("keys", [])
 
         # the good trust chain is then stored
         trust_source.add_trust_param(
@@ -276,7 +242,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 jwks=[JWK(key=jwk).as_dict() for jwk in leaf_jwks],
                 expiration_date=0,
                 trust_handler_name=str(self.__class__.__name__),
-            )
+            ),
         )
-        
+
         return _is_valid, trust_source

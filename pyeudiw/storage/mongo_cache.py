@@ -39,9 +39,7 @@ class MongoCache(BaseCache):
         self._connect()
         self.client.close()
 
-    def try_retrieve(
-        self, object_name: str, on_not_found: Callable[[], str]
-    ) -> tuple[dict, RetrieveStatus]:
+    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
         self._connect()
 
         query = {"object_name": object_name}
@@ -69,9 +67,7 @@ class MongoCache(BaseCache):
 
         query = {"object_name": object_name}
 
-        self.collection.update_one(
-            query, {"$set": {"data": new_data, "creation_date": update_time}}
-        )
+        self.collection.update_one(query, {"$set": {"data": new_data, "creation_date": update_time}})
 
         return cache_object
 

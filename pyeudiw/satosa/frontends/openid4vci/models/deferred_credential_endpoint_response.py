@@ -16,7 +16,9 @@ class CredentialItem(BaseModel):
             - If the requested format is 'mso_mdoc', it MUST be a base64url-encoded
               CBOR-encoded IssuerSigned structure (per ISO 18013-5).
     """
+
     credential: str
+
 
 class DeferredCredentialEndpointResponse(BaseModel):
     """
@@ -29,6 +31,7 @@ class DeferredCredentialEndpointResponse(BaseModel):
         notification_id (Optional[str]):
             An optional identifier for tracking the notification related to this deferred response.
     """
+
     credentials: Optional[List[CredentialItem]] = None
     notification_id: Optional[str] = None
 
@@ -45,7 +48,7 @@ class DeferredCredentialEndpointResponse(BaseModel):
                 - application/json content type
                 - payload
         """
-        data = DeferredCredentialEndpointResponse(credentials = credentials)
+        data = DeferredCredentialEndpointResponse(credentials=credentials)
         return Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,

@@ -3,8 +3,9 @@ from pymongo.results import UpdateResult
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
 
-#TODO: This class is never used. The code inside must be integrated and standardized in the DBEngine class and the MongoStorage class.
+# TODO: This class is never used. The code inside must be integrated and standardized in the DBEngine class and the MongoStorage class.
 #       It is kept here for reference and future integration.
+
 
 class OpenId4VciStorage(MongoStorage):
     """
@@ -25,9 +26,7 @@ class OpenId4VciStorage(MongoStorage):
         :param entity: An instance of OpenId4VCIEntity containing session data.
         :return: The document ID assigned to the stored session.
         """
-        super().init_session(
-            entity.document_id, entity.session_id, entity.state, entity.remote_flow_typ
-        )
+        super().init_session(entity.document_id, entity.session_id, entity.state, entity.remote_flow_typ)
         return entity.document_id
 
     def get_by_session_id(self, session_id: str = "") -> OpenId4VCIEntity:
@@ -50,9 +49,7 @@ class OpenId4VciStorage(MongoStorage):
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
-        return self._update(self.get_by_session_id(session_id).document_id, updated_data={
-            "nonce": c_nonce
-        })
+        return self._update(self.get_by_session_id(session_id).document_id, updated_data={"nonce": c_nonce})
 
     def update_attributes_by_session_id(self, session_id: str, attributes: dict) -> UpdateResult:
         """
@@ -63,9 +60,7 @@ class OpenId4VciStorage(MongoStorage):
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
-        return self._update(self.get_by_session_id(session_id).document_id, updated_data={
-            "attributes": attributes
-        })
+        return self._update(self.get_by_session_id(session_id).document_id, updated_data={"attributes": attributes})
 
     def _update(self, document_id: str, updated_data: dict) -> UpdateResult:
         """
@@ -79,9 +74,7 @@ class OpenId4VciStorage(MongoStorage):
         self._connect()
         update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
-            {
-                "$set": updated_data
-            },
+            {"$set": updated_data},
         )
         if update_result.matched_count != 1 or update_result.modified_count != 1:
             raise ValueError(f"Cannot update document {document_id}.")

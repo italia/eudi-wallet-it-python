@@ -2,10 +2,7 @@ from typing import Any, Callable
 
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
-from satosa.response import (
-    Redirect,
-    Response
-)
+from satosa.response import Redirect, Response
 
 from pyeudiw.satosa.utils.base_http_response_handler import BaseHTTPResponseHandler
 from pyeudiw.tools.base_logger import BaseLogger
@@ -14,13 +11,14 @@ from pyeudiw.tools.base_logger import BaseLogger
 class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
 
     def __init__(
-            self, 
-            config: dict, 
-            internal_attributes: dict[str, dict[str, str | list[str]]], 
-            base_url: str, 
-            name: str, 
-            auth_callback: Callable[[Context, Any], Response] | None = None,
-            converter: AttributeMapper | None = None):
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback: Callable[[Context, Any], Response] | None = None,
+        converter: AttributeMapper | None = None,
+    ):
         """
         Initialize the OpenID4VCI endpoints class.
         Args:
@@ -58,9 +56,7 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         """
         missing_fields = [name for name, value in fields if not value]
         if missing_fields:
-            raise ValueError(
-                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
-            )
+            raise ValueError(f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}")
 
     def endpoint(self, context: Context) -> Redirect | Response:
         """

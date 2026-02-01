@@ -9,9 +9,7 @@ class RequestHandlerInterface(EventHandlerInterface):
     Interface for request handlers.
     """
 
-    def request_endpoint(
-        self, context: Context, *args: tuple
-    ) -> Response:
+    def request_endpoint(self, context: Context, *args: tuple) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance to retrieve the signed signed Request Object.
 

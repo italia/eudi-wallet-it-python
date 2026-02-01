@@ -4,20 +4,18 @@ from typing import List, Optional
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
-    OpenId4VciBaseModel,
-    ENDPOINT_CTX
-)
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, ENDPOINT_CTX
 
 logger = logging.getLogger(__name__)
 OPEN_ID_CREDENTIAL_TYPE = "openid_credential"
 
+
 class AuthorizationDetail(OpenId4VciBaseModel):
     type: str = None
     credential_configuration_id: str = None
-    credential_identifiers: Optional[List[str]] = None # for token response
+    credential_identifiers: Optional[List[str]] = None  # for token response
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_authorization_detail(self) -> "AuthorizationDetail":
         endpoint = self.get_ctx(ENDPOINT_CTX)
         self.validate_type(endpoint)
@@ -35,6 +33,6 @@ class AuthorizationDetail(OpenId4VciBaseModel):
     def validate_type(self, endpoint: str):
         self.type = self.strip(self.type)
         self.check_missing_parameter(self.type, "authorization_details.type", endpoint)
-        if self.type != OPEN_ID_CREDENTIAL_TYPE :
+        if self.type != OPEN_ID_CREDENTIAL_TYPE:
             logger.error(f"invalid authorization_details.type {self.type} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `authorization_details.type` parameter")

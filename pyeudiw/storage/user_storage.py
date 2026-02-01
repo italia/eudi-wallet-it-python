@@ -10,6 +10,7 @@ class UserStorage(MongoStorage):
 
     This class provides methods to initialize, retrieve, and update session data stored in a MongoDB database.
     """
+
     def __init__(self, conf: dict, url: str, connection_params=None) -> None:
         if connection_params is None:
             connection_params = {}
@@ -30,12 +31,10 @@ class UserStorage(MongoStorage):
         if not self.is_connected:
             self.client = pymongo.MongoClient(self.url, **self.connection_params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
-            self.users = getattr(
-                self.db, self.storage_conf["db_users_collection"]
-            )
+            self.users = getattr(self.db, self.storage_conf["db_users_collection"])
 
     def get_by_fiscal_code(self, fiscal_code: str) -> tuple[str, UserEntity]:
-        return self.get_by_field("fiscal_code",fiscal_code)
+        return self.get_by_field("fiscal_code", fiscal_code)
 
     def get_by_field(self, field_name: str, field_value: str) -> tuple[str, UserEntity]:
         query = {field_name: field_value}
@@ -68,6 +67,4 @@ class UserStorage(MongoStorage):
             if self.users.index_information().get("creation_date_1"):
                 self.users.drop_index("creation_date_1")
         else:
-            self.users.create_index(
-                [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
-            )
+            self.users.create_index([("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)

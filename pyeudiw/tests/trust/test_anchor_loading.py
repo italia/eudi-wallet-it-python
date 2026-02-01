@@ -11,17 +11,7 @@ def test_load_anchors():
     db = DBEngine(CONFIG["storage"])
     pem = DER_cert_to_PEM_cert(gen_chain()[-1])
 
-    anchors = [
-        {
-            "entity_id": "entity",
-            "federation": {
-                "entity_configuration": ta_ec_signed
-            },
-            "x509": {
-                "pem": pem
-            }
-        }
-    ]
+    anchors = [{"entity_id": "entity", "federation": {"entity_configuration": ta_ec_signed}, "x509": {"pem": pem}}]
 
     AnchorsLoader.load_anchors(db, anchors)
 

@@ -15,6 +15,7 @@ class FormatConfig(BaseModel):
         class_ (str): The name of the handler class (alias for 'class').
         config (dict): A dictionary of configuration parameters specific to the handler class.
     """
+
     format: str
     module: str
     class_: str = Field(..., alias="class")
@@ -35,6 +36,7 @@ class CredentialPresentationHandlersConfig(BaseModel):
         trust_evaluator (CombinedTrustEvaluator): The trust evaluator used to evaluate the credential presentations.
         sig_alg_supported (list[str]): A list of supported signature algorithms.
     """
+
     max_submission_size: Optional[int] = None
     formats: List[FormatConfig]
     trust_evaluator: CombinedTrustEvaluator

@@ -17,6 +17,7 @@ class AccessToken(BaseModel):
         sub (str): Subject of the token (usually equals client_id).
         cnf (dict): Confirmation claim (e.g., public key thumbprint).
     """
+
     iss: str
     aud: str
     exp: int
@@ -25,6 +26,7 @@ class AccessToken(BaseModel):
     jti: str = Field(default_factory=lambda: str(uuid4()))
     sub: str
     cnf: dict = {}
+
 
 class RefreshToken(AccessToken):
     """
@@ -36,6 +38,7 @@ class RefreshToken(AccessToken):
     Notes:
         The `nbf` field ensures the refresh token is not accepted before the expiration of the access token.
     """
+
     nbf: int = None
 
     @model_validator(mode="after")
@@ -45,6 +48,3 @@ class RefreshToken(AccessToken):
         """
         self.nbf = self.nbf or self.exp
         return self
-
-
-

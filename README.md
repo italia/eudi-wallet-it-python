@@ -104,10 +104,13 @@ Please refer to the dedicate README files for details on how to configure SaToSa
 
 ## Executing Tests Using Preexisting MongoDb Instances
 
-Use the env variable PYEUDIW_MONGO_TEST_AUTH_INLINE
+Use the env variable `PYEUDIW_MONGO_TEST_AUTH_INLINE` so tests connect with credentials.
+CI uses `PYEUDIW_MONGO_TEST_AUTH_INLINE=""` (MongoDB without auth). For local MongoDB with auth,
+set it in `.env` (loaded by `./run_tests.sh`) or export it:
 
 ````
-PYEUDIW_MONGO_TEST_AUTH_INLINE=satosa:thatpassword@ pytest
+PYEUDIW_MONGO_TEST_AUTH_INLINE=satosa:thatpassword@ pytest pyeudiw -x
+# or: echo 'PYEUDIW_MONGO_TEST_AUTH_INLINE=satosa:thatpassword@' >> .env && ./run_tests.sh
 ````
 
 ## Contribute

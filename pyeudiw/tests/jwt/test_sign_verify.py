@@ -53,7 +53,7 @@ class TestJWSHeperSelectSigningKey:
         k = signer._select_signing_key(({"kid": exp_k["kid"]}, {}))
         assert k == exp_k
 
-    def test_JWSHelper_select_signing_key_infer_kid(self, sign_jwks: list[dict]):
+    def test_JWSHelper_select_signing_key_infer_kid_x5c(self, sign_jwks: list[dict]):
         new_private_ec_key = ec.generate_private_key(ec.SECP256R1())
         x509_der_chain = test_x509.gen_chain(leaf_private_key=new_private_ec_key)
         x5c = [DER_cert_to_B64DER_cert(der) for der in x509_der_chain]
@@ -208,9 +208,7 @@ class TestJWSHelperSignVerify:
         # case 1: using global configured tolerance
         DEFAULT_TOKEN_TIME_TOLERANCE
         claims = {
-            "iat": iat_now()
-            + DEFAULT_TOKEN_TIME_TOLERANCE
-            // 2,  # oops, issuer clock is slightly skewed!
+            "iat": iat_now() + DEFAULT_TOKEN_TIME_TOLERANCE // 2,  # oops, issuer clock is slightly skewed!
             "exp": iat_now() + 999,
             "iss": "token-issuer",
             "sub": "token-subject",

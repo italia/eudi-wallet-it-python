@@ -44,9 +44,7 @@ class JWEHelper(JWHelperInterface):
         encryption_keys = [key for key in self.jwks if key.appropriate_for("encrypt")]
 
         if len(encryption_keys) == 0:
-            raise JWEEncryptionError(
-                "unable to produce JWE: no available encryption key(s)"
-            )
+            raise JWEEncryptionError("unable to produce JWE: no available encryption key(s)")
 
         for key in self.jwks:
             if isinstance(key, cryptojwt.jwk.rsa.RSAKey):
@@ -67,9 +65,7 @@ class JWEHelper(JWHelperInterface):
 
             if key.kty == "EC":
                 _keyobj: JWE_EC
-                cek, encrypted_key, iv, params, _ = _keyobj.enc_setup(
-                    msg=_payload, key=key
-                )
+                cek, encrypted_key, iv, params, _ = _keyobj.enc_setup(msg=_payload, key=key)
                 kwargs = {
                     "params": params,
                     "cek": cek,
@@ -80,9 +76,7 @@ class JWEHelper(JWHelperInterface):
             else:
                 return _keyobj.encrypt(key=key.public_key())
 
-        raise JWEEncryptionError(
-            "unable to produce JWE: no supported encryption key(s)"
-        )
+        raise JWEEncryptionError("unable to produce JWE: no supported encryption key(s)")
 
     def decrypt(self, jwe: str) -> dict:
         """
@@ -99,9 +93,7 @@ class JWEHelper(JWHelperInterface):
         try:
             jwe_header = decode_jwt_header(jwe)
         except (binascii.Error, Exception) as e:
-            raise JWEDecryptionError(
-                f"Not a valid JWE format for the following reason: {e}"
-            )
+            raise JWEDecryptionError(f"Not a valid JWE format for the following reason: {e}")
 
         _alg = jwe_header.get("alg")
         _enc = jwe_header.get("enc")

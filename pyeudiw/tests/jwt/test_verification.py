@@ -13,7 +13,7 @@ def test_is_jwt_expired():
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
 
-    assert is_jwt_expired(jws) == True
+    assert is_jwt_expired(jws) is True
 
 
 def test_is_jwt_not_expired():
@@ -23,7 +23,7 @@ def test_is_jwt_not_expired():
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
 
-    assert is_jwt_expired(jws) == False
+    assert is_jwt_expired(jws) is False
 
 
 def test_verify_jws_with_key():
@@ -33,4 +33,4 @@ def test_verify_jws_with_key():
     helper = JWSHelper(jwk)
     jws = helper.sign(payload)
 
-    assert verify_jws_with_key(jws, jwk) == None
+    assert verify_jws_with_key(jws, jwk) is None

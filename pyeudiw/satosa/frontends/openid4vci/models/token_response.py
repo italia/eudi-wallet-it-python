@@ -8,35 +8,33 @@ from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
 class TokenResponse(BaseModel):
-  """
-  Pydantic model representing the response returned from the token endpoint.
-  """
-
-  access_token: str
-  refresh_token: str
-  token_type: str
-  expires_in: int
-  authorization_details: Optional[List[AuthorizationDetail]] = None
-
-  @staticmethod
-  def to_created_response(access_token: str, refresh_token: str, expires_in: int, authorization_details: List[AuthorizationDetail]) -> Created:
     """
-    Converts the token response to a `Created` HTTP response object.
-
-    Returns:
-        Created: An HTTP 201 Created response containing the JSON-serialized token response.
+    Pydantic model representing the response returned from the token endpoint.
     """
 
-    data = TokenResponse(
-      access_token=access_token,
-      refresh_token=refresh_token,
-      token_type="DPOP", # nosec B106
-      expires_in=expires_in,
-      authorization_details= None
-      if not authorization_details and len(authorization_details) == 0
-      else authorization_details
-    )
-    return Created(
-      message=data.model_dump_json(),
-      content=APPLICATION_JSON,
-    )
+    access_token: str
+    refresh_token: str
+    token_type: str
+    expires_in: int
+    authorization_details: Optional[List[AuthorizationDetail]] = None
+
+    @staticmethod
+    def to_created_response(access_token: str, refresh_token: str, expires_in: int, authorization_details: List[AuthorizationDetail]) -> Created:
+        """
+        Converts the token response to a `Created` HTTP response object.
+
+        Returns:
+            Created: An HTTP 201 Created response containing the JSON-serialized token response.
+        """
+
+        data = TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="DPOP",  # nosec B106
+            expires_in=expires_in,
+            authorization_details=None if not authorization_details and len(authorization_details) == 0 else authorization_details,
+        )
+        return Created(
+            message=data.model_dump_json(),
+            content=APPLICATION_JSON,
+        )

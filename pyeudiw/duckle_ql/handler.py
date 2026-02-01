@@ -21,6 +21,7 @@ MSO_MDOC_FORMAT = "mso_mdoc"
 VC_SD_JWT_FORMAT = "vc+sd-jwt"
 DC_SD_JWT_FORMAT = "dc+sd-jwt"
 
+
 class DuckleHandler(BaseVPParser):
     """Handler for processing Verifiable Presentations using DCQL."""
 
@@ -43,7 +44,7 @@ class DuckleHandler(BaseVPParser):
         else:
             self.queries = CredentialsRequest.model_validate_json(dcql_value)
 
-    def parse(self,  token: dict) -> Dict[str, Any]:
+    def parse(self, token: dict) -> Dict[str, Any]:
         """
         Parse the Duckle Verifiable Presentation.
 
@@ -111,5 +112,5 @@ class DuckleHandler(BaseVPParser):
                     raise InvalidVPToken(f"Unexpected token format {cred.format}")
                 parser.validate(token_str, verifier_id, verifier_nonce)
             except Exception as e:
-                    logging.exception(f"Error parsing token for credential '{cred.id}'")
-                    raise e
+                logging.exception(f"Error parsing token for credential '{cred.id}'")
+                raise e

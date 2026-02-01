@@ -34,12 +34,12 @@ class ResponseCodeSource:
     def create_code(self, state: str) -> str:
         """
         Create a code from the state using the key.
-        
+
         :param state: the state to encrypt
         :type state: str
-        
+
         :raises ValueError: if the key is not of the expected length or if the key is not in the expected format
-        
+
         :return: the encrypted code
         :rtype: str
         """
@@ -77,9 +77,7 @@ def decode_key(key: str) -> bytes:
         raise ValueError("key in format different than hex currently not supported")
     key_len = len(key)
     if key_len != 2 * CODE_SYM_KEY_LEN:
-        raise ValueError(
-            f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}"
-        )
+        raise ValueError(f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}")
     return bytes.fromhex(key)
 
 

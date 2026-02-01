@@ -34,9 +34,7 @@ YAML_TESTCASES_EXPECTED = [
 ]
 
 
-@pytest.mark.parametrize(
-    "yaml_testcase,expected", zip(YAML_TESTCASES, YAML_TESTCASES_EXPECTED)
-)
+@pytest.mark.parametrize("yaml_testcase,expected", zip(YAML_TESTCASES, YAML_TESTCASES_EXPECTED))
 def test_parsing_yaml(yaml_testcase, expected):
     # load_yaml_specification expects a file-like object, so we wrap the string in an io.StringIO
 

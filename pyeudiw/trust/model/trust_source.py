@@ -6,6 +6,7 @@ from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pyeudiw.jwk import JWK
 from pyeudiw.tools.utils import iat_now
 
+
 @dataclass
 class TrustEvaluationType:
     """
@@ -62,7 +63,7 @@ class TrustEvaluationType:
             "jwks": [key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks],
             "trust_handler_name": self.trust_handler_name,
             "crls": self.crls,
-            self.attribute_name: getattr(self, self.attribute_name)
+            self.attribute_name: getattr(self, self.attribute_name),
         }
 
     @property
@@ -74,9 +75,10 @@ class TrustEvaluationType:
         :rtype: bool
         """
         return iat_now() > self.expiration_date
-    
+
     def get_jwks(self) -> list[dict]:
         return self.jwks
+
 
 @dataclass
 class TrustSourceData:
@@ -84,14 +86,7 @@ class TrustSourceData:
     TrustSourceData is a dataclass that holds the trust data of a trust source.
     """
 
-    def __init__(
-        self,
-        entity_id: str,
-        policies: dict = {},
-        metadata: dict = {},
-        revoked: bool = False,
-        **kwargs
-    ) -> None:
+    def __init__(self, entity_id: str, policies: dict = {}, metadata: dict = {}, revoked: bool = False, **kwargs) -> None:
         """
         Initialize the trust source data.
 
@@ -113,9 +108,8 @@ class TrustSourceData:
 
         self.metadata = metadata
         for _type, tp in kwargs.items():
-            setattr(self, _type, TrustEvaluationType(**tp)) 
+            setattr(self, _type, TrustEvaluationType(**tp))
 
-    
     def add_trust_param(self, ttype: str, trust_params: TrustEvaluationType) -> None:
         """
         Add a trust source to the trust source.
@@ -150,7 +144,7 @@ class TrustSourceData:
         if not self.has_trust_param(ttype):
             return None
         return getattr(self, ttype)
-    
+
     def get_trust_evaluation_type_by_handler_name(self, handler_name: str) -> Optional[TrustEvaluationType]:
         """
         Return the trust source of the given handler name.
@@ -192,7 +186,7 @@ class TrustSourceData:
                 trust_source[ttype] = getattr(self, ttype).serialize()
 
         return trust_source
-    
+
     def is_revoked(self) -> bool:
         """
         Return whether the trust source is revoked.
@@ -212,12 +206,7 @@ class TrustSourceData:
         :returns: The empty trust source data
         :rtype: TrustSourceData
         """
-        return TrustSourceData(
-            entity_id, 
-            policies={}, 
-            metadata={}, 
-            revoked=False
-        )
+        return TrustSourceData(entity_id, policies={}, metadata={}, revoked=False)
 
     @staticmethod
     def from_dict(data: dict) -> "TrustSourceData":

@@ -72,9 +72,7 @@ def test_build_authorization_request_claims():
         "aud": "https://self-issued.me/v2",
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_aud
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_aud)
 
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
@@ -91,9 +89,7 @@ def test_build_authorization_request_claims():
         "response_mode": "direct_post",
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_rmode
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_rmode)
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
@@ -108,15 +104,11 @@ def test_build_authorization_request_claims():
         "aud": "https://self-issued.me/v2",
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope)
     assert "scope" not in claims
 
     # case 4: force nonce
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope, nonce="predetermined-nonce"
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
     assert claims["nonce"] == "predetermined-nonce"
 
     # case 5: custom client_id
@@ -127,9 +119,7 @@ def test_build_authorization_request_claims():
         "expiration_time": 1,
     }
 
-    claims = build_authorization_request_claims(
-        "custom-client-id", state, response_uri, config_custom_id
-    )
+    claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
     assert claims["iss"] != client_id
 
     # case 6: submission_data with dcql_query (DCQL/Duckle flow; equivalent of former presentation_definition)
@@ -152,9 +142,7 @@ def test_build_authorization_request_claims():
         "typo": DUCKLE_PRESENTATION,
         DUCKLE_QUERY_KEY: dcql_query,
     }
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_dcql, submission_data=submission_data
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_dcql, submission_data=submission_data)
     assert claims[DUCKLE_QUERY_KEY] == dcql_query
     assert "scope" not in claims  # DCQL path does not add scope
     assert "client_metadata" not in claims

@@ -21,17 +21,18 @@ def from_jwk_to_mso_mdoc_private_key(jwk_key: dict) -> dict:
         case "EC":
             kty_mso_mdoc = "EC2"
         case _:
-            kty_mso_mdoc =jwk_key["kty"]
+            kty_mso_mdoc = jwk_key["kty"]
 
-    mso_mdoc_private_key ={
-        'KTY': kty_mso_mdoc,
-        'CURVE': jwk_key["crv"].replace("-", "_"),
-        'ALG': jwk_key["alg"],
-        'D': base64_urldecode(jwk_key["d"]),
+    mso_mdoc_private_key = {
+        "KTY": kty_mso_mdoc,
+        "CURVE": jwk_key["crv"].replace("-", "_"),
+        "ALG": jwk_key["alg"],
+        "D": base64_urldecode(jwk_key["d"]),
     }
     if jwk_key["kid"]:
         mso_mdoc_private_key["KID"] = jwk_key["kid"].encode("utf-8")
     return mso_mdoc_private_key
+
 
 def render_mso_mdoc_template(template_str: str, data: dict, transform_config: dict = None) -> dict:
     """
@@ -54,6 +55,7 @@ def render_mso_mdoc_template(template_str: str, data: dict, transform_config: di
     # Parse YAML into Python dictionary
     return yaml.safe_load(rendered)
 
+
 def _apply_transforms(data: dict, transform_config: dict) -> dict:
     data = deepcopy(data)
 
@@ -73,7 +75,8 @@ def _apply_transforms(data: dict, transform_config: dict) -> dict:
 
     return data
 
+
 def _cbor_date_constructor(loader, node):
-    """ Custom constructor for !cbor_date tag """
+    """Custom constructor for !cbor_date tag"""
     value = loader.construct_scalar(node)
     return cbor2.CBORTag(1004, cbor2.dumps(value))

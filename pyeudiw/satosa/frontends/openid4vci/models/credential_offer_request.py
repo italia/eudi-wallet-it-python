@@ -5,13 +5,11 @@ from urllib.parse import urlparse
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
-    OpenId4VciBaseModel,
-    CONFIG_CTX
-)
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX
 
 logger = logging.getLogger(__name__)
 CREDENTIAL_OFFER_ENDPOINT = "credential_offer"
+
 
 class AuthorizationCode(OpenId4VciBaseModel):
     """
@@ -33,7 +31,7 @@ class AuthorizationCode(OpenId4VciBaseModel):
     issuer_state: str = None
     authorization_server: str = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_authorization_code(self) -> "AuthorizationCode":
         """
         Validate the AuthorizationCode fields after model initialization.
@@ -88,7 +86,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
     credential_configuration_ids: List[str] = None
     grants: AuthorizationCode = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_credential_offer(self) -> "CredentialOfferRequest":
         """
         Validates the CredentialOfferRequest after model initialization.
@@ -114,10 +112,7 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
             InvalidRequestException: If `grants` is missing or invalid.
         """
         self.check_missing_parameter(self.grants, "grants", CREDENTIAL_OFFER_ENDPOINT)
-        AuthorizationCode.model_validate(
-            self.grants,
-            context={CONFIG_CTX: self.get_config()}
-        )
+        AuthorizationCode.model_validate(self.grants, context={CONFIG_CTX: self.get_config()})
 
     def validate_credential_configuration_ids(self):
         """

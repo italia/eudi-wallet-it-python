@@ -10,7 +10,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     AUTHORIZATION_DETAILS_CTX,
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
-    NONCE_CTX
+    NONCE_CTX,
 )
 from pyeudiw.tools.date import is_valid_unix_timestamp
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 CREDENTIAL_ENDPOINT = "credential"
 JWT_PROOF_TYPE = "jwt"
 JWT_PROOF_TYP = "openid4vci-proof+jwt"
+
 
 class ProofJWT(OpenId4VciBaseModel):
     """
@@ -38,6 +39,7 @@ class ProofJWT(OpenId4VciBaseModel):
         - JWT `typ` must be "openid4vci-proof+jwt".
         - JWT `iss`, `aud`, and `nonce` must match contextual values.
     """
+
     alg: str = None
     typ: str = None
     jwk: str = None
@@ -46,7 +48,7 @@ class ProofJWT(OpenId4VciBaseModel):
     iat: int = None
     nonce: str = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_proof(self) -> "ProofJWT":
         self.validate_alg()
         self.validate_typ()
@@ -64,10 +66,7 @@ class ProofJWT(OpenId4VciBaseModel):
     def validate_typ(self):
         self.typ = self.strip(self.typ)
         self.check_missing_parameter(self.typ, "proof.jwt.typ", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            self.typ != JWT_PROOF_TYP,
-            self.typ, "proof.jwt.typ", CREDENTIAL_ENDPOINT
-        )
+        self.check_invalid_parameter(self.typ != JWT_PROOF_TYP, self.typ, "proof.jwt.typ", CREDENTIAL_ENDPOINT)
 
     def validate_jwk(self):
         pass
@@ -75,32 +74,21 @@ class ProofJWT(OpenId4VciBaseModel):
     def validate_iss(self):
         self.iss = self.strip(self.iss)
         self.check_missing_parameter(self.iss, "proof.jwt.iss", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            self.iss != self.get_ctx(CLIENT_ID_CTX),
-            self.iss, "proof.jwt.iss", CREDENTIAL_ENDPOINT
-        )
+        self.check_invalid_parameter(self.iss != self.get_ctx(CLIENT_ID_CTX), self.iss, "proof.jwt.iss", CREDENTIAL_ENDPOINT)
 
     def validate_aud(self):
         self.aud = self.strip(self.aud)
         self.check_missing_parameter(self.aud, "proof.jwt.aud", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            self.aud != self.get_ctx(ENTITY_ID_CTX),
-            self.aud, "proof.jwt.aud", CREDENTIAL_ENDPOINT
-        )
+        self.check_invalid_parameter(self.aud != self.get_ctx(ENTITY_ID_CTX), self.aud, "proof.jwt.aud", CREDENTIAL_ENDPOINT)
 
     def validate_iat(self):
-        self.check_invalid_parameter(
-            not is_valid_unix_timestamp(self.iat),
-            self.iat, "proof.jwt.iat", CREDENTIAL_ENDPOINT
-        )
+        self.check_invalid_parameter(not is_valid_unix_timestamp(self.iat), self.iat, "proof.jwt.iat", CREDENTIAL_ENDPOINT)
 
     def validate_nonce(self):
         self.nonce = self.strip(self.nonce)
         self.check_missing_parameter(self.nonce, "proof.jwt.nonce", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            self.nonce != self.get_ctx(NONCE_CTX),
-            self.nonce, "proof.jwt.nonce", CREDENTIAL_ENDPOINT
-        )
+        self.check_invalid_parameter(self.nonce != self.get_ctx(NONCE_CTX), self.nonce, "proof.jwt.nonce", CREDENTIAL_ENDPOINT)
+
 
 class Proof(OpenId4VciBaseModel):
     """
@@ -115,10 +103,11 @@ class Proof(OpenId4VciBaseModel):
         - proof_type must be present and must equal "jwt".
         - jwt must be a non-empty string.
     """
+
     proof_type: str = None
     jwt: str = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_proof(self) -> "Proof":
         self.validate_prof_type()
         self.validate_jwt()
@@ -127,13 +116,12 @@ class Proof(OpenId4VciBaseModel):
     def validate_prof_type(self):
         self.proof_type = self.strip(self.proof_type)
         self.check_missing_parameter(self.proof_type, "proof.proof_type", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            JWT_PROOF_TYPE != self.proof_type,
-            self.proof_type, "proof.proof_type", CREDENTIAL_ENDPOINT)
+        self.check_invalid_parameter(JWT_PROOF_TYPE != self.proof_type, self.proof_type, "proof.proof_type", CREDENTIAL_ENDPOINT)
 
     def validate_jwt(self):
         self.jwt = self.strip(self.jwt)
         self.check_missing_parameter(self.jwt, "proof.jwt", CREDENTIAL_ENDPOINT)
+
 
 class CredentialEndpointRequest(OpenId4VciBaseModel):
     """
@@ -156,7 +144,7 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
     proof: Proof = None
     transaction_id: str = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_credential_endpoint_request(self) -> "CredentialEndpointRequest":
         self.validate_credential_id()
         self.validate_proof()
@@ -171,10 +159,7 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
         if self.credential_identifier and self.credential_configuration_id:
             raise InvalidRequestException("`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint")
 
-        has_openid_credential = any(
-            ad.get("type") == OPEN_ID_CREDENTIAL_TYPE
-            for ad in auth_det_req
-        )
+        has_openid_credential = any(ad.get("type") == OPEN_ID_CREDENTIAL_TYPE for ad in auth_det_req)
 
         if has_openid_credential:
             self.check_missing_parameter(self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
@@ -184,8 +169,8 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
                 if ad.get("type") == OPEN_ID_CREDENTIAL_TYPE:
                     valid_identifiers.extend(ad.get("credential_identifiers"))
             self.check_invalid_parameter(
-                self.credential_identifier not in valid_identifiers,
-                self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
+                self.credential_identifier not in valid_identifiers, self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT
+            )
         else:
             self.check_missing_parameter(self.credential_configuration_id, "credential_configuration_id", CREDENTIAL_ENDPOINT)
             self.check_unexpected_parameter(self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
@@ -196,4 +181,3 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
 
     def validate_transaction_id(self):
         pass
-

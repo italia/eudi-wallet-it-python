@@ -20,7 +20,7 @@ mock_jwk_private = {
     "kid": "8OQ2P3OVYOys0Aobqr1HbK2HVpJiiWBl1Z2c2v732Sw",
     "x": "SMbScr0uzMGAsEMaGbAMXjQwv45h5Lpx3oMLljgsAeA",
     "y": "NGbl7KWmrDc_LiM2oLOm-wrNPmlhtSDdBV6noIB7jyw",
-    "alg": "ES256"
+    "alg": "ES256",
 }
 
 
@@ -38,31 +38,23 @@ class MockTrustHandler(TrustHandlerInterface):
         if issuer == self.client_id:
             trust_source.metadata = {
                 "default_key": "default_value",
-                "jwks": {
-                    "keys": [
-                        mock_jwk, 
-                        mock_jwk_private
-                    ]
-                },
+                "jwks": {"keys": [mock_jwk, mock_jwk_private]},
             }
             return trust_source
 
         trust_source.metadata = {"json_key": "json_value"}
         return trust_source
 
-    def extract_and_update_trust_materials(
-        self, issuer: str, trust_source: TrustSourceData
-    ) -> TrustSourceData:
+    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
-
 
         if issuer == self.client_id:
             trust_param = TrustEvaluationType(
                 attribute_name="trust_param_name",
                 jwks=[mock_jwk, mock_jwk_private],
                 expiration_date=exp_from_now(self.exp),
-                trust_param_name={'trust_param_key': 'trust_param_value'},
-                trust_handler_name=str(self.__class__.__name__)
+                trust_param_name={"trust_param_key": "trust_param_value"},
+                trust_handler_name=str(self.__class__.__name__),
             )
         else:
             trust_param = TrustEvaluationType(
@@ -70,15 +62,16 @@ class MockTrustHandler(TrustHandlerInterface):
                 jwks=[mock_jwk, mock_jwk_private],
                 expiration_date=exp_from_now(self.exp),
                 trust_param_name={"trust_param_key": "trust_param_value"},
-                trust_handler_name=str(self.__class__.__name__)
+                trust_handler_name=str(self.__class__.__name__),
             )
 
         trust_source.add_trust_param("test_trust_param", trust_param)
 
         return trust_source
-    
+
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
-        return {'trust_param_name': trust_source.test_trust_param.trust_param_name}
+        return {"trust_param_name": trust_source.test_trust_param.trust_param_name}
+
 
 class UpdateTrustHandler(MockTrustHandler):
     """
@@ -89,23 +82,20 @@ class UpdateTrustHandler(MockTrustHandler):
         super().__init__(*args, **kwargs)
         self.updated = False
 
-    def extract_and_update_trust_materials(
-        self, issuer: str, trust_source: TrustSourceData
-    ) -> TrustSourceData:
-        
+    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+
         if not self.updated:
             self.updated = True
             return super().extract_and_update_trust_materials(issuer, trust_source)
-        
-        
+
         trust_source = self.get_metadata(issuer, trust_source)
 
         trust_param = TrustEvaluationType(
             attribute_name="trust_param_name",
             jwks=[mock_jwk],
             expiration_date=exp_from_now(self.exp),
-            trust_param_name={'updated_trust_param_key': 'updated_trust_param_value'},
-            trust_handler_name=str(self.__class__.__name__)
+            trust_param_name={"updated_trust_param_key": "updated_trust_param_value"},
+            trust_handler_name=str(self.__class__.__name__),
         )
 
         trust_source.add_trust_param("test_trust_param", trust_param)
@@ -113,7 +103,8 @@ class UpdateTrustHandler(MockTrustHandler):
         return trust_source
 
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
-        return {'trust_param_name': trust_source.test_trust_param.trust_param_name}
+        return {"trust_param_name": trust_source.test_trust_param.trust_param_name}
+
 
 class NonConformatTrustHandler:
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:

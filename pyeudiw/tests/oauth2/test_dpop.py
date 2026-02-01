@@ -48,9 +48,7 @@ def jwshelper(private_jwk):
 
 @pytest.fixture
 def wia_jws(jwshelper):
-    wia = jwshelper.sign(
-        WALLET_INSTANCE_ATTESTATION, protected={"trust_chain": [], "x5c": []}
-    )
+    wia = jwshelper.sign(WALLET_INSTANCE_ATTESTATION, protected={"trust_chain": [], "x5c": []})
     return wia
 
 
@@ -62,11 +60,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert isinstance(header["x5c"], list)
     assert header["alg"]
 
-    new_dpop = DPoPIssuer(
-        htu="https://example.org/redirect", 
-        private_jwk=private_jwk, 
-        token=wia_jws
-    )
+    new_dpop = DPoPIssuer(htu="https://example.org/redirect", private_jwk=private_jwk, token=wia_jws)
     proof = new_dpop.proof
     assert proof
 
@@ -77,12 +71,7 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert "d" not in header["jwk"]
 
     payload = decode_jwt_payload(proof)
-    assert (
-        payload["ath"]
-        == base64.urlsafe_b64encode(hashlib.sha256(wia_jws.encode()).digest())
-        .rstrip(b"=")
-        .decode()
-    )
+    assert payload["ath"] == base64.urlsafe_b64encode(hashlib.sha256(wia_jws.encode()).digest()).rstrip(b"=").decode()
     assert payload["htm"] in ["GET", "POST", "get", "post"]
     assert payload["htu"] == "https://example.org/redirect"
     assert payload["jti"]
