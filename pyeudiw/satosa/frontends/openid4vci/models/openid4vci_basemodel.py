@@ -16,10 +16,12 @@ NONCE_CTX = "nonce"
 
 logger = logging.getLogger(__name__)
 
+
 class OpenId4VciBaseModel(BaseModel):
     """
     Base model that extracts the Pydantic context and provides helper accessors.
     """
+
     _context: dict[str, Any] = {}
 
     def model_post_init(self, context: Any) -> None:

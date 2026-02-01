@@ -13,30 +13,36 @@ class InvalidVPToken(Exception):
     Raised when a given VP is invalid
     """
 
+
 class VPFormatNotSupported(Exception):
     """
     Raised when a given VP format is not supported
     """
+
 
 class NotKBJWT(Exception):
     """
     Raised when a given VP format is not Key Binding JWT format
     """
 
+
 class MissingIssuer(Exception):
     """
     Raised when a given VP not contain the issuer
     """
+
 
 class MdocCborValidationError(Exception):
     """
     Raised when a given VP not contain the issuer
     """
 
+
 class VPExpired(Exception):
     """
     Raised when a given VP is expired
     """
+
 
 class VPRevoked(Exception):
     """

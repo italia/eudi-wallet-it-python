@@ -47,11 +47,7 @@ sdjwt_at_holder = SDJWTHolder(
     serialization_format="compact",
 )
 
-ec_key = (
-    key_from_jwk_dict(holder_jwk)
-    if sd_specification.get("key_binding", False)
-    else None
-)
+ec_key = key_from_jwk_dict(holder_jwk) if sd_specification.get("key_binding", False) else None
 
 
 def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> str:
@@ -89,9 +85,7 @@ def _generate_response(state: str, vp_token: str) -> dict:
     }
 
 
-def _generate_post_context(
-    context: Context, request_uri: str, encrypted_response: str
-) -> Context:
+def _generate_post_context(context: Context, request_uri: str, encrypted_response: str) -> Context:
     context.request_method = "POST"
     context.request_uri = request_uri
     context.request = {"response": encrypted_response}
@@ -100,12 +94,8 @@ def _generate_post_context(
     return context
 
 
-def _initialize_session(
-    db_engine: DBEngine, state: str, session_id: str, nonce: str
-) -> None:
+def _initialize_session(db_engine: DBEngine, state: str, session_id: str, nonce: str) -> None:
     db_engine.init_session(state=state, session_id=session_id)
     doc_id = db_engine.get_by_state(state)["document_id"]
 
-    db_engine.update_request_object(
-        document_id=doc_id, request_object={"nonce": nonce, "state": state}
-    )
+    db_engine.update_request_object(document_id=doc_id, request_object={"nonce": nonce, "state": state})

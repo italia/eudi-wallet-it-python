@@ -18,5 +18,6 @@ class MongoDbConfig(BaseModel):
     cache: Optional[StorageConfig] = None
     storage: StorageConfig
 
+
 class Storage(BaseModel):
     mongo_db: MongoDbConfig

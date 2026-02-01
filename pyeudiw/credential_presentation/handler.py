@@ -8,6 +8,7 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
 CREDENTIAL_PRESENTATION_HANDLERS_CONFIG_KEY = "credential_presentation_handlers"
 
+
 class CredentialPresentationHandlers:
     """
     This class manages credential presentation handlers based on the given configuration.
@@ -20,6 +21,7 @@ class CredentialPresentationHandlers:
         handlers (dict[str, BaseVPParser]): A dictionary where the keys are format names and values are the handler instances.
         trust_evaluator (CombinedTrustEvaluator): The trust evaluator used for assessing the presentations.
     """
+
     def __init__(self, config: CredentialPresentationHandlersConfig) -> None:
         """
         Initializes the credential presentation handlers based on the provided configuration.
@@ -32,6 +34,7 @@ class CredentialPresentationHandlers:
         """
         self.max_submission_size = config.max_submission_size or 4096
         from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+
         self.handlers: dict[str, BaseVPParser] = {}
         self.trust_evaluator = config.trust_evaluator
 
@@ -48,11 +51,7 @@ class CredentialPresentationHandlers:
                 if not issubclass(cls, BaseVPParser):
                     raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
 
-                self.handlers[format_name] = cls(
-                    trust_evaluator=config.trust_evaluator,
-                    **module_config,
-                    sig_alg_supported=config.sig_alg_supported
-                )
+                self.handlers[format_name] = cls(trust_evaluator=config.trust_evaluator, **module_config, sig_alg_supported=config.sig_alg_supported)
             except ModuleNotFoundError:
                 raise ImportError(f"Module '{module_name}' not found for format '{format_name}'.")
             except AttributeError:
@@ -62,9 +61,7 @@ class CredentialPresentationHandlers:
 
 
 def load_credential_presentation_handlers(
-        config: dict,
-        trust_evaluator: CombinedTrustEvaluator,
-        sig_alg_supported: Optional[List[str]] = None
+    config: dict, trust_evaluator: CombinedTrustEvaluator, sig_alg_supported: Optional[List[str]] = None
 ) -> CredentialPresentationHandlers:
     """
     Loads and validates the configuration for credential presentation handlers.
@@ -91,11 +88,7 @@ def load_credential_presentation_handlers(
     if sig_alg_supported is None:
         sig_alg_supported = []
 
-    config_model = CredentialPresentationHandlersConfig(
-        **raw_config,
-        trust_evaluator=trust_evaluator,
-        sig_alg_supported=sig_alg_supported
-    )
+    config_model = CredentialPresentationHandlersConfig(**raw_config, trust_evaluator=trust_evaluator, sig_alg_supported=sig_alg_supported)
     duckle_handler = next((handler for handler in config_model.formats if handler.class_ == "DuckleHandler"), None)
     if duckle_handler and config.get(DUCKLE_QUERY_KEY):
         updated_config = {DUCKLE_QUERY_KEY: config[DUCKLE_QUERY_KEY]}

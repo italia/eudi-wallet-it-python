@@ -51,6 +51,7 @@ class AuthorizeUnmatchedResponse(Exception):
     Raised when an authorization response cannot be matched to an authentication request
     """
 
+
 class InvalidRequestException(Exception):
     """
     Exception raised when a request is invalid according to OpenID4VCI specifications.

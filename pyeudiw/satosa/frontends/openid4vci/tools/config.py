@@ -3,26 +3,23 @@ from typing import Dict, Any
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
 from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
-from pyeudiw.satosa.schemas.metadata import (
-    OauthAuthorizationServerMetadata,
-    OpenidCredentialIssuerMetadata,
-    CredentialConfiguration
-)
+from pyeudiw.satosa.schemas.metadata import OauthAuthorizationServerMetadata, OpenidCredentialIssuerMetadata, CredentialConfiguration
 
 
 class Openid4VciFrontendConfigUtils:
     """
-        Utility class to simplify access to OpenID4VCI frontend configuration data.
+    Utility class to simplify access to OpenID4VCI frontend configuration data.
 
-        This class wraps the frontend configuration and exposes convenient
-        methods to retrieve JWT settings, OAuth authorization server metadata,
-        OpenID credential issuer metadata, and supported credential configurations.
+    This class wraps the frontend configuration and exposes convenient
+    methods to retrieve JWT settings, OAuth authorization server metadata,
+    OpenID credential issuer metadata, and supported credential configurations.
 
-        Args:
-            config (Any): The configuration object or dictionary.
-                          If not already an instance of `PyeudiwFrontendConfig`,
-                          it will be parsed into one.
+    Args:
+        config (Any): The configuration object or dictionary.
+                      If not already an instance of `PyeudiwFrontendConfig`,
+                      it will be parsed into one.
     """
+
     def __init__(self, config: Any):
         if isinstance(config, PyeudiwFrontendConfig):
             self.config = config
@@ -45,10 +42,7 @@ class Openid4VciFrontendConfigUtils:
         ccs = self.get_openid_credential_issuer().credential_configurations_supported
         if not ccs:
             return None
-        return {
-            k: CredentialConfiguration.map(k, v)
-            for k, v in ccs.items()
-        }
+        return {k: CredentialConfiguration.map(k, v) for k, v in ccs.items()}
 
     def get_credential_configurations(self) -> CredentialConfigurationsConfig:
         return self.config.credential_configurations

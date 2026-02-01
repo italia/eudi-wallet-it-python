@@ -18,7 +18,7 @@ class InvalidRequestException(Exception):
 class InvalidScopeException(Exception):
     """
     Exception raised when a request contains an invalid or unsupported scope.
-    
+
     Attributes:
         message (str): A human-readable explanation of the scope error.
     """

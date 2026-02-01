@@ -5,10 +5,7 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.utils.validation import (
-    validate_oauth_client_attestation_pop,
-    validate_oauth_client_attestation
-)
+from pyeudiw.satosa.utils.validation import validate_oauth_client_attestation_pop, validate_oauth_client_attestation
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 
@@ -16,15 +13,15 @@ from pyeudiw.tools.base_endpoint import BaseEndpoint
 class VPBaseEndpoint(BaseEndpoint):
 
     def __init__(
-            self,
-            config: dict,
-            internal_attributes: dict[str, dict[str, str | list[str]]],
-            base_url: str,
-            name: str,
-            auth_callback: Callable[[Context, Any], Response] | None = None,
-            converter: AttributeMapper | None = None,
-            trust_evaluator=None,
-            db_engine=None,
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback: Callable[[Context, Any], Response] | None = None,
+        converter: AttributeMapper | None = None,
+        trust_evaluator=None,
+        db_engine=None,
     ):
         """
         Initialize the OpenID4VCI endpoints class.
@@ -48,9 +45,7 @@ class VPBaseEndpoint(BaseEndpoint):
 
         self.storage_settings = self.config.get("storage", {})
         if not self.storage_settings:
-            raise ValueError(
-                "Storage settings are not configured. Please check your configuration."
-            )
+            raise ValueError("Storage settings are not configured. Please check your configuration.")
 
         # Reuse shared db_engine from backend when provided to avoid multiple MongoClient instances per backend.
         self.db_engine = db_engine if db_engine is not None else DBEngine(self.storage_settings)
@@ -58,20 +53,11 @@ class VPBaseEndpoint(BaseEndpoint):
     def wallet_attestation_validation(self, context: Context):
         if self._wallet_attestation_required:
             try:
-                validate_oauth_client_attestation_pop(
-                    context,
-                    self._client_attestation_pop_signing_alg_values_supported
-                )
-                validate_oauth_client_attestation(
-                    context,
-                    self._client_attestation_signing_alg_values_supported
-                )
+                validate_oauth_client_attestation_pop(context, self._client_attestation_pop_signing_alg_values_supported)
+                validate_oauth_client_attestation(context, self._client_attestation_signing_alg_values_supported)
                 return None
             except InvalidRequestException as e:
-                self._log_error(
-                    e.__class__.__name__,
-                    f"Error during OAuth client attestation validation: {e}"
-                )
+                self._log_error(e.__class__.__name__, f"Error during OAuth client attestation validation: {e}")
                 return self._handle_400(context, str(e), e)
         else:
             return None

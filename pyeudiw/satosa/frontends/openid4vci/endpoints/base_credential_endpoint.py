@@ -21,10 +21,7 @@ from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngin
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
-from pyeudiw.satosa.schemas.metadata import (
-    CredentialConfigurationFormatEnum,
-    CredentialConfiguration
-)
+from pyeudiw.satosa.schemas.metadata import CredentialConfigurationFormatEnum, CredentialConfiguration
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_request_method,
@@ -39,13 +36,8 @@ from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key, render_mso_
 from pyeudiw.tools.utils import iat_now, exp_from_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
-FIELD_TRANSFORMS = {
-    "portrait": {
-        "if_type": "bytes",
-        "transform": "base64",
-        "output": "portrait_b64"
-    }
-}
+FIELD_TRANSFORMS = {"portrait": {"if_type": "bytes", "transform": "base64", "output": "portrait_b64"}}
+
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
@@ -69,10 +61,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         self._db_user_engine = _user_credential_engine.db_user_storage_engine
         self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
         self._trust_evaluator = CombinedTrustEvaluator.from_config(
-            self.config.get("trust", {}),
-            self.db_engine,
-            default_client_id = self.entity_id,
-            mode = self.config.get("trust_caching_mode", "update_first")
+            self.config.get("trust", {}), self.db_engine, default_client_id=self.entity_id, mode=self.config.get("trust_caching_mode", "update_first")
         )
 
     def endpoint(self, context: Context) -> Response:
@@ -84,24 +73,18 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if self.dpop_required:
                 if not context.http_headers or ("DPoP" not in context.http_headers) or ("Authorization" not in context.http_headers):
                     raise InvalidRequestException("Missing DPoP and/or Authorization header")
-                
+
                 dpop = context.http_headers.get("DPoP")
                 authz = context.http_headers.get("Authorization")
-                
+
                 try:
-                    dpop_verifier = DPoPVerifier(
-                        http_header_dpop=dpop,
-                        http_header_authz=authz
-                    )
+                    dpop_verifier = DPoPVerifier(http_header_dpop=dpop, http_header_authz=authz)
                     if not dpop_verifier.is_valid:
                         raise InvalidRequestException("Invalid DPoP proof")
                 except ValueError as e:
-                    self._log_error(
-                        e.__class__.__name__,
-                        f"Error during DPoP validation in `token` endpoint: {e}"
-                    )
+                    self._log_error(e.__class__.__name__, f"Error during DPoP validation in `token` endpoint: {e}")
                     return self._handle_400(context, str(e), e)
-            
+
             entity = self.db_engine.get_by_session_id(get_session_id(context))
             req = self.validate_request(context, entity)
             credential_id = None
@@ -112,12 +95,8 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
         except Exception as e:
-            self._log_error(
-                e.__class__.__name__,
-                f"Error during invoke credential endpoint: {e}"
-            )
+            self._log_error(e.__class__.__name__, f"Error during invoke credential endpoint: {e}")
             return self._handle_500(context, "error during invoke credential endpoint", e)
-
 
     @abstractmethod
     def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
@@ -132,19 +111,16 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         entity = self.db_engine.get_by_session_id(get_session_id(context))
 
         if not entity:
-            self._log_error(
-                self.__class__.__name__,
-                "No entity found for the current session."
-            )
+            self._log_error(self.__class__.__name__, "No entity found for the current session.")
             return credential_list
-        
+
         vci_entity = OpenId4VCIEntity(**entity)
 
         user = self._db_user_engine.get_by_fields(self._extract_lookup_identifiers(vci_entity.attributes or {}))
         if credential_id:
             return [self._build_credential(vci_entity, user, credential_id)]
         else:
-            pass #todo: manage deferred
+            pass  # todo: manage deferred
 
         return credential_list
 
@@ -157,35 +133,23 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 return self._issue_mso_mdoc(user_entity, credential, config)
             case _:
-                self._log_error(
-                    self.__class__.__name__,
-                    f"unexpected credential_configurations_supported format {config.format}")
+                self._log_error(self.__class__.__name__, f"unexpected credential_configurations_supported format {config.format}")
                 raise Exception(f"Invalid credential_configurations_supported format {config.format}")
 
     def _issue_mso_mdoc(self, user_entity: tuple[str, UserEntity], credential: CredentialSpecificationConfig, config: CredentialConfiguration) -> str:
-        mdoci = MdocCborIssuer(
-            private_key=self._mso_mdoc_private_key,
-            alg=self._mso_mdoc_private_key['ALG']
-        )
+        mdoci = MdocCborIssuer(private_key=self._mso_mdoc_private_key, alg=self._mso_mdoc_private_key["ALG"])
         issuance_date = datetime.date.today()
         mdoci.new(
             doctype=config.doctype,
             data=self._loader(user_entity, credential.template, CredentialConfigurationFormatEnum.MSO_MDOC.value),
-            validity={
-                "issuance_date": issuance_date.isoformat(),
-                "expiry_date": (issuance_date + timedelta(credential.expiry_days)).isoformat()
-            }
+            validity={"issuance_date": issuance_date.isoformat(), "expiry_date": (issuance_date + timedelta(credential.expiry_days)).isoformat()},
         )
         return mdoci.dumps().decode()
 
-    def _issue_sd_jwt(self, user_entity: tuple[str, UserEntity] , entity: OpenId4VCIEntity, template) -> dict:
+    def _issue_sd_jwt(self, user_entity: tuple[str, UserEntity], entity: OpenId4VCIEntity, template) -> dict:
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
-        claims = {
-            "iss": entity.client_id,
-            "iat": now,
-            "exp": exp
-        }
+        claims = {"iss": entity.client_id, "iat": now, "exp": exp}
         specification = self._loader(user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value)
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
@@ -194,17 +158,13 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             user_claims=specification,
             issuer_keys=self._metadata_jwks,
             add_decoy_claims=use_decoys,
-            extra_header_parameters = self._trust_evaluator.get_jwt_header_trust_parameters(issuer=self.entity_id)
+            extra_header_parameters=self._trust_evaluator.get_jwt_header_trust_parameters(issuer=self.entity_id),
         )
 
-        return {
-            "jws": sdjwt_at_issuer.serialized_sd_jwt,
-            "issuance": sdjwt_at_issuer.sd_jwt_issuance
-        }
-
+        return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
     @staticmethod
-    def _retrieve_user_data(user_entity: tuple[str, UserEntity] | UserEntity) ->  dict[str, Any]:
+    def _retrieve_user_data(user_entity: tuple[str, UserEntity] | UserEntity) -> dict[str, Any]:
         if isinstance(user_entity, UserEntity):
             user = user_entity
         else:
@@ -218,9 +178,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
-                template = json.dumps(
-                    yaml_load_specification_with_placeholder(template)
-                )
+                template = json.dumps(yaml_load_specification_with_placeholder(template))
                 template = Template(template)
                 user_data = self._retrieve_user_data(user_data)
                 json_filled = template.render(**user_data)
@@ -237,12 +195,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def _build_status_list_payload(self, user_id: str):
         credential = self._db_credential_engine.get_credential_by_user_id(user_id)
-        return {
-            "status_list": {
-                "idx": credential.incremental_id,
-                "uri": f"{self.status_endpoint}/{credential.incremental_id}"
-            }
-        }
+        return {"status_list": {"idx": credential.incremental_id, "uri": f"{self.status_endpoint}/{credential.incremental_id}"}}
 
     def _extract_lookup_identifiers(self, attributes: dict):
         """
@@ -258,11 +211,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         lookup_params = {}
 
         lookup_source = self.config_utils.get_credential_configurations().lookup_source
-        ia_openid4vci = {
-            attr: sources[lookup_source]
-            for attr, sources in self.internal_attributes["attributes"].items()
-            if lookup_source in sources
-        }
+        ia_openid4vci = {attr: sources[lookup_source] for attr, sources in self.internal_attributes["attributes"].items() if lookup_source in sources}
 
         for db_field_name, possible_saml_names in ia_openid4vci.items():
             for saml_name in possible_saml_names:
@@ -273,26 +222,29 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
         return {k: v for k, v in lookup_params.items() if v is not None}
 
-
     def _validate_configs(self):
         credential_config = self.config_utils.get_credential_configurations()
-        self._validate_required_configs([
-            ("credential_configurations", credential_config),
-        ])
+        self._validate_required_configs(
+            [
+                ("credential_configurations", credential_config),
+            ]
+        )
 
         specification = credential_config.credential_specification
-        self._validate_required_configs([
-            ("credential_configurations.credential_specification", specification),
-            ("metadata.openid_credential_issuer.credential_configurations_supported",  self.config_utils.get_credential_configurations_supported()),
-        ])
+        self._validate_required_configs(
+            [
+                ("credential_configurations.credential_specification", specification),
+                ("metadata.openid_credential_issuer.credential_configurations_supported", self.config_utils.get_credential_configurations_supported()),
+            ]
+        )
 
         status_list = credential_config.status_list
-        self._validate_required_configs([
-            ("credential_configurations.status_list", status_list),
-        ])
+        self._validate_required_configs(
+            [
+                ("credential_configurations.status_list", status_list),
+            ]
+        )
 
-        self._validate_required_configs([
-            ("credential_configurations.status_list.path", credential_config.status_list.path)
-        ])
+        self._validate_required_configs([("credential_configurations.status_list.path", credential_config.status_list.path)])
 
         self.specification = specification

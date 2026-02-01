@@ -26,7 +26,7 @@ class MetadataHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
 
-    def _ensure_credential_issuer(self, metadata: dict, metadata_key: str, issuer_key:str):
+    def _ensure_credential_issuer(self, metadata: dict, metadata_key: str, issuer_key: str):
         metadata_val = metadata.get(metadata_key)
         if metadata_val and isinstance(metadata_val, dict) and not metadata_val.get(issuer_key):
             metadata_val[issuer_key] = self._backend_url
@@ -81,7 +81,7 @@ class MetadataHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context) -> Response:
         """
         Handle request to the metadata endpoint.
-        
+
         Args:
             context (Context): The SATOSA context.
         Returns:
@@ -92,14 +92,16 @@ class MetadataHandler(VCIBaseEndpoint):
         return Response(
             json.dumps(self.entity_configuration_as_dict) if is_json else self.entity_configuration,
             status="200",
-            content=APPLICATION_JSON if is_json else ENTITY_STATEMENT_JWT
+            content=APPLICATION_JSON if is_json else ENTITY_STATEMENT_JWT,
         )
 
     def _validate_configs(self):
         credential_configuration = self.config_utils.get_credential_configurations()
         if not credential_configuration:
-            self._validate_required_configs([
-                ("credential_configurations", credential_configuration),
-            ])
+            self._validate_required_configs(
+                [
+                    ("credential_configurations", credential_configuration),
+                ]
+            )
 
         self.credential_configuration = credential_configuration

@@ -8,12 +8,15 @@ from pyeudiw.satosa.schemas.status_list import StatusListConfig
 
 class CredentialConfigurationsConfig(BaseModel):
     """
-        Configuration model for credential presentation handling.
+    Configuration model for credential presentation handling.
     """
+
     lookup_source: str
-    ensure_credential_issuer: Optional[List[Dict[str, str]]] = Field(default_factory=lambda: [
-        {"oauth_authorization_server": "issuer"},
-        {"openid_credential_issuer": "credential_issuer"},
-    ])
+    ensure_credential_issuer: Optional[List[Dict[str, str]]] = Field(
+        default_factory=lambda: [
+            {"oauth_authorization_server": "issuer"},
+            {"openid_credential_issuer": "credential_issuer"},
+        ]
+    )
     credential_specification: Optional[Dict[str, CredentialSpecificationConfig]] = None
     status_list: Optional[StatusListConfig] = None

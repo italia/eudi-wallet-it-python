@@ -28,6 +28,7 @@ def find_jwk_by_kid(jwks: list[dict], kid: str, as_dict: bool = True) -> dict | 
 
     raise KidNotFoundError(f"Key with Kid {kid} not found")
 
+
 def find_jwk_by_thumbprint(jwks: list[dict], thumbprint: bytes) -> dict | None:
     """Find if a jwk with the given thumbprint is part of the given JWKS.
     Function can be used to select if a public key without a kid (such as

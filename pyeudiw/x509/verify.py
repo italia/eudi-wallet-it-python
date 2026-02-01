@@ -7,12 +7,12 @@ from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
 import pem
 from typing import Optional
 from cryptography import x509
-from cryptography.x509 import load_der_x509_certificate
+from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
-from OpenSSL import crypto
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from pyeudiw.x509.crl_helper import CRLHelper
 
 LOG_ERROR = "x509 verification failed: {}"
@@ -24,47 +24,55 @@ _BASE64_RE = re.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+
 
 def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bool:
     """
-    Verify the x509 certificate chain.
+    Verify the x509 certificate chain using cryptography (no pyOpenSSL).
 
-    :param pems: The x509 certificate chain
+    :param pems: The x509 certificate chain (PEM strings)
     :type pems: list[str]
 
     :returns: True if the x509 certificate chain is valid else False
     :rtype: bool
     """
     try:
-        store = crypto.X509Store()
-        x509_certs = [
-            crypto.load_certificate(crypto.FILETYPE_PEM, pem.encode()) for pem in pems
-        ]
+        certs = [load_pem_x509_certificate(pem_str.encode(), default_backend()) for pem_str in pems]
+        if len(certs) < 2:
+            return False
 
-        for cert in x509_certs[1:]:
-            store.add_cert(cert)
+        for i in range(len(certs) - 1):
+            child, issuer = certs[i], certs[i + 1]
+            pubkey = issuer.public_key()
+            try:
+                if isinstance(pubkey, rsa.RSAPublicKey):
+                    pubkey.verify(
+                        child.signature,
+                        child.tbs_certificate_bytes,
+                        padding.PKCS1v15(),
+                        child.signature_hash_algorithm,
+                    )
+                elif isinstance(pubkey, ec.EllipticCurvePublicKey):
+                    pubkey.verify(
+                        child.signature,
+                        child.tbs_certificate_bytes,
+                        ec.ECDSA(child.signature_hash_algorithm),
+                    )
+                else:
+                    logging.warning(LOG_ERROR.format("unsupported issuer key type"))
+                    return False
+            except Exception as e:
+                _message = f"chain signature invalid (cert {i} by {i+1}) -> {e}"
+                logging.warning(LOG_ERROR.format(_message))
+                return False
 
-        store_ctx = crypto.X509StoreContext(store, x509_certs[0])
-
-        store_ctx.verify_certificate()
-
-        for x509_cert in x509_certs:
-            serial_number = x509_cert.get_serial_number()
-
+        for cert in certs:
+            serial_number = cert.serial_number
             for crl in crls:
                 if crl.is_revoked(serial_number):
-                    logging.warning(
-                        LOG_ERROR.format(
-                            f"certificate with serial number {serial_number} is revoked"
-                        )
-                    )
+                    logging.warning(LOG_ERROR.format(f"certificate with serial number {serial_number} is revoked"))
                     return False
 
         return True
-    except crypto.Error as e:
-        _message = f"cert's chain result invalid for the following reason -> {e}"
-        logging.warning(LOG_ERROR.format(_message))
-        return False
     except Exception as e:
         _message = f"cert's chain cannot be validated for error -> {e}"
-        logging.warning(LOG_ERROR.format(e))
+        logging.warning(LOG_ERROR.format(_message))
         return False
 
 
@@ -81,7 +89,9 @@ def _check_datetime(exp: datetime | None):
     if exp is None:
         return True
 
-    if datetime.now(timezone.utc) > exp:
+    now = datetime.now(timezone.utc)
+    exp_utc = exp if exp.tzinfo else exp.replace(tzinfo=timezone.utc)
+    if now > exp_utc:
         message = f"expired chain date -> {exp}"
         logging.warning(LOG_ERROR.format(message))
         return False
@@ -99,14 +109,18 @@ def verify_x509_attestation_chain(x5c: list[bytes], crls: list[CRLHelper] = []) 
     :returns: True if the x509 attestation certificate chain is valid else False
     :rtype: bool
     """
-    exp = get_expiry_date_from_x5c(x5c)
+    try:
+        for cert_der in x5c:
+            cert = load_der_x509_certificate(to_DER_cert(cert_der), default_backend())
+            if not _check_datetime(cert.not_valid_after_utc):
+                return False
 
-    if not _check_datetime(exp):
+        pems = [to_PEM_cert(cert) for cert in x5c]
+
+        return _verify_x509_certificate_chain(pems, crls)
+    except (ValueError, Exception) as e:
+        logging.warning(LOG_ERROR.format(e))
         return False
-    
-    pems = [to_PEM_cert(cert) for cert in x5c]
-
-    return _verify_x509_certificate_chain(pems, crls)
 
 
 def DER_cert_to_B64DER_cert(cert: bytes) -> str:
@@ -154,14 +168,18 @@ def to_DER_cert(cert: str | bytes) -> bytes:
     if isinstance(cert, bytes):
         if is_der_format(cert):
             return cert
-        cert_s = cert.decode()
+        try:
+            cert_s = cert.decode("utf-8")
+        except UnicodeDecodeError:
+            # Bytes that are not valid DER and not UTF-8 (e.g. malformed DER)
+            raise ValueError("unable to recognize input as a certificate")
     else:
         cert_s = cert
 
     if isinstance(cert, str) and str(cert_s).startswith("-----BEGIN CERTIFICATE-----"):
         return PEM_cert_to_DER_cert(str(cert_s))
 
-    cert_s = re.sub(r'\n\r|\n', '', str(cert_s))
+    cert_s = re.sub(r"\n\r|\n", "", str(cert_s))
     if _BASE64_RE.fullmatch(cert_s):
         return B64DER_cert_to_DER_cert(cert_s)
 
@@ -202,6 +220,7 @@ def to_PEM_cert(cert: str | bytes) -> str:
 
     raise ValueError("unable to recognize input as a certificate")
 
+
 def pem_to_pems_list(cert: str) -> list[str]:
     """
     Convert the x509 certificate chain from PEM to multiple PEMs.
@@ -213,6 +232,7 @@ def pem_to_pems_list(cert: str) -> list[str]:
     :rtype: list[str]
     """
     return [str(cert) for cert in pem.parse(cert)]
+
 
 def to_pem_list(der_list: list[bytes] | list[str]) -> list[str]:
     """
@@ -227,6 +247,7 @@ def to_pem_list(der_list: list[bytes] | list[str]) -> list[str]:
     """
     return [to_PEM_cert(cert) for cert in der_list]
 
+
 def to_der_list(pem_list: list[str] | list[bytes]) -> list[bytes]:
     """
     If the input is a list of PEM certificates, it will be converted to a list of DER certificates.
@@ -239,6 +260,7 @@ def to_der_list(pem_list: list[str] | list[bytes]) -> list[bytes]:
     :rtype: list[bytes]
     """
     return [to_DER_cert(cert) for cert in pem_list]
+
 
 def verify_x509_anchor(pem_str: str) -> bool:
     """
@@ -260,6 +282,7 @@ def verify_x509_anchor(pem_str: str) -> bool:
 
     return _verify_x509_certificate_chain(pems, [])
 
+
 def get_get_subject_name(der: bytes) -> Optional[str]:
     """
     Get the subject name from the x509 certificate.
@@ -272,20 +295,21 @@ def get_get_subject_name(der: bytes) -> Optional[str]:
     """
     cert = load_der_x509_certificate(der)
 
-    #get san dns name
+    # get san dns name
     san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
 
     if san:
         dns = san.value.get_values_for_type(x509.DNSName)
         if dns:
             return dns[0]
-        
+
         uri = san.value.get_values_for_type(x509.UniformResourceIdentifier)
         if uri:
             return uri[0]
 
     # alternatively erturn the rfc4514 string
     return cert.subject.rfc4514_string()
+
 
 def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
@@ -299,7 +323,7 @@ def get_issuer_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     der = to_DER_cert(x5c[0])
     return get_get_subject_name(der)
-    
+
 
 def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
@@ -313,6 +337,7 @@ def get_trust_anchor_from_x5c(x5c: list[bytes] | list[str]) -> Optional[str]:
     """
     der = to_DER_cert(x5c[-1])
     return get_get_subject_name(der)
+
 
 def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
     """
@@ -329,6 +354,7 @@ def get_expiry_date_from_x5c(x5c: list[bytes] | list[str]) -> datetime:
 
     return cert.not_valid_after_utc
 
+
 def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     """
     Get the x509 certificate information.
@@ -341,7 +367,8 @@ def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     :returns: The certificate information
     :rtype: str
     """
-    get_common_name = lambda cert: cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
+    def get_common_name(cert):
+        return cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
 
     der = to_DER_cert(cert)
     loaded_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
@@ -350,10 +377,11 @@ def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
         san = loaded_cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
         if san_dns:
             return san.value.get_values_for_type(x509.DNSName)[0]
-        
+
         return get_common_name(loaded_cert)
     except x509.ExtensionNotFound:
         return get_common_name(loaded_cert)
+
 
 def is_der_format(cert: bytes) -> bool:
     """
@@ -366,13 +394,14 @@ def is_der_format(cert: bytes) -> bool:
     :rtype: bool
     """
     try:
-        pem = DER_cert_to_PEM_cert(cert)
-        crypto.load_certificate(crypto.FILETYPE_PEM, pem.encode())
+        pem_str = DER_cert_to_PEM_cert(cert)
+        load_pem_x509_certificate(pem_str.encode(), default_backend())
         return True
-    except crypto.Error as e:
+    except Exception as e:
         logging.error(LOG_ERROR.format(e))
         return False
-    
+
+
 def is_pem_format(cert: str | bytes) -> bool:
     """
     Check if the certificate is in PEM format.
@@ -384,19 +413,22 @@ def is_pem_format(cert: str | bytes) -> bool:
     :rtype: bool
     """
     try:
-        crypto.load_certificate(crypto.FILETYPE_PEM, cert.encode() if isinstance(cert, str) else cert)
+        data = cert.encode() if isinstance(cert, str) else cert
+        load_pem_x509_certificate(data, default_backend())
         return True
-    except crypto.Error as e:
+    except Exception as e:
         logging.error(LOG_ERROR.format(e))
         return False
+
 
 def get_public_key_from_x509_chain(x5c: list[bytes]) -> ECKey | RSAKey | dict:
     raise NotImplementedError("TODO")
 
-def get_certificate_type(cert: str | bytes) -> str:
-    pem = to_PEM_cert(cert)
 
-    loaded_cert = x509.load_pem_x509_certificate(pem.encode(), default_backend())
+def get_certificate_type(cert: str | bytes) -> str:
+    pem_str = to_PEM_cert(cert)
+
+    loaded_cert = x509.load_pem_x509_certificate(pem_str.encode(), default_backend())
     public_key = loaded_cert.public_key()
 
     if isinstance(public_key, rsa.RSAPublicKey):

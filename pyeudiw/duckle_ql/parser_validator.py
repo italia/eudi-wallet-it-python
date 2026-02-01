@@ -4,6 +4,7 @@ Parser and validator for DCQL (Duckle) Verifiable Presentation requests.
 This module provides ParserValidator to detect and validate VP tokens when
 the backend is configured with config.dcql_query (DCQL flow).
 """
+
 import logging
 from typing import Any
 
@@ -30,11 +31,7 @@ class ParserValidator:
     def parse(self) -> list[dict]:
         return [self.handler.parse(self.token)]
 
-    def validate(
-            self,
-            verifier_id: str,
-            verifier_nonce: str
-    ) -> None:
+    def validate(self, verifier_id: str, verifier_nonce: str) -> None:
         """
         Validate the DCQL presentation data using the DuckleHandler.
 

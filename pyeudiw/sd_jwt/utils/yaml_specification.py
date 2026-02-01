@@ -28,9 +28,7 @@ class _SDKeyTag(yaml.YAMLObject):
             if node.style == '"':
                 mp = loader.construct_yaml_str(node)
             else:
-                resolved_type = yaml.resolver.Resolver().resolve(
-                    yaml.ScalarNode, node.value, (True, False)
-                )
+                resolved_type = yaml.resolver.Resolver().resolve(yaml.ScalarNode, node.value, (True, False))
                 if resolved_type == "tag:yaml.org,2002:str":
                     mp = loader.construct_yaml_str(node)
                 elif resolved_type == "tag:yaml.org,2002:int":
@@ -42,36 +40,35 @@ class _SDKeyTag(yaml.YAMLObject):
                 elif resolved_type == "tag:yaml.org,2002:null":
                     mp = None
                 else:
-                    raise Exception(
-                        f"Unsupported scalar type for selective disclosure (!sd): {resolved_type}; node is {node}, style is {node.style}"
-                    )
+                    raise Exception(f"Unsupported scalar type for selective disclosure (!sd): {resolved_type}; node is {node}, style is {node.style}")
             return SDObj(mp)
         elif isinstance(node, yaml.MappingNode):
             return SDObj(loader.construct_mapping(node))
         elif isinstance(node, yaml.SequenceNode):
             return SDObj(loader.construct_sequence(node))
         else:
-            raise Exception(
-                "Unsupported node type for selective disclosure (!sd): {}".format(
-                    node
-                )
-            )
+            raise Exception("Unsupported node type for selective disclosure (!sd): {}".format(node))
+
 
 def yaml_load_specification_with_placeholder(file_buffer: TextIOWrapper):
-    parsed = yaml.load(file_buffer, Loader=yaml.FullLoader) # nosec B506
+    parsed = yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec B506
 
-    convert = lambda obj: (
-        {(f"{{{{ {k.value} }}}}" if isinstance(k, SDObj) else k): convert(v)  for k, v in obj.items()}
-        if isinstance(obj, dict)
-        else [convert(i) for i in obj]
-        if isinstance(obj, list)
-        else (f"{{{{ {obj.value} }}}}" if isinstance(obj, SDObj) else obj)
-    )
+    def convert(obj):
+        if isinstance(obj, dict):
+            return {
+                (f"{{{{ {k.value} }}}}" if isinstance(k, SDObj) else k): convert(v)
+                for k, v in obj.items()
+            }
+        if isinstance(obj, list):
+            return [convert(i) for i in obj]
+        return f"{{{{ {obj.value} }}}}" if isinstance(obj, SDObj) else obj
 
     return convert(parsed)
 
+
 def yaml_load_specification(file_buffer: TextIOWrapper):
     return yaml.load(file_buffer, Loader=yaml.FullLoader)  # nosec
+
 
 def load_yaml_specification(file_path: str) -> dict:
     """
@@ -94,6 +91,7 @@ def load_yaml_specification(file_path: str) -> dict:
 
     return example
 
+
 def remove_sdobj_wrappers(data: Union[SDObj, dict, list, any]) -> Union[dict, list, any]:
     """
     Recursively remove SDObj wrappers from the data structure.
@@ -108,10 +106,7 @@ def remove_sdobj_wrappers(data: Union[SDObj, dict, list, any]) -> Union[dict, li
     if isinstance(data, SDObj):
         return remove_sdobj_wrappers(data.value)
     elif isinstance(data, dict):
-        return {
-            remove_sdobj_wrappers(key): remove_sdobj_wrappers(value)
-            for key, value in data.items()
-        }
+        return {remove_sdobj_wrappers(key): remove_sdobj_wrappers(value) for key, value in data.items()}
     elif isinstance(data, list):
         return [remove_sdobj_wrappers(value) for value in data]
     else:

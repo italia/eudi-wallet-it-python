@@ -1,4 +1,3 @@
-
 from satosa.context import Context
 from pyeudiw.satosa.utils.response import JsonResponse
 
@@ -33,7 +32,7 @@ class OauthAuthorizationServerMetadataHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context) -> JsonResponse:
         """
         Handle request to the metadata endpoint.
-        
+
         Args:
             context (Context): The SATOSA context.
         Returns:

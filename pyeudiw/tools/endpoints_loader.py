@@ -7,22 +7,21 @@ from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
-
 class EndpointsLoader:
     """
     A dynamic backend/frontend module.
     """
 
     def __init__(
-            self,
-            config: dict[str, Any],
-            internal_attributes: dict[str, dict[str, str | list[str]]],
-            base_url: str,
-            name: str,
-            auth_callback_func: Callable[[Context, InternalData], Response] | None = None,
-            converter: AttributeMapper | None = None,
-            trust_evaluator: CombinedTrustEvaluator | None = None,
-            db_engine=None,
+        self,
+        config: dict[str, Any],
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback_func: Callable[[Context, InternalData], Response] | None = None,
+        converter: AttributeMapper | None = None,
+        trust_evaluator: CombinedTrustEvaluator | None = None,
+        db_engine=None,
     ):
         """
         Create a backend/frontend dynamically.
@@ -47,10 +46,10 @@ class EndpointsLoader:
 
         if not endpoints:
             raise ValueError("No endpoints configured in the OpenID4VCI config")
-        
+
         if not isinstance(endpoints, dict):
             raise ValueError("Endpoints configuration must be a dictionary")
-        
+
         endpoint_instances = {}
         for e in endpoints.values():
             module = e.get("module", None)
@@ -67,4 +66,3 @@ class EndpointsLoader:
                 endpoint_instances[path.lstrip("/")] = endpoint_class(*args)
 
         self.endpoint_instances = endpoint_instances
-

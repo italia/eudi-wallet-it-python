@@ -19,6 +19,7 @@ from pyeudiw.sd_jwt.common import SDJWTCommon
 
 logger = logging.getLogger(__name__)
 
+
 class SDJWTHolder(SDJWTCommon):
     """
     SDJWTHolder is a class to create a holder presentation from a SD-JWT.
@@ -34,10 +35,7 @@ class SDJWTHolder(SDJWTCommon):
     _hash_to_decoded_disclosure: Dict
     _hash_to_disclosure: Dict
 
-    def __init__(
-            self, 
-            sd_jwt_issuance: str, 
-            serialization_format: str = "compact") -> None:
+    def __init__(self, sd_jwt_issuance: str, serialization_format: str = "compact") -> None:
         """
         Creates an instance of SDJWTHolder.
 
@@ -61,12 +59,12 @@ class SDJWTHolder(SDJWTCommon):
         self._create_hash_mappings(self._input_disclosures)
 
     def create_presentation(
-        self, 
+        self,
         claims_to_disclose: Union[dict, bool, None],
-        nonce: Union[str, None] = None, 
-        aud: Union[str, None] = None, 
-        holder_key: Union[KeyLike, None] = None, 
-        sign_alg: Union[str, None] = None
+        nonce: Union[str, None] = None,
+        aud: Union[str, None] = None,
+        holder_key: Union[KeyLike, None] = None,
+        sign_alg: Union[str, None] = None,
     ) -> None:
         """
         Create a holder presentation from the SD-JWT.
@@ -86,9 +84,7 @@ class SDJWTHolder(SDJWTCommon):
         # Optional: Create a key binding JWT
         if nonce and aud and holder_key:
             sd_jwt_presentation_hash = self._calculate_kb_hash(self.hs_disclosures)
-            self._create_key_binding_jwt(
-                nonce, aud, sd_jwt_presentation_hash, holder_key, sign_alg
-            )
+            self._create_key_binding_jwt(nonce, aud, sd_jwt_presentation_hash, holder_key, sign_alg)
 
         # Create the combined presentation
         if self._serialization_format == "compact":
@@ -109,26 +105,17 @@ class SDJWTHolder(SDJWTCommon):
                 presentation["header"][JSON_SER_DISCLOSURE_KEY] = self.hs_disclosures
 
                 if self.serialized_key_binding_jwt:
-                    presentation["header"][
-                        JSON_SER_KB_JWT_KEY
-                    ] = self.serialized_key_binding_jwt
+                    presentation["header"][JSON_SER_KB_JWT_KEY] = self.serialized_key_binding_jwt
             else:
                 # general, add everything to first signature's header
-                presentation["signatures"][0]["header"][
-                    JSON_SER_DISCLOSURE_KEY
-                ] = self.hs_disclosures
+                presentation["signatures"][0]["header"][JSON_SER_DISCLOSURE_KEY] = self.hs_disclosures
 
                 if self.serialized_key_binding_jwt:
-                    presentation["signatures"][0]["header"][
-                        JSON_SER_KB_JWT_KEY
-                    ] = self.serialized_key_binding_jwt
+                    presentation["signatures"][0]["header"][JSON_SER_KB_JWT_KEY] = self.serialized_key_binding_jwt
 
             self.sd_jwt_presentation = dumps(presentation)
 
-    def _select_disclosures(
-            self, 
-            sd_jwt_claims: Union[bytes, list, dict], 
-            claims_to_disclose: Union[dict, bool, None]) -> Union[dict, list, None]:
+    def _select_disclosures(self, sd_jwt_claims: Union[bytes, list, dict], claims_to_disclose: Union[dict, bool, None]) -> Union[dict, list, None]:
         """
         Recursively process the claims in sd_jwt_claims. In each
         object found therein, look at the SD_DIGESTS_KEY. If it
@@ -147,9 +134,7 @@ class SDJWTHolder(SDJWTCommon):
         """
 
         if type(sd_jwt_claims) is bytes:
-            return self._select_disclosures_dict(
-                loads(self.sd_jwt_payload.decode("utf-8")), claims_to_disclose
-            )
+            return self._select_disclosures_dict(loads(self.sd_jwt_payload.decode("utf-8")), claims_to_disclose)
         if type(sd_jwt_claims) is list:
             return self._select_disclosures_list(sd_jwt_claims, claims_to_disclose)
         elif type(sd_jwt_claims) is dict:
@@ -157,11 +142,7 @@ class SDJWTHolder(SDJWTCommon):
         else:
             pass
 
-    def _select_disclosures_list(
-            self, 
-            sd_jwt_claims: list, 
-            claims_to_disclose: Union[list, bool, None]) -> list:
-        
+    def _select_disclosures_list(self, sd_jwt_claims: list, claims_to_disclose: Union[list, bool, None]) -> list:
         """
         Process the claims in a list.
 
@@ -188,15 +169,8 @@ class SDJWTHolder(SDJWTCommon):
                 f"Check disclosure information for array: {sd_jwt_claims}"
             )
 
-        for pos, (claims_to_disclose_element, element) in enumerate(
-            zip_longest(claims_to_disclose, sd_jwt_claims, fillvalue=None)
-        ):
-            if (
-                isinstance(element, dict)
-                and len(element) == 1
-                and SD_LIST_PREFIX in element
-                and type(element[SD_LIST_PREFIX]) is str
-            ):
+        for pos, (claims_to_disclose_element, element) in enumerate(zip_longest(claims_to_disclose, sd_jwt_claims, fillvalue=None)):
+            if isinstance(element, dict) and len(element) == 1 and SD_LIST_PREFIX in element and type(element[SD_LIST_PREFIX]) is str:
                 digest_to_check = element[SD_LIST_PREFIX]
                 if digest_to_check not in self._hash_to_decoded_disclosure:
                     # fake digest
@@ -225,9 +199,7 @@ class SDJWTHolder(SDJWTCommon):
                             f"Problem at position {pos} of {claims_to_disclose}.\n"
                             f"Check disclosure information for object: {sd_jwt_claims}"
                         )
-                    self._select_disclosures(
-                        disclosure_value, claims_to_disclose_element
-                    )
+                    self._select_disclosures(disclosure_value, claims_to_disclose_element)
                 elif isinstance(disclosure_value, list):
                     if claims_to_disclose_element is True:
                         # Tolerate a "True" for a disclosure of an array
@@ -240,17 +212,12 @@ class SDJWTHolder(SDJWTCommon):
                             f"Check disclosure information for array: {sd_jwt_claims}"
                         )
 
-                    self._select_disclosures(
-                        disclosure_value, claims_to_disclose_element
-                    )
+                    self._select_disclosures(disclosure_value, claims_to_disclose_element)
 
             else:
                 self._select_disclosures(element, claims_to_disclose_element)
 
-    def _select_disclosures_dict(
-            self, 
-            sd_jwt_claims: dict, 
-            claims_to_disclose: Union[dict, bool, None]) -> dict:
+    def _select_disclosures_dict(self, sd_jwt_claims: dict, claims_to_disclose: Union[dict, bool, None]) -> dict:
         """
         Process the claims in a dictionary.
 
@@ -286,18 +253,12 @@ class SDJWTHolder(SDJWTCommon):
                     _, key, value = self._hash_to_decoded_disclosure[digest_to_check]
 
                     try:
-                        logger.debug(
-                            f"In _select_disclosures_dict: {key}, {value}, {claims_to_disclose}"
-                        )
+                        logger.debug(f"In _select_disclosures_dict: {key}, {value}, {claims_to_disclose}")
                         if key in claims_to_disclose and claims_to_disclose[key]:
                             logger.debug(f"Adding disclosure for {digest_to_check}")
-                            self.hs_disclosures.append(
-                                self._hash_to_disclosure[digest_to_check]
-                            )
+                            self.hs_disclosures.append(self._hash_to_disclosure[digest_to_check])
                         else:
-                            logger.debug(
-                                f"Not adding disclosure for {digest_to_check}, {key} (type {type(key)}) not in {claims_to_disclose}"
-                            )
+                            logger.debug(f"Not adding disclosure for {digest_to_check}, {key} (type {type(key)}) not in {claims_to_disclose}")
                     except TypeError:
                         # claims_to_disclose is not a dict
                         raise TypeError(
@@ -310,12 +271,12 @@ class SDJWTHolder(SDJWTCommon):
                 self._select_disclosures(value, claims_to_disclose.get(key, None))
 
     def _create_key_binding_jwt(
-        self, 
-        nonce: Union[str, None], 
-        aud: Union[str, None], 
-        presentation_hash, 
-        holder_key: Union[KeyLike | list[KeyLike | dict] | dict], 
-        sign_alg: Optional[str] = None
+        self,
+        nonce: Union[str, None],
+        aud: Union[str, None],
+        presentation_hash,
+        holder_key: Union[KeyLike | list[KeyLike | dict] | dict],
+        sign_alg: Optional[str] = None,
     ) -> None:
         """
         Create a key binding JWT.

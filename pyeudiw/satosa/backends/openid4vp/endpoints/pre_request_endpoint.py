@@ -17,16 +17,16 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 class PreRequestHandler(VPBaseEndpoint):
 
     def __init__(
-            self,
-            config: dict,
-            internal_attributes: dict[str, dict[str, str | list[str]]],
-            base_url: str,
-            name: str,
-            auth_callback_func: Callable[[Context, InternalData], Response],
-            converter: AttributeMapper,
-            trust_evaluator: CombinedTrustEvaluator,
-            db_engine=None,
-        ) -> None:
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback_func: Callable[[Context, InternalData], Response],
+        converter: AttributeMapper,
+        trust_evaluator: CombinedTrustEvaluator,
+        db_engine=None,
+    ) -> None:
         """
         Initialize the AuthorizationHandler with the given configuration, internal attributes, base URL, and name.
 
@@ -44,20 +44,18 @@ class PreRequestHandler(VPBaseEndpoint):
 
         self.qrcode_settings: dict[str, str] = self.config.get("qrcode") or {}
         if not self.qrcode_settings:
-            raise ValueError(
-                "QR code settings are not configured. Please check your configuration."
-            )
+            raise ValueError("QR code settings are not configured. Please check your configuration.")
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
-        
+
         # This loads all the configured trust evaluation mechanisms
         self.config.get("trust", {})
         self.config.get("trust_caching_mode", "update_first")
-        
+
         self.trust_evaluator = trust_evaluator
         self.force_same_device_flow_referer_criteria = self.config.get("force_same_device_flow_referer_criteria")
-    
+
     def endpoint(self, context: Context) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance before calling the request endpoint.
@@ -72,17 +70,12 @@ class PreRequestHandler(VPBaseEndpoint):
         :rtype: satosa.response.Response
         """
 
-        self._log_function_debug(
-            "pre_request_endpoint", context, "internal_request"
-        )
+        self._log_function_debug("pre_request_endpoint", context, "internal_request")
 
         if context.state is None or "SESSION_ID" not in context.state:
             self._log_error(context, "SESSION_ID not found in context.state or context.state is None")
-            return self._handle_400(
-                context,
-                "Session ID not found in request context."
-            )
-        
+            return self._handle_400(context, "Session ID not found in request context.")
+
         session_id = context.state["SESSION_ID"]
         state = str(uuid4())
 
@@ -91,27 +84,17 @@ class PreRequestHandler(VPBaseEndpoint):
             self._log_warning(context, _msg)
             return self._handle_400(
                 context,
-                "previous authn session not found. It seems that the flow did "
-                "not started with a valid authn request to one of the configured frontend.",
+                "previous authn session not found. It seems that the flow did " "not started with a valid authn request to one of the configured frontend.",
             )
 
         flow_typ = detect_flow_typ(context, self.force_same_device_flow_referer_criteria)
 
         # Init session
         try:
-            self.db_engine.init_session(
-                state=state, session_id=session_id, remote_flow_typ=flow_typ.value
-            )
+            self.db_engine.init_session(state=state, session_id=session_id, remote_flow_typ=flow_typ.value)
         except Exception as e500:
-            self._log_error(
-                context, 
-                f"Error while initializing session with state {state} and {session_id}: {e500}"
-            )
-            return self._handle_500(
-                context, 
-                "internal error: something went wrong when creating your authentication request",
-                e500
-            )
+            self._log_error(context, f"Error while initializing session with state {state} and {session_id}: {e500}")
+            return self._handle_500(context, "internal error: something went wrong when creating your authentication request", e500)
 
         wallet_attestation_invalid = self.wallet_attestation_validation(context)
         if wallet_attestation_invalid:
@@ -119,9 +102,7 @@ class PreRequestHandler(VPBaseEndpoint):
 
         qs_params = getattr(context, "qs_params") or {}
         client_id_hint = qs_params.get("client_id_hint", None)
-        has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(
-            client_id_hint
-        )
+        has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(client_id_hint)
 
         # PAR
         payload = {
@@ -129,20 +110,18 @@ class PreRequestHandler(VPBaseEndpoint):
             "request_uri": f"{self.absolute_request_url}?id={state}",
         }
 
-        response_url = build_authorization_request_url(
-            self.config["authorization"]["url_scheme"], payload
-        )
+        response_url = build_authorization_request_url(self.config["authorization"]["url_scheme"], payload)
 
         if flow_typ == RemoteFlowType.SAME_DEVICE:
             return self._same_device_http_response(response_url)
         elif flow_typ == RemoteFlowType.CROSS_DEVICE:
             return self._cross_device_http_response(response_url, state)
-        
+
         return self._handle_400(
             context,
             "Invalid flow type detected. Please check your configuration.",
         )
-    
+
     @staticmethod
     def _same_device_http_response(response_url: str) -> Response:
         return Redirect(response_url)

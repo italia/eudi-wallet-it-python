@@ -41,6 +41,7 @@ class EndpointsConfig(BaseModel):
                 raise ValueError(f"Invalid config endpoint structure for {v}")
         return v
 
+
 class EndpointDefConfig(BaseModel):
     module: str
     class_: str = Field(..., alias="class")

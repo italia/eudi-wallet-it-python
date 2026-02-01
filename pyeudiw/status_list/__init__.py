@@ -20,6 +20,7 @@ StatusListFormat = Literal["jwt", "cwt"]
 STATUS_LIST_CWT = "application/statuslist+cwt"
 STATUS_LIST_JWT = "application/statuslist+jwt"
 
+
 def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, bytes]:
     """
     Decode a JWT status list token.
@@ -36,9 +37,9 @@ def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, byt
 
         if header["typ"] != "statuslist+jwt":
             raise ValueError("Invalid token type")
-        
+
         payload = decode_jwt_payload(token)
-        
+
         decoded_status_list = payload["status_list"]
 
         bits = decoded_status_list["bits"]
@@ -50,8 +51,14 @@ def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, byt
     except Exception:
         return False, {}, {}, 0, b""
 
-def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: int, status_list: bytes,
-                                 payload_map: dict | None = None, private_key: dict | None = None, ) -> bytes:
+
+def encode_cwt_status_list_token(
+    payload_parts: Tuple[dict, dict, dict],
+    bits: int,
+    status_list: bytes,
+    payload_map: dict | None = None,
+    private_key: dict | None = None,
+) -> bytes:
     """
     Encode a CWT representing a status list and optionally sign it.
 
@@ -94,27 +101,17 @@ def encode_cwt_status_list_token(payload_parts: Tuple[dict, dict, dict], bits: i
             phdr.setdefault(KID, kid)
             phdr.setdefault(Algorithm, pycose.algorithms.Es256)
 
-    mso = Sign1Message(
-        phdr=phdr,
-        uhdr=payload_parts[1],
-        payload=cbor2.dumps(payload, canonical=True)
-    )
+    mso = Sign1Message(phdr=phdr, uhdr=payload_parts[1], payload=cbor2.dumps(payload, canonical=True))
     if private_key:
         private_d = private_key["D"]
         kid = phdr[KID]
         if private_key["KTY"] == "EC2":
-            mso.key = EC2Key(
-                crv=getattr(curves, private_key["CURVE"].replace("_", ""), None),
-                d=private_d,
-                optional_params={"KID": kid}
-            )
+            mso.key = EC2Key(crv=getattr(curves, private_key["CURVE"].replace("_", ""), None), d=private_d, optional_params={"KID": kid})
         else:
             mso.key = CoseKey.from_dict(private_key)
 
-    return hexlify(mso.encode(
-        tag=(private_key is not None),
-        sign=(private_key is not None)
-    ))
+    return hexlify(mso.encode(tag=(private_key is not None), sign=(private_key is not None)))
+
 
 def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
     """
@@ -145,6 +142,7 @@ def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, b
     except Exception:
         return False, {}, {}, 0, b""
 
+
 def _compress_bitstring(bitstring: bytes) -> bytes:
     """
     Compress a bitstring using zlib.
@@ -159,12 +157,8 @@ def _compress_bitstring(bitstring: bytes) -> bytes:
     compressed_data = zlib.compress(bitstring)
     return base64_urlencode(compressed_data)
 
-def generate_status_list(
-        bitstring: bytes, 
-        bits: int = 1, 
-        aggregation_uri: Optional[str] = None, 
-        format: StatusListFormat = "jwt"
-    ) -> Union[dict, bytes]:
+
+def generate_status_list(bitstring: bytes, bits: int = 1, aggregation_uri: Optional[str] = None, format: StatusListFormat = "jwt") -> Union[dict, bytes]:
     """
     Generate a status list.
 
@@ -182,11 +176,8 @@ def generate_status_list(
     """
 
     compressed_status_list = _compress_bitstring(bitstring)
-    
-    status_list = {
-        "bits": bits,
-        "lst": compressed_status_list
-    }
+
+    status_list = {"bits": bits, "lst": compressed_status_list}
 
     if aggregation_uri:
         status_list["aggregation_uri"] = aggregation_uri
@@ -196,6 +187,7 @@ def generate_status_list(
 
     return cbor2.dumps(status_list)
 
+
 def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     """
     Convert an array of status objects to a bitstring.
@@ -204,7 +196,7 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     :type status_array: list[dict]
     :param bit_size: The size of each bit in the bitstring.
     :type bit_size: int
-    
+
     :return: The resulting bitstring.
     :rtype: bytes
     """
@@ -222,7 +214,8 @@ def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
 
     bit_length = len(status_array)
     byte_length = (bit_length + 7) // 8
-    return bitstring.to_bytes(byte_length, byteorder='big', signed=False)
+    return bitstring.to_bytes(byte_length, byteorder="big", signed=False)
+
 
 def _replace_keys(input_dict: dict, field_map: dict) -> dict:
     """
@@ -245,8 +238,8 @@ def _replace_keys(input_dict: dict, field_map: dict) -> dict:
         # Returns: {"fullName": "Alice", "info": {"years": 30, "city": "Rome"}}
     """
 
-    return {field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v)
-            for k, v in input_dict.items()}
+    return {field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v) for k, v in input_dict.items()}
+
 
 def _loads_cbor_data(data: Any, index: int):
     """

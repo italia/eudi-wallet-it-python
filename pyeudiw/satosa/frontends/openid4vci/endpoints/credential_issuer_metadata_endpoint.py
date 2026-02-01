@@ -1,4 +1,3 @@
-
 from satosa.context import Context
 from pyeudiw.satosa.utils.response import JsonResponse
 
@@ -10,7 +9,7 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
     def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
         """
         Initialize the OpenID4VCI metadata endpoint class.
-        
+
         Args:
             config (dict): The configuration dictionary.
             internal_attributes (dict): The internal attributes config.

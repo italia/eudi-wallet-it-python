@@ -55,10 +55,10 @@ class SDJWTCommon:
     def _combine(self, *parts) -> str:
         """
         Combine the parts with the separator.
-        
+
         :param parts: The parts to combine.
         :type parts: str
-        
+
         :return: The combined string.
         :rtype: str
         """
@@ -127,14 +127,10 @@ class SDJWTCommon:
         self._hash_to_disclosure = {}
 
         for disclosure in disclosurses_list:
-            decoded_disclosure = loads(
-                self._base64url_decode(disclosure).decode("utf-8")
-            )
+            decoded_disclosure = loads(self._base64url_decode(disclosure).decode("utf-8"))
             _hash = self._b64hash(disclosure.encode("ascii"))
             if _hash in self._hash_to_decoded_disclosure:
-                raise ValueError(
-                    f"Duplicate disclosure hash {_hash} for disclosure {decoded_disclosure}"
-                )
+                raise ValueError(f"Duplicate disclosure hash {_hash} for disclosure {decoded_disclosure}")
 
             self._hash_to_decoded_disclosure[_hash] = decoded_disclosure
             self._hash_to_disclosure[_hash] = disclosure
@@ -179,30 +175,20 @@ class SDJWTCommon:
             # Extract only the body from SD-JWT without verifying the signature
             _, jwt_body, _ = self._unverified_input_sd_jwt.split(".")
             self._unverified_input_sd_jwt_payload = self._base64url_decode(jwt_body)
-            self._unverified_compact_serialized_input_sd_jwt = (
-                self._unverified_input_sd_jwt
-            )
+            self._unverified_compact_serialized_input_sd_jwt = self._unverified_input_sd_jwt
 
         else:
             # if the SD-JWT is in JSON format, parse the json and extract the disclosures.
             self._unverified_input_sd_jwt = sd_jwt
             self._unverified_input_sd_jwt_parsed = loads(sd_jwt)
 
-            self._unverified_input_sd_jwt_payload = loads(
-                self._base64url_decode(self._unverified_input_sd_jwt_parsed["payload"])
-            )
+            self._unverified_input_sd_jwt_payload = loads(self._base64url_decode(self._unverified_input_sd_jwt_parsed["payload"]))
 
             # distinguish between flattened and general JSON serialization (RFC7515)
             if "signature" in self._unverified_input_sd_jwt_parsed:
                 # flattened
-                self._input_disclosures = self._unverified_input_sd_jwt_parsed[
-                    "header"
-                ][JSON_SER_DISCLOSURE_KEY]
-                self._unverified_input_key_binding_jwt = (
-                    self._unverified_input_sd_jwt_parsed["header"].get(
-                        JSON_SER_KB_JWT_KEY, ""
-                    )
-                )
+                self._input_disclosures = self._unverified_input_sd_jwt_parsed["header"][JSON_SER_DISCLOSURE_KEY]
+                self._unverified_input_key_binding_jwt = self._unverified_input_sd_jwt_parsed["header"].get(JSON_SER_KB_JWT_KEY, "")
                 self._unverified_compact_serialized_input_sd_jwt = ".".join(
                     [
                         self._unverified_input_sd_jwt_parsed["protected"],
@@ -213,23 +199,13 @@ class SDJWTCommon:
 
             elif "signatures" in self._unverified_input_sd_jwt_parsed:
                 # general, look at the header in the first signature
-                self._input_disclosures = self._unverified_input_sd_jwt_parsed[
-                    "signatures"
-                ][0]["header"][JSON_SER_DISCLOSURE_KEY]
-                self._unverified_input_key_binding_jwt = (
-                    self._unverified_input_sd_jwt_parsed["signatures"][0]["header"].get(
-                        JSON_SER_KB_JWT_KEY, ""
-                    )
-                )
+                self._input_disclosures = self._unverified_input_sd_jwt_parsed["signatures"][0]["header"][JSON_SER_DISCLOSURE_KEY]
+                self._unverified_input_key_binding_jwt = self._unverified_input_sd_jwt_parsed["signatures"][0]["header"].get(JSON_SER_KB_JWT_KEY, "")
                 self._unverified_compact_serialized_input_sd_jwt = ".".join(
                     [
-                        self._unverified_input_sd_jwt_parsed["signatures"][0][
-                            "protected"
-                        ],
+                        self._unverified_input_sd_jwt_parsed["signatures"][0]["protected"],
                         self._unverified_input_sd_jwt_parsed["payload"],
-                        self._unverified_input_sd_jwt_parsed["signatures"][0][
-                            "signature"
-                        ],
+                        self._unverified_input_sd_jwt_parsed["signatures"][0]["signature"],
                     ]
                 )
 
@@ -249,7 +225,5 @@ class SDJWTCommon:
 
         # Temporarily create the combined presentation in order to create the hash over it
         # Note: For JSON Serialization, the compact representation of the SD-JWT is restored from the parsed JSON (see common.py)
-        string_to_hash = self._combine(
-            self._unverified_compact_serialized_input_sd_jwt, *disclosures, ""
-        )
+        string_to_hash = self._combine(self._unverified_compact_serialized_input_sd_jwt, *disclosures, "")
         return self._b64hash(string_to_hash.encode("ascii"))

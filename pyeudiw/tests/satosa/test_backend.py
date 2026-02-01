@@ -27,16 +27,7 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.storage.db_engine import DBEngine, TrustType
-from pyeudiw.tests.federation.base import (
-    EXP,
-    NOW,
-    leaf_cred_jwk,
-    leaf_wallet_jwk,
-
-    ta_jwk,
-    trust_chain_wallet,
-    trust_chain_issuer
-)
+from pyeudiw.tests.federation.base import EXP, NOW, leaf_cred_jwk, leaf_wallet_jwk, ta_jwk, trust_chain_wallet, trust_chain_issuer
 from pyeudiw.tests.settings import (
     BASE_URL,
     CONFIG,
@@ -47,19 +38,18 @@ from pyeudiw.tests.settings import (
     PRIVATE_JWK,
     WALLET_INSTANCE_ATTESTATION,
     DEFAULT_X509_CHAIN,
-    DEFAULT_X509_LEAF_JWK
+    DEFAULT_X509_LEAF_JWK,
 )
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
 from pyeudiw.x509.verify import PEM_cert_to_B64DER_cert, to_pem_list
-from datetime import datetime, timezone, timedelta
 
 PKEY = {
-    'KTY': 'EC2',
-    'CURVE': 'P_256',
-    'ALG': 'ES256',
-    'D': b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
-    'KID': b"demo-kid"
+    "KTY": "EC2",
+    "CURVE": "P_256",
+    "ALG": "ES256",
+    "D": b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
+    "KID": b"demo-kid",
 }
 
 PID_DATA = {
@@ -68,11 +58,9 @@ PID_DATA = {
         "given_name": "Mascetti",
         "birth_date": "1922-03-13",
         "birth_place": "Rome",
-        "birth_country": "IT"
+        "birth_country": "IT",
     },
-    "eu.europa.ec.eudiw.pid.it.1": {
-        "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
-    }
+    "eu.europa.ec.eudiw.pid.it.1": {"tax_id_code": "TINIT-XXXXXXXXXXXXXXX"},
 }
 
 mdoci = MdocCborIssuer(
@@ -86,40 +74,35 @@ mdoci = MdocCborIssuer(
         "common_name": "My Company",
         "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
         "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
-        "san_url": "https://credential-issuer.example.org"
-    }
+        "san_url": "https://credential-issuer.example.org",
+    },
 )
 
+
 def issue_sd_jwt(specification: dict, settings: dict, issuer_key: JWK, holder_key: JWK, additional_headers: dict) -> dict:
-    claims = {
-        "iss": settings["issuer"],
-        "iat": iat_now(),
-        "exp": exp_from_now(settings["default_exp"])  # in seconds
-    }
+    claims = {"iss": settings["issuer"], "iat": iat_now(), "exp": exp_from_now(settings["default_exp"])}  # in seconds
 
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
 
-    additional_headers['kid'] = issuer_key["kid"]
+    additional_headers["kid"] = issuer_key["kid"]
 
     sdjwt_at_issuer = SDJWTIssuer(
-        user_claims=specification,
-        issuer_keys=[issuer_key],
-        holder_key=holder_key,
-        add_decoy_claims=use_decoys,
-        extra_header_parameters=additional_headers
+        user_claims=specification, issuer_keys=[issuer_key], holder_key=holder_key, add_decoy_claims=use_decoys, extra_header_parameters=additional_headers
     )
 
     return {"jws": sdjwt_at_issuer.serialized_sd_jwt, "issuance": sdjwt_at_issuer.sd_jwt_issuance}
 
+
 def _mock_auth_callback_function(context: Context, internal_data: InternalData):
     return JsonResponse({"response": "Authentication successful"}, status="200")
+
 
 class TestOpenID4VPBackend:
     @pytest.fixture(autouse=True)
     def create_backend(self):
         db_engine_inst = DBEngine(CONFIG["storage"])
-        
+
         self.chain = to_pem_list(DEFAULT_X509_CHAIN)
         issuer_pem = self.chain[-1]
         self.x509_leaf_private_key = DEFAULT_X509_LEAF_JWK
@@ -161,13 +144,7 @@ class TestOpenID4VPBackend:
         db_engine_inst.add_trust_source(tsd.serialize())
         db_engine_inst.close()
 
-        self.backend = OpenID4VPBackend(
-            Mock(side_effect=_mock_auth_callback_function), 
-            INTERNAL_ATTRIBUTES, 
-            CONFIG, 
-            BASE_URL, 
-            BACKEND_NAME
-        )
+        self.backend = OpenID4VPBackend(Mock(side_effect=_mock_auth_callback_function), INTERNAL_ATTRIBUTES, CONFIG, BASE_URL, BACKEND_NAME)
 
         url_map = self.backend.register_endpoints()
         assert len(url_map) == 7
@@ -189,31 +166,20 @@ class TestOpenID4VPBackend:
         context.target_frontend = "someFrontend"
         context.state = State()
         return context
-    
+
     def _generate_payload(self, issuer_jwk, holder_jwk, nonce, state, aud, x509=False):
         settings = CREDENTIAL_ISSUER_CONF
-        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
-        settings['default_exp'] = CONFIG['jwt']['default_exp']
+        settings["issuer"] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings["default_exp"] = CONFIG["jwt"]["default_exp"]
 
-        sd_specification = yaml_load_specification(
-            settings["sd_specification"])
-        
+        sd_specification = yaml_load_specification(settings["sd_specification"])
+
         if x509:
-            additional_headers = {
-                "x5c": [PEM_cert_to_B64DER_cert(pem) for pem in self.chain]
-            }
+            additional_headers = {"x5c": [PEM_cert_to_B64DER_cert(pem) for pem in self.chain]}
         else:
-            additional_headers = {
-                "trust_chain": trust_chain_issuer
-            }
-        
-        issued_jwt = issue_sd_jwt(
-            sd_specification,
-            settings,
-            issuer_jwk,
-            holder_jwk,
-            additional_headers
-        )
+            additional_headers = {"trust_chain": trust_chain_issuer}
+
+        issued_jwt = issue_sd_jwt(sd_specification, settings, issuer_jwk, holder_jwk, additional_headers)
 
         sdjwt_at_holder = SDJWTHolder(
             issued_jwt["issuance"],
@@ -230,14 +196,7 @@ class TestOpenID4VPBackend:
 
         vp_token = sdjwt_at_holder.sd_jwt_presentation
 
-        mdoci.new(
-            doctype="eu.europa.ec.eudiw.pid.1",
-            data=PID_DATA,
-            validity={
-                "issuance_date": "2024-12-31",
-                "expiry_date": "2050-12-31"
-            }
-        )
+        mdoci.new(doctype="eu.europa.ec.eudiw.pid.1", data=PID_DATA, validity={"issuance_date": "2024-12-31", "expiry_date": "2050-12-31"})
 
         vp_token_mdoc = mdoci.dumps().decode()
 
@@ -248,38 +207,24 @@ class TestOpenID4VPBackend:
                 "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
                 "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
                 "descriptor_map": [
-                    {
-                        "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                        "path": "$[0]",
-                        "format": "dc+sd-jwt"
-                    },
-                    {
-                        "id": "eu.europa.ec.eudiw.pid.1",
-                        "path": "$[1]",
-                        "format": "mso_mdoc"
-                    }
-                ]
-            }
+                    {"id": "pid-sd-jwt:unique_id+given_name+family_name", "path": "$[0]", "format": "dc+sd-jwt"},
+                    {"id": "eu.europa.ec.eudiw.pid.1", "path": "$[1]", "format": "mso_mdoc"},
+                ],
+            },
         }
 
-    def _initialize_session(self, nonce, state, session_id, remote_flow_typ = "same_device", exp=None):
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ=remote_flow_typ
-        )
+    def _initialize_session(self, nonce, state, session_id, remote_flow_typ="same_device", exp=None):
+        self.backend.db_engine.init_session(state=state, session_id=session_id, remote_flow_typ=remote_flow_typ)
 
         doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
 
-        request_object={"nonce": nonce, "state": state}
+        request_object = {"nonce": nonce, "state": state}
 
         if exp:
             request_object["exp"] = exp
 
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object=request_object)
-    
+        self.backend.db_engine.update_request_object(document_id=doc_id, request_object=request_object)
+
     def test_backend_init(self):
         assert self.backend.name == BACKEND_NAME
 
@@ -287,9 +232,7 @@ class TestOpenID4VPBackend:
     def test_entity_configuration(self, context):
         context.qs_params = {}
 
-        _fedback = self.backend.get_trust_backend_by_class_name(
-            "FederationHandler"
-        )
+        _fedback = self.backend.get_trust_backend_by_class_name("FederationHandler")
         assert _fedback
 
         entity_config = _fedback.entity_configuration_endpoint(context)
@@ -319,7 +262,7 @@ class TestOpenID4VPBackend:
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
         )
         context.qs_params = {"client_id_hint": f"openid_federation:{BASE_URL}/{BACKEND_NAME}"}
-        
+
         pre_request = self.backend.endpoints.get("pre_request")
         assert pre_request is not None, "Pre-request endpoint not found"
 
@@ -328,10 +271,8 @@ class TestOpenID4VPBackend:
         assert resp is not None
         assert resp.status == "302 Found"
         assert resp.message is not None
-        
-        parsed = urllib.parse.unquote(
-            resp.message, encoding="utf-8", errors="replace"
-        )
+
+        parsed = urllib.parse.unquote(resp.message, encoding="utf-8", errors="replace")
 
         assert "openid_federation:https://example.com/OpenID4VP" in parsed
 
@@ -354,10 +295,7 @@ class TestOpenID4VPBackend:
 
         soup = BeautifulSoup(resp.message, "html.parser")
         # get the img tag with src attribute starting with data:image/svg+xml;base64,
-        img_tag = soup.find(
-            lambda tag: tag.name == "img"
-            and tag.get("src", "").startswith("data:image/svg+xml;base64,")
-        )
+        img_tag = soup.find(lambda tag: tag.name == "img" and tag.get("src", "").startswith("data:image/svg+xml;base64,"))
         assert img_tag
         # get the src attribute
         src = img_tag["src"]
@@ -385,14 +323,9 @@ class TestOpenID4VPBackend:
         assert resp
         assert "302" in resp.status
 
-        assert (
-            f"{CONFIG['authorization']['url_scheme']}://"
-            in resp.message
-        )
+        assert f"{CONFIG['authorization']['url_scheme']}://" in resp.message
 
-        unquoted = urllib.parse.unquote(
-            resp.message, encoding="utf-8", errors="replace"
-        )
+        unquoted = urllib.parse.unquote(resp.message, encoding="utf-8", errors="replace")
         parsed = urllib.parse.urlparse(unquoted)
 
         assert parsed.scheme == CONFIG["authorization"]["url_scheme"]
@@ -408,9 +341,8 @@ class TestOpenID4VPBackend:
         state = str(uuid.uuid4())
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
-        
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
+
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         session_id = context.state["SESSION_ID"]
@@ -418,12 +350,9 @@ class TestOpenID4VPBackend:
         # This will trigger a `VPInvalidNonce` error
         self._initialize_session(str(uuid.uuid4()), state, session_id)
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
-        
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+
+        context.request = {"response": encrypted_response}
 
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
         response_endpoint = self.backend.endpoints.get("response")
@@ -441,11 +370,8 @@ class TestOpenID4VPBackend:
 
         # check that malformed jwt result in 400 response
         response["vp_token"][0] = "asd.fgh.jkl"
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        context.request = {"response": encrypted_response}
         resp = response_endpoint(context)
         assert resp.status == "400"
         msg = json.loads(resp.message)
@@ -461,7 +387,7 @@ class TestOpenID4VPBackend:
 
         session_id = context.state["SESSION_ID"]
         self._initialize_session(nonce, state, session_id, exp=exp_from_now(3000))
-        
+
         bad_nonce = str(uuid.uuid4())
         bad_state = str(uuid.uuid4())
         bad_aud = str(uuid.uuid4())
@@ -470,14 +396,10 @@ class TestOpenID4VPBackend:
         bad_nonce_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, bad_nonce, state, self.backend.client_id)
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(bad_nonce_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(bad_nonce_response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.endpoints.get("response")
@@ -496,11 +418,8 @@ class TestOpenID4VPBackend:
         # case (2): bad state
         bad_state_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id)
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(bad_state_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(bad_state_response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         resp = response_endpoint(context)
@@ -512,11 +431,8 @@ class TestOpenID4VPBackend:
         # case (3): bad aud
         bad_aud_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, bad_aud)
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(bad_aud_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(bad_aud_response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         resp = response_endpoint(context)
@@ -530,11 +446,8 @@ class TestOpenID4VPBackend:
 
         # case (4): good aud, nonce and state
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(good_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(good_response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
         resp = response_endpoint(context)
 
@@ -544,26 +457,24 @@ class TestOpenID4VPBackend:
         # test status endpoint
         msg = json.loads(resp.message)
 
-        resp_code = msg['redirect_uri'].split('=')[1]
+        resp_code = msg["redirect_uri"].split("=")[1]
         session_id = context.state.get("SESSION_ID", None)
 
         state = response_endpoint.response_code_helper.recover_state(resp_code)
 
         assert state is not None
 
-        finalized_session = self.backend.db_engine.get_by_state_and_session_id(
-            state=state, session_id=session_id
-        )
+        finalized_session = self.backend.db_engine.get_by_state_and_session_id(state=state, session_id=session_id)
 
         assert finalized_session is not None
-        assert 'internal_response' in finalized_session
-        assert finalized_session['internal_response'] is not None
-        assert 'attributes' in finalized_session['internal_response']
-        assert finalized_session['internal_response']['attributes'] is not None
-        assert 'edupersontargetedid' in finalized_session['internal_response']['attributes']
-        assert 'spidcode' in finalized_session['internal_response']['attributes']
-        assert len(finalized_session['internal_response']['attributes']['edupersontargetedid']) == 1
-        assert len(finalized_session['internal_response']['attributes']['spidcode']) == 1
+        assert "internal_response" in finalized_session
+        assert finalized_session["internal_response"] is not None
+        assert "attributes" in finalized_session["internal_response"]
+        assert finalized_session["internal_response"]["attributes"] is not None
+        assert "edupersontargetedid" in finalized_session["internal_response"]["attributes"]
+        assert "spidcode" in finalized_session["internal_response"]["attributes"]
+        assert len(finalized_session["internal_response"]["attributes"]["edupersontargetedid"]) == 1
+        assert len(finalized_session["internal_response"]["attributes"]["spidcode"]) == 1
 
         context.request_method = "GET"
         context.qs_params = {"response_code": resp_code}
@@ -599,14 +510,10 @@ class TestOpenID4VPBackend:
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, None, state, self.backend.client_id)
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.endpoints.get("response")
@@ -619,7 +526,7 @@ class TestOpenID4VPBackend:
         assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "invalid presentation submission: validation error"
-    
+
     def test_response_endpoint_invalid_signature(self, context):
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -632,20 +539,16 @@ class TestOpenID4VPBackend:
         jwt_segments = response["vp_token"][0].split(".")
 
         midlen = len(jwt_segments[2]) // 2
-        jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen+1:] 
+        jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen + 1:]
 
         response["vp_token"][0] = ".".join(jwt_segments)
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(response)
-        
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.endpoints.get("response")
@@ -672,15 +575,10 @@ class TestOpenID4VPBackend:
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]
-        ).encrypt(response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        context.request = {"response": encrypted_response}
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
         response_endpoint = self.backend.endpoints.get("response")
@@ -702,11 +600,8 @@ class TestOpenID4VPBackend:
 
         good_response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(good_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(good_response)
+        context.request = {"response": encrypted_response}
         context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
@@ -737,11 +632,8 @@ class TestOpenID4VPBackend:
 
         good_response = self._generate_payload(self.x509_leaf_private_key, self.holder_jwk, nonce, state, self.backend.client_id, x509=True)
 
-        encrypted_response = JWEHelper(
-            CONFIG["metadata_jwks"][1]).encrypt(good_response)
-        context.request = {
-            "response": encrypted_response
-        }
+        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(good_response)
+        context.request = {"response": encrypted_response}
         context.request_method = "POST"
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
 
@@ -792,33 +684,22 @@ class TestOpenID4VPBackend:
         self.backend.register_endpoints()
 
         settings = CREDENTIAL_ISSUER_CONF
-        settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
-        settings['default_exp'] = CONFIG['jwt']['default_exp']
+        settings["issuer"] = CREDENTIAL_ISSUER_ENTITY_ID
+        settings["default_exp"] = CONFIG["jwt"]["default_exp"]
 
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
 
         session_id = context.state["SESSION_ID"]
-        self.backend.db_engine.init_session(
-            state=state,
-            session_id=session_id,
-            remote_flow_typ="same_device"
-        )
+        self.backend.db_engine.init_session(state=state, session_id=session_id, remote_flow_typ="same_device")
         doc_id = self.backend.db_engine.get_by_state(state)["document_id"]
 
-        self.backend.db_engine.update_request_object(
-            document_id=doc_id,
-            request_object={"nonce": nonce, "state": state})
+        self.backend.db_engine.update_request_object(document_id=doc_id, request_object={"nonce": nonce, "state": state})
 
         context.request_method = "POST"
-        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(
-            CONFIG["base_url"])
+        context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
 
-        response_with_error = {
-            "state": state,
-            "error": "invalid_request",
-            "error_description": "invalid request"
-        }
+        response_with_error = {"state": state, "error": "invalid_request", "error_description": "invalid request"}
 
         context.request = response_with_error
         context.http_headers = {"HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"}
@@ -832,7 +713,7 @@ class TestOpenID4VPBackend:
 
         doc = self.backend.db_engine.get_by_state(state)
 
-        assert doc["finalized"] == True
+        assert doc["finalized"] is True
         assert "error_response" in doc
         assert doc["error_response"] == response_with_error
 
@@ -893,7 +774,7 @@ class TestOpenID4VPBackend:
 
         assert req_resp.status == "400"
         assert req_resp.message
-        
+
         msg = json.loads(req_resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "request error: missing or invalid parameter [id]"
@@ -903,12 +784,12 @@ class TestOpenID4VPBackend:
 
         assert req_resp.status == "400"
         assert req_resp.message
-        
+
         msg = json.loads(req_resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] == "request error: missing or invalid parameter [id]"
 
-    def test_request_endpoint(self, context):
+    def test_pre_request_endpoint_flow(self, context):
         InternalData()
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
@@ -939,18 +820,14 @@ class TestOpenID4VPBackend:
             private_jwk=PRIVATE_JWK,
         ).proof
 
-        context.http_headers = dict(
-            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
-        )
+        context.http_headers = dict(HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof)
 
         context.qs_params = {"id": state}
 
         # put a trust attestation related itself into the storage
         # this then is used as trust_chain header parameter in the signed
         # request object
-        _fedback = self.backend.get_trust_backend_by_class_name(
-            "FederationHandler"
-        )
+        _fedback = self.backend.get_trust_backend_by_class_name("FederationHandler")
         assert _fedback
 
         _es = {
@@ -993,7 +870,7 @@ class TestOpenID4VPBackend:
         context.request_uri = request_uri
 
         request_endpoint = self.backend.endpoints.get("request")
-        
+
         assert request_endpoint is not None, "Request endpoint not found"
 
         req_resp = request_endpoint(context)
@@ -1002,25 +879,16 @@ class TestOpenID4VPBackend:
             map(
                 lambda header_name_value_pair: header_name_value_pair[1],
                 filter(
-                    lambda header_name_value_pair: header_name_value_pair[0].lower()
-                    == "content-type",
+                    lambda header_name_value_pair: header_name_value_pair[0].lower() == "content-type",
                     req_resp.headers,
                 ),
             )
         )
         assert req_resp
-        assert (
-            req_resp.status == "200"
-        ), f"invalid status in request object response {req_resp_str}"
-        assert (
-            len(obtained_content_types) > 0
-        ), f"missing Content-Type in request object response {req_resp_str}"
-        assert (
-            obtained_content_types[0] == "application/oauth-authz-req+jwt"
-        ), f"invalid Content-Type in request object response {req_resp_str}"
-        assert (
-            req_resp.message
-        ), f"invalid message in request object response {req_resp_str}"
+        assert req_resp.status == "200", f"invalid status in request object response {req_resp_str}"
+        assert len(obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
+        assert obtained_content_types[0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
+        assert req_resp.message, f"invalid message in request object response {req_resp_str}"
         request_object_jwt = req_resp.message
 
         header = decode_jwt_header(request_object_jwt)
@@ -1030,9 +898,7 @@ class TestOpenID4VPBackend:
         assert header["typ"] == "oauth-authz-req+jwt"
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
-        assert (
-            payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
-        )
+        assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
 
         datetime_mock = Mock(wraps=datetime)
         datetime_mock.now.return_value = datetime(2999, 1, 1)
@@ -1081,18 +947,14 @@ class TestOpenID4VPBackend:
             private_jwk=PRIVATE_JWK,
         ).proof
 
-        context.http_headers = dict(
-            HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof
-        )
+        context.http_headers = dict(HTTP_AUTHORIZATION=f"DPoP {dpop_wia}", HTTP_DPOP=dpop_proof)
 
         context.qs_params = {"id": state}
 
         # put a trust attestation related itself into the storage
         # this then is used as trust_chain header parameter in the signed
         # request object
-        _fedback = self.backend.get_trust_backend_by_class_name(
-            "FederationHandler"
-        )
+        _fedback = self.backend.get_trust_backend_by_class_name("FederationHandler")
         assert _fedback
 
         _es = {
@@ -1119,14 +981,9 @@ class TestOpenID4VPBackend:
         context.request = {
             "wallet_metadata": {
                 "alg_values_supported": ["ES256"],
-                "vp_formats_supported": {
-                    "dc+sd-jwt": {
-                        "sd-jwt_alg_values": ["ES256"],
-                        "kb-jwt_alg_values": ["ES256"]
-                    }
-                }
+                "vp_formats_supported": {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"], "kb-jwt_alg_values": ["ES256"]}},
             },
-            "wallet_nonce": "qPmxiNFCR3QTm19POc8u"
+            "wallet_nonce": "qPmxiNFCR3QTm19POc8u",
         }
         request_uri = CONFIG["metadata"]["request_uris"][0]
         context.request_uri = request_uri
@@ -1141,25 +998,16 @@ class TestOpenID4VPBackend:
             map(
                 lambda header_name_value_pair: header_name_value_pair[1],
                 filter(
-                    lambda header_name_value_pair: header_name_value_pair[0].lower()
-                    == "content-type",
+                    lambda header_name_value_pair: header_name_value_pair[0].lower() == "content-type",
                     req_resp.headers,
                 ),
             )
         )
         assert req_resp
-        assert (
-            req_resp.status == "200"
-        ), f"invalid status in request object response {req_resp_str}"
-        assert (
-            len(obtained_content_types) > 0
-        ), f"missing Content-Type in request object response {req_resp_str}"
-        assert (
-            obtained_content_types[0] == "application/oauth-authz-req+jwt"
-        ), f"invalid Content-Type in request object response {req_resp_str}"
-        assert (
-            req_resp.message
-        ), f"invalid message in request object response {req_resp_str}"
+        assert req_resp.status == "200", f"invalid status in request object response {req_resp_str}"
+        assert len(obtained_content_types) > 0, f"missing Content-Type in request object response {req_resp_str}"
+        assert obtained_content_types[0] == "application/oauth-authz-req+jwt", f"invalid Content-Type in request object response {req_resp_str}"
+        assert req_resp.message, f"invalid message in request object response {req_resp_str}"
         request_object_jwt = req_resp.message
 
         header = decode_jwt_header(request_object_jwt)
@@ -1170,9 +1018,7 @@ class TestOpenID4VPBackend:
         assert header["typ"] == "oauth-authz-req+jwt"
         assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
-        assert (
-            payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
-        )
+        assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         assert payload["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
 
         document = self.backend.db_engine.get_by_session_id(context.state["SESSION_ID"])
@@ -1180,18 +1026,13 @@ class TestOpenID4VPBackend:
         assert document
 
         assert document["request_object"]["wallet_metadata"] == {
-            'authorization_endpoint': None,
-            'request_object_signing_alg_values_supported': None,
-            'response_modes_supported': None,
-            'response_types_supported': None,
+            "authorization_endpoint": None,
+            "request_object_signing_alg_values_supported": None,
+            "response_modes_supported": None,
+            "response_types_supported": None,
             "client_id_schemes_supported": None,
             "alg_values_supported": ["ES256"],
-            "vp_formats_supported": {
-                "dc+sd-jwt": {
-                    "sd-jwt_alg_values": ["ES256"],
-                    "kb-jwt_alg_values": ["ES256"]
-                }
-            }
+            "vp_formats_supported": {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"], "kb-jwt_alg_values": ["ES256"]}},
         }
 
         assert document["request_object"]["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
@@ -1199,21 +1040,15 @@ class TestOpenID4VPBackend:
         context.request = {
             "wallet_metadata": {
                 "alg_values_supported": ["RS256"],
-                "vp_formats_supported": {
-                    "dc+sd-jwt": {
-                        "sd-jwt_alg_values": ["ES256"],
-                        "kb-jwt_alg_values": ["ES256"]
-                    }
-                }
+                "vp_formats_supported": {"dc+sd-jwt": {"sd-jwt_alg_values": ["ES256"], "kb-jwt_alg_values": ["ES256"]}},
             },
-            "wallet_nonce": "qPmxiNFCR3QTm19POc8u"
+            "wallet_nonce": "qPmxiNFCR3QTm19POc8u",
         }
 
         req_resp = request_endpoint(context)
 
         assert req_resp
         assert req_resp.status == "400"
-
 
     def test_trust_parameters_in_response(self, context):
         context.http_headers = dict(
@@ -1242,7 +1077,7 @@ class TestOpenID4VPBackend:
                 expiration_date=datetime.now(),
                 trust_chain=trust_chain_wallet,
                 trust_handler_name="FederationHandler",
-            )
+            ),
         )
 
         mocked_jwks_document_endpoint = unittest.mock.patch(
@@ -1261,7 +1096,7 @@ class TestOpenID4VPBackend:
 
         assert req_resp
         assert req_resp.status == "200"
-        
+
         header = decode_jwt_header(req_resp.message)
 
         assert header["trust_chain"]
@@ -1277,5 +1112,3 @@ class TestOpenID4VPBackend:
         )
 
         assert verification
-
-    

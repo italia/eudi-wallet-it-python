@@ -41,7 +41,7 @@ def test_e2e(testcase, settings):
     sdjwt_header_parameters = {}
 
     def cb_get_issuer_key(issuer, header_parameters):
-        if type(header_parameters) == dict:
+        if isinstance(header_parameters, dict):
             if "kid" in header_parameters:
                 header_parameters.pop("kid")
             sdjwt_header_parameters.update(header_parameters)
@@ -62,9 +62,7 @@ def test_e2e(testcase, settings):
 
     if testcase.get("key_binding", False):
         demo_keys["holder_key"]
-        expected_claims["cnf"] = {
-            "jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()
-        }
+        expected_claims["cnf"] = {"jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()}
 
     assert verified == expected_claims
 

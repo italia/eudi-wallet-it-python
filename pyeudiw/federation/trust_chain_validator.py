@@ -49,10 +49,7 @@ class StaticTrustChainValidator:
         self.httpc_params = httpc_params
 
         if not trust_anchor_jwks:
-            raise MissingTrustAnchorPublicKey(
-                f"{self.__class__.__name__} cannot "
-                "created without the TA public jwks"
-            )
+            raise MissingTrustAnchorPublicKey(f"{self.__class__.__name__} cannot " "created without the TA public jwks")
 
         self.trust_anchor_jwks = trust_anchor_jwks
         for k, v in kwargs.items():
@@ -134,18 +131,14 @@ class StaticTrustChainValidator:
         jwsh = JWSHelper(ta_jwk)
 
         if not jwsh.verify(last_element):
-            logger.error(
-                f"Trust chain signature validation error: {last_element} using {ta_jwk}"
-            )
+            logger.error(f"Trust chain signature validation error: {last_element} using {ta_jwk}")
             return False
 
         # then go ahead with other checks
         self.exp = es_payload["exp"]
 
         if self._check_expired(self.exp):
-            logger.error(
-                f"Trust chain validation error, statement expired: {es_payload}"
-            )
+            logger.error(f"Trust chain validation error, statement expired: {es_payload}")
             return False
 
         fed_jwks = es_payload["jwks"]["keys"]
@@ -160,16 +153,12 @@ class StaticTrustChainValidator:
             try:
                 jwk = find_jwk_by_kid(fed_jwks, st_header.get("kid", None))
             except (KidNotFoundError, InvalidKid):
-                logger.error(
-                    f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}"
-                )
+                logger.error(f"Trust chain validation KidNotFoundError: {st_header} not in {fed_jwks}")
                 return False
 
             jwsh = JWSHelper(jwk)
             if not jwsh.verify(st):
-                logger.error(
-                    f"Trust chain signature validation error: {st} using {jwk}"
-                )
+                logger.error(f"Trust chain signature validation error: {st} using {jwk}")
                 return False
             else:
                 fed_jwks = st_payload["jwks"]["keys"]
@@ -236,14 +225,9 @@ class StaticTrustChainValidator:
 
             try:
                 # get superior fetch url
-                fetch_api_url = ec_data["metadata"]["federation_entity"][
-                    "federation_fetch_endpoint"
-                ]
+                fetch_api_url = ec_data["metadata"]["federation_entity"]["federation_fetch_endpoint"]
             except KeyError:
-                logger.warning(
-                    "Missing federation_fetch_endpoint in  "
-                    f"federation_entity metadata for {ec_data['sub']}"
-                )
+                logger.warning("Missing federation_fetch_endpoint in  " f"federation_entity metadata for {ec_data['sub']}")
 
             jwt = self._retrieve_es(fetch_api_url, iss)
 
