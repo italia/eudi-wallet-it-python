@@ -22,6 +22,13 @@ This project provides example configurations for each scenario:
 Each integration test script may have its own expected configuration files.  
 Check the comments or README of each script for details.
 
+#### RP base URL
+
+By default, tests connect to the Relying Party at `https://localhost`. If your RP runs on a different host or port (e.g. Docker Compose with nginx on another port), set:
+
+- `PYEUDIW_IDP_BASEURL` – base URL of the IdP/Satosa (e.g. `https://localhost:443`, `http://localhost:10000`)
+- `PYEUDIW_RP_EID` – (optional) OpenID4VP entity URL; defaults to `{PYEUDIW_IDP_BASEURL}/OpenID4VP`
+
 #### MongoDB Configuration for Tests
 
 The MongoDB connection is configured dynamically using the environment variable `PYEUDIW_MONGO_TEST_AUTH_INLINE`.
@@ -66,14 +73,12 @@ This project provides multiple integration test scripts, each covering a differe
 
 | Script                                   | Configurations                                                                                                                                                                                                                                                                                | Description                                                                                                                                                                               |
 |------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 🛑 `same_device_integration_test.py`     | To run this integration test, you need to modify the [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) configuration file by removing the following entries: `config.duckle.dcql_query`. Additionally, you must remove the DuckleHandler in the `credential_presentation_handlers` section. | Simulates a same-device authentication flow with an OpenID4VP relying party.                                                                                                              |
-| 🛑 `cross_device_integration_test.py`    | To run this integration test, you need to modify the [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) configuration file by removing the following entries: `config.duckle.dcql_query`. Additionally, you must remove the DuckleHandler in the `credential_presentation_handlers` section. | Simulates a cross-device authentication flow, e.g., mobile to desktop.                                                                                                                    |
-| `same_device_integration_test_duckle.py` | To run this integration test, you need to use the [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml)                                                                                                                                                                                         | Simulates a same-device authentication flow with an OpenID4VP relying party and Duckle credentials.                                                                                       |
-| `user_denies_end_to_end_test.py`         | To run this integration test, you need to use the custom [pyeudiw_backend.yaml](./conf/potential/wp2uc1/userdenies/pyeudiw_backend.yaml)                                                                                                                                                      | Simulates the end-to-end flow where the user explicitly denies sharing credentials in the wallet, testing the OpenID4VP Authorization Error Response flow (same-device and cross-device). |
+| `same_device_integration_test.py`        | Use the default [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) (DCQL/Duckle flow).                                                                 | Same-device authentication flow with an OpenID4VP relying party.                                                                                                                         |
+| `cross_device_integration_test.py`       | Use the default [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) (DCQL/Duckle flow).                                                                 | Cross-device authentication flow, e.g., mobile to desktop.                                                                                                                               |
+| `user_denies_end_to_end_test.py`         | Use the custom [pyeudiw_backend.yaml](./conf/potential/wp2uc1/userdenies/pyeudiw_backend.yaml) (DCQL/Duckle flow).                                                                                                            | User denies sharing credentials; tests the OpenID4VP Authorization Error Response (same- and cross-device).                                                                              |
 
-> ℹ️ **Note:** Each test may require different config files.  
-> Refer to the comments in the script or the scenario documentation for setup details.  
-> 🛑 indicates a deprecated test. These tests use outdated logic and may not comply with the latest specifications. When running them, a confirmation prompt will appear asking if you wish to proceed. You can bypass this prompt by setting the environment variable `RUN_DEPRECATED=true`.
+> ℹ️ **Note:** All tests use the **DCQL (Duckle) flow** with `config.dcql_query`. The default [pyeudiw_backend.yaml](./conf/pyeudiw_backend.yaml) is ready to run same-device and cross-device tests without any modification.  
+
 
 ## Usage
 
@@ -81,7 +86,6 @@ To execute the integration tests:
 
     python same_device_integration_test.py
     python cross_device_integration_test.py
-    python same_device_integration_test_duckle.py
     python user_denies_end_to_end_test.py
 
 Otherwise, it's possible to run all the tests at once with:

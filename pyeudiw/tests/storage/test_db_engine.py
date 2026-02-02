@@ -19,9 +19,7 @@ class TestMongoDBEngine:
         state = str(uuid.uuid4())
         session_id = str(uuid.uuid4())
 
-        document_id = self.engine.init_session(
-            session_id=session_id, state=state, remote_flow_typ=""
-        )
+        document_id = self.engine.init_session(session_id=session_id, state=state, remote_flow_typ="")
 
         assert document_id
 
@@ -37,9 +35,7 @@ class TestMongoDBEngine:
             "state": self.state,
         }
 
-        replica_count = self.engine.update_request_object(
-            self.document_id, request_object
-        )
+        replica_count = self.engine.update_request_object(self.document_id, request_object)
 
         assert replica_count == 1
 
@@ -61,9 +57,7 @@ class TestMongoDBEngine:
     def test_update_response_object_unexistent_id_object(self):
         response_object = {"response_object": "response_object"}
         try:
-            self.engine.update_response_object(
-                str(uuid.uuid4()), str(uuid.uuid4()), response_object
-            )
+            self.engine.update_response_object(str(uuid.uuid4()), str(uuid.uuid4()), response_object)
         except Exception:
             return
 
@@ -72,9 +66,7 @@ class TestMongoDBEngine:
         self.federation_entity_id = str(uuid.uuid4())
         date = datetime.now()
 
-        replica_count = self.engine.add_trust_attestation(
-            self.federation_entity_id, ["a", "b", "c"], date
-        )
+        replica_count = self.engine.add_trust_attestation(self.federation_entity_id, ["a", "b", "c"], date)
 
         assert replica_count > 0
 
@@ -88,9 +80,7 @@ class TestMongoDBEngine:
         self.x509_entity_id = str(uuid.uuid4())
         date = datetime.now()
 
-        replica_count = self.engine.add_trust_attestation(
-            self.x509_entity_id, ["a", "b", "c"], date, TrustType.X509
-        )
+        replica_count = self.engine.add_trust_attestation(self.x509_entity_id, ["a", "b", "c"], date, TrustType.X509)
 
         assert replica_count > 0
 
@@ -102,9 +92,7 @@ class TestMongoDBEngine:
     def test_update_trusted_attestation_federation(self):
         date = datetime.now()
 
-        replica_count = self.engine.update_trust_attestation(
-            self.federation_entity_id, ["a", "b", "d"], date
-        )
+        replica_count = self.engine.update_trust_attestation(self.federation_entity_id, ["a", "b", "d"], date)
 
         assert replica_count > 0
 
@@ -116,9 +104,7 @@ class TestMongoDBEngine:
     def test_update_trusted_attestation_x509(self):
         date = datetime.now()
 
-        replica_count = self.engine.update_trust_attestation(
-            self.x509_entity_id, ["a", "b", "d"], date, TrustType.X509
-        )
+        replica_count = self.engine.update_trust_attestation(self.x509_entity_id, ["a", "b", "d"], date, TrustType.X509)
 
         assert replica_count > 0
 
@@ -154,9 +140,7 @@ class TestMongoDBEngine:
 
     def test_update_unexistent_trusted_attestation_metadata(self):
         try:
-            self.engine.add_trust_attestation_metadata(
-                "test", "test_metadata", {"metadata": {"data_type": "test"}}
-            )
+            self.engine.add_trust_attestation_metadata("test", "test_metadata", {"metadata": {"data_type": "test"}})
             assert False
         except StorageWriteError:
             return
@@ -166,9 +150,7 @@ class TestMongoDBEngine:
         self.federation_entity_anchor_id = str(uuid.uuid4())
         date = datetime.now()
 
-        replica_count = self.engine.add_trust_anchor(
-            self.federation_entity_anchor_id, "test123", date
-        )
+        replica_count = self.engine.add_trust_anchor(self.federation_entity_anchor_id, "test123", date)
 
         assert replica_count > 0
 
@@ -182,9 +164,7 @@ class TestMongoDBEngine:
         self.x509_entity_anchor_id = str(uuid.uuid4())
         date = datetime.now()
 
-        replica_count = self.engine.add_trust_anchor(
-            self.x509_entity_anchor_id, "test123", date, TrustType.X509
-        )
+        replica_count = self.engine.add_trust_anchor(self.x509_entity_anchor_id, "test123", date, TrustType.X509)
 
         assert replica_count > 0
 
@@ -196,9 +176,7 @@ class TestMongoDBEngine:
     def test_update_trusted_anchor_federation(self):
         date = datetime.now()
 
-        replica_count = self.engine.update_trust_anchor(
-            self.federation_entity_anchor_id, "test124", date
-        )
+        replica_count = self.engine.update_trust_anchor(self.federation_entity_anchor_id, "test124", date)
 
         assert replica_count > 0
 
@@ -210,9 +188,7 @@ class TestMongoDBEngine:
     def test_update_trusted_anchor_x509(self):
         date = datetime.now()
 
-        replica_count = self.engine.update_trust_anchor(
-            self.x509_entity_anchor_id, "test124", date, TrustType.X509
-        )
+        replica_count = self.engine.update_trust_anchor(self.x509_entity_anchor_id, "test124", date, TrustType.X509)
 
         assert replica_count > 0
 

@@ -5,7 +5,8 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.backends import default_backend
 from datetime import datetime, timedelta, timezone
 
-class CRLBuilder():
+
+class CRLBuilder:
     """
     Class to build a Certificate Revocation List (CRL).
     """
@@ -39,10 +40,7 @@ class CRLBuilder():
         :type revocation_date: datetime
         """
         self.crl_builder = self.crl_builder.add_revoked_certificate(
-            x509.RevokedCertificateBuilder()
-                .serial_number(serial_number)
-                .revocation_date(revocation_date)
-                .build(default_backend())
+            x509.RevokedCertificateBuilder().serial_number(serial_number).revocation_date(revocation_date).build(default_backend())
         )
 
     def sign(self) -> x509.CertificateRevocationList:
@@ -52,12 +50,8 @@ class CRLBuilder():
         :return: The signed CRL.
         :rtype: x509.CertificateRevocationList
         """
-        return self.crl_builder.sign(
-            private_key=self.private_key,
-            algorithm=hashes.SHA256(),
-            backend=default_backend()
-        )
-    
+        return self.crl_builder.sign(private_key=self.private_key, algorithm=hashes.SHA256(), backend=default_backend())
+
     def to_pem(self) -> bytes:
         """
         Convert the CRL to PEM format.
@@ -66,7 +60,7 @@ class CRLBuilder():
         :rtype: bytes
         """
         return self.sign().public_bytes(Encoding.PEM)
-    
+
     def to_der(self) -> bytes:
         """
         Convert the CRL to DER format.

@@ -6,6 +6,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import Open
 
 logger = logging.getLogger(__name__)
 
+
 class DeferredCredentialEndpointRequest(OpenId4VciBaseModel):
     """
     Model representing the payload of a Deferred Credential Request.
@@ -17,11 +18,10 @@ class DeferredCredentialEndpointRequest(OpenId4VciBaseModel):
 
     transaction_id: str = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_deferred_credential_endpoint_request(self) -> "DeferredCredentialEndpointRequest":
         self.validate_transaction_id()
         return self
 
     def validate_transaction_id(self):
         pass
-

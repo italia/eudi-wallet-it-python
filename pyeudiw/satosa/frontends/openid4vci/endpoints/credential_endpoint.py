@@ -3,10 +3,7 @@ from satosa.response import Response
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import BaseCredentialEndpoint
-from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import (
-    CredentialEndpointRequest,
-    ProofJWT
-)
+from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
 from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import CredentialItem
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
@@ -14,7 +11,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     AUTHORIZATION_DETAILS_CTX,
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
-    NONCE_CTX
+    NONCE_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 
@@ -40,17 +37,12 @@ class CredentialHandler(BaseCredentialEndpoint):
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
 
-        c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context = {
-            AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})
-        })
+        c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context={AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})})
 
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
         ProofJWT.model_validate(
-            proof_jws_helper.verify(c_req.proof.jwt), context = {
-                CLIENT_ID_CTX: entity["client_id"],
-                ENTITY_ID_CTX: self.entity_id,
-                NONCE_CTX: entity["c_nonce"]
-            })
+            proof_jws_helper.verify(c_req.proof.jwt), context={CLIENT_ID_CTX: entity["client_id"], ENTITY_ID_CTX: self.entity_id, NONCE_CTX: entity["c_nonce"]}
+        )
         return c_req
 
     def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
@@ -69,7 +61,4 @@ class CredentialHandler(BaseCredentialEndpoint):
             Response: A SATOSA HTTP response with the issued credential.
         """
 
-        return CredentialEndpointResponse.to_response([
-            CredentialItem(credential = cred)
-            for cred in self.build_credential(context, credential_id)
-        ])
+        return CredentialEndpointResponse.to_response([CredentialItem(credential=cred) for cred in self.build_credential(context, credential_id)])

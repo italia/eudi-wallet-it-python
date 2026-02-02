@@ -2,25 +2,14 @@ from typing import Optional
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.tools.http import http_get_sync
 from pyeudiw.status_list import decode_jwt_status_list_token, decode_cwt_status_list_token
-from pyeudiw.status_list.exceptions import (
-    PositionOutOfRangeError,
-    InvalidTokenFormatError,
-    MissingStatusListUriError,
-    StatusListRetrievalError
-)
+from pyeudiw.status_list.exceptions import PositionOutOfRangeError, InvalidTokenFormatError, MissingStatusListUriError, StatusListRetrievalError
+
 
 class StatusListTokenHelper:
-    def __init__(
-            self, 
-            header: dict, 
-            payload: dict, 
-            bits: int, 
-            status_list: bytes,
-            aggregation_uri: Optional[str] = None
-    ) -> None:
+    def __init__(self, header: dict, payload: dict, bits: int, status_list: bytes, aggregation_uri: Optional[str] = None) -> None:
         """
         Initializes the StatusListTokenHelper instance.
-        
+
         :param header: The header of the token.
         :type header: dict
         :param payload: The payload of the token.
@@ -46,10 +35,7 @@ class StatusListTokenHelper:
         :returns: True if the token is expired, False otherwise.
         :rtype: bool
         """
-        expiration_time = self.payload.get(
-            "exp", 
-            self.payload.get(4)
-        )
+        expiration_time = self.payload.get("exp", self.payload.get(4))
 
         if expiration_time is None:
             return False
@@ -77,13 +63,13 @@ class StatusListTokenHelper:
 
         if position >= total_elemets_number:
             raise PositionOutOfRangeError("Position out of range")
-        
+
         jump = self.bits * position
         mask = (1 << self.bits) - 1
         status = (self.status_list[jump // 8] >> (jump % 8)) & mask
 
         return status
-    
+
     def get_aggregation_uri(self) -> Optional[str]:
         """
         Returns the aggregation URI.
@@ -92,7 +78,7 @@ class StatusListTokenHelper:
         :rtype: Optional[str]
         """
         return self.aggregation_uri
-    
+
     @property
     def ttl(self) -> Optional[int]:
         """
@@ -101,11 +87,8 @@ class StatusListTokenHelper:
         :returns: The TTL of the token in seconds.
         :rtype: Optional[int]
         """
-        return self.payload.get(
-            "ttl", 
-            self.payload.get(65534)
-        )
-    
+        return self.payload.get("ttl", self.payload.get(65534))
+
     @property
     def iss(self) -> Optional[str]:
         """
@@ -115,7 +98,7 @@ class StatusListTokenHelper:
         :rtype: Optional[str]
         """
         return self.payload.get("iss")
-    
+
     @property
     def sub(self) -> Optional[str]:
         """
@@ -124,11 +107,8 @@ class StatusListTokenHelper:
         :returns: The subject of the token.
         :rtype: Optional[str]
         """
-        return self.payload.get(
-            "sub", 
-            self.payload.get(2)
-        )
-    
+        return self.payload.get("sub", self.payload.get(2))
+
     @property
     def iat(self) -> Optional[int]:
         """
@@ -137,11 +117,8 @@ class StatusListTokenHelper:
         :returns: The issued at time of the token.
         :rtype: Optional[int]
         """
-        return self.payload.get(
-            "iat",
-            self.payload.get(6)
-        )
-    
+        return self.payload.get("iat", self.payload.get(6))
+
     @staticmethod
     def from_token(token: str | bytes) -> "StatusListTokenHelper":
         """
@@ -163,7 +140,7 @@ class StatusListTokenHelper:
                 return StatusListTokenHelper(header, payload, bits, status_list)
 
         raise InvalidTokenFormatError(f"Token is not a valid JWT or CWT {token}")
-    
+
     @staticmethod
     def from_status(status: dict, httpc_params: Optional[dict] = None) -> "StatusListTokenHelper":
         """
@@ -185,10 +162,13 @@ class StatusListTokenHelper:
             raise MissingStatusListUriError("Status list URI is missing")
 
         try:
-            status_token = http_get_sync([uri], {
-                "connection": {"ssl": True},
-                "session": {"timeout": 4},
-            })
+            status_token = http_get_sync(
+                [uri],
+                {
+                    "connection": {"ssl": True},
+                    "session": {"timeout": 4},
+                },
+            )
         except Exception as e:
             raise StatusListRetrievalError(f"Failed to retrieve status list token: {e}")
 

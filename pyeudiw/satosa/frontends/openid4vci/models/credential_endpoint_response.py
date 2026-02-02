@@ -2,10 +2,7 @@ from typing import List, Optional
 
 from satosa.response import Response
 
-from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import (
-    CredentialItem,
-    DeferredCredentialEndpointResponse
-)
+from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import CredentialItem, DeferredCredentialEndpointResponse
 from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
@@ -30,7 +27,7 @@ class CredentialEndpointResponse(DeferredCredentialEndpointResponse):
                 - application/json content type
                 - payload
         """
-        data = CredentialEndpointResponse(credentials = credentials)
+        data = CredentialEndpointResponse(credentials=credentials)
         return Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,

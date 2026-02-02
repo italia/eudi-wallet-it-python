@@ -43,11 +43,7 @@ def test_e2e(testcase, settings):
     sdjwt_at_holder.create_presentation(
         testcase["holder_disclosed_claims"],
         settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
-        (
-            settings["identifiers"]["verifier"]
-            if testcase.get("key_binding", False)
-            else None
-        ),
+        (settings["identifiers"]["verifier"] if testcase.get("key_binding", False) else None),
         demo_keys["holder_key"] if testcase.get("key_binding", False) else None,
     )
 
@@ -66,11 +62,7 @@ def test_e2e(testcase, settings):
     sdjwt_at_verifier = SDJWTVerifier(
         output_holder,
         cb_get_issuer_key,
-        (
-            settings["identifiers"]["verifier"]
-            if testcase.get("key_binding", False)
-            else None
-        ),
+        (settings["identifiers"]["verifier"] if testcase.get("key_binding", False) else None),
         settings["key_binding_nonce"] if testcase.get("key_binding", False) else None,
         serialization_format=serialization_format,
     )
@@ -81,13 +73,9 @@ def test_e2e(testcase, settings):
     expected_claims["iss"] = settings["identifiers"]["issuer"]
 
     if testcase.get("key_binding", False):
-        expected_claims["cnf"] = {
-            "jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()
-        }
+        expected_claims["cnf"] = {"jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()}
 
-    assert (
-        verified == expected_claims
-    ), f"Verified payload mismatch: {verified} != {expected_claims}"
+    assert verified == expected_claims, f"Verified payload mismatch: {verified} != {expected_claims}"
 
     # We don't compare header parameters for JSON Serialization for now
     if serialization_format == "compact":
@@ -98,6 +86,4 @@ def test_e2e(testcase, settings):
         expected_header_parameters.update(extra_header_parameters)
 
         # Assert degli header JWS
-        assert (
-            sdjwt_header_parameters == expected_header_parameters
-        ), f"Header parameters mismatch: {sdjwt_header_parameters} != {expected_header_parameters}"
+        assert sdjwt_header_parameters == expected_header_parameters, f"Header parameters mismatch: {sdjwt_header_parameters} != {expected_header_parameters}"

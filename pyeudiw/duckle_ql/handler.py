@@ -1,8 +1,6 @@
 import logging
 from typing import Dict, Any
 
-from pyeudiw.jwt.exceptions import JWSVerificationError
-
 from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
 from pyeudiw.duckle_ql.credential import CredentialsRequest
 from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
@@ -10,7 +8,6 @@ from pyeudiw.satosa.backends.openid4vp.exceptions import InvalidVPToken
 from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
 from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
-from pyeudiw.satosa.utils.validation import validate_client_attestation
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 EXP_CLAIM = "exp"
@@ -23,6 +20,7 @@ METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
 MSO_MDOC_FORMAT = "mso_mdoc"
 VC_SD_JWT_FORMAT = "vc+sd-jwt"
 DC_SD_JWT_FORMAT = "dc+sd-jwt"
+
 
 class DuckleHandler(BaseVPParser):
     """Handler for processing Verifiable Presentations using DCQL."""
@@ -40,11 +38,13 @@ class DuckleHandler(BaseVPParser):
         if sig_alg_supported is None:
             sig_alg_supported = []
         self.sig_alg_supported = sig_alg_supported
-        self.wallet_attestation_required = kwargs.get("security", {}).get("wallet_attestation_required", True)
-        self.client_attestation_signing_alg_values_supported = kwargs.get("metadata", {}).get("client_attestation_signing_alg_values_supported")
-        self.queries = CredentialsRequest.model_validate_json(kwargs.get(DUCKLE_PRESENTATION, {})[DUCKLE_QUERY_KEY])
+        dcql_value = kwargs.get(DUCKLE_QUERY_KEY) or (kwargs.get(DUCKLE_PRESENTATION) or {}).get(DUCKLE_QUERY_KEY)
+        if isinstance(dcql_value, dict):
+            self.queries = CredentialsRequest.model_validate(dcql_value)
+        else:
+            self.queries = CredentialsRequest.model_validate_json(dcql_value)
 
-    def parse(self,  token: dict) -> Dict[str, Any]:
+    def parse(self, token: dict) -> Dict[str, Any]:
         """
         Parse the Duckle Verifiable Presentation.
 
@@ -105,16 +105,6 @@ class DuckleHandler(BaseVPParser):
             token_str = token[cred.id]
             try:
                 if cred.format == VC_SD_JWT_FORMAT or cred.format == DC_SD_JWT_FORMAT:
-                    if (cred.id == "wallet attestation"
-                            and self.wallet_attestation_required and cred.format == VC_SD_JWT_FORMAT):
-                        try:
-                            validate_client_attestation(token_str, self.client_attestation_signing_alg_values_supported)
-                        except Exception as e:
-                            logging.error(
-                                f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
-                                f"during wallet attestation validation: {e}"
-                            )
-                            raise e
                     parser = VpVcSdJwtParserVerifier(self.trust_evaluator, self.sig_alg_supported)
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
@@ -122,5 +112,5 @@ class DuckleHandler(BaseVPParser):
                     raise InvalidVPToken(f"Unexpected token format {cred.format}")
                 parser.validate(token_str, verifier_id, verifier_nonce)
             except Exception as e:
-                    logging.exception(f"Error parsing token for credential '{cred.id}'")
-                    raise e
+                logging.exception(f"Error parsing token for credential '{cred.id}'")
+                raise e

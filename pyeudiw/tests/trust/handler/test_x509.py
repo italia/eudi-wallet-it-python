@@ -11,14 +11,10 @@ from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.crl_builder import CRLBuilder
 from requests import Response
 
+
 def test_wrong_configuration_must_fail():
     try:
-        X509Handler(
-            client_id="https://test.com",
-            leaf_certificate_chains_by_ca={},
-            private_keys=[],
-            certificate_authorities={}
-        )
+        X509Handler(client_id="https://test.com", leaf_certificate_chains_by_ca={}, private_keys=[], certificate_authorities={})
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
         assert str(e) == "No x509 certificate chains provided in the configuration"
@@ -26,11 +22,9 @@ def test_wrong_configuration_must_fail():
     try:
         X509Handler(
             client_id="https://test.com",
-            leaf_certificate_chains_by_ca={
-                "example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")
-            },
+            leaf_certificate_chains_by_ca={"example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")},
             private_keys=[],
-            certificate_authorities={}
+            certificate_authorities={},
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
@@ -42,15 +36,9 @@ def test_extract_trust_material_from_x509_handler():
 
     trust_handler = X509Handler(
         client_id="example.com",
-        leaf_certificate_chains_by_ca={
-            "ca.example.com": chain
-        },
-        private_keys=[
-            DEFAULT_X509_LEAF_JWK
-        ],
-        certificate_authorities={
-            "ca.example.com": chain[-1]
-        }
+        leaf_certificate_chains_by_ca={"ca.example.com": chain},
+        private_keys=[DEFAULT_X509_LEAF_JWK],
+        certificate_authorities={"ca.example.com": chain[-1]},
     )
     trust_source = TrustSourceData.empty("example.com")
 
@@ -67,25 +55,21 @@ def test_extract_trust_material_from_x509_handler():
     assert "x" in serialized_object["x509"]["jwks"][0]
     assert "y" in serialized_object["x509"]["jwks"][0]
 
+
 def test_fail_if_all_chains_are_invalid():
     invalid_chain = gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
     try:
-        trust_handler = X509Handler(
+        X509Handler(
             client_id="https://example.com",
-            leaf_certificate_chains_by_ca={
-                "ca.example.com": invalid_chain
-            },
-            private_keys=[
-                DEFAULT_X509_LEAF_JWK
-            ],
-            certificate_authorities={
-                "ca.example.com": invalid_chain[-1]
-            }
+            leaf_certificate_chains_by_ca={"ca.example.com": invalid_chain},
+            private_keys=[DEFAULT_X509_LEAF_JWK],
+            certificate_authorities={"ca.example.com": invalid_chain[-1]},
         )
-    except InvalidTrustHandlerConfiguration as e:
+    except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
         assert False, "Should have raised InvalidTrustHandlerConfiguration due to invalid certificate chain"
+
 
 def test_chain_crl_passing():
     resp = Response()
@@ -128,26 +112,18 @@ def test_chain_crl_passing():
     )
 
     chain = chain.get_chain("DER")
-    
+
     trust_handler = X509Handler(
         client_id="example.com",
-        leaf_certificate_chains_by_ca={
-            "ca.example.com": chain
-        },
-        private_keys=[
-            DEFAULT_X509_LEAF_JWK
-        ],
-        certificate_authorities={
-            "ca.example.com": chain[-1]
-        }
+        leaf_certificate_chains_by_ca={"ca.example.com": chain},
+        private_keys=[DEFAULT_X509_LEAF_JWK],
+        certificate_authorities={"ca.example.com": chain[-1]},
     )
     trust_source = TrustSourceData.empty("example.com")
 
     mock_staus_list_endpoint = patch(
         "pyeudiw.x509.crl_helper.http_get_sync",
-        return_value=[
-            resp
-        ],
+        return_value=[resp],
     )
 
     mock_staus_list_endpoint.start()
@@ -158,6 +134,7 @@ def test_chain_crl_passing():
     assert "x509" in serialized_object
     assert "crls" in serialized_object["x509"]
     assert len(serialized_object["x509"]["crls"]) == 1
+
 
 def test_chain_crl_fail():
     resp = Response()
@@ -216,21 +193,15 @@ def test_chain_crl_fail():
     )
 
     chain = chain.get_chain("DER")
-    
+
     try:
-        trust_handler = X509Handler(
+        X509Handler(
             client_id="https://example.com",
-            leaf_certificate_chains_by_ca={
-                "ca.example.com": chain
-            },
-            private_keys=[
-                DEFAULT_X509_LEAF_JWK
-            ],
-            certificate_authorities={
-                "ca.example.com": chain[-1]
-            }
+            leaf_certificate_chains_by_ca={"ca.example.com": chain},
+            private_keys=[DEFAULT_X509_LEAF_JWK],
+            certificate_authorities={"ca.example.com": chain[-1]},
         )
-    except InvalidTrustHandlerConfiguration as e:
+    except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
         assert False, "Should have raised InvalidTrustHandlerConfiguration due to revoked certificate"

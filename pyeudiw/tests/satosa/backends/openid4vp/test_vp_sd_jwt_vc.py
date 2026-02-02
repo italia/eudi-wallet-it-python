@@ -9,48 +9,27 @@ from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
 from pyeudiw.storage.db_engine import DBEngine
-from pyeudiw.tests.federation.base import (
-    leaf_cred_jwk,
-    leaf_wallet_jwk,
-    trust_chain_issuer,
-    ta_jwk
-)
-from pyeudiw.tests.settings import (
-    CONFIG,
-    CREDENTIAL_ISSUER_CONF,
-    CREDENTIAL_ISSUER_ENTITY_ID,
-    _METADATA,
-    jwk
-)
+from pyeudiw.tests.federation.base import leaf_cred_jwk, leaf_wallet_jwk, trust_chain_issuer, ta_jwk
+from pyeudiw.tests.settings import CONFIG, CREDENTIAL_ISSUER_CONF, CREDENTIAL_ISSUER_ENTITY_ID, _METADATA, jwk
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
 def issue_sd_jwt(aud: str, nonce: str, status_list: bool = False, idx: int = 1, invalid_trust_chain: bool = False) -> dict:
     settings = CREDENTIAL_ISSUER_CONF
-    settings['issuer'] = CREDENTIAL_ISSUER_ENTITY_ID
-    settings['default_exp'] = CONFIG['jwt']['default_exp']
+    settings["issuer"] = CREDENTIAL_ISSUER_ENTITY_ID
+    settings["default_exp"] = CONFIG["jwt"]["default_exp"]
 
-    claims = {
-        "iss": settings["issuer"],
-        "iat": iat_now(),
-        "exp": exp_from_now(settings["default_exp"])  # in seconds
-    }
+    claims = {"iss": settings["issuer"], "iat": iat_now(), "exp": exp_from_now(settings["default_exp"])}  # in seconds
 
     issuer_jwk = leaf_cred_jwk.serialize(private=True)
     holder_jwk = leaf_wallet_jwk.serialize(private=True)
 
-    specification = yaml_load_specification(
-        settings["sd_specification"])
-    
+    specification = yaml_load_specification(settings["sd_specification"])
+
     if status_list:
-        specification["status"] = {
-            "status_list": {
-                "idx": idx,
-                "uri": "https://example.com/statuslists/1"
-            }
-        }
-        
+        specification["status"] = {"status_list": {"idx": idx, "uri": "https://example.com/statuslists/1"}}
+
     specification.update(claims)
     use_decoys = specification.get("add_decoy_claims", True)
 
@@ -58,16 +37,11 @@ def issue_sd_jwt(aud: str, nonce: str, status_list: bool = False, idx: int = 1, 
         "trust_chain": trust_chain_issuer if not invalid_trust_chain else trust_chain_issuer[::-1],
     }
 
-    additional_headers['kid'] = issuer_jwk["kid"]
+    additional_headers["kid"] = issuer_jwk["kid"]
 
     sdjwt_at_issuer = SDJWTIssuer(
-        user_claims=specification,
-        issuer_keys=[issuer_jwk],
-        holder_key=holder_jwk,
-        add_decoy_claims=use_decoys,
-        extra_header_parameters=additional_headers
+        user_claims=specification, issuer_keys=[issuer_jwk], holder_key=holder_jwk, add_decoy_claims=use_decoys, extra_header_parameters=additional_headers
     )
-
 
     sdjwt_at_holder = SDJWTHolder(
         sdjwt_at_issuer.sd_jwt_issuance,
@@ -157,79 +131,52 @@ resp._content = b"eyJhbGciOiJFUzI1NiIsImtpZCI6IjEyIiwidHlwIjoic3RhdHVzbGlzdCtqd3
 
 mock_staus_list_endpoint = patch(
     "pyeudiw.status_list.helper.http_get_sync",
-    return_value=[
-        resp
-    ],
+    return_value=[resp],
 )
 
+
 def test_handler_initialization():
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
     assert isinstance(ps, VpVcSdJwtParserVerifier), "Handler for 'vp_sd_jwt_vc' format is incorrect."
+
 
 def test_handler_correct_parsing():
     nonce = str(uuid.uuid4())
     aud = str(uuid.uuid4())
 
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
     vp_token = issue_sd_jwt(aud, nonce)
     parsed_tokens = ps.parse(vp_token)
-    
-    assert parsed_tokens['holder_disclosed_claims'] == {
-        'given_name': 'Mario', 
-        'family_name': 'Rossi', 
-        'place_of_birth': {
-            'country': 'IT', 
-            'locality': 'Rome'
-        }
-    }
 
-    assert parsed_tokens['key_binding'] is True, "Key binding is not present."
-    assert parsed_tokens['iss'] == 'https://issuer.example.com', "Issuer is not correct."
+    assert parsed_tokens["holder_disclosed_claims"] == {"given_name": "Mario", "family_name": "Rossi", "place_of_birth": {"country": "IT", "locality": "Rome"}}
+
+    assert parsed_tokens["key_binding"] is True, "Key binding is not present."
+    assert parsed_tokens["iss"] == "https://issuer.example.com", "Issuer is not correct."
 
 
 def test_handler_correct_validation():
     nonce = str(uuid.uuid4())
     aud = str(uuid.uuid4())
 
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
     vp_token = issue_sd_jwt(aud, nonce)
 
-    ps.validate(
-        vp_token, 
-        aud, 
-        nonce
-    )
-    
-   
+    ps.validate(vp_token, aud, nonce)
+
+
 def test_handler_correct_validation_with_status_list():
     nonce = str(uuid.uuid4())
     aud = str(uuid.uuid4())
 
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
     vp_token = issue_sd_jwt(aud, nonce, True)
 
     mock_staus_list_endpoint.start()
-    ps.validate(
-        vp_token, 
-        aud, 
-        nonce
-    )
+    ps.validate(vp_token, aud, nonce)
     mock_staus_list_endpoint.stop()
 
 
@@ -237,44 +184,30 @@ def test_handler_failed_validation_with_status_list():
     nonce = str(uuid.uuid4())
     aud = str(uuid.uuid4())
 
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
-    vp_token = issue_sd_jwt(aud, nonce, True, idx = 0)
+    vp_token = issue_sd_jwt(aud, nonce, True, idx=0)
 
     try:
         mock_staus_list_endpoint.start()
-        ps.validate(
-            vp_token, 
-            aud, 
-            nonce
-        )
+        ps.validate(vp_token, aud, nonce)
         assert False, "Validation should have failed."
     except Exception as e:
         assert str(e) == "Status list indicates that the token is revoked", "Incorrect exception message."
     finally:
         mock_staus_list_endpoint.stop()
 
+
 def test_handler_failed_validation():
     nonce = str(uuid.uuid4())
     aud = str(uuid.uuid4())
 
-    ps = VpVcSdJwtParserVerifier(
-        trust_evaluator=trust_ev, 
-        sig_alg_supported=["ES256", "ES384", "ES512"]
-    )
+    ps = VpVcSdJwtParserVerifier(trust_evaluator=trust_ev, sig_alg_supported=["ES256", "ES384", "ES512"])
 
     vp_token = issue_sd_jwt(aud, nonce, invalid_trust_chain=True)
 
     try:
-        ps.validate(
-            vp_token, 
-            aud, 
-            nonce
-        )
+        ps.validate(vp_token, aud, nonce)
         assert False, "Validation should have failed."
     except Exception as e:
         assert str(e) == "Unknown Trust Anchor: 'https://credential-issuer.example.org' is not a recognizable Trust Anchor.", "Incorrect exception message."
-    

@@ -31,15 +31,15 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - '3.10.18'
+          - '3.10'
           - '3.11'
           - '3.12'
-          - '3.13.7'
+          - '3.13'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install system package
@@ -57,21 +57,20 @@ jobs:
         run: sudo systemctl start mongod
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-customizations.txt ]; then pip install -r requirements-customizations.txt; fi
-          python -m pip install -U setuptools
-          python -m pip install -e .
-          python -m pip install "Pillow>=11.1.0,<12.0.0" "device_detector>=5.0,<6" "satosa>=8.4,<8.6" "jinja2>=3.0,<4" "pymongo>=4.4.1,<4.5" aiohttp
-          python -m pip install git+https://github.com/peppelinux/pyMDOC-CBOR.git
+          python -m pip install -e ".[satosa,test]"
           python -m pip list
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 pyeudiw --count --select=E9,F63,F7,F82,T100 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 pyeudiw --count --exit-zero --statistics  --max-line-length 160
+          flake8 pyeudiw --count --show-source --statistics
+          flake8 pyeudiw --count --exit-zero --statistics --extend-select=E,W,F
+      - name: Radon complexity (cyclomatic)
+        run: radon cc pyeudiw -a -n B --exclude "*/tests/*" || true
+      - name: Radon maintainability index
+        run: radon mi pyeudiw -n B --exclude "*/tests/*" || true
       - name: Tests
         run: |
           # pytest --cov=pyeudiw --cov-fail-under=90 pyeudiw

@@ -9,11 +9,8 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 class TrustHandlerInterface:
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("client_id", "default_client_id")
-        pass
 
-    def extract_and_update_trust_materials(
-        self, issuer: str, trust_source: TrustSourceData
-    ) -> TrustSourceData:
+    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer using a trust handler implementation.
 
@@ -28,9 +25,7 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def get_metadata(
-        self, issuer: str, trust_source: TrustSourceData
-    ) -> TrustSourceData:
+    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
         """
         Get the metadata of a certain issuer if is needed by the specifics.
 
@@ -45,9 +40,7 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def build_metadata_endpoints(
-        self, backend_name: str, entity_uri: str
-    ) -> List[Tuple[str, Callable[[Context, Any], Response]]]:
+    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> List[Tuple[str, Callable[[Context, Any], Response]]]:
         """
         Expose one or more metadata endpoints required to publish metadata
         information about this handler (for example public keys, configurations,
@@ -66,9 +59,9 @@ class TrustHandlerInterface:
 
         If the TrustHandler has no associated metadata endpoints, return an empty list.
         """
-    
+
         return []
-    
+
     def get_handled_trust_material_name(self) -> str:
         """
         Return the name of the trust material that this handler can handle.
@@ -77,7 +70,7 @@ class TrustHandlerInterface:
         :rtype: str
         """
         raise NotImplementedError
-    
+
     def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
         """
         Parse a trust source to extract the trust parameters (in the source)
@@ -91,10 +84,10 @@ class TrustHandlerInterface:
         return {}
 
     def validate_trust_material(
-            self, 
-            chain: list[str], 
-            trust_source: TrustSourceData,
-        ) -> tuple[bool, TrustSourceData]:
+        self,
+        chain: list[str],
+        trust_source: TrustSourceData,
+    ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust chain using the trust handler.
 
@@ -110,14 +103,14 @@ class TrustHandlerInterface:
         """
 
         raise NotImplementedError
-    
+
     def get_client_id(self) -> Optional[str]:
         """
         Return the client ID associated with this trust evaluator.
         This is typically used for OAuth2 or OpenID Connect flows.
         """
 
-        return getattr(self, 'client_id', None)
+        return getattr(self, "client_id", None)
 
     def is_it_me(self, client_id: str) -> bool:
         """

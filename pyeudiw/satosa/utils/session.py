@@ -1,5 +1,6 @@
 from satosa.context import Context
 
+
 def get_session_id(context: Context) -> str:
     """
     Extract the session ID from the SATOSA context.

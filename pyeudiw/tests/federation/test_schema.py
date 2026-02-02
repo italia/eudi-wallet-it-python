@@ -1,5 +1,4 @@
 from pyeudiw.federation.exceptions import (
-    InvalidEntityConfiguration,
     InvalidEntityStatement,
 )
 from pyeudiw.federation.utils import is_es

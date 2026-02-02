@@ -40,16 +40,9 @@ class BaseHTTPResponseHandler(BaseLogger):
             _error += f" {err}."
         self._log(context, level=level, message=f"{_error} {description}")
 
-        return JsonResponse(
-            {"error": error, "error_description": description}, status=err_code
-        )
+        return JsonResponse({"error": error, "error_description": description}, status=err_code)
 
-    def _handle_500(
-            self, 
-            context: Context, 
-            description: str, 
-            exc: Exception
-        ) -> JsonResponse:
+    def _handle_500(self, context: Context, description: str, exc: Exception) -> JsonResponse:
         """
         Handles a 500 error.
 
@@ -108,12 +101,7 @@ class BaseHTTPResponseHandler(BaseLogger):
             "error",
         )
 
-    def _handle_400(
-        self, 
-        context: Context, 
-        description: str, 
-        exc: Exception = EmptyHTTPError("")
-    ) -> JsonResponse:
+    def _handle_400(self, context: Context, description: str, exc: Exception = EmptyHTTPError("")) -> JsonResponse:
         """
         Handles a 400 error.
 
@@ -129,9 +117,7 @@ class BaseHTTPResponseHandler(BaseLogger):
         """
         return self._handle_40X("0", "invalid_request", context, description, exc)
 
-    def _handle_401(
-        self, context, description: str, exc: Exception = EmptyHTTPError("")
-    ):
+    def _handle_401(self, context, description: str, exc: Exception = EmptyHTTPError("")):
         """
         Handles a 401 error.
 
@@ -148,12 +134,7 @@ class BaseHTTPResponseHandler(BaseLogger):
 
         return self._handle_40X("1", "invalid_client", context, description, exc)
 
-    def _handle_403(
-        self, 
-        context, 
-        description: str, 
-        exc: Exception = EmptyHTTPError("")
-    ):
+    def _handle_403(self, context, description: str, exc: Exception = EmptyHTTPError("")):
         """
         Handles a 403 error.
 
@@ -173,4 +154,3 @@ class BaseHTTPResponseHandler(BaseLogger):
     @staticmethod
     def _handle_204():
         return JsonResponse(status=204)
-

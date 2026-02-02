@@ -7,21 +7,21 @@ from satosa.attribute_mapping import AttributeMapper
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
-
 class EndpointsLoader:
     """
     A dynamic backend/frontend module.
     """
 
     def __init__(
-            self,
-            config: dict[str, Any],
-            internal_attributes: dict[str, dict[str, str | list[str]]],
-            base_url: str,
-            name: str,
-            auth_callback_func: Callable[[Context, InternalData], Response] | None = None,
-            converter: AttributeMapper | None = None,
-            trust_evaluator: CombinedTrustEvaluator | None = None
+        self,
+        config: dict[str, Any],
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback_func: Callable[[Context, InternalData], Response] | None = None,
+        converter: AttributeMapper | None = None,
+        trust_evaluator: CombinedTrustEvaluator | None = None,
+        db_engine=None,
     ):
         """
         Create a backend/frontend dynamically.
@@ -46,10 +46,10 @@ class EndpointsLoader:
 
         if not endpoints:
             raise ValueError("No endpoints configured in the OpenID4VCI config")
-        
+
         if not isinstance(endpoints, dict):
             raise ValueError("Endpoints configuration must be a dictionary")
-        
+
         endpoint_instances = {}
         for e in endpoints.values():
             module = e.get("module", None)
@@ -58,15 +58,11 @@ class EndpointsLoader:
 
             if module and class_name and path:
                 endpoint_class = get_dynamic_class(module, class_name)
-                endpoint_instances[path.lstrip("/")] = endpoint_class(
-                    config,
-                    internal_attributes,
-                    base_url,
-                    name,
-                    auth_callback_func,
-                    converter,
-                    trust_evaluator
-                )
+                args = [config, internal_attributes, base_url, name, auth_callback_func, converter]
+                if trust_evaluator is not None:
+                    args.append(trust_evaluator)
+                if db_engine is not None:
+                    args.append(db_engine)
+                endpoint_instances[path.lstrip("/")] = endpoint_class(*args)
 
         self.endpoint_instances = endpoint_instances
-

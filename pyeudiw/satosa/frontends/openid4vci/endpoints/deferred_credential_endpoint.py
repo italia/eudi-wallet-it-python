@@ -2,11 +2,8 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import BaseCredentialEndpoint
-from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request import \
-    DeferredCredentialEndpointRequest
-from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import \
-    DeferredCredentialEndpointResponse, \
-    CredentialItem
+from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
+from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse, CredentialItem
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 
@@ -50,7 +47,4 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
             Response: A SATOSA HTTP response with the issued credential.
         """
 
-        return DeferredCredentialEndpointResponse.to_response([
-            CredentialItem(credential = cred)
-            for cred in self.build_credential(context, credential_id)
-        ])
+        return DeferredCredentialEndpointResponse.to_response([CredentialItem(credential=cred) for cred in self.build_credential(context, credential_id)])

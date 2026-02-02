@@ -21,20 +21,19 @@ from pyeudiw.trust.model.trust_source import TrustSourceData
 
 from requests import Response
 
-def fake_get_http_url(
-    urls: list[str] | str, httpc_params: dict, http_async: bool = True
-) -> list[requests.Response]:
-    issuer = f"https://example-url.issuer.it/vct"
+
+def fake_get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[requests.Response]:
+    issuer = "https://example-url.issuer.it/vct"
 
     if urls[0].endswith("vct"):
         response = Response()
         response.status_code = 404
         response.headers.update({"Content-Type": "application/json"})
         return [response]
-    
+
     if urls[0].endswith("vct/.well-known/jwt-vc-issuer"):
         return [_generate_response(issuer, expected_jwk)]
-    
+
 
 def test_direct_trust_build_issuer_jwk_endpoint():
     entity_id = "https://credential-issuer.example/vct"
@@ -103,9 +102,7 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
     jwk_metadata = {"issuer": issuer}
     try:
         trust_source._extract_jwks_from_jwk_metadata(jwk_metadata)
-        assert (
-            False
-        ), "parsed invalid metadata: should have raised InvalidJwkMetadataException instead"
+        assert False, "parsed invalid metadata: should have raised InvalidJwkMetadataException instead"
     except InvalidJwkMetadataException:
         assert True
 
@@ -129,9 +126,7 @@ def test_direct_trust_jwk():
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(random_issuer)
-    trust_source = trust_handler.extract_and_update_trust_materials(
-        random_issuer, trust_source
-    )
+    trust_source = trust_handler.extract_and_update_trust_materials(random_issuer, trust_source)
 
     obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 
@@ -141,10 +136,11 @@ def test_direct_trust_jwk():
     assert len(obtained_jwks) == 1, f"expected 1 jwk, obtained {len(obtained_jwks)}"
     assert expected_jwk == obtained_jwks[0]
 
+
 def test_direct_trust_jwk_not_conformat_url():
     trust_handler = DirectTrustSdJwtVc()
 
-    issuer = f"https://example-url.issuer.it/vct"
+    issuer = "https://example-url.issuer.it/vct"
 
     mocked_issuer_jwt_vc_issuer_endpoint = unittest.mock.patch(
         "pyeudiw.trust.handler._direct_trust_jwk.get_http_url",
@@ -154,9 +150,7 @@ def test_direct_trust_jwk_not_conformat_url():
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(issuer)
-    trust_source = trust_handler.extract_and_update_trust_materials(
-        issuer, trust_source
-    )
+    trust_source = trust_handler.extract_and_update_trust_materials(issuer, trust_source)
 
     obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 
@@ -167,9 +161,9 @@ def test_direct_trust_jwk_not_conformat_url():
 
 
 def test_is_url():
-    assert is_url("missing-scheme.net") == False
-    assert is_url("http//malformed-scheme.net") == False
-    assert is_url("https://malformed_domain.org") == False
-    assert is_url("https://domain.example") == True
-    assert is_url("https://domain.example/path") == True
-    assert is_url("https://domain.example/path/trailing/") == True
+    assert is_url("missing-scheme.net") is False
+    assert is_url("http//malformed-scheme.net") is False
+    assert is_url("https://malformed_domain.org") is False
+    assert is_url("https://domain.example") is True
+    assert is_url("https://domain.example/path") is True
+    assert is_url("https://domain.example/path/trailing/") is True

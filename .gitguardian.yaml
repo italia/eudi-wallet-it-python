@@ -1,0 +1,5 @@
+version: 2
+
+secret:
+  ignored_paths:
+    - integration_test/conf/openid4vci_frontend.yaml

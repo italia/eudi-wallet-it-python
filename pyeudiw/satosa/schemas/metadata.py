@@ -11,9 +11,11 @@ class OauthAuthorizationServerMetadata(BaseModel):
     scopes_supported: Optional[List[str]] = None
     dpop_signing_alg_values_supported: Optional[List[str]] = None
 
+
 class CredentialConfigurationFormatEnum(Enum):
-    SD_JWT = "dc+sd-jwt" #nosec B105
-    MSO_MDOC = "mso_mdoc" #nosec B105
+    SD_JWT = "dc+sd-jwt"  # nosec B105
+    MSO_MDOC = "mso_mdoc"  # nosec B105
+
 
 class CredentialConfiguration(BaseModel):
     id: str
@@ -30,10 +32,12 @@ class CredentialConfiguration(BaseModel):
             doctype=config_dict.get("doctype"),
         )
 
+
 class OpenidCredentialIssuerMetadata(BaseModel):
     credential_configurations_supported: Optional[dict] = None
     authorization_servers: Optional[List[Optional[str]]] = None
     credential_issuer: Optional[str]
+
 
 class Metadata(BaseModel):
     oauth_authorization_server: Optional[OauthAuthorizationServerMetadata] = None

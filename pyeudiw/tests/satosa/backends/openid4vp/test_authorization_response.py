@@ -24,11 +24,13 @@ def jwe_helper():
     jwe_helper = JWEHelper(private_key)
     return jwe_helper
 
+
 @pytest.fixture
 def jws_helper():
     private_key = new_rsa_key()
     jws_helper = JWSHelper(private_key)
     return jws_helper
+
 
 def test_direct_post_parser_good_case():
     parser = DirectPostParser()
@@ -40,9 +42,7 @@ def test_direct_post_parser_good_case():
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     # case 0: vp_token is string
     ctx.request = {
@@ -57,11 +57,7 @@ def test_direct_post_parser_good_case():
     assert resp.presentation_submission == presentation_submission
 
     # case 1: vp_token is a json string
-    ctx.request = {
-        "vp_token": f'"{vp_token}"',
-        "state": state,
-        "presentation_submission": presentation_submission
-    }
+    ctx.request = {"vp_token": f'"{vp_token}"', "state": state, "presentation_submission": presentation_submission}
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
@@ -80,9 +76,7 @@ def test_direct_post_response_bad_parse_case():
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     ctx.qs_params = {
         "vp_token": vp_token,
@@ -116,12 +110,7 @@ def test_direct_post_response_bad_parse_case():
 
 def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
-    parser = DirectPostJwtJweParser(
-        jwe_helper, 
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", [])
-    )
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = Context()
     ctx.request_method = "POST"
@@ -130,9 +119,7 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
 
     data = {
@@ -150,12 +137,7 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
 def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     # case 0: bad method
-    parser = DirectPostJwtJweParser(
-        jwe_helper,
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", [])
-    )
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = Context()
     ctx.request_method = "GET"
@@ -164,9 +146,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     ctx.qs_params = {
         "response": jwe_helper.encrypt(
@@ -203,11 +183,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
 
 
 def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(
-        jwe_helper, 
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     wrong_public_key = {
         "kid": "ybmSufrnl3Cu6OrNcsOF_g95g5zShf2aKpg59PMcMm8",
@@ -225,9 +201,7 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     data = {
         "vp_token": vp_token,
@@ -246,21 +220,17 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
 
 
 def test_normalize_json_string():
-    s = 'asd'
+    s = "asd"
     assert s == normalize_jsonstring_to_string(s)
     assert s == normalize_jsonstring_to_string(f'"{s}"')
 
-    sl = ['asd', 'fgh']
+    sl = ["asd", "fgh"]
     assert sl == normalize_jsonstring_to_string(sl)
     assert sl == normalize_jsonstring_to_string([f'"{sl[0]}"', f'"{sl[1]}"'])
 
+
 def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(
-        jwe_helper, 
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", [])
-    )
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = Context()
     ctx.request_method = "POST"
@@ -269,9 +239,7 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
 
     data = {
@@ -286,12 +254,9 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
     assert resp.state == state
     assert resp.presentation_submission == presentation_submission
 
+
 def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(
-        jwe_helper, 
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     wrong_public_key = new_rsa_key()
     wrong_helper = JWSHelper(wrong_public_key)
@@ -303,9 +268,7 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     data = {
         "vp_token": vp_token,
@@ -317,17 +280,14 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
     try:
         parser.parse_and_validate(ctx)
         assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException as e:
+    except AuthRespParsingException:
         assert True
     except Exception as e:
         assert False, f"obtained unexpected parsing exception: {e}"
 
+
 def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(
-        jwe_helper, 
-        jws_helper,
-        CONFIG["jwt"].get("enc_alg_supported", []), 
-        CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
 
     ctx = Context()
     ctx.request_method = "POST"
@@ -336,9 +296,7 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
     presentation_submission = {
         "id": "submit-id",
         "definition_id": "definition-id",
-        "descriptor_map": [
-            {"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}
-        ],
+        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
     }
     data = {
         "vp_token": vp_token,
@@ -350,7 +308,7 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
     try:
         parser.parse_and_validate(ctx)
         assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException as e:
+    except AuthRespParsingException:
         assert True
     except Exception as e:
         assert False, f"obtained unexpected parsing exception: {e}"

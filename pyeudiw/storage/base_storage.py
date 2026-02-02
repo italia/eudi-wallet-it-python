@@ -35,9 +35,7 @@ class BaseStorage(BaseDB):
     Interface class for storage.
     """
 
-    def init_session(
-        self, document_id: str, session_id: str, state: str, remote_flow_typ: str
-    ) -> str:
+    def init_session(self, document_id: str, session_id: str, state: str, remote_flow_typ: str) -> str:
         """
         Initialize a session.
 
@@ -69,9 +67,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_dpop_proof_and_attestation(
-        self, document_id, dpop_proof: dict, attestation: dict
-    ) -> UpdateResult:
+    def add_dpop_proof_and_attestation(self, document_id, dpop_proof: dict, attestation: dict) -> UpdateResult:
         """
         Add a dpop proof and an attestation to the session.
 
@@ -100,9 +96,7 @@ class BaseStorage(BaseDB):
 
         raise NotImplementedError()
 
-    def update_request_object(
-        self, document_id: str, request_object: dict
-    ) -> UpdateResult:
+    def update_request_object(self, document_id: str, request_object: dict) -> UpdateResult:
         """
         Update the request object of the session.
 
@@ -116,9 +110,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def update_response_object(
-        self, nonce: str, state: str, response_object: dict, isError: bool = False
-    ) -> UpdateResult:
+    def update_response_object(self, nonce: str, state: str, response_object: dict, isError: bool = False) -> UpdateResult:
         """
         Update the response object of the session.
 
@@ -215,9 +207,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def add_trust_attestation_metadata(
-        self, entity_id: str, metadata_type: str, metadata: dict
-    ) -> str:
+    def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict) -> str:
         """
         Add a trust attestation metadata.
 
@@ -384,9 +374,7 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
-    def get_by_state_and_session_id(
-        self, state: str, session_id: str = ""
-    ) -> Union[dict, None]:
+    def get_by_state_and_session_id(self, state: str, session_id: str = "") -> Union[dict, None]:
         """
         Get a session by state and session id.
 
@@ -411,10 +399,8 @@ class BaseStorage(BaseDB):
         :rtype: Union[dict, None]
         """
         raise NotImplementedError()
-    
-    def upsert_session(
-        self, session_id: str, data: dict
-    ) -> tuple[str, dict]:
+
+    def upsert_session(self, session_id: str, data: dict) -> tuple[str, dict]:
         """
         Upsert a session by session id.
 
@@ -427,10 +413,8 @@ class BaseStorage(BaseDB):
         :rtype: tuple[str, dict]
         """
         raise NotImplementedError()
-    
-    def search_session_by_field(
-        self, field: str, value: str
-    ) -> dict:
+
+    def search_session_by_field(self, field: str, value: str) -> dict:
         """
         Search for a session by a specific field and value.
 
@@ -442,12 +426,10 @@ class BaseStorage(BaseDB):
         :returns: the session data if found, otherwise an empty dict.
         :rtype: dict
         """
-        raise NotImplementedError()    
+        raise NotImplementedError()
 
     # TODO: create add_or_update for all the write methods
-    def add_or_update_trust_attestation(
-        self, entity_id: str, attestation: list[str], exp: datetime
-    ) -> str:
+    def add_or_update_trust_attestation(self, entity_id: str, attestation: list[str], exp: datetime) -> str:
         """
         Add or update a trust attestation.
 

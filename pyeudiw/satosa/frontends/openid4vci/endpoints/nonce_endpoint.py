@@ -10,14 +10,8 @@ from pyeudiw.satosa.frontends.openid4vci.models.nonce_response import NonceRespo
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.session import get_session_id
-from pyeudiw.satosa.utils.validation import (
-    validate_content_type,
-    validate_request_method
-)
-from pyeudiw.tools.content_type import (
-    HTTP_CONTENT_TYPE_HEADER,
-    APPLICATION_JSON
-)
+from pyeudiw.satosa.utils.validation import validate_content_type, validate_request_method
+from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
 
 
 class NonceHandler(VCIBaseEndpoint):
@@ -40,7 +34,7 @@ class NonceHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context) -> Response:
         """
         Handle a POST request to the nonce endpoint.
-        
+
         Args:
             context (Context): The SATOSA context.
         Returns:
@@ -58,8 +52,5 @@ class NonceHandler(VCIBaseEndpoint):
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
-            self._log_error(
-                e.__class__.__name__,
-                f"Error during invoke nonce endpoint: {e}"
-            )
+            self._log_error(e.__class__.__name__, f"Error during invoke nonce endpoint: {e}")
             return self._handle_500(context, "error during invoke nonce endpoint", e)

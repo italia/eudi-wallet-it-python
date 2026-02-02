@@ -80,6 +80,37 @@ config:
     aud: https://self-issued.me/v2
     response_mode: direct_post
 
+  dcql_query: |
+    {
+      "credentials": [
+        {
+          "id": "personal id data",
+          "format": "dc+sd-jwt",
+          "meta": {
+            "vct_values": [
+              "https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"
+            ]
+          },
+          "claims": [
+            {"path": ["given_name"]},
+            {"path": ["family_name"]}
+          ]
+        },
+        {
+          "id": "wallet attestation",
+          "format": "mso_mdoc",
+          "meta": {
+            "vct_values": [
+              "https://itwallet.registry.example.it/WalletAttestation"
+            ]
+          },
+          "claims": [
+            {"path": ["wallet_name"]}
+          ]
+        }
+      ]
+    }
+
   user_attributes:
     unique_identifiers:
       - tax_id_code
@@ -179,6 +210,9 @@ config:
       - module: pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor
         class:  VpMDocCbor
         format: mso_mdoc
+      - module: pyeudiw.duckle_ql.handler
+        class: DuckleHandler
+        format: jwt_vc_json
 
   trust:
     direct_trust_sd_jwt_vc:

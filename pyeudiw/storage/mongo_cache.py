@@ -39,9 +39,7 @@ class MongoCache(BaseCache):
         self._connect()
         self.client.close()
 
-    def try_retrieve(
-        self, object_name: str, on_not_found: Callable[[], str]
-    ) -> tuple[dict, RetrieveStatus]:
+    def try_retrieve(self, object_name: str, on_not_found: Callable[[], str]) -> tuple[dict, RetrieveStatus]:
         self._connect()
 
         query = {"object_name": object_name}
@@ -69,9 +67,7 @@ class MongoCache(BaseCache):
 
         query = {"object_name": object_name}
 
-        self.collection.update_one(
-            query, {"$set": {"data": new_data, "creation_date": update_time}}
-        )
+        self.collection.update_one(query, {"$set": {"data": new_data, "creation_date": update_time}})
 
         return cache_object
 
@@ -80,9 +76,28 @@ class MongoCache(BaseCache):
 
         return self.collection.insert_one(data)
 
+    def _reset_connection(self) -> None:
+        """Clear client and db references so the next _connect() creates a fresh connection.
+        Used when MongoDB closes the connection (AutoReconnect / "connection closed"),
+        e.g. under load during pytest runs with multiple DBEngine instances.
+        """
+        self.client = None
+        self.db = None
+        self.collection = None
+
     def _connect(self) -> None:
-        if not self.client or not self.client.server_info():
-            self.client = pymongo.MongoClient(self.url, **self.connection_params)
+        # If the existing client's socket was closed by MongoDB (e.g. under load), reset
+        # and create a new MongoClient so we do not reuse a dead connection.
+        try:
+            if not self.client:
+                raise ValueError("no client")
+            self.client.server_info()
+        except (ValueError, pymongo.errors.AutoReconnect, OSError, AttributeError):
+            self._reset_connection()
+        if not self.client:
+            params = dict(self.connection_params or {})
+            params.setdefault("maxPoolSize", 10)
+            self.client = pymongo.MongoClient(self.url, **params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
             self.collection = getattr(self.db, "cache_storage")
 

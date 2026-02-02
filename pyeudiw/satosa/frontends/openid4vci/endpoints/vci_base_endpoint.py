@@ -17,16 +17,18 @@ REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
 GET_ACCEPTED_METHODS = ["GET"]
 POST_ACCEPTED_METHODS = ["POST"]
 
+
 class VCIBaseEndpoint(BaseEndpoint):
 
     def __init__(
-            self, 
-            config: dict, 
-            internal_attributes: dict[str, dict[str, str | list[str]]], 
-            base_url: str, 
-            name: str, 
-            auth_callback: Callable[[Context, Any], Response] | None = None,
-            converter: AttributeMapper | None = None):
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        auth_callback: Callable[[Context, Any], Response] | None = None,
+        converter: AttributeMapper | None = None,
+    ):
         """
         Initialize the OpenID4VCI endpoints class.
 
@@ -46,36 +48,24 @@ class VCIBaseEndpoint(BaseEndpoint):
         if isinstance(e, InvalidRequestException) or isinstance(e, InvalidScopeException):
             return e.message
         elif isinstance(e, JWSVerificationError):
-            self._log_error(
-                e.__class__.__name__,
-                f"{str(e)} in`{endpoint_name}` endpoint"
-            )
+            self._log_error(e.__class__.__name__, f"{str(e)} in`{endpoint_name}` endpoint")
             return "Not a valid JWS format"
         elif isinstance(e, TypeError):
             match = re.search(r"got an unexpected keyword argument '([^']+)'", str(e))
             if match:
                 parameter_name = match.group(1)
-                self._log_error(
-                    e.__class__.__name__,
-                    f"missing {parameter_name} in request `{endpoint_name}` endpoint"
-                )
+                self._log_error(e.__class__.__name__, f"missing {parameter_name} in request `{endpoint_name}` endpoint")
                 return f"missing `{parameter_name}` parameter"
             else:
                 return "invalid request"
         elif isinstance(e, ValidationError):
             errors = e.errors()
             for err in errors:
-                parameter_name = err['loc'][0] if len(err['loc']) > 0 else None
+                parameter_name = err["loc"][0] if len(err["loc"]) > 0 else None
                 if parameter_name:
-                    self._log_error(
-                        e.__class__.__name__,
-                        f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}"
-                    )
+                    self._log_error(e.__class__.__name__, f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}")
                 else:
-                    self._log_error(
-                        e.__class__.__name__,
-                        f"invalid request in `{endpoint_name}` endpoint: {err['msg']}"
-                    )
+                    self._log_error(e.__class__.__name__, f"invalid request in `{endpoint_name}` endpoint: {err['msg']}")
             return "invalid request"
         else:
             raise e
@@ -99,12 +89,14 @@ class VCIBaseEndpoint(BaseEndpoint):
         Retrieve body from the HTTP request.
         """
 
-        if not context.request or context.request == '{}':
+        if not context.request or context.request == "{}":
             return None
         if isinstance(context.request, dict) or isinstance(context.request, set):
             return context.request
-        try: parsed = json.loads(context.request)
-        except (json.JSONDecodeError, TypeError): parsed = context.request
+        try:
+            parsed = json.loads(context.request)
+        except (json.JSONDecodeError, TypeError):
+            parsed = context.request
         return parsed
 
     @property
@@ -158,12 +150,12 @@ class VCIBaseEndpoint(BaseEndpoint):
         if authz_server:
             return authz_server.dpop_signing_alg_values_supported
         return None
-    
+
     @property
     def signed_par_request(self) -> str:
         """
         Check if signed par request is required.
-        
+
         Returns:
             str: "true", "false" or "both". Defaults to "true".
         """
