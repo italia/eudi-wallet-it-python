@@ -15,10 +15,7 @@ from integration_test.initializer.commons import (
     create_saml_auth_request,
     extract_saml_attributes,
     verify_request_object_jwt,
-    verify_status_login_page,
-    OAUTH_CLIENT_ATTESTATION_HEADER,
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
-    valid_oauth_client_attestation_jwt
+    verify_status_login_page
 )
 from integration_test.initializer.commons_duckle import (
     create_verifiable_presentations,
@@ -33,11 +30,6 @@ db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
 STATUS_ENDPOINT_URI_JS = "statusEndpoint()+'?id='+sessionIdentifier()"  # javascript functions that yield the status URI; defined in qrcode.html
-
-headers = {
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt(),
-    OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt()
-}
 
 def _extract_request_uri(page_content: str) -> str:
     bs = BeautifulSoup(page_content, features="html.parser")
@@ -104,7 +96,6 @@ def run(playwright: Playwright):
         verify=False,
         data={"response": wallet_response_data},
         timeout=TIMEOUT_S,
-        headers=headers
     )
 
     assert authz_response.status_code == 200

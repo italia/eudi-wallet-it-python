@@ -12,10 +12,7 @@ from integration_test.initializer.commons import (
     apply_trust_settings,
     create_saml_auth_request,
     extract_saml_attributes,
-    verify_request_object_jwt,
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
-    OAUTH_CLIENT_ATTESTATION_HEADER,
-    valid_oauth_client_attestation_jwt
+    verify_request_object_jwt
 )
 from integration_test.initializer.commons_duckle import (
     create_verifiable_presentations,
@@ -42,8 +39,6 @@ http_user_agent = requests.Session()
 auth_req_url = create_saml_auth_request()
 headers_mobile = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1",
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt(),
-    OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt()
 }
 request_uri = ""
 

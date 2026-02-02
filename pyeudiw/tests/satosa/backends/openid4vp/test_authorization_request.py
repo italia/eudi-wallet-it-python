@@ -122,7 +122,7 @@ def test_build_authorization_request_claims():
     claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
     assert claims["iss"] != client_id
 
-    # case 6: submission_data with dcql_query (DCQL/Duckle flow; equivalent of former presentation_definition)
+    # case 6: submission_data with dcql_query (DCQL/Duckle flow)
     config_dcql = {
         "scopes": ["family_name", "given_name"],
         "expiration_time": 1,

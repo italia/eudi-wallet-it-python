@@ -46,7 +46,6 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-
 def _validate_client_attestation(header_attestation: str, signing_alg_values_supported: list[str] | None) -> Optional[dict]:
     if header_attestation:
         payload = decode_jwt_payload(header_attestation)
@@ -60,6 +59,10 @@ def _validate_client_attestation(header_attestation: str, signing_alg_values_sup
 
         return {"thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))}
     return None
+
+
+# Public alias for OpenID4VCI OAuth client attestation only (not used by OpenID4VP/DCQL)
+validate_client_attestation = _validate_client_attestation
 
 
 def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_values_supported: list[str] | None = None) -> None:
@@ -80,7 +83,7 @@ def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_val
 
     if dpop_signing_alg_values_supported:
         try:
-            _validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
+            validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
         except Exception as e:
             logger.error(
                 f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
@@ -118,7 +121,7 @@ def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_s
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
 
     try:
-        return _validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
+        return validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
     except Exception as e:
         logger.error(
             f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "

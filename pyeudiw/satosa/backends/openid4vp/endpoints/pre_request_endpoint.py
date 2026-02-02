@@ -96,10 +96,6 @@ class PreRequestHandler(VPBaseEndpoint):
             self._log_error(context, f"Error while initializing session with state {state} and {session_id}: {e500}")
             return self._handle_500(context, "internal error: something went wrong when creating your authentication request", e500)
 
-        wallet_attestation_invalid = self.wallet_attestation_validation(context)
-        if wallet_attestation_invalid:
-            return wallet_attestation_invalid
-
         qs_params = getattr(context, "qs_params") or {}
         client_id_hint = qs_params.get("client_id_hint", None)
         has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(client_id_hint)
