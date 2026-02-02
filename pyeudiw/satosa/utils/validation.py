@@ -61,7 +61,7 @@ def _validate_client_attestation(header_attestation: str, signing_alg_values_sup
     return None
 
 
-# Public alias for backward compatibility (used by OAuth attestation and duckle_ql)
+# Public alias for OpenID4VCI OAuth client attestation only (not used by OpenID4VP/DCQL)
 validate_client_attestation = _validate_client_attestation
 
 

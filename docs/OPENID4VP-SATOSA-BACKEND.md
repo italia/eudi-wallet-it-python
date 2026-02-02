@@ -1,6 +1,6 @@
 # SATOSA backend setup
 
-The OpenID4VP SATOSA backend supports **only** the **DCQL (Duckle)** flow for credential requests. The legacy Presentation Exchange flow (`presentation_definition`) is no longer supported; configure the backend with `dcql_query` as described below.
+The OpenID4VP SATOSA backend supports the **DCQL (Duckle)** flow for credential requests. Configure the backend with `dcql_query` as described below.
 
 To install the OpenID4VP SATOSA backend you just need to:
 
