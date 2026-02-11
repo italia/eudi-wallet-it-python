@@ -36,9 +36,7 @@ class BaseLogger:
 
         self._log(context, "debug", message)
 
-    def _log_function_debug(
-        self, fn_name: str, context: Context, args_name: str | None = None, args=None
-    ) -> None:
+    def _log_function_debug(self, fn_name: str, context: Context, args_name: str | None = None, args=None) -> None:
         """
         Logs a message at the start of a backend function.
 
@@ -53,10 +51,7 @@ class BaseLogger:
 
         args_str = f" and {args_name}: {args}" if not args_name else ""
 
-        debug_message = (
-            f"[INCOMING REQUEST] {fn_name} with Context: "
-            f"{context.__dict__}{args_str}"
-        )
+        debug_message = f"[INCOMING REQUEST] {fn_name} with Context: " f"{context.__dict__}{args_str}"
         self._log_debug(context, debug_message)
 
     def _log_error(self, context: str | Context, message: str) -> None:

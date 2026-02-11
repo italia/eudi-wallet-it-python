@@ -18,7 +18,9 @@ BACKEND_NAME = "OpenID4VP"
 
 def base64url_to_int(val):
     import base64
-    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
+
+    return int.from_bytes(base64.urlsafe_b64decode(val + "=="), "big")
+
 
 jwk = {
     "kty": "EC",
@@ -28,25 +30,15 @@ jwk = {
     "kid": "SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk",
     "x": "Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI",
     "y": "IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA",
-    "alg": "ES256"
+    "alg": "ES256",
 }
 
-_d = base64url_to_int(jwk['d'])
-_x = base64url_to_int(jwk['x'])
-_y = base64url_to_int(jwk['y'])
-private_key = ec.EllipticCurvePrivateNumbers(
-    private_value=_d,
-    public_numbers=ec.EllipticCurvePublicNumbers(
-        x=_x,
-        y=_y,
-        curve=ec.SECP256R1()
-    )
-).private_key()
+_d = base64url_to_int(jwk["d"])
+_x = base64url_to_int(jwk["x"])
+_y = base64url_to_int(jwk["y"])
+private_key = ec.EllipticCurvePrivateNumbers(private_value=_d, public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1())).private_key()
 
-DEFAULT_X509_CHAIN = gen_chain(
-    leaf_dns="example.com",
-    leaf_private_key=private_key
-)
+DEFAULT_X509_CHAIN = gen_chain(leaf_dns="example.com", leaf_private_key=private_key)
 
 DEFAULT_X509_LEAF_JWK = jwk
 DEFAULT_X509_LEAF_PRIVATE_KEY = private_key
@@ -132,10 +124,10 @@ CONFIG = {
         "static_storage_url": BASE_URL,
         "template_folder": f"{pathlib.Path().absolute().__str__()}/pyeudiw/tests/satosa/templates",
         "qrcode_template": "qrcode.html",
-        "authorization_error_template": "authorization_error.html"
+        "authorization_error_template": "authorization_error.html",
     },
     "endpoints": {
-        "pre_request":{ 
+        "pre_request": {
             "module": "pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint",
             "class": "PreRequestHandler",
             "path": "/pre-request",
@@ -161,9 +153,7 @@ CONFIG = {
             "path": "/get-response",
         },
     },
-    "response_code": {
-        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-    },
+    "response_code": {"sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"},
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
@@ -171,16 +161,9 @@ CONFIG = {
         "logo_path": "pyeudiw/tests/satosa/static/logo.png",
     },
     "jwt": {
-        "default_sig_alg": "ES256", 
+        "default_sig_alg": "ES256",
         "default_exp": 6,
-        "enc_alg_supported": [
-            "RSA-OAEP",
-            "RSA-OAEP-256",
-            "ECDH-ES",
-            "ECDH-ES+A128KW",
-            "ECDH-ES+A192KW",
-            "ECDH-ES+A256KW"
-        ],
+        "enc_alg_supported": ["RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"],
         "enc_enc_supported": [
             "A128CBC-HS256",
             "A192CBC-HS384",
@@ -197,7 +180,7 @@ CONFIG = {
             "EdDSA",
         ],
     },
-    "security" :{
+    "security": {
         "wallet_attestation_required": False,
     },
     "authorization": {
@@ -205,89 +188,8 @@ CONFIG = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
-        "presentation_definition": [
-            {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.sd-jwt.type"],
-                                    },
-                                    {
-                                        "filter": {"type": "object"},
-                                        "path": ["$.sd-jwt.cnf"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.given_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.unique_id"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "jwt": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "sd-jwt",
-                    }
-                ],
-            },
-            {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.doctype"],
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.namespace"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.portrait"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.driving_privileges"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "mDL",
-                    }
-                ],
-            },
-        ],
+        "aud": "https://self-issued.me/v2",
+        "response_mode": "direct_post",
     },
     "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
@@ -365,11 +267,11 @@ CONFIG = {
                 "client_id": f"x509_san_dns:{BASE_URL.split('://')[-1]}",
                 "include_issued_jwt_header_param": True,
                 "leaf_certificate_chains_by_ca": {
-                    f"ca.example.com": DEFAULT_X509_CHAIN,
+                    "ca.example.com": DEFAULT_X509_CHAIN,
                 },
                 "certificate_authorities": {
                     "ca.example.com": DER_cert_to_PEM_cert(DEFAULT_X509_CHAIN[-1]),
-                    "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n"
+                    "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n",
                 },
                 "private_keys": [
                     jwk,
@@ -385,12 +287,11 @@ CONFIG = {
                         "q": "xZYanwkJJGOD4b7Z2PwCA_ubEYU8O2C3UoeINv2P5fXicXRK278o4WelaQBhyvDcPyS3lJyyusB_ro3Fax1fm4IDV1buITar671NzooWKOUQgG0MoVHS8k7qFmGXGDhFBrO_khsvc3FNAjdqkNpH5slo8AwvN2SrbHO3GX6aVVU",
                         "dp": "tk7iJCCI24SVXQYH6k-tNB5yH5ag5zP3Hs5DjeVG3b4bTkSwsofaNs2AIl5EKTRJOMUB4yGrw6U7FAwBJVOib3eSlym_S8-pIUUzv6IxdgGC73M5RMXuhfZi7liLANmZ7QvDCDo5LNP6qy1E8FcAa6qsCKniQydn_X4aydvijNE",
                         "dq": "Ml9mQg1Hq2NDiBXj7BGzYdiPXBQfmvO5SO0MqRhTy0i4hjwjqYo-ndiSrwZN6DMns2Fk_BpG5p2U76dtITXH3hlzSJz88LLDecI1R-akZ6CeaF9kzOvTX7sGqtYOczpFPsQsns8XddL40wvVu0Aq_Id0nV49211q5qdJktJX_lE",
-                        "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA"
+                        "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA",
                     },
-                ]
-            }
+                ],
+            },
         },
-   
     },
     "metadata_jwks": [
         jwk,
@@ -417,7 +318,7 @@ CONFIG = {
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
-        }
+        },
     ],
     "storage": {
         "mongo_db": {
@@ -425,16 +326,20 @@ CONFIG = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                     "conf": {"db_name": "pyeudiw_test"},
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                    "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                     "conf": {
                         "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
@@ -442,7 +347,11 @@ CONFIG = {
                         "db_trust_anchors_collection": "trust_anchors",
                         "db_trust_sources_collection": "trust_sources",
                     },
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
         }
@@ -451,17 +360,12 @@ CONFIG = {
     "credential_presentation_handlers": {
         "max_submission_size": 4096,
         "formats": [
-            {
-                "module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc",
-                "class": "VpVcSdJwtParserVerifier",
-                "format": "dc+sd-jwt",
-                "config": {}
-            },
+            {"module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc", "class": "VpVcSdJwtParserVerifier", "format": "dc+sd-jwt", "config": {}},
             {
                 "module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor",
                 "class": "VpMDocCbor",
                 "format": "mso_mdoc",
-            }
+            },
         ],
     },
 }
@@ -492,9 +396,7 @@ CONFIG_DIRECT_TRUST = {
         "status": "/status-uri",
         "get_response": "/get-response",
     },
-    "response_code": {
-        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-    },
+    "response_code": {"sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"},
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
@@ -507,86 +409,35 @@ CONFIG_DIRECT_TRUST = {
         "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
-        "presentation_definition": [
+        "aud": "https://self-issued.me/v2",
+        "response_mode": "direct_post",
+    },
+    "dcql_query": {
+        "credentials": [
             {
-                "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "PersonIdentificationData",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.sd-jwt.type"],
-                                    },
-                                    {
-                                        "filter": {"type": "object"},
-                                        "path": ["$.sd-jwt.cnf"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.given_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "true",
-                                        "path": ["$.sd-jwt.unique_id"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "jwt": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "sd-jwt",
-                    }
+                "id": "personal id data",
+                "format": "dc+sd-jwt",
+                "meta": {
+                    "vct_values": [
+                        "https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata",
+                    ],
+                },
+                "claims": [
+                    {"path": ["given_name"]},
+                    {"path": ["family_name"]},
                 ],
             },
             {
-                "id": "mDL-sample-req",
-                "input_descriptors": [
-                    {
-                        "format": {
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1.mDL",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.doctype"],
-                                    },
-                                    {
-                                        "filter": {
-                                            "const": "org.iso.18013.5.1",
-                                            "type": "string",
-                                        },
-                                        "path": ["$.mdoc.namespace"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.family_name"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.portrait"],
-                                    },
-                                    {
-                                        "intent_to_retain": "false",
-                                        "path": ["$.mdoc.driving_privileges"],
-                                    },
-                                ],
-                                "limit_disclosure": "required",
-                            },
-                            "mso_mdoc": {"alg": ["EdDSA", "ES256"]},
-                        },
-                        "id": "mDL",
-                    }
+                "id": "wallet attestation",
+                "format": "mso_mdoc",
+                "meta": {
+                    "vct_values": [
+                        "https://itwallet.registry.example.it/WalletAttestation",
+                    ],
+                },
+                "claims": [
+                    {"path": ["wallet_link"]},
+                    {"path": ["wallet_name"]},
                 ],
             },
         ],
@@ -622,7 +473,7 @@ CONFIG_DIRECT_TRUST = {
             "1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0",
             "q": "2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG"
             "oWM5RHyl_HDDMI-UeLkzP7ImxGizrM",
-        }
+        },
     ],
     "storage": {
         "mongo_db": {
@@ -630,23 +481,31 @@ CONFIG_DIRECT_TRUST = {
                 "module": "pyeudiw.storage.mongo_cache",
                 "class": "MongoCache",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=15000",
                     "conf": {"db_name": "pyeudiw_test"},
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
             "storage": {
                 "module": "pyeudiw.storage.mongo_storage",
                 "class": "MongoStorage",
                 "init_params": {
-                    "url": "mongodb://localhost:27017/?timeoutMS=2000",
+                    "url": "mongodb://localhost:27017/?timeoutMS=15000",
                     "conf": {
                         "db_name": "pyeudiw_test",
                         "db_sessions_collection": "sessions",
                         "db_trust_attestations_collection": "trust_attestations",
                         "db_trust_anchors_collection": "trust_anchors",
                     },
-                    "connection_params": {},
+                    "connection_params": {
+                        "serverSelectionTimeoutMS": 15000,
+                        "connectTimeoutMS": 10000,
+                        "maxPoolSize": 10,
+                    },
                 },
             },
         }
@@ -877,7 +736,6 @@ WALLET_INSTANCE_ATTESTATION = {
         "jwt_vc_json": {"alg_values_supported": ["ES256"]},
     },
     "request_object_signing_alg_values_supported": ["ES256"],
-    "presentation_definition_uri_supported": False,
     "iat": iat_now(),
     "exp": exp_from_now(),
 }

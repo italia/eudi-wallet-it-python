@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
 
 from pyeudiw.credential_presentation.handler import CredentialPresentationHandlers
 from pyeudiw.satosa.backends.openid4vp.presentation_submission.exceptions import (
@@ -11,17 +11,18 @@ from pyeudiw.satosa.backends.openid4vp.presentation_submission.exceptions import
     SubmissionValidationError,
     VPTokenDescriptorMapMismatch,
     ParseError,
-    ValidationError
+    ValidationError,
 )
 from pyeudiw.satosa.backends.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 
 logger = logging.getLogger(__name__)
 
+
 class PresentationSubmissionHandler:
     def __init__(
-            self,
-            config: CredentialPresentationHandlers,
-        ) -> None:
+        self,
+        config: CredentialPresentationHandlers,
+    ) -> None:
         """
         Initialize the PresentationSubmissionHandler handler with the submission data.
         :param config: Configuration object.
@@ -45,15 +46,13 @@ class PresentationSubmissionHandler:
         # Check submission size
         submission_size = len(str(submission).encode("utf-8"))
         if submission_size > self.max_submission_size:
-            raise SubmissionValidationError(
-                f"Submission size exceeds maximum allowed limit of {self.max_submission_size} bytes."
-            )
+            raise SubmissionValidationError(f"Submission size exceeds maximum allowed limit of {self.max_submission_size} bytes.")
 
         try:
             return PresentationSubmissionSchema(**submission)
-        except ValidationError as e:
+        except PydanticValidationError as e:
             raise SubmissionValidationError(f"Submission validation failed: {e}")
-    
+
     def _extract_position(self, path: str) -> int:
         """
         Extract the position and path from the descriptor path.
@@ -93,14 +92,14 @@ class PresentationSubmissionHandler:
         descriptor_map_len = len(submission["descriptor_map"])
 
         parsed_tokens: list[dict] = [{} for _ in range(descriptor_map_len)]
-        
+
         for descriptor in submission["descriptor_map"]:
-            handler = self.handlers.get(descriptor['format'])
+            handler = self.handlers.get(descriptor["format"])
 
             if not handler:
                 raise MissingHandler(f"Handler for format '{descriptor['format']}' not found.")
 
-            position = self._extract_position(descriptor['path'])
+            position = self._extract_position(descriptor["path"])
 
             try:
                 parsed_tokens[position] = handler.parse(vp_tokens[position])
@@ -108,14 +107,8 @@ class PresentationSubmissionHandler:
                 raise ParseError(f"Error parsing token at position {position}: {e}")
 
         return parsed_tokens
-    
-    def validate(
-        self, 
-        submission: dict[str, Any], 
-        vp_tokens: list[str],
-        verifier_id: str, 
-        verifier_nonce: str
-    ) -> None:
+
+    def validate(self, submission: dict[str, Any], vp_tokens: list[str], verifier_id: str, verifier_nonce: str) -> None:
         """
         Validate the presentation submission data using the appropriate handler.
 
@@ -134,15 +127,13 @@ class PresentationSubmissionHandler:
         descriptor_map_len = len(validated_submission.descriptor_map)
 
         if len(vp_tokens) != descriptor_map_len:
-            raise VPTokenDescriptorMapMismatch(
-                f"Number of VP tokens ({len(vp_tokens)}) does not match the number of descriptors ({descriptor_map_len})."
-            )
-        
+            raise VPTokenDescriptorMapMismatch(f"Number of VP tokens ({len(vp_tokens)}) does not match the number of descriptors ({descriptor_map_len}).")
+
         for descriptor in validated_submission.descriptor_map:
             handler = self.handlers.get(descriptor.format)
             if not handler:
                 raise MissingHandler(f"Handler for format '{descriptor.format}' not found.")
-            
+
             position = self._extract_position(descriptor.path)
 
             try:

@@ -1,5 +1,7 @@
 # SATOSA backend setup
 
+The OpenID4VP SATOSA backend supports the **DCQL (Duckle)** flow for credential requests. Configure the backend with `dcql_query` as described below.
+
 To install the OpenID4VP SATOSA backend you just need to:
 
 1. install this package and the extra dependencies: `pip install pyeudiw[satosa]`
@@ -90,21 +92,23 @@ To install the OpenID4VP SATOSA backend you just need to:
 | config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
 | config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                           |
 | config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
-| config.authorization.presentation_definition | The object that defines the presentation request                                                    | [Presentation definition](#presentation-definition) |
 
-###### Presentation definition
+##### DCQL query (dcql_query)
 
-| Parameter                                                                 | Description                                                                                           | Example value                                  |
-|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| config.authorization.presentation_definition.id                           | The unique identifier of the presentation definition                                                  | d76c51b7-ea90-49bb-8368-6b3d194fc131           |
-| config.authorization.presentation_definition.input_descriptors            | The list of input descriptors that specify the verifiable credentials that the client requests        | See below                                      |
-| config.authorization.presentation_definition.id                           | The unique identifier of the input descriptor                                                         | IdentityCredential                             |
-| config.authorization.presentation_definition.format                       | The object that defines the verifiable credential format that the client requests                     | dc+sd-jwt: {}                                  |
-| config.authorization.presentation_definition.constraints                  | The object that defines the constraints on the verifiable credential                                  | See below                                      |
-| config.authorization.presentation_definition.constraints.limit_disclosure | The string that indicates whether the client requests minimal disclosure of the verifiable credential | required                                       |
-| config.authorization.presentation_definition.constraints.fields           | The list of objects that define the fields that the client requests in the verifiable credential      | See below                                      |
-| config.authorization.presentation_definition.constraints.fields.path      | The list of strings that define the JSON path to the field in the verifiable credential               | ["$.vct"], ["$.family_name"], ["$.given_name"] |
-| config.authorization.presentation_definition.constraints.fields.filter    | The object that defines the filter criteria for the field in the verifiable credential                | type: string, const: IdentityCredential        |
+The backend uses the **DCQL (Duckle)** flow. The `dcql_query` configuration (top-level under `config`) defines the credentials request.
+
+| Parameter           | Description                                                                                          | Example value                                                                 |
+|---------------------|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| config.dcql_query   | The DCQL credentials request: object or YAML multiline string. Must contain a `credentials` array.   | See [pyeudiw_backend.yaml](integration_test/conf/pyeudiw_backend.yaml)        |
+
+Each entry in `credentials` can include:
+
+| Field     | Description                                                |
+|-----------|------------------------------------------------------------|
+| id        | Identifier for the credential type                         |
+| format    | VP format (e.g. `dc+sd-jwt`, `mso_mdoc`)                   |
+| meta      | Optional metadata (e.g. `vct_values` for trust registry)   |
+| claims    | List of `{"path": ["claim_name"]}` for requested claims    |
 
 ##### User Attributes
 

@@ -7,16 +7,13 @@ from pyeudiw.tools.http import http_get_sync, DEFAULT_HTTPC_PARAMS
 from pyeudiw.x509.exceptions import CRLHTTPError, CRLParseError, CRLReadError
 from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 
+
 class CRLHelper:
     """
     Helper class to handle CRL (Certificate Revocation List) operations.
     """
 
-    def __init__(
-            self, 
-            crl: CertificateRevocationList,
-            uri: str
-        ) -> None:
+    def __init__(self, crl: CertificateRevocationList, uri: str) -> None:
         """
         Initialize the CRLHelper with a CRL object.
 
@@ -31,7 +28,7 @@ class CRLHelper:
 
         if not uri:
             raise CRLReadError("CRL URI is required.")
-        
+
         self.uri = uri
 
     def is_revoked(self, serial_number: str | int) -> bool:
@@ -56,7 +53,7 @@ class CRLHelper:
             return self.revocation_list.get_revoked_certificate_by_serial_number(serial_number) is not None
         except Exception as e:
             raise CRLReadError(f"Failed to check revocation status: {e}")
-        
+
     def get_revocation_date(self, serial_number: str | int) -> datetime | None:
         """
         Get the revocation date of a certificate with the given serial number.
@@ -80,7 +77,7 @@ class CRLHelper:
             return cert.revocation_date_utc if cert else None
         except Exception as e:
             raise CRLReadError(f"Failed to get revocation date: {e}")
-        
+
     def is_crl_expired(self) -> bool:
         """
         Check if the CRL is valid (not expired).
@@ -95,11 +92,11 @@ class CRLHelper:
 
             if exp is None:
                 return False
-            
+
             return exp < datetime.now(exp.tzinfo)
         except Exception as e:
             raise CRLReadError(f"Failed to check CRL validity: {e}")
-        
+
     def update(self, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> None:
         """
         Update the CRL by fetching it from the URI.
@@ -107,13 +104,13 @@ class CRLHelper:
 
         :param httpc_params: Optional HTTP client parameters.
         :type httpc_params: dict | None
-        
+
         :raises CRLHTTPError: If the HTTP request fails or the response is not valid.
         :raises CRLParseError: If the CRL file is not in the expected format.
         """
         response = http_get_sync([self.uri], httpc_params)
         if response[0].status_code != 200:
-            raise CRLHTTPError(f"Failed to fetch CRL from {self.uri}: {response[0].status_code}")        
+            raise CRLHTTPError(f"Failed to fetch CRL from {self.uri}: {response[0].status_code}")
 
         self.revocation_list = CRLHelper._parse_crl(
             response[0].text.encode("utf-8"),
@@ -152,10 +149,7 @@ class CRLHelper:
         elif isinstance(crl, bytes) and crl.startswith(b"-----BEGIN X509 CRL-----"):
             rev_list = x509.load_pem_x509_crl(crl, default_backend())
         else:
-            rev_list = x509.load_der_x509_crl(
-                crl.encode() if isinstance(crl, str) else crl, 
-                default_backend()
-            )
+            rev_list = x509.load_der_x509_crl(crl.encode() if isinstance(crl, str) else crl, default_backend())
 
         return rev_list
 
@@ -164,7 +158,7 @@ class CRLHelper:
         """
         Load a CRL from a given URL.
         This method fetches the CRL file from the specified URL and loads it into a CRL object.
-        
+
         :param crl_url: URL of the CRL file.
         :type crl_url: str
         :param httpc_params: Optional HTTP client parameters.
@@ -179,13 +173,10 @@ class CRLHelper:
 
         response = http_get_sync([crl_url], httpc_params)
         if response[0].status_code != 200:
-            raise CRLHTTPError(f"Failed to fetch CRL from {crl_url}: {response[0].status_code}")        
+            raise CRLHTTPError(f"Failed to fetch CRL from {crl_url}: {response[0].status_code}")
 
-        return CRLHelper.from_crl(
-            response[0].text.encode("utf-8"),
-            uri=crl_url
-        )
-            
+        return CRLHelper.from_crl(response[0].text.encode("utf-8"), uri=crl_url)
+
     @staticmethod
     def from_certificate(cert: str | bytes) -> list["CRLHelper"]:
         """
@@ -205,10 +196,7 @@ class CRLHelper:
         elif isinstance(cert, bytes) and cert.startswith(b"-----BEGIN CERTIFICATE-----"):
             parsed_cert: x509.Certificate = load_pem_x509_certificate(cert, default_backend())
         else:
-            parsed_cert: x509.Certificate = load_der_x509_certificate(
-                cert.encode() if isinstance(cert, str) else cert, 
-                default_backend()
-            )
+            parsed_cert: x509.Certificate = load_der_x509_certificate(cert.encode() if isinstance(cert, str) else cert, default_backend())
 
         try:
             crl_distribution_points = parsed_cert.extensions.get_extension_for_class(x509.CRLDistributionPoints)
@@ -223,9 +211,9 @@ class CRLHelper:
                 crl_helpers.append(crl_helper)
             except (CRLHTTPError, CRLParseError, CRLReadError) as e:
                 raise CRLReadError(f"Failed to load CRL from certificate: {e}")
-            
+
         return crl_helpers
-    
+
     @staticmethod
     def from_crl(crl: str | bytes, uri: str) -> "CRLHelper":
         """
@@ -240,9 +228,6 @@ class CRLHelper:
         :rtype: CRLHelper
         """
         try:
-            return CRLHelper(
-                crl=CRLHelper._parse_crl(crl),
-                uri=uri
-            )
+            return CRLHelper(crl=CRLHelper._parse_crl(crl), uri=uri)
         except Exception as e:
             raise CRLParseError(f"Failed to parse CRL: {e}")

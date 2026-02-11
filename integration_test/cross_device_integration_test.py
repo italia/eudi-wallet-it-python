@@ -1,15 +1,5 @@
-# This file defines an end-to-end integration test flow without Duckle support.
-#
-# To run this integration test, you need to modify the `pyeudiw_backend.yaml` configuration file
-# by removing the following entries:
-#   config.duckle.dcql_query
-#
-# Additionally, you must remove the Duckle handler in the `credential_presentation_handlers` section:
-#
-# credential_presentation_handlers: [...]
-#   - module: pyeudiw.duckle_ql.handler
-#     class: DuckleHandler
-#     format: jwt_vc_json
+# This file defines an end-to-end integration test flow using the DCQL (Duckle) flow.
+# Use the default pyeudiw_backend.yaml with config.dcql_query (no modification needed).
 
 import time
 import urllib.parse
@@ -23,22 +13,16 @@ from integration_test.initializer.commons import (
     setup_test_db_engine,
     apply_trust_settings,
     create_saml_auth_request,
-    create_authorize_response,
-    create_holder_test_data,
-    create_issuer_test_data,
     extract_saml_attributes,
     verify_request_object_jwt,
-    verify_status_login_page,
-    OAUTH_CLIENT_ATTESTATION_HEADER,
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
-    valid_oauth_client_attestation_jwt
+    verify_status_login_page
 )
-from integration_test.initializer.deprecatation import show_deprecation_warning
+from integration_test.initializer.commons_duckle import (
+    create_verifiable_presentations,
+    create_authorize_response,
+)
 from integration_test.initializer.settings import TIMEOUT_S
 from pyeudiw.jwt.utils import decode_jwt_payload
-
-# Show deprecation warning for the test
-show_deprecation_warning()
 
 # put a trust attestation related itself into the storage
 # this is then used as trust_chain header parameter in the signed request object
@@ -46,11 +30,6 @@ db_engine_inst = setup_test_db_engine()
 db_engine_inst = apply_trust_settings(db_engine_inst)
 
 STATUS_ENDPOINT_URI_JS = "statusEndpoint()+'?id='+sessionIdentifier()"  # javascript functions that yield the status URI; defined in qrcode.html
-
-headers = {
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt(),
-    OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt()
-}
 
 def _extract_request_uri(page_content: str) -> str:
     bs = BeautifulSoup(page_content, features="html.parser")
@@ -103,18 +82,13 @@ def run(playwright: Playwright):
 
     verify_status_login_page(login_page, expected_code=202)
 
-    # Authentication Flow Step 3: wallet provides an authentication response in the response endpoint
-    verifiable_credential = create_issuer_test_data()
-    verifiable_presentations = create_holder_test_data(
-        verifiable_credential,
-        request_object_claims["nonce"],
-        request_object_claims["client_id"]
-    )
-    
+    # Authentication Flow Step 3: wallet provides an authentication response (DCQL/Duckle flow)
     wallet_response_data = create_authorize_response(
-        verifiable_presentations,
+        create_verifiable_presentations(
+            request_object_claims["nonce"],
+            request_object_claims["client_id"]
+        ),
         request_object_claims["state"],
-        response_uri
     )
 
     authz_response = wallet_user_agent.post(
@@ -122,7 +96,6 @@ def run(playwright: Playwright):
         verify=False,
         data={"response": wallet_response_data},
         timeout=TIMEOUT_S,
-        headers=headers
     )
 
     assert authz_response.status_code == 200
@@ -160,7 +133,7 @@ def run(playwright: Playwright):
                 result_index = i
                 break
         assert result_index != -1, f"missing attribute with name=[{exp_att_name}] in result set"
-        obt_att_value = attributes[result_index].contents[0].contents[0]
+        obt_att_value = attributes[result_index]["value"]
         assert exp_att_value == obt_att_value, f"wrong attribute parsing expected {exp_att_value}, obtained {obt_att_value}"
 
     print("TEST PASSED")

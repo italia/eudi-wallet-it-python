@@ -9,8 +9,8 @@ from pyeudiw.tools.mobile import is_smartphone
 
 logger = logging.getLogger(__name__)
 
-def detect_flow_typ(context: Context,
-                    force_same_device_flow_referer_criteria: Optional[List[str]] = None) -> RemoteFlowType:
+
+def detect_flow_typ(context: Context, force_same_device_flow_referer_criteria: Optional[List[str]] = None) -> RemoteFlowType:
     """
     Identify or guess the remote flow type based on the authentication context. The logic is as follows:
     If the User-Agent clearly indicates a smartphone -> SAME_DEVICE
@@ -19,7 +19,8 @@ def detect_flow_typ(context: Context,
 
     Parameters
     context: the context of the user authentication
-    force_same_device_flow_referer_criteria: optional list of regex patterns (as strings) that, if matched against the HTTP_REFERER header, indicate a wallet-originated request.
+    force_same_device_flow_referer_criteria: optional list of regex patterns (as strings)
+    that, if matched against the HTTP_REFERER header, indicate a wallet-originated request.
 
     Returns the detected remote flow type (RemoteFlowType).
     """
@@ -28,12 +29,13 @@ def detect_flow_typ(context: Context,
         logger.info("Flow detected as SAME_DEVICE because User-Agent indicates smartphone.")
         return RemoteFlowType.SAME_DEVICE
 
-    if (context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site"
-            and force_same_device_flow_referer_criteria):
+    if context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site" and force_same_device_flow_referer_criteria:
         referer = context.http_headers.get("HTTP_REFERER", "")
         for pattern in force_same_device_flow_referer_criteria:
             if re.match(pattern, referer):
-                logger.info(f"Flow detected as SAME_DEVICE because Referer '{referer}' matched regex '{pattern}'.")
+                logger.info(
+                    f"Flow detected as SAME_DEVICE because Referer '{referer}' matched regex '{pattern}'."
+                )
                 return RemoteFlowType.SAME_DEVICE
 
     logger.info("Flow classified as CROSS_DEVICE by default.")

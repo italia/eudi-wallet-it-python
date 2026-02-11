@@ -59,9 +59,7 @@ class DPoPIssuer:
         }
 
         if self.token:
-            data["ath"] = base64.urlsafe_b64encode(
-                hashlib.sha256(self.token.encode()).digest()
-            ).rstrip(b"=").decode()
+            data["ath"] = base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest()).rstrip(b"=").decode()
 
         jwt = self.signer.sign(
             data,

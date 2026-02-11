@@ -24,6 +24,7 @@ _default_supported_algorithms = [
 _default_response_types_supported = "vp_token"
 _default_client_id_schemes_supported = "http"
 
+
 class WalletMetadata(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[str]]]
     alg_values_supported: Optional[List[str]] = None
@@ -85,9 +86,7 @@ class WalletMetadata(BaseModel):
         if not valid:
             return v
         else:
-            filtered_vp_formats = {
-                k: v for k, v in v.items() if k in valid
-            }
+            filtered_vp_formats = {k: v for k, v in v.items() if k in valid}
             if not filtered_vp_formats:
                 raise ValueError("Invalid value for response_modes_supported")
             return filtered_vp_formats
@@ -121,14 +120,14 @@ class WalletMetadata(BaseModel):
             raise ValueError("Invalid value for request_object_signing_alg_values_supported")
 
     @staticmethod
-    def _valid_element_list(v: list, expected_value: str|list, field_name: str):
+    def _valid_element_list(v: list, expected_value: str | list, field_name: str):
         if len(v) == 0:
             return [expected_value] if isinstance(expected_value, str) else expected_value
-        filtered = [mode for mode in v if
-                    (mode == expected_value if isinstance(expected_value, str) else mode in expected_value)]
+        filtered = [mode for mode in v if (mode == expected_value if isinstance(expected_value, str) else mode in expected_value)]
         if not filtered or len(filtered) == 0:
             raise ValueError(f"Invalid value for {field_name}")
         return filtered
+
 
 class WalletPostRequest(BaseModel):
     wallet_metadata: Optional[WalletMetadata] = None

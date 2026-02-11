@@ -8,7 +8,6 @@ from cryptojwt.jwk.ec import new_ec_key
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import new_rsa_key
 
-from pyeudiw.jwk.exceptions import InvalidKid, KidNotFoundError
 
 KEY_TYPES_FUNC = dict(EC=new_ec_key, RSA=new_rsa_key)
 

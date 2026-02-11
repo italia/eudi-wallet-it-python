@@ -68,25 +68,17 @@ class TrustChainBuilder:
         self.trust_anchor = trust_anchor
         if not trust_anchor_configuration:
             try:
-                jwts = get_entity_configurations(
-                    trust_anchor, httpc_params=self.httpc_params
-                )
-                trust_anchor_configuration = EntityStatement(
-                    jwts[0], httpc_params=self.httpc_params
-                )
+                jwts = get_entity_configurations(trust_anchor, httpc_params=self.httpc_params)
+                trust_anchor_configuration = EntityStatement(jwts[0], httpc_params=self.httpc_params)
 
-                subject_configuration.update_trust_anchor_conf(
-                    trust_anchor_configuration
-                )
+                subject_configuration.update_trust_anchor_conf(trust_anchor_configuration)
                 subject_configuration.validate_by_itself()
             except Exception as e:
                 _msg = f"Entity Configuration for {self.trust_anchor} failed: {e}"
                 logger.error(_msg)
                 raise InvalidEntityStatement(_msg)
         elif isinstance(trust_anchor_configuration, str):
-            trust_anchor_configuration = EntityStatement(
-                jwt=trust_anchor_configuration, httpc_params=self.httpc_params
-            )
+            trust_anchor_configuration = EntityStatement(jwt=trust_anchor_configuration, httpc_params=self.httpc_params)
 
         self.trust_anchor_configuration = trust_anchor_configuration
 
@@ -120,11 +112,7 @@ class TrustChainBuilder:
             # ok trust path completed, I just have to return over all the parent calls
             return
 
-        logger.info(
-            f"Applying metadata policy for {self.subject} over "
-            f"{self.trust_anchor_configuration.sub} starting from "
-            f"{self.trust_path[-1]}"
-        )
+        logger.info(f"Applying metadata policy for {self.subject} over " f"{self.trust_anchor_configuration.sub} starting from " f"{self.trust_path[-1]}")
         last_path = self.tree_of_trust[len(self.trust_path) - 1]
         path_found = False
         for ec in last_path:
@@ -138,10 +126,7 @@ class TrustChainBuilder:
                         self.trust_path.append(sup_ec)
                         self.apply_metadata_policy()
                     else:
-                        logger.info(
-                            f"'Cul de sac' in {sup_ec.sub} for {self.subject} "
-                            f"to {self.trust_anchor_configuration.sub}"
-                        )
+                        logger.info(f"'Cul de sac' in {sup_ec.sub} for {self.subject} " f"to {self.trust_anchor_configuration.sub}")
                         self.trust_path = [self.subject_configuration]
                         break
 
@@ -150,22 +135,16 @@ class TrustChainBuilder:
             logger.info(f"Found a trust path: {self.trust_path}")
             self.final_metadata = self.subject_configuration.payload.get("metadata", {})
             if not self.final_metadata:
-                logger.error(
-                    f"Missing metadata in {self.subject_configuration.payload['metadata']}"
-                )
+                logger.error(f"Missing metadata in {self.subject_configuration.payload['metadata']}")
                 return
 
             for i in range(len(self.trust_path))[::-1]:
                 self.trust_path[i - 1].sub
-                _pol = self.trust_path[i].verified_descendant_statements.get(
-                    "metadata_policy", {}
-                )
+                _pol = self.trust_path[i].verified_descendant_statements.get("metadata_policy", {})
                 for md_type, md in _pol.items():
                     if not self.final_metadata.get(md_type):
                         continue
-                    self.final_metadata[md_type] = TrustChainPolicy().apply_policy(
-                        self.final_metadata[md_type], _pol[md_type]
-                    )
+                    self.final_metadata[md_type] = TrustChainPolicy().apply_policy(self.final_metadata[md_type], _pol[md_type])
 
         # set exp
         self._set_exp()
@@ -202,9 +181,7 @@ class TrustChainBuilder:
                 # Metadata discovery loop prevention
                 if last_ec.sub in ecs_history:
                     logger.warning(
-                        f"Metadata discovery loop detection for {last_ec.sub}. "
-                        f"Already present in {ecs_history}. "
-                        "Discovery blocked for this path."
+                        f"Metadata discovery loop detection for {last_ec.sub}. " f"Already present in {ecs_history}. " "Discovery blocked for this path."
                     )
                     continue
 
@@ -213,16 +190,12 @@ class TrustChainBuilder:
                         max_authority_hints=self.max_authority_hints,
                         superiors_hints=[self.trust_anchor_configuration],
                     )
-                    validated_by = last_ec.validate_by_superiors(
-                        superiors_entity_configurations=superiors.values()
-                    )
+                    validated_by = last_ec.validate_by_superiors(superiors_entity_configurations=superiors.values())
                     vbv = list(validated_by.values())
                     sup_ecs.extend(vbv)
                     ecs_history.append(last_ec)
                 except MetadataDiscoveryException as e:
-                    logger.exception(
-                        f"Metadata discovery exception for {last_ec.sub}: {e}"
-                    )
+                    logger.exception(f"Metadata discovery exception for {last_ec.sub}: {e}")
 
             if sup_ecs:
                 self.tree_of_trust[last_path_n + 1] = sup_ecs
@@ -230,10 +203,7 @@ class TrustChainBuilder:
                 break
 
         last_path = list(self.tree_of_trust.keys())[-1]
-        if (
-            self.tree_of_trust[0][0].is_valid
-            and self.tree_of_trust[last_path][0].is_valid
-        ):
+        if self.tree_of_trust[0][0].is_valid and self.tree_of_trust[last_path][0].is_valid:
             self.is_valid = True
             self.apply_metadata_policy()
 
@@ -246,18 +216,13 @@ class TrustChainBuilder:
         """
         if not isinstance(self.trust_anchor, EntityStatement):
             logger.info(f"Get Trust Anchor Entity Configuration for {self.subject}")
-            ta_jwt = get_entity_configurations(
-                self.trust_anchor, httpc_params=self.httpc_params
-            )[0]
+            ta_jwt = get_entity_configurations(self.trust_anchor, httpc_params=self.httpc_params)[0]
             self.trust_anchor_configuration = EntityStatement(ta_jwt)
 
         try:
             self.trust_anchor_configuration.validate_by_itself()
         except Exception as e:  # pragma: no cover
-            _msg = (
-                f"Trust Anchor Entity Configuration failed for "
-                f"{self.trust_anchor}: '{e}'"
-            )
+            _msg = f"Trust Anchor Entity Configuration failed for " f"{self.trust_anchor}: '{e}'"
             logger.error(_msg)
             raise Exception(_msg)
 
@@ -268,14 +233,8 @@ class TrustChainBuilder:
         Sets the internal field max_path_len with the costraint
         found in trust anchor payload
         """
-        if self.trust_anchor_configuration.payload.get("constraints", {}).get(
-            "max_path_length"
-        ):
-            self.max_path_len = int(
-                self.trust_anchor_configuration.payload["constraints"][
-                    "max_path_length"
-                ]
-            )
+        if self.trust_anchor_configuration.payload.get("constraints", {}).get("max_path_length"):
+            self.max_path_len = int(self.trust_anchor_configuration.payload["constraints"]["max_path_length"])
 
     def get_subject_configuration(self) -> None:
         """
@@ -286,9 +245,7 @@ class TrustChainBuilder:
         """
         if not self.subject_configuration:
             try:
-                jwts = get_entity_configurations(
-                    self.subject, httpc_params=self.httpc_params
-                )
+                jwts = get_entity_configurations(self.subject, httpc_params=self.httpc_params)
                 self.subject_configuration = EntityStatement(
                     jwts[0],
                     trust_anchor_entity_conf=self.trust_anchor_configuration,
@@ -311,9 +268,7 @@ class TrustChainBuilder:
                 # trust_mark_issuers_entity_confs
                 # ]
                 if not sc.validate_by_allowed_trust_marks():
-                    raise InvalidRequiredTrustMark(
-                        "The required Trust Marks are not valid"
-                    )
+                    raise InvalidRequiredTrustMark("The required Trust Marks are not valid")
                 else:
                     self.verified_trust_marks.extend(sc.verified_trust_marks)
 

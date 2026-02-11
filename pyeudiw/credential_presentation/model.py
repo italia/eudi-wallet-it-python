@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -15,6 +15,7 @@ class FormatConfig(BaseModel):
         class_ (str): The name of the handler class (alias for 'class').
         config (dict): A dictionary of configuration parameters specific to the handler class.
     """
+
     format: str
     module: str
     class_: str = Field(..., alias="class")
@@ -35,13 +36,13 @@ class CredentialPresentationHandlersConfig(BaseModel):
         trust_evaluator (CombinedTrustEvaluator): The trust evaluator used to evaluate the credential presentations.
         sig_alg_supported (list[str]): A list of supported signature algorithms.
     """
+
     max_submission_size: Optional[int] = None
     formats: List[FormatConfig]
     trust_evaluator: CombinedTrustEvaluator
     sig_alg_supported: list[str] = []
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @model_validator(mode="before")
     def validate_formats(cls, values):

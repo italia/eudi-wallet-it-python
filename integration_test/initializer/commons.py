@@ -291,17 +291,7 @@ def verify_status_login_page(login_page: Page, expected_code: int):
     assert expected_code == current_status
 
 
-def extract_request_uri_login_page(page_content: str) -> str:
-    """
-    extract_request_uri_login_page parses the QR code in the login page
-    and returns the request_uri field embedded in the QR code value.
-    """
-    bs = BeautifulSoup(page_content, features="html.parser")
-    # Request URI is extracted by parsing the QR code in the response page
-    qrcode_element = list(bs.find(id="content-qrcode-payload").children)[1]
-    qrcode_text = qrcode_element.get("contents")
-    request_uri = urllib.parse.parse_qs(qrcode_text)["request_uri"][0]
-    return request_uri
+from integration_test.initializer.request_uri_parsers import extract_request_uri_login_page  # noqa: E402
 
 
 def extract_content_title_login_page(page_content: str) -> PageElement:

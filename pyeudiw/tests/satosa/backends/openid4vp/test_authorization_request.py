@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.authorization_request import (
     build_authorization_request_claims,
     build_authorization_request_url,
@@ -51,34 +52,12 @@ def test_build_authorization_request_claims():
     config = {
         "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
-        "presentation_definition": {
-            "id": "global-id",
-            "input_descriptors": [
-                {
-                    "id": "specific-id",
-                    "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"dc+sd-jwt": {}},
-                    "constraints": {
-                        "fields": [
-                            {
-                                "path": ["$.vct"],
-                                "filter": {
-                                    "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
-                                },
-                            }
-                        ]
-                    },
-                }
-            ],
-        },
     }
 
     claims = build_authorization_request_claims(client_id, state, response_uri, config)
 
     assert "aud" in claims
     assert "nonce" in claims
-    assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
     assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
@@ -91,36 +70,12 @@ def test_build_authorization_request_claims():
         "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
-        "presentation_definition": {
-            "id": "global-id",
-            "input_descriptors": [
-                {
-                    "id": "specific-id",
-                    "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"dc+sd-jwt": {}},
-                    "constraints": {
-                        "fields": [
-                            {
-                                "path": ["$.vct"],
-                                "filter": {
-                                    "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
-                                },
-                            }
-                        ]
-                    },
-                }
-            ],
-        },
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_aud
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_aud)
 
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
-    assert "presentation_definition" in claims
     assert claims["response_mode"] == "direct_post.jwt"
     assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
@@ -132,36 +87,12 @@ def test_build_authorization_request_claims():
         "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "response_mode": "direct_post",
-        "presentation_definition": {
-            "id": "global-id",
-            "input_descriptors": [
-                {
-                    "id": "specific-id",
-                    "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"dc+sd-jwt": {}},
-                    "constraints": {
-                        "fields": [
-                            {
-                                "path": ["$.vct"],
-                                "filter": {
-                                    "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
-                                },
-                            }
-                        ]
-                    },
-                }
-            ],
-        },
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_rmode
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_rmode)
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
-    assert "presentation_definition" in claims
     assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
@@ -171,18 +102,13 @@ def test_build_authorization_request_claims():
     config_noscope = {
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
-        "presentation_definition": {"id": "global-id", "input_descriptors": []},
     }
 
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope)
     assert "scope" not in claims
 
     # case 4: force nonce
-    claims = build_authorization_request_claims(
-        client_id, state, response_uri, config_noscope, nonce="predetermined-nonce"
-    )
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_noscope, nonce="predetermined-nonce")
     assert claims["nonce"] == "predetermined-nonce"
 
     # case 5: custom client_id
@@ -191,30 +117,34 @@ def test_build_authorization_request_claims():
         "scopes": ["family_name", "given_name"],
         "auth_iss_id": "OTHERRRRR",
         "expiration_time": 1,
-        "presentation_definition": {
-            "id": "global-id",
-            "input_descriptors": [
-                {
-                    "id": "specific-id",
-                    "purpose": "Request presentation holding Power of Representation attestation",
-                    "format": {"dc+sd-jwt": {}},
-                    "constraints": {
-                        "fields": [
-                            {
-                                "path": ["$.vct"],
-                                "filter": {
-                                    "type": "string",
-                                    "pattern": "urn:eu.europa.ec.eudi:por:1",
-                                },
-                            }
-                        ]
-                    },
-                }
-            ],
-        },
     }
 
-    claims = build_authorization_request_claims(
-        "custom-client-id", state, response_uri, config_custom_id
-    )
+    claims = build_authorization_request_claims("custom-client-id", state, response_uri, config_custom_id)
     assert claims["iss"] != client_id
+
+    # case 6: submission_data with dcql_query (DCQL/Duckle flow)
+    config_dcql = {
+        "scopes": ["family_name", "given_name"],
+        "expiration_time": 1,
+        "aud": "https://self-issued.me/v2",
+    }
+    dcql_query = {
+        "credentials": [
+            {
+                "id": "pid",
+                "format": "dc+sd-jwt",
+                "meta": {"vct_values": ["https://example.org/pid"]},
+                "claims": [{"path": ["given_name"]}, {"path": ["family_name"]}],
+            }
+        ]
+    }
+    submission_data = {
+        "typo": DUCKLE_PRESENTATION,
+        DUCKLE_QUERY_KEY: dcql_query,
+    }
+    claims = build_authorization_request_claims(client_id, state, response_uri, config_dcql, submission_data=submission_data)
+    assert claims[DUCKLE_QUERY_KEY] == dcql_query
+    assert "scope" not in claims  # DCQL path does not add scope
+    assert "client_metadata" not in claims
+    assert claims["response_type"] == "vp_token"
+    assert claims["client_id"] == client_id

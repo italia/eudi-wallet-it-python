@@ -6,13 +6,10 @@ import requests
 from pyeudiw.tools.exceptions import HttpError
 
 DEFAULT_HTTPC_PARAMS = {
-    "connection": {
-        "ssl": True
-    },
-    "session": {
-        "timeout": 4
-    },
+    "connection": {"ssl": True},
+    "session": {"timeout": 4},
 }
+
 
 def http_get_sync(urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
     """
@@ -61,17 +58,14 @@ async def http_get_async(urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> lis
     :rtype: list[requests.Response]
     """
     if not isinstance(httpc_params["session"]["timeout"], aiohttp.ClientTimeout):
-        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(
-            total=httpc_params["session"]["timeout"]
-        )
+        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(total=httpc_params["session"]["timeout"])
 
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)
         return text
-    
-async def fetch(
-    session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS
-) -> aiohttp.ClientResponse:
+
+
+async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> aiohttp.ClientResponse:
     """
     Fetches the content of a URL.
 
@@ -82,7 +76,7 @@ async def fetch(
     :param httpc_params: parameters to perform http requests.
     :type httpc_params: dict
 
-    :returns: the client response 
+    :returns: the client response
     :rtype: aiohttp.ClientResponse
     """
 
@@ -92,9 +86,7 @@ async def fetch(
         return response
 
 
-async def fetch_all(
-    session: aiohttp.ClientSession, urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS
-) -> list[requests.Response]:
+async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
     """
     Fetches the content of a list of URL.
 

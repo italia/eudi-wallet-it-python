@@ -19,6 +19,7 @@ class UserEntity(BaseModel):
         placeOfBirth (str): The locality (city, town) where the user was born.
         portrait (Optional[str]): An optional base64-encoded image of the user's portrait.
     """
+
     name: str
     surname: str
     dateOfBirth: str

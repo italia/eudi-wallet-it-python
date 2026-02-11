@@ -28,9 +28,7 @@ intermediate_example = "https://intermediate.eidas.example.org"
 
 
 def test_is_valid():
-    assert StaticTrustChainValidator(
-        trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params
-    ).is_valid
+    assert StaticTrustChainValidator(trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params).is_valid
 
 
 invalid_intermediate = copy.deepcopy(intermediate_es_wallet)
@@ -39,12 +37,8 @@ invalid_leaf_jwk["kid"] = str(uuid.uuid4())
 
 invalid_intermediate["jwks"]["keys"] = [invalid_leaf_jwk]
 
-intermediate_signer = JWS(
-    invalid_intermediate, alg="ES256", typ="application/entity-statement+jwt"
-)
-invalid_intermediate_es_wallet_signed = intermediate_signer.sign_compact(
-    [intermediate_jwk]
-)
+intermediate_signer = JWS(invalid_intermediate, alg="ES256", typ="application/entity-statement+jwt")
+invalid_intermediate_es_wallet_signed = intermediate_signer.sign_compact([intermediate_jwk])
 
 invalid_trust_chain = [
     leaf_wallet_signed,
@@ -54,16 +48,12 @@ invalid_trust_chain = [
 
 
 def test_is_valid_equals_false():
-    assert not StaticTrustChainValidator(
-        invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-    ).is_valid
+    assert not StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params).is_valid
 
 
 def test_retrieve_ec_fails():
     try:
-        StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-        )._retrieve_ec(trust_anchor_example)
+        StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)._retrieve_ec(trust_anchor_example)
     except HttpError:
         return
 
@@ -72,9 +62,7 @@ def test_retrieve_ec():
     tcv.get_entity_configurations = Mock(return_value=[leaf_wallet_signed])
 
     assert (
-        tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-        )._retrieve_ec(trust_anchor_example)
+        tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)._retrieve_ec(trust_anchor_example)
         == leaf_wallet_signed
     )
 
@@ -83,9 +71,9 @@ def test_retrieve_es():
     tcv.get_entity_statements = Mock(return_value=[ta_es])
 
     assert (
-        tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-        )._retrieve_es(trust_anchor_example, trust_anchor_example)
+        tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)._retrieve_es(
+            trust_anchor_example, trust_anchor_example
+        )
         == ta_es
     )
 
@@ -94,9 +82,9 @@ def test_retrieve_es_output_is_none():
     tcv.get_entity_statements = Mock(return_value=[None])
 
     assert (
-        tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-        )._retrieve_es(trust_anchor_example, trust_anchor_example)
+        tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)._retrieve_es(
+            trust_anchor_example, trust_anchor_example
+        )
         is None
     )
 
@@ -110,9 +98,7 @@ def test_update_st_ec_case():
 
     with mock.patch.object(tcv, "get_entity_configurations", mock_method):
         assert (
-            tcv.StaticTrustChainValidator(
-                invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-            )._update_st(leaf_wallet_signed)
+            tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)._update_st(leaf_wallet_signed)
             == leaf_wallet_signed
         )
 
@@ -134,9 +120,7 @@ def test_update_st_es_case_source_endpoint():
         return [leaf_wallet_signed]
 
     with mock.patch.object(tcv, "get_entity_statements", mock_method):
-        _t = tcv.StaticTrustChainValidator(
-            invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-        )
+        _t = tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)
         assert _t._update_st(ta_es_signed) == leaf_wallet_signed
         assert not _t.is_valid
 
@@ -161,7 +145,5 @@ def test_update_st_es_case_no_source_endpoint():
 
     with mock.patch.object(tcv, "get_entity_statements", mock_method_es):
         with mock.patch.object(tcv, "get_entity_configurations", mock_method_ec):
-            _t = tcv.StaticTrustChainValidator(
-                invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params
-            )
+            _t = tcv.StaticTrustChainValidator(invalid_trust_chain, [ta_jwk.serialize()], httpc_params=httpc_params)
             assert _t._update_st(ta_es_signed) == leaf_wallet_signed

@@ -44,12 +44,8 @@ def test_is_sd_jwt_format():
         TestCase("qwertyuiop", False, "non sense string: not a jwt"),
         TestCase("qwe.rty.uio.azs~", False, "too many dots in base jwt"),
         TestCase("qwe.rty~", False, "too few dots in base jwt"),
-        TestCase(
-            "qwe.rty~asd~", False, "too few dots in base jwt and diclosure lookalike"
-        ),
-        TestCase(
-            "qwe.rty.uio~asd~qwe", False, "sd-jwt with key binding that is not a jwt"
-        ),
+        TestCase("qwe.rty~asd~", False, "too few dots in base jwt and diclosure lookalike"),
+        TestCase("qwe.rty.uio~asd~qwe", False, "sd-jwt with key binding that is not a jwt"),
         TestCase(
             "qwe.rty.uio~asd~qwe.asd.",
             False,
@@ -58,9 +54,7 @@ def test_is_sd_jwt_format():
     ]
     for i, case in enumerate(test_table):
         obt_result = is_sd_jwt_format(case.input)
-        assert (
-            obt_result == case.expected_result
-        ), f"failed test case {i}: scenario: {case.explanation}"
+        assert obt_result == case.expected_result, f"failed test case {i}: scenario: {case.explanation}"
 
 
 def test_is_sd_jwt_kb_format():
@@ -76,12 +70,8 @@ def test_is_sd_jwt_kb_format():
             True,
             "sd-jwt with key binding",
         ),
-        TestCase(
-            "qwe.rty.uio~asd.fgh.jkl", True, "sd-jwt lookalike with 0 disclosures"
-        ),
-        TestCase(
-            "qwe.rty.uio~zxc~asd.fgh.jkl", True, "sd-jwt lookalike with 1 disclosure"
-        ),
+        TestCase("qwe.rty.uio~asd.fgh.jkl", True, "sd-jwt lookalike with 0 disclosures"),
+        TestCase("qwe.rty.uio~zxc~asd.fgh.jkl", True, "sd-jwt lookalike with 1 disclosure"),
         TestCase(
             "qwe.rty.uio~zxc~vbn~asd.fgh.jkl",
             True,
@@ -115,12 +105,8 @@ def test_is_sd_jwt_kb_format():
         TestCase("qwertyuiop", False, "non sense string: not a jwt"),
         TestCase("qwe.rty.uio.azs~", False, "too many dots in base jwt"),
         TestCase("qwe.rty~", False, "too few dots in base jwt"),
-        TestCase(
-            "qwe.rty~asd~", False, "too few dots in base jwt and diclosure lookalike"
-        ),
-        TestCase(
-            "qwe.rty.uio~asd~qwe", False, "sd-jwt with key binding that is not a jwt"
-        ),
+        TestCase("qwe.rty~asd~", False, "too few dots in base jwt and diclosure lookalike"),
+        TestCase("qwe.rty.uio~asd~qwe", False, "sd-jwt with key binding that is not a jwt"),
         TestCase(
             "qwe.rty.uio~asd~qwe.asd.",
             False,
@@ -129,6 +115,4 @@ def test_is_sd_jwt_kb_format():
     ]
     for i, case in enumerate(test_table):
         obt_result = is_sd_jwt_kb_format(case.input)
-        assert (
-            obt_result == case.expected_result
-        ), f"failed test case {i}: scenario: {case.explanation}"
+        assert obt_result == case.expected_result, f"failed test case {i}: scenario: {case.explanation}"

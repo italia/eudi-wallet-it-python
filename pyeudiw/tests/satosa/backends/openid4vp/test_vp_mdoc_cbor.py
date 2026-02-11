@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -10,12 +10,12 @@ from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.x509.chain_builder import ChainBuilder
-from datetime import datetime, timedelta, timezone
 
 
 def base64url_to_int(val):
     import base64
-    return int.from_bytes(base64.urlsafe_b64decode(val + '=='), 'big')
+
+    return int.from_bytes(base64.urlsafe_b64decode(val + "=="), "big")
 
 
 jwk = {
@@ -26,20 +26,13 @@ jwk = {
     "kid": "SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk",
     "x": "Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI",
     "y": "IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA",
-    "alg": "ES256"
+    "alg": "ES256",
 }
 
-_d = base64url_to_int(jwk['d'])
-_x = base64url_to_int(jwk['x'])
-_y = base64url_to_int(jwk['y'])
-private_key = ec.EllipticCurvePrivateNumbers(
-    private_value=_d,
-    public_numbers=ec.EllipticCurvePublicNumbers(
-        x=_x,
-        y=_y,
-        curve=ec.SECP256R1()
-    )
-).private_key()
+_d = base64url_to_int(jwk["d"])
+_x = base64url_to_int(jwk["x"])
+_y = base64url_to_int(jwk["y"])
+private_key = ec.EllipticCurvePrivateNumbers(private_value=_d, public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1())).private_key()
 
 chain = ChainBuilder()
 chain.gen_certificate(
@@ -84,7 +77,7 @@ STORAGE_CONFIG = {
             "module": "pyeudiw.storage.mongo_cache",
             "class": "MongoCache",
             "init_params": {
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                 "conf": {"db_name": "pyeudiw_test"},
                 "connection_params": {},
             },
@@ -93,7 +86,7 @@ STORAGE_CONFIG = {
             "module": "pyeudiw.storage.mongo_storage",
             "class": "MongoStorage",
             "init_params": {
-                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=2000",
+                "url": f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
                 "conf": {
                     "db_name": "pyeudiw_test",
                     "db_sessions_collection": "sessions",
@@ -117,18 +110,18 @@ trust_ev = CombinedTrustEvaluator.from_config(
                 "httpc_params": {"connection": {"ssl": True}, "session": {"timeout": 6}},
             },
         },
-         "x509": {
+        "x509": {
             "module": "pyeudiw.trust.handler.x509",
             "class": "X509Handler",
             "config": {
-                "client_id": f"x509_san_dns:example.com",
+                "client_id": "x509_san_dns:example.com",
                 "include_issued_jwt_header_param": True,
                 "leaf_certificate_chains_by_ca": {
-                    f"ca.example.com": chain_der,
+                    "ca.example.com": chain_der,
                 },
                 "certificate_authorities": {
                     "ca.example.com": ca_der,
-                    "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n"
+                    "https://credential-issuer.example.org": "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh\nbiBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0\nZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG\nEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj\nbzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c\ncT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud\nEQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI\nKoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C\nIQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==\n-----END CERTIFICATE-----\n",
                 },
                 "private_keys": [
                     jwk,
@@ -144,10 +137,10 @@ trust_ev = CombinedTrustEvaluator.from_config(
                         "q": "xZYanwkJJGOD4b7Z2PwCA_ubEYU8O2C3UoeINv2P5fXicXRK278o4WelaQBhyvDcPyS3lJyyusB_ro3Fax1fm4IDV1buITar671NzooWKOUQgG0MoVHS8k7qFmGXGDhFBrO_khsvc3FNAjdqkNpH5slo8AwvN2SrbHO3GX6aVVU",
                         "dp": "tk7iJCCI24SVXQYH6k-tNB5yH5ag5zP3Hs5DjeVG3b4bTkSwsofaNs2AIl5EKTRJOMUB4yGrw6U7FAwBJVOib3eSlym_S8-pIUUzv6IxdgGC73M5RMXuhfZi7liLANmZ7QvDCDo5LNP6qy1E8FcAa6qsCKniQydn_X4aydvijNE",
                         "dq": "Ml9mQg1Hq2NDiBXj7BGzYdiPXBQfmvO5SO0MqRhTy0i4hjwjqYo-ndiSrwZN6DMns2Fk_BpG5p2U76dtITXH3hlzSJz88LLDecI1R-akZ6CeaF9kzOvTX7sGqtYOczpFPsQsns8XddL40wvVu0Aq_Id0nV49211q5qdJktJX_lE",
-                        "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA"
+                        "qi": "rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA",
                     },
-                ]
-            }
+                ],
+            },
         },
     },
     DBEngine(STORAGE_CONFIG),
@@ -161,18 +154,17 @@ resp._content = b"d2845820a2012610781a6170706c69636174696f6e2f7374617475736c6973
 
 mock_staus_list_endpoint = patch(
     "pyeudiw.status_list.helper.http_get_sync",
-    return_value=[
-        resp
-    ],
+    return_value=[resp],
 )
+
 
 def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
     PKEY = {
-        'KTY': 'EC2',
-        'CURVE': 'P_256',
-        'ALG': 'ES256',
-        'D': b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
-        'KID': b"demo-kid"
+        "KTY": "EC2",
+        "CURVE": "P_256",
+        "ALG": "ES256",
+        "D": b"<\xe5\xbc;\x08\xadF\x1d\xc5\x0czR'T&\xbb\x91\xac\x84\xdc\x9ce\xbf\x0b,\x00\xcb\xdd\xbf\xec\xa2\xa5",
+        "KID": b"demo-kid",
     }
 
     PID_DATA = {
@@ -181,22 +173,15 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
             "given_name": "Mascetti",
             "birth_date": "1922-03-13",
             "birth_place": "Rome",
-            "birth_country": "IT"
+            "birth_country": "IT",
         },
-        "eu.europa.ec.eudiw.pid.it.1": {
-            "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
-        }
+        "eu.europa.ec.eudiw.pid.it.1": {"tax_id_code": "TINIT-XXXXXXXXXXXXXXX"},
     }
 
     status = None
 
     if status_list:
-        status = {
-            "status_list": {
-                "idx": idx,
-                "uri": "https://example.com/statuslists/1"
-            }
-        }
+        status = {"status_list": {"idx": idx, "uri": "https://example.com/statuslists/1"}}
 
     mdoci = MdocCborIssuer(
         private_key=PKEY,
@@ -209,81 +194,71 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
             "common_name": "My Company",
             "not_valid_before": datetime.now(timezone.utc) - timedelta(days=1),
             "not_valid_after": datetime.now(timezone.utc) + timedelta(days=10),
-            "san_url": "https://credential-issuer.example.org"
-        }
+            "san_url": "https://credential-issuer.example.org",
+        },
     )
 
     mdoci.new(
         doctype="eu.europa.ec.eudiw.pid.1",
         data=PID_DATA,
-        validity={
-            "issuance_date": "2024-12-31",
-            "expiry_date": "2050-12-31"
-        },
+        validity={"issuance_date": "2024-12-31", "expiry_date": "2050-12-31"},
         status=status,
     )
 
     return mdoci.dumps().decode()
 
+
 def test_handler_initialization():
     ps = VpMDocCbor(
-        trust_evaluator=trust_ev, 
+        trust_evaluator=trust_ev,
     )
 
     assert isinstance(ps, VpMDocCbor), "Handler for 'vp_mdoc_cbor' format is incorrect."
 
+
 def test_handler_correct_parsing():
     ps = VpMDocCbor(
-        trust_evaluator=trust_ev, 
+        trust_evaluator=trust_ev,
     )
 
     vp_token = issue_mdoc_cbor()
     parsed_tokens = ps.parse(vp_token)
-    
-    assert parsed_tokens == {
-        "eu.europa.ec.eudiw.pid.1": {
-            "family_name": "Raffaello",
-            "given_name": "Mascetti",
-            "birth_date": "1922-03-13",
-            "birth_place": "Rome",
-            "birth_country": "IT"
-        },
-        "eu.europa.ec.eudiw.pid.it.1": {
-            "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
-        }
-    }, f"Parsed tokens are not correct: {parsed_tokens}"
+
+    # birth_date may be datetime.date or string depending on pymdoccbor version
+    expected_birth_date = (date(1922, 3, 13), "1922-03-13")
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["family_name"] == "Raffaello"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["given_name"] == "Mascetti"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_date"] in expected_birth_date
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_place"] == "Rome"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_country"] == "IT"
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.it.1"] == {"tax_id_code": "TINIT-XXXXXXXXXXXXXXX"}
+
 
 def test_handler_correct_validation():
     ps = VpMDocCbor(
-        trust_evaluator=trust_ev, 
+        trust_evaluator=trust_ev,
     )
 
     vp_token = issue_mdoc_cbor()
 
-    ps.validate(
-        vp_token, 
-        "https://example.com/", 
-        "1234567890"
-    )
+    ps.validate(vp_token, "https://example.com/", "1234567890")
+
 
 def test_handler_correct_validation_with_status_list():
     ps = VpMDocCbor(
-        trust_evaluator=trust_ev, 
+        trust_evaluator=trust_ev,
     )
 
     vp_token = issue_mdoc_cbor(status_list=True)
 
     mock_staus_list_endpoint.start()
-    ps.validate(
-        vp_token, 
-        "https://example.com/", 
-        "1234567890"
-    )
+    ps.validate(vp_token, "https://example.com/", "1234567890")
     mock_staus_list_endpoint.stop()
+
 
 def test_handler_correct_validation_with_status_list_revoked():
     ps = VpMDocCbor(
-        trust_evaluator=trust_ev, 
+        trust_evaluator=trust_ev,
     )
 
     vp_token = issue_mdoc_cbor(status_list=True, idx=0)
@@ -291,11 +266,7 @@ def test_handler_correct_validation_with_status_list_revoked():
     try:
         mock_staus_list_endpoint.start()
 
-        ps.validate(
-            vp_token, 
-            "https://example.com/", 
-            "1234567890"
-        )
+        ps.validate(vp_token, "https://example.com/", "1234567890")
 
         assert False, "Validation should have failed with revoked status list."
     except Exception as e:

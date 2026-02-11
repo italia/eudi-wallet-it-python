@@ -1,5 +1,6 @@
 from pyeudiw.tools.exceptions import HttpError
 
+
 class TrustChainHttpError(HttpError):
     pass
 
