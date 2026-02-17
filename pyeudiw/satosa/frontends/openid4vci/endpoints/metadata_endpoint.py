@@ -7,6 +7,7 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
 from pyeudiw.tools.content_type import APPLICATION_JSON, ENTITY_STATEMENT_JWT
 from pyeudiw.tools.utils import exp_from_now, iat_now
+from pyeudiw.jwk import JWK
 
 
 class MetadataHandler(VCIBaseEndpoint):
@@ -34,13 +35,19 @@ class MetadataHandler(VCIBaseEndpoint):
     @property
     def metadata(self) -> dict:
         metadata = self.config.get("metadata", {})
-        [
-            self._ensure_credential_issuer(metadata, metadata_key, issuer_key)
-            for mapping_config in self.credential_configuration.ensure_credential_issuer
-            if isinstance(mapping_config, dict)
-            for metadata_key, issuer_key in mapping_config.items()
-        ]
+        for mapping_config in self.credential_configuration.ensure_credential_issuer:
+            if isinstance(mapping_config, dict):
+                for metadata_key, issuer_key in mapping_config.items():
+                    self._ensure_credential_issuer(metadata, metadata_key, issuer_key)
+                    if "jwks" in metadata[metadata_key]:
+                        _keys = dict()
+                        _keys["keys"] = [JWK(_k).as_public_dict() for _k in metadata[metadata_key]["jwks"]]
+                        metadata[metadata_key]["jwks"] = _keys
         return metadata
+
+    @property
+    def pub_federation_jwks(self) -> dict:
+        return [JWK(_k).as_public_dict() for _k in self.federation_config.get("federation_jwks")]
 
     @property
     def entity_configuration_as_dict(self) -> dict:
@@ -51,7 +58,7 @@ class MetadataHandler(VCIBaseEndpoint):
             "iat": iat_now(),
             "iss": self.entity_id,
             "sub": self.entity_id,
-            "jwks": {"keys": self.metadata_jwks},
+            "jwks": {"keys": self.pub_federation_jwks},
             "metadata": self.metadata,
             "authority_hints": self.federation_config.get("authority_hints", []),
         }
