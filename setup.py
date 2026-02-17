@@ -56,7 +56,7 @@ setup(
             "sphinx_rtd_theme"
         ],
         "satosa": [
-            "Pillow>=11.1.0,<12.0.0",
+            "Pillow>12.0.0",
             "device_detector>=5.0,<6.0",
             "satosa>=8.4,<8.6",
             "jinja2>=3.1.5,<4.0.0",

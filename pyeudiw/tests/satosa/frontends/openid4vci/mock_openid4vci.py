@@ -16,7 +16,8 @@ JWS_HELPER_VERIFY_MODULE = f"{_JWS_HELPER_MODULE}.verify"
 
 MOCK_TRUST_CONFIG = {"federation": {"config": {"entity_configuration_exp": 600, "default_sig_alg": "RS256"}}}
 
-MOCK_METADATA_JWKS_CONFIG = [
+MOCK_METADATA_JWKS_CONFIG = {
+    "keys": [
     {
         "kty": "EC",
         "d": "i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc",
@@ -28,6 +29,7 @@ MOCK_METADATA_JWKS_CONFIG = [
         "alg": "ES256",
     }
 ]
+}
 
 MOCK_USER_STORAGE_CONFIG = {
     "mongo_db": {

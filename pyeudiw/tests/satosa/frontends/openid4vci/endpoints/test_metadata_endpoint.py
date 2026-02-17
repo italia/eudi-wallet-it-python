@@ -91,7 +91,7 @@ def test_endpoint_returns_jwt(metadata_handler, context):
     jwt_parts = response.message.split(".")
     header = json.loads(base64_urldecode(jwt_parts[0]))
     assert header["alg"] == "ES256"
-    assert header["kid"] == MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"][0]["kid"]
+    assert header["kid"] == MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]["keys"][0]["kid"]
     assert header["typ"] == "entity-statement+jwt"
 
     payload = json.loads(base64_urldecode(jwt_parts[1]))
