@@ -1,7 +1,14 @@
+import json
+import logging
+
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
 from satosa.response import Response
 
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import BaseCredentialEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
@@ -14,6 +21,53 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     NONCE_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.trust.exceptions import NoCriptographicMaterial
+
+logger = logging.getLogger(__name__)
+
+
+def _jwk_thumbprint(jwk_dict: dict) -> str:
+    return key_from_jwk_dict(jwk_dict).thumbprint("SHA-256")
+
+
+def _verify_key_attestation(proof_jwt: str, proof_payload: dict, trust_evaluator) -> None:
+    """Verify key_attestation (WUA) in proof JWT header when present."""
+    try:
+        header = decode_jwt_header(proof_jwt)
+    except Exception:
+        return
+    wua_jwt = header.get("key_attestation")
+    if not wua_jwt:
+        return
+    try:
+        wua_payload_unverified = decode_jwt_payload(wua_jwt)
+        wua_iss = wua_payload_unverified.get("iss")
+    except Exception:
+        raise InvalidRequestException("invalid key_attestation in credential proof")
+    if not wua_iss:
+        raise InvalidRequestException("key_attestation missing iss")
+    try:
+        wp_keys = trust_evaluator.get_public_keys(wua_iss)
+    except NoCriptographicMaterial:
+        raise InvalidRequestException("cannot resolve Wallet Provider keys for key_attestation")
+    wua_helper = JWSHelper(wp_keys)
+    try:
+        wua_payload = wua_helper.verify(wua_jwt)
+    except JWSVerificationError:
+        raise InvalidRequestException("invalid key_attestation signature")
+    cnf = wua_payload.get("cnf") or {}
+    wua_jwk = cnf.get("jwk")
+    if not wua_jwk:
+        raise InvalidRequestException("key_attestation missing cnf.jwk")
+    proof_jwk_str = proof_payload.get("jwk")
+    if not proof_jwk_str:
+        raise InvalidRequestException("proof missing jwk")
+    try:
+        proof_jwk = json.loads(proof_jwk_str) if isinstance(proof_jwk_str, str) else proof_jwk_str
+    except (json.JSONDecodeError, TypeError):
+        raise InvalidRequestException("invalid proof.jwk")
+    if _jwk_thumbprint(proof_jwk) != _jwk_thumbprint(wua_jwk):
+        raise InvalidRequestException("proof jwk does not match key_attestation cnf.jwk")
 
 
 class CredentialHandler(BaseCredentialEndpoint):
@@ -40,8 +94,10 @@ class CredentialHandler(BaseCredentialEndpoint):
         c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context={AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})})
 
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
+        proof_payload = proof_jws_helper.verify(c_req.proof.jwt)
+        _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator)
         ProofJWT.model_validate(
-            proof_jws_helper.verify(c_req.proof.jwt), context={CLIENT_ID_CTX: entity["client_id"], ENTITY_ID_CTX: self.entity_id, NONCE_CTX: entity["c_nonce"]}
+            proof_payload, context={CLIENT_ID_CTX: entity["client_id"], ENTITY_ID_CTX: self.entity_id, NONCE_CTX: entity["c_nonce"]}
         )
         return c_req
 
