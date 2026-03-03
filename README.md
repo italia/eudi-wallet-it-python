@@ -108,46 +108,50 @@ Compliance checklist against the [Italian Wallet implementation profile](https:/
 
 #### OpenID4VCI (Credential Issuer Frontend)
 
+🟢 Supported · 🟠 Partial · 🔴 Not supported
+
 | Feature | Status |
 |---------|--------|
-| Pushed Authorization Requests (PAR) | - [x] Supported |
-| PAR: reject `request_uri` in request body (RFC 9126) | - [x] Supported |
-| OAuth 2.0 Attestation-Based Client Authentication | - [x] Supported |
-| PKCE | - [x] Supported |
-| Authorization Code Flow | - [x] Supported |
-| DPoP at Token endpoint | - [x] Supported |
-| Immediate Issuance | - [x] Supported |
-| JWT Proof of Possession (`openid4vci-proof+jwt`) | - [x] Supported |
-| Nonce endpoint (`c_nonce`) | - [x] Supported |
-| Credential Offer (by value and QR code) | - [x] Supported |
-| Notification endpoint | - [x] Supported |
-| SD-JWT VC credential format | - [x] Supported |
-| mso_mdoc credential format | - [x] Supported |
-| Refresh Token (DPoP-bound) | - [x] Supported |
-| **Batch Credential Issuance** | - [ ] Not supported |
-| **Deferred Issuance Flow** | - [ ] Not supported |
+| Pushed Authorization Requests (PAR) | 🟢 |
+| PAR: reject `request_uri` in request body (RFC 9126) | 🟢 |
+| OAuth 2.0 Attestation-Based Client Authentication | 🟢 |
+| PKCE | 🟢 |
+| Authorization Code Flow | 🟢 |
+| DPoP at Token endpoint | 🟢 |
+| Immediate Issuance | 🟢 |
+| JWT Proof of Possession (`openid4vci-proof+jwt`) | 🟢 |
+| Nonce endpoint (`c_nonce`) | 🟢 |
+| Credential Offer (by value and QR code) | 🟢 |
+| Notification endpoint | 🟢 |
+| SD-JWT VC credential format | 🟢 |
+| mso_mdoc credential format | 🟢 |
+| Refresh Token (DPoP-bound) | 🟢 |
+| Batch Credential Issuance | 🔴 |
+| Deferred Issuance Flow | 🔴 |
 
 #### OpenID4VP (Relying Party Backend)
 
+🟢 Supported · 🟠 Partial · 🔴 Not supported
+
 | Feature | Status |
 |---------|--------|
-| DCQL (Duckle) query language | - [x] Supported |
-| Same Device flow | - [x] Supported |
-| Cross Device flow (QR code) | - [x] Supported |
-| Request Object by reference (`request_uri`) | - [x] Supported |
-| Request URI method GET | - [x] Supported |
-| Request URI method POST (wallet metadata) | - [x] Supported |
-| `wallet_metadata` and `wallet_nonce` | - [x] Supported |
-| Response mode `direct_post.jwt` (encrypted) | - [x] Supported |
-| Response mode `direct_post` | - [x] Supported |
-| `vp_token` keyed by credential id | - [x] Supported |
-| `dc+sd-jwt` format | - [x] Supported |
-| `mso_mdoc` format | - [x] Supported |
-| Status endpoint (session polling) | - [x] Supported |
-| Trust evaluation (X.509 PKI, OpenID Federation) | - [x] Supported |
-| Credential revocation (status list) | - [x] Supported |
-| Custom URL schemes (`haip`, configurable) | - [x] Supported |
-| `transaction_data` / `transaction_data_hashes` | - [ ] Not supported |
+| DCQL (Duckle) query language | 🟢 |
+| Same Device flow | 🟢 |
+| Cross Device flow (QR code) | 🟢 |
+| Request Object by reference (`request_uri`) | 🟢 |
+| Request URI method GET | 🟢 |
+| Request URI method POST (wallet metadata) | 🟢 |
+| `wallet_metadata` and `wallet_nonce` | 🟢 |
+| Response mode `direct_post.jwt` (encrypted) | 🟢 |
+| Response mode `direct_post` | 🟢 |
+| `vp_token` keyed by credential id | 🟢 |
+| `dc+sd-jwt` format | 🟢 |
+| `mso_mdoc` format | 🟢 |
+| Status endpoint (session polling) | 🟢 |
+| Trust evaluation (X.509 PKI, OpenID Federation) | 🟢 |
+| Credential revocation (status list) | 🟢 |
+| Custom URL schemes (`haip`, configurable) | 🟢 |
+| `transaction_data` / `transaction_data_hashes` | 🔴 |
 
 ## Executing Tests Using Preexisting MongoDb Instances
 
