@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import cast
 
@@ -69,7 +70,15 @@ class ProofJWT(OpenId4VciBaseModel):
         self.check_invalid_parameter(self.typ != JWT_PROOF_TYP, self.typ, "proof.jwt.typ", CREDENTIAL_ENDPOINT)
 
     def validate_jwk(self):
-        pass
+        self.jwk = self.strip(self.jwk)
+        self.check_missing_parameter(self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT)
+        try:
+            jwk_dict = json.loads(self.jwk)
+        except (json.JSONDecodeError, TypeError):
+            self.check_invalid_parameter(True, self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT)
+        if not isinstance(jwk_dict, dict) or "kty" not in jwk_dict:
+            logger.error("proof.jwt.jwk missing kty in request `credential` endpoint")
+            raise InvalidRequestException("missing proof.jwt.jwk kty")
 
     def validate_iss(self):
         self.iss = self.strip(self.iss)
