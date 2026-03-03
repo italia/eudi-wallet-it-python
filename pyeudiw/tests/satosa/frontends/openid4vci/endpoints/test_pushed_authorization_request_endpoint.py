@@ -176,6 +176,19 @@ def test_invalid_request(par_handler, context, client_id, request_par):
     assert_invalid_request_application_json(par_handler.endpoint(context), "invalid request parameters")
 
 
+def test_par_rejects_request_uri_in_body(par_handler, context):
+    """RFC 9126: PAR request MUST be rejected if it contains the request_uri parameter."""
+    context.request = {
+        "client_id": _MOCK_VALID_THUMBPRINT,
+        "request": "valid.jwt",
+        "request_uri": "urn:ietf:params:oauth:request_uri:existing",
+    }
+    assert_invalid_request_application_json(
+        par_handler.endpoint(context),
+        "invalid request parameters: request_uri must not be present",
+    )
+
+
 def _mock_request_deserialized(overrides=None):
     return mock_deserialized_overridable(_MOCK_REQUEST_DESERIALIZED, overrides)
 

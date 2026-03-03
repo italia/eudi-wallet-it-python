@@ -66,6 +66,11 @@ class ParHandler(VCIBaseEndpoint):
 
             data = self._get_body(context) or {}
 
+            # RFC 9126 Section 4.2: MUST reject PAR request if it contains request_uri
+            if data.get("request_uri"):
+                self._log_error(CLASS_NAME, "invalid request parameters for `par` endpoint, request_uri must not be present")
+                return self._handle_400(context, "invalid request parameters: request_uri must not be present")
+
             client_id = data.get("client_id", "").strip()
 
             if not client_id:

@@ -102,6 +102,53 @@ Please refer to the dedicate README files for details on how to configure SaToSa
 - [OpenID4VP Relying Party backend](docs/OPENID4VP-SATOSA-BACKEND.md);
 - [OpenID4VCI Issuer fronted](docs/OPENID4VCI-SATOSA-FRONTEND.md).
 
+### Protocol Support Recap
+
+Compliance checklist against the [Italian Wallet implementation profile](https://italia.github.io/eid-wallet-it-docs/versione-corrente/en/) and related OpenID4VCI/OpenID4VP specifications.
+
+#### OpenID4VCI (Credential Issuer Frontend)
+
+| Feature | Status |
+|---------|--------|
+| Pushed Authorization Requests (PAR) | - [x] Supported |
+| PAR: reject `request_uri` in request body (RFC 9126) | - [x] Supported |
+| OAuth 2.0 Attestation-Based Client Authentication | - [x] Supported |
+| PKCE | - [x] Supported |
+| Authorization Code Flow | - [x] Supported |
+| DPoP at Token endpoint | - [x] Supported |
+| Immediate Issuance | - [x] Supported |
+| JWT Proof of Possession (`openid4vci-proof+jwt`) | - [x] Supported |
+| Nonce endpoint (`c_nonce`) | - [x] Supported |
+| Credential Offer (by value and QR code) | - [x] Supported |
+| Notification endpoint | - [x] Supported |
+| SD-JWT VC credential format | - [x] Supported |
+| mso_mdoc credential format | - [x] Supported |
+| Refresh Token (DPoP-bound) | - [x] Supported |
+| **Batch Credential Issuance** | - [ ] Not supported |
+| **Deferred Issuance Flow** | - [ ] Not supported |
+
+#### OpenID4VP (Relying Party Backend)
+
+| Feature | Status |
+|---------|--------|
+| DCQL (Duckle) query language | - [x] Supported |
+| Same Device flow | - [x] Supported |
+| Cross Device flow (QR code) | - [x] Supported |
+| Request Object by reference (`request_uri`) | - [x] Supported |
+| Request URI method GET | - [x] Supported |
+| Request URI method POST (wallet metadata) | - [x] Supported |
+| `wallet_metadata` and `wallet_nonce` | - [x] Supported |
+| Response mode `direct_post.jwt` (encrypted) | - [x] Supported |
+| Response mode `direct_post` | - [x] Supported |
+| `vp_token` keyed by credential id | - [x] Supported |
+| `dc+sd-jwt` format | - [x] Supported |
+| `mso_mdoc` format | - [x] Supported |
+| Status endpoint (session polling) | - [x] Supported |
+| Trust evaluation (issuer validation) | - [x] Supported |
+| Credential revocation (status list) | - [x] Supported |
+| Custom URL schemes (`haip`, configurable) | - [x] Supported |
+| `transaction_data` / `transaction_data_hashes` | - [ ] Not supported |
+
 ## Executing Tests Using Preexisting MongoDb Instances
 
 Use the env variable `PYEUDIW_MONGO_TEST_AUTH_INLINE` so tests connect with credentials.
