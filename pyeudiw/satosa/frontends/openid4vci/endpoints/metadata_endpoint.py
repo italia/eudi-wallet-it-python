@@ -39,10 +39,9 @@ class MetadataHandler(VCIBaseEndpoint):
             if isinstance(mapping_config, dict):
                 for metadata_key, issuer_key in mapping_config.items():
                     self._ensure_credential_issuer(metadata, metadata_key, issuer_key)
-                    if "jwks" in metadata[metadata_key]:
-                        _keys = dict()
-                        _keys["keys"] = [JWK(_k).as_public_dict() for _k in metadata[metadata_key]["jwks"]]
-                        metadata[metadata_key]["jwks"] = _keys
+        for cred_issuer in metadata.values():
+            if isinstance(cred_issuer, dict) and "jwks" in cred_issuer and not isinstance(cred_issuer["jwks"], dict):
+                cred_issuer["jwks"] = {"keys": [JWK(k).as_public_dict() for k in cred_issuer["jwks"]]}
         return metadata
 
     @property

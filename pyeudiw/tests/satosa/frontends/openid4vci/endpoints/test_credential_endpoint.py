@@ -498,6 +498,18 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
             },
             "invalid `proof.jwt.nonce` parameter",
         ),
+        (
+            {
+                "alg": "ES256",
+                "typ": JWT_PROOF_TYP,
+                "jwk": '{"crv":"P-256","x":"abc","y":"def"}',
+                "iss": "client123",
+                "aud": "example.com/openid4vcimock",
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "nonce": "random-nonce-abc123",
+            },
+            "missing proof.jwt.jwk kty",
+        ),
     ],
 )
 def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_without_open_id_credential, value, error_desc):

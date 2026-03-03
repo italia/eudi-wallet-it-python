@@ -32,6 +32,16 @@ def test_invalid_keys():
         ({"aaaa": "1"}, "non-sense key"),
         (
             {
+                "crv": "P-256",
+                "x": "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+                "y": "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+                "use": "sig",
+                "kid": "1",
+            },
+            "jwk missing kty",
+        ),
+        (
+            {
                 "kty": "RSA",
                 "e": "AQAB",
                 "alg": "RS256",

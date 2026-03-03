@@ -14,10 +14,7 @@ BASE_PACKAGE = "pyeudiw.satosa.frontends.openid4vci"
 _JWS_HELPER_MODULE = "pyeudiw.jwt.jws_helper.JWSHelper"
 JWS_HELPER_VERIFY_MODULE = f"{_JWS_HELPER_MODULE}.verify"
 
-MOCK_TRUST_CONFIG = {"federation": {"config": {"entity_configuration_exp": 600, "default_sig_alg": "RS256"}}}
-
-MOCK_METADATA_JWKS_CONFIG = {
-    "keys": [
+MOCK_METADATA_JWKS_CONFIG = [
     {
         "kty": "EC",
         "d": "i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc",
@@ -29,6 +26,16 @@ MOCK_METADATA_JWKS_CONFIG = {
         "alg": "ES256",
     }
 ]
+
+MOCK_TRUST_CONFIG = {
+    "federation": {
+        "config": {
+            "entity_configuration_exp": 600,
+            "default_sig_alg": "ES256",
+            "federation_jwks": MOCK_METADATA_JWKS_CONFIG,
+            "authority_hints": [],
+        }
+    }
 }
 
 MOCK_USER_STORAGE_CONFIG = {

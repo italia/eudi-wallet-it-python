@@ -25,6 +25,40 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
 )
 from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON, ENTITY_STATEMENT_JWT, get_content_type_header
 
+# JWK parameter names that must never appear in published metadata (private key material).
+PRIVATE_KEY_PARAMS = ("d", "p", "q", "dp", "dq", "qi")
+
+
+def _get_entity_configuration_payload(metadata_handler: MetadataHandler, context: Context, *, as_json: bool) -> dict:
+    """Return the entity configuration payload as a dict (from JSON response or decoded JWT)."""
+    if as_json:
+        context.qs_params = {"format": "json"}
+        response = metadata_handler.endpoint(context)
+        assert response.status == "200"
+        return json.loads(response.message)
+    context.qs_params = {"format": "jwt"}
+    response = metadata_handler.endpoint(context)
+    assert response.status == "200"
+    jwt_parts = response.message.split(".")
+    return json.loads(base64_urldecode(jwt_parts[1]))
+
+
+def _collect_all_jwk_dicts_from_entity_config(payload: dict) -> list[dict]:
+    """Collect every JWK dict from entity configuration (top-level jwks and metadata.*.jwks)."""
+    keys_list: list[dict] = []
+    if "jwks" in payload and isinstance(payload["jwks"], dict) and "keys" in payload["jwks"]:
+        keys_list.extend(payload["jwks"]["keys"])
+    for metadata_val in payload.get("metadata", {}).values():
+        if isinstance(metadata_val, dict) and "jwks" in metadata_val and isinstance(metadata_val["jwks"], dict):
+            keys_list.extend(metadata_val["jwks"].get("keys", []))
+    return keys_list
+
+
+def _assert_no_private_key_material(jwk_dict: dict) -> None:
+    """Assert that the JWK dict contains no private key parameters."""
+    for param in PRIVATE_KEY_PARAMS:
+        assert param not in jwk_dict, f"Private key parameter {param!r} must not appear in published metadata"
+
 
 @pytest.fixture
 def metadata_handler() -> MetadataHandler:
@@ -91,7 +125,7 @@ def test_endpoint_returns_jwt(metadata_handler, context):
     jwt_parts = response.message.split(".")
     header = json.loads(base64_urldecode(jwt_parts[0]))
     assert header["alg"] == "ES256"
-    assert header["kid"] == MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]["keys"][0]["kid"]
+    assert header["kid"] == MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"][0]["kid"]
     assert header["typ"] == "entity-statement+jwt"
 
     payload = json.loads(base64_urldecode(jwt_parts[1]))
@@ -113,3 +147,37 @@ def _assert_metadata(config: dict, response_metadata: dict, expected_issuer: dic
         assert response_metadata[k] == v
     assert response_metadata["openid_credential_issuer"]["credential_issuer"] == expected_issuer["openid_credential_issuer"]
     assert response_metadata["oauth_authorization_server"]["issuer"] == expected_issuer["oauth_authorization_server_issuer"]
+
+
+@pytest.mark.parametrize("as_json", [True, False])
+def test_entity_configuration_jwks_contain_no_private_keys(metadata_handler, context, as_json: bool):
+    """All JWKs in published entity configuration must be public only; private key material must never be exposed."""
+    payload = _get_entity_configuration_payload(metadata_handler, context, as_json=as_json)
+    for jwk_dict in _collect_all_jwk_dicts_from_entity_config(payload):
+        _assert_no_private_key_material(jwk_dict)
+
+
+def test_entity_configuration_federation_jwks_count_and_public_only(metadata_handler, context):
+    """Entity configuration jwks.keys must contain exactly the configured federation keys, and only in public form."""
+    payload = _get_entity_configuration_payload(metadata_handler, context, as_json=True)
+    expected_count = len(
+        MOCK_PYEUDIW_FRONTEND_CONFIG["trust"]["federation"]["config"].get("federation_jwks", [])
+    )
+    assert "jwks" in payload and "keys" in payload["jwks"]
+    entity_keys = payload["jwks"]["keys"]
+    assert len(entity_keys) == expected_count, (
+        f"Expected {expected_count} federation public key(s) in entity jwks, got {len(entity_keys)}"
+    )
+    for jwk_dict in entity_keys:
+        _assert_no_private_key_material(jwk_dict)
+
+
+def test_metadata_credential_issuer_jwks_contain_no_private_keys_when_config_has_jwks(context):
+    """When config metadata contains jwks (with private keys), published metadata must expose only public keys."""
+    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+    # Use keys that include private material (e.g. "d"); endpoint must publish only public form.
+    config["metadata"]["openid_credential_issuer"]["jwks"] = MOCK_METADATA_JWKS_CONFIG
+    metadata_handler = MetadataHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+    payload = _get_entity_configuration_payload(metadata_handler, context, as_json=True)
+    for jwk_dict in _collect_all_jwk_dicts_from_entity_config(payload):
+        _assert_no_private_key_material(jwk_dict)
