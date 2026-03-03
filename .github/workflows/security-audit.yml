@@ -9,13 +9,21 @@ on:
   pull_request:
     branches: ["**"]
 
-# Avoid duplicate runs when both push and pull_request trigger for the same commit
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
-  cancel-in-progress: true
-
 jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v3.4.0
+        with:
+          skip_after_successful_duplicate: "true"
+          same_content_newer: "true"
+
   audit:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
     name: pip-audit
     runs-on: ubuntu-latest
     steps:
