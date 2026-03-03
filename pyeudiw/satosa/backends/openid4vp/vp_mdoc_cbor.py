@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives import serialization
 from pymdoccbor.mdoc.verifier import MdocCbor
 
 from pyeudiw.satosa.backends.openid4vp.exceptions import MdocCborValidationError, VPRevoked
-from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.x509.verify import get_issuer_from_x5c
 

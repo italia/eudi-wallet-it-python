@@ -37,32 +37,23 @@ def test_direct_post_parser_good_case():
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
-    # case 0: vp_token is string
+    # case 0: vp_token is dict (DCQL flow)
     ctx.request = {
-        "vp_token": vp_token,
+        "vp_token": json.dumps(vp_token),
         "state": state,
-        "presentation_submission": json.dumps(presentation_submission),
     }
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
     assert resp.state == state
-    assert resp.presentation_submission == presentation_submission
 
-    # case 1: vp_token is a json string
-    ctx.request = {"vp_token": f'"{vp_token}"', "state": state, "presentation_submission": presentation_submission}
-
+    # case 1: vp_token as parsed dict (when framework parses form)
+    ctx.request = {"vp_token": vp_token, "state": state}
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
     assert resp.state == state
-    assert resp.presentation_submission == presentation_submission
 
 
 def test_direct_post_response_bad_parse_case():
@@ -71,17 +62,11 @@ def test_direct_post_response_bad_parse_case():
 
     ctx = Context()
     ctx.request_method = "GET"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
     ctx.qs_params = {
-        "vp_token": vp_token,
+        "vp_token": json.dumps(vp_token),
         "state": state,
-        "presentation_submission": json.dumps(presentation_submission),
     }
 
     try:
@@ -114,25 +99,15 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
 
-    data = {
-        "vp_token": vp_token,
-        "state": state,
-        "presentation_submission": presentation_submission,
-    }
+    data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": jwe_helper.encrypt(data)}
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
     assert resp.state == state
-    assert resp.presentation_submission == presentation_submission
 
 
 def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
@@ -141,21 +116,10 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "GET"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
     ctx.qs_params = {
-        "response": jwe_helper.encrypt(
-            {
-                "vp_token": vp_token,
-                "state": state,
-                "presentation_submission": presentation_submission,
-            }
-        )
+        "response": jwe_helper.encrypt({"vp_token": vp_token, "state": state})
     }
 
     try:
@@ -196,18 +160,9 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
-    data = {
-        "vp_token": vp_token,
-        "state": state,
-        "presentation_submission": presentation_submission,
-    }
+    data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": wrong_helper.encrypt(data)}
 
     try:
@@ -234,25 +189,15 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
 
-    data = {
-        "vp_token": vp_token,
-        "state": state,
-        "presentation_submission": presentation_submission,
-    }
+    data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": jws_helper.sign(data)}
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
     assert resp.state == state
-    assert resp.presentation_submission == presentation_submission
 
 
 def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
@@ -263,18 +208,9 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
-    data = {
-        "vp_token": vp_token,
-        "state": state,
-        "presentation_submission": presentation_submission,
-    }
+    data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": wrong_helper.sign(data)}
 
     try:
@@ -291,18 +227,9 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
 
     ctx = Context()
     ctx.request_method = "POST"
-    vp_token = "qwe.rty.uio~asd.fgh.jkl"
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
-    presentation_submission = {
-        "id": "submit-id",
-        "definition_id": "definition-id",
-        "descriptor_map": [{"id": "verifiable-credential-type", "format": "dc+sd-jwt", "path": "$.vct"}],
-    }
-    data = {
-        "vp_token": vp_token,
-        "state": state,
-        "presentation_submission": presentation_submission,
-    }
+    data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": jws_helper.sign(data)[:-1]}  # tamper with the signature
 
     try:

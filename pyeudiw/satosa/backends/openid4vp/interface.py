@@ -14,7 +14,7 @@ class AuthorizationResponseParser:
     "lower" applicaiton layer of the transmission, that is, it is used to
     extract an authorization response from the HTTP layer.
     It SHOULD NOT be used to validate the actual content of the response, that
-    is, it SHOULD NOT try to validate vp_tokens, presentation_submissions, etc.
+    is, it SHOULD NOT try to validate vp_tokens, etc.
     This is a delicate task that that is best suited for a different, dedicated
     object, method or interface.
     """
@@ -27,8 +27,7 @@ class AuthorizationResponseParser:
         reepresented as a jwt, the validation should perform a check on the jwt validity.
 
         The concrete implementation SHOULD NOT be used to validate the actual content
-        of the response, that is, it SHOULD NOT try to validate vp_tokens,
-        presentation_submissions, etc.
+        of the response, that is, it SHOULD NOT try to validate vp_tokens, etc.
         This is a delicate task that that is best suited for a different, dedicated
         object, method or interface.
 

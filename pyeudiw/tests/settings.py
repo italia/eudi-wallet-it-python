@@ -191,6 +191,16 @@ CONFIG = {
         "aud": "https://self-issued.me/v2",
         "response_mode": "direct_post",
     },
+    "dcql_query": {
+        "credentials": [
+            {
+                "id": "personal id data",
+                "format": "dc+sd-jwt",
+                "meta": {"vct_values": ["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},
+                "claims": [{"path": ["user_claims", "given_name"]}, {"path": ["user_claims", "family_name"]}],
+            },
+        ],
+    },
     "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
         "subject_id_random_value": "CHANGEME!",
@@ -361,11 +371,8 @@ CONFIG = {
         "max_submission_size": 4096,
         "formats": [
             {"module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc", "class": "VpVcSdJwtParserVerifier", "format": "dc+sd-jwt", "config": {}},
-            {
-                "module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor",
-                "class": "VpMDocCbor",
-                "format": "mso_mdoc",
-            },
+            {"module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor", "class": "VpMDocCbor", "format": "mso_mdoc"},
+            {"module": "pyeudiw.duckle_ql.handler", "class": "DuckleHandler", "format": "duckle"},
         ],
     },
 }

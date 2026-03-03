@@ -93,16 +93,13 @@ class DirectPostParser(AuthorizationResponseParser):
         try:
             d = {}
             if vp_token := resp_data.get("vp_token", None):
-                # vp_token should be a JSON string but caller might not be compliant and use string instead
+                # vp_token: JSON string for DCQL dict, or string/list of strings
                 vp_token = normalize_jsonstring_to_string(vp_token)
+                if isinstance(vp_token, str) and vp_token.strip().startswith("{"):
+                    vp_token = json.loads(vp_token)
                 d["vp_token"] = vp_token
             if state := resp_data.get("state", None):
                 d["state"] = state
-            if presentation_submission := resp_data["presentation_submission"]:
-                if isinstance(presentation_submission, dict):
-                    d["presentation_submission"] = presentation_submission
-                else:
-                    d["presentation_submission"] = json.loads(presentation_submission)
             return AuthorizeResponsePayload(**d)
         except Exception as e:
             raise AuthRespParsingException("invalid data in direct_post request body", e)
@@ -170,7 +167,9 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
             )
 
         try:
-            return AuthorizeResponsePayload(**payload)
+            # DCQL flow: only state and vp_token are used
+            d = {k: payload[k] for k in ("state", "vp_token") if k in payload}
+            return AuthorizeResponsePayload(**d)
         except Exception as e:
             raise AuthRespParsingException(
                 "invalid data in the direct_post.jwt: token payload does not have the expected claims",
