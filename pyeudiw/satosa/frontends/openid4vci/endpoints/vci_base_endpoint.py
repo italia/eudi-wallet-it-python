@@ -118,13 +118,13 @@ class VCIBaseEndpoint(BaseEndpoint):
     @property
     def dpop_required(self) -> bool:
         """
-        Check if DPoD is required.
+        Check if DPoP is required.
 
         Returns:
-            bool: True if DPoD is required, False otherwise. Defaults to True.
+            bool: True if DPoP is required, False otherwise. Defaults to False (DPoP optional).
         """
 
-        return self.config.get("security", {}).get("dpop_required", True)
+        return self.config.get("security", {}).get("dpop_required", False)
 
     @property
     def wallet_attestation_required(self) -> bool:
