@@ -185,7 +185,6 @@ CONFIG = {
     },
     "authorization": {
         "url_scheme": "haip",  # haip://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
         "aud": "https://self-issued.me/v2",
@@ -413,7 +412,6 @@ CONFIG_DIRECT_TRUST = {
     "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
     "authorization": {
         "url_scheme": "haip",  # haip://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
         "aud": "https://self-issued.me/v2",

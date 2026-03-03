@@ -50,7 +50,6 @@ def test_build_authorization_request_claims():
 
     # case 0: minimal config
     config = {
-        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
     }
 
@@ -59,7 +58,6 @@ def test_build_authorization_request_claims():
     assert "aud" in claims
     assert "nonce" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -67,7 +65,6 @@ def test_build_authorization_request_claims():
 
     # case 1: config with aud
     config_aud = {
-        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
     }
@@ -77,14 +74,12 @@ def test_build_authorization_request_claims():
     assert claims["aud"] == "https://self-issued.me/v2"
     assert "nonce" in claims
     assert claims["response_mode"] == "direct_post.jwt"
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
 
     # case 2: config with response mode
     config_rmode = {
-        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "response_mode": "direct_post",
     }
@@ -93,7 +88,6 @@ def test_build_authorization_request_claims():
 
     assert claims["response_mode"] == "direct_post"
     assert "nonce" in claims
-    assert claims["scope"] in ("family_name given_name", "given_name family_name")
     assert claims["exp"] > claims["iat"]
     assert claims["client_id"] == client_id
     assert claims["response_type"] == "vp_token"
@@ -114,7 +108,6 @@ def test_build_authorization_request_claims():
     # case 5: custom client_id
     config_custom_id = {
         "client_id": "custom-client-id",
-        "scopes": ["family_name", "given_name"],
         "auth_iss_id": "OTHERRRRR",
         "expiration_time": 1,
     }
@@ -124,7 +117,6 @@ def test_build_authorization_request_claims():
 
     # case 6: submission_data with dcql_query (DCQL/Duckle flow)
     config_dcql = {
-        "scopes": ["family_name", "given_name"],
         "expiration_time": 1,
         "aud": "https://self-issued.me/v2",
     }
