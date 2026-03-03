@@ -1,0 +1,1 @@
+# Wallet instance attestation tests

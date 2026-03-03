@@ -192,14 +192,6 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.client_attestation_signing_alg_values_supported     | Optional supported algorithm for validate client attestation signing, if missing every value in cnf is admitted .   | [ES256, ES384]                                                   |
 | config.metadata.client_attestation_pop_signing_alg_values_supported | Optional supported algorithm for validate client attestation PoP signin, if missing every value in cnf is admitted. | [ES256, ES384]                                                   |
 
-### Security
-
-Root section for security configuration.
-
-| Key                                         | Description                                                                                                                                                                                                                      |
-|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| config.security.wallet_attestation_required | This flag enables the [OAuth 2.0 Attestation-Based Client Authentication](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html). If this setting is missing it will be set to true by default. |
-
 ### Other config
 
 Root section for single configuration parameters.

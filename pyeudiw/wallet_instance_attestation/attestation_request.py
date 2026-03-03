@@ -3,8 +3,8 @@ from typing import Literal
 from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
-from pyeudiw.satosa.backends.openid4vp.schemas.cnf_schema import CNFSchema
 from pyeudiw.tools.schema_utils import check_algorithm
+from pyeudiw.wallet_instance_attestation.cnf import CNFSchema
 
 
 class WalletInstanceAttestationRequestHeader(BaseModel):

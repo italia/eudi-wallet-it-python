@@ -240,8 +240,7 @@ class ResponseHandler(VPBaseEndpoint):
         :param subject_type: public or pairwise according to oidc standard.
         :return: A SATOSA internal response.
         """
-        # it may depends by credential type and attested security context evaluated
-        # if WIA was previously submitted by the Wallet
+        # Credential type and security context (if applicable)
         timestamp_epoch = response.get("auth_time") or response.get("iat") or iat_now()
         timestamp_dt = datetime.fromtimestamp(timestamp_epoch, timezone.utc)
         timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")

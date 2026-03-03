@@ -180,9 +180,6 @@ CONFIG = {
             "EdDSA",
         ],
     },
-    "security": {
-        "wallet_attestation_required": False,
-    },
     "authorization": {
         "url_scheme": "haip",  # haip://
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
