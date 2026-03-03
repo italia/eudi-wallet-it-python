@@ -9,6 +9,7 @@ from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.satosa.exceptions import InvalidRequestException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import MissingProofJWTException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import BaseCredentialEndpoint
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import CredentialEndpointRequest, ProofJWT
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response import CredentialEndpointResponse
@@ -19,6 +20,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
     NONCE_CTX,
+    PROOF_JWT_REQUIRED_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.trust.exceptions import NoCriptographicMaterial
@@ -91,7 +93,37 @@ class CredentialHandler(BaseCredentialEndpoint):
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
 
-        c_req = CredentialEndpointRequest.model_validate(self._get_body(context), context={AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {})})
+        body = self._get_body(context)
+        if body is None:
+            body_dict = {}
+        elif isinstance(body, dict):
+            body_dict = body
+        else:
+            try:
+                body_dict = json.loads(body) if isinstance(body, str) else {}
+            except (json.JSONDecodeError, TypeError):
+                body_dict = {}
+        proof = body_dict.get("proof")
+        proof_jwt = None
+        if isinstance(proof, dict):
+            proof_jwt = proof.get("jwt") or ""
+        proof_jwt = (proof_jwt or "").strip() if proof_jwt else None
+
+        if self.proof_jwt_required and not proof_jwt:
+            raise MissingProofJWTException("missing proof JWT")
+        if not self.proof_jwt_required and not proof_jwt:
+            logger.debug("Missing JWTProof since it is not configured")
+
+        c_req = CredentialEndpointRequest.model_validate(
+            body_dict,
+            context={
+                AUTHORIZATION_DETAILS_CTX: entity.get("authorization_details", {}),
+                PROOF_JWT_REQUIRED_CTX: self.proof_jwt_required,
+            },
+        )
+
+        if not c_req.proof or not c_req.proof.jwt:
+            return c_req
 
         proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
         proof_payload = proof_jws_helper.verify(c_req.proof.jwt)

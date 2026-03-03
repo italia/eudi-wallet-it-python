@@ -15,6 +15,19 @@ class InvalidRequestException(Exception):
         self.message = message
 
 
+class MissingProofJWTException(Exception):
+    """
+    Raised when proof JWT is required but missing from the credential request.
+
+    Attributes:
+        message (str): A human-readable explanation.
+    """
+
+    def __init__(self, message: str = "missing proof JWT"):
+        super().__init__(message)
+        self.message = message
+
+
 class InvalidScopeException(Exception):
     """
     Exception raised when a request contains an invalid or unsupported scope.

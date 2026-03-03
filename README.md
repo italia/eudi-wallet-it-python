@@ -144,7 +144,7 @@ Compliance checklist against the [Italian Wallet implementation profile](https:/
 | `dc+sd-jwt` format | - [x] Supported |
 | `mso_mdoc` format | - [x] Supported |
 | Status endpoint (session polling) | - [x] Supported |
-| Trust evaluation (issuer validation) | - [x] Supported |
+| Trust evaluation (X.509 PKI, OpenID Federation) | - [x] Supported |
 | Credential revocation (status list) | - [x] Supported |
 | Custom URL schemes (`haip`, configurable) | - [x] Supported |
 | `transaction_data` / `transaction_data_hashes` | - [ ] Not supported |
@@ -228,6 +228,8 @@ PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 
 ## Acknowledgments
 
+- Manuel Pacella
+- Manuel Ciofo
 - Thomas Chiozzi
 - Pasquale De Rose
 - Elisa Nicolussi Paolaz

@@ -12,6 +12,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
     NONCE_CTX,
+    PROOF_JWT_REQUIRED_CTX,
 )
 from pyeudiw.tools.date import is_valid_unix_timestamp
 
@@ -185,8 +186,14 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
             self.check_unexpected_parameter(self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
 
     def validate_proof(self):
-        self.check_missing_parameter(self.proof, "proof", CREDENTIAL_ENDPOINT)
-        Proof.model_validate(self.proof)
+        try:
+            proof_required = self.get_ctx(PROOF_JWT_REQUIRED_CTX)
+        except ValueError:
+            proof_required = False
+        if proof_required:
+            self.check_missing_parameter(self.proof, "proof", CREDENTIAL_ENDPOINT)
+        if self.proof:
+            Proof.model_validate(self.proof)
 
     def validate_transaction_id(self):
         pass

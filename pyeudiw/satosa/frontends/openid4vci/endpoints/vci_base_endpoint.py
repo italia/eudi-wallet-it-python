@@ -10,7 +10,7 @@ from satosa.response import Response
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.tools.config import Openid4VciFrontendConfigUtils
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, MissingProofJWTException
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
@@ -45,7 +45,7 @@ class VCIBaseEndpoint(BaseEndpoint):
         self._validate_configs()
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
-        if isinstance(e, InvalidRequestException) or isinstance(e, InvalidScopeException):
+        if isinstance(e, (InvalidRequestException, InvalidScopeException, MissingProofJWTException)):
             return e.message
         elif isinstance(e, JWSVerificationError):
             self._log_error(e.__class__.__name__, f"{str(e)} in`{endpoint_name}` endpoint")
@@ -150,6 +150,16 @@ class VCIBaseEndpoint(BaseEndpoint):
         if authz_server:
             return authz_server.dpop_signing_alg_values_supported
         return None
+
+    @property
+    def proof_jwt_required(self) -> bool:
+        """
+        Check if proof JWT is required in credential endpoint requests.
+
+        Returns:
+            bool: True if proof JWT is required, False otherwise. Defaults to False.
+        """
+        return self.config.get("security", {}).get("proof_jwt_required", False)
 
     @property
     def signed_par_request(self) -> str:
