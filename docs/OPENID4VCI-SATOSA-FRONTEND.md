@@ -102,6 +102,8 @@ section, it's possible to override them or add new ones.
 | ------------ | ------------------------------------------------------------------------------------------------------------------- |
 | config.trust | A dictionary of trust implementation, where the key is a user friendly identitfier and the value is described below |
 
+When configured with the `FederationHandler`, the credential issuer uses [OpenID Federation](https://openid.net/specs/openid-federation-1_0.html) for trust evaluation. This includes resolution of Wallet Provider keys for `key_attestation` in credential proof (WUA) and trust chain parameters in issued credentials.
+
 The parameters of a `config.trust` dictionary entry value are
 
 | Parameter                            | Description                                                 | Example Value                                |
