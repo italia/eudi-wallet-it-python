@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.frontends.openid4vci package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.satosa.frontends.openid4vci.endpoints package" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html" />
+    <link rel="prev" title="pyeudiw.satosa.frontends package" href="pyeudiw.satosa.frontends.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.frontends.html">pyeudiw.satosa.frontends package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.frontends.openid4vci package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.satosa.frontends.openid4vci.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-satosa-frontends-openid4vci-package">
+<h1>pyeudiw.satosa.frontends.openid4vci package<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html">pyeudiw.satosa.frontends.openid4vci.endpoints package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-authorization-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-base-credential-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-credential-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler"><code class="docutils literal notranslate"><span class="pre">CredentialIssuerMetadataHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">CredentialIssuerMetadataHandler.endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.metadata"><code class="docutils literal notranslate"><span class="pre">CredentialIssuerMetadataHandler.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.openid_credential_issuer_metadata_as_dict"><code class="docutils literal notranslate"><span class="pre">CredentialIssuerMetadataHandler.openid_credential_issuer_metadata_as_dict</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler"><code class="docutils literal notranslate"><span class="pre">CredentialOfferHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">CredentialOfferHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-credential-offer-qrcode-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-deferred-credential-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.deferred_credential_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler"><code class="docutils literal notranslate"><span class="pre">MetadataHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">MetadataHandler.endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration"><code class="docutils literal notranslate"><span class="pre">MetadataHandler.entity_configuration</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration_as_dict"><code class="docutils literal notranslate"><span class="pre">MetadataHandler.entity_configuration_as_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.metadata"><code class="docutils literal notranslate"><span class="pre">MetadataHandler.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.pub_federation_jwks"><code class="docutils literal notranslate"><span class="pre">MetadataHandler.pub_federation_jwks</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler"><code class="docutils literal notranslate"><span class="pre">NonceHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">NonceHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler"><code class="docutils literal notranslate"><span class="pre">NotificationHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">NotificationHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler"><code class="docutils literal notranslate"><span class="pre">OauthAuthorizationServerMetadataHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">OauthAuthorizationServerMetadataHandler.endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.oauth_authorization_server_metadata_as_dict"><code class="docutils literal notranslate"><span class="pre">OauthAuthorizationServerMetadataHandler.oauth_authorization_server_metadata_as_dict</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-pushed-authorization-request-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum"><code class="docutils literal notranslate"><span class="pre">AcceptHeaderEnum</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_CWT"><code class="docutils literal notranslate"><span class="pre">AcceptHeaderEnum.STATUS_LIST_CWT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_JWT"><code class="docutils literal notranslate"><span class="pre">AcceptHeaderEnum.STATUS_LIST_JWT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler"><code class="docutils literal notranslate"><span class="pre">StatusListHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">StatusListHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw-satosa-frontends-openid4vci-endpoints-token-endpoint-module">pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint">pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_required"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.dpop_required</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_signing_alg_values_supported"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.dpop_signing_alg_values_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.entity_id"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.entity_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.proof_jwt_required"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.proof_jwt_required</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.signed_par_request"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.signed_par_request</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.status_endpoint"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.status_endpoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.wallet_attestation_required"><code class="docutils literal notranslate"><span class="pre">VCIBaseEndpoint.wallet_attestation_required</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.endpoints.html#module-pyeudiw.satosa.frontends.openid4vci.endpoints">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html">pyeudiw.satosa.frontends.openid4vci.models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail">pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.check_authorization_detail"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.check_authorization_detail()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.credential_configuration_id"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.credential_configuration_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.credential_identifiers"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.credential_identifiers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.model_config"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.model_post_init"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.type"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.validate_credential_configuration_id"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.validate_credential_configuration_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail.AuthorizationDetail.validate_type"><code class="docutils literal notranslate"><span class="pre">AuthorizationDetail.validate_type()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.authorization_request">pyeudiw.satosa.frontends.openid4vci.models.authorization_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.check_authorization_request"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.check_authorization_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.client_id"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.model_config"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.request_uri"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.request_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.validate_client_id"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.validate_client_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_request.AuthorizationRequest.validate_request_uri"><code class="docutils literal notranslate"><span class="pre">AuthorizationRequest.validate_request_uri()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.authorization_response">pyeudiw.satosa.frontends.openid4vci.models.authorization_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse.code"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse.code</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse.iss"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse.model_config"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse.state"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.authorization_response.AuthorizationResponse.to_redirect_response"><code class="docutils literal notranslate"><span class="pre">AuthorizationResponse.to_redirect_response()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.config">pyeudiw.satosa.frontends.openid4vci.models.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.credential_configurations"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.credential_configurations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.credential_storage"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.credential_storage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.endpoints"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.endpoints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.jwt"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.jwt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.metadata"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.model_config"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.config.PyeudiwFrontendConfig.user_storage"><code class="docutils literal notranslate"><span class="pre">PyeudiwFrontendConfig.user_storage</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request">pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.check_credential_endpoint_request"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.check_credential_endpoint_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.credential_configuration_id"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.credential_configuration_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.credential_identifier"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.credential_identifier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.proof"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.proof</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.transaction_id"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.transaction_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.validate_credential_id"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.validate_credential_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.validate_proof"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.validate_proof()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.CredentialEndpointRequest.validate_transaction_id"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointRequest.validate_transaction_id()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof"><code class="docutils literal notranslate"><span class="pre">Proof</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.check_proof"><code class="docutils literal notranslate"><span class="pre">Proof.check_proof()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.jwt"><code class="docutils literal notranslate"><span class="pre">Proof.jwt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.model_config"><code class="docutils literal notranslate"><span class="pre">Proof.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.model_post_init"><code class="docutils literal notranslate"><span class="pre">Proof.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.proof_type"><code class="docutils literal notranslate"><span class="pre">Proof.proof_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.validate_jwt"><code class="docutils literal notranslate"><span class="pre">Proof.validate_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.Proof.validate_prof_type"><code class="docutils literal notranslate"><span class="pre">Proof.validate_prof_type()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT"><code class="docutils literal notranslate"><span class="pre">ProofJWT</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.alg"><code class="docutils literal notranslate"><span class="pre">ProofJWT.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.aud"><code class="docutils literal notranslate"><span class="pre">ProofJWT.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.check_proof"><code class="docutils literal notranslate"><span class="pre">ProofJWT.check_proof()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.iat"><code class="docutils literal notranslate"><span class="pre">ProofJWT.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.iss"><code class="docutils literal notranslate"><span class="pre">ProofJWT.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.jwk"><code class="docutils literal notranslate"><span class="pre">ProofJWT.jwk</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.model_config"><code class="docutils literal notranslate"><span class="pre">ProofJWT.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.model_post_init"><code class="docutils literal notranslate"><span class="pre">ProofJWT.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.nonce"><code class="docutils literal notranslate"><span class="pre">ProofJWT.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.typ"><code class="docutils literal notranslate"><span class="pre">ProofJWT.typ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_alg"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_alg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_aud"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_aud()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_iat"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_iat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_iss"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_iss()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_jwk"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_jwk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_nonce"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_nonce()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request.ProofJWT.validate_typ"><code class="docutils literal notranslate"><span class="pre">ProofJWT.validate_typ()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response">pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response.CredentialEndpointResponse"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response.CredentialEndpointResponse.lead_time"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointResponse.lead_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response.CredentialEndpointResponse.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response.CredentialEndpointResponse.to_response"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointResponse.to_response()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response.CredentialEndpointResponse.transaction_id"><code class="docutils literal notranslate"><span class="pre">CredentialEndpointResponse.transaction_id</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request">pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.authorization_server"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.authorization_server</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.check_authorization_code"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.check_authorization_code()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.issuer_state"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.issuer_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.model_config"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.model_post_init"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.AuthorizationCode.validate_authorization_server"><code class="docutils literal notranslate"><span class="pre">AuthorizationCode.validate_authorization_server()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.check_credential_offer"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.check_credential_offer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.credential_configuration_ids"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.credential_configuration_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.credential_issuer"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.credential_issuer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.grants"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.grants</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.validate_credential_configuration_ids"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.validate_credential_configuration_ids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.validate_credential_issuer"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.validate_credential_issuer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request.CredentialOfferRequest.validate_grants"><code class="docutils literal notranslate"><span class="pre">CredentialOfferRequest.validate_grants()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request">pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest.check_deferred_credential_endpoint_request"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest.check_deferred_credential_endpoint_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest.model_config"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest.transaction_id"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest.transaction_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request.DeferredCredentialEndpointRequest.validate_transaction_id"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointRequest.validate_transaction_id()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response">pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.CredentialItem"><code class="docutils literal notranslate"><span class="pre">CredentialItem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.CredentialItem.credential"><code class="docutils literal notranslate"><span class="pre">CredentialItem.credential</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.CredentialItem.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialItem.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.DeferredCredentialEndpointResponse"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.DeferredCredentialEndpointResponse.credentials"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointResponse.credentials</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.DeferredCredentialEndpointResponse.model_config"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.DeferredCredentialEndpointResponse.notification_id"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointResponse.notification_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response.DeferredCredentialEndpointResponse.to_response"><code class="docutils literal notranslate"><span class="pre">DeferredCredentialEndpointResponse.to_response()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.nonce_response">pyeudiw.satosa.frontends.openid4vci.models.nonce_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.nonce_response.NonceResponse"><code class="docutils literal notranslate"><span class="pre">NonceResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.nonce_response.NonceResponse.c_nonce"><code class="docutils literal notranslate"><span class="pre">NonceResponse.c_nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.nonce_response.NonceResponse.model_config"><code class="docutils literal notranslate"><span class="pre">NonceResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.nonce_response.NonceResponse.to_response"><code class="docutils literal notranslate"><span class="pre">NonceResponse.to_response()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.notification_request">pyeudiw.satosa.frontends.openid4vci.models.notification_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest"><code class="docutils literal notranslate"><span class="pre">NotificationRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.check_notification_endpoint_request"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.check_notification_endpoint_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.event"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.event</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.event_description"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.event_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.model_config"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.notification_id"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.notification_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.validate_event"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.validate_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.validate_event_description"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.validate_event_description()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.notification_request.NotificationRequest.validate_notification_id"><code class="docutils literal notranslate"><span class="pre">NotificationRequest.validate_notification_id()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel">pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.check_invalid_parameter"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.check_invalid_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.check_missing_parameter"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.check_missing_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.check_unexpected_parameter"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.check_unexpected_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.get_config"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.get_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.get_config_utils"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.get_config_utils()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.get_ctx"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.get_ctx()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.model_config"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.model_post_init"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel.OpenId4VciBaseModel.strip"><code class="docutils literal notranslate"><span class="pre">OpenId4VciBaseModel.strip()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.par_request">pyeudiw.satosa.frontends.openid4vci.models.par_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest"><code class="docutils literal notranslate"><span class="pre">ParRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.authorization_details"><code class="docutils literal notranslate"><span class="pre">ParRequest.authorization_details</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.check_par_request"><code class="docutils literal notranslate"><span class="pre">ParRequest.check_par_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.client_id"><code class="docutils literal notranslate"><span class="pre">ParRequest.client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.code_challenge"><code class="docutils literal notranslate"><span class="pre">ParRequest.code_challenge</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.code_challenge_method"><code class="docutils literal notranslate"><span class="pre">ParRequest.code_challenge_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.model_config"><code class="docutils literal notranslate"><span class="pre">ParRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">ParRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.redirect_uri"><code class="docutils literal notranslate"><span class="pre">ParRequest.redirect_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.response_type"><code class="docutils literal notranslate"><span class="pre">ParRequest.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.scope"><code class="docutils literal notranslate"><span class="pre">ParRequest.scope</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.state"><code class="docutils literal notranslate"><span class="pre">ParRequest.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_authorization_details"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_authorization_details()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_client_id"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_client_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_code_challenge"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_code_challenge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_code_challenge_method"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_code_challenge_method()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_redirect_uri"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_redirect_uri()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_response_type"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_response_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_scope"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_scope()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.ParRequest.validate_state"><code class="docutils literal notranslate"><span class="pre">ParRequest.validate_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest"><code class="docutils literal notranslate"><span class="pre">SignedParRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.aud"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.authorization_details"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.authorization_details</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.check_par_request"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.check_par_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.client_id"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.code_challenge"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.code_challenge</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.code_challenge_method"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.code_challenge_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.exp"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.iat"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.iss"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.issuer_state"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.issuer_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.jti"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.jti</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.model_config"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.redirect_uri"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.redirect_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.response_mode"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.response_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.response_type"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.scope"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.scope</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.state"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_aud"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_aud()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_authorization_details"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_authorization_details()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_client_id"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_client_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_code_challenge"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_code_challenge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_code_challenge_method"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_code_challenge_method()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_iss"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_iss()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_jti"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_jti()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_redirect_uri"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_redirect_uri()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_response_mode"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_response_mode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_response_type"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_response_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_scope"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_scope()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_request.SignedParRequest.validate_state"><code class="docutils literal notranslate"><span class="pre">SignedParRequest.validate_state()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.par_response">pyeudiw.satosa.frontends.openid4vci.models.par_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_response.ParResponse"><code class="docutils literal notranslate"><span class="pre">ParResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_response.ParResponse.expires_in"><code class="docutils literal notranslate"><span class="pre">ParResponse.expires_in</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_response.ParResponse.model_config"><code class="docutils literal notranslate"><span class="pre">ParResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_response.ParResponse.request_uri"><code class="docutils literal notranslate"><span class="pre">ParResponse.request_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.par_response.ParResponse.to_created_response"><code class="docutils literal notranslate"><span class="pre">ParResponse.to_created_response()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.token">pyeudiw.satosa.frontends.openid4vci.models.token module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken"><code class="docutils literal notranslate"><span class="pre">AccessToken</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.aud"><code class="docutils literal notranslate"><span class="pre">AccessToken.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.client_id"><code class="docutils literal notranslate"><span class="pre">AccessToken.client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.cnf"><code class="docutils literal notranslate"><span class="pre">AccessToken.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.exp"><code class="docutils literal notranslate"><span class="pre">AccessToken.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.iat"><code class="docutils literal notranslate"><span class="pre">AccessToken.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.iss"><code class="docutils literal notranslate"><span class="pre">AccessToken.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.jti"><code class="docutils literal notranslate"><span class="pre">AccessToken.jti</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.model_config"><code class="docutils literal notranslate"><span class="pre">AccessToken.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.AccessToken.sub"><code class="docutils literal notranslate"><span class="pre">AccessToken.sub</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.RefreshToken"><code class="docutils literal notranslate"><span class="pre">RefreshToken</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.RefreshToken.model_config"><code class="docutils literal notranslate"><span class="pre">RefreshToken.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.RefreshToken.nbf"><code class="docutils literal notranslate"><span class="pre">RefreshToken.nbf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token.RefreshToken.set_nbf"><code class="docutils literal notranslate"><span class="pre">RefreshToken.set_nbf()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.token_request">pyeudiw.satosa.frontends.openid4vci.models.token_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest"><code class="docutils literal notranslate"><span class="pre">TokenRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.check_token_request"><code class="docutils literal notranslate"><span class="pre">TokenRequest.check_token_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.code"><code class="docutils literal notranslate"><span class="pre">TokenRequest.code</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.code_verifier"><code class="docutils literal notranslate"><span class="pre">TokenRequest.code_verifier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.grant_type"><code class="docutils literal notranslate"><span class="pre">TokenRequest.grant_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.model_config"><code class="docutils literal notranslate"><span class="pre">TokenRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.model_post_init"><code class="docutils literal notranslate"><span class="pre">TokenRequest.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.redirect_uri"><code class="docutils literal notranslate"><span class="pre">TokenRequest.redirect_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.refresh_token"><code class="docutils literal notranslate"><span class="pre">TokenRequest.refresh_token</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.scope"><code class="docutils literal notranslate"><span class="pre">TokenRequest.scope</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_code"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_code()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_code_verifier"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_code_verifier()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_grant_type"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_grant_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_redirect_uri"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_redirect_uri()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_refresh_token"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_refresh_token()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_scope"><code class="docutils literal notranslate"><span class="pre">TokenRequest.validate_scope()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models.token_response">pyeudiw.satosa.frontends.openid4vci.models.token_response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse"><code class="docutils literal notranslate"><span class="pre">TokenResponse</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.access_token"><code class="docutils literal notranslate"><span class="pre">TokenResponse.access_token</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.authorization_details"><code class="docutils literal notranslate"><span class="pre">TokenResponse.authorization_details</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.expires_in"><code class="docutils literal notranslate"><span class="pre">TokenResponse.expires_in</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.model_config"><code class="docutils literal notranslate"><span class="pre">TokenResponse.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.refresh_token"><code class="docutils literal notranslate"><span class="pre">TokenResponse.refresh_token</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.to_created_response"><code class="docutils literal notranslate"><span class="pre">TokenResponse.to_created_response()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_response.TokenResponse.token_type"><code class="docutils literal notranslate"><span class="pre">TokenResponse.token_type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.models.html#module-pyeudiw.satosa.frontends.openid4vci.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html">pyeudiw.satosa.frontends.openid4vci.storage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#module-pyeudiw.satosa.frontends.openid4vci.storage.engine">pyeudiw.satosa.frontends.openid4vci.storage.engine module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#pyeudiw.satosa.frontends.openid4vci.storage.engine.OpenId4VciDBEngineHandler"><code class="docutils literal notranslate"><span class="pre">OpenId4VciDBEngineHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#pyeudiw.satosa.frontends.openid4vci.storage.engine.OpenId4VciDBEngineHandler.db_engine"><code class="docutils literal notranslate"><span class="pre">OpenId4VciDBEngineHandler.db_engine</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#pyeudiw-satosa-frontends-openid4vci-storage-entity-module">pyeudiw.satosa.frontends.openid4vci.storage.entity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#pyeudiw-satosa-frontends-openid4vci-storage-openid4vci-storage-module">pyeudiw.satosa.frontends.openid4vci.storage.openid4vci_storage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.storage.html#module-pyeudiw.satosa.frontends.openid4vci.storage">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html">pyeudiw.satosa.frontends.openid4vci.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#module-pyeudiw.satosa.frontends.openid4vci.tools.config">pyeudiw.satosa.frontends.openid4vci.tools.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_credential_configurations"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_credential_configurations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_credential_configurations_supported"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_credential_configurations_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_jwt"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_jwt_default_sig_alg"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_jwt_default_sig_alg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_oauth_authorization_server"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_oauth_authorization_server()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_openid_credential_issuer"><code class="docutils literal notranslate"><span class="pre">Openid4VciFrontendConfigUtils.get_openid_credential_issuer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#module-pyeudiw.satosa.frontends.openid4vci.tools.exceptions">pyeudiw.satosa.frontends.openid4vci.tools.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.exceptions.InvalidRequestException"><code class="docutils literal notranslate"><span class="pre">InvalidRequestException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.exceptions.InvalidScopeException"><code class="docutils literal notranslate"><span class="pre">InvalidScopeException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.exceptions.MissingProofJWTException"><code class="docutils literal notranslate"><span class="pre">MissingProofJWTException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.tools.html#module-pyeudiw.satosa.frontends.openid4vci.tools">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-openid4vci-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.openid4vci module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-openid4vci-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.satosa.frontends.html" class="btn btn-neutral float-left" title="pyeudiw.satosa.frontends package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.satosa.frontends.openid4vci.endpoints.html" class="btn btn-neutral float-right" title="pyeudiw.satosa.frontends.openid4vci.endpoints package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

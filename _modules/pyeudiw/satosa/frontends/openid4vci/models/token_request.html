@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.frontends.openid4vci.models.token_request &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.frontends.openid4vci.models.token_request</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.frontends.openid4vci.models.token_request</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">sha256</span><span class="p">,</span> <span class="n">sha512</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">model_validator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidRequestException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenId4VciBaseModel</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">AUTHORIZATION_CODE_GRANT</span> <span class="o">=</span> <span class="s2">&quot;authorization_code&quot;</span>
+<span class="n">REFRESH_TOKEN_GRANT</span> <span class="o">=</span> <span class="s2">&quot;refresh_token&quot;</span>  <span class="c1"># nosec B105</span>
+
+<span class="n">REDIRECT_URI_CTX</span> <span class="o">=</span> <span class="s2">&quot;redirect_uri&quot;</span>
+<span class="n">CODE_CHALLENGE_METHOD_CTX</span> <span class="o">=</span> <span class="s2">&quot;code_challenge_method&quot;</span>
+<span class="n">CODE_CHALLENGE_CTX</span> <span class="o">=</span> <span class="s2">&quot;code_challenge&quot;</span>
+<span class="n">SCOPE_CTX</span> <span class="o">=</span> <span class="s2">&quot;scope&quot;</span>
+
+<span class="n">TOKEN_ENDPOINT</span> <span class="o">=</span> <span class="s2">&quot;token&quot;</span>  <span class="c1"># nosec B105</span>
+
+
+<div class="viewcode-block" id="TokenRequest">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TokenRequest</span><span class="p">(</span><span class="n">OpenId4VciBaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a request to the token endpoint in an OpenID4VCI flow.</span>
+
+<span class="sd">    Fields:</span>
+<span class="sd">        grant_type (str): Either &#39;authorization_code&#39; or &#39;refresh_token&#39;.</span>
+<span class="sd">        code (str): Required for &#39;authorization_code&#39; grant type.</span>
+<span class="sd">        redirect_uri (str): Required for &#39;authorization_code&#39; grant type.</span>
+<span class="sd">        code_verifier (str): Required for PKCE validation.</span>
+<span class="sd">        refresh_token (str): Required for &#39;refresh_token&#39; grant type.</span>
+<span class="sd">        scope (Optional[str]): Optional, only valid for &#39;refresh_token&#39;.</span>
+
+<span class="sd">    Validation Logic:</span>
+<span class="sd">        - Validates `grant_type` is one of the supported values.</span>
+<span class="sd">        - Enforces required fields depending on the grant type.</span>
+<span class="sd">        - Validates PKCE `code_verifier` against the challenge using SHA256 or SHA512.</span>
+<span class="sd">        - Ensures `scope` values are in the allowed configuration list.</span>
+<span class="sd">        - Raises `InvalidRequestException` with appropriate messages if checks fail.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">grant_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">redirect_uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">code_verifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">refresh_token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scope</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TokenRequest.check_token_request">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.check_token_request">[docs]</a>
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_token_request</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TokenRequest&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_grant_type</span><span class="p">()</span>
+        <span class="n">is_authorization_code_grant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span> <span class="o">==</span> <span class="n">AUTHORIZATION_CODE_GRANT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_code</span><span class="p">(</span><span class="n">is_authorization_code_grant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_redirect_uri</span><span class="p">(</span><span class="n">is_authorization_code_grant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_code_verifier</span><span class="p">(</span><span class="n">is_authorization_code_grant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_refresh_token</span><span class="p">(</span><span class="n">is_authorization_code_grant</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_scope</span><span class="p">(</span><span class="n">is_authorization_code_grant</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_scope">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_scope">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_authorization_code_grant</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_unexpected_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">,</span> <span class="s2">&quot;scope&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">:</span>
+            <span class="n">scopes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="n">par_scope_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ctx</span><span class="p">(</span><span class="n">SCOPE_CTX</span><span class="p">)</span>
+            <span class="n">par_scopes</span> <span class="o">=</span> <span class="n">par_scope_ctx</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">par_scope_ctx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scopes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">oauth_authorization_server</span><span class="o">.</span><span class="n">scopes_supported</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid scope value &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39; in `token` endpoint&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid scope value &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">par_scopes</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">par_scopes</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid scope in `token` endpoint: value &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39; not present in previous `par` endpoint&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid scope value &#39;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_refresh_token">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_refresh_token">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_refresh_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_authorization_code_grant</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_unexpected_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">,</span> <span class="s2">&quot;refresh_token&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_missing_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">,</span> <span class="s2">&quot;refresh_token&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_code_verifier">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_code_verifier">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_code_verifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_authorization_code_grant</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_missing_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span><span class="p">,</span> <span class="s2">&quot;code_verifier&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+
+            <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ctx</span><span class="p">(</span><span class="n">CODE_CHALLENGE_METHOD_CTX</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+                <span class="k">case</span> <span class="s2">&quot;S256&quot;</span><span class="p">:</span>
+                    <span class="n">code_verifier_encode</span> <span class="o">=</span> <span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+                <span class="k">case</span> <span class="s2">&quot;S512&quot;</span><span class="p">:</span>
+                    <span class="n">code_verifier_encode</span> <span class="o">=</span> <span class="n">sha512</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unexpected code_challenge_method </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ctx</span><span class="p">(</span><span class="n">CODE_CHALLENGE_METHOD_CTX</span><span class="p">)</span><span class="si">}</span><span class="s2"> for code_verifier in token request&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="s2">&quot;Invalid `code_verifier`&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">code_verifier_encode</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ctx</span><span class="p">(</span><span class="n">CODE_CHALLENGE_CTX</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid `code_verifier` </span><span class="si">{</span><span class="n">code_verifier_encode</span><span class="si">}</span><span class="s2"> in token request with authorization_code as `grant_type`&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="s2">&quot;Invalid `code_verifier`&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_unexpected_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code_verifier</span><span class="p">,</span> <span class="s2">&quot;code_verifier&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_redirect_uri">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_redirect_uri">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_redirect_uri</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_authorization_code_grant</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_missing_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="s2">&quot;redirect_uri&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ctx</span><span class="p">(</span><span class="n">REDIRECT_URI_CTX</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid `redirect_uri` in token request with authorization_code as `grant_type`&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="s2">&quot;Invalid `redirect_uri`&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_unexpected_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="s2">&quot;redirect_uri&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_grant_type">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_grant_type">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_grant_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_missing_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span><span class="p">,</span> <span class="s2">&quot;grant_type&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AUTHORIZATION_CODE_GRANT</span><span class="p">,</span> <span class="n">REFRESH_TOKEN_GRANT</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid `grant_type` </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grant_type</span><span class="si">}</span><span class="s2"> in token request&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span><span class="s2">&quot;invalid `grant_type`&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TokenRequest.validate_code">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.models.html#pyeudiw.satosa.frontends.openid4vci.models.token_request.TokenRequest.validate_code">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_authorization_code_grant</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_missing_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_unexpected_parameter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="n">TOKEN_ENDPOINT</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

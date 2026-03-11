@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.jwt.test_utils &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.jwt.test_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tests.jwt.test_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWTDecodeError</span><span class="p">,</span> <span class="n">JWTInvalidElementPosition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">decode_jwt_element</span><span class="p">,</span>
+    <span class="n">decode_jwt_header</span><span class="p">,</span>
+    <span class="n">decode_jwt_payload</span><span class="p">,</span>
+    <span class="n">is_jwe_format</span><span class="p">,</span>
+    <span class="n">is_jwt_format</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.jwt</span><span class="w"> </span><span class="kn">import</span> <span class="n">VALID_JWE</span><span class="p">,</span> <span class="n">VALID_TC_JWT</span>
+
+
+<div class="viewcode-block" id="test_decode_jwt_element">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_decode_jwt_element">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_decode_jwt_element</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_element</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">payload</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;1234567890&quot;</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;John Doe&quot;</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;iat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1516239022</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_element</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">header</span>
+    <span class="k">assert</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;alg&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HS256&quot;</span>
+    <span class="k">assert</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;typ&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;JWT&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_decode_jwt_element_signature_failure">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_decode_jwt_element_signature_failure">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_decode_jwt_element_signature_failure</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">decode_jwt_element</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="n">JWTDecodeError</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_decode_jwt_element_invalid">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_decode_jwt_element_invalid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_decode_jwt_element_invalid</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">decode_jwt_element</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="n">JWTInvalidElementPosition</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">decode_jwt_element</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="n">JWTInvalidElementPosition</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_decode_jwt_header">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_decode_jwt_header">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_decode_jwt_header</span><span class="p">():</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">header</span>
+    <span class="k">assert</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;alg&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HS256&quot;</span>
+    <span class="k">assert</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;typ&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;JWT&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_decode_jwt_payload">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_decode_jwt_payload">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_decode_jwt_payload</span><span class="p">():</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">payload</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;1234567890&quot;</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;John Doe&quot;</span>
+    <span class="k">assert</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;iat&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1516239022</span></div>
+
+
+
+<div class="viewcode-block" id="test_is_jwt_format">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_is_jwt_format">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_is_jwt_format</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">is_jwt_format</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="test_is_jwt_format_invalid">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_is_jwt_format_invalid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_is_jwt_format_invalid</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">is_jwt_format</span><span class="p">(</span><span class="s2">&quot;eyJ&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="test_is_jwe_format">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_is_jwe_format">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_is_jwe_format</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">is_jwe_format</span><span class="p">(</span><span class="n">VALID_JWE</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="test_is_not_jwt_format_jwe">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_utils.test_is_not_jwt_format_jwe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_is_not_jwt_format_jwe</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">is_jwe_format</span><span class="p">(</span><span class="n">VALID_TC_JWT</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

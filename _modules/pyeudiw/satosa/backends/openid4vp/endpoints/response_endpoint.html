@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.attribute_mapping</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeMapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.internal</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuthenticationInformation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.internal</span><span class="w"> </span><span class="kn">import</span> <span class="n">InternalData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Redirect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jwe_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWEHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.duckle_ql.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">CredentialValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.duckle_ql.parser_validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParserValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.authorization_response</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AuthorizeResponsePayload</span><span class="p">,</span>
+    <span class="n">DirectPostJwtJweParser</span><span class="p">,</span>
+    <span class="n">DirectPostParser</span><span class="p">,</span>
+    <span class="n">detect_response_mode</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">VPBaseEndpoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuthRespParsingException</span><span class="p">,</span> <span class="n">AuthRespValidationException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">RemoteFlowType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorResponsePayload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AuthorizeUnmatchedResponse</span><span class="p">,</span>
+    <span class="n">FinalizedSessionError</span><span class="p">,</span>
+    <span class="n">InvalidInternalStateError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.utils.respcode</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseCodeSource</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.utils.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">VerifierChallenge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">StorageWriteError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">iat_now</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.dynamic</span><span class="w"> </span><span class="kn">import</span> <span class="n">CombinedTrustEvaluator</span>
+
+
+<div class="viewcode-block" id="ResponseHandler">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ResponseHandler</span><span class="p">(</span><span class="n">VPBaseEndpoint</span><span class="p">):</span>
+    <span class="n">_SUPPORTED_RESPONSE_METHOD</span> <span class="o">=</span> <span class="s2">&quot;post&quot;</span>
+    <span class="n">_SUPPORTED_RESPONSE_CONTENT_TYPE</span> <span class="o">=</span> <span class="s2">&quot;application/x-www-form-urlencoded&quot;</span>
+    <span class="n">_ACCEPTED_ISSUER_METADATA_TYPE</span> <span class="o">=</span> <span class="s2">&quot;openid_credential_issuer&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">internal_attributes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+        <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">auth_callback_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Context</span><span class="p">,</span> <span class="n">InternalData</span><span class="p">],</span> <span class="n">Response</span><span class="p">],</span>
+        <span class="n">converter</span><span class="p">:</span> <span class="n">AttributeMapper</span><span class="p">,</span>
+        <span class="n">trust_evaluator</span><span class="p">:</span> <span class="n">CombinedTrustEvaluator</span><span class="p">,</span>
+        <span class="n">db_engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">internal_attributes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">auth_callback_func</span><span class="p">,</span> <span class="n">converter</span><span class="p">,</span> <span class="n">trust_evaluator</span><span class="p">,</span> <span class="n">db_engine</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">registered_get_response_endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s2">/get_response&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_code_helper</span> <span class="o">=</span> <span class="n">ResponseCodeSource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;response_code&quot;</span><span class="p">][</span><span class="s2">&quot;sym_key&quot;</span><span class="p">])</span>
+
+        <span class="c1"># This loads all the configured trust evaluation mechanisms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trust&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;trust_caching_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;update_first&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_evaluator</span> <span class="o">=</span> <span class="n">trust_evaluator</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">credential_presentation_handlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_credential_presentation_handlers</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_all_user_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extracted_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># for all the valid credentials, take the payload and the disclosure and disclose user attributes</span>
+        <span class="c1"># returns the user attributes ...</span>
+        <span class="n">all_user_attributes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">extracted_attributes</span><span class="p">:</span>
+            <span class="n">all_user_attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_user_attributes</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_retrieve_session_from_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_retrieve_session_and_nonce_from_state tries to recover an</span>
+<span class="sd">        authenticasion session by matching it with the state. Returns the whole</span>
+<span class="sd">        session data (if found) and the nonce proposed in the authentication</span>
+<span class="sd">        request that should be matched by the holder response.</span>
+
+<span class="sd">        :returns: the authentication session information and the nonce challenge</span>
+<span class="sd">            associated to that authentication request</span>
+<span class="sd">        :rtype: tuple[dict, str]</span>
+
+<span class="sd">        :raises AuthorizeUnmatchedResponse: if the state is not matched to any session</span>
+<span class="sd">        :raises FinalizedSessionError: if the state is matched to an already closed session</span>
+<span class="sd">        :raises InvalidInternalStateError: if the session contains invalid, corrupted or missing</span>
+<span class="sd">            data of known reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request_session</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">request_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">get_by_state</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request_session</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthorizeUnmatchedResponse</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find document-session associated to state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">AuthorizeUnmatchedResponse</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find document-session associated to state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request_session</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidInternalStateError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find document-session associated to state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;finalized&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">FinalizedSessionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot accept response: session for state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> corrupted or already finalized&quot;</span><span class="p">)</span>
+
+        <span class="n">nonce</span> <span class="o">=</span> <span class="n">request_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nonce&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nonce</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidInternalStateError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to find nonce in session associated to state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">: corrupted data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">request_session</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_error_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">error_response</span><span class="p">:</span> <span class="n">ErrorResponsePayload</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JsonResponse</span><span class="p">:</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">error_response</span><span class="o">.</span><span class="n">state</span>
+        <span class="n">request_session</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">request_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_session_from_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="s2">&quot;the response state is associated to an invalid, corrupted, expired or non existing authentication request&quot;</span><span class="p">,</span>
+                <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exception found when associating authorization error respons </span><span class="si">{</span><span class="n">error_response</span><span class="si">}</span><span class="s2"> with a rewquest: </span><span class="si">{</span><span class="n">e400</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="n">flow_type</span><span class="p">,</span> <span class="n">response_code</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flow_type</span> <span class="o">=</span> <span class="n">RemoteFlowType</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;remote_flow_typ&quot;</span><span class="p">])</span>
+            <span class="n">response_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_code_helper</span><span class="o">.</span><span class="n">create_code</span><span class="p">(</span><span class="n">error_response</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">update_response_object</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">,</span> <span class="n">asdict</span><span class="p">(</span><span class="n">error_response</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">set_finalized</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;document_id&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e500</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;internal server error&quot;</span><span class="p">,</span> <span class="n">e500</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">flow_type</span> <span class="o">==</span> <span class="n">RemoteFlowType</span><span class="o">.</span><span class="n">SAME_DEVICE</span><span class="p">:</span>
+            <span class="n">cb_redirect_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">registered_get_response_endpoint</span><span class="si">}</span><span class="s2">?response_code=</span><span class="si">{</span><span class="n">response_code</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s2">&quot;redirect_uri&quot;</span><span class="p">:</span> <span class="n">cb_redirect_uri</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({},</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResponseHandler.endpoint">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler.endpoint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Redirect</span> <span class="o">|</span> <span class="n">JsonResponse</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_function_debug</span><span class="p">(</span><span class="s2">&quot;response_endpoint&quot;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+        <span class="c1"># parse and eventually decrypt jwt in response</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">authz_payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_authorization_response</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AuthRespParsingException</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid authorization response: cannot parse the payload&quot;</span><span class="p">,</span> <span class="n">e400</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AuthRespValidationException</span> <span class="k">as</span> <span class="n">e401</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_401</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="s2">&quot;invalid authentication method: token might be invalid or expired&quot;</span><span class="p">,</span>
+                <span class="n">e401</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_debug</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;response URI endpoint response with payload </span><span class="si">{</span><span class="n">authz_payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">authz_payload</span><span class="p">,</span> <span class="n">ErrorResponsePayload</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_error_response</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">authz_payload</span><span class="p">)</span>
+
+        <span class="n">request_session</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">request_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_session_from_state</span><span class="p">(</span><span class="n">authz_payload</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AuthorizeUnmatchedResponse</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid authorization response: cannot find the session associated to the state&quot;</span><span class="p">,</span> <span class="n">e400</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">InvalidInternalStateError</span> <span class="k">as</span> <span class="n">e500</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">e500</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;invalid state&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">FinalizedSessionError</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid authorization response: session already finalized or corrupted&quot;</span><span class="p">,</span> <span class="n">e400</span><span class="p">)</span>
+
+        <span class="c1"># DCQL (Duckle Query Language) flow: vp_token is a dict keyed by credential id</span>
+        <span class="n">extracted_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">credential_issuers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">challenge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_verifier_challenge</span><span class="p">(</span><span class="n">request_session</span><span class="p">)</span>
+            <span class="n">request_vp_formats_supported</span> <span class="o">=</span> <span class="n">request_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wallet_metadata&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vp_formats_supported&quot;</span><span class="p">)</span>
+            <span class="n">vp_token_handlers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">credential_presentation_handlers</span><span class="o">.</span><span class="n">handlers</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">request_vp_formats_supported</span>
+                <span class="k">else</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">credential_presentation_handlers</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">request_vp_formats_supported</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">parser_validator</span> <span class="o">=</span> <span class="n">ParserValidator</span><span class="p">(</span><span class="n">authz_payload</span><span class="o">.</span><span class="n">vp_token</span><span class="p">,</span> <span class="n">vp_token_handlers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">parser_validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">challenge</span><span class="p">[</span><span class="s2">&quot;aud&quot;</span><span class="p">],</span> <span class="n">challenge</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">])</span>
+            <span class="n">extracted_attributes</span> <span class="o">=</span> <span class="n">parser_validator</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">MissingHandler</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid DCQL response: vp_format not supported&quot;</span><span class="p">,</span> <span class="n">e400</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CredentialValidationError</span> <span class="k">as</span> <span class="n">e400</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid DCQL response: validation error&quot;</span><span class="p">,</span> <span class="n">e400</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e500</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;invalid DCQL response: unknown error&quot;</span><span class="p">,</span> <span class="n">e500</span><span class="p">)</span>
+
+        <span class="n">all_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_all_user_attributes</span><span class="p">(</span><span class="n">extracted_attributes</span><span class="p">)</span>
+        <span class="n">iss_list_serialized</span> <span class="o">=</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">credential_issuers</span><span class="p">)</span>  <span class="c1"># marshaling is whatever</span>
+        <span class="n">internal_resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_translate_response</span><span class="p">(</span><span class="n">all_attributes</span><span class="p">,</span> <span class="n">iss_list_serialized</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="n">authz_payload</span><span class="o">.</span><span class="n">state</span>
+        <span class="n">response_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_code_helper</span><span class="o">.</span><span class="n">create_code</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">update_response_object</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">,</span> <span class="n">internal_resp</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+            <span class="c1"># authentication finalized!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">set_finalized</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;document_id&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_log_level</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+                <span class="n">request_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_engine</span><span class="o">.</span><span class="n">get_by_state</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_debug</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Session update on storage: </span><span class="si">{</span><span class="n">request_session</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">request_session</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log_error</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Session update on storage failed: session with state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;Update error: Cannot update response object.&quot;</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;session not found after update&quot;</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="n">StorageWriteError</span> <span class="k">as</span> <span class="n">e500</span><span class="p">:</span>
+            <span class="c1"># TODO - do we have to block in the case the update cannot be done?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_error</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Session update on storage failed: </span><span class="si">{</span><span class="n">e500</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;Update error: Cannot update response object.&quot;</span><span class="p">,</span> <span class="n">e500</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flow_type</span> <span class="o">=</span> <span class="n">RemoteFlowType</span><span class="p">(</span><span class="n">request_session</span><span class="p">[</span><span class="s2">&quot;remote_flow_typ&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e500</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_error</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unable to identify flow from stored session: </span><span class="si">{</span><span class="n">e500</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;flow error: unable to identify flow from stored session&quot;</span><span class="p">,</span> <span class="n">e500</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">flow_type</span> <span class="o">==</span> <span class="n">RemoteFlowType</span><span class="o">.</span><span class="n">SAME_DEVICE</span><span class="p">:</span>
+            <span class="n">auth_endpoint</span> <span class="o">=</span> <span class="n">request_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wallet_metadata&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;authorization_endpoint&quot;</span><span class="p">)</span>
+            <span class="n">cb_redirect_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">auth_endpoint</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">registered_get_response_endpoint</span><span class="si">}</span><span class="s2">?response_code=</span><span class="si">{</span><span class="n">response_code</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s2">&quot;redirect_uri&quot;</span><span class="p">:</span> <span class="n">cb_redirect_uri</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({},</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_translate_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">issuer</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InternalData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Translates wallet response to SATOSA internal response.</span>
+<span class="sd">        :type response: dict[str, str]</span>
+<span class="sd">        :type issuer: str</span>
+<span class="sd">        :type subject_type: str</span>
+<span class="sd">        :rtype: InternalData</span>
+<span class="sd">        :param response: Dictioary with attribute name as key.</span>
+<span class="sd">        :param issuer: The oidc op that gave the repsonse.</span>
+<span class="sd">        :param subject_type: public or pairwise according to oidc standard.</span>
+<span class="sd">        :return: A SATOSA internal response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Credential type and security context (if applicable)</span>
+        <span class="n">timestamp_epoch</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;auth_time&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iat&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">iat_now</span><span class="p">()</span>
+        <span class="n">timestamp_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">timestamp_epoch</span><span class="p">,</span> <span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+        <span class="n">timestamp_iso</span> <span class="o">=</span> <span class="n">timestamp_dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;+00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">)</span>
+
+        <span class="c1"># default_acr_value is not part of OpenID4VP; VP responses typically lack acr/amr.</span>
+        <span class="c1"># It is used as a fallback when building SATOSA InternalData for the upstream IdP.</span>
+        <span class="n">auth_class_ref</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;acr&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;amr&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;authorization&quot;</span><span class="p">][</span><span class="s2">&quot;default_acr_value&quot;</span><span class="p">]</span>
+        <span class="n">auth_info</span> <span class="o">=</span> <span class="n">AuthenticationInformation</span><span class="p">(</span><span class="n">auth_class_ref</span><span class="p">,</span> <span class="n">timestamp_iso</span><span class="p">,</span> <span class="n">issuer</span><span class="p">)</span>
+
+        <span class="c1"># TODO - ACR values</span>
+        <span class="n">internal_resp</span> <span class="o">=</span> <span class="n">InternalData</span><span class="p">(</span><span class="n">auth_info</span><span class="o">=</span><span class="n">auth_info</span><span class="p">)</span>
+
+        <span class="c1"># (re)define the response subject</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">pepper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_attributes&quot;</span><span class="p">,</span> <span class="p">{})[</span><span class="s2">&quot;subject_id_random_value&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_attributes&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;unique_identifiers&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">_sub</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">sub</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_sub</span><span class="si">}</span><span class="s2">~</span><span class="si">{</span><span class="n">pepper</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sub</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="n">level</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation &quot;</span> <span class="s2">&quot;setting a random one for interop for internal frontends&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_json_default</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+                    <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Object of type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not JSON serializable&quot;</span><span class="p">)</span>
+
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">response</span><span class="p">,</span><span class="w"> </span><span class="n">default</span><span class="o">=</span><span class="n">_json_default</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span><span class="si">}</span><span class="s2">~</span><span class="si">{</span><span class="n">pepper</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">response</span><span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">sub</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="p">:</span>
+            <span class="n">internal_resp</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">to_internal</span><span class="p">(</span><span class="s2">&quot;openid4vp&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">internal_resp</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="n">response</span>
+
+        <span class="n">internal_resp</span><span class="o">.</span><span class="n">subject_id</span> <span class="o">=</span> <span class="n">sub</span>
+        <span class="k">return</span> <span class="n">internal_resp</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_authorization_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">AuthorizeResponsePayload</span><span class="p">,</span> <span class="n">ErrorResponsePayload</span><span class="p">]:</span>
+        <span class="n">response_mode</span> <span class="o">=</span> <span class="n">detect_response_mode</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">match</span> <span class="n">response_mode</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post</span><span class="p">:</span>
+                <span class="n">parser</span> <span class="o">=</span> <span class="n">DirectPostParser</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_and_validate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post_jwt</span><span class="p">:</span>
+                <span class="n">jwe_decrypter</span> <span class="o">=</span> <span class="n">JWEHelper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;metadata_jwks&quot;</span><span class="p">])</span>
+                <span class="n">jws_verifier</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;metadata_jwks&quot;</span><span class="p">])</span>
+                <span class="n">parser</span> <span class="o">=</span> <span class="n">DirectPostJwtJweParser</span><span class="p">(</span>
+                    <span class="n">jwe_decrypter</span><span class="p">,</span> <span class="n">jws_verifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;jwt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enc_alg_supported&quot;</span><span class="p">,</span> <span class="p">[]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;jwt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enc_enc_supported&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_and_validate</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+                <span class="n">request</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span> <span class="ow">or</span> <span class="p">{}</span>
+                <span class="k">return</span> <span class="n">ErrorResponsePayload</span><span class="p">(</span><span class="o">**</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;invalid or unrecognized response mode: </span><span class="si">{</span><span class="n">response_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;invalid program state&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_verifier_challenge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VerifierChallenge</span><span class="p">:</span>
+        <span class="c1"># TODO: check aud according to the LSP Potential singularities ...</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;aud&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s2">&quot;nonce&quot;</span><span class="p">:</span> <span class="n">session_data</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">]}</span>
+
+<div class="viewcode-block" id="ResponseHandler.load_credential_presentation_handlers">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler.load_credential_presentation_handlers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_credential_presentation_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.credential_presentation.handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_credential_presentation_handlers</span>
+
+            <span class="k">return</span> <span class="n">load_credential_presentation_handlers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_evaluator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jwt&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sig_alg_supported&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to import credential_presentation handlers: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

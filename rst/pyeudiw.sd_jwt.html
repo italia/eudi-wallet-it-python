@@ -1,0 +1,727 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.sd_jwt package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.status_list package" href="pyeudiw.status_list.html" />
+    <link rel="prev" title="pyeudiw.satosa.frontends.openid4vci.tools package" href="pyeudiw.satosa.frontends.openid4vci.tools.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.sd_jwt package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.sd_jwt.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-sd-jwt-package">
+<h1>pyeudiw.sd_jwt package<a class="headerlink" href="#pyeudiw-sd-jwt-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.sd_jwt.common">
+<span id="pyeudiw-sd-jwt-common-module"></span><h2>pyeudiw.sd_jwt.common module<a class="headerlink" href="#module-pyeudiw.sd_jwt.common" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDJWTCommon">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.common.</span></span><span class="sig-name descname"><span class="pre">SDJWTCommon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialization_format</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/common.html#SDJWTCommon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDJWTCommon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR">
+<span class="sig-name descname"><span class="pre">COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'~'</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDJWTCommon.HASH_ALG">
+<span class="sig-name descname"><span class="pre">HASH_ALG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'fn':</span> <span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;,</span> <span class="pre">'name':</span> <span class="pre">'sha-256'}</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDJWTCommon.HASH_ALG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDJWTCommon.KB_JWT_TYP_HEADER">
+<span class="sig-name descname"><span class="pre">KB_JWT_TYP_HEADER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'kb+jwt'</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDJWTCommon.KB_JWT_TYP_HEADER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDJWTCommon.SD_JWT_HEADER">
+<span class="sig-name descname"><span class="pre">SD_JWT_HEADER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dc+sd-jwt'</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDJWTCommon.SD_JWT_HEADER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDObj">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.common.</span></span><span class="sig-name descname"><span class="pre">SDObj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/common.html#SDObj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDObj" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class can be used to make this part of the object selective disclosable.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.common.SDObj.value">
+<span class="sig-name descname"><span class="pre">value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">any</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.common.SDObj.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.disclosure">
+<span id="pyeudiw-sd-jwt-disclosure-module"></span><h2>pyeudiw.sd_jwt.disclosure module<a class="headerlink" href="#module-pyeudiw.sd_jwt.disclosure" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.disclosure.</span></span><span class="sig-name descname"><span class="pre">SDJWTDisclosure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/disclosure.html#SDJWTDisclosure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class represents a disclosure of a claim.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.b64">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">b64</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.b64" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.hash">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hash</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.hash" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.issuer">
+<span class="sig-name descname"><span class="pre">issuer</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">any</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.issuer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.json">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">json</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.json" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.key">
+<span class="sig-name descname"><span class="pre">key</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.value">
+<span class="sig-name descname"><span class="pre">value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">any</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.exceptions">
+<span id="pyeudiw-sd-jwt-exceptions-module"></span><h2>pyeudiw.sd_jwt.exceptions module<a class="headerlink" href="#module-pyeudiw.sd_jwt.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.exceptions.InvalidKeyBinding">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidKeyBinding</span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/exceptions.html#InvalidKeyBinding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.exceptions.InvalidKeyBinding" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.exceptions.MissingConfirmationKey">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingConfirmationKey</span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/exceptions.html#MissingConfirmationKey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.exceptions.MissingConfirmationKey" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP not contain a confirmation key</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.exceptions.SDJWTHasSDClaimException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">SDJWTHasSDClaimException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/exceptions.html#SDJWTHasSDClaimException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.exceptions.SDJWTHasSDClaimException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised when input data contains the special _sd claim reserved for SD-JWT internal data.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnsupportedSdAlg</span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/exceptions.html#UnsupportedSdAlg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.holder">
+<span id="pyeudiw-sd-jwt-holder-module"></span><h2>pyeudiw.sd_jwt.holder module<a class="headerlink" href="#module-pyeudiw.sd_jwt.holder" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.holder.</span></span><span class="sig-name descname"><span class="pre">SDJWTHolder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sd_jwt_issuance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialization_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'compact'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/holder.html#SDJWTHolder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.sd_jwt.common.SDJWTCommon" title="pyeudiw.sd_jwt.common.SDJWTCommon"><code class="xref py py-class docutils literal notranslate"><span class="pre">SDJWTCommon</span></code></a></p>
+<p>SDJWTHolder is a class to create a holder presentation from a SD-JWT.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.create_presentation">
+<span class="sig-name descname"><span class="pre">create_presentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">claims_to_disclose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aud</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holder_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sign_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/holder.html#SDJWTHolder.create_presentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.create_presentation" title="Link to this definition"></a></dt>
+<dd><p>Create a holder presentation from the SD-JWT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>claims_to_disclose</strong> – The claims to disclose. If True, all claims are disclosed.</p></li>
+<li><p><strong>nonce</strong> – The nonce to include in the key binding JWT.</p></li>
+<li><p><strong>aud</strong> – The audience to include in the key binding JWT.</p></li>
+<li><p><strong>holder_key</strong> – The key to sign the key binding JWT with.</p></li>
+<li><p><strong>sign_alg</strong> – The signing algorithm to use for the key binding JWT.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.hs_disclosures">
+<span class="sig-name descname"><span class="pre">hs_disclosures</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.hs_disclosures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_header">
+<span class="sig-name descname"><span class="pre">key_binding_jwt_header</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_header" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_payload">
+<span class="sig-name descname"><span class="pre">key_binding_jwt_payload</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_payload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.sd_jwt_presentation">
+<span class="sig-name descname"><span class="pre">sd_jwt_presentation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.sd_jwt_presentation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.holder.SDJWTHolder.serialized_key_binding_jwt">
+<span class="sig-name descname"><span class="pre">serialized_key_binding_jwt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.holder.SDJWTHolder.serialized_key_binding_jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.issuer">
+<span id="pyeudiw-sd-jwt-issuer-module"></span><h2>pyeudiw.sd_jwt.issuer module<a class="headerlink" href="#module-pyeudiw.sd_jwt.issuer" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.issuer.</span></span><span class="sig-name descname"><span class="pre">SDJWTIssuer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_claims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issuer_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">holder_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sign_alg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_decoy_claims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialization_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'compact'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_header_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/issuer.html#SDJWTIssuer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.sd_jwt.common.SDJWTCommon" title="pyeudiw.sd_jwt.common.SDJWTCommon"><code class="xref py py-class docutils literal notranslate"><span class="pre">SDJWTCommon</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MAX_ELEMENTS">
+<span class="sig-name descname"><span class="pre">DECOY_MAX_ELEMENTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MAX_ELEMENTS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MIN_ELEMENTS">
+<span class="sig-name descname"><span class="pre">DECOY_MIN_ELEMENTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MIN_ELEMENTS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.decoy_digests">
+<span class="sig-name descname"><span class="pre">decoy_digests</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.decoy_digests" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.ii_disclosures">
+<span class="sig-name descname"><span class="pre">ii_disclosures</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.ii_disclosures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt">
+<span class="sig-name descname"><span class="pre">sd_jwt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">JWS</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_issuance">
+<span class="sig-name descname"><span class="pre">sd_jwt_issuance</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_issuance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_payload">
+<span class="sig-name descname"><span class="pre">sd_jwt_payload</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_payload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.issuer.SDJWTIssuer.serialized_sd_jwt">
+<span class="sig-name descname"><span class="pre">serialized_sd_jwt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.issuer.SDJWTIssuer.serialized_sd_jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.schema">
+<span id="pyeudiw-sd-jwt-schema-module"></span><h2>pyeudiw.sd_jwt.schema module<a class="headerlink" href="#module-pyeudiw.sd_jwt.schema" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtHeader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">KeyBindingJwtHeader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#KeyBindingJwtHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.alg">
+<span class="sig-name descname"><span class="pre">alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.typ">
+<span class="sig-name descname"><span class="pre">typ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.validate_typ">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_typ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#KeyBindingJwtHeader.validate_typ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.validate_typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">KeyBindingJwtPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">iat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aud</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd_hash</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#KeyBindingJwtPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.aud">
+<span class="sig-name descname"><span class="pre">aud</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.aud" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.iat">
+<span class="sig-name descname"><span class="pre">iat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.iat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.nonce">
+<span class="sig-name descname"><span class="pre">nonce</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.nonce" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.sd_hash">
+<span class="sig-name descname"><span class="pre">sd_hash</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.sd_hash" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">VcSdJwtHeaderSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vctm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtHeaderSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.alg">
+<span class="sig-name descname"><span class="pre">alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.check_typ_when_not_x5c">
+<span class="sig-name descname"><span class="pre">check_typ_when_not_x5c</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtHeaderSchema.check_typ_when_not_x5c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.check_typ_when_not_x5c" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.kid">
+<span class="sig-name descname"><span class="pre">kid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.kid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.trust_chain">
+<span class="sig-name descname"><span class="pre">trust_chain</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.trust_chain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.typ">
+<span class="sig-name descname"><span class="pre">typ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.validate_typ">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_typ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtHeaderSchema.validate_typ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.validate_typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.vctm">
+<span class="sig-name descname"><span class="pre">vctm</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.vctm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.x5c">
+<span class="sig-name descname"><span class="pre">x5c</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.x5c" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">VcSdJwtPayloadSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">iss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'jwk'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwkSchema" title="pyeudiw.jwk.schemas.public.JwkSchema"><span class="pre">JwkSchema</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verification</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtPayloadSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.cnf">
+<span class="sig-name descname"><span class="pre">cnf</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'jwk'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwkSchema" title="pyeudiw.jwk.schemas.public.JwkSchema"><span class="pre">JwkSchema</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.cnf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.exp">
+<span class="sig-name descname"><span class="pre">exp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.exp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iat">
+<span class="sig-name descname"><span class="pre">iat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iss">
+<span class="sig-name descname"><span class="pre">iss</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iss" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_post_init">
+<span class="sig-name descname"><span class="pre">model_post_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_post_init" title="Link to this definition"></a></dt>
+<dd><p>This function is meant to behave like a BaseModel method to initialise private attributes.</p>
+<p>It takes context as an argument since that’s what pydantic-core passes when calling it.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>self: The BaseModel instance.
+context: The context.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.status" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.sub">
+<span class="sig-name descname"><span class="pre">sub</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.sub" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_status">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtPayloadSchema.validate_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_status" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_verification">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_verification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VcSdJwtPayloadSchema.validate_verification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_verification" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.vct">
+<span class="sig-name descname"><span class="pre">vct</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.vct" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.verification">
+<span class="sig-name descname"><span class="pre">verification</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.verification" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VerifierChallenge">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">VerifierChallenge</span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#VerifierChallenge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VerifierChallenge" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VerifierChallenge.aud">
+<span class="sig-name descname"><span class="pre">aud</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VerifierChallenge.aud" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.VerifierChallenge.nonce">
+<span class="sig-name descname"><span class="pre">nonce</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.sd_jwt.schema.VerifierChallenge.nonce" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.is_sd_jwt_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">is_sd_jwt_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sd_jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#is_sd_jwt_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.is_sd_jwt_format" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.schema.is_sd_jwt_kb_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.schema.</span></span><span class="sig-name descname"><span class="pre">is_sd_jwt_kb_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sd_jwt_kb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/schema.html#is_sd_jwt_kb_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.schema.is_sd_jwt_kb_format" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.sd_jwt">
+<span id="pyeudiw-sd-jwt-sd-jwt-module"></span><h2>pyeudiw.sd_jwt.sd_jwt module<a class="headerlink" href="#module-pyeudiw.sd_jwt.sd_jwt" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.sd_jwt.</span></span><span class="sig-name descname"><span class="pre">SdJwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>SdJwt is an utility class to easily parse and verify sd jwt.
+All class attributes are intended to be read only</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.get_confirmation_key">
+<span class="sig-name descname"><span class="pre">get_confirmation_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.get_confirmation_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_confirmation_key" title="Link to this definition"></a></dt>
+<dd><p>Get the confirmation key from the issuer payload claims.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyeudiw.sd_jwt.exceptions.MissingConfirmationKey" title="pyeudiw.sd_jwt.exceptions.MissingConfirmationKey"><strong>MissingConfirmationKey</strong></a> – if the confirmation key is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the confirmation key</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.get_disclosed_claims">
+<span class="sig-name descname"><span class="pre">get_disclosed_claims</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.get_disclosed_claims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_disclosed_claims" title="Link to this definition"></a></dt>
+<dd><p>Get the disclosed claims from the issuer payload</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg" title="pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg"><strong>UnsupportedSdAlg</strong></a> – if the sd_alg is not supported</p></li>
+<li><p><strong>ValueError</strong> – if there are duplicate digests</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the disclosed claims</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.get_holder_key_binding_jwt">
+<span class="sig-name descname"><span class="pre">get_holder_key_binding_jwt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.get_holder_key_binding_jwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_holder_key_binding_jwt" title="Link to this definition"></a></dt>
+<dd><p>Get the holder key binding jwt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the holder key binding jwt</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.get_issuer_jwt">
+<span class="sig-name descname"><span class="pre">get_issuer_jwt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt" title="pyeudiw.jwt.parse.DecodedJwt"><span class="pre">DecodedJwt</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.get_issuer_jwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_issuer_jwt" title="Link to this definition"></a></dt>
+<dd><p>Get the issuer jwt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the issuer jwt</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt" title="pyeudiw.jwt.parse.DecodedJwt">DecodedJwt</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.get_sd_alg">
+<span class="sig-name descname"><span class="pre">get_sd_alg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.get_sd_alg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_sd_alg" title="Link to this definition"></a></dt>
+<dd><p>Get the sd_alg from the issuer jwt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the sd_alg</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.has_key_binding">
+<span class="sig-name descname"><span class="pre">has_key_binding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.has_key_binding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.has_key_binding" title="Link to this definition"></a></dt>
+<dd><p>Check if the token has a key binding</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the token has a key binding, False otherwise</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt">
+<span class="sig-name descname"><span class="pre">verify_holder_kb_jwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">challenge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.sd_jwt.schema.VerifierChallenge" title="pyeudiw.sd_jwt.schema.VerifierChallenge"><span class="pre">VerifierChallenge</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.verify_holder_kb_jwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt" title="Link to this definition"></a></dt>
+<dd><p>Checks validity of holder key binding.
+This procedure always passes when no key binding is used</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg" title="pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg"><strong>UnsupportedSdAlg</strong></a> – if verification fails due to an unkown _sd_alg</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.sd_jwt.exceptions.InvalidKeyBinding" title="pyeudiw.sd_jwt.exceptions.InvalidKeyBinding"><strong>InvalidKeyBinding</strong></a> – if the verification fails for an invalid key binding</p></li>
+<li><p><strong>ValueError</strong> – if the iat claim is missing or invalid</p></li>
+<li><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if the verification fails</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt_signature">
+<span class="sig-name descname"><span class="pre">verify_holder_kb_jwt_signature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.verify_holder_kb_jwt_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt_signature" title="Link to this definition"></a></dt>
+<dd><p>Verify the holder key binding signature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if the verification fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_issuer_jwt_signature">
+<span class="sig-name descname"><span class="pre">verify_issuer_jwt_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/sd_jwt.html#SdJwt.verify_issuer_jwt_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_issuer_jwt_signature" title="Link to this definition"></a></dt>
+<dd><p>Verify the issuer jwt signature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>list</em><em>[</em><em>ECKey</em><em> | </em><em>RSAKey</em><em> | </em><em>dict</em><em>] </em><em>| </em><em>ECKey</em><em> | </em><em>RSAKey</em><em> | </em><em>dict</em>) – the public key(s) to use to verify the issuer jwt signature</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if the verification fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt.verifier">
+<span id="pyeudiw-sd-jwt-verifier-module"></span><h2>pyeudiw.sd_jwt.verifier module<a class="headerlink" href="#module-pyeudiw.sd_jwt.verifier" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.verifier.SDJWTVerifier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.sd_jwt.verifier.</span></span><span class="sig-name descname"><span class="pre">SDJWTVerifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sd_jwt_presentation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_get_issuer_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_aud</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialization_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'compact'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/verifier.html#SDJWTVerifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.verifier.SDJWTVerifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.sd_jwt.common.SDJWTCommon" title="pyeudiw.sd_jwt.common.SDJWTCommon"><code class="xref py py-class docutils literal notranslate"><span class="pre">SDJWTCommon</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.sd_jwt.verifier.SDJWTVerifier.get_verified_payload">
+<span class="sig-name descname"><span class="pre">get_verified_payload</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/sd_jwt/verifier.html#SDJWTVerifier.get_verified_payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.sd_jwt.verifier.SDJWTVerifier.get_verified_payload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.sd_jwt">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.sd_jwt" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.satosa.frontends.openid4vci.tools.html" class="btn btn-neutral float-left" title="pyeudiw.satosa.frontends.openid4vci.tools package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.status_list.html" class="btn btn-neutral float-right" title="pyeudiw.status_list package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

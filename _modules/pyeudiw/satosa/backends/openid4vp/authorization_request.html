@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp.authorization_request &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp.authorization_request</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.backends.openid4vp.authorization_request</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">quote_plus</span><span class="p">,</span> <span class="n">urlencode</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.duckle_ql.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DUCKLE_PRESENTATION</span><span class="p">,</span> <span class="n">DUCKLE_QUERY_KEY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">exp_from_now</span><span class="p">,</span> <span class="n">iat_now</span>
+
+
+<div class="viewcode-block" id="build_authorization_request_url">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_authorization_request_url</span><span class="p">(</span><span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build authorization request URL that let the wallet download the request</span>
+<span class="sd">    object. This is loosely realted to RFC9101 [JAR], section 5.2.1.</span>
+<span class="sd">    The scheme is either the scheme portion of a deeplink, such as &quot;haip&quot; or</span>
+<span class="sd">    &quot;eudiw&quot;, while params is a dictitonary of query parameters not urlencoded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s2">&quot;://&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scheme</span><span class="p">:</span>
+        <span class="n">scheme</span> <span class="o">=</span> <span class="n">scheme</span> <span class="o">+</span> <span class="s2">&quot;://&quot;</span>
+    <span class="n">query_params</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">quote_via</span><span class="o">=</span><span class="n">quote_plus</span><span class="p">)</span>
+    <span class="n">_sep</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">scheme</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scheme</span><span class="si">}{</span><span class="n">_sep</span><span class="si">}{</span><span class="n">query_params</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="build_authorization_request_claims">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_claims">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_authorization_request_claims</span><span class="p">(</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">response_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">default_claims</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">client_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">submission_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wallet_nonce</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Primitive function to build the payload claims of the (JAR) authorization request.</span>
+
+<span class="sd">    :param client_id: the client identifier (who issues the JAR token)</span>
+<span class="sd">    :type client_id: str</span>
+<span class="sd">    :param state: request session identifier</span>
+<span class="sd">    :type state: str</span>
+<span class="sd">    :param response_uri: endpoint accepting authorization responses</span>
+<span class="sd">    :type response_uri: str</span>
+<span class="sd">    :param default_claims: a dictionary with the default claims to be used in the request object.</span>
+<span class="sd">        It must contain the following mandatory keys:</span>
+<span class="sd">        - &quot;expiration_time&quot;: the expiration time in minutes of the request object</span>
+<span class="sd">        - &quot;response_mode&quot;: the response mode to be used in the request object</span>
+<span class="sd">        - &quot;auth_iss_id&quot;: the issuer identifier of the authorization server</span>
+<span class="sd">        - &quot;aud&quot;: the audience of the request object</span>
+<span class="sd">    :type default_claims: dict</span>
+<span class="sd">    :param nonce: optional nonce to be inserted in the request object; if not</span>
+<span class="sd">        set, a new cryptographically safe uuid v4 nonce is generated.</span>
+<span class="sd">    :type nonce: str</span>
+<span class="sd">    :param client_metadata: optional client_metadata to be included in the request object</span>
+<span class="sd">    :type client_metadata: dict</span>
+<span class="sd">    :param submission_data: optional submission data, such as the duckle query,</span>
+<span class="sd">        to be included in the request object.</span>
+<span class="sd">        If this parameter is set, the duckle data is used to build the request object.</span>
+<span class="sd">    :type submission_data: dict</span>
+<span class="sd">    :param wallet_nonce: optional nonce to be used by the wallet.</span>
+<span class="sd">    :type wallet_nonce: str</span>
+<span class="sd">    :raises KeyError: if authorization_config misses mandatory configuration options</span>
+<span class="sd">    :returns: a dictionary with the *complete* set of JAR JWT payload claims</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">nonce</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">default_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;auth_iss_id&quot;</span><span class="p">):</span>
+        <span class="n">_iss</span> <span class="o">=</span> <span class="n">default_claims</span><span class="p">[</span><span class="s2">&quot;auth_iss_id&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_iss</span> <span class="o">=</span> <span class="n">client_id</span>
+
+    <span class="n">claims</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;client_id_scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>  <span class="c1"># that&#39;s federation.</span>
+        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="n">client_id</span><span class="p">,</span>
+        <span class="s2">&quot;response_mode&quot;</span><span class="p">:</span> <span class="n">default_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;response_mode&quot;</span><span class="p">,</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post_jwt</span><span class="p">),</span>
+        <span class="s2">&quot;response_type&quot;</span><span class="p">:</span> <span class="s2">&quot;vp_token&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;response_uri&quot;</span><span class="p">:</span> <span class="n">response_uri</span><span class="p">,</span>
+        <span class="s2">&quot;nonce&quot;</span><span class="p">:</span> <span class="n">nonce</span><span class="p">,</span>
+        <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+        <span class="s2">&quot;iss&quot;</span><span class="p">:</span> <span class="n">_iss</span><span class="p">,</span>
+        <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">iat_now</span><span class="p">(),</span>
+        <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">exp_from_now</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">default_claims</span><span class="p">[</span><span class="s2">&quot;expiration_time&quot;</span><span class="p">]),</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">_aud</span> <span class="o">:=</span> <span class="n">default_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aud&quot;</span><span class="p">,</span> <span class="s2">&quot;https://self-issued.me/v2&quot;</span><span class="p">):</span>
+        <span class="n">claims</span><span class="p">[</span><span class="s2">&quot;aud&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_aud</span>
+
+    <span class="k">if</span> <span class="n">submission_data</span> <span class="ow">and</span> <span class="n">submission_data</span><span class="p">[</span><span class="s2">&quot;typo&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">DUCKLE_PRESENTATION</span><span class="p">:</span>
+        <span class="n">claims</span><span class="p">[</span><span class="n">DUCKLE_QUERY_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">submission_data</span><span class="p">[</span><span class="n">DUCKLE_QUERY_KEY</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">client_metadata</span><span class="p">:</span>
+            <span class="n">claims</span><span class="p">[</span><span class="s2">&quot;client_metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_metadata</span>
+
+    <span class="k">if</span> <span class="n">wallet_nonce</span><span class="p">:</span>
+        <span class="n">claims</span><span class="p">[</span><span class="s2">&quot;wallet_nonce&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wallet_nonce</span>
+
+    <span class="k">return</span> <span class="n">claims</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.jwk.jwks &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../jwk.html">pyeudiw.jwk</a></li>
+      <li class="breadcrumb-item active">pyeudiw.jwk.jwks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.jwk.jwks</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidKid</span><span class="p">,</span> <span class="n">KidNotFoundError</span>
+
+
+<div class="viewcode-block" id="find_jwk_by_kid">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwk.html#pyeudiw.jwk.jwks.find_jwk_by_kid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_jwk_by_kid</span><span class="p">(</span><span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">as_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the JWK with the indicated kid in the jwks list.</span>
+
+<span class="sd">    :param kid: the identifier of the jwk</span>
+<span class="sd">    :type kid: str</span>
+<span class="sd">    :param jwks: the list of jwks</span>
+<span class="sd">    :type jwks: list[dict]</span>
+<span class="sd">    :param as_dict: if True the return type will be a dict, JWK otherwise.</span>
+<span class="sd">    :type as_dict: bool</span>
+
+<span class="sd">    :raises InvalidKid: if kid is None.</span>
+<span class="sd">    :raises KidNotFoundError: if kid is not in jwks list.</span>
+
+<span class="sd">    :returns: the jwk with the indicated kid or an empty dict if no jwk is found</span>
+<span class="sd">    :rtype: dict | JWK</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">kid</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidKid</span><span class="p">(</span><span class="s2">&quot;Kid cannot be empty&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">jwk</span> <span class="ow">in</span> <span class="n">jwks</span><span class="p">:</span>
+        <span class="n">valid_jwk</span> <span class="o">=</span> <span class="n">jwk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_jwk</span> <span class="ow">and</span> <span class="n">kid</span> <span class="o">==</span> <span class="n">valid_jwk</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jwk</span> <span class="k">if</span> <span class="n">as_dict</span> <span class="k">else</span> <span class="n">JWK</span><span class="p">(</span><span class="n">jwk</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="n">KidNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key with Kid </span><span class="si">{</span><span class="n">kid</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_jwk_by_thumbprint">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwk.html#pyeudiw.jwk.jwks.find_jwk_by_thumbprint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_jwk_by_thumbprint</span><span class="p">(</span><span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">thumbprint</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find if a jwk with the given thumbprint is part of the given JWKS.</span>
+<span class="sd">    Function can be used to select if a public key without a kid (such as</span>
+<span class="sd">    a key that is part of a certificate chain) is part of a jwk set.</span>
+
+<span class="sd">    We assume that SHA-256 is the hash function used to produce the thumbprint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">jwks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">JWK</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">thumbprint</span> <span class="o">==</span> <span class="n">thumbprint</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">key</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

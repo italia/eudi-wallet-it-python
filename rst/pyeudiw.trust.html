@@ -1,0 +1,576 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.trust package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.trust.default package" href="pyeudiw.trust.default.html" />
+    <link rel="prev" title="pyeudiw.tools package" href="pyeudiw.tools.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.trust package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.trust.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-trust-package">
+<h1>pyeudiw.trust package<a class="headerlink" href="#pyeudiw-trust-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.trust.default.html">pyeudiw.trust.default package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.default.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.default.html#module-pyeudiw.trust.default.direct_trust_sd_jwt_vc">pyeudiw.trust.default.direct_trust_sd_jwt_vc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrust"><code class="docutils literal notranslate"><span class="pre">DirectTrust</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc.build_issuer_jwk_endpoint"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc.build_issuer_jwk_endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc.build_issuer_metadata_endpoint"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc.build_issuer_metadata_endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc.get_metadata"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#pyeudiw.trust.default.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc.get_public_keys"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc.get_public_keys()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.default.html#module-pyeudiw.trust.default">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.trust.handler.html">pyeudiw.trust.handler package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.commons">pyeudiw.trust.handler.commons module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.commons.DEFAULT_OPENID4VCI_METADATA_ENDPOINT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_OPENID4VCI_METADATA_ENDPOINT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.direct_trust_jar">pyeudiw.trust.handler.direct_trust_jar module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_jar.DEFAULT_JARISSUER_METADATA_ENDPOINT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_JARISSUER_METADATA_ENDPOINT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_jar.DirectTrustJar"><code class="docutils literal notranslate"><span class="pre">DirectTrustJar</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_jar.DirectTrustJar.extract_and_update_trust_materials"><code class="docutils literal notranslate"><span class="pre">DirectTrustJar.extract_and_update_trust_materials()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_jar.DirectTrustJar.get_handled_trust_material_name"><code class="docutils literal notranslate"><span class="pre">DirectTrustJar.get_handled_trust_material_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_jar.DirectTrustJar.get_metadata"><code class="docutils literal notranslate"><span class="pre">DirectTrustJar.get_metadata()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.direct_trust_sd_jwt_vc">pyeudiw.trust.handler.direct_trust_sd_jwt_vc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_sd_jwt_vc.DEFAULT_SDJWTVC_METADATA_ENDPOINT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_SDJWTVC_METADATA_ENDPOINT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_sd_jwt_vc.DirectTrustSdJwtVc.get_metadata"><code class="docutils literal notranslate"><span class="pre">DirectTrustSdJwtVc.get_metadata()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.direct_trust_sd_jwt_vc.build_metadata_issuer_endpoint"><code class="docutils literal notranslate"><span class="pre">build_metadata_issuer_endpoint()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.exceptions">pyeudiw.trust.handler.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.exceptions.InvalidTrustHandlerConfiguration"><code class="docutils literal notranslate"><span class="pre">InvalidTrustHandlerConfiguration</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.federation">pyeudiw.trust.handler.federation module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler"><code class="docutils literal notranslate"><span class="pre">FederationHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.build_metadata_endpoints"><code class="docutils literal notranslate"><span class="pre">FederationHandler.build_metadata_endpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.entity_configuration"><code class="docutils literal notranslate"><span class="pre">FederationHandler.entity_configuration</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.entity_configuration_as_dict"><code class="docutils literal notranslate"><span class="pre">FederationHandler.entity_configuration_as_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.entity_configuration_endpoint"><code class="docutils literal notranslate"><span class="pre">FederationHandler.entity_configuration_endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.extract_and_update_trust_materials"><code class="docutils literal notranslate"><span class="pre">FederationHandler.extract_and_update_trust_materials()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.extract_jwt_header_trust_parameters"><code class="docutils literal notranslate"><span class="pre">FederationHandler.extract_jwt_header_trust_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.get_handled_trust_material_name"><code class="docutils literal notranslate"><span class="pre">FederationHandler.get_handled_trust_material_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.get_metadata"><code class="docutils literal notranslate"><span class="pre">FederationHandler.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.validate_trust_material"><code class="docutils literal notranslate"><span class="pre">FederationHandler.validate_trust_material()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.interface">pyeudiw.trust.handler.interface module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.build_metadata_endpoints"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.build_metadata_endpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.default_client_id"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.default_client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.extract_and_update_trust_materials"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.extract_and_update_trust_materials()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.extract_jwt_header_trust_parameters"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.extract_jwt_header_trust_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_client_id"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.get_client_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_handled_trust_material_name"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.get_handled_trust_material_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_metadata"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.is_it_me"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.is_it_me()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.name"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.validate_trust_material"><code class="docutils literal notranslate"><span class="pre">TrustHandlerInterface.validate_trust_material()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.x509">pyeudiw.trust.handler.x509 module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler"><code class="docutils literal notranslate"><span class="pre">X509Handler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler.extract_and_update_trust_materials"><code class="docutils literal notranslate"><span class="pre">X509Handler.extract_and_update_trust_materials()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler.extract_jwt_header_trust_parameters"><code class="docutils literal notranslate"><span class="pre">X509Handler.extract_jwt_header_trust_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler.get_handled_trust_material_name"><code class="docutils literal notranslate"><span class="pre">X509Handler.get_handled_trust_material_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler.get_metadata"><code class="docutils literal notranslate"><span class="pre">X509Handler.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.x509.X509Handler.validate_trust_material"><code class="docutils literal notranslate"><span class="pre">X509Handler.validate_trust_material()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.trust.model.html">pyeudiw.trust.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.model.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.model.html#module-pyeudiw.trust.model.trust_source">pyeudiw.trust.model.trust_source module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustEvaluationType"><code class="docutils literal notranslate"><span class="pre">TrustEvaluationType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustEvaluationType.expired"><code class="docutils literal notranslate"><span class="pre">TrustEvaluationType.expired</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustEvaluationType.get_jwks"><code class="docutils literal notranslate"><span class="pre">TrustEvaluationType.get_jwks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustEvaluationType.serialize"><code class="docutils literal notranslate"><span class="pre">TrustEvaluationType.serialize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData"><code class="docutils literal notranslate"><span class="pre">TrustSourceData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.add_trust_param"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.add_trust_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.empty"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.empty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.from_dict"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.from_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.get_trust_evaluation_type_by_handler_name"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.get_trust_evaluation_type_by_handler_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.get_trust_param"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.get_trust_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.has_trust_param"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.has_trust_param()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.is_revoked"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.is_revoked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData.serialize"><code class="docutils literal notranslate"><span class="pre">TrustSourceData.serialize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.model.html#module-pyeudiw.trust.model">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.TrustModuleConfiguration_T"><code class="docutils literal notranslate"><span class="pre">TrustModuleConfiguration_T</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.trust.anchors_loader">
+<span id="pyeudiw-trust-anchors-loader-module"></span><h2>pyeudiw.trust.anchors_loader module<a class="headerlink" href="#module-pyeudiw.trust.anchors_loader" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.trust.anchors_loader.AnchorsLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.anchors_loader.</span></span><span class="sig-name descname"><span class="pre">AnchorsLoader</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/anchors_loader.html#AnchorsLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.anchors_loader.AnchorsLoader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.anchors_loader.AnchorsLoader.load_anchors">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">load_anchors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine" title="pyeudiw.storage.db_engine.DBEngine"><span class="pre">DBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/anchors_loader.html#AnchorsLoader.load_anchors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.anchors_loader.AnchorsLoader.load_anchors" title="Link to this definition"></a></dt>
+<dd><p>Load the anchors from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine" title="pyeudiw.storage.db_engine.DBEngine"><em>DBEngine</em></a>) – The database engine</p></li>
+<li><p><strong>config</strong> (<em>list</em><em>[</em><em>dict</em><em>]</em>) – The configuration</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.trust.dynamic">
+<span id="pyeudiw-trust-dynamic-module"></span><h2>pyeudiw.trust.dynamic module<a class="headerlink" href="#module-pyeudiw.trust.dynamic" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.dynamic.</span></span><span class="sig-name descname"><span class="pre">CombinedTrustEvaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handlers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface" title="pyeudiw.trust.handler.interface.TrustHandlerInterface"><span class="pre">TrustHandlerInterface</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine" title="pyeudiw.storage.db_engine.DBEngine"><span class="pre">DBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'update_first'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cache_first'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'update_first'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_logger.BaseLogger" title="pyeudiw.tools.base_logger.BaseLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseLogger</span></code></a></p>
+<p>A trust evaluator that combines multiple trust models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.build_metadata_endpoints">
+<span class="sig-name descname"><span class="pre">build_metadata_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entity_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Context</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.build_metadata_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.build_metadata_endpoints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.from_config">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine" title="pyeudiw.storage.db_engine.DBEngine"><span class="pre">DBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'update_first'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cache_first'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'update_first'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator" title="pyeudiw.trust.dynamic.CombinedTrustEvaluator"><span class="pre">CombinedTrustEvaluator</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.from_config" title="Link to this definition"></a></dt>
+<dd><p>Create a CombinedTrustEvaluator from a configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – The configuration</p></li>
+<li><p><strong>db_engine</strong> (<a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine" title="pyeudiw.storage.db_engine.DBEngine"><em>DBEngine</em></a>) – The database engine</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The CombinedTrustEvaluator</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator" title="pyeudiw.trust.dynamic.CombinedTrustEvaluator">CombinedTrustEvaluator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_jwt_header_trust_parameters">
+<span class="sig-name descname"><span class="pre">get_jwt_header_trust_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.get_jwt_header_trust_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_jwt_header_trust_parameters" title="Link to this definition"></a></dt>
+<dd><p>Get the trust parameters of a certain issuer according to some trust model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>issuer</strong> (<em>str</em>) – The issuer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trust parameters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_metadata" title="Link to this definition"></a></dt>
+<dd><p>Yields a dictionary of metadata about an issuer, according to some trust model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issuer</strong> (<em>str</em>) – The issuer</p></li>
+<li><p><strong>force_update</strong> (<em>bool</em>) – If the metadata should be updated even if it is already present in the cache</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_policies">
+<span class="sig-name descname"><span class="pre">get_policies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.get_policies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_policies" title="Link to this definition"></a></dt>
+<dd><p>Get the policies of a certain issuer according to some trust model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>issuer</strong> (<em>str</em>) – The issuer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The policies</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_public_keys">
+<span class="sig-name descname"><span class="pre">get_public_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_trust_materials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.get_public_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_public_keys" title="Link to this definition"></a></dt>
+<dd><p>Yields a list of public keys for an issuer, according to some trust model.
+If trust materials are provided, they are used to derive the public keys.
+If not, the public keys are derived from a trust model that does not require trust materials to attest the trust.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issuer</strong> (<em>str</em>) – The issuer</p></li>
+<li><p><strong>static_trust_materials</strong> (<em>dict</em>) – The static trust materials</p></li>
+<li><p><strong>force_update</strong> (<em>bool</em>) – If the public keys should be updated even if they are already present in the cache</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The public keys</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.has_client_id">
+<span class="sig-name descname"><span class="pre">has_client_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.has_client_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.has_client_id" title="Link to this definition"></a></dt>
+<dd><p>Check if the trust source has a client id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>issuer</strong> (<em>str</em>) – The issuer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If the trust source has a client id</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.is_revoked">
+<span class="sig-name descname"><span class="pre">is_revoked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.is_revoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.is_revoked" title="Link to this definition"></a></dt>
+<dd><p>Yield if the trust toward the issuer was revoked according to some trust model;
+This asusmed that  the isser exists, is valid, but is not trusted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>issuer</strong> (<em>str</em>) – The issuer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If the trust toward the issuer was revoked</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.dynamic.CombinedTrustEvaluator.revoke">
+<span class="sig-name descname"><span class="pre">revoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/dynamic.html#CombinedTrustEvaluator.revoke"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.dynamic.CombinedTrustEvaluator.revoke" title="Link to this definition"></a></dt>
+<dd><p>Revoke the trust toward the issuer according to some trust model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>issuer</strong> (<em>str</em>) – The issuer</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.trust.exceptions">
+<span id="pyeudiw-trust-exceptions-module"></span><h2>pyeudiw.trust.exceptions module<a class="headerlink" href="#module-pyeudiw.trust.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.InvalidAnchor">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidAnchor</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#InvalidAnchor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.InvalidAnchor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.InvalidJwkMetadataException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidJwkMetadataException</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#InvalidJwkMetadataException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.InvalidJwkMetadataException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.InvalidTrustType">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidTrustType</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#InvalidTrustType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.InvalidTrustType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.MissingProtocolSpecificJwks">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingProtocolSpecificJwks</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#MissingProtocolSpecificJwks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.MissingProtocolSpecificJwks" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.MissingTrustType">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingTrustType</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#MissingTrustType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.MissingTrustType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.NoCriptographicMaterial">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoCriptographicMaterial</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#NoCriptographicMaterial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.NoCriptographicMaterial" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.NoMetadata">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoMetadata</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#NoMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.NoMetadata" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.NoTrustChainProvided">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoTrustChainProvided</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#NoTrustChainProvided"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.NoTrustChainProvided" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.TrustConfigurationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrustConfigurationError</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#TrustConfigurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.TrustConfigurationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.trust.exceptions.UnknownTrustAnchor">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnknownTrustAnchor</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/exceptions.html#UnknownTrustAnchor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.exceptions.UnknownTrustAnchor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.trust.interface">
+<span id="pyeudiw-trust-interface-module"></span><h2>pyeudiw.trust.interface module<a class="headerlink" href="#module-pyeudiw.trust.interface" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.trust.interface.</span></span><span class="sig-name descname"><span class="pre">TrustEvaluator</span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>TrustEvaluator is an interface that defined the expected behaviour of a
+class that, as the very core, can:
+(1) obtain the cryptographic material of an issuer, which might or might not be trusted according to some trust model
+(2) obtain the meta information about an issuer that is defined according to some trust model</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.build_metadata_endpoints">
+<span class="sig-name descname"><span class="pre">build_metadata_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Context</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.build_metadata_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.build_metadata_endpoints" title="Link to this definition"></a></dt>
+<dd><p>Return metadata endpoints for this trust evaluator (e.g. keys, config, policies).</p>
+<p>Each item must be a tuple (regex: str, handler: Callable[[Context, Any], Response])
+compatible with satosa.backend.BackendModule.register_endpoints.</p>
+<p>base_path is the module base path and can be used when building the routes.
+Return an empty list if there are no endpoints to expose.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.get_jwt_header_trust_parameters">
+<span class="sig-name descname"><span class="pre">get_jwt_header_trust_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.get_jwt_header_trust_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.get_jwt_header_trust_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.get_metadata" title="Link to this definition"></a></dt>
+<dd><p>yields a dictionary of metadata about an issuer, according to some
+trust model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.get_policies">
+<span class="sig-name descname"><span class="pre">get_policies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.get_policies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.get_policies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.get_public_keys">
+<span class="sig-name descname"><span class="pre">get_public_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.get_public_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.get_public_keys" title="Link to this definition"></a></dt>
+<dd><p>yields the public cryptographic material of the issuer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a list of jwk(s); note that those key are _not_ necessarely identified by a kid claim</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.initialize_istance">
+<span class="sig-name descname"><span class="pre">initialize_istance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.initialize_istance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.initialize_istance" title="Link to this definition"></a></dt>
+<dd><p>Initialize the cryptographic material of the issuer, according to some
+trust model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.trust.interface.TrustEvaluator.is_revoked">
+<span class="sig-name descname"><span class="pre">is_revoked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/trust/interface.html#TrustEvaluator.is_revoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.trust.interface.TrustEvaluator.is_revoked" title="Link to this definition"></a></dt>
+<dd><p>yield if the trust toward the issuer was revoked according to some trust model;
+this asusmed that  the isser exists, is valid, but is not trusted.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.trust">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.trust" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.tools.html" class="btn btn-neutral float-left" title="pyeudiw.tools package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.trust.default.html" class="btn btn-neutral float-right" title="pyeudiw.trust.default package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

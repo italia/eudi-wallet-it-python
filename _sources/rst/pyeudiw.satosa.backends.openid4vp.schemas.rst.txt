@@ -1,0 +1,53 @@
+pyeudiw.satosa.backends.openid4vp.schemas package
+=================================================
+
+Submodules
+----------
+
+pyeudiw.satosa.backends.openid4vp.schemas.flow module
+-----------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas.flow
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.schemas.response module
+---------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas.response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.schemas.vp\_formats module
+------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas.vp_formats
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.schemas.vp\_token module
+----------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas.vp_token
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.schemas.wallet\_metadata module
+-----------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.schemas
+   :members:
+   :show-inheritance:
+   :undoc-members:

@@ -1,0 +1,602 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.x509.verify &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.x509.verify</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.x509.verify</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ssl</span><span class="w"> </span><span class="kn">import</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">,</span> <span class="n">PEM_cert_to_DER_cert</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography</span><span class="w"> </span><span class="kn">import</span> <span class="n">x509</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.x509</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_der_x509_certificate</span><span class="p">,</span> <span class="n">load_pem_x509_certificate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives.asymmetric</span><span class="w"> </span><span class="kn">import</span> <span class="n">rsa</span><span class="p">,</span> <span class="n">ec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives.asymmetric</span><span class="w"> </span><span class="kn">import</span> <span class="n">padding</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.ec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ECKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.rsa</span><span class="w"> </span><span class="kn">import</span> <span class="n">RSAKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.x509.crl_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRLHelper</span>
+
+<span class="n">LOG_ERROR</span> <span class="o">=</span> <span class="s2">&quot;x509 verification failed: </span><span class="si">{}</span><span class="s2">&quot;</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_BASE64_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;^(?:[A-Za-z0-9+/]</span><span class="si">{4}</span><span class="s2">)*(?:[A-Za-z0-9+/]</span><span class="si">{2}</span><span class="s2">==|[A-Za-z0-9+/]</span><span class="si">{3}</span><span class="s2">=)?$&quot;</span><span class="p">)</span>
+<span class="c1"># PEM block: -----BEGIN LABEL----- ... -----END LABEL----- (no pyOpenSSL/pem dependency)</span>
+<span class="n">_PEM_BLOCK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;-----BEGIN [^-]+-----\n.*?-----END [^-]+-----&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_verify_x509_certificate_chain</span><span class="p">(</span><span class="n">pems</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">crls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CRLHelper</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the x509 certificate chain using cryptography (no pyOpenSSL).</span>
+
+<span class="sd">    :param pems: The x509 certificate chain (PEM strings)</span>
+<span class="sd">    :type pems: list[str]</span>
+
+<span class="sd">    :returns: True if the x509 certificate chain is valid else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">certs</span> <span class="o">=</span> <span class="p">[</span><span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">pem_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">default_backend</span><span class="p">())</span> <span class="k">for</span> <span class="n">pem_str</span> <span class="ow">in</span> <span class="n">pems</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">certs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">certs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">child</span><span class="p">,</span> <span class="n">issuer</span> <span class="o">=</span> <span class="n">certs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">certs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">pubkey</span> <span class="o">=</span> <span class="n">issuer</span><span class="o">.</span><span class="n">public_key</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pubkey</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">RSAPublicKey</span><span class="p">):</span>
+                    <span class="n">pubkey</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">signature</span><span class="p">,</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">tbs_certificate_bytes</span><span class="p">,</span>
+                        <span class="n">padding</span><span class="o">.</span><span class="n">PKCS1v15</span><span class="p">(),</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">signature_hash_algorithm</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pubkey</span><span class="p">,</span> <span class="n">ec</span><span class="o">.</span><span class="n">EllipticCurvePublicKey</span><span class="p">):</span>
+                    <span class="n">pubkey</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">signature</span><span class="p">,</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">tbs_certificate_bytes</span><span class="p">,</span>
+                        <span class="n">ec</span><span class="o">.</span><span class="n">ECDSA</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">signature_hash_algorithm</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;unsupported issuer key type&quot;</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;chain signature invalid (cert </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> by </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">) -&gt; </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_message</span><span class="p">))</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">cert</span> <span class="ow">in</span> <span class="n">certs</span><span class="p">:</span>
+            <span class="n">serial_number</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">serial_number</span>
+            <span class="k">for</span> <span class="n">crl</span> <span class="ow">in</span> <span class="n">crls</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">crl</span><span class="o">.</span><span class="n">is_revoked</span><span class="p">(</span><span class="n">serial_number</span><span class="p">):</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;certificate with serial number </span><span class="si">{</span><span class="n">serial_number</span><span class="si">}</span><span class="s2"> is revoked&quot;</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cert&#39;s chain cannot be validated for error -&gt; </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_message</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_datetime</span><span class="p">(</span><span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the x509 certificate chain expiration date.</span>
+
+<span class="sd">    :param exp: The x509 certificate chain expiration date</span>
+<span class="sd">    :type exp: datetime.datetime | None</span>
+
+<span class="sd">    :returns: True if the x509 certificate chain expiration date is valid else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="n">exp_utc</span> <span class="o">=</span> <span class="n">exp</span> <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">tzinfo</span> <span class="k">else</span> <span class="n">exp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">now</span> <span class="o">&gt;</span> <span class="n">exp_utc</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;expired chain date -&gt; </span><span class="si">{</span><span class="n">exp</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="verify_x509_attestation_chain">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.verify_x509_attestation_chain">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_x509_attestation_chain</span><span class="p">(</span><span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">],</span> <span class="n">crls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CRLHelper</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the x509 attestation certificate chain.</span>
+
+<span class="sd">    :param x5c: The x509 attestation certificate chain</span>
+<span class="sd">    :type x5c: list[bytes]</span>
+
+<span class="sd">    :returns: True if the x509 attestation certificate chain is valid else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">cert_der</span> <span class="ow">in</span> <span class="n">x5c</span><span class="p">:</span>
+            <span class="n">cert</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">to_DER_cert</span><span class="p">(</span><span class="n">cert_der</span><span class="p">),</span> <span class="n">default_backend</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_datetime</span><span class="p">(</span><span class="n">cert</span><span class="o">.</span><span class="n">not_valid_after_utc</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">pems</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span> <span class="k">for</span> <span class="n">cert</span> <span class="ow">in</span> <span class="n">x5c</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">_verify_x509_certificate_chain</span><span class="p">(</span><span class="n">pems</span><span class="p">,</span> <span class="n">crls</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="DER_cert_to_B64DER_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.DER_cert_to_B64DER_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">DER_cert_to_B64DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encode in Base64 a DER certificate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="PEM_cert_to_B64DER_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.PEM_cert_to_B64DER_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">PEM_cert_to_B64DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a certificate in ANSII PEM format and returns the base64</span>
+<span class="sd">    encoding of the corresponding DER certificate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">PEM_cert_to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="B64DER_cert_to_PEM_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.B64DER_cert_to_PEM_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">B64DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a certificate Base64 encoded DER and returns the</span>
+<span class="sd">    certificate in ANSII PEM format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">cert</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="B64DER_cert_to_DER_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.B64DER_cert_to_DER_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">B64DER_cert_to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes a certificate Base64 encoded DER and returns the</span>
+<span class="sd">    certificate in DER format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="to_DER_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.to_DER_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes in a certificate with unknown representation</span>
+<span class="sd">    (allegedly, PEM, DER or Base64 encoded DER) and applies some</span>
+<span class="sd">    heuristics to convert it to a DER certificate.</span>
+
+<span class="sd">    This function should be treated as UNSAFE and inefficient. Do NOT</span>
+<span class="sd">    use it unless you do NOT hany prior way to know the actual representation</span>
+<span class="sd">    format of a certificate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cert_s</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_der_format</span><span class="p">(</span><span class="n">cert</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cert</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cert_s</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+            <span class="c1"># Bytes that are not valid DER and not UTF-8 (e.g. malformed DER)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unable to recognize input as a certificate&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cert_s</span> <span class="o">=</span> <span class="n">cert</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">cert_s</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;-----BEGIN CERTIFICATE-----&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PEM_cert_to_DER_cert</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cert_s</span><span class="p">))</span>
+
+    <span class="n">cert_s</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\n\r|\n&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cert_s</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">_BASE64_RE</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">cert_s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">B64DER_cert_to_DER_cert</span><span class="p">(</span><span class="n">cert_s</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unable to recognize input as a certificate&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="to_PEM_cert">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.to_PEM_cert">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes in a certificate with unknown representation</span>
+<span class="sd">    (allegedly, PEM, DER or Base64 encoded DER) and applies some</span>
+<span class="sd">    heuristics to convert it to a PEM certificate.</span>
+
+<span class="sd">    This function should be treated as UNSAFE and inefficient. Do NOT</span>
+<span class="sd">    use it unless you do NOT hany prior way to know the actual representation</span>
+<span class="sd">    format of a certificate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cert_b</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_pem_format</span><span class="p">(</span><span class="n">cert</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cert</span>
+        <span class="k">elif</span> <span class="n">_BASE64_RE</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">cert</span><span class="p">):</span>
+            <span class="n">cert_b</span> <span class="o">=</span> <span class="n">B64DER_cert_to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cert_b</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cert_b</span> <span class="o">=</span> <span class="n">cert</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">cert_b</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;-----BEGIN CERTIFICATE-----&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">cert_b</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cert_s</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">cert_b</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">_BASE64_RE</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">cert_s</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">B64DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">cert_s</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">UnicodeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">cert_b</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unable to recognize input as a certificate&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pem_to_pems_list">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.pem_to_pems_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pem_to_pems_list</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split a string containing one or more PEM blocks (e.g. certificates) into a list of PEM strings.</span>
+<span class="sd">    Uses stdlib/re only; no pyOpenSSL or pem dependency.</span>
+
+<span class="sd">    :param cert: The x509 certificate chain in PEM format (one or more concatenated PEM blocks)</span>
+<span class="sd">    :type cert: str</span>
+
+<span class="sd">    :returns: The x509 certificate chain as a list of PEM strings</span>
+<span class="sd">    :rtype: list[str]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_PEM_BLOCK_RE</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">cert</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="to_pem_list">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.to_pem_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_pem_list</span><span class="p">(</span><span class="n">der_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the input is a list of DER certificates, it will be converted to a list of PEM certificates.</span>
+<span class="sd">    If the input is a list of PEM certificates, it will be returned as is.</span>
+
+<span class="sd">    :param der: The x509 certificate chain in DER format</span>
+<span class="sd">    :type der: list[bytes]</span>
+
+<span class="sd">    :returns: The x509 certificate chain in PEM format</span>
+<span class="sd">    :rtype: list[str]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span> <span class="k">for</span> <span class="n">cert</span> <span class="ow">in</span> <span class="n">der_list</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="to_der_list">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.to_der_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_der_list</span><span class="p">(</span><span class="n">pem_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the input is a list of PEM certificates, it will be converted to a list of DER certificates.</span>
+<span class="sd">    If the input is a list of DER certificates, it will be returned as is.</span>
+
+<span class="sd">    :param pem_list: The x509 certificate chain in PEM format</span>
+<span class="sd">    :type pem_list: list[str]</span>
+
+<span class="sd">    :returns: The x509 certificate chain in DER format</span>
+<span class="sd">    :rtype: list[bytes]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span> <span class="k">for</span> <span class="n">cert</span> <span class="ow">in</span> <span class="n">pem_list</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="verify_x509_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.verify_x509_anchor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_x509_anchor</span><span class="p">(</span><span class="n">pem_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the x509 anchor certificate.</span>
+
+<span class="sd">    :param pem_str: The x509 anchor certificate</span>
+<span class="sd">    :type pem_str: str</span>
+
+<span class="sd">    :returns: True if the x509 anchor certificate is valid else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cert_data</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">to_DER_cert</span><span class="p">(</span><span class="n">pem_str</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_datetime</span><span class="p">(</span><span class="n">cert_data</span><span class="o">.</span><span class="n">not_valid_after_utc</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;check datetime failed&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">pems</span> <span class="o">=</span> <span class="n">pem_to_pems_list</span><span class="p">(</span><span class="n">pem_str</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_verify_x509_certificate_chain</span><span class="p">(</span><span class="n">pems</span><span class="p">,</span> <span class="p">[])</span></div>
+
+
+
+<div class="viewcode-block" id="get_get_subject_name">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_get_subject_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_get_subject_name</span><span class="p">(</span><span class="n">der</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the subject name from the x509 certificate.</span>
+
+<span class="sd">    :param der: The x509 certificate</span>
+<span class="sd">    :type der: bytes</span>
+
+<span class="sd">    :returns: The subject name</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cert</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">der</span><span class="p">)</span>
+
+    <span class="c1"># get san dns name</span>
+    <span class="n">san</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">extensions</span><span class="o">.</span><span class="n">get_extension_for_class</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">SubjectAlternativeName</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">san</span><span class="p">:</span>
+        <span class="n">dns</span> <span class="o">=</span> <span class="n">san</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">get_values_for_type</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">DNSName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dns</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">san</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">get_values_for_type</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">UniformResourceIdentifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uri</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">uri</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># alternatively erturn the rfc4514 string</span>
+    <span class="k">return</span> <span class="n">cert</span><span class="o">.</span><span class="n">subject</span><span class="o">.</span><span class="n">rfc4514_string</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="get_issuer_from_x5c">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_issuer_from_x5c">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_issuer_from_x5c</span><span class="p">(</span><span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the issuer from the x509 certificate chain.</span>
+
+<span class="sd">    :param x5c: The x509 certificate chain</span>
+<span class="sd">    :type x5c: list[bytes]</span>
+
+<span class="sd">    :returns: The issuer</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">der</span> <span class="o">=</span> <span class="n">to_DER_cert</span><span class="p">(</span><span class="n">x5c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">get_get_subject_name</span><span class="p">(</span><span class="n">der</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_trust_anchor_from_x5c">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_trust_anchor_from_x5c">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_trust_anchor_from_x5c</span><span class="p">(</span><span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the issuer from the x509 certificate chain.</span>
+
+<span class="sd">    :param x5c: The x509 certificate chain</span>
+<span class="sd">    :type x5c: list[bytes]</span>
+
+<span class="sd">    :returns: The issuer</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">der</span> <span class="o">=</span> <span class="n">to_DER_cert</span><span class="p">(</span><span class="n">x5c</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">get_get_subject_name</span><span class="p">(</span><span class="n">der</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_expiry_date_from_x5c">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_expiry_date_from_x5c">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_expiry_date_from_x5c</span><span class="p">(</span><span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the expiry date from the x509 certificate chain.</span>
+
+<span class="sd">    :param x5c: The x509 certificate chain</span>
+<span class="sd">    :type x5c: list[bytes]</span>
+
+<span class="sd">    :returns: The expiry date</span>
+<span class="sd">    :rtype: datetime</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">der</span> <span class="o">=</span> <span class="n">to_DER_cert</span><span class="p">(</span><span class="n">x5c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">cert</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">der</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cert</span><span class="o">.</span><span class="n">not_valid_after_utc</span></div>
+
+
+
+<div class="viewcode-block" id="get_x509_info">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_x509_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_x509_info</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">san_dns</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the x509 certificate information.</span>
+
+<span class="sd">    :param cert: The x509 certificate</span>
+<span class="sd">    :type cert: bytes | str</span>
+<span class="sd">    :param info_type: The information type</span>
+<span class="sd">    :type info_type: str</span>
+
+<span class="sd">    :returns: The certificate information</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_common_name</span><span class="p">(</span><span class="n">cert</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cert</span><span class="o">.</span><span class="n">subject</span><span class="o">.</span><span class="n">get_attributes_for_oid</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">NameOID</span><span class="o">.</span><span class="n">COMMON_NAME</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="n">der</span> <span class="o">=</span> <span class="n">to_DER_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span>
+    <span class="n">loaded_cert</span><span class="p">:</span> <span class="n">x509</span><span class="o">.</span><span class="n">Certificate</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">der</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">san</span> <span class="o">=</span> <span class="n">loaded_cert</span><span class="o">.</span><span class="n">extensions</span><span class="o">.</span><span class="n">get_extension_for_class</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">SubjectAlternativeName</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">san_dns</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">san</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">get_values_for_type</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">DNSName</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">get_common_name</span><span class="p">(</span><span class="n">loaded_cert</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">x509</span><span class="o">.</span><span class="n">ExtensionNotFound</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_common_name</span><span class="p">(</span><span class="n">loaded_cert</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="is_der_format">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.is_der_format">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_der_format</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the certificate is in DER format.</span>
+
+<span class="sd">    :param cert: The certificate</span>
+<span class="sd">    :type cert: bytes</span>
+
+<span class="sd">    :returns: True if the certificate is in DER format else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pem_str</span> <span class="o">=</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span>
+        <span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">pem_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="is_pem_format">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.is_pem_format">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_pem_format</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the certificate is in PEM format.</span>
+
+<span class="sd">    :param cert: The certificate</span>
+<span class="sd">    :type cert: bytes</span>
+
+<span class="sd">    :returns: True if the certificate is in PEM format else False</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">cert</span>
+        <span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">LOG_ERROR</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="get_public_key_from_x509_chain">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_public_key_from_x509_chain">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_public_key_from_x509_chain</span><span class="p">(</span><span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ECKey</span> <span class="o">|</span> <span class="n">RSAKey</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;TODO&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_certificate_type">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.verify.get_certificate_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_certificate_type</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">pem_str</span> <span class="o">=</span> <span class="n">to_PEM_cert</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span>
+
+    <span class="n">loaded_cert</span> <span class="o">=</span> <span class="n">x509</span><span class="o">.</span><span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">pem_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">default_backend</span><span class="p">())</span>
+    <span class="n">public_key</span> <span class="o">=</span> <span class="n">loaded_cert</span><span class="o">.</span><span class="n">public_key</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">public_key</span><span class="p">,</span> <span class="n">rsa</span><span class="o">.</span><span class="n">RSAPublicKey</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;RS&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">public_key</span><span class="p">,</span> <span class="n">ec</span><span class="o">.</span><span class="n">EllipticCurvePublicKey</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;EC&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Unknown&quot;</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

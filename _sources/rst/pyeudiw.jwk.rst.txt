@@ -1,0 +1,45 @@
+pyeudiw.jwk package
+===================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.jwk.schemas
+
+Submodules
+----------
+
+pyeudiw.jwk.exceptions module
+-----------------------------
+
+.. automodule:: pyeudiw.jwk.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.jwk.jwks module
+-----------------------
+
+.. automodule:: pyeudiw.jwk.jwks
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.jwk.parse module
+------------------------
+
+.. automodule:: pyeudiw.jwk.parse
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.jwk
+   :members:
+   :show-inheritance:
+   :undoc-members:

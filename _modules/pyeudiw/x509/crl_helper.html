@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.x509.crl_helper &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.x509.crl_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.x509.crl_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography</span><span class="w"> </span><span class="kn">import</span> <span class="n">x509</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.x509</span><span class="w"> </span><span class="kn">import</span> <span class="n">CertificateRevocationList</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives</span><span class="w"> </span><span class="kn">import</span> <span class="n">serialization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">http_get_sync</span><span class="p">,</span> <span class="n">DEFAULT_HTTPC_PARAMS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.x509.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRLHTTPError</span><span class="p">,</span> <span class="n">CRLParseError</span><span class="p">,</span> <span class="n">CRLReadError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.x509</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_der_x509_certificate</span><span class="p">,</span> <span class="n">load_pem_x509_certificate</span>
+
+
+<div class="viewcode-block" id="CRLHelper">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CRLHelper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper class to handle CRL (Certificate Revocation List) operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crl</span><span class="p">:</span> <span class="n">CertificateRevocationList</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the CRLHelper with a CRL object.</span>
+
+<span class="sd">        :param crl: The CRL object to be used.</span>
+<span class="sd">        :type crl: CertificateRevocationList</span>
+<span class="sd">        :param uri: The URI of the CRL.</span>
+<span class="sd">        :type uri: str</span>
+
+<span class="sd">        :raises CRLReadError: If the CRL object is invalid or if the URI is not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span> <span class="o">=</span> <span class="n">crl</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">uri</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="s2">&quot;CRL URI is required.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uri</span> <span class="o">=</span> <span class="n">uri</span>
+
+<div class="viewcode-block" id="CRLHelper.is_revoked">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.is_revoked">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_revoked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if a certificate with the given serial number is revoked.</span>
+
+<span class="sd">        :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.</span>
+<span class="sd">        :type serial_number: str | int</span>
+
+<span class="sd">        :raises CRLReadError: If the serial number is invalid or if the revocation list is not loaded.</span>
+
+<span class="sd">        :return: True if the certificate is revoked, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serial_number</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">serial_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">serial_number</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid serial number format: </span><span class="si">{</span><span class="n">serial_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span><span class="o">.</span><span class="n">get_revoked_certificate_by_serial_number</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to check revocation status: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.get_revocation_date">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.get_revocation_date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_revocation_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serial_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the revocation date of a certificate with the given serial number.</span>
+
+<span class="sd">        :param serial_number: The serial number of the certificate to check. Can be in hex format (string) or integer.</span>
+<span class="sd">        :type serial_number: str | int</span>
+
+<span class="sd">        :raises CRLReadError: If the serial number is invalid or if the revocation list is not loaded.</span>
+
+<span class="sd">        :return: The revocation date if revoked, None otherwise.</span>
+<span class="sd">        :rtype: str | None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serial_number</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">serial_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">serial_number</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid serial number format: </span><span class="si">{</span><span class="n">serial_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span><span class="o">.</span><span class="n">get_revoked_certificate_by_serial_number</span><span class="p">(</span><span class="n">serial_number</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cert</span><span class="o">.</span><span class="n">revocation_date_utc</span> <span class="k">if</span> <span class="n">cert</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to get revocation date: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.is_crl_expired">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.is_crl_expired">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_crl_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the CRL is valid (not expired).</span>
+
+<span class="sd">        :raises CRLReadError: If the CRL is not loaded or if the expiration date cannot be determined.</span>
+
+<span class="sd">        :return: True if the CRL is valid, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span><span class="o">.</span><span class="n">next_update</span>
+
+            <span class="k">if</span> <span class="n">exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="k">return</span> <span class="n">exp</span> <span class="o">&lt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">tzinfo</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to check CRL validity: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.update">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">DEFAULT_HTTPC_PARAMS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the CRL by fetching it from the URI.</span>
+<span class="sd">        This method fetches the CRL file from the specified URI and loads it into the CRL object.</span>
+
+<span class="sd">        :param httpc_params: Optional HTTP client parameters.</span>
+<span class="sd">        :type httpc_params: dict | None</span>
+
+<span class="sd">        :raises CRLHTTPError: If the HTTP request fails or the response is not valid.</span>
+<span class="sd">        :raises CRLParseError: If the CRL file is not in the expected format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">http_get_sync</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">uri</span><span class="p">],</span> <span class="n">httpc_params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLHTTPError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch CRL from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uri</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span> <span class="o">=</span> <span class="n">CRLHelper</span><span class="o">.</span><span class="n">_parse_crl</span><span class="p">(</span>
+            <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.serialize">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.serialize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serialize the CRL to a specified encoding format.</span>
+
+<span class="sd">        :param encoding: The encoding format. Can be &quot;pem&quot; or &quot;der&quot;. Defaults to &quot;pem&quot;.</span>
+<span class="sd">        :type encoding: str</span>
+
+<span class="sd">        :return: The serialized CRL with the uri.</span>
+<span class="sd">        :rtype: dict[str, str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;pem&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">revocation_list</span><span class="o">.</span><span class="n">public_bytes</span><span class="p">(</span><span class="n">serialization</span><span class="o">.</span><span class="n">Encoding</span><span class="o">.</span><span class="n">PEM</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_crl</span><span class="p">(</span><span class="n">crl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CertificateRevocationList</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a CRL from a given PEM or DER formatted string or bytes.</span>
+
+<span class="sd">        :param crl: The CRL in PEM or DER format.</span>
+<span class="sd">        :type crl: str | bytes</span>
+
+<span class="sd">        :raises CRLParseError: If the CRL file is not in the expected format.</span>
+
+<span class="sd">        :return: The parsed CRL object.</span>
+<span class="sd">        :rtype: CertificateRevocationList</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crl</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">crl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;-----BEGIN X509 CRL-----&quot;</span><span class="p">):</span>
+            <span class="n">rev_list</span> <span class="o">=</span> <span class="n">x509</span><span class="o">.</span><span class="n">load_pem_x509_crl</span><span class="p">(</span><span class="n">crl</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crl</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">crl</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crl</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">and</span> <span class="n">crl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;-----BEGIN X509 CRL-----&quot;</span><span class="p">):</span>
+            <span class="n">rev_list</span> <span class="o">=</span> <span class="n">x509</span><span class="o">.</span><span class="n">load_pem_x509_crl</span><span class="p">(</span><span class="n">crl</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rev_list</span> <span class="o">=</span> <span class="n">x509</span><span class="o">.</span><span class="n">load_der_x509_crl</span><span class="p">(</span><span class="n">crl</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crl</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">crl</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">rev_list</span>
+
+<div class="viewcode-block" id="CRLHelper.from_url">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_url">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_url</span><span class="p">(</span><span class="n">crl_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">DEFAULT_HTTPC_PARAMS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CRLHelper&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a CRL from a given URL.</span>
+<span class="sd">        This method fetches the CRL file from the specified URL and loads it into a CRL object.</span>
+
+<span class="sd">        :param crl_url: URL of the CRL file.</span>
+<span class="sd">        :type crl_url: str</span>
+<span class="sd">        :param httpc_params: Optional HTTP client parameters.</span>
+<span class="sd">        :type httpc_params: dict | None</span>
+
+<span class="sd">        :raises CRLHTTPError: If the HTTP request fails or the response is not valid.</span>
+<span class="sd">        :raises CRLParseError: If the CRL file is not in the expected format.</span>
+
+<span class="sd">        :return: An instance of CRLHelper containing the loaded CRL.</span>
+<span class="sd">        :rtype: CRLHelper</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">http_get_sync</span><span class="p">([</span><span class="n">crl_url</span><span class="p">],</span> <span class="n">httpc_params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLHTTPError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch CRL from </span><span class="si">{</span><span class="n">crl_url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">CRLHelper</span><span class="o">.</span><span class="n">from_crl</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">uri</span><span class="o">=</span><span class="n">crl_url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.from_certificate">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_certificate">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_certificate</span><span class="p">(</span><span class="n">cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="s2">&quot;CRLHelper&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load CRL distribution points from a given certificate.</span>
+<span class="sd">        This method extracts the CRL distribution points from the certificate and loads them into CRLHelper instances.</span>
+
+<span class="sd">        :param cert: The certificate in PEM or DER format.</span>
+<span class="sd">        :type cert: str | bytes</span>
+
+<span class="sd">        :raises CRLReadError: If the certificate does not contain CRL distribution points or if loading fails.</span>
+
+<span class="sd">        :return: A list of CRLHelper instances containing the loaded CRLs.</span>
+<span class="sd">        :rtype: list[CRLHelper]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cert</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;-----BEGIN CERTIFICATE-----&quot;</span><span class="p">):</span>
+            <span class="n">parsed_cert</span><span class="p">:</span> <span class="n">x509</span><span class="o">.</span><span class="n">Certificate</span> <span class="o">=</span> <span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">cert</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cert</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;-----BEGIN CERTIFICATE-----&quot;</span><span class="p">):</span>
+            <span class="n">parsed_cert</span><span class="p">:</span> <span class="n">x509</span><span class="o">.</span><span class="n">Certificate</span> <span class="o">=</span> <span class="n">load_pem_x509_certificate</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parsed_cert</span><span class="p">:</span> <span class="n">x509</span><span class="o">.</span><span class="n">Certificate</span> <span class="o">=</span> <span class="n">load_der_x509_certificate</span><span class="p">(</span><span class="n">cert</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">cert</span><span class="p">,</span> <span class="n">default_backend</span><span class="p">())</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">crl_distribution_points</span> <span class="o">=</span> <span class="n">parsed_cert</span><span class="o">.</span><span class="n">extensions</span><span class="o">.</span><span class="n">get_extension_for_class</span><span class="p">(</span><span class="n">x509</span><span class="o">.</span><span class="n">CRLDistributionPoints</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">x509</span><span class="o">.</span><span class="n">ExtensionNotFound</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="s2">&quot;No CRL distribution points found in the certificate.&quot;</span><span class="p">)</span>
+
+        <span class="n">crl_helpers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">crl_url</span> <span class="ow">in</span> <span class="n">crl_distribution_points</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">crl_helper</span> <span class="o">=</span> <span class="n">CRLHelper</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">crl_url</span><span class="o">.</span><span class="n">full_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">crl_helpers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">crl_helper</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">CRLHTTPError</span><span class="p">,</span> <span class="n">CRLParseError</span><span class="p">,</span> <span class="n">CRLReadError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CRLReadError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load CRL from certificate: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">crl_helpers</span></div>
+
+
+<div class="viewcode-block" id="CRLHelper.from_crl">
+<a class="viewcode-back" href="../../../rst/pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_crl">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_crl</span><span class="p">(</span><span class="n">crl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CRLHelper&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a CRL from a given PEM or DER formatted string or bytes.</span>
+
+<span class="sd">        :param crl: The CRL in PEM or DER format.</span>
+<span class="sd">        :type crl: str | bytes</span>
+
+<span class="sd">        :raises CRLParseError: If the CRL file is not in the expected format.</span>
+
+<span class="sd">        :return: An instance of CRLHelper containing the loaded CRL.</span>
+<span class="sd">        :rtype: CRLHelper</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CRLHelper</span><span class="p">(</span><span class="n">crl</span><span class="o">=</span><span class="n">CRLHelper</span><span class="o">.</span><span class="n">_parse_crl</span><span class="p">(</span><span class="n">crl</span><span class="p">),</span> <span class="n">uri</span><span class="o">=</span><span class="n">uri</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CRLParseError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse CRL: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

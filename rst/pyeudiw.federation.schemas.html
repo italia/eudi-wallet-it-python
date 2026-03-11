@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.federation.schemas package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.federation.trust_chain package" href="pyeudiw.federation.trust_chain.html" />
+    <link rel="prev" title="pyeudiw.federation package" href="pyeudiw.federation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.federation.schemas package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.federation.schemas.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-federation-schemas-package">
+<h1>pyeudiw.federation.schemas package<a class="headerlink" href="#pyeudiw-federation-schemas-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.federation.schemas.entity_configuration">
+<span id="pyeudiw-federation-schemas-entity-configuration-module"></span><h2>pyeudiw.federation.schemas.entity_configuration module<a class="headerlink" href="#module-pyeudiw.federation.schemas.entity_configuration" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.entity_configuration.</span></span><span class="sig-name descname"><span class="pre">EntityConfigurationHeader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'entity-statement+jwt'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/entity_configuration.html#EntityConfigurationHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.alg">
+<span class="sig-name descname"><span class="pre">alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.kid">
+<span class="sig-name descname"><span class="pre">kid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.kid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.typ">
+<span class="sig-name descname"><span class="pre">typ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'entity-statement+jwt'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.entity_configuration.</span></span><span class="sig-name descname"><span class="pre">EntityConfigurationMetadataSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">openid_credential_verifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier" title="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier"><span class="pre">OpenIDCredentialVerifier</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">federation_entity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity" title="pyeudiw.federation.schemas.federation_entity.FederationEntity"><span class="pre">FederationEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/entity_configuration.html#EntityConfigurationMetadataSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.federation_entity">
+<span class="sig-name descname"><span class="pre">federation_entity</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity" title="pyeudiw.federation.schemas.federation_entity.FederationEntity"><span class="pre">FederationEntity</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.federation_entity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.openid_credential_verifier">
+<span class="sig-name descname"><span class="pre">openid_credential_verifier</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier" title="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier"><span class="pre">OpenIDCredentialVerifier</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.openid_credential_verifier" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.entity_configuration.</span></span><span class="sig-name descname"><span class="pre">EntityConfigurationPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">iat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema" title="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema"><span class="pre">EntityConfigurationMetadataSchema</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">authority_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/entity_configuration.html#EntityConfigurationPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.authority_hints">
+<span class="sig-name descname"><span class="pre">authority_hints</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.authority_hints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.exp">
+<span class="sig-name descname"><span class="pre">exp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.exp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iat">
+<span class="sig-name descname"><span class="pre">iat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iss">
+<span class="sig-name descname"><span class="pre">iss</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iss" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.jwks">
+<span class="sig-name descname"><span class="pre">jwks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.jwks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema" title="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema"><span class="pre">EntityConfigurationMetadataSchema</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.sub">
+<span class="sig-name descname"><span class="pre">sub</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.sub" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.entity_configuration.</span></span><span class="sig-name descname"><span class="pre">EntityStatementPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_marks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/entity_configuration.html#EntityStatementPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.exp">
+<span class="sig-name descname"><span class="pre">exp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.exp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iat">
+<span class="sig-name descname"><span class="pre">iat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iss">
+<span class="sig-name descname"><span class="pre">iss</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iss" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.jwks">
+<span class="sig-name descname"><span class="pre">jwks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.jwks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata_policy">
+<span class="sig-name descname"><span class="pre">metadata_policy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata_policy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'extra':</span> <span class="pre">'forbid'}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.source_endpoint">
+<span class="sig-name descname"><span class="pre">source_endpoint</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.source_endpoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.sub">
+<span class="sig-name descname"><span class="pre">sub</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.sub" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.trust_marks">
+<span class="sig-name descname"><span class="pre">trust_marks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.trust_marks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.schemas.federation_configuration">
+<span id="pyeudiw-federation-schemas-federation-configuration-module"></span><h2>pyeudiw.federation.schemas.federation_configuration module<a class="headerlink" href="#module-pyeudiw.federation.schemas.federation_configuration" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.federation_configuration.</span></span><span class="sig-name descname"><span class="pre">FederationConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authority_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_anchors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_sig_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported"><span class="pre">SigningAlgValuesSupported</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">federation_entity_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata" title="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata"><span class="pre">FederationEntityMetadata</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">federation_jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwkSchema" title="pyeudiw.jwk.schemas.public.JwkSchema"><span class="pre">JwkSchema</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/federation_configuration.html#FederationConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.authority_hints">
+<span class="sig-name descname"><span class="pre">authority_hints</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.authority_hints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.default_sig_alg">
+<span class="sig-name descname"><span class="pre">default_sig_alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported"><span class="pre">SigningAlgValuesSupported</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.default_sig_alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_entity_metadata">
+<span class="sig-name descname"><span class="pre">federation_entity_metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata" title="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata"><span class="pre">FederationEntityMetadata</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_entity_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_jwks">
+<span class="sig-name descname"><span class="pre">federation_jwks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwkSchema" title="pyeudiw.jwk.schemas.public.JwkSchema"><span class="pre">JwkSchema</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_jwks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.metadata_type">
+<span class="sig-name descname"><span class="pre">metadata_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.metadata_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationConfig.trust_anchors">
+<span class="sig-name descname"><span class="pre">trust_anchors</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationConfig.trust_anchors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.federation_configuration.</span></span><span class="sig-name descname"><span class="pre">FederationEntityMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">homepage_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tos_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logo_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/federation_configuration.html#FederationEntityMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.homepage_uri">
+<span class="sig-name descname"><span class="pre">homepage_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.homepage_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.logo_uri">
+<span class="sig-name descname"><span class="pre">logo_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.logo_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.organization_name">
+<span class="sig-name descname"><span class="pre">organization_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.organization_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.policy_uri">
+<span class="sig-name descname"><span class="pre">policy_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.policy_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.tos_uri">
+<span class="sig-name descname"><span class="pre">tos_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.tos_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.schemas.federation_entity">
+<span id="pyeudiw-federation-schemas-federation-entity-module"></span><h2>pyeudiw.federation.schemas.federation_entity module<a class="headerlink" href="#module-pyeudiw.federation.schemas.federation_entity" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.federation_entity.</span></span><span class="sig-name descname"><span class="pre">FederationEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">homepage_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logo_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contacts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/federation_entity.html#FederationEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.contacts">
+<span class="sig-name descname"><span class="pre">contacts</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.contacts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.homepage_uri">
+<span class="sig-name descname"><span class="pre">homepage_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.homepage_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.logo_uri">
+<span class="sig-name descname"><span class="pre">logo_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.logo_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.organization_name">
+<span class="sig-name descname"><span class="pre">organization_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.organization_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.federation_entity.FederationEntity.policy_uri">
+<span class="sig-name descname"><span class="pre">policy_uri</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.federation_entity.FederationEntity.policy_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.schemas.openid_credential_verifier">
+<span id="pyeudiw-federation-schemas-openid-credential-verifier-module"></span><h2>pyeudiw.federation.schemas.openid_credential_verifier module<a class="headerlink" href="#module-pyeudiw.federation.schemas.openid_credential_verifier" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">AcrValuesSupported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#AcrValuesSupported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l1">
+<span class="sig-name descname"><span class="pre">spid_l1</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.spid.gov.it/SpidL1'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l2">
+<span class="sig-name descname"><span class="pre">spid_l2</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.spid.gov.it/SpidL2'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l3">
+<span class="sig-name descname"><span class="pre">spid_l3</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.spid.gov.it/SpidL3'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">AuthorizationSignedResponseAlg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#AuthorizationSignedResponseAlg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es256">
+<span class="sig-name descname"><span class="pre">es256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es384">
+<span class="sig-name descname"><span class="pre">es384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES384'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es512">
+<span class="sig-name descname"><span class="pre">es512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES512'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs256">
+<span class="sig-name descname"><span class="pre">rs256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs384">
+<span class="sig-name descname"><span class="pre">rs384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS384'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs512">
+<span class="sig-name descname"><span class="pre">rs512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS512'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">EncryptionAlgValuesSupported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#EncryptionAlgValuesSupported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es">
+<span class="sig-name descname"><span class="pre">ecdh_es</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ECDH-ES'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a128kw">
+<span class="sig-name descname"><span class="pre">ecdh_es_a128kw</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ECDH-ES+A128KW'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a128kw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a192kw">
+<span class="sig-name descname"><span class="pre">ecdh_es_a192kw</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ECDH-ES+A192KW'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a192kw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a256kw">
+<span class="sig-name descname"><span class="pre">ecdh_es_a256kw</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ECDH-ES+A256KW'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a256kw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ras_oaep_256">
+<span class="sig-name descname"><span class="pre">ras_oaep_256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RSA-OAEP-256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ras_oaep_256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.rsa_oaep">
+<span class="sig-name descname"><span class="pre">rsa_oaep</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RSA-OAEP'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.rsa_oaep" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">EncryptionEncValuesSupported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#EncryptionEncValuesSupported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128cbc_hs256">
+<span class="sig-name descname"><span class="pre">a128cbc_hs256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A128CBC-HS256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128cbc_hs256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128gcm">
+<span class="sig-name descname"><span class="pre">a128gcm</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A128GCM'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128gcm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192cbc_hs384">
+<span class="sig-name descname"><span class="pre">a192cbc_hs384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A192CBC-HS384'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192cbc_hs384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192gcm">
+<span class="sig-name descname"><span class="pre">a192gcm</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A192GCM'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192gcm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256cbc_hs512">
+<span class="sig-name descname"><span class="pre">a256cbc_hs512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A256CBC-HS512'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256cbc_hs512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256gcm">
+<span class="sig-name descname"><span class="pre">a256gcm</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'A256GCM'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256gcm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">OpenIDCredentialVerifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contacts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_uris</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">redirect_uris</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_acr_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported"><span class="pre">AcrValuesSupported</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authorization_signed_response_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg" title="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg"><span class="pre">AuthorizationSignedResponseAlg</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authorization_encrypted_response_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported"><span class="pre">EncryptionAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authorization_encrypted_response_enc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported"><span class="pre">EncryptionEncValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_token_encrypted_response_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported"><span class="pre">EncryptionAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_token_encrypted_response_enc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported"><span class="pre">EncryptionEncValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_token_signed_response_alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported"><span class="pre">SigningAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_formats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats"><span class="pre">VpFormats</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#OpenIDCredentialVerifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.application_type">
+<span class="sig-name descname"><span class="pre">application_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.application_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_alg">
+<span class="sig-name descname"><span class="pre">authorization_encrypted_response_alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported"><span class="pre">EncryptionAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_enc">
+<span class="sig-name descname"><span class="pre">authorization_encrypted_response_enc</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported"><span class="pre">EncryptionEncValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_enc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_signed_response_alg">
+<span class="sig-name descname"><span class="pre">authorization_signed_response_alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg" title="pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg"><span class="pre">AuthorizationSignedResponseAlg</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_signed_response_alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_name">
+<span class="sig-name descname"><span class="pre">client_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.contacts">
+<span class="sig-name descname"><span class="pre">contacts</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.contacts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.default_acr_values">
+<span class="sig-name descname"><span class="pre">default_acr_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported"><span class="pre">AcrValuesSupported</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.default_acr_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_alg">
+<span class="sig-name descname"><span class="pre">id_token_encrypted_response_alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported"><span class="pre">EncryptionAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_enc">
+<span class="sig-name descname"><span class="pre">id_token_encrypted_response_enc</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported"><span class="pre">EncryptionEncValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_enc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_signed_response_alg">
+<span class="sig-name descname"><span class="pre">id_token_signed_response_alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported" title="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported"><span class="pre">SigningAlgValuesSupported</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_signed_response_alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.jwks">
+<span class="sig-name descname"><span class="pre">jwks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.schemas.html#pyeudiw.jwk.schemas.public.JwksSchema" title="pyeudiw.jwk.schemas.public.JwksSchema"><span class="pre">JwksSchema</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.jwks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.redirect_uris">
+<span class="sig-name descname"><span class="pre">redirect_uris</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.redirect_uris" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.request_uris">
+<span class="sig-name descname"><span class="pre">request_uris</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">HttpUrl</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.request_uris" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.vp_formats">
+<span class="sig-name descname"><span class="pre">vp_formats</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats"><span class="pre">VpFormats</span></a></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.vp_formats" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.schemas.openid_credential_verifier.</span></span><span class="sig-name descname"><span class="pre">SigningAlgValuesSupported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/schemas/openid_credential_verifier.html#SigningAlgValuesSupported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es256">
+<span class="sig-name descname"><span class="pre">es256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es384">
+<span class="sig-name descname"><span class="pre">es384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES384'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es512">
+<span class="sig-name descname"><span class="pre">es512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES512'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs256">
+<span class="sig-name descname"><span class="pre">rs256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS256'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs384">
+<span class="sig-name descname"><span class="pre">rs384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS384'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs512">
+<span class="sig-name descname"><span class="pre">rs512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS512'</span></span><a class="headerlink" href="#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.schemas">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.federation.schemas" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.federation.html" class="btn btn-neutral float-left" title="pyeudiw.federation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.federation.trust_chain.html" class="btn btn-neutral float-right" title="pyeudiw.federation.trust_chain package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

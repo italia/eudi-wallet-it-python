@@ -1,0 +1,1296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.duckle_ql package" href="pyeudiw.duckle_ql.html" />
+    <link rel="prev" title="pyeudiw" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyeudiw package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyeudiw.exceptions">pyeudiw.exceptions module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyeudiw.exceptions.ValidationError"><code class="docutils literal notranslate"><span class="pre">ValidationError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+      <li class="breadcrumb-item active">pyeudiw package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-package">
+<h1>pyeudiw package<a class="headerlink" href="#pyeudiw-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.attribute_mapper">pyeudiw.duckle_ql.attribute_mapper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.attribute_mapper.extract_claims"><code class="docutils literal notranslate"><span class="pre">extract_claims()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.attribute_mapper.flatten_namespace"><code class="docutils literal notranslate"><span class="pre">flatten_namespace()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.credential">pyeudiw.duckle_ql.credential module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Claim"><code class="docutils literal notranslate"><span class="pre">Claim</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Claim.model_config"><code class="docutils literal notranslate"><span class="pre">Claim.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Claim.path"><code class="docutils literal notranslate"><span class="pre">Claim.path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential"><code class="docutils literal notranslate"><span class="pre">Credential</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential.claims"><code class="docutils literal notranslate"><span class="pre">Credential.claims</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential.format"><code class="docutils literal notranslate"><span class="pre">Credential.format</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential.id"><code class="docutils literal notranslate"><span class="pre">Credential.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential.meta"><code class="docutils literal notranslate"><span class="pre">Credential.meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Credential.model_config"><code class="docutils literal notranslate"><span class="pre">Credential.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.CredentialsRequest"><code class="docutils literal notranslate"><span class="pre">CredentialsRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.CredentialsRequest.credentials"><code class="docutils literal notranslate"><span class="pre">CredentialsRequest.credentials</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.CredentialsRequest.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialsRequest.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Meta"><code class="docutils literal notranslate"><span class="pre">Meta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Meta.model_config"><code class="docutils literal notranslate"><span class="pre">Meta.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.credential.Meta.vct_values"><code class="docutils literal notranslate"><span class="pre">Meta.vct_values</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.exceptions">pyeudiw.duckle_ql.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.exceptions.MissingHandler"><code class="docutils literal notranslate"><span class="pre">MissingHandler</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.handler">pyeudiw.duckle_ql.handler module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.handler.DuckleHandler"><code class="docutils literal notranslate"><span class="pre">DuckleHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.handler.DuckleHandler.parse"><code class="docutils literal notranslate"><span class="pre">DuckleHandler.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.handler.DuckleHandler.validate"><code class="docutils literal notranslate"><span class="pre">DuckleHandler.validate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.parser_validator">pyeudiw.duckle_ql.parser_validator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.parser_validator.ParserValidator"><code class="docutils literal notranslate"><span class="pre">ParserValidator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.parser_validator.ParserValidator.is_active_duckle_request"><code class="docutils literal notranslate"><span class="pre">ParserValidator.is_active_duckle_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.parser_validator.ParserValidator.parse"><code class="docutils literal notranslate"><span class="pre">ParserValidator.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html#pyeudiw.duckle_ql.parser_validator.ParserValidator.validate"><code class="docutils literal notranslate"><span class="pre">ParserValidator.validate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql.utils">pyeudiw.duckle_ql.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.duckle_ql.html#module-pyeudiw.duckle_ql">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html">pyeudiw.federation.schemas package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.entity_configuration">pyeudiw.federation.schemas.entity_configuration module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.federation_configuration">pyeudiw.federation.schemas.federation_configuration module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.federation_entity">pyeudiw.federation.schemas.federation_entity module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.openid_credential_verifier">pyeudiw.federation.schemas.openid_credential_verifier module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.trust_chain.html">pyeudiw.federation.trust_chain package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain.builder">pyeudiw.federation.trust_chain.builder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain.validator">pyeudiw.federation.trust_chain.validator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.exceptions">pyeudiw.federation.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidChainError"><code class="docutils literal notranslate"><span class="pre">InvalidChainError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidEntityConfiguration"><code class="docutils literal notranslate"><span class="pre">InvalidEntityConfiguration</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidEntityHeader"><code class="docutils literal notranslate"><span class="pre">InvalidEntityHeader</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidEntityStatement"><code class="docutils literal notranslate"><span class="pre">InvalidEntityStatement</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidEntityStatementPayload"><code class="docutils literal notranslate"><span class="pre">InvalidEntityStatementPayload</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidRequiredTrustMark"><code class="docutils literal notranslate"><span class="pre">InvalidRequiredTrustMark</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.InvalidTrustchain"><code class="docutils literal notranslate"><span class="pre">InvalidTrustchain</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.KeyValidationError"><code class="docutils literal notranslate"><span class="pre">KeyValidationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.MetadataDiscoveryException"><code class="docutils literal notranslate"><span class="pre">MetadataDiscoveryException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.MissingAuthorityHintsClaim"><code class="docutils literal notranslate"><span class="pre">MissingAuthorityHintsClaim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.MissingJwksClaim"><code class="docutils literal notranslate"><span class="pre">MissingJwksClaim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.MissingTrustAnchorPublicKey"><code class="docutils literal notranslate"><span class="pre">MissingTrustAnchorPublicKey</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.MissingTrustMark"><code class="docutils literal notranslate"><span class="pre">MissingTrustMark</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.NotDescendant"><code class="docutils literal notranslate"><span class="pre">NotDescendant</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.PolicyError"><code class="docutils literal notranslate"><span class="pre">PolicyError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.ProtocolMetadataNotFound"><code class="docutils literal notranslate"><span class="pre">ProtocolMetadataNotFound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.TimeValidationError"><code class="docutils literal notranslate"><span class="pre">TimeValidationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.TrustAnchorNeeded"><code class="docutils literal notranslate"><span class="pre">TrustAnchorNeeded</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.TrustChainHttpError"><code class="docutils literal notranslate"><span class="pre">TrustChainHttpError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.TrustchainMissingMetadata"><code class="docutils literal notranslate"><span class="pre">TrustchainMissingMetadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.exceptions.UnknownKid"><code class="docutils literal notranslate"><span class="pre">UnknownKid</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.policy">pyeudiw.federation.policy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.TrustChainPolicy"><code class="docutils literal notranslate"><span class="pre">TrustChainPolicy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.TrustChainPolicy.apply_policy"><code class="docutils literal notranslate"><span class="pre">TrustChainPolicy.apply_policy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.TrustChainPolicy.gather_policies"><code class="docutils literal notranslate"><span class="pre">TrustChainPolicy.gather_policies()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine"><code class="docutils literal notranslate"><span class="pre">combine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine_add"><code class="docutils literal notranslate"><span class="pre">combine_add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine_claim_policy"><code class="docutils literal notranslate"><span class="pre">combine_claim_policy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine_one_of"><code class="docutils literal notranslate"><span class="pre">combine_one_of()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine_subset_of"><code class="docutils literal notranslate"><span class="pre">combine_subset_of()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.combine_superset_of"><code class="docutils literal notranslate"><span class="pre">combine_superset_of()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.do_default"><code class="docutils literal notranslate"><span class="pre">do_default()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.do_essential"><code class="docutils literal notranslate"><span class="pre">do_essential()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.do_sub_one_super_add"><code class="docutils literal notranslate"><span class="pre">do_sub_one_super_add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.do_value"><code class="docutils literal notranslate"><span class="pre">do_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.gather_policies"><code class="docutils literal notranslate"><span class="pre">gather_policies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.policy.union"><code class="docutils literal notranslate"><span class="pre">union()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.statements">pyeudiw.federation.statements module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement"><code class="docutils literal notranslate"><span class="pre">EntityStatement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.get_superiors"><code class="docutils literal notranslate"><span class="pre">EntityStatement.get_superiors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.update_trust_anchor_conf"><code class="docutils literal notranslate"><span class="pre">EntityStatement.update_trust_anchor_conf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.validate_by_allowed_trust_marks"><code class="docutils literal notranslate"><span class="pre">EntityStatement.validate_by_allowed_trust_marks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.validate_by_itself"><code class="docutils literal notranslate"><span class="pre">EntityStatement.validate_by_itself()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.validate_by_superior_statement"><code class="docutils literal notranslate"><span class="pre">EntityStatement.validate_by_superior_statement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.validate_by_superiors"><code class="docutils literal notranslate"><span class="pre">EntityStatement.validate_by_superiors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.EntityStatement.validate_descendant_statement"><code class="docutils literal notranslate"><span class="pre">EntityStatement.validate_descendant_statement()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.TrustMark"><code class="docutils literal notranslate"><span class="pre">TrustMark</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.TrustMark.validate_by"><code class="docutils literal notranslate"><span class="pre">TrustMark.validate_by()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.TrustMark.validate_by_its_issuer"><code class="docutils literal notranslate"><span class="pre">TrustMark.validate_by_its_issuer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.get_entity_configurations"><code class="docutils literal notranslate"><span class="pre">get_entity_configurations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.get_entity_statements"><code class="docutils literal notranslate"><span class="pre">get_entity_statements()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.statements.get_federation_jwks"><code class="docutils literal notranslate"><span class="pre">get_federation_jwks()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.trust_chain_builder">pyeudiw.federation.trust_chain_builder module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.apply_metadata_policy"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.apply_metadata_policy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.discovery"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.discovery()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.exp_datetime"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.exp_datetime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_subject_configuration"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.get_subject_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_anchor_configuration"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.get_trust_anchor_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_chain"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.get_trust_chain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.serialize"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.serialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.start"><code class="docutils literal notranslate"><span class="pre">TrustChainBuilder.start()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.trust_chain_validator">pyeudiw.federation.trust_chain_validator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.entity_id"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.entity_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.final_metadata"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.final_metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_expired"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.is_expired</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_valid"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.is_valid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.set_exp"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.set_exp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.trust_chain"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.trust_chain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.update"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.validate"><code class="docutils literal notranslate"><span class="pre">StaticTrustChainValidator.validate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation.utils">pyeudiw.federation.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.html#pyeudiw.federation.utils.is_es"><code class="docutils literal notranslate"><span class="pre">is_es()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.html#module-pyeudiw.federation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.schemas.html">pyeudiw.jwk.schemas package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.schemas.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.schemas.html#module-pyeudiw.jwk.schemas.public">pyeudiw.jwk.schemas.public module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.schemas.html#module-pyeudiw.jwk.schemas">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#module-pyeudiw.jwk.exceptions">pyeudiw.jwk.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.exceptions.InvalidJwk"><code class="docutils literal notranslate"><span class="pre">InvalidJwk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.exceptions.InvalidKid"><code class="docutils literal notranslate"><span class="pre">InvalidKid</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.exceptions.KidError"><code class="docutils literal notranslate"><span class="pre">KidError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.exceptions.KidNotFoundError"><code class="docutils literal notranslate"><span class="pre">KidNotFoundError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#module-pyeudiw.jwk.jwks">pyeudiw.jwk.jwks module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.jwks.find_jwk_by_kid"><code class="docutils literal notranslate"><span class="pre">find_jwk_by_kid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.jwks.find_jwk_by_thumbprint"><code class="docutils literal notranslate"><span class="pre">find_jwk_by_thumbprint()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#module-pyeudiw.jwk.parse">pyeudiw.jwk.parse module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.parse.parse_b64der"><code class="docutils literal notranslate"><span class="pre">parse_b64der()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.parse.parse_certificate"><code class="docutils literal notranslate"><span class="pre">parse_certificate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.parse.parse_pem"><code class="docutils literal notranslate"><span class="pre">parse_pem()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.parse.parse_x5c_keys"><code class="docutils literal notranslate"><span class="pre">parse_x5c_keys()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwk.html#module-pyeudiw.jwk">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK"><code class="docutils literal notranslate"><span class="pre">JWK</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK.as_dict"><code class="docutils literal notranslate"><span class="pre">JWK.as_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK.as_json"><code class="docutils literal notranslate"><span class="pre">JWK.as_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK.as_public_dict"><code class="docutils literal notranslate"><span class="pre">JWK.as_public_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK.export_private_pem"><code class="docutils literal notranslate"><span class="pre">JWK.export_private_pem()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK.export_public_pem"><code class="docutils literal notranslate"><span class="pre">JWK.export_public_pem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.exceptions">pyeudiw.jwt.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWEDecryptionError"><code class="docutils literal notranslate"><span class="pre">JWEDecryptionError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWEEncryptionError"><code class="docutils literal notranslate"><span class="pre">JWEEncryptionError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSSigningError"><code class="docutils literal notranslate"><span class="pre">JWSSigningError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError"><code class="docutils literal notranslate"><span class="pre">JWSVerificationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWTDecodeError"><code class="docutils literal notranslate"><span class="pre">JWTDecodeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWTInvalidElementPosition"><code class="docutils literal notranslate"><span class="pre">JWTInvalidElementPosition</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.LifetimeException"><code class="docutils literal notranslate"><span class="pre">LifetimeException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.helper">pyeudiw.jwt.helper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.JWHelperInterface"><code class="docutils literal notranslate"><span class="pre">JWHelperInterface</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.JWHelperInterface.get_jwk_by_kid"><code class="docutils literal notranslate"><span class="pre">JWHelperInterface.get_jwk_by_kid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.find_self_contained_key"><code class="docutils literal notranslate"><span class="pre">find_self_contained_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.is_jwt_expired"><code class="docutils literal notranslate"><span class="pre">is_jwt_expired()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.is_payload_expired"><code class="docutils literal notranslate"><span class="pre">is_payload_expired()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.serialize_payload"><code class="docutils literal notranslate"><span class="pre">serialize_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.helper.validate_jwt_timestamps_claims"><code class="docutils literal notranslate"><span class="pre">validate_jwt_timestamps_claims()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.jwe_helper">pyeudiw.jwt.jwe_helper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper"><code class="docutils literal notranslate"><span class="pre">JWEHelper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper.decrypt"><code class="docutils literal notranslate"><span class="pre">JWEHelper.decrypt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper.encrypt"><code class="docutils literal notranslate"><span class="pre">JWEHelper.encrypt()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.jws_helper">pyeudiw.jwt.jws_helper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper"><code class="docutils literal notranslate"><span class="pre">JWSHelper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.is_sd_jwt"><code class="docutils literal notranslate"><span class="pre">JWSHelper.is_sd_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.sign"><code class="docutils literal notranslate"><span class="pre">JWSHelper.sign()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.verify"><code class="docutils literal notranslate"><span class="pre">JWSHelper.verify()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.log">pyeudiw.jwt.log module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.parse">pyeudiw.jwt.parse module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt"><code class="docutils literal notranslate"><span class="pre">DecodedJwt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt.header"><code class="docutils literal notranslate"><span class="pre">DecodedJwt.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt.jwt"><code class="docutils literal notranslate"><span class="pre">DecodedJwt.jwt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt.parse"><code class="docutils literal notranslate"><span class="pre">DecodedJwt.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt.payload"><code class="docutils literal notranslate"><span class="pre">DecodedJwt.payload</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.DecodedJwt.signature"><code class="docutils literal notranslate"><span class="pre">DecodedJwt.signature</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.parse.unsafe_parse_jws"><code class="docutils literal notranslate"><span class="pre">unsafe_parse_jws()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.utils">pyeudiw.jwt.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.base64_urldecode"><code class="docutils literal notranslate"><span class="pre">base64_urldecode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.base64_urlencode"><code class="docutils literal notranslate"><span class="pre">base64_urlencode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.decode_jwt_element"><code class="docutils literal notranslate"><span class="pre">decode_jwt_element()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.decode_jwt_header"><code class="docutils literal notranslate"><span class="pre">decode_jwt_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.decode_jwt_payload"><code class="docutils literal notranslate"><span class="pre">decode_jwt_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.is_jwe_format"><code class="docutils literal notranslate"><span class="pre">is_jwe_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.utils.is_jwt_format"><code class="docutils literal notranslate"><span class="pre">is_jwt_format()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt.verification">pyeudiw.jwt.verification module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.verification.verify_jws_with_key"><code class="docutils literal notranslate"><span class="pre">verify_jws_with_key()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.jwt.html#module-pyeudiw.jwt">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.oauth2.html#module-pyeudiw.oauth2">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.html">pyeudiw.satosa.backends package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.html#module-pyeudiw.satosa.backends">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.html">pyeudiw.satosa.frontends package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.html#module-pyeudiw.satosa.frontends">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.html#module-pyeudiw.satosa.exceptions">pyeudiw.satosa.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.AuthorizeUnmatchedResponse"><code class="docutils literal notranslate"><span class="pre">AuthorizeUnmatchedResponse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.BadRequestError"><code class="docutils literal notranslate"><span class="pre">BadRequestError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.DiscoveryFailedError"><code class="docutils literal notranslate"><span class="pre">DiscoveryFailedError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.EmptyHTTPError"><code class="docutils literal notranslate"><span class="pre">EmptyHTTPError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.FinalizedSessionError"><code class="docutils literal notranslate"><span class="pre">FinalizedSessionError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.HTTPError"><code class="docutils literal notranslate"><span class="pre">HTTPError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.InternalServerError"><code class="docutils literal notranslate"><span class="pre">InternalServerError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.InvalidInternalStateError"><code class="docutils literal notranslate"><span class="pre">InvalidInternalStateError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.html#pyeudiw.satosa.exceptions.InvalidRequestException"><code class="docutils literal notranslate"><span class="pre">InvalidRequestException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.html#module-pyeudiw.satosa">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.common">pyeudiw.sd_jwt.common module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon"><code class="docutils literal notranslate"><span class="pre">SDJWTCommon</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR"><code class="docutils literal notranslate"><span class="pre">SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon.HASH_ALG"><code class="docutils literal notranslate"><span class="pre">SDJWTCommon.HASH_ALG</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon.KB_JWT_TYP_HEADER"><code class="docutils literal notranslate"><span class="pre">SDJWTCommon.KB_JWT_TYP_HEADER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon.SD_JWT_HEADER"><code class="docutils literal notranslate"><span class="pre">SDJWTCommon.SD_JWT_HEADER</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDObj"><code class="docutils literal notranslate"><span class="pre">SDObj</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDObj.value"><code class="docutils literal notranslate"><span class="pre">SDObj.value</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.disclosure">pyeudiw.sd_jwt.disclosure module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.b64"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.b64</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.hash"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.issuer"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.issuer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.json"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.key"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.key</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.disclosure.SDJWTDisclosure.value"><code class="docutils literal notranslate"><span class="pre">SDJWTDisclosure.value</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.exceptions">pyeudiw.sd_jwt.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.InvalidKeyBinding"><code class="docutils literal notranslate"><span class="pre">InvalidKeyBinding</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.MissingConfirmationKey"><code class="docutils literal notranslate"><span class="pre">MissingConfirmationKey</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.SDJWTHasSDClaimException"><code class="docutils literal notranslate"><span class="pre">SDJWTHasSDClaimException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg"><code class="docutils literal notranslate"><span class="pre">UnsupportedSdAlg</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.holder">pyeudiw.sd_jwt.holder module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.create_presentation"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.create_presentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.hs_disclosures"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.hs_disclosures</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_header"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.key_binding_jwt_header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.key_binding_jwt_payload"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.key_binding_jwt_payload</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.sd_jwt_presentation"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.sd_jwt_presentation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.holder.SDJWTHolder.serialized_key_binding_jwt"><code class="docutils literal notranslate"><span class="pre">SDJWTHolder.serialized_key_binding_jwt</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.issuer">pyeudiw.sd_jwt.issuer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MAX_ELEMENTS"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.DECOY_MAX_ELEMENTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.DECOY_MIN_ELEMENTS"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.DECOY_MIN_ELEMENTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.decoy_digests"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.decoy_digests</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.ii_disclosures"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.ii_disclosures</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.sd_jwt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_issuance"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.sd_jwt_issuance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.sd_jwt_payload"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.sd_jwt_payload</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer.serialized_sd_jwt"><code class="docutils literal notranslate"><span class="pre">SDJWTIssuer.serialized_sd_jwt</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.schema">pyeudiw.sd_jwt.schema module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.alg"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.model_config"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.typ"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtHeader.typ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtHeader.validate_typ"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtHeader.validate_typ()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.aud"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.iat"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.model_config"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.nonce"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.KeyBindingJwtPayload.sd_hash"><code class="docutils literal notranslate"><span class="pre">KeyBindingJwtPayload.sd_hash</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.alg"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.check_typ_when_not_x5c"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.check_typ_when_not_x5c()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.kid"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.model_config"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.trust_chain"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.trust_chain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.typ"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.typ</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.validate_typ"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.validate_typ()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.vctm"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.vctm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtHeaderSchema.x5c"><code class="docutils literal notranslate"><span class="pre">VcSdJwtHeaderSchema.x5c</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.cnf"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.exp"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iat"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.iss"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_config"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.model_post_init"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.model_post_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.status"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.sub"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.sub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_status"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.validate_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.validate_verification"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.validate_verification()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.vct"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.vct</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VcSdJwtPayloadSchema.verification"><code class="docutils literal notranslate"><span class="pre">VcSdJwtPayloadSchema.verification</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VerifierChallenge"><code class="docutils literal notranslate"><span class="pre">VerifierChallenge</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VerifierChallenge.aud"><code class="docutils literal notranslate"><span class="pre">VerifierChallenge.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.VerifierChallenge.nonce"><code class="docutils literal notranslate"><span class="pre">VerifierChallenge.nonce</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.is_sd_jwt_format"><code class="docutils literal notranslate"><span class="pre">is_sd_jwt_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.schema.is_sd_jwt_kb_format"><code class="docutils literal notranslate"><span class="pre">is_sd_jwt_kb_format()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.sd_jwt">pyeudiw.sd_jwt.sd_jwt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt"><code class="docutils literal notranslate"><span class="pre">SdJwt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_confirmation_key"><code class="docutils literal notranslate"><span class="pre">SdJwt.get_confirmation_key()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_disclosed_claims"><code class="docutils literal notranslate"><span class="pre">SdJwt.get_disclosed_claims()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_holder_key_binding_jwt"><code class="docutils literal notranslate"><span class="pre">SdJwt.get_holder_key_binding_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_issuer_jwt"><code class="docutils literal notranslate"><span class="pre">SdJwt.get_issuer_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.get_sd_alg"><code class="docutils literal notranslate"><span class="pre">SdJwt.get_sd_alg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.has_key_binding"><code class="docutils literal notranslate"><span class="pre">SdJwt.has_key_binding()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt"><code class="docutils literal notranslate"><span class="pre">SdJwt.verify_holder_kb_jwt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_holder_kb_jwt_signature"><code class="docutils literal notranslate"><span class="pre">SdJwt.verify_holder_kb_jwt_signature()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.sd_jwt.SdJwt.verify_issuer_jwt_signature"><code class="docutils literal notranslate"><span class="pre">SdJwt.verify_issuer_jwt_signature()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt.verifier">pyeudiw.sd_jwt.verifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.verifier.SDJWTVerifier"><code class="docutils literal notranslate"><span class="pre">SDJWTVerifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.verifier.SDJWTVerifier.get_verified_payload"><code class="docutils literal notranslate"><span class="pre">SDJWTVerifier.get_verified_payload()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.sd_jwt.html#module-pyeudiw.sd_jwt">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.status_list.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.status_list.html#module-pyeudiw.status_list.exceptions">pyeudiw.status_list.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.exceptions.InvalidTokenFormatError"><code class="docutils literal notranslate"><span class="pre">InvalidTokenFormatError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.exceptions.MissingStatusListUriError"><code class="docutils literal notranslate"><span class="pre">MissingStatusListUriError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.exceptions.PositionOutOfRangeError"><code class="docutils literal notranslate"><span class="pre">PositionOutOfRangeError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.exceptions.StatusListRetrievalError"><code class="docutils literal notranslate"><span class="pre">StatusListRetrievalError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.status_list.html#module-pyeudiw.status_list.helper">pyeudiw.status_list.helper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.from_status"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.from_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.from_token"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.from_token()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.get_aggregation_uri"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.get_aggregation_uri()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.get_status"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.get_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.iat"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.is_expired"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.is_expired()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.iss"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.sub"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.sub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.helper.StatusListTokenHelper.ttl"><code class="docutils literal notranslate"><span class="pre">StatusListTokenHelper.ttl</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.status_list.html#module-pyeudiw.status_list">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.array_to_bitstring"><code class="docutils literal notranslate"><span class="pre">array_to_bitstring()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.decode_cwt_status_list_token"><code class="docutils literal notranslate"><span class="pre">decode_cwt_status_list_token()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.decode_jwt_status_list_token"><code class="docutils literal notranslate"><span class="pre">decode_jwt_status_list_token()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.encode_cwt_status_list_token"><code class="docutils literal notranslate"><span class="pre">encode_cwt_status_list_token()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.status_list.html#pyeudiw.status_list.generate_status_list"><code class="docutils literal notranslate"><span class="pre">generate_status_list()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.base_cache">pyeudiw.storage.base_cache module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.BaseCache"><code class="docutils literal notranslate"><span class="pre">BaseCache</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.BaseCache.overwrite"><code class="docutils literal notranslate"><span class="pre">BaseCache.overwrite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.BaseCache.set"><code class="docutils literal notranslate"><span class="pre">BaseCache.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.BaseCache.try_retrieve"><code class="docutils literal notranslate"><span class="pre">BaseCache.try_retrieve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.RetrieveStatus"><code class="docutils literal notranslate"><span class="pre">RetrieveStatus</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.RetrieveStatus.ADDED"><code class="docutils literal notranslate"><span class="pre">RetrieveStatus.ADDED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_cache.RetrieveStatus.RETRIEVED"><code class="docutils literal notranslate"><span class="pre">RetrieveStatus.RETRIEVED</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.base_db">pyeudiw.storage.base_db module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_db.BaseDB"><code class="docutils literal notranslate"><span class="pre">BaseDB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_db.BaseDB.close"><code class="docutils literal notranslate"><span class="pre">BaseDB.close()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.base_storage">pyeudiw.storage.base_storage module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage"><code class="docutils literal notranslate"><span class="pre">BaseStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_dpop_proof_and_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_dpop_proof_and_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_empty_trust_anchor"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_empty_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_or_update_trust_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_or_update_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_trust_anchor"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_trust_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_trust_attestation_metadata"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_trust_attestation_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.add_trust_source"><code class="docutils literal notranslate"><span class="pre">BaseStorage.add_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.exists_by_state_and_session_id"><code class="docutils literal notranslate"><span class="pre">BaseStorage.exists_by_state_and_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_by_nonce_state"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_by_nonce_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_by_session_id"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_by_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_by_state"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_by_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_by_state_and_session_id"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_by_state_and_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_trust_anchor"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_trust_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.get_trust_source"><code class="docutils literal notranslate"><span class="pre">BaseStorage.get_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.has_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">BaseStorage.has_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.has_trust_anchor"><code class="docutils literal notranslate"><span class="pre">BaseStorage.has_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.has_trust_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.has_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.has_trust_source"><code class="docutils literal notranslate"><span class="pre">BaseStorage.has_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.init_session"><code class="docutils literal notranslate"><span class="pre">BaseStorage.init_session()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.is_connected"><code class="docutils literal notranslate"><span class="pre">BaseStorage.is_connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.search_session_by_field"><code class="docutils literal notranslate"><span class="pre">BaseStorage.search_session_by_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.set_finalized"><code class="docutils literal notranslate"><span class="pre">BaseStorage.set_finalized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.set_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">BaseStorage.set_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.update_request_object"><code class="docutils literal notranslate"><span class="pre">BaseStorage.update_request_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.update_response_object"><code class="docutils literal notranslate"><span class="pre">BaseStorage.update_response_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.update_trust_anchor"><code class="docutils literal notranslate"><span class="pre">BaseStorage.update_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.update_trust_attestation"><code class="docutils literal notranslate"><span class="pre">BaseStorage.update_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.BaseStorage.upsert_session"><code class="docutils literal notranslate"><span class="pre">BaseStorage.upsert_session()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.TrustType"><code class="docutils literal notranslate"><span class="pre">TrustType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.TrustType.DIRECT_TRUST_SD_JWT_VC"><code class="docutils literal notranslate"><span class="pre">TrustType.DIRECT_TRUST_SD_JWT_VC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.TrustType.FEDERATION"><code class="docutils literal notranslate"><span class="pre">TrustType.FEDERATION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.base_storage.TrustType.X509"><code class="docutils literal notranslate"><span class="pre">TrustType.X509</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.credential_entity">pyeudiw.storage.credential_entity module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity"><code class="docutils literal notranslate"><span class="pre">CredentialEntity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity.identifier"><code class="docutils literal notranslate"><span class="pre">CredentialEntity.identifier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity.incremental_id"><code class="docutils literal notranslate"><span class="pre">CredentialEntity.incremental_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity.model_config"><code class="docutils literal notranslate"><span class="pre">CredentialEntity.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity.revoked"><code class="docutils literal notranslate"><span class="pre">CredentialEntity.revoked</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_entity.CredentialEntity.user_id"><code class="docutils literal notranslate"><span class="pre">CredentialEntity.user_id</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.credential_storage">pyeudiw.storage.credential_storage module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage"><code class="docutils literal notranslate"><span class="pre">CredentialStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.close"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.get_all_sorted_by_incremental_id"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.get_all_sorted_by_incremental_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.get_by_field"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.get_by_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.get_by_fields"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.get_by_fields()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.get_credential_by_user_id"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.get_credential_by_user_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.is_connected"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.is_connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.credential_storage.CredentialStorage.set_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">CredentialStorage.set_session_retention_ttl()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.db_engine">pyeudiw.storage.db_engine module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine"><code class="docutils literal notranslate"><span class="pre">DBEngine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_dpop_proof_and_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_dpop_proof_and_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_empty_trust_anchor"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_empty_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_or_update_trust_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_or_update_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_anchor"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_attestation_metadata"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_trust_attestation_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_source"><code class="docutils literal notranslate"><span class="pre">DBEngine.add_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.close"><code class="docutils literal notranslate"><span class="pre">DBEngine.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.exists_by_state_and_session_id"><code class="docutils literal notranslate"><span class="pre">DBEngine.exists_by_state_and_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get"><code class="docutils literal notranslate"><span class="pre">DBEngine.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_nonce_state"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_by_nonce_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_session_id"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_by_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_state"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_by_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_state_and_session_id"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_by_state_and_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_anchor"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_source"><code class="docutils literal notranslate"><span class="pre">DBEngine.get_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_anchor"><code class="docutils literal notranslate"><span class="pre">DBEngine.has_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.has_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_source"><code class="docutils literal notranslate"><span class="pre">DBEngine.has_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.init_session"><code class="docutils literal notranslate"><span class="pre">DBEngine.init_session()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.is_connected"><code class="docutils literal notranslate"><span class="pre">DBEngine.is_connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.is_par_jti_replay"><code class="docutils literal notranslate"><span class="pre">DBEngine.is_par_jti_replay()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.overwrite"><code class="docutils literal notranslate"><span class="pre">DBEngine.overwrite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.search_session_by_field"><code class="docutils literal notranslate"><span class="pre">DBEngine.search_session_by_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.set_finalized"><code class="docutils literal notranslate"><span class="pre">DBEngine.set_finalized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.try_retrieve"><code class="docutils literal notranslate"><span class="pre">DBEngine.try_retrieve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_request_object"><code class="docutils literal notranslate"><span class="pre">DBEngine.update_request_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_response_object"><code class="docutils literal notranslate"><span class="pre">DBEngine.update_response_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_trust_anchor"><code class="docutils literal notranslate"><span class="pre">DBEngine.update_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_trust_attestation"><code class="docutils literal notranslate"><span class="pre">DBEngine.update_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.upsert_session"><code class="docutils literal notranslate"><span class="pre">DBEngine.upsert_session()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.write"><code class="docutils literal notranslate"><span class="pre">DBEngine.write()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.exceptions">pyeudiw.storage.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.exceptions.ChainNotExist"><code class="docutils literal notranslate"><span class="pre">ChainNotExist</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.exceptions.EntryNotFound"><code class="docutils literal notranslate"><span class="pre">EntryNotFound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.exceptions.StorageEntryUpdateFailed"><code class="docutils literal notranslate"><span class="pre">StorageEntryUpdateFailed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.exceptions.StorageWriteError"><code class="docutils literal notranslate"><span class="pre">StorageWriteError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.mongo_cache">pyeudiw.storage.mongo_cache module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_cache.MongoCache"><code class="docutils literal notranslate"><span class="pre">MongoCache</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_cache.MongoCache.close"><code class="docutils literal notranslate"><span class="pre">MongoCache.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_cache.MongoCache.overwrite"><code class="docutils literal notranslate"><span class="pre">MongoCache.overwrite()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_cache.MongoCache.set"><code class="docutils literal notranslate"><span class="pre">MongoCache.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_cache.MongoCache.try_retrieve"><code class="docutils literal notranslate"><span class="pre">MongoCache.try_retrieve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.mongo_storage">pyeudiw.storage.mongo_storage module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage"><code class="docutils literal notranslate"><span class="pre">MongoStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_dpop_proof_and_attestation"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_dpop_proof_and_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_empty_trust_anchor"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_empty_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_anchor"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_attestation"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_attestation_metadata"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_trust_attestation_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_source"><code class="docutils literal notranslate"><span class="pre">MongoStorage.add_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.close"><code class="docutils literal notranslate"><span class="pre">MongoStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_id"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_by_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_nonce_state"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_by_nonce_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_session_id"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_by_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_state_and_session_id"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_by_state_and_session_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_anchor"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_attestation"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_source"><code class="docutils literal notranslate"><span class="pre">MongoStorage.get_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">MongoStorage.has_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_anchor"><code class="docutils literal notranslate"><span class="pre">MongoStorage.has_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_attestation"><code class="docutils literal notranslate"><span class="pre">MongoStorage.has_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_source"><code class="docutils literal notranslate"><span class="pre">MongoStorage.has_trust_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.init_session"><code class="docutils literal notranslate"><span class="pre">MongoStorage.init_session()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.is_connected"><code class="docutils literal notranslate"><span class="pre">MongoStorage.is_connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.search_session_by_field"><code class="docutils literal notranslate"><span class="pre">MongoStorage.search_session_by_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.set_finalized"><code class="docutils literal notranslate"><span class="pre">MongoStorage.set_finalized()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.set_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">MongoStorage.set_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_request_object"><code class="docutils literal notranslate"><span class="pre">MongoStorage.update_request_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_response_object"><code class="docutils literal notranslate"><span class="pre">MongoStorage.update_response_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_trust_anchor"><code class="docutils literal notranslate"><span class="pre">MongoStorage.update_trust_anchor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_trust_attestation"><code class="docutils literal notranslate"><span class="pre">MongoStorage.update_trust_attestation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.upsert_session"><code class="docutils literal notranslate"><span class="pre">MongoStorage.upsert_session()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.user_credential_db_engine">pyeudiw.storage.user_credential_db_engine module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_credential_db_engine.UserCredentialEngine"><code class="docutils literal notranslate"><span class="pre">UserCredentialEngine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_credential_db_engine.UserCredentialEngine.db_credential_storage_engine"><code class="docutils literal notranslate"><span class="pre">UserCredentialEngine.db_credential_storage_engine</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_credential_db_engine.UserCredentialEngine.db_user_storage_engine"><code class="docutils literal notranslate"><span class="pre">UserCredentialEngine.db_user_storage_engine</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.user_entity">pyeudiw.storage.user_entity module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity"><code class="docutils literal notranslate"><span class="pre">UserEntity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.countyOfBirth"><code class="docutils literal notranslate"><span class="pre">UserEntity.countyOfBirth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.dateOfBirth"><code class="docutils literal notranslate"><span class="pre">UserEntity.dateOfBirth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.fiscal_code"><code class="docutils literal notranslate"><span class="pre">UserEntity.fiscal_code</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.mail"><code class="docutils literal notranslate"><span class="pre">UserEntity.mail</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.model_config"><code class="docutils literal notranslate"><span class="pre">UserEntity.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.name"><code class="docutils literal notranslate"><span class="pre">UserEntity.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.placeOfBirth"><code class="docutils literal notranslate"><span class="pre">UserEntity.placeOfBirth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.portrait"><code class="docutils literal notranslate"><span class="pre">UserEntity.portrait</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_entity.UserEntity.surname"><code class="docutils literal notranslate"><span class="pre">UserEntity.surname</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage.user_storage">pyeudiw.storage.user_storage module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage"><code class="docutils literal notranslate"><span class="pre">UserStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.close"><code class="docutils literal notranslate"><span class="pre">UserStorage.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.get_by_field"><code class="docutils literal notranslate"><span class="pre">UserStorage.get_by_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.get_by_fields"><code class="docutils literal notranslate"><span class="pre">UserStorage.get_by_fields()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.get_by_fiscal_code"><code class="docutils literal notranslate"><span class="pre">UserStorage.get_by_fiscal_code()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.is_connected"><code class="docutils literal notranslate"><span class="pre">UserStorage.is_connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.set_session_retention_ttl"><code class="docutils literal notranslate"><span class="pre">UserStorage.set_session_retention_ttl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html#pyeudiw.storage.user_storage.UserStorage.upsert_user"><code class="docutils literal notranslate"><span class="pre">UserStorage.upsert_user()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.storage.html#module-pyeudiw.storage">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.federation.html">pyeudiw.tests.federation package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.base">pyeudiw.tests.federation.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.mocked_response">pyeudiw.tests.federation.mocked_response module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#pyeudiw-tests-federation-test-metadata-module">pyeudiw.tests.federation.test_metadata module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.test_policy">pyeudiw.tests.federation.test_policy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.test_schema">pyeudiw.tests.federation.test_schema module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.test_static_trust_chain_validator">pyeudiw.tests.federation.test_static_trust_chain_validator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation.test_trust_chain_builder">pyeudiw.tests.federation.test_trust_chain_builder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.federation.html#module-pyeudiw.tests.federation">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.jwt.html">pyeudiw.tests.jwt package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#module-pyeudiw.tests.jwt.test_helper">pyeudiw.tests.jwt.test_helper module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#module-pyeudiw.tests.jwt.test_parse">pyeudiw.tests.jwt.test_parse module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#pyeudiw-tests-jwt-test-sign-verify-module">pyeudiw.tests.jwt.test_sign_verify module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#module-pyeudiw.tests.jwt.test_utils">pyeudiw.tests.jwt.test_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#module-pyeudiw.tests.jwt.test_verification">pyeudiw.tests.jwt.test_verification module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.jwt.html#module-pyeudiw.tests.jwt">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.satosa.html">pyeudiw.tests.satosa package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.satosa.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.satosa.html#pyeudiw-tests-satosa-test-backend-module">pyeudiw.tests.satosa.test_backend module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.satosa.html#pyeudiw-tests-satosa-test-backend-trust-module">pyeudiw.tests.satosa.test_backend_trust module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.satosa.html#pyeudiw-tests-satosa-test-exceptions-module">pyeudiw.tests.satosa.test_exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.satosa.html#module-pyeudiw.tests.satosa">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.status_list.html">pyeudiw.tests.status_list package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.status_list.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.status_list.html#pyeudiw-tests-status-list-test-status-list-module">pyeudiw.tests.status_list.test_status_list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.status_list.html#module-pyeudiw.tests.status_list">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.storage.html">pyeudiw.tests.storage package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.storage.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.storage.html#pyeudiw-tests-storage-test-db-engine-module">pyeudiw.tests.storage.test_db_engine module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.storage.html#pyeudiw-tests-storage-test-mongo-cache-module">pyeudiw.tests.storage.test_mongo_cache module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.storage.html#pyeudiw-tests-storage-test-mongo-storage-module">pyeudiw.tests.storage.test_mongo_storage module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.storage.html#module-pyeudiw.tests.storage">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.html">pyeudiw.tests.trust package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#module-pyeudiw.tests.trust.mock_trust_handler">pyeudiw.tests.trust.mock_trust_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#module-pyeudiw.tests.trust.test_anchor_loading">pyeudiw.tests.trust.test_anchor_loading module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#module-pyeudiw.tests.trust.test_dynamic">pyeudiw.tests.trust.test_dynamic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.trust.html#module-pyeudiw.tests.trust">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.wallet_instance_attestation.html">pyeudiw.tests.wallet_instance_attestation package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.wallet_instance_attestation.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.wallet_instance_attestation.html#pyeudiw-tests-wallet-instance-attestation-test-attestation-module">pyeudiw.tests.wallet_instance_attestation.test_attestation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.wallet_instance_attestation.html#pyeudiw-tests-wallet-instance-attestation-test-attestation-request-module">pyeudiw.tests.wallet_instance_attestation.test_attestation_request module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.wallet_instance_attestation.html#module-pyeudiw.tests.wallet_instance_attestation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#pyeudiw-tests-conftest-module">pyeudiw.tests.conftest module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#module-pyeudiw.tests.settings">pyeudiw.tests.settings module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.html#pyeudiw.tests.settings.base64url_to_int"><code class="docutils literal notranslate"><span class="pre">base64url_to_int()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#pyeudiw-tests-test-jwk-module">pyeudiw.tests.test_jwk module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#pyeudiw-tests-test-jwt-module">pyeudiw.tests.test_jwt module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.html#module-pyeudiw.tests">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.base_endpoint">pyeudiw.tools.base_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_endpoint.BaseEndpoint"><code class="docutils literal notranslate"><span class="pre">BaseEndpoint</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_endpoint.BaseEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">BaseEndpoint.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.base_logger">pyeudiw.tools.base_logger module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_logger.BaseLogger"><code class="docutils literal notranslate"><span class="pre">BaseLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_logger.BaseLogger.effective_log_level"><code class="docutils literal notranslate"><span class="pre">BaseLogger.effective_log_level</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.content_type">pyeudiw.tools.content_type module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.content_type.get_accept_header"><code class="docutils literal notranslate"><span class="pre">get_accept_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.content_type.get_content_type_header"><code class="docutils literal notranslate"><span class="pre">get_content_type_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.content_type.is_application_json"><code class="docutils literal notranslate"><span class="pre">is_application_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.content_type.is_form_urlencoded"><code class="docutils literal notranslate"><span class="pre">is_form_urlencoded()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.date">pyeudiw.tools.date module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.date.is_valid_unix_timestamp"><code class="docutils literal notranslate"><span class="pre">is_valid_unix_timestamp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.endpoints_loader">pyeudiw.tools.endpoints_loader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.endpoints_loader.EndpointsLoader"><code class="docutils literal notranslate"><span class="pre">EndpointsLoader</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.exceptions">pyeudiw.tools.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.exceptions.HttpError"><code class="docutils literal notranslate"><span class="pre">HttpError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.http">pyeudiw.tools.http module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.http.fetch"><code class="docutils literal notranslate"><span class="pre">fetch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.http.fetch_all"><code class="docutils literal notranslate"><span class="pre">fetch_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.http.http_get_async"><code class="docutils literal notranslate"><span class="pre">http_get_async()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.http.http_get_sync"><code class="docutils literal notranslate"><span class="pre">http_get_sync()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw-tools-mobile-module">pyeudiw.tools.mobile module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.mso_mdoc">pyeudiw.tools.mso_mdoc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.mso_mdoc.from_jwk_to_mso_mdoc_private_key"><code class="docutils literal notranslate"><span class="pre">from_jwk_to_mso_mdoc_private_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.mso_mdoc.render_mso_mdoc_template"><code class="docutils literal notranslate"><span class="pre">render_mso_mdoc_template()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.schema_utils">pyeudiw.tools.schema_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.schema_utils.check_algorithm"><code class="docutils literal notranslate"><span class="pre">check_algorithm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools.utils">pyeudiw.tools.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.cacheable_get_http_url"><code class="docutils literal notranslate"><span class="pre">cacheable_get_http_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.datetime_from_timestamp"><code class="docutils literal notranslate"><span class="pre">datetime_from_timestamp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.dynamic_class_loader"><code class="docutils literal notranslate"><span class="pre">dynamic_class_loader()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.exp_from_now"><code class="docutils literal notranslate"><span class="pre">exp_from_now()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.get_dynamic_class"><code class="docutils literal notranslate"><span class="pre">get_dynamic_class()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.get_http_url"><code class="docutils literal notranslate"><span class="pre">get_http_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.iat_now"><code class="docutils literal notranslate"><span class="pre">iat_now()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.make_timezone_aware"><code class="docutils literal notranslate"><span class="pre">make_timezone_aware()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.random_token"><code class="docutils literal notranslate"><span class="pre">random_token()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.utils.timestamp_from_datetime"><code class="docutils literal notranslate"><span class="pre">timestamp_from_datetime()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tools.html#module-pyeudiw.tools">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.default.html">pyeudiw.trust.default package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#module-pyeudiw.trust.default.direct_trust_sd_jwt_vc">pyeudiw.trust.default.direct_trust_sd_jwt_vc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.default.html#module-pyeudiw.trust.default">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.handler.html">pyeudiw.trust.handler package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.commons">pyeudiw.trust.handler.commons module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.direct_trust_jar">pyeudiw.trust.handler.direct_trust_jar module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.direct_trust_sd_jwt_vc">pyeudiw.trust.handler.direct_trust_sd_jwt_vc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.exceptions">pyeudiw.trust.handler.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.federation">pyeudiw.trust.handler.federation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.interface">pyeudiw.trust.handler.interface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler.x509">pyeudiw.trust.handler.x509 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.handler.html#module-pyeudiw.trust.handler">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.model.html">pyeudiw.trust.model package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#module-pyeudiw.trust.model.trust_source">pyeudiw.trust.model.trust_source module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.model.html#module-pyeudiw.trust.model">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#module-pyeudiw.trust.anchors_loader">pyeudiw.trust.anchors_loader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.anchors_loader.AnchorsLoader"><code class="docutils literal notranslate"><span class="pre">AnchorsLoader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.anchors_loader.AnchorsLoader.load_anchors"><code class="docutils literal notranslate"><span class="pre">AnchorsLoader.load_anchors()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#module-pyeudiw.trust.dynamic">pyeudiw.trust.dynamic module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.build_metadata_endpoints"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.build_metadata_endpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.from_config"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.from_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_jwt_header_trust_parameters"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.get_jwt_header_trust_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_metadata"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_policies"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.get_policies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.get_public_keys"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.get_public_keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.has_client_id"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.has_client_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.is_revoked"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.is_revoked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator.revoke"><code class="docutils literal notranslate"><span class="pre">CombinedTrustEvaluator.revoke()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#module-pyeudiw.trust.exceptions">pyeudiw.trust.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.InvalidAnchor"><code class="docutils literal notranslate"><span class="pre">InvalidAnchor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.InvalidJwkMetadataException"><code class="docutils literal notranslate"><span class="pre">InvalidJwkMetadataException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.InvalidTrustType"><code class="docutils literal notranslate"><span class="pre">InvalidTrustType</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.MissingProtocolSpecificJwks"><code class="docutils literal notranslate"><span class="pre">MissingProtocolSpecificJwks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.MissingTrustType"><code class="docutils literal notranslate"><span class="pre">MissingTrustType</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.NoCriptographicMaterial"><code class="docutils literal notranslate"><span class="pre">NoCriptographicMaterial</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.NoMetadata"><code class="docutils literal notranslate"><span class="pre">NoMetadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.NoTrustChainProvided"><code class="docutils literal notranslate"><span class="pre">NoTrustChainProvided</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.TrustConfigurationError"><code class="docutils literal notranslate"><span class="pre">TrustConfigurationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.exceptions.UnknownTrustAnchor"><code class="docutils literal notranslate"><span class="pre">UnknownTrustAnchor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#module-pyeudiw.trust.interface">pyeudiw.trust.interface module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.build_metadata_endpoints"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.build_metadata_endpoints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.get_jwt_header_trust_parameters"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.get_jwt_header_trust_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.get_metadata"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.get_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.get_policies"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.get_policies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.get_public_keys"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.get_public_keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.initialize_istance"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.initialize_istance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.interface.TrustEvaluator.is_revoked"><code class="docutils literal notranslate"><span class="pre">TrustEvaluator.is_revoked()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.trust.html#module-pyeudiw.trust">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#module-pyeudiw.wallet_instance_attestation.attestation">pyeudiw.wallet_instance_attestation.attestation module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.VPFormatSchema"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.VPFormatSchema.jwt_vc_json"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.jwt_vc_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.VPFormatSchema.jwt_vp_json"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.jwt_vp_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.VPFormatSchema.model_config"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader.alg"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader.kid"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader.trust_chain"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.trust_chain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationHeader.typ"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.aal"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.aal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.authorization_endpoint"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.authorization_endpoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.cnf"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.exp"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.iat"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.iss"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.logo_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.logo_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.policy_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.policy_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.request_object_signing_alg_values_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.request_object_signing_alg_values_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.response_types_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.response_types_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.sub"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.sub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.tos_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.tos_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.type"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation.WalletInstanceAttestationPayload.vp_formats_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.vp_formats_supported</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#module-pyeudiw.wallet_instance_attestation.attestation_request">pyeudiw.wallet_instance_attestation.attestation_request module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestHeader"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestHeader.alg"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestHeader.kid"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestHeader.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestHeader.typ"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.aud"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.cnf"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.exp"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.iat"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.iss"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.jti"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.jti</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.nonce"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.attestation_request.WalletInstanceAttestationRequestPayload.type"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#module-pyeudiw.wallet_instance_attestation.cnf">pyeudiw.wallet_instance_attestation.cnf module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.cnf.CNFSchema"><code class="docutils literal notranslate"><span class="pre">CNFSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.cnf.CNFSchema.jwk"><code class="docutils literal notranslate"><span class="pre">CNFSchema.jwk</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.cnf.CNFSchema.model_config"><code class="docutils literal notranslate"><span class="pre">CNFSchema.model_config</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#module-pyeudiw.wallet_instance_attestation">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.CNFSchema"><code class="docutils literal notranslate"><span class="pre">CNFSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.CNFSchema.jwk"><code class="docutils literal notranslate"><span class="pre">CNFSchema.jwk</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.CNFSchema.model_config"><code class="docutils literal notranslate"><span class="pre">CNFSchema.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.VPFormatSchema"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.VPFormatSchema.jwt_vc_json"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.jwt_vc_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.VPFormatSchema.jwt_vp_json"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.jwt_vp_json</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.VPFormatSchema.model_config"><code class="docutils literal notranslate"><span class="pre">VPFormatSchema.model_config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader.alg"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader.kid"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader.trust_chain"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.trust_chain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationHeader.typ"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.aal"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.aal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.authorization_endpoint"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.authorization_endpoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.cnf"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.exp"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.iat"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.iss"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.logo_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.logo_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.policy_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.policy_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.request_object_signing_alg_values_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.request_object_signing_alg_values_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.response_types_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.response_types_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.sub"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.sub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.tos_uri"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.tos_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.type"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationPayload.vp_formats_supported"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationPayload.vp_formats_supported</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestHeader"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestHeader.alg"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestHeader.kid"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestHeader.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestHeader.typ"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.aud"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.cnf"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.cnf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.exp"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.iat"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.iss"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.jti"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.jti</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.model_config"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.nonce"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html#pyeudiw.wallet_instance_attestation.WalletInstanceAttestationRequestPayload.type"><code class="docutils literal notranslate"><span class="pre">WalletInstanceAttestationRequestPayload.type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509.chain_builder">pyeudiw.x509.chain_builder module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.chain_builder.ChainBuilder"><code class="docutils literal notranslate"><span class="pre">ChainBuilder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.chain_builder.ChainBuilder.gen_certificate"><code class="docutils literal notranslate"><span class="pre">ChainBuilder.gen_certificate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.chain_builder.ChainBuilder.get_ca"><code class="docutils literal notranslate"><span class="pre">ChainBuilder.get_ca()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.chain_builder.ChainBuilder.get_chain"><code class="docutils literal notranslate"><span class="pre">ChainBuilder.get_chain()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509.crl_builder">pyeudiw.x509.crl_builder module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_builder.CRLBuilder"><code class="docutils literal notranslate"><span class="pre">CRLBuilder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_builder.CRLBuilder.add_revoked_certificate"><code class="docutils literal notranslate"><span class="pre">CRLBuilder.add_revoked_certificate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_builder.CRLBuilder.sign"><code class="docutils literal notranslate"><span class="pre">CRLBuilder.sign()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_builder.CRLBuilder.to_der"><code class="docutils literal notranslate"><span class="pre">CRLBuilder.to_der()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_builder.CRLBuilder.to_pem"><code class="docutils literal notranslate"><span class="pre">CRLBuilder.to_pem()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509.crl_helper">pyeudiw.x509.crl_helper module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper"><code class="docutils literal notranslate"><span class="pre">CRLHelper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_certificate"><code class="docutils literal notranslate"><span class="pre">CRLHelper.from_certificate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_crl"><code class="docutils literal notranslate"><span class="pre">CRLHelper.from_crl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.from_url"><code class="docutils literal notranslate"><span class="pre">CRLHelper.from_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.get_revocation_date"><code class="docutils literal notranslate"><span class="pre">CRLHelper.get_revocation_date()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.is_crl_expired"><code class="docutils literal notranslate"><span class="pre">CRLHelper.is_crl_expired()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.is_revoked"><code class="docutils literal notranslate"><span class="pre">CRLHelper.is_revoked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.serialize"><code class="docutils literal notranslate"><span class="pre">CRLHelper.serialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.crl_helper.CRLHelper.update"><code class="docutils literal notranslate"><span class="pre">CRLHelper.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509.exceptions">pyeudiw.x509.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.exceptions.CRLHTTPError"><code class="docutils literal notranslate"><span class="pre">CRLHTTPError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.exceptions.CRLParseError"><code class="docutils literal notranslate"><span class="pre">CRLParseError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.exceptions.CRLReadError"><code class="docutils literal notranslate"><span class="pre">CRLReadError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509.verify">pyeudiw.x509.verify module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.B64DER_cert_to_DER_cert"><code class="docutils literal notranslate"><span class="pre">B64DER_cert_to_DER_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.B64DER_cert_to_PEM_cert"><code class="docutils literal notranslate"><span class="pre">B64DER_cert_to_PEM_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.DER_cert_to_B64DER_cert"><code class="docutils literal notranslate"><span class="pre">DER_cert_to_B64DER_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.PEM_cert_to_B64DER_cert"><code class="docutils literal notranslate"><span class="pre">PEM_cert_to_B64DER_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_certificate_type"><code class="docutils literal notranslate"><span class="pre">get_certificate_type()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_expiry_date_from_x5c"><code class="docutils literal notranslate"><span class="pre">get_expiry_date_from_x5c()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_get_subject_name"><code class="docutils literal notranslate"><span class="pre">get_get_subject_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_issuer_from_x5c"><code class="docutils literal notranslate"><span class="pre">get_issuer_from_x5c()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_public_key_from_x509_chain"><code class="docutils literal notranslate"><span class="pre">get_public_key_from_x509_chain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_trust_anchor_from_x5c"><code class="docutils literal notranslate"><span class="pre">get_trust_anchor_from_x5c()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.get_x509_info"><code class="docutils literal notranslate"><span class="pre">get_x509_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.is_der_format"><code class="docutils literal notranslate"><span class="pre">is_der_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.is_pem_format"><code class="docutils literal notranslate"><span class="pre">is_pem_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.pem_to_pems_list"><code class="docutils literal notranslate"><span class="pre">pem_to_pems_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.to_DER_cert"><code class="docutils literal notranslate"><span class="pre">to_DER_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.to_PEM_cert"><code class="docutils literal notranslate"><span class="pre">to_PEM_cert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.to_der_list"><code class="docutils literal notranslate"><span class="pre">to_der_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.to_pem_list"><code class="docutils literal notranslate"><span class="pre">to_pem_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.verify_x509_anchor"><code class="docutils literal notranslate"><span class="pre">verify_x509_anchor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.x509.html#pyeudiw.x509.verify.verify_x509_attestation_chain"><code class="docutils literal notranslate"><span class="pre">verify_x509_attestation_chain()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.x509.html#module-pyeudiw.x509">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.exceptions">
+<span id="pyeudiw-exceptions-module"></span><h2>pyeudiw.exceptions module<a class="headerlink" href="#module-pyeudiw.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.exceptions.ValidationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.exceptions.</span></span><span class="sig-name descname"><span class="pre">ValidationError</span></span><a class="reference internal" href="../_modules/pyeudiw/exceptions.html#ValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.exceptions.ValidationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="pyeudiw" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.duckle_ql.html" class="btn btn-neutral float-right" title="pyeudiw.duckle_ql package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

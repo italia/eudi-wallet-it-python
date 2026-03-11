@@ -1,0 +1,794 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.satosa.backends.openid4vp.endpoints package" href="pyeudiw.satosa.backends.openid4vp.endpoints.html" />
+    <link rel="prev" title="pyeudiw.satosa.backends package" href="pyeudiw.satosa.backends.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.backends.html">pyeudiw.satosa.backends package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.satosa.backends.openid4vp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-satosa-backends-openid4vp-package">
+<h1>pyeudiw.satosa.backends.openid4vp package<a class="headerlink" href="#pyeudiw-satosa-backends-openid4vp-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html">pyeudiw.satosa.backends.openid4vp.endpoints package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint">pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint.GetResponseHandler"><code class="docutils literal notranslate"><span class="pre">GetResponseHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint.GetResponseHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">GetResponseHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw-satosa-backends-openid4vp-endpoints-pre-request-endpoint-module">pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint">pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint.RequestHandler"><code class="docutils literal notranslate"><span class="pre">RequestHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint.RequestHandler.default_metadata_private_jwk"><code class="docutils literal notranslate"><span class="pre">RequestHandler.default_metadata_private_jwk</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint.RequestHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">RequestHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint">pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler"><code class="docutils literal notranslate"><span class="pre">ResponseHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">ResponseHandler.endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint.ResponseHandler.load_credential_presentation_handlers"><code class="docutils literal notranslate"><span class="pre">ResponseHandler.load_credential_presentation_handlers()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint">pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint.StatusHandler"><code class="docutils literal notranslate"><span class="pre">StatusHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint.StatusHandler.endpoint"><code class="docutils literal notranslate"><span class="pre">StatusHandler.endpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint">pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint.VPBaseEndpoint"><code class="docutils literal notranslate"><span class="pre">VPBaseEndpoint</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.endpoints.html#module-pyeudiw.satosa.backends.openid4vp.endpoints">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html">pyeudiw.satosa.backends.openid4vp.schemas package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas.flow">pyeudiw.satosa.backends.openid4vp.schemas.flow module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType"><code class="docutils literal notranslate"><span class="pre">RemoteFlowType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.CROSS_DEVICE"><code class="docutils literal notranslate"><span class="pre">RemoteFlowType.CROSS_DEVICE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.SAME_DEVICE"><code class="docutils literal notranslate"><span class="pre">RemoteFlowType.SAME_DEVICE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas.response">pyeudiw.satosa.backends.openid4vp.schemas.response module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt"><code class="docutils literal notranslate"><span class="pre">AuthorizeResponseDirectPostJwt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt.response"><code class="docutils literal notranslate"><span class="pre">AuthorizeResponseDirectPostJwt.response</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload"><code class="docutils literal notranslate"><span class="pre">AuthorizeResponsePayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.state"><code class="docutils literal notranslate"><span class="pre">AuthorizeResponsePayload.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.vp_token"><code class="docutils literal notranslate"><span class="pre">AuthorizeResponsePayload.vp_token</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload"><code class="docutils literal notranslate"><span class="pre">ErrorResponsePayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error"><code class="docutils literal notranslate"><span class="pre">ErrorResponsePayload.error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error_description"><code class="docutils literal notranslate"><span class="pre">ErrorResponsePayload.error_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.state"><code class="docutils literal notranslate"><span class="pre">ErrorResponsePayload.state</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode"><code class="docutils literal notranslate"><span class="pre">ResponseMode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post"><code class="docutils literal notranslate"><span class="pre">ResponseMode.direct_post</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post_jwt"><code class="docutils literal notranslate"><span class="pre">ResponseMode.direct_post_jwt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.error"><code class="docutils literal notranslate"><span class="pre">ResponseMode.error</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema"><code class="docutils literal notranslate"><span class="pre">ResponseSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.model_config"><code class="docutils literal notranslate"><span class="pre">ResponseSchema.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.nonce"><code class="docutils literal notranslate"><span class="pre">ResponseSchema.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.state"><code class="docutils literal notranslate"><span class="pre">ResponseSchema.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.vp_token"><code class="docutils literal notranslate"><span class="pre">ResponseSchema.vp_token</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas.vp_formats">pyeudiw.satosa.backends.openid4vp.schemas.vp_formats module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms"><code class="docutils literal notranslate"><span class="pre">Algorithms</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es256"><code class="docutils literal notranslate"><span class="pre">Algorithms.es256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es384"><code class="docutils literal notranslate"><span class="pre">Algorithms.es384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es512"><code class="docutils literal notranslate"><span class="pre">Algorithms.es512</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs256"><code class="docutils literal notranslate"><span class="pre">Algorithms.rs256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs384"><code class="docutils literal notranslate"><span class="pre">Algorithms.rs384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs512"><code class="docutils literal notranslate"><span class="pre">Algorithms.rs512</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt"><code class="docutils literal notranslate"><span class="pre">VcSdJwt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.kb_jwt_alg_values"><code class="docutils literal notranslate"><span class="pre">VcSdJwt.kb_jwt_alg_values</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.model_config"><code class="docutils literal notranslate"><span class="pre">VcSdJwt.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.sd_jwt_alg_values"><code class="docutils literal notranslate"><span class="pre">VcSdJwt.sd_jwt_alg_values</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats"><code class="docutils literal notranslate"><span class="pre">VpFormats</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.model_config"><code class="docutils literal notranslate"><span class="pre">VpFormats.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.vc_sd_jwt"><code class="docutils literal notranslate"><span class="pre">VpFormats.vc_sd_jwt</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas.vp_token">pyeudiw.satosa.backends.openid4vp.schemas.vp_token module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader"><code class="docutils literal notranslate"><span class="pre">VPTokenHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.alg"><code class="docutils literal notranslate"><span class="pre">VPTokenHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.kid"><code class="docutils literal notranslate"><span class="pre">VPTokenHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.model_config"><code class="docutils literal notranslate"><span class="pre">VPTokenHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.typ"><code class="docutils literal notranslate"><span class="pre">VPTokenHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.aud"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.aud</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.exp"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iat"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iss"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.jti"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.jti</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.model_config"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.nonce"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.nonce</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.vp"><code class="docutils literal notranslate"><span class="pre">VPTokenPayload.vp</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata">pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata"><code class="docutils literal notranslate"><span class="pre">WalletMetadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.alg_values_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.alg_values_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.authorization_endpoint"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.authorization_endpoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.client_id_schemes_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.client_id_schemes_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.model_config"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.request_object_signing_alg_values_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.request_object_signing_alg_values_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_modes_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.response_modes_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_types_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.response_types_supported</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_alg_values_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_alg_values_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_authorization_endpoint"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_authorization_endpoint()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_client_id_schemes_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_client_id_schemes_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_request_object_signing_alg_values_supported_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_request_object_signing_alg_values_supported_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_modes_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_response_modes_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_types_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_response_types_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_vp_formats_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.validate_vp_formats_supported()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.vp_formats_supported"><code class="docutils literal notranslate"><span class="pre">WalletMetadata.vp_formats_supported</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest"><code class="docutils literal notranslate"><span class="pre">WalletPostRequest</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.model_config"><code class="docutils literal notranslate"><span class="pre">WalletPostRequest.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_metadata"><code class="docutils literal notranslate"><span class="pre">WalletPostRequest.wallet_metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_nonce"><code class="docutils literal notranslate"><span class="pre">WalletPostRequest.wallet_nonce</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#module-pyeudiw.satosa.backends.openid4vp.schemas">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.authorization_request">
+<span id="pyeudiw-satosa-backends-openid4vp-authorization-request-module"></span><h2>pyeudiw.satosa.backends.openid4vp.authorization_request module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.authorization_request" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_claims">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_request.</span></span><span class="sig-name descname"><span class="pre">build_authorization_request_claims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_claims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">submission_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wallet_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_request.html#build_authorization_request_claims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_claims" title="Link to this definition"></a></dt>
+<dd><p>Primitive function to build the payload claims of the (JAR) authorization request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client_id</strong> (<em>str</em>) – the client identifier (who issues the JAR token)</p></li>
+<li><p><strong>state</strong> (<em>str</em>) – request session identifier</p></li>
+<li><p><strong>response_uri</strong> (<em>str</em>) – endpoint accepting authorization responses</p></li>
+<li><p><strong>default_claims</strong> (<em>dict</em>) – a dictionary with the default claims to be used in the request object.
+It must contain the following mandatory keys:
+- “expiration_time”: the expiration time in minutes of the request object
+- “response_mode”: the response mode to be used in the request object
+- “auth_iss_id”: the issuer identifier of the authorization server
+- “aud”: the audience of the request object</p></li>
+<li><p><strong>nonce</strong> (<em>str</em>) – optional nonce to be inserted in the request object; if not
+set, a new cryptographically safe uuid v4 nonce is generated.</p></li>
+<li><p><strong>client_metadata</strong> (<em>dict</em>) – optional client_metadata to be included in the request object</p></li>
+<li><p><strong>submission_data</strong> (<em>dict</em>) – optional submission data, such as the duckle query,
+to be included in the request object.
+If this parameter is set, the duckle data is used to build the request object.</p></li>
+<li><p><strong>wallet_nonce</strong> (<em>str</em>) – optional nonce to be used by the wallet.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – if authorization_config misses mandatory configuration options</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dictionary with the <em>complete</em> set of JAR JWT payload claims</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_url">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_request.</span></span><span class="sig-name descname"><span class="pre">build_authorization_request_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scheme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_request.html#build_authorization_request_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_url" title="Link to this definition"></a></dt>
+<dd><p>Build authorization request URL that let the wallet download the request
+object. This is loosely realted to RFC9101 [JAR], section 5.2.1.
+The scheme is either the scheme portion of a deeplink, such as “haip” or
+“eudiw”, while params is a dictitonary of query parameters not urlencoded.</p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.authorization_response">
+<span id="pyeudiw-satosa-backends-openid4vp-authorization-response-module"></span><h2>pyeudiw.satosa.backends.openid4vp.authorization_response module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.authorization_response" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_response.</span></span><span class="sig-name descname"><span class="pre">DirectPostJwtJweParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwe_decryptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper" title="pyeudiw.jwt.jwe_helper.JWEHelper"><span class="pre">JWEHelper</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">jws_verifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper" title="pyeudiw.jwt.jws_helper.JWSHelper"><span class="pre">JWSHelper</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_alg_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_enc_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#DirectPostJwtJweParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser" title="pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationResponseParser</span></code></a></p>
+<p>DirectPostJwtJweParser parses authorization responses sent as body of an
+http post request. The parser expectes a response wrapped in a jwt; more
+precisely the managed response is x-www-form-urlencoded in the form of
+response=&lt;jwt&gt; where &lt;jwt&gt; is an <strong>encrypted but not signed</strong> response.
+As such, the class required a jwe helper with the correct key able to
+decrypt the jwe.</p>
+<dl class="simple">
+<dt>The reference specification is defined here</dt><dd><p><a class="reference external" href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_postjw">https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_postjw</a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser.parse_and_validate">
+<span class="sig-name descname"><span class="pre">parse_and_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload"><span class="pre">AuthorizeResponsePayload</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#DirectPostJwtJweParser.parse_and_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser.parse_and_validate" title="Link to this definition"></a></dt>
+<dd><p>Parse (and optionally validate) a satosa http request, wrapped in its own
+context, in order to extract an auhtorization response.
+The validation step might include verification tasks; for example if the data is
+reepresented as a jwt, the validation should perform a check on the jwt validity.</p>
+<p>The concrete implementation SHOULD NOT be used to validate the actual content
+of the response, that is, it SHOULD NOT try to validate vp_tokens, etc.
+This is a delicate task that that is best suited for a different, dedicated
+object, method or interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>context</strong> (<em>satosa.context.Context</em>) – an http request wrapped in its own satosa context</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException</strong></a> – raised             when the http response is malformed.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException</strong></a> – raised             when the http response is syntactically correct, but not valid (for             example, it might be an expired token).</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the plain openid4vp authorization response; DCQL is not supported yet</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload">AuthorizeResponsePayload</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_response.</span></span><span class="sig-name descname"><span class="pre">DirectPostParser</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#DirectPostParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser" title="pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">AuthorizationResponseParser</span></code></a></p>
+<p>DirectPostParser parses authorization responses sent as body of an
+http post request.</p>
+<dl class="simple">
+<dt>The reference specification is defined here</dt><dd><p><a class="reference external" href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters">https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters</a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser.parse_and_validate">
+<span class="sig-name descname"><span class="pre">parse_and_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload"><span class="pre">AuthorizeResponsePayload</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#DirectPostParser.parse_and_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser.parse_and_validate" title="Link to this definition"></a></dt>
+<dd><p>Parse (and optionally validate) a satosa http request, wrapped in its own
+context, in order to extract an auhtorization response.
+The validation step might include verification tasks; for example if the data is
+reepresented as a jwt, the validation should perform a check on the jwt validity.</p>
+<p>The concrete implementation SHOULD NOT be used to validate the actual content
+of the response, that is, it SHOULD NOT try to validate vp_tokens, etc.
+This is a delicate task that that is best suited for a different, dedicated
+object, method or interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>context</strong> (<em>satosa.context.Context</em>) – an http request wrapped in its own satosa context</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException</strong></a> – raised             when the http response is malformed.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException</strong></a> – raised             when the http response is syntactically correct, but not valid (for             example, it might be an expired token).</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the plain openid4vp authorization response; DCQL is not supported yet</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload">AuthorizeResponsePayload</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.detect_response_mode">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_response.</span></span><span class="sig-name descname"><span class="pre">detect_response_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode" title="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode"><span class="pre">ResponseMode</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#detect_response_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.detect_response_mode" title="Link to this definition"></a></dt>
+<dd><p>Try to make inference on which response mode type this is based on the
+content of an http request body</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.authorization_response.normalize_jsonstring_to_string">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.authorization_response.</span></span><span class="sig-name descname"><span class="pre">normalize_jsonstring_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_S</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_S</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/authorization_response.html#normalize_jsonstring_to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.authorization_response.normalize_jsonstring_to_string" title="Link to this definition"></a></dt>
+<dd><p>Normalize s from string (or list of string) or JSON String (or list
+of JSON String) to simply string (or list of string).
+For example, this would map a vp_token from JSON String “ey…Ui5” to
+the naitve string ey…Ui5 (note the missing quote “).</p>
+<p>Note that this method is NOT intended to parse JSON String.
+For that purpose, json.loads should be preferred. Instead, this method
+should be used when an imput might be a string OR a JSON string.</p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.exceptions">
+<span id="pyeudiw-satosa-backends-openid4vp-exceptions-module"></span><h2>pyeudiw.satosa.backends.openid4vp.exceptions module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">AuthRespParsingException</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#AuthRespParsingException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when the http request corresponding to an authorization response is malformed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">AuthRespValidationException</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#AuthRespValidationException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when the http request corresponding to an authorization response is well formed,
+but not valid (for example, it might be wrapped in an expired token).</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.InvalidVPToken">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidVPToken</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#InvalidVPToken"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.InvalidVPToken" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP is invalid</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.MdocCborValidationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">MdocCborValidationError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#MdocCborValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.MdocCborValidationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP not contain the issuer</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.MissingIssuer">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingIssuer</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#MissingIssuer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.MissingIssuer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP not contain the issuer</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.NotKBJWT">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">NotKBJWT</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#NotKBJWT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.NotKBJWT" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP format is not Key Binding JWT format</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.VPExpired">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">VPExpired</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#VPExpired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.VPExpired" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP is expired</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.VPFormatNotSupported">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">VPFormatNotSupported</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#VPFormatNotSupported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.VPFormatNotSupported" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP format is not supported</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.exceptions.VPRevoked">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.exceptions.</span></span><span class="sig-name descname"><span class="pre">VPRevoked</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/exceptions.html#VPRevoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.exceptions.VPRevoked" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a given VP is revoked</p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.interface">
+<span id="pyeudiw-satosa-backends-openid4vp-interface-module"></span><h2>pyeudiw.satosa.backends.openid4vp.interface module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.interface" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.interface.</span></span><span class="sig-name descname"><span class="pre">AuthorizationResponseParser</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#AuthorizationResponseParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>AuthorizationResponseParser is an interface intended to parse direct POST
+http responses.</p>
+<p>An authorization parser is meant to just parse and eventually validate the
+“lower” applicaiton layer of the transmission, that is, it is used to
+extract an authorization response from the HTTP layer.
+It SHOULD NOT be used to validate the actual content of the response, that
+is, it SHOULD NOT try to validate vp_tokens, etc.
+This is a delicate task that that is best suited for a different, dedicated
+object, method or interface.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser.parse_and_validate">
+<span class="sig-name descname"><span class="pre">parse_and_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload"><span class="pre">AuthorizeResponsePayload</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#AuthorizationResponseParser.parse_and_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.AuthorizationResponseParser.parse_and_validate" title="Link to this definition"></a></dt>
+<dd><p>Parse (and optionally validate) a satosa http request, wrapped in its own
+context, in order to extract an auhtorization response.
+The validation step might include verification tasks; for example if the data is
+reepresented as a jwt, the validation should perform a check on the jwt validity.</p>
+<p>The concrete implementation SHOULD NOT be used to validate the actual content
+of the response, that is, it SHOULD NOT try to validate vp_tokens, etc.
+This is a delicate task that that is best suited for a different, dedicated
+object, method or interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>context</strong> (<em>satosa.context.Context</em>) – an http request wrapped in its own satosa context</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespParsingException</strong></a> – raised             when the http response is malformed.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException" title="pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException"><strong>pyeudiw.satosa.backends.openid4vp.exceptions.AuthRespValidationException</strong></a> – raised             when the http response is syntactically correct, but not valid (for             example, it might be an expired token).</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the plain openid4vp authorization response; DCQL is not supported yet</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.schemas.html#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload">AuthorizeResponsePayload</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.interface.</span></span><span class="sig-name descname"><span class="pre">VpTokenParser</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>VpTokenParser is an interface that specify that an object is able to
+extract verifiable credentials from a VP token.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser.get_credentials">
+<span class="sig-name descname"><span class="pre">get_credentials</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenParser.get_credentials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser.get_credentials" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser.get_issuer_name">
+<span class="sig-name descname"><span class="pre">get_issuer_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenParser.get_issuer_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenParser.get_issuer_name" title="Link to this definition"></a></dt>
+<dd><p>Get the issuer name from the token payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.exceptions.MissingIssuer" title="pyeudiw.satosa.backends.openid4vp.exceptions.MissingIssuer"><strong>MissingIssuer</strong></a> – if the issuer name is missing in the token payload</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the issuer name</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.interface.</span></span><span class="sig-name descname"><span class="pre">VpTokenVerifier</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>VpTokenVerifier is an interface that specify that an object is able to
+verify a vp token.
+The interface supposes that the verification process requires a public
+key (os the token issuer)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_active">
+<span class="sig-name descname"><span class="pre">is_active</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier.is_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_active" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_expired">
+<span class="sig-name descname"><span class="pre">is_expired</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier.is_expired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_expired" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_revoked">
+<span class="sig-name descname"><span class="pre">is_revoked</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier.is_revoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.is_revoked" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if the credential is revoked</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.verify_challenge">
+<span class="sig-name descname"><span class="pre">verify_challenge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier.verify_challenge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.verify_challenge" title="Link to this definition"></a></dt>
+<dd><p>Verifies the challenge of the jwt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg" title="pyeudiw.sd_jwt.exceptions.UnsupportedSdAlg"><strong>UnsupportedSdAlg</strong></a> – if verification fails due to an unkown _sd_alg</p></li>
+<li><p><a class="reference internal" href="pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.exceptions.InvalidKeyBinding" title="pyeudiw.sd_jwt.exceptions.InvalidKeyBinding"><strong>InvalidKeyBinding</strong></a> – if the verification fails for a known reason</p></li>
+<li><p><strong>ValueError</strong> – if the iat claim is missing or invalid</p></li>
+<li><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if the verification of a JWS fails</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.verify_signature">
+<span class="sig-name descname"><span class="pre">verify_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">public_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/interface.html#VpTokenVerifier.verify_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.interface.VpTokenVerifier.verify_signature" title="Link to this definition"></a></dt>
+<dd><p>Verifies the signature of the jwt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>public_key</strong> (<em>ECKey</em><em> | </em><em>RSAKey</em><em> | </em><em>dict</em>) – the public key to verify the signature</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pyeudiw.jwt.html#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if the signature is invalid</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.openid4vp">
+<span id="pyeudiw-satosa-backends-openid4vp-openid4vp-module"></span><h2>pyeudiw.satosa.backends.openid4vp.openid4vp module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.openid4vp" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.openid4vp.</span></span><span class="sig-name descname"><span class="pre">OpenID4VPBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth_req_callback_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Context</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">InternalData</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/openid4vp.html#OpenID4VPBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BackendModule</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.get_trust_backend_by_class_name">
+<span class="sig-name descname"><span class="pre">get_trust_backend_by_class_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface" title="pyeudiw.trust.handler.interface.TrustHandlerInterface"><span class="pre">TrustHandlerInterface</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/openid4vp.html#OpenID4VPBackend.get_trust_backend_by_class_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.get_trust_backend_by_class_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.register_endpoints">
+<span class="sig-name descname"><span class="pre">register_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/openid4vp.html#OpenID4VPBackend.register_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.register_endpoints" title="Link to this definition"></a></dt>
+<dd><p>See super class satosa.backends.base.BackendModule</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[(str, ((satosa.context.Context, Any) -&gt; satosa.response.Response, Any))]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if more than one backend is configured</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.start_auth">
+<span class="sig-name descname"><span class="pre">start_auth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_request</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/openid4vp.html#OpenID4VPBackend.start_auth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.openid4vp.OpenID4VPBackend.start_auth" title="Link to this definition"></a></dt>
+<dd><p>This is the start up function of the backend authorization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<em>satosa.context.Context</em>) – the request context</p></li>
+<li><p><strong>internal_request</strong> (<em>satosa.internal.InternalData</em>) – Information about the authorization request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>satosa.response.Response</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyeudiw-satosa-backends-openid4vp-utils-module">
+<h2>pyeudiw.satosa.backends.openid4vp.utils module<a class="headerlink" href="#pyeudiw-satosa-backends-openid4vp-utils-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.vp">
+<span id="pyeudiw-satosa-backends-openid4vp-vp-module"></span><h2>pyeudiw.satosa.backends.openid4vp.vp module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.vp" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp.Vp">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.vp.</span></span><span class="sig-name descname"><span class="pre">Vp</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp.html#Vp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp.Vp" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_logger.BaseLogger" title="pyeudiw.tools.base_logger.BaseLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseLogger</span></code></a></p>
+<p>Class for Verifiable Presentation istance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp.Vp.check_revocation">
+<span class="sig-name descname"><span class="pre">check_revocation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp.html#Vp.check_revocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp.Vp.check_revocation" title="Link to this definition"></a></dt>
+<dd><p>Check if the VP is revoked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RevokedVPToken</strong> – if the VP is revoked.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp.Vp.parse_digital_credential">
+<span class="sig-name descname"><span class="pre">parse_digital_credential</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp.html#Vp.parse_digital_credential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp.Vp.parse_digital_credential" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp.Vp.verify">
+<span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp.html#Vp.verify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp.Vp.verify" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor">
+<span id="pyeudiw-satosa-backends-openid4vp-vp-mdoc-cbor-module"></span><h2>pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.</span></span><span class="sig-name descname"><span class="pre">VpMDocCbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trust_evaluator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator" title="pyeudiw.trust.dynamic.CombinedTrustEvaluator"><span class="pre">CombinedTrustEvaluator</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_mdoc_cbor.html#VpMDocCbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseVPParser</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_mdoc_cbor.html#VpMDocCbor.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor.parse" title="Link to this definition"></a></dt>
+<dd><p>Parses a Verifiable Presentation token.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verifier_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verifier_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_mdoc_cbor.html#VpMDocCbor.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor.VpMDocCbor.validate" title="Link to this definition"></a></dt>
+<dd><p>Validates the content of a Verifiable Presentation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc">
+<span id="pyeudiw-satosa-backends-openid4vp-vp-sd-jwt-vc-module"></span><h2>pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.</span></span><span class="sig-name descname"><span class="pre">VpVcSdJwtParserVerifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trust_evaluator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.html#pyeudiw.trust.dynamic.CombinedTrustEvaluator" title="pyeudiw.trust.dynamic.CombinedTrustEvaluator"><span class="pre">CombinedTrustEvaluator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_alg_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_sd_jwt_vc.html#VpVcSdJwtParserVerifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseVPParser</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_sd_jwt_vc.html#VpVcSdJwtParserVerifier.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier.parse" title="Link to this definition"></a></dt>
+<dd><p>Parses a Verifiable Presentation token.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verifier_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verifier_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/vp_sd_jwt_vc.html#VpVcSdJwtParserVerifier.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc.VpVcSdJwtParserVerifier.validate" title="Link to this definition"></a></dt>
+<dd><p>Validates the content of a Verifiable Presentation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.satosa.backends.html" class="btn btn-neutral float-left" title="pyeudiw.satosa.backends package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.satosa.backends.openid4vp.endpoints.html" class="btn btn-neutral float-right" title="pyeudiw.satosa.backends.openid4vp.endpoints package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

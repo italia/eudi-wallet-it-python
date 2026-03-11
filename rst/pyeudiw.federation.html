@@ -1,0 +1,953 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.federation package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.federation.schemas package" href="pyeudiw.federation.schemas.html" />
+    <link rel="prev" title="pyeudiw.duckle_ql package" href="pyeudiw.duckle_ql.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.federation package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.federation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-federation-package">
+<h1>pyeudiw.federation package<a class="headerlink" href="#pyeudiw-federation-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.federation.schemas.html">pyeudiw.federation.schemas package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.entity_configuration">pyeudiw.federation.schemas.entity_configuration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationHeader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.alg"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationHeader.alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.kid"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationHeader.kid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.model_config"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationHeader.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationHeader.typ"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationHeader.typ</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationMetadataSchema</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.federation_entity"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationMetadataSchema.federation_entity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.model_config"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationMetadataSchema.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationMetadataSchema.openid_credential_verifier"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationMetadataSchema.openid_credential_verifier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.authority_hints"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.authority_hints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.exp"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iat"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.iss"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.jwks"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.jwks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.metadata"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.model_config"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityConfigurationPayload.sub"><code class="docutils literal notranslate"><span class="pre">EntityConfigurationPayload.sub</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.exp"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.exp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iat"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.iat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.iss"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.iss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.jwks"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.jwks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.metadata_policy"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.metadata_policy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.model_config"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.source_endpoint"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.source_endpoint</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.sub"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.sub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.entity_configuration.EntityStatementPayload.trust_marks"><code class="docutils literal notranslate"><span class="pre">EntityStatementPayload.trust_marks</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.federation_configuration">pyeudiw.federation.schemas.federation_configuration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig"><code class="docutils literal notranslate"><span class="pre">FederationConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.authority_hints"><code class="docutils literal notranslate"><span class="pre">FederationConfig.authority_hints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.default_sig_alg"><code class="docutils literal notranslate"><span class="pre">FederationConfig.default_sig_alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_entity_metadata"><code class="docutils literal notranslate"><span class="pre">FederationConfig.federation_entity_metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.federation_jwks"><code class="docutils literal notranslate"><span class="pre">FederationConfig.federation_jwks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.metadata_type"><code class="docutils literal notranslate"><span class="pre">FederationConfig.metadata_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.model_config"><code class="docutils literal notranslate"><span class="pre">FederationConfig.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationConfig.trust_anchors"><code class="docutils literal notranslate"><span class="pre">FederationConfig.trust_anchors</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.homepage_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.homepage_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.logo_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.logo_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.model_config"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.organization_name"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.organization_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.policy_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.policy_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_configuration.FederationEntityMetadata.tos_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntityMetadata.tos_uri</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.federation_entity">pyeudiw.federation.schemas.federation_entity module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity"><code class="docutils literal notranslate"><span class="pre">FederationEntity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.contacts"><code class="docutils literal notranslate"><span class="pre">FederationEntity.contacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.homepage_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntity.homepage_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.logo_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntity.logo_uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.model_config"><code class="docutils literal notranslate"><span class="pre">FederationEntity.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.organization_name"><code class="docutils literal notranslate"><span class="pre">FederationEntity.organization_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.federation_entity.FederationEntity.policy_uri"><code class="docutils literal notranslate"><span class="pre">FederationEntity.policy_uri</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas.openid_credential_verifier">pyeudiw.federation.schemas.openid_credential_verifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported"><code class="docutils literal notranslate"><span class="pre">AcrValuesSupported</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l1"><code class="docutils literal notranslate"><span class="pre">AcrValuesSupported.spid_l1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l2"><code class="docutils literal notranslate"><span class="pre">AcrValuesSupported.spid_l2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AcrValuesSupported.spid_l3"><code class="docutils literal notranslate"><span class="pre">AcrValuesSupported.spid_l3</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es256"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.es256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es384"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.es384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.es512"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.es512</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs256"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.rs256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs384"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.rs384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.AuthorizationSignedResponseAlg.rs512"><code class="docutils literal notranslate"><span class="pre">AuthorizationSignedResponseAlg.rs512</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.ecdh_es</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a128kw"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.ecdh_es_a128kw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a192kw"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.ecdh_es_a192kw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ecdh_es_a256kw"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.ecdh_es_a256kw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.ras_oaep_256"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.ras_oaep_256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionAlgValuesSupported.rsa_oaep"><code class="docutils literal notranslate"><span class="pre">EncryptionAlgValuesSupported.rsa_oaep</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128cbc_hs256"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a128cbc_hs256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a128gcm"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a128gcm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192cbc_hs384"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a192cbc_hs384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a192gcm"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a192gcm</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256cbc_hs512"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a256cbc_hs512</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.EncryptionEncValuesSupported.a256gcm"><code class="docutils literal notranslate"><span class="pre">EncryptionEncValuesSupported.a256gcm</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.application_type"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.application_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_alg"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.authorization_encrypted_response_alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_encrypted_response_enc"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.authorization_encrypted_response_enc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.authorization_signed_response_alg"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.authorization_signed_response_alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_id"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.client_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.client_name"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.client_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.contacts"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.contacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.default_acr_values"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.default_acr_values</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_alg"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.id_token_encrypted_response_alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_encrypted_response_enc"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.id_token_encrypted_response_enc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.id_token_signed_response_alg"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.id_token_signed_response_alg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.jwks"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.jwks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.model_config"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.redirect_uris"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.redirect_uris</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.request_uris"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.request_uris</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.OpenIDCredentialVerifier.vp_formats"><code class="docutils literal notranslate"><span class="pre">OpenIDCredentialVerifier.vp_formats</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es256"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.es256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es384"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.es384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.es512"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.es512</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs256"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.rs256</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs384"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.rs384</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.schemas.html#pyeudiw.federation.schemas.openid_credential_verifier.SigningAlgValuesSupported.rs512"><code class="docutils literal notranslate"><span class="pre">SigningAlgValuesSupported.rs512</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.schemas.html#module-pyeudiw.federation.schemas">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.federation.trust_chain.html">pyeudiw.federation.trust_chain package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain.builder">pyeudiw.federation.trust_chain.builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain.validator">pyeudiw.federation.trust_chain.validator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.federation.trust_chain.html#module-pyeudiw.federation.trust_chain">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.federation.exceptions">
+<span id="pyeudiw-federation-exceptions-module"></span><h2>pyeudiw.federation.exceptions module<a class="headerlink" href="#module-pyeudiw.federation.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidChainError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidChainError</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidChainError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidChainError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidEntityConfiguration">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidEntityConfiguration</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidEntityConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidEntityConfiguration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidEntityHeader">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidEntityHeader</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidEntityHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidEntityHeader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidEntityStatement">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidEntityStatement</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidEntityStatement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidEntityStatement" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidEntityStatementPayload">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidEntityStatementPayload</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidEntityStatementPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidEntityStatementPayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidRequiredTrustMark">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidRequiredTrustMark</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidRequiredTrustMark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidRequiredTrustMark" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.InvalidTrustchain">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidTrustchain</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#InvalidTrustchain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.InvalidTrustchain" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.KeyValidationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">KeyValidationError</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#KeyValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.KeyValidationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.MetadataDiscoveryException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">MetadataDiscoveryException</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#MetadataDiscoveryException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.MetadataDiscoveryException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.MissingAuthorityHintsClaim">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingAuthorityHintsClaim</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#MissingAuthorityHintsClaim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.MissingAuthorityHintsClaim" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.MissingJwksClaim">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingJwksClaim</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#MissingJwksClaim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.MissingJwksClaim" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.MissingTrustAnchorPublicKey">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingTrustAnchorPublicKey</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#MissingTrustAnchorPublicKey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.MissingTrustAnchorPublicKey" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.MissingTrustMark">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">MissingTrustMark</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#MissingTrustMark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.MissingTrustMark" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.NotDescendant">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">NotDescendant</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#NotDescendant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.NotDescendant" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.PolicyError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">PolicyError</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#PolicyError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.PolicyError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.ProtocolMetadataNotFound">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">ProtocolMetadataNotFound</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#ProtocolMetadataNotFound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.ProtocolMetadataNotFound" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.TimeValidationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">TimeValidationError</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#TimeValidationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.TimeValidationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.TrustAnchorNeeded">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrustAnchorNeeded</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#TrustAnchorNeeded"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.TrustAnchorNeeded" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.TrustChainHttpError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrustChainHttpError</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#TrustChainHttpError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.TrustChainHttpError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.exceptions.HttpError" title="pyeudiw.tools.exceptions.HttpError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.TrustchainMissingMetadata">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">TrustchainMissingMetadata</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#TrustchainMissingMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.TrustchainMissingMetadata" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.federation.exceptions.UnknownKid">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.exceptions.</span></span><span class="sig-name descname"><span class="pre">UnknownKid</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/exceptions.html#UnknownKid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.exceptions.UnknownKid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.policy">
+<span id="pyeudiw-federation-policy-module"></span><h2>pyeudiw.federation.policy module<a class="headerlink" href="#module-pyeudiw.federation.policy" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.TrustChainPolicy">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">TrustChainPolicy</span></span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#TrustChainPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.TrustChainPolicy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.TrustChainPolicy.apply_policy">
+<span class="sig-name descname"><span class="pre">apply_policy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#TrustChainPolicy.apply_policy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.TrustChainPolicy.apply_policy" title="Link to this definition"></a></dt>
+<dd><p>Apply a metadata policy on metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metadata</strong> – Metadata statements</p></li>
+<li><p><strong>policy</strong> – A dictionary with metadata and metadata_policy as keys</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A metadata statement that adheres to a metadata policy</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.TrustChainPolicy.gather_policies">
+<span class="sig-name descname"><span class="pre">gather_policies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entity_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#TrustChainPolicy.gather_policies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.TrustChainPolicy.gather_policies" title="Link to this definition"></a></dt>
+<dd><p>Gather and combine all the metadata policies that are defined in the trust chain
+:param chain: A list of Entity Statements
+:return: The combined metadata policy</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule</strong> – Dictionary with two keys metadata_policy and metadata</p></li>
+<li><p><strong>sub</strong> – Dictionary with two keys metadata_policy and metadata</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine_add">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine_add" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine_claim_policy">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine_claim_policy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine_claim_policy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine_claim_policy" title="Link to this definition"></a></dt>
+<dd><p>Combine policy rules.
+Applying the child policy can only make the combined policy more restrictive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>superior</strong> – Superior policy</p></li>
+<li><p><strong>child</strong> – Intermediates policy</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine_one_of">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine_one_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine_one_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine_one_of" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine_subset_of">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine_subset_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine_subset_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine_subset_of" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.combine_superset_of">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">combine_superset_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#combine_superset_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.combine_superset_of" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.do_default">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">do_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#do_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.do_default" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.do_essential">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">do_essential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#do_essential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.do_essential" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.do_sub_one_super_add">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">do_sub_one_super_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#do_sub_one_super_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.do_sub_one_super_add" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.do_value">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">do_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#do_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.do_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.gather_policies">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">gather_policies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entity_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#gather_policies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.gather_policies" title="Link to this definition"></a></dt>
+<dd><p>Gather and combine all the metadata policies that are defined in the trust chain
+:param chain: A list of Entity Statements
+:return: The combined metadata policy</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.policy.union">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.policy.</span></span><span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/policy.html#union"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.policy.union" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.statements">
+<span id="pyeudiw-federation-statements-module"></span><h2>pyeudiw.federation.statements module<a class="headerlink" href="#module-pyeudiw.federation.statements" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.statements.</span></span><span class="sig-name descname"><span class="pre">EntityStatement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_by_allowed_trust_marks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_anchor_entity_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_mark_issuers_entity_confs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The self issued/signed statement of a federation entity</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.get_superiors">
+<span class="sig-name descname"><span class="pre">get_superiors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">authority_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_authority_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">superiors_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.get_superiors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.get_superiors" title="Link to this definition"></a></dt>
+<dd><p>get superiors entity configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>authority_hints</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – the authority hint list</p></li>
+<li><p><strong>max_authority_hints</strong> (<em>int</em>) – the number of max authority hint</p></li>
+<li><p><strong>superiors_hints</strong> (<em>list</em><em>[</em><em>dict</em><em>]</em>) – the list of superior hints</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a dict with the superior’s entity configurations</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.update_trust_anchor_conf">
+<span class="sig-name descname"><span class="pre">update_trust_anchor_conf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trust_anchor_entity_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.update_trust_anchor_conf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.update_trust_anchor_conf" title="Link to this definition"></a></dt>
+<dd><p>Updates the internal Trust Anchor conf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trust_anchor_entity_conf</strong> (<a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><em>EntityStatement</em></a>) – the trust anchor entity conf</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.validate_by_allowed_trust_marks">
+<span class="sig-name descname"><span class="pre">validate_by_allowed_trust_marks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.validate_by_allowed_trust_marks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.validate_by_allowed_trust_marks" title="Link to this definition"></a></dt>
+<dd><p>validate the entity configuration ony if marked by a well known
+trust mark, issued by a trusted issuer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.validate_by_itself">
+<span class="sig-name descname"><span class="pre">validate_by_itself</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.validate_by_itself"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.validate_by_itself" title="Link to this definition"></a></dt>
+<dd><p>validates the entity configuration by it self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.validate_by_superior_statement">
+<span class="sig-name descname"><span class="pre">validate_by_superior_statement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.validate_by_superior_statement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.validate_by_superior_statement" title="Link to this definition"></a></dt>
+<dd><p>validates self with the jwks contained in statement of the superior
+:param jwt: the statement issued by a superior in form of JWT
+:type jwt: str
+:param ec: is a superior entity configuration
+:type ec: EntityStatement</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the entity configuration subject if is valid</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.validate_by_superiors">
+<span class="sig-name descname"><span class="pre">validate_by_superiors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">superiors_entity_configurations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.validate_by_superiors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.validate_by_superiors" title="Link to this definition"></a></dt>
+<dd><p>validates the entity configuration with the entity statements issued by its superiors
+this methods create self.verified_superiors and failed ones and self.verified_by_superiors and failed ones</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>superiors_entity_configurations</strong> (<em>dict</em>) – an object containing the entity configurations of superiors</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an object containing the superior validations</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.EntityStatement.validate_descendant_statement">
+<span class="sig-name descname"><span class="pre">validate_descendant_statement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#EntityStatement.validate_descendant_statement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.EntityStatement.validate_descendant_statement" title="Link to this definition"></a></dt>
+<dd><p>jwt is a descendant entity statement issued by self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt</strong> (<em>str</em>) – the JWT to validate by</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if is valid or False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.TrustMark">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.statements.</span></span><span class="sig-name descname"><span class="pre">TrustMark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#TrustMark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.TrustMark" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The class representing a Trust Mark</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.TrustMark.validate_by">
+<span class="sig-name descname"><span class="pre">validate_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#TrustMark.validate_by"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.TrustMark.validate_by" title="Link to this definition"></a></dt>
+<dd><p>Validates Trust Marks by an Entity Configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ec</strong> (<em>dict</em>) – the entity configuration to validate by</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if is valid otherwise False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.TrustMark.validate_by_its_issuer">
+<span class="sig-name descname"><span class="pre">validate_by_its_issuer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#TrustMark.validate_by_its_issuer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.TrustMark.validate_by_its_issuer" title="Link to this definition"></a></dt>
+<dd><p>Validates Trust Marks by it’s issuer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if is valid otherwise False</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.get_entity_configurations">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.statements.</span></span><span class="sig-name descname"><span class="pre">get_entity_configurations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">http_async</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#get_entity_configurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.get_entity_configurations" title="Link to this definition"></a></dt>
+<dd><p>Fetches an entity configuration from the specified subjects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subjects</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em>) – The url or a list of url where perform the GET HTTP calls</p></li>
+<li><p><strong>httpc_params</strong> (<em>dict</em>) – parameters to perform http requests.</p></li>
+<li><p><strong>http_async</strong> (<em>bool</em>) – if is set to True the operation will be performed in async (deafault True)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of entity statements.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Response]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.get_entity_statements">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.statements.</span></span><span class="sig-name descname"><span class="pre">get_entity_statements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">http_async</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#get_entity_statements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.get_entity_statements" title="Link to this definition"></a></dt>
+<dd><p>Fetches an entity statement from the specified urls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>urls</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>str</em>) – The url or a list of url where perform the GET HTTP calls</p></li>
+<li><p><strong>httpc_params</strong> (<em>dict</em>) – parameters to perform http requests.</p></li>
+<li><p><strong>http_async</strong> (<em>bool</em>) – if is set to True the operation will be performed in async (deafault True)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of entity statements.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Response]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.statements.get_federation_jwks">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.statements.</span></span><span class="sig-name descname"><span class="pre">get_federation_jwks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt_payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/statements.html#get_federation_jwks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.statements.get_federation_jwks" title="Link to this definition"></a></dt>
+<dd><p>Returns the list of JWKS inside a JWT payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt_payload</strong> (<em>dict</em>) – the jwt payload from where extract the JWKs.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of entity jwk’s keys.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.trust_chain_builder">
+<span id="pyeudiw-federation-trust-chain-builder-module"></span><h2>pyeudiw.federation.trust_chain_builder module<a class="headerlink" href="#module-pyeudiw.federation.trust_chain_builder" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.trust_chain_builder.</span></span><span class="sig-name descname"><span class="pre">TrustChainBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_anchor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_anchor_configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_authority_hints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.federation.statements.EntityStatement" title="pyeudiw.federation.statements.EntityStatement"><span class="pre">EntityStatement</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_trust_marks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A trust walker that fetches statements and evaluate the evaluables</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.apply_metadata_policy">
+<span class="sig-name descname"><span class="pre">apply_metadata_policy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.apply_metadata_policy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.apply_metadata_policy" title="Link to this definition"></a></dt>
+<dd><p>filters the trust path from subject to trust anchor
+apply the metadata policies along the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the final metadata with policy applied</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.discovery">
+<span class="sig-name descname"><span class="pre">discovery</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.discovery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.discovery" title="Link to this definition"></a></dt>
+<dd><p>discovers the chain of verified statements
+from the lower up to the trust anchor and updates
+the internal representation of chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the validity status of the updated chain</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.exp_datetime">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">exp_datetime</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">datetime</span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.exp_datetime" title="Link to this definition"></a></dt>
+<dd><p>The exp filed converted in datetime format</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_subject_configuration">
+<span class="sig-name descname"><span class="pre">get_subject_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.get_subject_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_subject_configuration" title="Link to this definition"></a></dt>
+<dd><p>Download and updates the internal field subject_configuration
+with the entity statement of leaf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_anchor_configuration">
+<span class="sig-name descname"><span class="pre">get_trust_anchor_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.get_trust_anchor_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_anchor_configuration" title="Link to this definition"></a></dt>
+<dd><p>Download and updates the internal field trust_anchor_configuration
+with the entity statement of trust anchor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_chain">
+<span class="sig-name descname"><span class="pre">get_trust_chain</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.get_trust_chain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_chain" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the leaf and the Trust Anchor entity configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the list containing the ECs</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.serialize" title="Link to this definition"></a></dt>
+<dd><p>Serializes the chain in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the serialized chain in JSON format</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_builder.TrustChainBuilder.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_builder.html#TrustChainBuilder.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.start" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the subject (leaf) configuration and starts
+chain discovery.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the list containing the ECs</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.trust_chain_validator">
+<span id="pyeudiw-federation-trust-chain-validator-module"></span><h2>pyeudiw.federation.trust_chain_validator module<a class="headerlink" href="#module-pyeudiw.federation.trust_chain_validator" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.trust_chain_validator.</span></span><span class="sig-name descname"><span class="pre">StaticTrustChainValidator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">static_trust_chain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_anchor_jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_validator.html#StaticTrustChainValidator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class for Static Trust Chain validation</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.entity_id">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">entity_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.entity_id" title="Link to this definition"></a></dt>
+<dd><p>Get the chain’s entity_id.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.final_metadata">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">final_metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.final_metadata" title="Link to this definition"></a></dt>
+<dd><p>Apply the metadata and returns the final metadata.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_expired">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_expired</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_expired" title="Link to this definition"></a></dt>
+<dd><p>Get the status of chain expiration.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_valid">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_valid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.is_valid" title="Link to this definition"></a></dt>
+<dd><p>Get the validity of chain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.set_exp">
+<span class="sig-name descname"><span class="pre">set_exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_validator.html#StaticTrustChainValidator.set_exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.set_exp" title="Link to this definition"></a></dt>
+<dd><p>Updates the self.exp field if the exp parameter is more recent than the previous one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exp</strong> (<em>int</em>) – an integer that represent the timestemp to check</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.trust_chain">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trust_chain</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.trust_chain" title="Link to this definition"></a></dt>
+<dd><p>Get the list of the jwt that compones the trust chain.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_validator.html#StaticTrustChainValidator.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.update" title="Link to this definition"></a></dt>
+<dd><p>Updates the statement retrieving and the exp filed and determines the validity of it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the updated chain is valid, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/trust_chain_validator.html#StaticTrustChainValidator.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.validate" title="Link to this definition"></a></dt>
+<dd><p>Validates the static chain checking the validity in all jwt inside the field trust_chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if static chain is valid and False otherwise</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation.utils">
+<span id="pyeudiw-federation-utils-module"></span><h2>pyeudiw.federation.utils module<a class="headerlink" href="#module-pyeudiw.federation.utils" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.federation.utils.is_es">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.federation.utils.</span></span><span class="sig-name descname"><span class="pre">is_es</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/federation/utils.html#is_es"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.federation.utils.is_es" title="Link to this definition"></a></dt>
+<dd><p>Determines if payload dict is a Subordinate Entity Statement</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>payload</strong> (<em>dict</em>) – the object to determine if is a Subordinate Entity Statement</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.federation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.federation" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.duckle_ql.html" class="btn btn-neutral float-left" title="pyeudiw.duckle_ql package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.federation.schemas.html" class="btn btn-neutral float-right" title="pyeudiw.federation.schemas package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

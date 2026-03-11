@@ -1,0 +1,42 @@
+pyeudiw package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.duckle_ql
+   pyeudiw.federation
+   pyeudiw.jwk
+   pyeudiw.jwt
+   pyeudiw.oauth2
+   pyeudiw.satosa
+   pyeudiw.sd_jwt
+   pyeudiw.status_list
+   pyeudiw.storage
+   pyeudiw.tests
+   pyeudiw.tools
+   pyeudiw.trust
+   pyeudiw.wallet_instance_attestation
+   pyeudiw.x509
+
+Submodules
+----------
+
+pyeudiw.exceptions module
+-------------------------
+
+.. automodule:: pyeudiw.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw
+   :members:
+   :show-inheritance:
+   :undoc-members:

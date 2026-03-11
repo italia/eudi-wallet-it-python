@@ -1,0 +1,529 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.jwt.jws_helper &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.jwt.jws_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.jwt.jws_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">binascii</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">key_from_jwk_dict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">KidError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.jwks</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_jwk_by_kid</span><span class="p">,</span> <span class="n">find_jwk_by_thumbprint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_b64der</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JWSSigningError</span><span class="p">,</span>
+    <span class="n">JWSVerificationError</span><span class="p">,</span>
+    <span class="n">LifetimeException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.helper</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JWHelperInterface</span><span class="p">,</span>
+    <span class="n">find_self_contained_key</span><span class="p">,</span>
+    <span class="n">serialize_payload</span><span class="p">,</span>
+    <span class="n">validate_jwt_timestamps_claims</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span>
+
+<span class="n">SerializationFormat</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;compact&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">DEFAULT_HASH_FUNC</span> <span class="o">=</span> <span class="s2">&quot;SHA-256&quot;</span>
+
+<span class="n">DEFAULT_SIG_KTY_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;RSA&quot;</span><span class="p">:</span> <span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;EC&quot;</span><span class="p">:</span> <span class="s2">&quot;ES256&quot;</span><span class="p">}</span>
+
+<span class="n">DEFAULT_SIG_ALG_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;RSA&quot;</span><span class="p">:</span> <span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;EC&quot;</span><span class="p">:</span> <span class="s2">&quot;ES256&quot;</span><span class="p">}</span>
+
+<span class="n">DEFAULT_ENC_ALG_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;RSA&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;EC&quot;</span><span class="p">:</span> <span class="s2">&quot;ECDH-ES+A256KW&quot;</span><span class="p">}</span>
+
+<span class="n">DEFAULT_ENC_ENC_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;RSA&quot;</span><span class="p">:</span> <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span> <span class="s2">&quot;EC&quot;</span><span class="p">:</span> <span class="s2">&quot;A256GCM&quot;</span><span class="p">}</span>
+
+<span class="n">DEFAULT_TOKEN_TIME_TOLERANCE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;PYEUDIW_TOKEN_TIME_TOLERANCE&quot;</span><span class="p">,</span> <span class="s2">&quot;60&quot;</span><span class="p">),</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="JWSHelper">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">JWSHelper</span><span class="p">(</span><span class="n">JWHelperInterface</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper class for working with JWS, extended to support SD-JWT.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="JWSHelper.sign">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.sign">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sign</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plain_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">protected</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unprotected</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">serialization_format</span><span class="p">:</span> <span class="n">SerializationFormat</span> <span class="o">=</span> <span class="s2">&quot;compact&quot;</span><span class="p">,</span>
+        <span class="n">signing_kid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">kid_in_header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">signing_algs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a signed JWS with the given payload and header.</span>
+<span class="sd">        This method provides no guarantee that the input header is fully preserved,</span>
+<span class="sd">        not does it guarantee that some optional but usually found header such</span>
+<span class="sd">        as &#39;typ&#39; and &#39;kid&#39; are present.</span>
+<span class="sd">        If the signing jwk has a kid claim, and the JWS header does not a have a kid claim,</span>
+<span class="sd">        a kid matching the signing key &#39;kid&#39; can be injected in the protected header</span>
+<span class="sd">        by setting kid_in_header=True.</span>
+
+<span class="sd">        Header claim &#39;alg&#39; is always added as it is mandated by RFC7515</span>
+<span class="sd">        and, if present, will be overridden with the actual &#39;alg&#39; used for singing.</span>
+<span class="sd">        This is done to make sure that untrusted alg values, such as none, cannot be used.</span>
+
+<span class="sd">        The signing key is selected among the constructor jwks based on internal</span>
+<span class="sd">        heuristics. The user can force with key he can attempt to use by</span>
+<span class="sd">        setting signing_key, which will then be looked in the internal set</span>
+<span class="sd">        of available keys.</span>
+
+<span class="sd">        If the header already contains indication of a key, such as &#39;kid&#39;,</span>
+<span class="sd">        &#39;trust_chain&#39; and &#39;x5c&#39;, the method will attempt to match the signing</span>
+<span class="sd">        key among the available keys based on such claims, but there is no</span>
+<span class="sd">        guarantee that the correct key will be selected. We assume that is</span>
+<span class="sd">        it responsibility of the class initiator to make those checks. To</span>
+<span class="sd">        avoid any possible ambiguity, it is suggested to initilize the class</span>
+<span class="sd">        with one (signing) key only.</span>
+
+<span class="sd">        :param plain_dict: The payload to be signed.</span>
+<span class="sd">        :param protected: Protected header for the JWS.</span>
+<span class="sd">        :param unprotected: Unprotected header for the JWS (only for JSON serialization).</span>
+<span class="sd">        :param serialization_format: The format of the signature (compact or JSON).</span>
+<span class="sd">        :param signing_kid: The key ID for signing.</span>
+<span class="sd">        :param kid_in_header: If True, include the key ID in the token header.</span>
+<span class="sd">        :param kwargs: Additional parameters for the signing process.</span>
+
+<span class="sd">        :returns: The signed JWS token.</span>
+<span class="sd">        :rtype: str</span>
+
+<span class="sd">        :raises JWSSigningError: if there is any signing error, such as the signing</span>
+<span class="sd">            key not being suitable for such a cryptographic operation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">protected</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">protected</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">unprotected</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">unprotected</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Select the signing key</span>
+        <span class="n">signing_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_signing_key</span><span class="p">((</span><span class="n">protected</span><span class="p">,</span> <span class="n">unprotected</span><span class="p">),</span> <span class="n">signing_kid</span><span class="p">,</span> <span class="n">signing_algs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">signing_key</span><span class="p">[</span><span class="s2">&quot;kty&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;oct&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">signing_key</span><span class="p">[</span><span class="s1">&#39;kid&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> is a symmetric key&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">signing_key</span><span class="p">,</span> <span class="n">protected</span><span class="p">,</span> <span class="n">unprotected</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed to validate signing key: it&#39;s content it not valid for current header claims: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">serialize_payload</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">)</span>
+
+        <span class="c1"># Select a trusted algorithm and override header</span>
+        <span class="n">signing_alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_SIG_KTY_MAP</span><span class="p">[</span><span class="n">JWK</span><span class="p">(</span><span class="n">signing_key</span><span class="p">)</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">kty</span><span class="p">]</span>
+        <span class="n">protected</span><span class="p">[</span><span class="s2">&quot;alg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signing_alg</span>
+
+        <span class="c1"># Add &quot;typ&quot; header if not present</span>
+        <span class="k">if</span> <span class="s2">&quot;typ&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">protected</span><span class="p">:</span>
+            <span class="n">protected</span><span class="p">[</span><span class="s2">&quot;typ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sd-jwt&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sd_jwt</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;JWT&quot;</span>
+
+        <span class="c1"># Include the signing key&#39;s kid in the header if required</span>
+        <span class="n">header_kid</span> <span class="o">=</span> <span class="n">protected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">)</span>
+        <span class="n">signer_kid</span> <span class="o">=</span> <span class="n">signing_key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kid_in_header</span> <span class="ow">and</span> <span class="n">signer_kid</span><span class="p">:</span>
+            <span class="c1"># note that is actually redundant as the underlying library auto-update the header with the kid</span>
+            <span class="n">protected</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">signer_kid</span>
+
+        <span class="c1"># this is a hack: if the header to be signed does NOT have kid and we do</span>
+        <span class="c1"># not want to include it, then we must remove it from the signing kid</span>
+        <span class="c1"># otherwise the signing library will auto insert it</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kid_in_header</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">header_kid</span><span class="p">:</span>
+            <span class="n">signing_key</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">signing_key</span><span class="p">)</span>
+            <span class="n">signing_key</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">signing_key_jwk</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">signing_key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">signing_key_jwk</span><span class="o">.</span><span class="n">priv_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">signing_key_jwk</span><span class="o">.</span><span class="n">kid</span><span class="si">}</span><span class="s2"> is not a private key&quot;</span><span class="p">)</span>
+
+        <span class="n">signer</span> <span class="o">=</span> <span class="n">JWS</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">signing_alg</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">signing_key_jwk</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">serialization_format</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">signed</span> <span class="o">=</span> <span class="n">signer</span><span class="o">.</span><span class="n">sign_compact</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">protected</span><span class="o">=</span><span class="n">protected</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">signed</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="s2">&quot;Signing error: error in step&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">signer</span><span class="o">.</span><span class="n">sign_json</span><span class="p">(</span>
+            <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">[(</span><span class="n">protected</span><span class="p">,</span> <span class="n">unprotected</span><span class="p">)],</span>
+            <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_signing_key</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">headers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
+        <span class="n">signing_kid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">signing_algs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select a signing key based on the provided headers and optional parameters.</span>
+<span class="sd">        This method attempts to find a suitable signing key from the initialized JWKS.</span>
+
+<span class="sd">        :param headers: A tuple containing the protected and unprotected headers.</span>
+<span class="sd">        :param signing_kid: Optional key ID to force the selection of a specific signing key.</span>
+<span class="sd">        :param signing_algs: Optional list of algorithms to force the selection of a signing key.</span>
+<span class="sd">        :returns: A dictionary representing the selected signing key.</span>
+<span class="sd">        :raises JWSSigningError: If no suitable signing key is found or if the key cannot be used for signing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="s2">&quot;signing error: no key available for signature; note that {&#39;alg&#39;:&#39;none&#39;} is not supported&quot;</span><span class="p">)</span>
+        <span class="c1"># Case 1: key forced by the user</span>
+        <span class="k">if</span> <span class="n">signing_kid</span><span class="p">:</span>
+            <span class="n">signing_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jwk_by_kid</span><span class="p">(</span><span class="n">signing_kid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">signing_key</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;signing forced by using key with </span><span class="si">{</span><span class="n">signing_kid</span><span class="si">=}</span><span class="s2">, but no such key is available&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">signing_key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="c1"># Case 2: key forced by the user by a list of alg</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signing_algs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">signing_key</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">alg</span> <span class="ow">in</span> <span class="n">signing_algs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">signing_key</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_key_by_sig_alg</span><span class="p">(</span><span class="n">alg</span><span class="p">):</span>
+                    <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">signing_key</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">signing_key</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;signing forced by using algs </span><span class="si">{</span><span class="n">signing_algs</span><span class="si">}</span><span class="s2">, but no such key is available&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Case 3: only one key</span>
+        <span class="k">if</span> <span class="n">signing_key</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_signing_key_by_uniqueness</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">signing_key</span>
+        <span class="c1"># Case 4: only one *signing* key</span>
+        <span class="k">if</span> <span class="n">signing_key</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_key_by_use</span><span class="p">(</span><span class="n">use</span><span class="o">=</span><span class="s2">&quot;sig&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">signing_key</span>
+        <span class="c1"># Case 5: match key by kid</span>
+        <span class="k">if</span> <span class="n">signing_key</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_key_by_kid</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">signing_key</span>
+        <span class="c1"># Case 6: match key by x5c</span>
+        <span class="k">if</span> <span class="n">signing_key</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_key_by_x5c</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">signing_key</span>
+        <span class="k">raise</span> <span class="n">JWSSigningError</span><span class="p">(</span><span class="s2">&quot;signing error: not possible to uniquely determine the signing key&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_signing_key_by_uniqueness</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_key_by_use</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">candidate_signing_keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span>
+            <span class="n">key_d</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">use</span> <span class="o">==</span> <span class="n">key_d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                <span class="n">candidate_signing_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key_d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate_signing_keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">candidate_signing_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_key_by_sig_alg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select a key based on the signature algorithm.</span>
+<span class="sd">        This is a helper method to find a key that matches the given signature algorithm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span>
+            <span class="n">key_d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="n">DEFAULT_SIG_KTY_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key_d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kty&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">key_d</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_key_by_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">headers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;kid&quot;</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">kid</span> <span class="o">=</span> <span class="n">headers</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s2">&quot;kid&quot;</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">kid</span> <span class="o">=</span> <span class="n">headers</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">find_jwk_by_kid</span><span class="p">([</span><span class="n">key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">],</span> <span class="n">kid</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_key_by_x5c</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">headers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">headers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x5c&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">headers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x5c&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">x5c</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">header_jwk</span> <span class="o">=</span> <span class="n">parse_b64der</span><span class="p">(</span><span class="n">x5c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span>
+            <span class="n">key_d</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">JWK</span><span class="p">(</span><span class="n">key_d</span><span class="p">)</span><span class="o">.</span><span class="n">thumbprint</span> <span class="o">==</span> <span class="n">header_jwk</span><span class="o">.</span><span class="n">thumbprint</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">key_d</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="JWSHelper.verify">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.verify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jwt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tolerance_s</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_TOKEN_TIME_TOLERANCE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify a JWS with one of the initialized keys and validate standard</span>
+<span class="sd">        standard claims if possible, such as &#39;iat&#39; and &#39;exp&#39;.</span>
+<span class="sd">        Verification of tokens in JSON serialization format is not supported.</span>
+
+<span class="sd">        :param jwt: The JWS token to be verified.</span>
+<span class="sd">        :type jws: str</span>
+<span class="sd">        :param tolerance_s: optional tolerance window, in seconds, which can be \</span>
+<span class="sd">            used to account for some clock skew between the token issuer and the \</span>
+<span class="sd">            token verifier when validating lifetime claims.</span>
+<span class="sd">        :type tolerance_s: int</span>
+
+<span class="sd">        :raises JWSVerificationError: if jws field is not in compact jws</span>
+<span class="sd">            format or if the signature is invalid</span>
+
+<span class="sd">        :returns: the decoded payload of the verified tokens.</span>
+<span class="sd">        :rtype: dict | bytes | str | Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">jwt</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not a valid JWS format for the following reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">verifying_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_verifying_key</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verifying_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verification error: unable to find matching public key for header </span><span class="si">{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># sanity check: kid must match if present</span>
+        <span class="k">if</span> <span class="n">expected_kid</span> <span class="o">:=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">):</span>
+            <span class="n">obtained_kid</span> <span class="o">=</span> <span class="n">verifying_key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">obtained_kid</span> <span class="ow">and</span> <span class="p">(</span><span class="n">obtained_kid</span> <span class="o">!=</span> <span class="n">expected_kid</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span>
+                    <span class="n">KidError</span><span class="p">(</span>
+                        <span class="s2">&quot;unexpected verification state: found a valid verifying key,&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;but its kid </span><span class="si">{</span><span class="n">obtained_kid</span><span class="si">}</span><span class="s2"> does not match token header kid </span><span class="si">{</span><span class="n">expected_kid</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Verify the JWS compact signature</span>
+        <span class="n">verifier</span> <span class="o">=</span> <span class="n">JWS</span><span class="p">(</span><span class="n">alg</span><span class="o">=</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;alg&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Validate JWT claims</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">verifier</span><span class="o">.</span><span class="n">verify_compact</span><span class="p">(</span><span class="n">jwt</span><span class="p">,</span> <span class="p">[</span><span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">verifying_key</span><span class="p">)])</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">tolerance_s</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">msg</span>
+        <span class="k">except</span> <span class="n">LifetimeException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid JWT claims: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error during signature verification: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_verifying_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">available_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">]</span>
+
+        <span class="c1"># case 1: can be found by header</span>
+        <span class="k">if</span> <span class="s2">&quot;kid&quot;</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verifying_key</span> <span class="o">:=</span> <span class="n">find_jwk_by_kid</span><span class="p">(</span><span class="n">available_keys</span><span class="p">,</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]):</span>
+                <span class="k">return</span> <span class="n">verifying_key</span>
+
+        <span class="c1"># case 2: the token is self contained, and the verification key matches one of the key in the whitelist</span>
+        <span class="k">if</span> <span class="n">self_contained_claims_key_pair</span> <span class="o">:=</span> <span class="n">find_self_contained_key</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+            <span class="c1"># check if the self contained key matches a trusted jwk</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">candidate_key</span> <span class="o">=</span> <span class="n">self_contained_claims_key_pair</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">candidate_key</span><span class="p">,</span> <span class="s2">&quot;thumbprint&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">verifying_key</span> <span class="o">:=</span> <span class="n">find_jwk_by_thumbprint</span><span class="p">(</span><span class="n">available_keys</span><span class="p">,</span> <span class="n">candidate_key</span><span class="o">.</span><span class="n">thumbprint</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">verifying_key</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Candidate key </span><span class="si">{</span><span class="n">candidate_key</span><span class="si">}</span><span class="s2"> does not have a thumbprint attribute.&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid key: missing thumbprint.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># case 3: if only one key and there is no header claim that can identitfy any key, than that MUST</span>
+        <span class="c1"># be the only valid CANDIDATE key for signature verification</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="JWSHelper.is_sd_jwt">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jws_helper.JWSHelper.is_sd_jwt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_sd_jwt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if the provided JWT is an SD-JWT.</span>
+
+<span class="sd">        :param token: The JWT token to inspect.</span>
+<span class="sd">        :type token: str</span>
+<span class="sd">        :returns: True if the token is an SD-JWT, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Decode the JWT header to inspect the &#39;typ&#39; field</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+            <span class="c1"># Check if &#39;typ&#39; field exists and is equal to &#39;sd-jwt&#39;</span>
+            <span class="k">return</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;typ&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;sd-jwt&quot;</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Log or handle errors (optional)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to determine if token is SD-JWT: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_key_with_header_kid</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :raises Exception: if the key is not compatible with the header content kid (if any)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">key_kid</span> <span class="o">:=</span> <span class="n">key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">header_kid</span> <span class="o">:=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key_kid</span> <span class="o">!=</span> <span class="n">header_kid</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;token header contains a kid </span><span class="si">{</span><span class="n">header_kid</span><span class="si">}</span><span class="s2"> that does not match the signing key kid </span><span class="si">{</span><span class="n">key_kid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_key_with_header_x5c</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validate that a key has a public component that matches what defined in</span>
+<span class="sd">    the x5c leaf certificate in the header (if any).</span>
+<span class="sd">    Note that this method DOES NOT validate the chain. Instead, it actually</span>
+<span class="sd">    checks that the leaf of the chain has the same cryptographic material</span>
+<span class="sd">    of the argument key.</span>
+
+<span class="sd">    :raises Exception: if the key is not compatible with the header content x5c (if any)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x5c&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">x5c</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">leaf_cert</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">x5c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># if the key has a certificate, check the cert, otherwise check the public material</span>
+    <span class="n">key_x5c</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x5c&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">key_x5c</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">leaf_cert</span> <span class="o">!=</span> <span class="p">(</span><span class="n">leaf_x5c_cert</span> <span class="o">:=</span> <span class="n">key_x5c</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;token header containes a chain whose leaf certificate </span><span class="si">{</span><span class="n">leaf_cert</span><span class="si">}</span><span class="s2"> does not match the signing key leaf certificate </span><span class="si">{</span><span class="n">leaf_x5c_cert</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">header_key</span> <span class="o">=</span> <span class="n">parse_b64der</span><span class="p">(</span><span class="n">leaf_cert</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">header_key</span><span class="o">.</span><span class="n">thumbprint</span> <span class="o">!=</span> <span class="n">JWK</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">thumbprint</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;public material of the key does not matches the key in the leaf certificate </span><span class="si">{</span><span class="n">leaf_cert</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">protected_jws_header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">unprotected_jws_header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validate that a key used for some operations (sign, verify) on a token</span>
+<span class="sd">    is compatible with the token header itself.</span>
+
+<span class="sd">    :raises Exception: if the key is not compatible with the token header</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">protected_jws_header</span><span class="p">)</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">unprotected_jws_header</span><span class="p">)</span>
+    <span class="c1"># NOTE: consistency with usage claims such as &#39;alg&#39;, &#39;kty&#39; and &#39;use&#39;</span>
+    <span class="c1"># are done by the signer library and are not required here</span>
+    <span class="n">_validate_key_with_header_kid</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+    <span class="n">_validate_key_with_header_x5c</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

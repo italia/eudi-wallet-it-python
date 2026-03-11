@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.trust.handler.test_direct_trust &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.trust.handler.test_direct_trust</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tests.trust.handler.test_direct_trust</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unittest.mock</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.trust.handler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_generate_empty_json_ok_response</span><span class="p">,</span>
+    <span class="n">_generate_response</span><span class="p">,</span>
+    <span class="n">issuer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.trust.handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">issuer_jwk</span> <span class="k">as</span> <span class="n">expected_jwk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.handler._direct_trust_jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_jwk_issuer_endpoint</span><span class="p">,</span> <span class="n">is_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.handler.direct_trust_sd_jwt_vc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DirectTrustSdJwtVc</span><span class="p">,</span>
+    <span class="n">build_metadata_issuer_endpoint</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidJwkMetadataException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.model.trust_source</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustSourceData</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+
+<div class="viewcode-block" id="fake_get_http_url">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.fake_get_http_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fake_get_http_url</span><span class="p">(</span><span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">http_async</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+    <span class="n">issuer</span> <span class="o">=</span> <span class="s2">&quot;https://example-url.issuer.it/vct&quot;</span>
+
+    <span class="k">if</span> <span class="n">urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;vct&quot;</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">Response</span><span class="p">()</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">404</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">response</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;vct/.well-known/jwt-vc-issuer&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_generate_response</span><span class="p">(</span><span class="n">issuer</span><span class="p">,</span> <span class="n">expected_jwk</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_build_issuer_jwk_endpoint">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_build_issuer_jwk_endpoint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_build_issuer_jwk_endpoint</span><span class="p">():</span>
+    <span class="n">entity_id</span> <span class="o">=</span> <span class="s2">&quot;https://credential-issuer.example/vct&quot;</span>
+    <span class="n">well_known_component</span> <span class="o">=</span> <span class="s2">&quot;/.well-known/jwt-vc-issuer&quot;</span>
+    <span class="n">expected_url</span> <span class="o">=</span> <span class="s2">&quot;https://credential-issuer.example/.well-known/jwt-vc-issuer/vct&quot;</span>
+    <span class="n">obtained_url</span> <span class="o">=</span> <span class="n">build_jwk_issuer_endpoint</span><span class="p">(</span><span class="n">entity_id</span><span class="p">,</span> <span class="n">well_known_component</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">expected_url</span> <span class="o">==</span> <span class="n">obtained_url</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_build_issuer_metadata_endpoint">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_build_issuer_metadata_endpoint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_build_issuer_metadata_endpoint</span><span class="p">():</span>
+    <span class="nd">@dataclass</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">TestCase</span><span class="p">:</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">explanation</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">test_cases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TestCase</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">TestCase</span><span class="p">(</span>
+            <span class="s2">&quot;https://entity-id.example/path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;https://entity-id.example/path/.well-known/openid-credential-issuer&quot;</span><span class="p">,</span>
+            <span class="n">explanation</span><span class="o">=</span><span class="s2">&quot;the entity id does NOT have a trailing path separator&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">TestCase</span><span class="p">(</span>
+            <span class="s2">&quot;https://entity-id.example/path/&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;https://entity-id.example/path/.well-known/openid-credential-issuer&quot;</span><span class="p">,</span>
+            <span class="n">explanation</span><span class="o">=</span><span class="s2">&quot;the entity id DOES have a trailing path separator&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">metadata_endpoint</span> <span class="o">=</span> <span class="s2">&quot;/.well-known/openid-credential-issuer&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">case</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">test_cases</span><span class="p">):</span>
+        <span class="n">obtained</span> <span class="o">=</span> <span class="n">build_metadata_issuer_endpoint</span><span class="p">(</span><span class="n">case</span><span class="o">.</span><span class="n">entity_id</span><span class="p">,</span> <span class="n">metadata_endpoint</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">case</span><span class="o">.</span><span class="n">expected</span> <span class="o">==</span> <span class="n">obtained</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;failed case </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">case</span><span class="o">.</span><span class="n">explanation</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_extract_jwks_from_jwk_metadata_by_value">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_by_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_extract_jwks_from_jwk_metadata_by_value</span><span class="p">():</span>
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">()</span>
+    <span class="n">jwk_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;issuer&quot;</span><span class="p">:</span> <span class="n">issuer</span><span class="p">,</span> <span class="s2">&quot;jwks&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">expected_jwk</span><span class="p">]}}</span>
+    <span class="n">obt_jwks</span> <span class="o">=</span> <span class="n">trust_source</span><span class="o">.</span><span class="n">_extract_jwks_from_jwk_metadata</span><span class="p">(</span><span class="n">jwk_metadata</span><span class="p">)</span>
+    <span class="n">exp_jwks</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">expected_jwk</span><span class="p">]}</span>
+    <span class="k">assert</span> <span class="n">obt_jwks</span> <span class="o">==</span> <span class="n">exp_jwks</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_extract_jwks_from_jwk_metadata_by_reference">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_by_reference">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_extract_jwks_from_jwk_metadata_by_reference</span><span class="p">():</span>
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">()</span>
+    <span class="n">jwk_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;issuer&quot;</span><span class="p">:</span> <span class="n">issuer</span><span class="p">,</span> <span class="s2">&quot;jwks_uri&quot;</span><span class="p">:</span> <span class="n">issuer</span> <span class="o">+</span> <span class="s2">&quot;jwks&quot;</span><span class="p">}</span>
+    <span class="n">expected_jwks</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">expected_jwk</span><span class="p">]}</span>
+    <span class="n">jwks_uri_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">()</span>
+    <span class="n">jwks_uri_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="n">jwks_uri_response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">})</span>
+    <span class="n">jwks_uri_response</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">expected_jwks</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+    <span class="n">mocked_jwks_document_endpoint</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;pyeudiw.trust.handler._direct_trust_jwk.get_http_url&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="n">jwks_uri_response</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">mocked_jwks_document_endpoint</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">obtained_jwks</span> <span class="o">=</span> <span class="n">trust_source</span><span class="o">.</span><span class="n">_extract_jwks_from_jwk_metadata</span><span class="p">(</span><span class="n">jwk_metadata</span><span class="p">)</span>
+    <span class="n">mocked_jwks_document_endpoint</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">expected_jwks</span> <span class="o">==</span> <span class="n">obtained_jwks</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_extract_jwks_from_jwk_metadata_invalid">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_invalid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_extract_jwks_from_jwk_metadata_invalid</span><span class="p">():</span>
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">()</span>
+    <span class="n">jwk_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;issuer&quot;</span><span class="p">:</span> <span class="n">issuer</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">trust_source</span><span class="o">.</span><span class="n">_extract_jwks_from_jwk_metadata</span><span class="p">(</span><span class="n">jwk_metadata</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;parsed invalid metadata: should have raised InvalidJwkMetadataException instead&quot;</span>
+    <span class="k">except</span> <span class="n">InvalidJwkMetadataException</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_jwk">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_jwk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_jwk</span><span class="p">():</span>
+    <span class="n">trust_handler</span> <span class="o">=</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">()</span>
+
+    <span class="n">random_issuer</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;pyeudiw.trust.handler._direct_trust_jwk.get_http_url&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="n">_generate_response</span><span class="p">(</span><span class="n">random_issuer</span><span class="p">,</span> <span class="n">expected_jwk</span><span class="p">)],</span>
+    <span class="p">)</span>
+
+    <span class="n">mocked_metadata_endpoint</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;pyeudiw.trust.handler.direct_trust_sd_jwt_vc.get_http_url&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="n">_generate_empty_json_ok_response</span><span class="p">()],</span>
+    <span class="p">)</span>
+
+    <span class="n">mocked_metadata_endpoint</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">TrustSourceData</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">random_issuer</span><span class="p">)</span>
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">trust_handler</span><span class="o">.</span><span class="n">extract_and_update_trust_materials</span><span class="p">(</span><span class="n">random_issuer</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">)</span>
+
+    <span class="n">obtained_jwks</span> <span class="o">=</span> <span class="n">trust_source</span><span class="o">.</span><span class="n">direct_trust_sd_jwt_vc</span><span class="o">.</span><span class="n">get_jwks</span><span class="p">()</span>
+
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+    <span class="n">mocked_metadata_endpoint</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">obtained_jwks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;expected 1 jwk, obtained </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">obtained_jwks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">assert</span> <span class="n">expected_jwk</span> <span class="o">==</span> <span class="n">obtained_jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="test_direct_trust_jwk_not_conformat_url">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_jwk_not_conformat_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_direct_trust_jwk_not_conformat_url</span><span class="p">():</span>
+    <span class="n">trust_handler</span> <span class="o">=</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">()</span>
+
+    <span class="n">issuer</span> <span class="o">=</span> <span class="s2">&quot;https://example-url.issuer.it/vct&quot;</span>
+
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;pyeudiw.trust.handler._direct_trust_jwk.get_http_url&quot;</span><span class="p">,</span>
+        <span class="n">side_effect</span><span class="o">=</span><span class="n">fake_get_http_url</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">TrustSourceData</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">issuer</span><span class="p">)</span>
+    <span class="n">trust_source</span> <span class="o">=</span> <span class="n">trust_handler</span><span class="o">.</span><span class="n">extract_and_update_trust_materials</span><span class="p">(</span><span class="n">issuer</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">)</span>
+
+    <span class="n">obtained_jwks</span> <span class="o">=</span> <span class="n">trust_source</span><span class="o">.</span><span class="n">direct_trust_sd_jwt_vc</span><span class="o">.</span><span class="n">get_jwks</span><span class="p">()</span>
+
+    <span class="n">mocked_issuer_jwt_vc_issuer_endpoint</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">obtained_jwks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;expected 1 jwk, obtained </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">obtained_jwks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">assert</span> <span class="n">expected_jwk</span> <span class="o">==</span> <span class="n">obtained_jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="test_is_url">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_is_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_is_url</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;missing-scheme.net&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;http//malformed-scheme.net&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;https://malformed_domain.org&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;https://domain.example&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;https://domain.example/path&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;https://domain.example/path/trailing/&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

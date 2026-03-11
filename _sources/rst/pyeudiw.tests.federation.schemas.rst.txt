@@ -1,0 +1,21 @@
+pyeudiw.tests.federation.schemas package
+========================================
+
+Submodules
+----------
+
+pyeudiw.tests.federation.schemas.test\_entity\_configuration module
+-------------------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.schemas.test_entity_configuration
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests.federation.schemas
+   :members:
+   :show-inheritance:
+   :undoc-members:

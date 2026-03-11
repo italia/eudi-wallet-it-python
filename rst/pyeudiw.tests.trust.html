@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.trust package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.tests.trust.handler package" href="pyeudiw.tests.trust.handler.html" />
+    <link rel="prev" title="pyeudiw.tests.storage package" href="pyeudiw.tests.storage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.trust package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.tests.trust.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-tests-trust-package">
+<h1>pyeudiw.tests.trust package<a class="headerlink" href="#pyeudiw-tests-trust-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.tests.trust.handler.html">pyeudiw.tests.trust.handler package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#module-pyeudiw.tests.trust.handler.test_direct_trust">pyeudiw.tests.trust.handler.test_direct_trust module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.fake_get_http_url"><code class="docutils literal notranslate"><span class="pre">fake_get_http_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_build_issuer_jwk_endpoint"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_build_issuer_jwk_endpoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_build_issuer_metadata_endpoint"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_build_issuer_metadata_endpoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_by_reference"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_extract_jwks_from_jwk_metadata_by_reference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_by_value"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_extract_jwks_from_jwk_metadata_by_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_extract_jwks_from_jwk_metadata_invalid"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_extract_jwks_from_jwk_metadata_invalid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_jwk"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_jwk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_direct_trust_jwk_not_conformat_url"><code class="docutils literal notranslate"><span class="pre">test_direct_trust_jwk_not_conformat_url()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_direct_trust.test_is_url"><code class="docutils literal notranslate"><span class="pre">test_is_url()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw-tests-trust-handler-test-direct-trust-jar-module">pyeudiw.tests.trust.handler.test_direct_trust_jar module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#module-pyeudiw.tests.trust.handler.test_federation">pyeudiw.tests.trust.handler.test_federation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#module-pyeudiw.tests.trust.handler.test_x509">pyeudiw.tests.trust.handler.test_x509 module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_x509.test_chain_crl_fail"><code class="docutils literal notranslate"><span class="pre">test_chain_crl_fail()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_x509.test_chain_crl_passing"><code class="docutils literal notranslate"><span class="pre">test_chain_crl_passing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_x509.test_extract_trust_material_from_x509_handler"><code class="docutils literal notranslate"><span class="pre">test_extract_trust_material_from_x509_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_x509.test_fail_if_all_chains_are_invalid"><code class="docutils literal notranslate"><span class="pre">test_fail_if_all_chains_are_invalid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#pyeudiw.tests.trust.handler.test_x509.test_wrong_configuration_must_fail"><code class="docutils literal notranslate"><span class="pre">test_wrong_configuration_must_fail()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.tests.trust.handler.html#module-pyeudiw.tests.trust.handler">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.tests.trust.mock_trust_handler">
+<span id="pyeudiw-tests-trust-mock-trust-handler-module"></span><h2>pyeudiw.tests.trust.mock_trust_handler module<a class="headerlink" href="#module-pyeudiw.tests.trust.mock_trust_handler" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.mock_trust_handler.</span></span><span class="sig-name descname"><span class="pre">MockTrustHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#MockTrustHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface" title="pyeudiw.trust.handler.interface.TrustHandlerInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrustHandlerInterface</span></code></a></p>
+<p>Mock realization of TrustEvaluator for testing purposes only</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.extract_and_update_trust_materials">
+<span class="sig-name descname"><span class="pre">extract_and_update_trust_materials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#MockTrustHandler.extract_and_update_trust_materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.extract_and_update_trust_materials" title="Link to this definition"></a></dt>
+<dd><p>Extract the trust material of a certain issuer using a trust handler implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issuer</strong> (<em>str</em>) – The issuer</p></li>
+<li><p><strong>trust_source</strong> (<a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><em>TrustSourceData</em></a>) – The trust source to update</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated trust source</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData">TrustSourceData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.extract_jwt_header_trust_parameters">
+<span class="sig-name descname"><span class="pre">extract_jwt_header_trust_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#MockTrustHandler.extract_jwt_header_trust_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.extract_jwt_header_trust_parameters" title="Link to this definition"></a></dt>
+<dd><p>Parse a trust source to extract the trust parameters (in the source)
+that can be used as a JWT header according to what this very own trust
+evaluation mechanism is capable of understanding.</p>
+<p>Some trust evaluation mechanism is not associated to any JWT header
+mechanism, in which case an empty dictionary is returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#MockTrustHandler.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler.get_metadata" title="Link to this definition"></a></dt>
+<dd><p>Get the metadata of a certain issuer if is needed by the specifics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issuer</strong> (<em>str</em>) – The issuer</p></li>
+<li><p><strong>trust_source</strong> (<a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><em>TrustSourceData</em></a>) – The trust source to update</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated trust source</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData">TrustSourceData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.mock_trust_handler.</span></span><span class="sig-name descname"><span class="pre">NonConformatTrustHandler</span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#NonConformatTrustHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler.extract">
+<span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#NonConformatTrustHandler.extract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler.extract" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#NonConformatTrustHandler.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.NonConformatTrustHandler.get_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.mock_trust_handler.</span></span><span class="sig-name descname"><span class="pre">UpdateTrustHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#UpdateTrustHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler" title="pyeudiw.tests.trust.mock_trust_handler.MockTrustHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">MockTrustHandler</span></code></a></p>
+<p>Mock realization of TrustEvaluator for testing purposes only</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler.extract_and_update_trust_materials">
+<span class="sig-name descname"><span class="pre">extract_and_update_trust_materials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#UpdateTrustHandler.extract_and_update_trust_materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler.extract_and_update_trust_materials" title="Link to this definition"></a></dt>
+<dd><p>Extract the trust material of a certain issuer using a trust handler implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>issuer</strong> (<em>str</em>) – The issuer</p></li>
+<li><p><strong>trust_source</strong> (<a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><em>TrustSourceData</em></a>) – The trust source to update</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated trust source</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData">TrustSourceData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler.extract_jwt_header_trust_parameters">
+<span class="sig-name descname"><span class="pre">extract_jwt_header_trust_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trust_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyeudiw.trust.model.html#pyeudiw.trust.model.trust_source.TrustSourceData" title="pyeudiw.trust.model.trust_source.TrustSourceData"><span class="pre">TrustSourceData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/mock_trust_handler.html#UpdateTrustHandler.extract_jwt_header_trust_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.mock_trust_handler.UpdateTrustHandler.extract_jwt_header_trust_parameters" title="Link to this definition"></a></dt>
+<dd><p>Parse a trust source to extract the trust parameters (in the source)
+that can be used as a JWT header according to what this very own trust
+evaluation mechanism is capable of understanding.</p>
+<p>Some trust evaluation mechanism is not associated to any JWT header
+mechanism, in which case an empty dictionary is returned.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.tests.trust.test_anchor_loading">
+<span id="pyeudiw-tests-trust-test-anchor-loading-module"></span><h2>pyeudiw.tests.trust.test_anchor_loading module<a class="headerlink" href="#module-pyeudiw.tests.trust.test_anchor_loading" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_anchor_loading.test_load_anchors">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_anchor_loading.</span></span><span class="sig-name descname"><span class="pre">test_load_anchors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_anchor_loading.html#test_load_anchors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_anchor_loading.test_load_anchors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyeudiw.tests.trust.test_dynamic">
+<span id="pyeudiw-tests-trust-test-dynamic-module"></span><h2>pyeudiw.tests.trust.test_dynamic module<a class="headerlink" href="#module-pyeudiw.tests.trust.test_dynamic" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_cache_first_strategy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_cache_first_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_cache_first_strategy_expired</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_cache_first_strategy_expired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_force_update">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_cache_first_strategy_expired_force_update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_cache_first_strategy_expired_force_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_force_update" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_revoked">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_cache_first_strategy_expired_revoked</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_cache_first_strategy_expired_revoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_revoked" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_if_no_conf_default_handler_instanciated">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_if_no_conf_default_handler_instanciated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_if_no_conf_default_handler_instanciated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_if_no_conf_default_handler_instanciated" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_not_conformant_CombinedTrusstEvaluation_handler_loading">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_not_conformant_CombinedTrusstEvaluation_handler_loading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_not_conformant_CombinedTrusstEvaluation_handler_loading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_not_conformant_CombinedTrusstEvaluation_handler_loading" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_public_key_and_metadata_retrive">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_public_key_and_metadata_retrive</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_public_key_and_metadata_retrive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_public_key_and_metadata_retrive" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_trust_CombinedTrusstEvaluation_handler_loading">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_trust_CombinedTrusstEvaluation_handler_loading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_trust_CombinedTrusstEvaluation_handler_loading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_trust_CombinedTrusstEvaluation_handler_loading" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.tests.trust.test_dynamic.test_update_first_strategy">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.tests.trust.test_dynamic.</span></span><span class="sig-name descname"><span class="pre">test_update_first_strategy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/tests/trust/test_dynamic.html#test_update_first_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.tests.trust.test_dynamic.test_update_first_strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyeudiw.tests.trust">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.tests.trust" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.tests.storage.html" class="btn btn-neutral float-left" title="pyeudiw.tests.storage package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.tests.trust.handler.html" class="btn btn-neutral float-right" title="pyeudiw.tests.trust.handler package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

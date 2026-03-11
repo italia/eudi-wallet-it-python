@@ -1,0 +1,257 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.jwt.test_helper &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.jwt.test_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tests.jwt.test_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives.asymmetric</span><span class="w"> </span><span class="kn">import</span> <span class="n">ec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.ec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ECKey</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_jwt_timestamps_claims</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">_validate_key_with_jws_header</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">iat_now</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyeudiw.tests.x509.test_x509</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">test_x509</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.x509.verify</span><span class="w"> </span><span class="kn">import</span> <span class="n">DER_cert_to_B64DER_cert</span>
+
+
+<div class="viewcode-block" id="test_validate_jwt_timestamps_claims_ok">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_jwt_timestamps_claims_ok">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_jwt_timestamps_claims_ok</span><span class="p">():</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;nbf&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">9999</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;encountered unexpeted error when validating the lifetime of a good token payload: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_jwt_timestamps_claims_bad_iat">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_jwt_timestamps_claims_bad_iat">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_jwt_timestamps_claims_bad_iat</span><span class="p">():</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">9999</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;failed to raise exception when validating a token payload with bad iat&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_jwt_timestamps_claims_bad_nbf">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_jwt_timestamps_claims_bad_nbf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_jwt_timestamps_claims_bad_nbf</span><span class="p">():</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;nbf&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">9999</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;failed to raise exception when validating a token payload with bad nbf&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_jwt_timestamps_claims_bad_exp">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_jwt_timestamps_claims_bad_exp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_jwt_timestamps_claims_bad_exp</span><span class="p">():</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">10</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;failed to raise exception when validating a token payload with bad exp&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="test_test_validate_jwt_timestamps_claims_tolerance_window">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_test_validate_jwt_timestamps_claims_tolerance_window">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_test_validate_jwt_timestamps_claims_tolerance_window</span><span class="p">():</span>
+    <span class="n">tolerance_window</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># in seconds</span>
+
+    <span class="c1"># case 0: tolerance window covers a token issuer &quot;slightly&quot; in the future</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;nbf&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">+</span> <span class="mi">9999</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">tolerance_window</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for iat, nbf): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># case 1: tolerance window covers a token &quot;slightly&quot; expired</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;nbf&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">now</span> <span class="o">-</span> <span class="mi">15</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">tolerance_window</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for exp): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_key_with_jws_header_x5c_ok">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_key_with_jws_header_x5c_ok">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_key_with_jws_header_x5c_ok</span><span class="p">():</span>
+    <span class="n">private_ec_key</span> <span class="o">=</span> <span class="n">ec</span><span class="o">.</span><span class="n">generate_private_key</span><span class="p">(</span><span class="n">ec</span><span class="o">.</span><span class="n">SECP256R1</span><span class="p">())</span>
+    <span class="n">x509_der_chain</span> <span class="o">=</span> <span class="n">test_x509</span><span class="o">.</span><span class="n">gen_chain</span><span class="p">(</span><span class="n">leaf_private_key</span><span class="o">=</span><span class="n">private_ec_key</span><span class="p">)</span>
+    <span class="n">x5c</span> <span class="o">=</span> <span class="p">[</span><span class="n">DER_cert_to_B64DER_cert</span><span class="p">(</span><span class="n">der</span><span class="p">)</span> <span class="k">for</span> <span class="n">der</span> <span class="ow">in</span> <span class="n">x509_der_chain</span><span class="p">]</span>
+
+    <span class="n">ec_jwk</span> <span class="o">=</span> <span class="n">ECKey</span><span class="p">()</span>
+    <span class="n">ec_jwk</span><span class="o">.</span><span class="n">load_key</span><span class="p">(</span><span class="n">private_ec_key</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">ec_jwk</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;x5c&quot;</span><span class="p">:</span> <span class="n">x5c</span><span class="p">},</span> <span class="p">{})</span>
+        <span class="k">assert</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unexpected exception when validating header for correct key: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_key_with_jws_header_kid_ok">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_key_with_jws_header_kid_ok">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_key_with_jws_header_kid_ok</span><span class="p">():</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">()</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+    <span class="n">kid</span> <span class="o">=</span> <span class="s2">&quot;1234567890&quot;</span>
+    <span class="n">key</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kid</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">kid</span><span class="p">},</span> <span class="p">{})</span>
+        <span class="k">assert</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unexpected exception when validating header for correct key: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_key_with_jws_header_expect_x5c_fail">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_key_with_jws_header_expect_x5c_fail">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_key_with_jws_header_expect_x5c_fail</span><span class="p">():</span>
+    <span class="n">private_ec_key</span> <span class="o">=</span> <span class="n">ec</span><span class="o">.</span><span class="n">generate_private_key</span><span class="p">(</span><span class="n">ec</span><span class="o">.</span><span class="n">SECP256R1</span><span class="p">())</span>
+    <span class="n">x509_der_chain</span> <span class="o">=</span> <span class="n">test_x509</span><span class="o">.</span><span class="n">gen_chain</span><span class="p">(</span><span class="n">leaf_private_key</span><span class="o">=</span><span class="n">private_ec_key</span><span class="p">)</span>
+    <span class="n">x5c</span> <span class="o">=</span> <span class="p">[</span><span class="n">DER_cert_to_B64DER_cert</span><span class="p">(</span><span class="n">der</span><span class="p">)</span> <span class="k">for</span> <span class="n">der</span> <span class="ow">in</span> <span class="n">x509_der_chain</span><span class="p">]</span>
+
+    <span class="n">wrong_ec_key</span> <span class="o">=</span> <span class="n">ec</span><span class="o">.</span><span class="n">generate_private_key</span><span class="p">(</span><span class="n">ec</span><span class="o">.</span><span class="n">SECP256R1</span><span class="p">())</span>
+    <span class="n">wrong_ec_jwk</span> <span class="o">=</span> <span class="n">ECKey</span><span class="p">()</span>
+    <span class="n">wrong_ec_jwk</span><span class="o">.</span><span class="n">load_key</span><span class="p">(</span><span class="n">wrong_ec_key</span><span class="p">)</span>
+    <span class="n">wrong_key</span> <span class="o">=</span> <span class="n">wrong_ec_jwk</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">wrong_key</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;x5c&quot;</span><span class="p">:</span> <span class="n">x5c</span><span class="p">},</span> <span class="p">{})</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;should have encountered exception when validating header &#39;x5c&#39; for wrong key&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_validate_key_with_jws_header_expect_kid_fail">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.jwt.html#pyeudiw.tests.jwt.test_helper.test_validate_key_with_jws_header_expect_kid_fail">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_key_with_jws_header_expect_kid_fail</span><span class="p">():</span>
+    <span class="n">wrong_key</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">()</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+    <span class="n">wrong_kid</span> <span class="o">=</span> <span class="s2">&quot;1234567890&quot;</span>
+    <span class="n">wrong_key</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wrong_kid</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">()</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+    <span class="n">kid</span> <span class="o">=</span> <span class="s2">&quot;qwertyuiop&quot;</span>
+    <span class="n">key</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kid</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_validate_key_with_jws_header</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">},</span> <span class="p">{})</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;should have encountered exception when validating header &#39;kid&#39; for wrong key&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

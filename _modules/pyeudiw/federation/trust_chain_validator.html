@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.federation.trust_chain_validator &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.federation.trust_chain_validator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.federation.trust_chain_validator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InvalidEntityStatement</span><span class="p">,</span>
+    <span class="n">KeyValidationError</span><span class="p">,</span>
+    <span class="n">MissingTrustAnchorPublicKey</span><span class="p">,</span>
+    <span class="n">TimeValidationError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustChainPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.statements</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_entity_configurations</span><span class="p">,</span>
+    <span class="n">get_entity_statements</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_es</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.jwks</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_jwk_by_kid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidKid</span><span class="p">,</span> <span class="n">KidNotFoundError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span><span class="p">,</span> <span class="n">decode_jwt_payload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">iat_now</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StaticTrustChainValidator">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StaticTrustChainValidator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper class for Static Trust Chain validation&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">static_trust_chain</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">trust_anchor_jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a new StaticTrustChainValidator instance</span>
+
+<span class="sd">        :param static_trust_chain: the list of JWTs, containing the EC, composing the static trust chain</span>
+<span class="sd">        :type static_trust_chain: list[str]</span>
+<span class="sd">        :param trust_anchor_jwks: the list of trust anchor jwks</span>
+<span class="sd">        :type trust_anchor_jwks: list[dict[str, Any]]</span>
+<span class="sd">        :param httpc_params: parameters to perform http requests</span>
+<span class="sd">        :type httpc_params: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_trust_chain</span> <span class="o">=</span> <span class="n">static_trust_chain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updated_trust_chain</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span> <span class="o">=</span> <span class="n">httpc_params</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trust_anchor_jwks</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MissingTrustAnchorPublicKey</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> cannot &quot;</span> <span class="s2">&quot;created without the TA public jwks&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_jwks</span> <span class="o">=</span> <span class="n">trust_anchor_jwks</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if exp value is expired.</span>
+
+<span class="sd">        :param exp: an integer that represent the timestamp to check</span>
+<span class="sd">        :type exp: int</span>
+<span class="sd">        :returns: True if exp is expired and False otherwise</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">exp</span> <span class="o">&lt;</span> <span class="n">iat_now</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if exp value is expired.</span>
+
+<span class="sd">        :param exp: an integer that represent the timestamp to check</span>
+<span class="sd">        :type exp: int</span>
+
+<span class="sd">        :raises TimeValidationError: if exp value is expired</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_expired</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">TimeValidationError</span><span class="p">(</span><span class="s2">&quot;Expired validation error&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fed_jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">st_header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks that the kid in st_header match with one JWK present</span>
+<span class="sd">        in the federation JWKs list.</span>
+
+<span class="sd">        :param fed_jwks: the list of federation&#39;s JWKs</span>
+<span class="sd">        :type fed_jwks: list[dict]</span>
+<span class="sd">        :param st_header: the statement header</span>
+<span class="sd">        :type st_header: dict</span>
+
+<span class="sd">        :raises KeyValidationError: if no JWK with the kid specified in feild st_header is found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">current_kid</span> <span class="o">=</span> <span class="n">st_header</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span>
+
+        <span class="n">validation_kid</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">fed_jwks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">current_kid</span><span class="p">:</span>
+                <span class="n">validation_kid</span> <span class="o">=</span> <span class="n">key</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">validation_kid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">KeyValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kid </span><span class="si">{</span><span class="n">current_kid</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StaticTrustChainValidator.validate">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the static chain checking the validity in all jwt inside the field trust_chain.</span>
+
+<span class="sd">        :returns: True if static chain is valid and False otherwise</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># start from the last entity statement</span>
+        <span class="n">rev_tc</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_chain</span><span class="p">)]</span>
+
+        <span class="c1"># inspect the entity statement kid header to know which</span>
+        <span class="c1"># TA&#39;s public key to use for the validation</span>
+        <span class="n">last_element</span> <span class="o">=</span> <span class="n">rev_tc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">es_header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">last_element</span><span class="p">)</span>
+        <span class="n">es_payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">last_element</span><span class="p">)</span>
+
+        <span class="n">ta_jwk</span> <span class="o">=</span> <span class="n">find_jwk_by_kid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_jwks</span><span class="p">,</span> <span class="n">es_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ta_jwk</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Trust chain validation error: TA jwks not found.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Validate the last statement with ta_jwk</span>
+        <span class="n">jwsh</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="n">ta_jwk</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">jwsh</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">last_element</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust chain signature validation error: </span><span class="si">{</span><span class="n">last_element</span><span class="si">}</span><span class="s2"> using </span><span class="si">{</span><span class="n">ta_jwk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># then go ahead with other checks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="n">es_payload</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_expired</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust chain validation error, statement expired: </span><span class="si">{</span><span class="n">es_payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">fed_jwks</span> <span class="o">=</span> <span class="n">es_payload</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">]</span>
+
+        <span class="c1"># for st in rev_tc[1:]:</span>
+        <span class="c1"># validate the entire chain taking in cascade using fed_jwks</span>
+        <span class="c1"># if valid -&gt; update fed_jwks with $st</span>
+        <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">rev_tc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">st_header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+            <span class="n">st_payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">jwk</span> <span class="o">=</span> <span class="n">find_jwk_by_kid</span><span class="p">(</span><span class="n">fed_jwks</span><span class="p">,</span> <span class="n">st_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">KidNotFoundError</span><span class="p">,</span> <span class="n">InvalidKid</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust chain validation KidNotFoundError: </span><span class="si">{</span><span class="n">st_header</span><span class="si">}</span><span class="s2"> not in </span><span class="si">{</span><span class="n">fed_jwks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="n">jwsh</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="n">jwk</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">jwsh</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">st</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust chain signature validation error: </span><span class="si">{</span><span class="n">st</span><span class="si">}</span><span class="s2"> using </span><span class="si">{</span><span class="n">jwk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fed_jwks</span> <span class="o">=</span> <span class="n">st_payload</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_exp</span><span class="p">(</span><span class="n">st_payload</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_retrieve_ec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iss</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the Entity configuration from an on-line source.</span>
+
+<span class="sd">        :param iss: The issuer url where retrieve the entity configuration.</span>
+<span class="sd">        :type iss: str</span>
+
+<span class="sd">        :returns: the entity configuration in form of JWT.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">jwt</span> <span class="o">=</span> <span class="n">get_entity_configurations</span><span class="p">(</span><span class="n">iss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jwt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_retrieve_es</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">download_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iss</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the Entity Statement from an on-line source.</span>
+
+<span class="sd">        :param download_url: The path where retrieve the entity configuration.</span>
+<span class="sd">        :type download_url: str</span>
+<span class="sd">        :param iss: The issuer url.</span>
+<span class="sd">        :type iss: str</span>
+
+<span class="sd">        :returns: the entity statement in form of JWT.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">jwt</span> <span class="o">=</span> <span class="n">get_entity_statements</span><span class="p">(</span><span class="n">download_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jwt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_st</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the statement retrieving the new one using the source_endpoint and the sub fields of the entity statement payload.</span>
+
+<span class="sd">        :param st: The statement in form of a JWT.</span>
+<span class="sd">        :type st: str</span>
+
+<span class="sd">        :returns: the entity statement in form of JWT.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+        <span class="n">iss</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;iss&quot;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">is_es</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+            <span class="c1"># It&#39;s an entity configuration</span>
+        <span class="k">except</span> <span class="n">InvalidEntityStatement</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_ec</span><span class="p">(</span><span class="n">iss</span><span class="p">)</span>
+
+        <span class="c1"># if it has the source_endpoint let&#39;s try a fast renewal</span>
+        <span class="n">download_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_endpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">download_url</span><span class="p">:</span>
+            <span class="n">jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_es</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">download_url</span><span class="si">}</span><span class="s2">?sub=</span><span class="si">{</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iss</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_ec</span><span class="p">(</span><span class="n">iss</span><span class="p">)</span>
+            <span class="n">ec_data</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">ec</span><span class="p">)</span>
+            <span class="n">fetch_api_url</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># get superior fetch url</span>
+                <span class="n">fetch_api_url</span> <span class="o">=</span> <span class="n">ec_data</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;federation_entity&quot;</span><span class="p">][</span><span class="s2">&quot;federation_fetch_endpoint&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Missing federation_fetch_endpoint in  &quot;</span> <span class="sa">f</span><span class="s2">&quot;federation_entity metadata for </span><span class="si">{</span><span class="n">ec_data</span><span class="p">[</span><span class="s1">&#39;sub&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_retrieve_es</span><span class="p">(</span><span class="n">fetch_api_url</span><span class="p">,</span> <span class="n">iss</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">jwt</span>
+
+<div class="viewcode-block" id="StaticTrustChainValidator.set_exp">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.set_exp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the self.exp field if the exp parameter is more recent than the previous one.</span>
+
+<span class="sd">        :param exp: an integer that represent the timestemp to check</span>
+<span class="sd">        :type exp: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">&gt;</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="n">exp</span></div>
+
+
+<div class="viewcode-block" id="StaticTrustChainValidator.update">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_validator.StaticTrustChainValidator.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the statement retrieving and the exp filed and determines the validity of it.</span>
+
+<span class="sd">        :returns: True if the updated chain is valid, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_trust_chain</span><span class="p">:</span>
+            <span class="n">jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_st</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+            <span class="n">exp</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">jwt</span><span class="p">)[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_exp</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">updated_trust_chain</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jwt</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the validity of chain.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trust_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the list of the jwt that compones the trust chain.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">updated_trust_chain</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_trust_chain</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_expired</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the status of chain expiration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_expired</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">entity_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the chain&#39;s entity_id.&quot;&quot;&quot;</span>
+        <span class="n">chain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_chain</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;iss&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">final_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the metadata and returns the final metadata.&quot;&quot;&quot;</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_trust_chain</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">es_anchor_payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">anchor</span><span class="p">)</span>
+
+        <span class="n">policy</span> <span class="o">=</span> <span class="n">es_anchor_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_policy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_trust_chain</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">es_leaf_payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">leaf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TrustChainPolicy</span><span class="p">()</span><span class="o">.</span><span class="n">apply_policy</span><span class="p">(</span><span class="n">es_leaf_payload</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">],</span> <span class="n">policy</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.frontends.openid4vci.endpoints package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.satosa.frontends.openid4vci.models package" href="pyeudiw.satosa.frontends.openid4vci.models.html" />
+    <link rel="prev" title="pyeudiw.satosa.frontends.openid4vci package" href="pyeudiw.satosa.frontends.openid4vci.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.frontends.html">pyeudiw.satosa.frontends package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.frontends.openid4vci.html">pyeudiw.satosa.frontends.openid4vci package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.frontends.openid4vci.endpoints package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.satosa.frontends.openid4vci.endpoints.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-satosa-frontends-openid4vci-endpoints-package">
+<h1>pyeudiw.satosa.frontends.openid4vci.endpoints package<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-authorization-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.authorization_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-authorization-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-base-credential-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-base-credential-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-credential-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-credential-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-credential-issuer-metadata-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.</span></span><span class="sig-name descname"><span class="pre">CredentialIssuerMetadataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/credential_issuer_metadata_endpoint.html#CredentialIssuerMetadataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">JsonResponse</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/credential_issuer_metadata_endpoint.html#CredentialIssuerMetadataHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle request to the metadata endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.metadata">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.openid_credential_issuer_metadata_as_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">openid_credential_issuer_metadata_as_dict</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_issuer_metadata_endpoint.CredentialIssuerMetadataHandler.openid_credential_issuer_metadata_as_dict" title="Link to this definition"></a></dt>
+<dd><p>Returns the entity configuration as a dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-credential-offer-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.</span></span><span class="sig-name descname"><span class="pre">CredentialOfferHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/credential_offer_endpoint.html#CredentialOfferHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/credential_offer_endpoint.html#CredentialOfferHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_endpoint.CredentialOfferHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle a GET request to the credential_offer endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-credential-offer-qrcode-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.credential_offer_qrcode_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-credential-offer-qrcode-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-deferred-credential-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.deferred_credential_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-deferred-credential-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-metadata-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.</span></span><span class="sig-name descname"><span class="pre">MetadataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/metadata_endpoint.html#MetadataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/metadata_endpoint.html#MetadataHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle request to the metadata endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">entity_configuration</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration" title="Link to this definition"></a></dt>
+<dd><p>Returns the entity configuration as a JWT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The entity configuration</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration_as_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">entity_configuration_as_dict</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.entity_configuration_as_dict" title="Link to this definition"></a></dt>
+<dd><p>Returns the entity configuration as a dictionary.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.metadata">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.pub_federation_jwks">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">pub_federation_jwks</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint.MetadataHandler.pub_federation_jwks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-nonce-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.</span></span><span class="sig-name descname"><span class="pre">NonceHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/nonce_endpoint.html#NonceHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/nonce_endpoint.html#NonceHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.nonce_endpoint.NonceHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle a POST request to the nonce endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-notification-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.</span></span><span class="sig-name descname"><span class="pre">NotificationHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/notification_endpoint.html#NotificationHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/notification_endpoint.html#NotificationHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.notification_endpoint.NotificationHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle a POST request to the notification endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-oauth-authorization-server-metadata-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.</span></span><span class="sig-name descname"><span class="pre">OauthAuthorizationServerMetadataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/oauth_authorization_server_metadata_endpoint.html#OauthAuthorizationServerMetadataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">JsonResponse</span></span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/oauth_authorization_server_metadata_endpoint.html#OauthAuthorizationServerMetadataHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle request to the metadata endpoint.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A Response object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.oauth_authorization_server_metadata_as_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">oauth_authorization_server_metadata_as_dict</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.oauth_authorization_server_metadata_endpoint.OauthAuthorizationServerMetadataHandler.oauth_authorization_server_metadata_as_dict" title="Link to this definition"></a></dt>
+<dd><p>Returns the OAuth authorization server metadata as a dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-pushed-authorization-request-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-pushed-authorization-request-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-status-list-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.</span></span><span class="sig-name descname"><span class="pre">AcceptHeaderEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/status_list_endpoint.html#AcceptHeaderEnum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_CWT">
+<span class="sig-name descname"><span class="pre">STATUS_LIST_CWT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'application/statuslist+cwt'</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_CWT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_JWT">
+<span class="sig-name descname"><span class="pre">STATUS_LIST_JWT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'application/statuslist+jwt'</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum.STATUS_LIST_JWT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.</span></span><span class="sig-name descname"><span class="pre">StatusListHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/status_list_endpoint.html#StatusListHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">VCIBaseEndpoint</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Context</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/status_list_endpoint.html#StatusListHandler.endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler.endpoint" title="Link to this definition"></a></dt>
+<dd><p>Handle the incoming request and return either a Redirect or Response.</p>
+<p>This method must be implemented by subclasses to process the given context
+and return an appropriate HTTP response, such as a redirect to another
+URL or a standard HTTP response.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>context (Context): The SATOSA context object containing the request and environment information.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Redirect | Response: A Redirect or Response object depending on the logic implemented.</p>
+</dd>
+<dt>Raises:</dt><dd><p>NotImplementedError: If the method is not overridden by a subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pyeudiw-satosa-frontends-openid4vci-endpoints-token-endpoint-module">
+<h2>pyeudiw.satosa.frontends.openid4vci.endpoints.token_endpoint module<a class="headerlink" href="#pyeudiw-satosa-frontends-openid4vci-endpoints-token-endpoint-module" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint">
+<span id="pyeudiw-satosa-frontends-openid4vci-endpoints-vci-base-endpoint-module"></span><h2>pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint module<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.</span></span><span class="sig-name descname"><span class="pre">VCIBaseEndpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_attributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Context</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AttributeMapper</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/frontends/openid4vci/endpoints/vci_base_endpoint.html#VCIBaseEndpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.tools.html#pyeudiw.tools.base_endpoint.BaseEndpoint" title="pyeudiw.tools.base_endpoint.BaseEndpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEndpoint</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_required">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dpop_required</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_required" title="Link to this definition"></a></dt>
+<dd><p>Check if DPoP is required.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>bool: True if DPoP is required, False otherwise. Defaults to False (DPoP optional).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_signing_alg_values_supported">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dpop_signing_alg_values_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.dpop_signing_alg_values_supported" title="Link to this definition"></a></dt>
+<dd><p>Get the supported DPoP signing algorithms.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[str]: List of supported DPoP signing algorithms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.entity_id">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">entity_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.entity_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.proof_jwt_required">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">proof_jwt_required</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.proof_jwt_required" title="Link to this definition"></a></dt>
+<dd><p>Check if proof JWT is required in credential endpoint requests.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>bool: True if proof JWT is required, False otherwise. Defaults to False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.signed_par_request">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">signed_par_request</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.signed_par_request" title="Link to this definition"></a></dt>
+<dd><p>Check if signed par request is required.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>str: “true”, “false” or “both”. Defaults to “true”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.status_endpoint">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">status_endpoint</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.status_endpoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.wallet_attestation_required">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">wallet_attestation_required</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint.VCIBaseEndpoint.wallet_attestation_required" title="Link to this definition"></a></dt>
+<dd><p>Check if wallet attestation is required.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>bool: True if wallet_attestation is required, False otherwise. Defaults to True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.frontends.openid4vci.endpoints">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.satosa.frontends.openid4vci.endpoints" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.satosa.frontends.openid4vci.html" class="btn btn-neutral float-left" title="pyeudiw.satosa.frontends.openid4vci package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.satosa.frontends.openid4vci.models.html" class="btn btn-neutral float-right" title="pyeudiw.satosa.frontends.openid4vci.models package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,378 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.status_list &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.status_list</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.status_list</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">binascii</span><span class="w"> </span><span class="kn">import</span> <span class="n">hexlify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">binascii</span><span class="w"> </span><span class="kn">import</span> <span class="n">unhexlify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cbor2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycose.algorithms</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycose.keys.curves</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">curves</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycose.headers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Algorithm</span><span class="p">,</span> <span class="n">KID</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycose.keys</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoseKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycose.keys</span><span class="w"> </span><span class="kn">import</span> <span class="n">EC2Key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pycose.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sign1Message</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">base64_urldecode</span><span class="p">,</span> <span class="n">base64_urlencode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span><span class="p">,</span> <span class="n">decode_jwt_payload</span>
+
+<span class="n">StatusListFormat</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;jwt&quot;</span><span class="p">,</span> <span class="s2">&quot;cwt&quot;</span><span class="p">]</span>
+
+<span class="n">STATUS_LIST_CWT</span> <span class="o">=</span> <span class="s2">&quot;application/statuslist+cwt&quot;</span>
+<span class="n">STATUS_LIST_JWT</span> <span class="o">=</span> <span class="s2">&quot;application/statuslist+jwt&quot;</span>
+
+
+<div class="viewcode-block" id="decode_jwt_status_list_token">
+<a class="viewcode-back" href="../../rst/pyeudiw.status_list.html#pyeudiw.status_list.decode_jwt_status_list_token">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decode_jwt_status_list_token</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode a JWT status list token.</span>
+
+<span class="sd">    :param token: The JWT status list token.</span>
+<span class="sd">    :type token: str</span>
+
+<span class="sd">    :return: A tuple containing the parsing status, the header, payload, bits, and status list.</span>
+<span class="sd">    :rtype: tuple[dict, dict, int, bytes]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="s2">&quot;typ&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;statuslist+jwt&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid token type&quot;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="n">decoded_status_list</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;status_list&quot;</span><span class="p">]</span>
+
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">decoded_status_list</span><span class="p">[</span><span class="s2">&quot;bits&quot;</span><span class="p">]</span>
+
+        <span class="n">compressed_data</span> <span class="o">=</span> <span class="n">base64_urldecode</span><span class="p">(</span><span class="n">decoded_status_list</span><span class="p">[</span><span class="s2">&quot;lst&quot;</span><span class="p">])</span>
+        <span class="n">status_list</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">compressed_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">bits</span><span class="p">,</span> <span class="n">status_list</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{},</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="encode_cwt_status_list_token">
+<a class="viewcode-back" href="../../rst/pyeudiw.status_list.html#pyeudiw.status_list.encode_cwt_status_list_token">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_cwt_status_list_token</span><span class="p">(</span>
+    <span class="n">payload_parts</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
+    <span class="n">bits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">status_list</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+    <span class="n">payload_map</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">private_key</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encode a CWT representing a status list and optionally sign it.</span>
+
+<span class="sd">    Compresses the status list and inserts it under claim 65533 in the payload; if</span>
+<span class="sd">    a private_key is provided the token will be signed.</span>
+
+<span class="sd">    :param payload_parts: A tuple containing the protected header, unprotected header, and payload.</span>
+<span class="sd">    :type payload_parts: Tuple[dict, dict, dict]</span>
+<span class="sd">    :param bits: The number of bits in the status list.</span>
+<span class="sd">    :type bits: int</span>
+<span class="sd">    :param status_list: The status list as a byte string.</span>
+<span class="sd">    :type status_list: bytes</span>
+<span class="sd">    :param payload_map: An optional mapping to replace keys in the payload.</span>
+<span class="sd">    :type payload_map: dict | None</span>
+<span class="sd">    :param private_key: An optional private key for signing the token.</span>
+<span class="sd">    :type private_key: dict | None</span>
+<span class="sd">    :return: The encoded CWT as a byte string.</span>
+<span class="sd">    :rtype: bytes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Compress the status list</span>
+    <span class="n">compressed_status_list</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">status_list</span><span class="p">)</span>
+
+    <span class="c1"># Insert the &#39;decoded_status_list&#39; structure into the payload under claim key 65533</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">payload_parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">payload_map</span><span class="p">:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">_replace_keys</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">payload_map</span><span class="p">)</span>
+
+    <span class="n">payload</span><span class="p">[</span><span class="mi">65533</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;bits&quot;</span><span class="p">:</span> <span class="n">bits</span><span class="p">,</span>
+        <span class="s2">&quot;lst&quot;</span><span class="p">:</span> <span class="n">compressed_status_list</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">phdr</span> <span class="o">=</span> <span class="n">payload_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="mi">16</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">phdr</span><span class="p">:</span>
+        <span class="n">phdr</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="n">STATUS_LIST_CWT</span>
+        <span class="k">if</span> <span class="n">private_key</span><span class="p">:</span>
+            <span class="n">kid</span> <span class="o">=</span> <span class="nb">bytes</span><span class="o">.</span><span class="n">fromhex</span><span class="p">(</span><span class="n">private_key</span><span class="p">[</span><span class="s2">&quot;KID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="n">phdr</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">KID</span><span class="p">,</span> <span class="n">kid</span><span class="p">)</span>
+            <span class="n">phdr</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">Algorithm</span><span class="p">,</span> <span class="n">pycose</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">Es256</span><span class="p">)</span>
+
+    <span class="n">mso</span> <span class="o">=</span> <span class="n">Sign1Message</span><span class="p">(</span><span class="n">phdr</span><span class="o">=</span><span class="n">phdr</span><span class="p">,</span> <span class="n">uhdr</span><span class="o">=</span><span class="n">payload_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">payload</span><span class="o">=</span><span class="n">cbor2</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">canonical</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">private_key</span><span class="p">:</span>
+        <span class="n">private_d</span> <span class="o">=</span> <span class="n">private_key</span><span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">]</span>
+        <span class="n">kid</span> <span class="o">=</span> <span class="n">phdr</span><span class="p">[</span><span class="n">KID</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">private_key</span><span class="p">[</span><span class="s2">&quot;KTY&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;EC2&quot;</span><span class="p">:</span>
+            <span class="n">mso</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">EC2Key</span><span class="p">(</span><span class="n">crv</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">curves</span><span class="p">,</span> <span class="n">private_key</span><span class="p">[</span><span class="s2">&quot;CURVE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span> <span class="n">d</span><span class="o">=</span><span class="n">private_d</span><span class="p">,</span> <span class="n">optional_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;KID&quot;</span><span class="p">:</span> <span class="n">kid</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mso</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">CoseKey</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">private_key</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">hexlify</span><span class="p">(</span><span class="n">mso</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="p">(</span><span class="n">private_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> <span class="n">sign</span><span class="o">=</span><span class="p">(</span><span class="n">private_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span></div>
+
+
+
+<div class="viewcode-block" id="decode_cwt_status_list_token">
+<a class="viewcode-back" href="../../rst/pyeudiw.status_list.html#pyeudiw.status_list.decode_cwt_status_list_token">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decode_cwt_status_list_token</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode a CWT status list token.</span>
+
+<span class="sd">    :param token: The CWT status list token.</span>
+<span class="sd">    :type token: bytes</span>
+
+<span class="sd">    :return: A tuple containing the parsing status, the header, payload, bits, and status list.</span>
+<span class="sd">    :rtype: tuple[dict, dict, int, bytes]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">cbor2</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">unhexlify</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">_loads_cbor_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;application/statuslist+cwt&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid token type&quot;</span><span class="p">)</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">_loads_cbor_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">decoded_status_list</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="mi">65533</span><span class="p">]</span>
+
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">decoded_status_list</span><span class="p">[</span><span class="s2">&quot;bits&quot;</span><span class="p">]</span>
+        <span class="n">status_list</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">decoded_status_list</span><span class="p">[</span><span class="s2">&quot;lst&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">bits</span><span class="p">,</span> <span class="n">status_list</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{},</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compress_bitstring</span><span class="p">(</span><span class="n">bitstring</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compress a bitstring using zlib.</span>
+
+<span class="sd">    :param bitstring: The bitstring to compress.</span>
+<span class="sd">    :type bitstring: bytes</span>
+
+<span class="sd">    :return: The compressed bitstring.</span>
+<span class="sd">    :rtype: bytes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">compressed_data</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">bitstring</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">base64_urlencode</span><span class="p">(</span><span class="n">compressed_data</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="generate_status_list">
+<a class="viewcode-back" href="../../rst/pyeudiw.status_list.html#pyeudiw.status_list.generate_status_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_status_list</span><span class="p">(</span><span class="n">bitstring</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">bits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">aggregation_uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="n">StatusListFormat</span> <span class="o">=</span> <span class="s2">&quot;jwt&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a status list.</span>
+
+<span class="sd">    :param bitstring: The bitstring to generate the status list from.</span>
+<span class="sd">    :type bitstring: bytes</span>
+<span class="sd">    :param bits: The number of bits in the status list.</span>
+<span class="sd">    :type bits: int</span>
+<span class="sd">    :param aggregation_uri: The aggregation URI.</span>
+<span class="sd">    :type aggregation_uri: Optional[str]</span>
+<span class="sd">    :param format: The format of the status list, either &quot;jwt&quot; or &quot;cwt&quot;.</span>
+<span class="sd">    :type format: StatusListFormat</span>
+
+<span class="sd">    :return: A dictionary containing the status list or a CWT token.</span>
+<span class="sd">    :rtype: Union[dict, bytes]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">compressed_status_list</span> <span class="o">=</span> <span class="n">_compress_bitstring</span><span class="p">(</span><span class="n">bitstring</span><span class="p">)</span>
+
+    <span class="n">status_list</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bits&quot;</span><span class="p">:</span> <span class="n">bits</span><span class="p">,</span> <span class="s2">&quot;lst&quot;</span><span class="p">:</span> <span class="n">compressed_status_list</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">aggregation_uri</span><span class="p">:</span>
+        <span class="n">status_list</span><span class="p">[</span><span class="s2">&quot;aggregation_uri&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aggregation_uri</span>
+
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;jwt&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">status_list</span>
+
+    <span class="k">return</span> <span class="n">cbor2</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">status_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="array_to_bitstring">
+<a class="viewcode-back" href="../../rst/pyeudiw.status_list.html#pyeudiw.status_list.array_to_bitstring">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">array_to_bitstring</span><span class="p">(</span><span class="n">status_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">bit_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert an array of status objects to a bitstring.</span>
+
+<span class="sd">    :param status_array: The array of status objects.</span>
+<span class="sd">    :type status_array: list[dict]</span>
+<span class="sd">    :param bit_size: The size of each bit in the bitstring.</span>
+<span class="sd">    :type bit_size: int</span>
+
+<span class="sd">    :return: The resulting bitstring.</span>
+<span class="sd">    :rtype: bytes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">status_array</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">status_array</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;incremental_id&quot;</span><span class="p">])</span>
+
+    <span class="n">bitstring</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">status_array</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;revoked&quot;</span><span class="p">]:</span>
+            <span class="c1"># Set bit to 1 if revoked</span>
+            <span class="n">bitstring</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">status_array</span><span class="p">)</span> <span class="o">-</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;incremental_id&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Clear bit to 0 if not revoked</span>
+            <span class="n">bitstring</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">status_array</span><span class="p">)</span> <span class="o">-</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;incremental_id&quot;</span><span class="p">]))</span>
+
+    <span class="n">bit_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">status_array</span><span class="p">)</span>
+    <span class="n">byte_length</span> <span class="o">=</span> <span class="p">(</span><span class="n">bit_length</span> <span class="o">+</span> <span class="mi">7</span><span class="p">)</span> <span class="o">//</span> <span class="mi">8</span>
+    <span class="k">return</span> <span class="n">bitstring</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">byte_length</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_keys</span><span class="p">(</span><span class="n">input_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">field_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recursively replaces keys in a dictionary according to a given mapping.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dict (dict): The input dictionary whose keys need to be replaced.</span>
+<span class="sd">        field_map (dict): A mapping of original keys to their replacement keys.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A new dictionary with keys replaced based on ``field_map``. If a key is</span>
+<span class="sd">            not found in ``field_map``, it remains unchanged. The function processes</span>
+<span class="sd">            nested dictionaries recursively.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        input_dict = {&quot;name&quot;: &quot;Alice&quot;, &quot;info&quot;: {&quot;age&quot;: 30, &quot;city&quot;: &quot;Rome&quot;}}</span>
+<span class="sd">        field_map = {&quot;name&quot;: &quot;fullName&quot;, &quot;age&quot;: &quot;years&quot;}</span>
+
+<span class="sd">        _replace_keys(input_dict, field_map)</span>
+<span class="sd">        # Returns: {&quot;fullName&quot;: &quot;Alice&quot;, &quot;info&quot;: {&quot;years&quot;: 30, &quot;city&quot;: &quot;Rome&quot;}}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="n">field_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span> <span class="p">(</span><span class="n">_replace_keys</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">field_map</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_loads_cbor_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load and decode CBOR data at a specific index from a list or CBOR tag container.</span>
+
+<span class="sd">    This helper function handles both CBOR-encoded lists and CBOR tag objects with a `.value`</span>
+<span class="sd">    attribute containing a list. It returns the decoded CBOR object at the specified index.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (Any): A list of CBOR-encoded byte strings or a CBOR tag object with a `.value` attribute (e.g., `cbor2.CBORTag`).</span>
+<span class="sd">        index (int): The index of the CBOR-encoded item to decode.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Any: The Python object resulting from CBOR decoding the selected item.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cbor2</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cbor2</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

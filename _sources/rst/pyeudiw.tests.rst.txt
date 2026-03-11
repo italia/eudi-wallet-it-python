@@ -1,0 +1,59 @@
+pyeudiw.tests package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.tests.federation
+   pyeudiw.tests.jwt
+   pyeudiw.tests.satosa
+   pyeudiw.tests.status_list
+   pyeudiw.tests.storage
+   pyeudiw.tests.trust
+   pyeudiw.tests.wallet_instance_attestation
+
+Submodules
+----------
+
+pyeudiw.tests.conftest module
+-----------------------------
+
+.. automodule:: pyeudiw.tests.conftest
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.settings module
+-----------------------------
+
+.. automodule:: pyeudiw.tests.settings
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.test\_jwk module
+------------------------------
+
+.. automodule:: pyeudiw.tests.test_jwk
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.test\_jwt module
+------------------------------
+
+.. automodule:: pyeudiw.tests.test_jwt
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests
+   :members:
+   :show-inheritance:
+   :undoc-members:

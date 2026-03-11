@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.trust.test_dynamic &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.trust.test_dynamic</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tests.trust.test_dynamic</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.db_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">DBEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">CONFIG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.trust</span><span class="w"> </span><span class="kn">import</span> <span class="n">correct_config</span><span class="p">,</span> <span class="n">not_conformant</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.trust.mock_trust_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockTrustHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.dynamic</span><span class="w"> </span><span class="kn">import</span> <span class="n">CombinedTrustEvaluator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustConfigurationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.handler.direct_trust_sd_jwt_vc</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectTrustSdJwtVc</span>
+
+
+<div class="viewcode-block" id="test_trust_CombinedTrusstEvaluation_handler_loading">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_trust_CombinedTrusstEvaluation_handler_loading">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_trust_CombinedTrusstEvaluation_handler_loading</span><span class="p">():</span>
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="n">correct_config</span><span class="p">,</span>
+        <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">]),</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">trust_ev</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trust_ev</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">MockTrustHandler</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trust_ev</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="test_not_conformant_CombinedTrusstEvaluation_handler_loading">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_not_conformant_CombinedTrusstEvaluation_handler_loading">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_not_conformant_CombinedTrusstEvaluation_handler_loading</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+            <span class="n">not_conformant</span><span class="p">,</span>
+            <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">]),</span>
+            <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="n">TrustConfigurationError</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="test_if_no_conf_default_handler_instanciated">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_if_no_conf_default_handler_instanciated">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_if_no_conf_default_handler_instanciated</span><span class="p">():</span>
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">({},</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">]),</span> <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">)</span>
+    <span class="c1"># both jar issuer and direct trust sd jwt vc are default if not trust handlers are configured</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">trust_ev</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trust_ev</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">DirectTrustSdJwtVc</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="test_public_key_and_metadata_retrive">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_public_key_and_metadata_retrive">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_public_key_and_metadata_retrive</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;MockTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;update_first&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;default_key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;default_value&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="s2">&quot;d&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="s2">&quot;d&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">][</span><span class="s2">&quot;keys&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_public_keys</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="s2">&quot;d&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="s2">&quot;d&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="test_update_first_strategy">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_update_first_strategy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_update_first_strategy</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;UpdateTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;updated_trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_trust_param_value&quot;</span><span class="p">}}</span></div>
+
+
+
+<div class="viewcode-block" id="test_cache_first_strategy">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_first_strategy</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;UpdateTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cache_first&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span></div>
+
+
+
+<div class="viewcode-block" id="test_cache_first_strategy_expired">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_first_strategy_expired</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;UpdateTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cache_first&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;updated_trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_trust_param_value&quot;</span><span class="p">}}</span></div>
+
+
+
+<div class="viewcode-block" id="test_cache_first_strategy_expired_revoked">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_revoked">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_first_strategy_expired_revoked</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;UpdateTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cache_first&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+
+    <span class="n">trust_ev</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">is_revoked</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;updated_trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_trust_param_value&quot;</span><span class="p">}}</span></div>
+
+
+
+<div class="viewcode-block" id="test_cache_first_strategy_expired_force_update">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.tests.trust.html#pyeudiw.tests.trust.test_dynamic.test_cache_first_strategy_expired_force_update">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_first_strategy_expired_force_update</span><span class="p">():</span>
+    <span class="n">db_engine</span> <span class="o">=</span> <span class="n">DBEngine</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">[</span><span class="s2">&quot;storage&quot;</span><span class="p">])</span>
+
+    <span class="n">trust_ev</span> <span class="o">=</span> <span class="n">CombinedTrustEvaluator</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.tests.trust.mock_trust_handler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;UpdateTrustHandler&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="n">db_engine</span><span class="p">,</span>
+        <span class="n">default_client_id</span><span class="o">=</span><span class="s2">&quot;default-client-id&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;cache_first&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">uuid_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">.issuer.it&quot;</span>
+
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_param_value&quot;</span><span class="p">}}</span>
+    <span class="k">assert</span> <span class="n">trust_ev</span><span class="o">.</span><span class="n">get_jwt_header_trust_parameters</span><span class="p">(</span><span class="n">uuid_url</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span>
+        <span class="s2">&quot;trust_param_name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;updated_trust_param_key&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_trust_param_value&quot;</span><span class="p">}</span>
+    <span class="p">}</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

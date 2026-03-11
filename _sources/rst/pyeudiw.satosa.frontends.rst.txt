@@ -1,0 +1,18 @@
+pyeudiw.satosa.frontends package
+================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.satosa.frontends.openid4vci
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.frontends
+   :members:
+   :show-inheritance:
+   :undoc-members:

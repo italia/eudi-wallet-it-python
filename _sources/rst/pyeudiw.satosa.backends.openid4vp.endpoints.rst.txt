@@ -1,0 +1,61 @@
+pyeudiw.satosa.backends.openid4vp.endpoints package
+===================================================
+
+Submodules
+----------
+
+pyeudiw.satosa.backends.openid4vp.endpoints.get\_response\_endpoint module
+--------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.endpoints.pre\_request\_endpoint module
+-------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.endpoints.request\_endpoint module
+--------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.endpoints.response\_endpoint module
+---------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.endpoints.status\_endpoint module
+-------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.endpoints.vp\_base\_endpoint module
+---------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.endpoints
+   :members:
+   :show-inheritance:
+   :undoc-members:

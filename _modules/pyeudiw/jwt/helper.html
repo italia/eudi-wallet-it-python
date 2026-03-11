@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.jwt.helper &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.jwt.helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.jwt.helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypeAlias</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.ec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ECKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.hmac</span><span class="w"> </span><span class="kn">import</span> <span class="n">SYMKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">key_from_jwk_dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.okp</span><span class="w"> </span><span class="kn">import</span> <span class="n">OKPKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.rsa</span><span class="w"> </span><span class="kn">import</span> <span class="n">RSAKey</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_x5c_keys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_payload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">iat_now</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">LifetimeException</span>
+
+<span class="n">KeyLike</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">ECKey</span> <span class="o">|</span> <span class="n">RSAKey</span> <span class="o">|</span> <span class="n">OKPKey</span> <span class="o">|</span> <span class="n">SYMKey</span>
+<span class="n">SerializationFormat</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;compact&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="JWHelperInterface">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.JWHelperInterface">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">JWHelperInterface</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KeyLike</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="n">KeyLike</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates an instance of JWEHelper.</span>
+
+<span class="sd">        :raises TypeError: If the input jwks is not a list, dict, or a key-like object.</span>
+
+<span class="sd">        :param jwks: The list of JWK used to crypt and encrypt the content of JWE.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KeyLike</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jwks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">single_jwk</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">jwks</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span> <span class="o">=</span> <span class="p">[</span><span class="n">single_jwk</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jwks</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jwks</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">j</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jwks</span><span class="p">,</span> <span class="p">(</span><span class="n">ECKey</span><span class="p">,</span> <span class="n">RSAKey</span><span class="p">,</span> <span class="n">OKPKey</span><span class="p">,</span> <span class="n">SYMKey</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span> <span class="o">=</span> <span class="p">[</span><span class="n">jwks</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unable to handle input jwks with type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">jwks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="JWHelperInterface.get_jwk_by_kid">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.JWHelperInterface.get_jwk_by_kid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_jwk_by_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyLike</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the JWK with the given kid from the list of JWKs.</span>
+
+<span class="sd">        :param kid: The key ID of the JWK to retrieve.</span>
+<span class="sd">        :type kid: str</span>
+<span class="sd">        :returns: The JWK with the given kid, or None if not found.</span>
+<span class="sd">        :rtype: KeyLike | None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">kid</span> <span class="o">==</span> <span class="n">kid</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="serialize_payload">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.serialize_payload">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">serialize_payload</span><span class="p">(</span><span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">payload</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="find_self_contained_key">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.find_self_contained_key">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_self_contained_key</span><span class="p">(</span><span class="n">header</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">JWK</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function find_self_contained_key evaluates a token header and attempts</span>
+<span class="sd">    at finding a self contained key (a self contained contained header is a</span>
+<span class="sd">    header that contains the full public material of the verifying key that</span>
+<span class="sd">    should be used to verify a token).</span>
+
+<span class="sd">    Currently recognized self contained headers are x5c, jwk, jku, x5u, x5t</span>
+<span class="sd">    and trust_chain.</span>
+<span class="sd">    It is responsability of the called to decide wether a self contained</span>
+<span class="sd">    key representation is to be trusted.</span>
+
+<span class="sd">    The functions returns the key and the set of claim used to infer the</span>
+<span class="sd">    self contained key. In no self contained key can be found, None is</span>
+<span class="sd">    returned instead.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;x5c&quot;</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="n">candidate_key</span><span class="p">:</span> <span class="n">JWK</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">candidate_key</span> <span class="o">=</span> <span class="n">parse_x5c_keys</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;x5c&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;5xc&quot;</span><span class="p">]),</span> <span class="n">candidate_key</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed to parse key from x5c chain </span><span class="si">{</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;x5c&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;jwk&quot;</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="n">candidate_key</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s2">&quot;jwk&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;jwk&quot;</span><span class="p">]),</span> <span class="n">candidate_key</span>
+    <span class="n">unsupported_claims</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s2">&quot;trust_chain&quot;</span><span class="p">,</span> <span class="s2">&quot;jku&quot;</span><span class="p">,</span> <span class="s2">&quot;x5u&quot;</span><span class="p">,</span> <span class="s2">&quot;x5t&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">unsupported_claims</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;self contained key extraction form header with claims </span><span class="si">{</span><span class="n">unsupported_claims</span><span class="si">}</span><span class="s2"> not supported yet&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="is_payload_expired">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.is_payload_expired">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_payload_expired</span><span class="p">(</span><span class="n">token_payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a JWT payload is expired.</span>
+
+<span class="sd">    :param token_payload: The decoded JWT payload.</span>
+<span class="sd">    :type token_payload: dict</span>
+
+<span class="sd">    :returns: True if the payload is expired, False otherwise.</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">token_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exp&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">exp</span> <span class="o">&lt;</span> <span class="n">iat_now</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="is_jwt_expired">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.is_jwt_expired">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_jwt_expired</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a JWT token is expired.</span>
+
+<span class="sd">    :param token: The JWT token.</span>
+<span class="sd">    :type token: str</span>
+
+<span class="sd">    :returns: True if the token is expired, False otherwise.</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">is_payload_expired</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="validate_jwt_timestamps_claims">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.helper.validate_jwt_timestamps_claims">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">tolerance_s</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validates the &#39;iat&#39;, &#39;exp&#39;, and &#39;nbf&#39; claims in a JWT payload, comparing</span>
+<span class="sd">    them with the current time.</span>
+<span class="sd">    The function assumes that the time in the payload claims is expressed as</span>
+<span class="sd">    seconds since the epoch, as required by rfc 7519.</span>
+<span class="sd">    To account for a clock skew between the token issuer and the token</span>
+<span class="sd">    verifier, the optional argument tolerance_s can be used. As suggested by</span>
+<span class="sd">    rfc 7519, it is recommended to keep the tolerance window to no more than</span>
+<span class="sd">    a few minutes.</span>
+
+<span class="sd">    :param payload: The decoded JWT payload.</span>
+<span class="sd">    :type payload: dict</span>
+<span class="sd">    :param tolerance_s: optional tolerance window, in seconds, which can be \</span>
+<span class="sd">        used to account for some clock skew between the token issuer and the \</span>
+<span class="sd">        token verifier.</span>
+<span class="sd">    :type tolerance_s: int</span>
+
+<span class="sd">    :raises LifetimeException: If any of the claims are invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">current_time</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="s2">&quot;iat&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;iat&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tolerance_s</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LifetimeException</span><span class="p">(</span><span class="s2">&quot;Future issue time, token is invalid.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;exp&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tolerance_s</span> <span class="o">&lt;=</span> <span class="n">current_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LifetimeException</span><span class="p">(</span><span class="s2">&quot;Token has expired.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;nbf&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;nbf&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tolerance_s</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LifetimeException</span><span class="p">(</span><span class="s2">&quot;Token not yet valid.&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.sd_jwt.verifier &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.sd_jwt.verifier</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.sd_jwt.verifier</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">key_from_jwk_dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jws.jws</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWS</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSVerificationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_jwt_timestamps_claims</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span><span class="p">,</span> <span class="n">decode_jwt_payload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">SDJWTCommon</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_SIGNING_ALG</span><span class="p">,</span>
+    <span class="n">DIGEST_ALG_KEY</span><span class="p">,</span>
+    <span class="n">KB_DIGEST_KEY</span><span class="p">,</span>
+    <span class="n">SD_DIGESTS_KEY</span><span class="p">,</span>
+    <span class="n">SD_LIST_PREFIX</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SDJWTVerifier">
+<a class="viewcode-back" href="../../../rst/pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.verifier.SDJWTVerifier">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SDJWTVerifier</span><span class="p">(</span><span class="n">SDJWTCommon</span><span class="p">):</span>
+    <span class="n">_input_disclosures</span><span class="p">:</span> <span class="n">List</span>
+    <span class="n">_hash_to_decoded_disclosure</span><span class="p">:</span> <span class="n">Dict</span>
+    <span class="n">_hash_to_disclosure</span><span class="p">:</span> <span class="n">Dict</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sd_jwt_presentation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cb_get_issuer_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">expected_aud</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expected_nonce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">serialization_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;compact&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">serialization_format</span><span class="o">=</span><span class="n">serialization_format</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_sd_jwt</span><span class="p">(</span><span class="n">sd_jwt_presentation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_hash_mappings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_disclosures</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verify_sd_jwt</span><span class="p">(</span><span class="n">cb_get_issuer_key</span><span class="p">)</span>
+
+        <span class="c1"># expected aud and nonce either need to be both set or both None</span>
+        <span class="k">if</span> <span class="n">expected_aud</span> <span class="ow">or</span> <span class="n">expected_nonce</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">expected_aud</span> <span class="ow">and</span> <span class="n">expected_nonce</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either both expected_aud and expected_nonce must be provided or both must be None&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Verify the SD-JWT-Release</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_verify_key_binding_jwt</span><span class="p">(</span>
+                <span class="n">expected_aud</span><span class="p">,</span>
+                <span class="n">expected_nonce</span><span class="p">,</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="SDJWTVerifier.get_verified_payload">
+<a class="viewcode-back" href="../../../rst/pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.verifier.SDJWTVerifier.get_verified_payload">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_verified_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_sd_claims</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_verify_sd_jwt</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cb_get_issuer_key</span><span class="p">,</span>
+        <span class="n">sign_alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">parsed_input_sd_jwt</span> <span class="o">=</span> <span class="n">JWS</span><span class="p">(</span><span class="n">alg</span><span class="o">=</span><span class="n">sign_alg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="n">_deserialize_sd_jwt_payload</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+            <span class="n">unverified_issuer</span> <span class="o">=</span> <span class="n">_deserialize_sd_jwt_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iss&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">unverified_header_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">]</span>
+            <span class="n">issuer_public_key_input</span> <span class="o">=</span> <span class="n">cb_get_issuer_key</span><span class="p">(</span><span class="n">unverified_issuer</span><span class="p">,</span> <span class="n">unverified_header_parameters</span><span class="p">)</span>
+
+            <span class="n">issuer_public_key</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">issuer_public_key_input</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The issuer_public_key must be a list of JWKs. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Found: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">issuer_public_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">issuer_public_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span> <span class="o">=</span> <span class="n">parsed_input_sd_jwt</span><span class="o">.</span><span class="n">verify_json</span><span class="p">(</span><span class="n">jws</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">issuer_public_key</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="n">unverified_header_parameters</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="p">)</span>
+            <span class="n">sign_alg</span> <span class="o">=</span> <span class="n">sign_alg</span> <span class="ow">or</span> <span class="n">unverified_header_parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alg&quot;</span><span class="p">,</span> <span class="n">DEFAULT_SIGNING_ALG</span><span class="p">)</span>
+
+            <span class="n">parsed_input_sd_jwt</span> <span class="o">=</span> <span class="n">JWS</span><span class="p">(</span><span class="n">alg</span><span class="o">=</span><span class="n">sign_alg</span><span class="p">)</span>
+            <span class="n">parsed_payload</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="p">)</span>
+            <span class="n">unverified_issuer</span> <span class="o">=</span> <span class="n">parsed_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iss&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">header_params</span> <span class="o">=</span> <span class="n">unverified_header_parameters</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">issuer_public_key_input</span> <span class="o">=</span> <span class="n">cb_get_issuer_key</span><span class="p">(</span><span class="n">unverified_issuer</span><span class="p">,</span> <span class="n">header_params</span><span class="p">)</span>
+
+            <span class="n">issuer_public_key</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">issuer_public_key_input</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The issuer_public_key must be a list of JWKs. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Found: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">issuer_public_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">issuer_public_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span> <span class="o">=</span> <span class="n">parsed_input_sd_jwt</span><span class="o">.</span><span class="n">verify_compact</span><span class="p">(</span>
+                <span class="n">jws</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="p">,</span>
+                <span class="n">keys</span><span class="o">=</span><span class="n">issuer_public_key</span><span class="p">,</span>
+                <span class="n">sigalg</span><span class="o">=</span><span class="n">sign_alg</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">validate_jwt_timestamps_claims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">JWSVerificationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid JWT claims: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported serialization format: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_holder_public_key_payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cnf&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_verify_key_binding_jwt</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">expected_aud</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expected_nonce</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sign_alg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="c1"># Deserialized the key binding JWT</span>
+        <span class="n">sign_alg</span> <span class="ow">or</span> <span class="n">DEFAULT_SIGNING_ALG</span>
+
+        <span class="c1"># Verify the key binding JWT using the holder public key</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="n">decode_jwt_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+
+        <span class="n">holder_public_key_payload_jwk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_holder_public_key_payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jwk&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">holder_public_key_payload_jwk</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The holder_public_key_payload is malformed. &quot;</span> <span class="s2">&quot;It doesn&#39;t contain the claim jwk: &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_holder_public_key_payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="n">holder_public_key_payload_jwk</span><span class="p">)</span>
+
+        <span class="n">parsed_input_key_binding_jwt</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="n">jwks</span><span class="o">=</span><span class="n">pubkey</span><span class="p">)</span>
+        <span class="n">verified_payload</span> <span class="o">=</span> <span class="n">parsed_input_key_binding_jwt</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_key_binding_jwt</span><span class="p">)</span>
+
+        <span class="n">key_binding_jwt_header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_key_binding_jwt</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key_binding_jwt_header</span><span class="p">[</span><span class="s2">&quot;typ&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">KB_JWT_TYP_HEADER</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid header typ&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check payload</span>
+        <span class="n">key_binding_jwt_payload</span> <span class="o">=</span> <span class="n">verified_payload</span>
+
+        <span class="k">if</span> <span class="n">key_binding_jwt_payload</span><span class="p">[</span><span class="s2">&quot;aud&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_aud</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid audience in KB-JWT&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key_binding_jwt_payload</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_nonce</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid nonce in KB-JWT&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Reassemble the SD-JWT in compact format and check digest</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="n">expected_sd_jwt_presentation_hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_kb_hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_disclosures</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">key_binding_jwt_payload</span><span class="p">[</span><span class="n">KB_DIGEST_KEY</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_sd_jwt_presentation_hash</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid digest in KB-JWT&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_sd_claims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">DIGEST_ALG_KEY</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span><span class="p">[</span><span class="n">DIGEST_ALG_KEY</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">HASH_ALG</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]:</span>
+                <span class="c1"># TODO: Support other hash algorithms</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid hash algorithm&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_duplicate_hash_check</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_disclosed_claims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sd_jwt_payload</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unpack_disclosed_claims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sd_jwt_claims</span><span class="p">):</span>
+        <span class="c1"># In a list, unpack each element individually</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">sd_jwt_claims</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">sd_jwt_claims</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">SD_LIST_PREFIX</span> <span class="ow">in</span> <span class="n">element</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">[</span><span class="n">SD_LIST_PREFIX</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                    <span class="n">digest_to_check</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="n">SD_LIST_PREFIX</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">digest_to_check</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">:</span>
+                        <span class="n">_</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">[</span><span class="n">digest_to_check</span><span class="p">]</span>
+                        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unpack_disclosed_claims</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unpack_disclosed_claims</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">output</span>
+
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">sd_jwt_claims</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="c1"># First, try to figure out if there are any claims to be</span>
+            <span class="c1"># disclosed in this dict. If so, replace them by their</span>
+            <span class="c1"># disclosed values.</span>
+
+            <span class="n">pre_output</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_disclosed_claims</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sd_jwt_claims</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">SD_DIGESTS_KEY</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">DIGEST_ALG_KEY</span><span class="p">}</span>
+
+            <span class="k">for</span> <span class="n">digest</span> <span class="ow">in</span> <span class="n">sd_jwt_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SD_DIGESTS_KEY</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">if</span> <span class="n">digest</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duplicate_hash_check</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duplicate hash found in SD-JWT: </span><span class="si">{</span><span class="n">digest</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_duplicate_hash_check</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">digest</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">digest</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">:</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">[</span><span class="n">digest</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">pre_output</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Duplicate key found when unpacking disclosed claim: &quot;</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; in </span><span class="si">{</span><span class="n">pre_output</span><span class="si">}</span><span class="s2">. This is not allowed.&quot;</span><span class="p">)</span>
+                    <span class="n">unpacked_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_disclosed_claims</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">pre_output</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">unpacked_value</span>
+
+            <span class="c1"># Now, go through the dict and unpack any nested dicts.</span>
+
+            <span class="k">return</span> <span class="n">pre_output</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sd_jwt_claims</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

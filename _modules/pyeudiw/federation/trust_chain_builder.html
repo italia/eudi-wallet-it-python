@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.federation.trust_chain_builder &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.federation.trust_chain_builder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.federation.trust_chain_builder</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime_from_timestamp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InvalidEntityStatement</span><span class="p">,</span>
+    <span class="n">InvalidRequiredTrustMark</span><span class="p">,</span>
+    <span class="n">MetadataDiscoveryException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustChainPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.statements</span><span class="w"> </span><span class="kn">import</span> <span class="n">EntityStatement</span><span class="p">,</span> <span class="n">get_entity_configurations</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TrustChainBuilder">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TrustChainBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A trust walker that fetches statements and evaluate the evaluables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">trust_anchor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">trust_anchor_configuration</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">EntityStatement</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_authority_hints</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">subject_configuration</span><span class="p">:</span> <span class="n">EntityStatement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">required_trust_marks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="c1"># TODO - prefetch cache?</span>
+        <span class="c1"># pre_fetched_entity_configurations = {},</span>
+        <span class="c1"># pre_fetched_statements = {},</span>
+        <span class="c1">#</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialized a TrustChainBuilder istance</span>
+
+<span class="sd">        :parameter subject: represents the subject url (leaf) of the Trust Chain</span>
+<span class="sd">        :type subject: str</span>
+<span class="sd">        :parameter trust_anchor: represents the issuer url (leaf) of the Trust Chain</span>
+<span class="sd">        :type trust_anchor: str</span>
+<span class="sd">        :param httpc_params: parameters needed to perform http requests</span>
+<span class="sd">        :type httpc_params: dict</span>
+<span class="sd">        :param trust_anchor_configuration: is the entity statment configuration of Trust Anchor.</span>
+<span class="sd">        The assigned value can be an EntityStatement, a str or None.</span>
+<span class="sd">        If the value is a string it will be converted in an EntityStatement istance.</span>
+<span class="sd">        If the value is None it will be retrieved from an http request on the trust_anchor field.</span>
+<span class="sd">        :parameter max_authority_hints: the number of how many authority_hints to follow on each hop</span>
+<span class="sd">        :type max_authority_hints: int</span>
+<span class="sd">        :parameter subject_configuration: the configuration of subject</span>
+<span class="sd">        :type subject_configuration: EntityStatement</span>
+<span class="sd">        :parameter required_trust_marks: means all the trust marks needed to start a metadata discovery</span>
+<span class="sd">        at least one of the required trust marks is needed to start a metadata discovery</span>
+<span class="sd">        if this param if absent the filter won&#39;t be considered.</span>
+<span class="sd">        :type required_trust_marks: list[dict]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">subject</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span> <span class="o">=</span> <span class="n">subject_configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span> <span class="o">=</span> <span class="n">httpc_params</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor</span> <span class="o">=</span> <span class="n">trust_anchor</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trust_anchor_configuration</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">jwts</span> <span class="o">=</span> <span class="n">get_entity_configurations</span><span class="p">(</span><span class="n">trust_anchor</span><span class="p">,</span> <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+                <span class="n">trust_anchor_configuration</span> <span class="o">=</span> <span class="n">EntityStatement</span><span class="p">(</span><span class="n">jwts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+
+                <span class="n">subject_configuration</span><span class="o">.</span><span class="n">update_trust_anchor_conf</span><span class="p">(</span><span class="n">trust_anchor_configuration</span><span class="p">)</span>
+                <span class="n">subject_configuration</span><span class="o">.</span><span class="n">validate_by_itself</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Entity Configuration for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InvalidEntityStatement</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trust_anchor_configuration</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">trust_anchor_configuration</span> <span class="o">=</span> <span class="n">EntityStatement</span><span class="p">(</span><span class="n">jwt</span><span class="o">=</span><span class="n">trust_anchor_configuration</span><span class="p">,</span> <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span> <span class="o">=</span> <span class="n">trust_anchor_configuration</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">required_trust_marks</span> <span class="o">=</span> <span class="n">required_trust_marks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of valid subjects up to trust anchor</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_authority_hints</span> <span class="o">=</span> <span class="n">max_authority_hints</span>
+        <span class="c1"># dynamically valued</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_path_len</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">verified_trust_marks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_max_path_len</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TrustChainBuilder.apply_metadata_policy">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.apply_metadata_policy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_metadata_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        filters the trust path from subject to trust anchor</span>
+<span class="sd">        apply the metadata policies along the path.</span>
+
+<span class="sd">        :returns: the final metadata with policy applied</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># find the path of trust</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">sub</span><span class="p">:</span>
+            <span class="c1"># ok trust path completed, I just have to return over all the parent calls</span>
+            <span class="k">return</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying metadata policy for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="si">}</span><span class="s2"> over &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">sub</span><span class="si">}</span><span class="s2"> starting from &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">last_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">path_found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">ec</span> <span class="ow">in</span> <span class="n">last_path</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sup_ec</span> <span class="ow">in</span> <span class="n">ec</span><span class="o">.</span><span class="n">verified_by_superiors</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_path_len</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sup_ec</span><span class="o">.</span><span class="n">sub</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">sub</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sup_ec</span><span class="p">)</span>
+                        <span class="n">path_found</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">sup_ec</span><span class="o">.</span><span class="n">verified_by_superiors</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sup_ec</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">apply_metadata_policy</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;Cul de sac&#39; in </span><span class="si">{</span><span class="n">sup_ec</span><span class="o">.</span><span class="n">sub</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">sub</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="p">]</span>
+                        <span class="k">break</span>
+
+        <span class="c1"># once I filtered a concrete and unique trust path I can apply the metadata policy</span>
+        <span class="k">if</span> <span class="n">path_found</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found a trust path: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing metadata in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span>
+                <span class="n">_pol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">verified_descendant_statements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_policy&quot;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="k">for</span> <span class="n">md_type</span><span class="p">,</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">_pol</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">md_type</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span><span class="p">[</span><span class="n">md_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">TrustChainPolicy</span><span class="p">()</span><span class="o">.</span><span class="n">apply_policy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span><span class="p">[</span><span class="n">md_type</span><span class="p">],</span> <span class="n">_pol</span><span class="p">[</span><span class="n">md_type</span><span class="p">])</span>
+
+        <span class="c1"># set exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_exp</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_metadata</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        updates the internal exp field with the nearest</span>
+<span class="sd">        expiraton date found in the trust_path field</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">exps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exp</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrustChainBuilder.discovery">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.discovery">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">discovery</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        discovers the chain of verified statements</span>
+<span class="sd">        from the lower up to the trust anchor and updates</span>
+<span class="sd">        the internal representation of chain.</span>
+
+<span class="sd">        :returns: the validity status of the updated chain</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting a Walk into Metadata Discovery for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="p">]</span>
+
+        <span class="n">ecs_history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_path_len</span><span class="p">:</span>
+            <span class="n">last_path_n</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">last_ecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="n">last_path_n</span><span class="p">]</span>
+
+            <span class="n">sup_ecs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">last_ec</span> <span class="ow">in</span> <span class="n">last_ecs</span><span class="p">:</span>
+                <span class="c1"># Metadata discovery loop prevention</span>
+                <span class="k">if</span> <span class="n">last_ec</span><span class="o">.</span><span class="n">sub</span> <span class="ow">in</span> <span class="n">ecs_history</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Metadata discovery loop detection for </span><span class="si">{</span><span class="n">last_ec</span><span class="o">.</span><span class="n">sub</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Already present in </span><span class="si">{</span><span class="n">ecs_history</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="s2">&quot;Discovery blocked for this path.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">superiors</span> <span class="o">=</span> <span class="n">last_ec</span><span class="o">.</span><span class="n">get_superiors</span><span class="p">(</span>
+                        <span class="n">max_authority_hints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_authority_hints</span><span class="p">,</span>
+                        <span class="n">superiors_hints</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="n">validated_by</span> <span class="o">=</span> <span class="n">last_ec</span><span class="o">.</span><span class="n">validate_by_superiors</span><span class="p">(</span><span class="n">superiors_entity_configurations</span><span class="o">=</span><span class="n">superiors</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                    <span class="n">vbv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">validated_by</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                    <span class="n">sup_ecs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">vbv</span><span class="p">)</span>
+                    <span class="n">ecs_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_ec</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">MetadataDiscoveryException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metadata discovery exception for </span><span class="si">{</span><span class="n">last_ec</span><span class="o">.</span><span class="n">sub</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">sup_ecs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="n">last_path_n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sup_ecs</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="n">last_path</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_valid</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_of_trust</span><span class="p">[</span><span class="n">last_path</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">apply_metadata_policy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span></div>
+
+
+<div class="viewcode-block" id="TrustChainBuilder.get_trust_anchor_configuration">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_anchor_configuration">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_anchor_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download and updates the internal field trust_anchor_configuration</span>
+<span class="sd">        with the entity statement of trust anchor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor</span><span class="p">,</span> <span class="n">EntityStatement</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Get Trust Anchor Entity Configuration for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ta_jwt</span> <span class="o">=</span> <span class="n">get_entity_configurations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor</span><span class="p">,</span> <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span> <span class="o">=</span> <span class="n">EntityStatement</span><span class="p">(</span><span class="n">ta_jwt</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">validate_by_itself</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Trust Anchor Entity Configuration failed for &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_max_path_len</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_max_path_len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the internal field max_path_len with the costraint</span>
+<span class="sd">        found in trust anchor payload</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;constraints&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_path_length&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_path_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;constraints&quot;</span><span class="p">][</span><span class="s2">&quot;max_path_length&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="TrustChainBuilder.get_subject_configuration">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_subject_configuration">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_subject_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download and updates the internal field subject_configuration</span>
+<span class="sd">        with the entity statement of leaf.</span>
+
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">jwts</span> <span class="o">=</span> <span class="n">get_entity_configurations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="p">,</span> <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span> <span class="o">=</span> <span class="n">EntityStatement</span><span class="p">(</span>
+                    <span class="n">jwts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">trust_anchor_entity_conf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="p">,</span>
+                    <span class="n">httpc_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span><span class="o">.</span><span class="n">validate_by_itself</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Entity Configuration for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subject</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">InvalidEntityStatement</span><span class="p">(</span><span class="n">_msg</span><span class="p">)</span>
+
+            <span class="c1"># Trust Mark filter</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_trust_marks</span><span class="p">:</span>
+                <span class="n">sc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject_configuration</span>
+                <span class="n">sc</span><span class="o">.</span><span class="n">filter_by_allowed_trust_marks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_trust_marks</span>
+
+                <span class="c1"># TODO: create a proxy function that gets tm issuers ec from</span>
+                <span class="c1"># a previously populated cache</span>
+                <span class="c1"># sc.trust_mark_issuers_entity_confs = [</span>
+                <span class="c1"># trust_mark_issuers_entity_confs</span>
+                <span class="c1"># ]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">sc</span><span class="o">.</span><span class="n">validate_by_allowed_trust_marks</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="n">InvalidRequiredTrustMark</span><span class="p">(</span><span class="s2">&quot;The required Trust Marks are not valid&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">verified_trust_marks</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sc</span><span class="o">.</span><span class="n">verified_trust_marks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TrustChainBuilder.serialize">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.serialize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serializes the chain in JSON format.</span>
+
+<span class="sd">        :returns: the serialized chain in JSON format</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_trust_chain</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="TrustChainBuilder.get_trust_chain">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.get_trust_chain">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the leaf and the Trust Anchor entity configurations.</span>
+
+<span class="sd">        :returns: the list containing the ECs</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># we keep just the leaf&#39;s and TA&#39;s EC, all the intermediates EC will be dropped</span>
+        <span class="n">ta_ec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subject</span> <span class="o">==</span> <span class="n">stat</span><span class="o">.</span><span class="n">sub</span> <span class="o">==</span> <span class="n">stat</span><span class="o">.</span><span class="n">iss</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">jwt</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchor_configuration</span><span class="o">.</span><span class="n">sub</span> <span class="o">==</span> <span class="n">stat</span><span class="o">.</span><span class="n">sub</span> <span class="o">==</span> <span class="n">stat</span><span class="o">.</span><span class="n">iss</span><span class="p">:</span>
+                <span class="n">ta_ec</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">jwt</span>
+
+            <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">verified_descendant_statements</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="c1"># [dict(i) for i in stat.verified_descendant_statements.values()]</span>
+                    <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">stat</span><span class="o">.</span><span class="n">verified_descendant_statements_as_jwt</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">ta_ec</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ta_ec</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="TrustChainBuilder.start">
+<a class="viewcode-back" href="../../../rst/pyeudiw.federation.html#pyeudiw.federation.trust_chain_builder.TrustChainBuilder.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the subject (leaf) configuration and starts</span>
+<span class="sd">        chain discovery.</span>
+
+<span class="sd">        :returns: the list containing the ECs</span>
+<span class="sd">        :rtype: list[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># self.get_trust_anchor_configuration()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_subject_configuration</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">discovery</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exp_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The exp filed converted in datetime format&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">return</span> <span class="n">datetime_from_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

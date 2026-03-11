@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp.authorization_response &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp.authorization_response</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.backends.openid4vp.authorization_response</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cryptojwt.jwe.exception</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWEDecryptionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSVerificationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jwe_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWEHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_jwe_format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AuthRespParsingException</span><span class="p">,</span>
+    <span class="n">AuthRespValidationException</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuthorizationResponseParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.response</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AuthorizeResponseDirectPostJwt</span><span class="p">,</span>
+    <span class="n">AuthorizeResponsePayload</span><span class="p">,</span>
+    <span class="n">ResponseMode</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">_S</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_S&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="normalize_jsonstring_to_string">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.normalize_jsonstring_to_string">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_jsonstring_to_string</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">_S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_S</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize s from string (or list of string) or JSON String (or list</span>
+<span class="sd">    of JSON String) to simply string (or list of string).</span>
+<span class="sd">    For example, this would map a vp_token from JSON String &quot;ey...Ui5&quot; to</span>
+<span class="sd">    the naitve string ey...Ui5 (note the missing quote &quot;).</span>
+
+<span class="sd">    Note that this method is NOT intended to parse JSON String.</span>
+<span class="sd">    For that purpose, json.loads should be preferred. Instead, this method</span>
+<span class="sd">    should be used when an imput might be a string OR a JSON string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">s</span></div>
+
+
+
+<div class="viewcode-block" id="detect_response_mode">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.detect_response_mode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_response_mode</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseMode</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Try to make inference on which response mode type this is based on the</span>
+<span class="sd">    content of an http request body</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;response&quot;</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post_jwt</span>
+    <span class="k">if</span> <span class="s2">&quot;vp_token&quot;</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post</span>
+    <span class="k">if</span> <span class="s2">&quot;error&quot;</span> <span class="ow">in</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">error</span>
+    <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;HTTP POST request body does not contain a recognized openid4vp response mode&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_http_post_headers</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :raises AuthRespParsingException: if the request in the context does not \</span>
+<span class="sd">        look like a POST request</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">http_method</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">request_method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">request_method</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">http_method</span> <span class="o">!=</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;HTTP method [</span><span class="si">{</span><span class="n">http_method</span><span class="si">}</span><span class="s2">] not supported&quot;</span>
+        <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="n">err_msg</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">)</span>
+
+    <span class="c1"># missing header is ok; but if it&#39;s there, it must be correct</span>
+    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">http_headers</span><span class="p">:</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">http_headers</span><span class="p">[</span><span class="s2">&quot;HTTP_CONTENT_TYPE&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;application/x-www-form-urlencoded&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;HTTP content type [</span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">] not supported&quot;</span>
+            <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="n">err_msg</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DirectPostParser">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DirectPostParser</span><span class="p">(</span><span class="n">AuthorizationResponseParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DirectPostParser parses authorization responses sent as body of an</span>
+<span class="sd">    http post request.</span>
+
+<span class="sd">    The reference specification is defined here</span>
+<span class="sd">        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="DirectPostParser.parse_and_validate">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostParser.parse_and_validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_and_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AuthorizeResponsePayload</span><span class="p">:</span>
+        <span class="n">_check_http_post_headers</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="n">resp_data</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">vp_token</span> <span class="o">:=</span> <span class="n">resp_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vp_token&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="c1"># vp_token: JSON string for DCQL dict, or string/list of strings</span>
+                <span class="n">vp_token</span> <span class="o">=</span> <span class="n">normalize_jsonstring_to_string</span><span class="p">(</span><span class="n">vp_token</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vp_token</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vp_token</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">):</span>
+                    <span class="n">vp_token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">vp_token</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s2">&quot;vp_token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp_token</span>
+            <span class="k">if</span> <span class="n">state</span> <span class="o">:=</span> <span class="n">resp_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="k">return</span> <span class="n">AuthorizeResponsePayload</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post request body&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DirectPostJwtJweParser">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DirectPostJwtJweParser</span><span class="p">(</span><span class="n">AuthorizationResponseParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DirectPostJwtJweParser parses authorization responses sent as body of an</span>
+<span class="sd">    http post request. The parser expectes a response wrapped in a jwt; more</span>
+<span class="sd">    precisely the managed response is x-www-form-urlencoded in the form of</span>
+<span class="sd">    response=&lt;jwt&gt; where &lt;jwt&gt; is an **encrypted but not signed** response.</span>
+<span class="sd">    As such, the class required a jwe helper with the correct key able to</span>
+<span class="sd">    decrypt the jwe.</span>
+
+<span class="sd">    The reference specification is defined here</span>
+<span class="sd">        https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_postjw</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jwe_decryptor</span><span class="p">:</span> <span class="n">JWEHelper</span><span class="p">,</span> <span class="n">jws_verifier</span><span class="p">:</span> <span class="n">JWSHelper</span><span class="p">,</span> <span class="n">enc_alg_supported</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">enc_enc_supported</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jwe_decryptor</span> <span class="o">=</span> <span class="n">jwe_decryptor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jws_verifier</span> <span class="o">=</span> <span class="n">jws_verifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enc_alg_supported</span> <span class="o">=</span> <span class="n">enc_alg_supported</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enc_enc_supported</span> <span class="o">=</span> <span class="n">enc_enc_supported</span>
+
+<div class="viewcode-block" id="DirectPostJwtJweParser.parse_and_validate">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_response.DirectPostJwtJweParser.parse_and_validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_and_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AuthorizeResponsePayload</span><span class="p">:</span>
+        <span class="n">_check_http_post_headers</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">resp_data_raw</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">request</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp_data</span> <span class="o">=</span> <span class="n">AuthorizeResponseDirectPostJwt</span><span class="p">(</span><span class="o">**</span><span class="n">resp_data_raw</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt request body&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_jwe_format</span><span class="p">(</span><span class="n">resp_data</span><span class="o">.</span><span class="n">response</span><span class="p">):</span>
+            <span class="c1"># if the response is a JWE, we need to decrypt it</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">resp_data</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alg&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_alg_supported</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespValidationException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt: alg not supported&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enc&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_enc_supported</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespValidationException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt: enc not supported&quot;</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwe_decryptor</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">resp_data</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">JWEDecryptionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt request body: not a jwe&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">cryptojwt</span><span class="o">.</span><span class="n">jwe</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">DecryptionFailed</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespValidationException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt: unable to decrypt token&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># unfortunately library cryptojwt is not very exhaustive on why an operation failed...</span>
+                <span class="k">raise</span> <span class="n">AuthRespValidationException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt request body&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if the response is a JWT, we just decode it</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jws_verifier</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">resp_data</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">JWSVerificationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt request body: cannot validate the jws&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span><span class="s2">&quot;invalid data in direct_post.jwt request body: not a jwt&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="c1"># iss, exp and aud MUST be OMITTED in the JWT Claims Set of the JWE</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;iss&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;exp&quot;</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span>
+                <span class="s2">&quot;response token contains an unexpected lifetime claims&quot;</span><span class="p">,</span>
+                <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;wallet mishbeahiour: JWe with bad claims&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># DCQL flow: only state and vp_token are used</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">payload</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;vp_token&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">}</span>
+            <span class="k">return</span> <span class="n">AuthorizeResponsePayload</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">AuthRespParsingException</span><span class="p">(</span>
+                <span class="s2">&quot;invalid data in the direct_post.jwt: token payload does not have the expected claims&quot;</span><span class="p">,</span>
+                <span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

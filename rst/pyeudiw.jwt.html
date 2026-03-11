@@ -1,0 +1,670 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.jwt package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.oauth2 package" href="pyeudiw.oauth2.html" />
+    <link rel="prev" title="pyeudiw.jwk.schemas package" href="pyeudiw.jwk.schemas.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.jwt package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.jwt.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-jwt-package">
+<h1>pyeudiw.jwt package<a class="headerlink" href="#pyeudiw-jwt-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.jwt.exceptions">
+<span id="pyeudiw-jwt-exceptions-module"></span><h2>pyeudiw.jwt.exceptions module<a class="headerlink" href="#module-pyeudiw.jwt.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWEDecryptionError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWEDecryptionError</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWEDecryptionError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWEDecryptionError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWEEncryptionError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWEEncryptionError</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWEEncryptionError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWEEncryptionError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWSSigningError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWSSigningError</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWSSigningError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWSSigningError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWSVerificationError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWSVerificationError</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWSVerificationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWSVerificationError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWTDecodeError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWTDecodeError</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWTDecodeError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWTDecodeError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.JWTInvalidElementPosition">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">JWTInvalidElementPosition</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#JWTInvalidElementPosition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.JWTInvalidElementPosition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.jwt.exceptions.LifetimeException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.exceptions.</span></span><span class="sig-name descname"><span class="pre">LifetimeException</span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/exceptions.html#LifetimeException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.exceptions.LifetimeException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyeudiw.html#pyeudiw.exceptions.ValidationError" title="pyeudiw.exceptions.ValidationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValidationError</span></code></a></p>
+<p>Exception raised for errors related to lifetime validation.</p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.helper">
+<span id="pyeudiw-jwt-helper-module"></span><h2>pyeudiw.jwt.helper module<a class="headerlink" href="#module-pyeudiw.jwt.helper" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.JWHelperInterface">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">JWHelperInterface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#JWHelperInterface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.JWHelperInterface" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.JWHelperInterface.get_jwk_by_kid">
+<span class="sig-name descname"><span class="pre">get_jwk_by_kid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#JWHelperInterface.get_jwk_by_kid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.JWHelperInterface.get_jwk_by_kid" title="Link to this definition"></a></dt>
+<dd><p>Returns the JWK with the given kid from the list of JWKs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kid</strong> (<em>str</em>) – The key ID of the JWK to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The JWK with the given kid, or None if not found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>KeyLike | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.find_self_contained_key">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">find_self_contained_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pyeudiw.jwk.html#pyeudiw.jwk.JWK" title="pyeudiw.jwk.JWK"><span class="pre">JWK</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#find_self_contained_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.find_self_contained_key" title="Link to this definition"></a></dt>
+<dd><p>Function find_self_contained_key evaluates a token header and attempts
+at finding a self contained key (a self contained contained header is a
+header that contains the full public material of the verifying key that
+should be used to verify a token).</p>
+<p>Currently recognized self contained headers are x5c, jwk, jku, x5u, x5t
+and trust_chain.
+It is responsability of the called to decide wether a self contained
+key representation is to be trusted.</p>
+<p>The functions returns the key and the set of claim used to infer the
+self contained key. In no self contained key can be found, None is
+returned instead.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.is_jwt_expired">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">is_jwt_expired</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#is_jwt_expired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.is_jwt_expired" title="Link to this definition"></a></dt>
+<dd><p>Check if a JWT token is expired.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token</strong> (<em>str</em>) – The JWT token.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the token is expired, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.is_payload_expired">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">is_payload_expired</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token_payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#is_payload_expired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.is_payload_expired" title="Link to this definition"></a></dt>
+<dd><p>Check if a JWT payload is expired.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token_payload</strong> (<em>dict</em>) – The decoded JWT payload.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the payload is expired, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.serialize_payload">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">serialize_payload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#serialize_payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.serialize_payload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.helper.validate_jwt_timestamps_claims">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.helper.</span></span><span class="sig-name descname"><span class="pre">validate_jwt_timestamps_claims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/helper.html#validate_jwt_timestamps_claims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.helper.validate_jwt_timestamps_claims" title="Link to this definition"></a></dt>
+<dd><p>Validates the ‘iat’, ‘exp’, and ‘nbf’ claims in a JWT payload, comparing
+them with the current time.
+The function assumes that the time in the payload claims is expressed as
+seconds since the epoch, as required by rfc 7519.
+To account for a clock skew between the token issuer and the token
+verifier, the optional argument tolerance_s can be used. As suggested by
+rfc 7519, it is recommended to keep the tolerance window to no more than
+a few minutes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>payload</strong> (<em>dict</em>) – The decoded JWT payload.</p></li>
+<li><p><strong>tolerance_s</strong> (<em>int</em>) – optional tolerance window, in seconds, which can be         used to account for some clock skew between the token issuer and the         token verifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.LifetimeException" title="pyeudiw.jwt.exceptions.LifetimeException"><strong>LifetimeException</strong></a> – If any of the claims are invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.jwe_helper">
+<span id="pyeudiw-jwt-jwe-helper-module"></span><h2>pyeudiw.jwt.jwe_helper module<a class="headerlink" href="#module-pyeudiw.jwt.jwe_helper" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jwe_helper.JWEHelper">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.jwe_helper.</span></span><span class="sig-name descname"><span class="pre">JWEHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/jwt/jwe_helper.html#JWEHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jwe_helper.JWEHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.jwt.helper.JWHelperInterface" title="pyeudiw.jwt.helper.JWHelperInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">JWHelperInterface</span></code></a></p>
+<p>The helper class for work with JWEs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jwe_helper.JWEHelper.decrypt">
+<span class="sig-name descname"><span class="pre">decrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/jwe_helper.html#JWEHelper.decrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jwe_helper.JWEHelper.decrypt" title="Link to this definition"></a></dt>
+<dd><p>Generate a dict containing the content of decrypted JWE string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwe</strong> (<em>str</em>) – A string representing the jwe.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWEDecryptionError" title="pyeudiw.jwt.exceptions.JWEDecryptionError"><strong>JWEDecryptionError</strong></a> – if jwe field is not in a JWE Format</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dict that represents the payload of decrypted JWE.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jwe_helper.JWEHelper.encrypt">
+<span class="sig-name descname"><span class="pre">encrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plain_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/jwe_helper.html#JWEHelper.encrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jwe_helper.JWEHelper.encrypt" title="Link to this definition"></a></dt>
+<dd><p>Generate a encrypted JWE string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plain_dict</strong> (<em>Union</em><em>[</em><em>dict</em><em>, </em><em>str</em><em>, </em><em>int</em><em>, </em><em>None</em><em>]</em>) – The payload of JWE.</p></li>
+<li><p><strong>kwargs</strong> – Other optional fields to generate the JWE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A string that represents the JWE.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.jws_helper">
+<span id="pyeudiw-jwt-jws-helper-module"></span><h2>pyeudiw.jwt.jws_helper module<a class="headerlink" href="#module-pyeudiw.jwt.jws_helper" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jws_helper.JWSHelper">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.jws_helper.</span></span><span class="sig-name descname"><span class="pre">JWSHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OKPKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SYMKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/jwt/jws_helper.html#JWSHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jws_helper.JWSHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.jwt.helper.JWHelperInterface" title="pyeudiw.jwt.helper.JWHelperInterface"><code class="xref py py-class docutils literal notranslate"><span class="pre">JWHelperInterface</span></code></a></p>
+<p>Helper class for working with JWS, extended to support SD-JWT.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jws_helper.JWSHelper.is_sd_jwt">
+<span class="sig-name descname"><span class="pre">is_sd_jwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/jws_helper.html#JWSHelper.is_sd_jwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jws_helper.JWSHelper.is_sd_jwt" title="Link to this definition"></a></dt>
+<dd><p>Determines if the provided JWT is an SD-JWT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token</strong> (<em>str</em>) – The JWT token to inspect.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the token is an SD-JWT, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jws_helper.JWSHelper.sign">
+<span class="sig-name descname"><span class="pre">sign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plain_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unprotected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialization_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'compact'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'json'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'compact'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signing_kid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kid_in_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signing_algs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/jws_helper.html#JWSHelper.sign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jws_helper.JWSHelper.sign" title="Link to this definition"></a></dt>
+<dd><p>Generate a signed JWS with the given payload and header.
+This method provides no guarantee that the input header is fully preserved,
+not does it guarantee that some optional but usually found header such
+as ‘typ’ and ‘kid’ are present.
+If the signing jwk has a kid claim, and the JWS header does not a have a kid claim,
+a kid matching the signing key ‘kid’ can be injected in the protected header
+by setting kid_in_header=True.</p>
+<p>Header claim ‘alg’ is always added as it is mandated by RFC7515
+and, if present, will be overridden with the actual ‘alg’ used for singing.
+This is done to make sure that untrusted alg values, such as none, cannot be used.</p>
+<p>The signing key is selected among the constructor jwks based on internal
+heuristics. The user can force with key he can attempt to use by
+setting signing_key, which will then be looked in the internal set
+of available keys.</p>
+<p>If the header already contains indication of a key, such as ‘kid’,
+‘trust_chain’ and ‘x5c’, the method will attempt to match the signing
+key among the available keys based on such claims, but there is no
+guarantee that the correct key will be selected. We assume that is
+it responsibility of the class initiator to make those checks. To
+avoid any possible ambiguity, it is suggested to initilize the class
+with one (signing) key only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plain_dict</strong> – The payload to be signed.</p></li>
+<li><p><strong>protected</strong> – Protected header for the JWS.</p></li>
+<li><p><strong>unprotected</strong> – Unprotected header for the JWS (only for JSON serialization).</p></li>
+<li><p><strong>serialization_format</strong> – The format of the signature (compact or JSON).</p></li>
+<li><p><strong>signing_kid</strong> – The key ID for signing.</p></li>
+<li><p><strong>kid_in_header</strong> – If True, include the key ID in the token header.</p></li>
+<li><p><strong>kwargs</strong> – Additional parameters for the signing process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The signed JWS token.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWSSigningError" title="pyeudiw.jwt.exceptions.JWSSigningError"><strong>JWSSigningError</strong></a> – if there is any signing error, such as the signing
+key not being suitable for such a cryptographic operation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.jws_helper.JWSHelper.verify">
+<span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">60</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/jws_helper.html#JWSHelper.verify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.jws_helper.JWSHelper.verify" title="Link to this definition"></a></dt>
+<dd><p>Verify a JWS with one of the initialized keys and validate standard
+standard claims if possible, such as ‘iat’ and ‘exp’.
+Verification of tokens in JSON serialization format is not supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jwt</strong> – The JWS token to be verified.</p></li>
+<li><p><strong>tolerance_s</strong> (<em>int</em>) – optional tolerance window, in seconds, which can be             used to account for some clock skew between the token issuer and the             token verifier when validating lifetime claims.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – if jws field is not in compact jws
+format or if the signature is invalid</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the decoded payload of the verified tokens.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict | bytes | str | Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.log">
+<span id="pyeudiw-jwt-log-module"></span><h2>pyeudiw.jwt.log module<a class="headerlink" href="#module-pyeudiw.jwt.log" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.jwt.parse">
+<span id="pyeudiw-jwt-parse-module"></span><h2>pyeudiw.jwt.parse module<a class="headerlink" href="#module-pyeudiw.jwt.parse" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.parse.</span></span><span class="sig-name descname"><span class="pre">DecodedJwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/jwt/parse.html#DecodedJwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Schema class for a decoded jwt.
+This class is not meant to be instantiated directly. Use instead
+the static method parse(str) -&gt; DecodedJwt.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt.header">
+<span class="sig-name descname"><span class="pre">header</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt.header" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt.jwt">
+<span class="sig-name descname"><span class="pre">jwt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt.jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt.parse">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyeudiw.jwt.parse.DecodedJwt" title="pyeudiw.jwt.parse.DecodedJwt"><span class="pre">DecodedJwt</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/parse.html#DecodedJwt.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt.parse" title="Link to this definition"></a></dt>
+<dd><p>Parse a token into its components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if the token is not a jwt</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>jws</strong> (<em>str</em>) – the token to parse</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt.payload">
+<span class="sig-name descname"><span class="pre">payload</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt.payload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.DecodedJwt.signature">
+<span class="sig-name descname"><span class="pre">signature</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.jwt.parse.DecodedJwt.signature" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.parse.unsafe_parse_jws">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.parse.</span></span><span class="sig-name descname"><span class="pre">unsafe_parse_jws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyeudiw.jwt.parse.DecodedJwt" title="pyeudiw.jwt.parse.DecodedJwt"><span class="pre">DecodedJwt</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/parse.html#unsafe_parse_jws"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.parse.unsafe_parse_jws" title="Link to this definition"></a></dt>
+<dd><p>Parse a token into its components.
+Correctness of this function is not guaranteed when the token is in a
+derived format, such as sd-jwt and jwe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>token</strong> (<em>str</em>) – the token to parse</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTDecodeError" title="pyeudiw.jwt.exceptions.JWTDecodeError"><strong>JWTDecodeError</strong></a> – if the token is not a jwt</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTInvalidElementPosition" title="pyeudiw.jwt.exceptions.JWTInvalidElementPosition"><strong>JWTInvalidElementPosition</strong></a> – if the token is not a jwt</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the decoded jwt</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.jwt.parse.DecodedJwt" title="pyeudiw.jwt.parse.DecodedJwt">DecodedJwt</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.utils">
+<span id="pyeudiw-jwt-utils-module"></span><h2>pyeudiw.jwt.utils module<a class="headerlink" href="#module-pyeudiw.jwt.utils" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.base64_urldecode">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">base64_urldecode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#base64_urldecode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.base64_urldecode" title="Link to this definition"></a></dt>
+<dd><p>Urlsafe base64 decoding. This function will handle missing
+padding symbols.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the decoded data in bytes, format, convert to str use method ‘.decode(“utf-8”)’ on result</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.base64_urlencode">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">base64_urlencode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#base64_urlencode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.base64_urlencode" title="Link to this definition"></a></dt>
+<dd><p>Urlsafe base64 encoding without padding symbols</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the encooded data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.decode_jwt_element">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">decode_jwt_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#decode_jwt_element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.decode_jwt_element" title="Link to this definition"></a></dt>
+<dd><p>Decodes the element in a determinated position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jwt</strong> (<em>str</em>) – a string that represents the jwt.</p></li>
+<li><p><strong>position</strong> (<em>int</em>) – the position of segment to unpad.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTInvalidElementPosition" title="pyeudiw.jwt.exceptions.JWTInvalidElementPosition"><strong>JWTInvalidElementPosition</strong></a> – If the JWT element position is greather then one or less of 0</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTDecodeError" title="pyeudiw.jwt.exceptions.JWTDecodeError"><strong>JWTDecodeError</strong></a> – If the JWT element cannot be decoded.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dict with the content of the decoded section.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.decode_jwt_header">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">decode_jwt_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#decode_jwt_header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.decode_jwt_header" title="Link to this definition"></a></dt>
+<dd><p>Decodes the jwt header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt</strong> (<em>str</em>) – a string that represents the jwt.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTDecodeError" title="pyeudiw.jwt.exceptions.JWTDecodeError"><strong>JWTDecodeError</strong></a> – If the JWT header cannot be decoded.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTInvalidElementPosition" title="pyeudiw.jwt.exceptions.JWTInvalidElementPosition"><strong>JWTInvalidElementPosition</strong></a> – If the JWT element position is missing</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dict with the content of the decoded header.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.decode_jwt_payload">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">decode_jwt_payload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#decode_jwt_payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.decode_jwt_payload" title="Link to this definition"></a></dt>
+<dd><p>Decodes the jwt payload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt</strong> (<em>str</em>) – a string that represents the jwt.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTDecodeError" title="pyeudiw.jwt.exceptions.JWTDecodeError"><strong>JWTDecodeError</strong></a> – If the JWT header cannot be decoded.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWTInvalidElementPosition" title="pyeudiw.jwt.exceptions.JWTInvalidElementPosition"><strong>JWTInvalidElementPosition</strong></a> – If the JWT element position is missing</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dict with the content of the decoded payload.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.is_jwe_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">is_jwe_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#is_jwe_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.is_jwe_format" title="Link to this definition"></a></dt>
+<dd><p>Check if a string is in JWE format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt</strong> (<em>str</em>) – a string that represents the jwt.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the string is a JWE, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.utils.is_jwt_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.utils.</span></span><span class="sig-name descname"><span class="pre">is_jwt_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/utils.html#is_jwt_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.utils.is_jwt_format" title="Link to this definition"></a></dt>
+<dd><p>Check if a string is in JWT format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jwt</strong> (<em>str</em>) – a string that represents the jwt.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the string is a JWT, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt.verification">
+<span id="pyeudiw-jwt-verification-module"></span><h2>pyeudiw.jwt.verification module<a class="headerlink" href="#module-pyeudiw.jwt.verification" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.jwt.verification.verify_jws_with_key">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.jwt.verification.</span></span><span class="sig-name descname"><span class="pre">verify_jws_with_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jws</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">JWK</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/jwt/verification.html#verify_jws_with_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.jwt.verification.verify_jws_with_key" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyeudiw.jwt.exceptions.JWSVerificationError" title="pyeudiw.jwt.exceptions.JWSVerificationError"><strong>JWSVerificationError</strong></a> – is signature verification fails for <em>any</em> reason</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.jwt">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.jwt" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.jwk.schemas.html" class="btn btn-neutral float-left" title="pyeudiw.jwk.schemas package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.oauth2.html" class="btn btn-neutral float-right" title="pyeudiw.oauth2 package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

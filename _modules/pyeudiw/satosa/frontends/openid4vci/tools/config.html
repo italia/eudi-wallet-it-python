@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.frontends.openid4vci.tools.config &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.frontends.openid4vci.tools.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.frontends.openid4vci.tools.config</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.schemas.jwt</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWTConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.frontends.openid4vci.models.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">PyeudiwFrontendConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.schemas.credential_configurations</span><span class="w"> </span><span class="kn">import</span> <span class="n">CredentialConfigurationsConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.schemas.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">OauthAuthorizationServerMetadata</span><span class="p">,</span> <span class="n">OpenidCredentialIssuerMetadata</span><span class="p">,</span> <span class="n">CredentialConfiguration</span>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Openid4VciFrontendConfigUtils</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility class to simplify access to OpenID4VCI frontend configuration data.</span>
+
+<span class="sd">    This class wraps the frontend configuration and exposes convenient</span>
+<span class="sd">    methods to retrieve JWT settings, OAuth authorization server metadata,</span>
+<span class="sd">    OpenID credential issuer metadata, and supported credential configurations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (Any): The configuration object or dictionary.</span>
+<span class="sd">                      If not already an instance of `PyeudiwFrontendConfig`,</span>
+<span class="sd">                      it will be parsed into one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">PyeudiwFrontendConfig</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PyeudiwFrontendConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_jwt">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_jwt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_jwt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWTConfig</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">jwt</span></div>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_jwt_default_sig_alg">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_jwt_default_sig_alg">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_jwt_default_sig_alg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">jwt</span><span class="o">.</span><span class="n">default_sig_alg</span></div>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_oauth_authorization_server">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_oauth_authorization_server">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_oauth_authorization_server</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OauthAuthorizationServerMetadata</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">oauth_authorization_server</span></div>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_openid_credential_issuer">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_openid_credential_issuer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_openid_credential_issuer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OpenidCredentialIssuerMetadata</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">openid_credential_issuer</span></div>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_credential_configurations_supported">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_credential_configurations_supported">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_credential_configurations_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CredentialConfiguration</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ccs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_openid_credential_issuer</span><span class="p">()</span><span class="o">.</span><span class="n">credential_configurations_supported</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ccs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">CredentialConfiguration</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ccs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+
+<div class="viewcode-block" id="Openid4VciFrontendConfigUtils.get_credential_configurations">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.tools.html#pyeudiw.satosa.frontends.openid4vci.tools.config.Openid4VciFrontendConfigUtils.get_credential_configurations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_credential_configurations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CredentialConfigurationsConfig</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">credential_configurations</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

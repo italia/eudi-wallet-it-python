@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.trust.handler.federation &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.trust.handler.federation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.trust.handler.federation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustChainPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.trust_chain_validator</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticTrustChainValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_payload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.utils.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">EntryNotFound</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.base_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">exp_from_now</span><span class="p">,</span> <span class="n">iat_now</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingProtocolSpecificJwks</span><span class="p">,</span> <span class="n">UnknownTrustAnchor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.handler.commons</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_HTTPC_PARAMS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.handler.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustHandlerInterface</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.model.trust_source</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustSourceData</span><span class="p">,</span> <span class="n">TrustEvaluationType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.federation.statements</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_entity_configurations</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">_ISSUER_METADATA_TYPE</span> <span class="o">=</span> <span class="s2">&quot;openid_credential_issuer&quot;</span>
+
+
+<div class="viewcode-block" id="FederationHandler">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FederationHandler</span><span class="p">(</span><span class="n">TrustHandlerInterface</span><span class="p">,</span> <span class="n">BaseLogger</span><span class="p">):</span>
+
+    <span class="n">_TRUST_TYPE</span> <span class="o">=</span> <span class="s2">&quot;federation&quot;</span>
+    <span class="n">_TRUST_PARAMETER_NAME</span> <span class="o">=</span> <span class="s2">&quot;trust_chain&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">authority_hints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">trust_anchors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="n">default_sig_alg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">federation_jwks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]],</span>
+        <span class="n">trust_marks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">federation_entity_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_configuration_exp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">800</span><span class="p">,</span>
+        <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">DEFAULT_HTTPC_PARAMS</span><span class="p">,</span>
+        <span class="n">cache_ttl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">metadata_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_ISSUER_METADATA_TYPE</span><span class="p">,</span>
+        <span class="n">include_issued_jwt_header_param</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span> <span class="o">=</span> <span class="n">httpc_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_ttl</span> <span class="o">=</span> <span class="n">cache_ttl</span>
+        <span class="c1"># TODO - this MUST be handled in httpc_params ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_async_calls</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_type</span> <span class="o">=</span> <span class="n">metadata_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">authority_hints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">authority_hints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">trust_anchors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_sig_alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">default_sig_alg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">federation_jwks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="n">federation_jwks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_marks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">trust_marks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">federation_entity_metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">federation_entity_metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">federation_entity_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iss&quot;</span><span class="p">,</span> <span class="n">client_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration_exp</span> <span class="o">=</span> <span class="n">entity_configuration_exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_issued_jwt_header_param</span> <span class="o">=</span> <span class="n">include_issued_jwt_header_param</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">federation_public_jwks</span> <span class="o">=</span> <span class="p">[</span><span class="n">JWK</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">as_public_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_jwks</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keys&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;keys&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_jwks</span> <span class="o">=</span> <span class="p">[</span><span class="n">JWK</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">as_public_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_jwks</span><span class="p">]}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_policy_resolver</span> <span class="o">=</span> <span class="n">TrustChainPolicy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust - FederationHandler. </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> was provided in the init but not handled.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FederationHandler.extract_and_update_trust_materials">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.extract_and_update_trust_materials">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_and_update_trust_materials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">issuer</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">trust_source</span></div>
+
+
+<div class="viewcode-block" id="FederationHandler.get_metadata">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.get_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">issuer</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">trust_source</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">entity_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the entity configuration as a JWT.</span>
+
+<span class="sd">        :return: The entity configuration</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration_as_dict</span>
+        <span class="n">_jwk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">jwshelper</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="n">_jwk</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jwshelper</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span>
+            <span class="n">protected</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_sig_alg</span><span class="p">,</span>
+                <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">_jwk</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;typ&quot;</span><span class="p">:</span> <span class="s2">&quot;entity-statement+jwt&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">plain_dict</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">entity_configuration_as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the entity configuration as a dictionary.&quot;&quot;&quot;</span>
+
+        <span class="n">ec_payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">exp_from_now</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration_exp</span><span class="p">),</span>
+            <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">iat_now</span><span class="p">(),</span>
+            <span class="s2">&quot;iss&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="s2">&quot;sub&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+            <span class="s2">&quot;jwks&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_public_jwks</span><span class="p">},</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata_type</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+                <span class="s2">&quot;federation_entity&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_entity_metadata</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;authority_hints&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">authority_hints</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">ec_payload</span>
+
+<div class="viewcode-block" id="FederationHandler.entity_configuration_endpoint">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.entity_configuration_endpoint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">entity_configuration_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Entity Configuration endpoint.</span>
+
+<span class="sd">        :param context: The current context</span>
+<span class="sd">        :type context: Context</span>
+
+<span class="sd">        :return: The entity configuration</span>
+<span class="sd">        :rtype: Response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">qs_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration_as_dict</span><span class="p">),</span>
+                <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">,</span>
+                <span class="n">content</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="s2">&quot;200&quot;</span><span class="p">,</span>
+                <span class="n">content</span><span class="o">=</span><span class="s2">&quot;application/entity-statement+jwt&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FederationHandler.build_metadata_endpoints">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.build_metadata_endpoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_metadata_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">entity_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Context</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Response</span><span class="p">]]]:</span>
+
+        <span class="n">metadata_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">backend_name</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/.well-known/openid-federation&#39;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_configuration</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">metadata_response_fn</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[(</span><span class="n">metadata_path</span><span class="p">,</span> <span class="n">metadata_response_fn</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="FederationHandler.get_handled_trust_material_name">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.get_handled_trust_material_name">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_handled_trust_material_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FederationHandler</span><span class="o">.</span><span class="n">_TRUST_PARAMETER_NAME</span></div>
+
+
+<div class="viewcode-block" id="FederationHandler.extract_jwt_header_trust_parameters">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.extract_jwt_header_trust_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_jwt_header_trust_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">tp</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">trust_source</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FederationHandler</span><span class="o">.</span><span class="n">_TRUST_TYPE</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">trust_chain</span> <span class="o">:=</span> <span class="n">tp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FederationHandler</span><span class="o">.</span><span class="n">_TRUST_PARAMETER_NAME</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;trust_chain&quot;</span><span class="p">:</span> <span class="n">trust_chain</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="FederationHandler.validate_trust_material">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.federation.FederationHandler.validate_trust_material">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_trust_material</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">chain</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">TrustSourceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate the trust chain of the trust source.</span>
+
+<span class="sd">        :param trust_source: The trust source</span>
+<span class="sd">        :type trust_source: TrustSourceData</span>
+
+<span class="sd">        :returns: If the trust chain is valid</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_first_statement</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">trust_anchor_eid</span> <span class="o">=</span> <span class="n">_first_statement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iss&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trust_anchor_eid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnknownTrustAnchor</span><span class="p">(</span><span class="s2">&quot;Unknown Trust Anchor: can&#39;t find &#39;iss&#39; in the &quot;</span> <span class="sa">f</span><span class="s2">&quot;first entity statement: </span><span class="si">{</span><span class="n">_first_statement</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trust_anchor_eid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnknownTrustAnchor</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown Trust Anchor: &#39;</span><span class="si">{</span><span class="n">trust_anchor_eid</span><span class="si">}</span><span class="s2">&#39; is not &quot;</span> <span class="s2">&quot;a recognizable Trust Anchor.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span><span class="p">[</span><span class="n">trust_anchor_eid</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">jwks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span><span class="p">[</span><span class="n">trust_anchor_eid</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">trust_anchor</span> <span class="o">=</span> <span class="n">get_entity_configurations</span><span class="p">(</span><span class="n">trust_anchor_eid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">decoded_ec</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">trust_anchor</span><span class="p">[</span><span class="s2">&quot;federation&quot;</span><span class="p">][</span><span class="s2">&quot;entity_configuration&quot;</span><span class="p">])</span>
+                <span class="n">jwks</span> <span class="o">=</span> <span class="n">decoded_ec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jwks&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">UnknownTrustAnchor</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot fetch Trust Anchor &#39;</span><span class="si">{</span><span class="n">trust_anchor_eid</span><span class="si">}</span><span class="s2">&#39; entity configuration: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">jwks</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MissingProtocolSpecificJwks</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find any jwks in for the Trust Anchor &#39;</span><span class="si">{</span><span class="n">trust_anchor_eid</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">tc</span> <span class="o">=</span> <span class="n">StaticTrustChainValidator</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">jwks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span>
+
+        <span class="n">_is_valid</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_is_valid</span> <span class="o">=</span> <span class="n">tc</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">TimeValidationError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trust Chain </span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">entity_id</span><span class="si">}</span><span class="s2"> is expired&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot validate Trust Chain </span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">entity_id</span><span class="si">}</span><span class="s2"> for the following reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">db_chain</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_valid</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">db_chain</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">trust_source</span><span class="p">,</span> <span class="s2">&quot;federation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">trust_chain</span>
+
+                <span class="k">if</span> <span class="n">StaticTrustChainValidator</span><span class="p">(</span><span class="n">db_chain</span><span class="p">,</span> <span class="n">jwks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">httpc_params</span><span class="p">)</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">is_trusted</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_trusted</span><span class="p">,</span> <span class="n">trust_source</span>
+
+            <span class="k">except</span> <span class="p">(</span><span class="n">EntryNotFound</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                <span class="k">pass</span>
+
+            <span class="n">_is_valid</span> <span class="o">=</span> <span class="n">tc</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="n">leaf_jwks</span> <span class="o">=</span> <span class="n">decode_jwt_payload</span><span class="p">(</span><span class="n">chain</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jwks&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+        <span class="c1"># the good trust chain is then stored</span>
+        <span class="n">trust_source</span><span class="o">.</span><span class="n">add_trust_param</span><span class="p">(</span>
+            <span class="n">FederationHandler</span><span class="o">.</span><span class="n">_TRUST_TYPE</span><span class="p">,</span>
+            <span class="n">TrustEvaluationType</span><span class="p">(</span>
+                <span class="n">attribute_name</span><span class="o">=</span><span class="n">FederationHandler</span><span class="o">.</span><span class="n">_TRUST_PARAMETER_NAME</span><span class="p">,</span>
+                <span class="n">trust_chain</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span>
+                <span class="n">jwks</span><span class="o">=</span><span class="p">[</span><span class="n">JWK</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">jwk</span><span class="p">)</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">jwk</span> <span class="ow">in</span> <span class="n">leaf_jwks</span><span class="p">],</span>
+                <span class="n">expiration_date</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">trust_handler_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_is_valid</span><span class="p">,</span> <span class="n">trust_source</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

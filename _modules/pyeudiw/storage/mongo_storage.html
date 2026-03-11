@@ -1,0 +1,617 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.storage.mongo_storage &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.storage.mongo_storage</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.storage.mongo_storage</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pymongo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymongo.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">UpdateResult</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.base_storage</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseStorage</span><span class="p">,</span>
+    <span class="n">TrustType</span><span class="p">,</span>
+    <span class="n">trust_anchor_field_map</span><span class="p">,</span>
+    <span class="n">trust_attestation_field_map</span><span class="p">,</span>
+    <span class="n">trust_type_map</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChainNotExist</span><span class="p">,</span> <span class="n">StorageEntryUpdateFailed</span>
+
+
+<div class="viewcode-block" id="MongoStorage">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MongoStorage</span><span class="p">(</span><span class="n">BaseStorage</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">connection_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span> <span class="o">=</span> <span class="n">conf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_params</span> <span class="o">=</span> <span class="n">connection_params</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_session_retention_ttl</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data_ttl&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">server_info</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">pymongo</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">InvalidOperation</span><span class="p">,</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">AutoReconnect</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="c1"># MongoDB may drop connections under load (e.g. many test workers). Invalidate</span>
+            <span class="c1"># so the next _connect() creates a fresh client instead of reusing a dead socket.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_connection</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear client and db references so the next _connect() creates a fresh connection.</span>
+<span class="sd">        Used when MongoDB closes the connection (AutoReconnect / &quot;connection closed&quot;),</span>
+<span class="sd">        e.g. under load during pytest runs with multiple DBEngine instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_attestations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trust_sources</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_params</span> <span class="ow">or</span> <span class="p">{})</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;maxPoolSize&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">MongoClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_name&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_sessions_collection&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_attestations</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_anchors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trust_sources</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_sources_collection&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="MongoStorage.close">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_by_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with id </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_by_nonce_state">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_nonce_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_nonce_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span> <span class="s2">&quot;nonce&quot;</span><span class="p">:</span> <span class="n">nonce</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="p">:</span>
+            <span class="n">query</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
+
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with nonce </span><span class="si">{</span><span class="n">nonce</span><span class="si">}</span><span class="s2"> and state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_by_session_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_session_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">}</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with session id </span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_by_state_and_session_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_by_state_and_session_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_state_and_session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+            <span class="n">query</span><span class="p">[</span><span class="s2">&quot;session_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with state </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.init_session">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.init_session">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remote_flow_typ</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">,</span>
+            <span class="s2">&quot;creation_date&quot;</span><span class="p">:</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+            <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+            <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+            <span class="s2">&quot;remote_flow_typ&quot;</span><span class="p">:</span> <span class="n">remote_flow_typ</span><span class="p">,</span>
+            <span class="s2">&quot;finalized&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;internal_response&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">insert_one</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document_id</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.set_session_retention_ttl">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.set_session_retention_ttl">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_session_retention_ttl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ttl</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Runs in __init__; under load (e.g. second DBEngine in register_endpoints) the</span>
+        <span class="c1"># socket can be closed by MongoDB. Retry once with a fresh connection.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_do_set_ttl</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ttl</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">index_information</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;creation_date_1&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">drop_index</span><span class="p">(</span><span class="s2">&quot;creation_date_1&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">create_index</span><span class="p">([(</span><span class="s2">&quot;creation_date&quot;</span><span class="p">,</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">)],</span> <span class="n">expireAfterSeconds</span><span class="o">=</span><span class="n">ttl</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_do_set_ttl</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">pymongo</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">AutoReconnect</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;connection closed&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">raise</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_connection</span><span class="p">()</span>
+            <span class="n">_do_set_ttl</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_session_retention_ttl">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_session_retention_ttl">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_session_retention_ttl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">index_information</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;creation_date_1&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.has_session_retention_ttl">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_session_retention_ttl">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_session_retention_ttl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">index_information</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;creation_date_1&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_dpop_proof_and_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_dpop_proof_and_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dpop_proof_and_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dpop_proof</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">attestation</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UpdateResult</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">update_result</span><span class="p">:</span> <span class="n">UpdateResult</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">update_one</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;$set&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;dpop_proof&quot;</span><span class="p">:</span> <span class="n">dpop_proof</span><span class="p">,</span>
+                    <span class="s2">&quot;attestation&quot;</span><span class="p">:</span> <span class="n">attestation</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">update_result</span><span class="o">.</span><span class="n">matched_count</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">update_result</span><span class="o">.</span><span class="n">modified_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot update document </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">update_result</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.update_request_object">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_request_object">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_request_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request_object</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UpdateResult</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+        <span class="n">documentStatus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">update_one</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;$set&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;request_object&quot;</span><span class="p">:</span> <span class="n">request_object</span><span class="p">,</span>
+                    <span class="s2">&quot;nonce&quot;</span><span class="p">:</span> <span class="n">request_object</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">request_object</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">documentStatus</span><span class="o">.</span><span class="n">matched_count</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">documentStatus</span><span class="o">.</span><span class="n">modified_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot update document </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">documentStatus</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.set_finalized">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.set_finalized">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_finalized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">document_id</span><span class="p">)</span>
+
+        <span class="n">update_result</span><span class="p">:</span> <span class="n">UpdateResult</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">update_one</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;document_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;$set&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;finalized&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">update_result</span><span class="o">.</span><span class="n">matched_count</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># or update_result.modified_count != 1:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot update document </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">update_result</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.update_response_object">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_response_object">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_response_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">internal_response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">isError</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UpdateResult</span><span class="p">:</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_nonce_state</span><span class="p">(</span><span class="n">nonce</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+        <span class="n">document_id</span> <span class="o">=</span> <span class="n">document</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">]</span>
+
+        <span class="n">updated_data_label</span> <span class="o">=</span> <span class="s2">&quot;internal_response&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">isError</span> <span class="k">else</span> <span class="s2">&quot;error_response&quot;</span>
+
+        <span class="n">document_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">update_one</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">document_id</span><span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;$set&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">updated_data_label</span><span class="p">:</span> <span class="n">internal_response</span><span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document_status</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+        <span class="n">db_collection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">db_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s2">&quot;entity_id&quot;</span><span class="p">:</span> <span class="n">entity_id</span><span class="p">})</span>
+
+<div class="viewcode-block" id="MongoStorage.get_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_sources_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.get_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.get_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_has_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MongoStorage.has_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.has_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.has_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.has_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_sources_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_upsert_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">db_collection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+
+        <span class="n">document_status</span> <span class="o">=</span> <span class="n">db_collection</span><span class="o">.</span><span class="n">update_one</span><span class="p">({</span><span class="n">key_label</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">key_label</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;$set&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">},</span> <span class="n">upsert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">document_status</span><span class="o">.</span><span class="n">acknowledged</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">StorageEntryUpdateFailed</span><span class="p">(</span><span class="s2">&quot;Trust Anchor matched count is ZERO&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document_status</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_entry_by_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">db_collection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+
+        <span class="n">document</span> <span class="o">=</span> <span class="n">db_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="n">key_label</span><span class="p">:</span> <span class="n">key_value</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">document</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with </span><span class="si">{</span><span class="n">key_label</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">key_value</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">document</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_attestation_metadata</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="n">trust_name</span> <span class="o">=</span> <span class="n">trust_type_map</span><span class="p">[</span><span class="n">trust_type</span><span class="p">]</span>
+        <span class="n">trust_field</span> <span class="o">=</span> <span class="n">trust_attestation_field_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">trust_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">trust_entity</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">trust_name</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="n">trust_field</span> <span class="ow">and</span> <span class="n">attestation</span><span class="p">:</span>
+            <span class="n">trust_entity</span><span class="p">[</span><span class="n">trust_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">attestation</span>
+        <span class="k">if</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">trust_entity</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
+        <span class="k">if</span> <span class="n">jwks</span><span class="p">:</span>
+            <span class="n">trust_entity</span><span class="p">[</span><span class="s2">&quot;jwks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jwks</span>
+
+        <span class="n">entity</span><span class="p">[</span><span class="n">trust_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">trust_entity</span>
+
+        <span class="k">return</span> <span class="n">entity</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_anchor_metadata</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;entity_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">entity</span><span class="p">[</span><span class="s2">&quot;entity_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity_id</span>
+
+        <span class="n">trust_name</span> <span class="o">=</span> <span class="n">trust_type_map</span><span class="p">[</span><span class="n">trust_type</span><span class="p">]</span>
+        <span class="n">trust_field</span> <span class="o">=</span> <span class="n">trust_anchor_field_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">trust_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">trust_entity</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">trust_name</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="n">trust_field</span> <span class="ow">and</span> <span class="n">attestation</span><span class="p">:</span>
+            <span class="n">trust_entity</span><span class="p">[</span><span class="n">trust_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">attestation</span>
+        <span class="n">trust_entity</span><span class="p">[</span><span class="s2">&quot;exp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
+
+        <span class="n">entity</span><span class="p">[</span><span class="n">trust_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">trust_entity</span>
+
+        <span class="k">return</span> <span class="n">entity</span>
+
+<div class="viewcode-block" id="MongoStorage.upsert_session">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.upsert_session">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upsert_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span><span class="s2">&quot;session_id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_sessions_collection&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.search_session_by_field">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.search_session_by_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search_session_by_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entry_by_key</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_sessions_collection&quot;</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_attestation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;entity_id&quot;</span><span class="p">:</span> <span class="n">entity_id</span><span class="p">,</span>
+            <span class="s2">&quot;federation&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;x509&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;direct_trust_sd_jwt_vc&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+
+        <span class="n">updated_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attestation_metadata</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">attestation</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">jwks</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span>
+            <span class="s2">&quot;entity_id&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span>
+            <span class="n">updated_entity</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">entity_id</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span><span class="s2">&quot;entity_id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_sources_collection&quot;</span><span class="p">],</span> <span class="n">trust_source</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_trust_attestation_metadata">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_attestation_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_attestation_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">entity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document with entity_id </span><span class="si">{</span><span class="n">entity_id</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="n">entity</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="n">metadata_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ChainNotExist</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chain with entity id </span><span class="si">{</span><span class="n">entity_id</span><span class="si">}</span><span class="s2"> not exist&quot;</span><span class="p">)</span>
+
+        <span class="n">documentStatus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span><span class="s2">&quot;entity_id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">documentStatus</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_empty_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_empty_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_empty_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;entity_id&quot;</span><span class="p">:</span> <span class="n">entity_id</span><span class="p">,</span> <span class="s2">&quot;federation&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;x509&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span>
+            <span class="s2">&quot;entity_id&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">],</span>
+            <span class="n">entity</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">entity_id</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.add_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.add_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_anchor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_configuration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;entity_id&quot;</span><span class="p">:</span> <span class="n">entity_id</span><span class="p">,</span> <span class="s2">&quot;federation&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;x509&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="n">updated_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_anchor_metadata</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">entity_configuration</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span>
+            <span class="s2">&quot;entity_id&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">],</span>
+            <span class="n">updated_entity</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">entity_id</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.update_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_trust_attestation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">old_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">upd_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attestation_metadata</span><span class="p">(</span><span class="n">old_entity</span><span class="p">,</span> <span class="n">attestation</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">jwks</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span>
+            <span class="s2">&quot;entity_id&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span>
+            <span class="n">upd_entity</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoStorage.update_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.mongo_storage.MongoStorage.update_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_trust_anchor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_configuration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">old_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_entity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">],</span> <span class="n">entity_id</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">upd_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_anchor_metadata</span><span class="p">(</span><span class="n">old_entity</span><span class="p">,</span> <span class="n">entity_configuration</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_trust_anchor</span><span class="p">(</span><span class="n">entity_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ChainNotExist</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chain with entity id </span><span class="si">{</span><span class="n">entity_id</span><span class="si">}</span><span class="s2"> not exist&quot;</span><span class="p">)</span>
+
+        <span class="n">documentStatus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upsert_entry</span><span class="p">(</span><span class="s2">&quot;entity_id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">],</span> <span class="n">upd_entity</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">documentStatus</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

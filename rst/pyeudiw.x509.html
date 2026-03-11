@@ -1,0 +1,739 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.x509 package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="pyeudiw.wallet_instance_attestation package" href="pyeudiw.wallet_instance_attestation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.x509 package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.x509.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-x509-package">
+<h1>pyeudiw.x509 package<a class="headerlink" href="#pyeudiw-x509-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.x509.chain_builder">
+<span id="pyeudiw-x509-chain-builder-module"></span><h2>pyeudiw.x509.chain_builder module<a class="headerlink" href="#module-pyeudiw.x509.chain_builder" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.x509.chain_builder.ChainBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.chain_builder.</span></span><span class="sig-name descname"><span class="pre">ChainBuilder</span></span><a class="reference internal" href="../_modules/pyeudiw/x509/chain_builder.html#ChainBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.chain_builder.ChainBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.chain_builder.ChainBuilder.gen_certificate">
+<span class="sig-name descname"><span class="pre">gen_certificate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email_address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ca</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serial_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EllipticCurvePrivateKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAPrivateKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crl_distr_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_valid_before</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">datetime.datetime(2026,</span> <span class="pre">3,</span> <span class="pre">10,</span> <span class="pre">14,</span> <span class="pre">59,</span> <span class="pre">49,</span> <span class="pre">191425)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">not_valid_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">datetime.datetime(2027,</span> <span class="pre">3,</span> <span class="pre">11,</span> <span class="pre">14,</span> <span class="pre">59,</span> <span class="pre">49,</span> <span class="pre">191430)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excluded_subtrees</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">DNSName</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">UniformResourceIdentifier</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permitted_subtrees</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">DNSName</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">UniformResourceIdentifier</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">KeyUsage</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_identifier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/chain_builder.html#ChainBuilder.gen_certificate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.chain_builder.ChainBuilder.gen_certificate" title="Link to this definition"></a></dt>
+<dd><p>Generate a certificate and add it to the chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cn</strong> (<em>str</em>) – Common Name</p></li>
+<li><p><strong>organization_name</strong> (<em>str</em><em> | </em><em>None</em>) – Organization name for the certificate</p></li>
+<li><p><strong>country_name</strong> (<em>str</em>) – Country Name</p></li>
+<li><p><strong>dns</strong> (<em>str</em>) – DNS Name</p></li>
+<li><p><strong>private_key</strong> (<em>ec.EllipticCurvePrivateKey</em><em> | </em><em>rsa.RSAPrivateKey</em><em> | </em><em>None</em>) – Private key to use for signing the certificate</p></li>
+<li><p><strong>ca</strong> (<em>bool</em>) – Whether the certificate is a CA certificate</p></li>
+<li><p><strong>path_length</strong> (<em>int</em><em> | </em><em>None</em>) – Path length for the CA certificate, None if not a CA</p></li>
+<li><p><strong>serial_number</strong> (<em>int</em><em> | </em><em>None</em>) – Serial number of the certificate, random if None</p></li>
+<li><p><strong>crl_distr_point</strong> (<em>str</em><em> | </em><em>None</em>) – CRL Distribution Point URI, None if not set</p></li>
+<li><p><strong>not_valid_before</strong> (<em>datetime</em>) – Start date of the certificate validity</p></li>
+<li><p><strong>not_valid_after</strong> (<em>datetime</em>) – End date of the certificate validity</p></li>
+<li><p><strong>excluded_subtrees</strong> (<em>list</em><em>[</em><em>x509.DNSName</em><em> | </em><em>x509.UniformResourceIdentifier</em><em>]</em>) – List of DNS names to exclude from the certificate</p></li>
+<li><p><strong>permitted_subtrees</strong> (<em>list</em><em>[</em><em>x509.DNSName</em><em> | </em><em>x509.UniformResourceIdentifier</em><em>]</em>) – List of DNS names to permit in the certificate</p></li>
+<li><p><strong>key_usage</strong> (<em>x509.KeyUsage</em><em> | </em><em>None</em>) – Key usage for the certificate</p></li>
+<li><p><strong>organization_identifier</strong> (<em>str</em><em> | </em><em>None</em>) – Organization identifier for the certificate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.chain_builder.ChainBuilder.get_ca">
+<span class="sig-name descname"><span class="pre">get_ca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'DER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'PEM'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'DER'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/chain_builder.html#ChainBuilder.get_ca"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.chain_builder.ChainBuilder.get_ca" title="Link to this definition"></a></dt>
+<dd><p>Get the CA certificate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CA certificate</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes | str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.chain_builder.ChainBuilder.get_chain">
+<span class="sig-name descname"><span class="pre">get_chain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'DER'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'PEM'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'DER'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/chain_builder.html#ChainBuilder.get_chain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.chain_builder.ChainBuilder.get_chain" title="Link to this definition"></a></dt>
+<dd><p>Get the certificate chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The certificate chain</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[bytes] | list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.x509.crl_builder">
+<span id="pyeudiw-x509-crl-builder-module"></span><h2>pyeudiw.x509.crl_builder module<a class="headerlink" href="#module-pyeudiw.x509.crl_builder" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_builder.CRLBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.crl_builder.</span></span><span class="sig-name descname"><span class="pre">CRLBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issuer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RSAPrivateKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">EllipticCurvePrivateKey</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_builder.html#CRLBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_builder.CRLBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to build a Certificate Revocation List (CRL).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_builder.CRLBuilder.add_revoked_certificate">
+<span class="sig-name descname"><span class="pre">add_revoked_certificate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serial_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revocation_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_builder.html#CRLBuilder.add_revoked_certificate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_builder.CRLBuilder.add_revoked_certificate" title="Link to this definition"></a></dt>
+<dd><p>Add a revoked certificate to the CRL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serial_number</strong> (<em>int</em>) – The serial number of the revoked certificate.</p></li>
+<li><p><strong>revocation_date</strong> (<em>datetime</em>) – The date when the certificate was revoked.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_builder.CRLBuilder.sign">
+<span class="sig-name descname"><span class="pre">sign</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CertificateRevocationList</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_builder.html#CRLBuilder.sign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_builder.CRLBuilder.sign" title="Link to this definition"></a></dt>
+<dd><p>Sign the CRL with the issuer’s private key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The signed CRL.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>x509.CertificateRevocationList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_builder.CRLBuilder.to_der">
+<span class="sig-name descname"><span class="pre">to_der</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_builder.html#CRLBuilder.to_der"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_builder.CRLBuilder.to_der" title="Link to this definition"></a></dt>
+<dd><p>Convert the CRL to DER format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CRL in DER format.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_builder.CRLBuilder.to_pem">
+<span class="sig-name descname"><span class="pre">to_pem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_builder.html#CRLBuilder.to_pem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_builder.CRLBuilder.to_pem" title="Link to this definition"></a></dt>
+<dd><p>Convert the CRL to PEM format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CRL in PEM format.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.x509.crl_helper">
+<span id="pyeudiw-x509-crl-helper-module"></span><h2>pyeudiw.x509.crl_helper module<a class="headerlink" href="#module-pyeudiw.x509.crl_helper" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.crl_helper.</span></span><span class="sig-name descname"><span class="pre">CRLHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CertificateRevocationList</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class to handle CRL (Certificate Revocation List) operations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.from_certificate">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_certificate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper"><span class="pre">CRLHelper</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.from_certificate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.from_certificate" title="Link to this definition"></a></dt>
+<dd><p>Load CRL distribution points from a given certificate.
+This method extracts the CRL distribution points from the certificate and loads them into CRLHelper instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cert</strong> (<em>str</em><em> | </em><em>bytes</em>) – The certificate in PEM or DER format.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLReadError" title="pyeudiw.x509.exceptions.CRLReadError"><strong>CRLReadError</strong></a> – If the certificate does not contain CRL distribution points or if loading fails.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of CRLHelper instances containing the loaded CRLs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper">CRLHelper</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.from_crl">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_crl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper"><span class="pre">CRLHelper</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.from_crl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.from_crl" title="Link to this definition"></a></dt>
+<dd><p>Load a CRL from a given PEM or DER formatted string or bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crl</strong> (<em>str</em><em> | </em><em>bytes</em>) – The CRL in PEM or DER format.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLParseError" title="pyeudiw.x509.exceptions.CRLParseError"><strong>CRLParseError</strong></a> – If the CRL file is not in the expected format.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An instance of CRLHelper containing the loaded CRL.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper">CRLHelper</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.from_url">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crl_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'connection':</span> <span class="pre">{'ssl':</span> <span class="pre">True},</span> <span class="pre">'session':</span> <span class="pre">{'timeout':</span> <span class="pre">4}}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper"><span class="pre">CRLHelper</span></a></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.from_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.from_url" title="Link to this definition"></a></dt>
+<dd><p>Load a CRL from a given URL.
+This method fetches the CRL file from the specified URL and loads it into a CRL object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>crl_url</strong> (<em>str</em>) – URL of the CRL file.</p></li>
+<li><p><strong>httpc_params</strong> (<em>dict</em><em> | </em><em>None</em>) – Optional HTTP client parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLHTTPError" title="pyeudiw.x509.exceptions.CRLHTTPError"><strong>CRLHTTPError</strong></a> – If the HTTP request fails or the response is not valid.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLParseError" title="pyeudiw.x509.exceptions.CRLParseError"><strong>CRLParseError</strong></a> – If the CRL file is not in the expected format.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An instance of CRLHelper containing the loaded CRL.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper">CRLHelper</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.get_revocation_date">
+<span class="sig-name descname"><span class="pre">get_revocation_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serial_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.get_revocation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.get_revocation_date" title="Link to this definition"></a></dt>
+<dd><p>Get the revocation date of a certificate with the given serial number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>serial_number</strong> (<em>str</em><em> | </em><em>int</em>) – The serial number of the certificate to check. Can be in hex format (string) or integer.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLReadError" title="pyeudiw.x509.exceptions.CRLReadError"><strong>CRLReadError</strong></a> – If the serial number is invalid or if the revocation list is not loaded.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The revocation date if revoked, None otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.is_crl_expired">
+<span class="sig-name descname"><span class="pre">is_crl_expired</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.is_crl_expired"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.is_crl_expired" title="Link to this definition"></a></dt>
+<dd><p>Check if the CRL is valid (not expired).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLReadError" title="pyeudiw.x509.exceptions.CRLReadError"><strong>CRLReadError</strong></a> – If the CRL is not loaded or if the expiration date cannot be determined.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the CRL is valid, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.is_revoked">
+<span class="sig-name descname"><span class="pre">is_revoked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serial_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.is_revoked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.is_revoked" title="Link to this definition"></a></dt>
+<dd><p>Check if a certificate with the given serial number is revoked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>serial_number</strong> (<em>str</em><em> | </em><em>int</em>) – The serial number of the certificate to check. Can be in hex format (string) or integer.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLReadError" title="pyeudiw.x509.exceptions.CRLReadError"><strong>CRLReadError</strong></a> – If the serial number is invalid or if the revocation list is not loaded.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the certificate is revoked, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.serialize" title="Link to this definition"></a></dt>
+<dd><p>Serialize the CRL to a specified encoding format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>encoding</strong> (<em>str</em>) – The encoding format. Can be “pem” or “der”. Defaults to “pem”.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The serialized CRL with the uri.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.x509.crl_helper.CRLHelper.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">httpc_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'connection':</span> <span class="pre">{'ssl':</span> <span class="pre">True},</span> <span class="pre">'session':</span> <span class="pre">{'timeout':</span> <span class="pre">4}}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/crl_helper.html#CRLHelper.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.crl_helper.CRLHelper.update" title="Link to this definition"></a></dt>
+<dd><p>Update the CRL by fetching it from the URI.
+This method fetches the CRL file from the specified URI and loads it into the CRL object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>httpc_params</strong> (<em>dict</em><em> | </em><em>None</em>) – Optional HTTP client parameters.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLHTTPError" title="pyeudiw.x509.exceptions.CRLHTTPError"><strong>CRLHTTPError</strong></a> – If the HTTP request fails or the response is not valid.</p></li>
+<li><p><a class="reference internal" href="#pyeudiw.x509.exceptions.CRLParseError" title="pyeudiw.x509.exceptions.CRLParseError"><strong>CRLParseError</strong></a> – If the CRL file is not in the expected format.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.x509.exceptions">
+<span id="pyeudiw-x509-exceptions-module"></span><h2>pyeudiw.x509.exceptions module<a class="headerlink" href="#module-pyeudiw.x509.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.x509.exceptions.CRLHTTPError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.exceptions.</span></span><span class="sig-name descname"><span class="pre">CRLHTTPError</span></span><a class="reference internal" href="../_modules/pyeudiw/x509/exceptions.html#CRLHTTPError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.exceptions.CRLHTTPError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in the CRL HTTP request.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.x509.exceptions.CRLParseError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.exceptions.</span></span><span class="sig-name descname"><span class="pre">CRLParseError</span></span><a class="reference internal" href="../_modules/pyeudiw/x509/exceptions.html#CRLParseError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.exceptions.CRLParseError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in parsing the CRL.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.x509.exceptions.CRLReadError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.exceptions.</span></span><span class="sig-name descname"><span class="pre">CRLReadError</span></span><a class="reference internal" href="../_modules/pyeudiw/x509/exceptions.html#CRLReadError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.exceptions.CRLReadError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in reading the CRL.</p>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.x509.verify">
+<span id="pyeudiw-x509-verify-module"></span><h2>pyeudiw.x509.verify module<a class="headerlink" href="#module-pyeudiw.x509.verify" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.B64DER_cert_to_DER_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">B64DER_cert_to_DER_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#B64DER_cert_to_DER_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.B64DER_cert_to_DER_cert" title="Link to this definition"></a></dt>
+<dd><p>Takes a certificate Base64 encoded DER and returns the
+certificate in DER format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.B64DER_cert_to_PEM_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">B64DER_cert_to_PEM_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#B64DER_cert_to_PEM_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.B64DER_cert_to_PEM_cert" title="Link to this definition"></a></dt>
+<dd><p>Takes a certificate Base64 encoded DER and returns the
+certificate in ANSII PEM format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.DER_cert_to_B64DER_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">DER_cert_to_B64DER_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#DER_cert_to_B64DER_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.DER_cert_to_B64DER_cert" title="Link to this definition"></a></dt>
+<dd><p>Encode in Base64 a DER certificate.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.PEM_cert_to_B64DER_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">PEM_cert_to_B64DER_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#PEM_cert_to_B64DER_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.PEM_cert_to_B64DER_cert" title="Link to this definition"></a></dt>
+<dd><p>Takes a certificate in ANSII PEM format and returns the base64
+encoding of the corresponding DER certificate.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_certificate_type">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_certificate_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_certificate_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_certificate_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_expiry_date_from_x5c">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_expiry_date_from_x5c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_expiry_date_from_x5c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_expiry_date_from_x5c" title="Link to this definition"></a></dt>
+<dd><p>Get the expiry date from the x509 certificate chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x5c</strong> (<em>list</em><em>[</em><em>bytes</em><em>]</em>) – The x509 certificate chain</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The expiry date</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetime</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_get_subject_name">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_get_subject_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_get_subject_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_get_subject_name" title="Link to this definition"></a></dt>
+<dd><p>Get the subject name from the x509 certificate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>der</strong> (<em>bytes</em>) – The x509 certificate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The subject name</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_issuer_from_x5c">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_issuer_from_x5c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_issuer_from_x5c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_issuer_from_x5c" title="Link to this definition"></a></dt>
+<dd><p>Get the issuer from the x509 certificate chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x5c</strong> (<em>list</em><em>[</em><em>bytes</em><em>]</em>) – The x509 certificate chain</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The issuer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_public_key_from_x509_chain">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_public_key_from_x509_chain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ECKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">RSAKey</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_public_key_from_x509_chain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_public_key_from_x509_chain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_trust_anchor_from_x5c">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_trust_anchor_from_x5c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_trust_anchor_from_x5c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_trust_anchor_from_x5c" title="Link to this definition"></a></dt>
+<dd><p>Get the issuer from the x509 certificate chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x5c</strong> (<em>list</em><em>[</em><em>bytes</em><em>]</em>) – The x509 certificate chain</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The issuer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.get_x509_info">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">get_x509_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">san_dns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#get_x509_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.get_x509_info" title="Link to this definition"></a></dt>
+<dd><p>Get the x509 certificate information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cert</strong> (<em>bytes</em><em> | </em><em>str</em>) – The x509 certificate</p></li>
+<li><p><strong>info_type</strong> (<em>str</em>) – The information type</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The certificate information</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.is_der_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">is_der_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#is_der_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.is_der_format" title="Link to this definition"></a></dt>
+<dd><p>Check if the certificate is in DER format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cert</strong> (<em>bytes</em>) – The certificate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the certificate is in DER format else False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.is_pem_format">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">is_pem_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#is_pem_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.is_pem_format" title="Link to this definition"></a></dt>
+<dd><p>Check if the certificate is in PEM format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cert</strong> (<em>bytes</em>) – The certificate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the certificate is in PEM format else False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.pem_to_pems_list">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">pem_to_pems_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#pem_to_pems_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.pem_to_pems_list" title="Link to this definition"></a></dt>
+<dd><p>Split a string containing one or more PEM blocks (e.g. certificates) into a list of PEM strings.
+Uses stdlib/re only; no pyOpenSSL or pem dependency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cert</strong> (<em>str</em>) – The x509 certificate chain in PEM format (one or more concatenated PEM blocks)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The x509 certificate chain as a list of PEM strings</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.to_DER_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">to_DER_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#to_DER_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.to_DER_cert" title="Link to this definition"></a></dt>
+<dd><p>This function takes in a certificate with unknown representation
+(allegedly, PEM, DER or Base64 encoded DER) and applies some
+heuristics to convert it to a DER certificate.</p>
+<p>This function should be treated as UNSAFE and inefficient. Do NOT
+use it unless you do NOT hany prior way to know the actual representation
+format of a certificate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.to_PEM_cert">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">to_PEM_cert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#to_PEM_cert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.to_PEM_cert" title="Link to this definition"></a></dt>
+<dd><p>This function takes in a certificate with unknown representation
+(allegedly, PEM, DER or Base64 encoded DER) and applies some
+heuristics to convert it to a PEM certificate.</p>
+<p>This function should be treated as UNSAFE and inefficient. Do NOT
+use it unless you do NOT hany prior way to know the actual representation
+format of a certificate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.to_der_list">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">to_der_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pem_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#to_der_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.to_der_list" title="Link to this definition"></a></dt>
+<dd><p>If the input is a list of PEM certificates, it will be converted to a list of DER certificates.
+If the input is a list of DER certificates, it will be returned as is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pem_list</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – The x509 certificate chain in PEM format</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The x509 certificate chain in DER format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[bytes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.to_pem_list">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">to_pem_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#to_pem_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.to_pem_list" title="Link to this definition"></a></dt>
+<dd><p>If the input is a list of DER certificates, it will be converted to a list of PEM certificates.
+If the input is a list of PEM certificates, it will be returned as is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>der</strong> (<em>list</em><em>[</em><em>bytes</em><em>]</em>) – The x509 certificate chain in DER format</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The x509 certificate chain in PEM format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.verify_x509_anchor">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">verify_x509_anchor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pem_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#verify_x509_anchor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.verify_x509_anchor" title="Link to this definition"></a></dt>
+<dd><p>Verify the x509 anchor certificate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pem_str</strong> (<em>str</em>) – The x509 anchor certificate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the x509 anchor certificate is valid else False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyeudiw.x509.verify.verify_x509_attestation_chain">
+<span class="sig-prename descclassname"><span class="pre">pyeudiw.x509.verify.</span></span><span class="sig-name descname"><span class="pre">verify_x509_attestation_chain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x5c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.x509.crl_helper.CRLHelper" title="pyeudiw.x509.crl_helper.CRLHelper"><span class="pre">CRLHelper</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../_modules/pyeudiw/x509/verify.html#verify_x509_attestation_chain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.x509.verify.verify_x509_attestation_chain" title="Link to this definition"></a></dt>
+<dd><p>Verify the x509 attestation certificate chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x5c</strong> (<em>list</em><em>[</em><em>bytes</em><em>]</em>) – The x509 attestation certificate chain</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the x509 attestation certificate chain is valid else False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.x509">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.x509" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.wallet_instance_attestation.html" class="btn btn-neutral float-left" title="pyeudiw.wallet_instance_attestation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

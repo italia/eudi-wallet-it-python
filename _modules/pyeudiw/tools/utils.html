@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tools.utils &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tools.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tools.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">secrets</span><span class="w"> </span><span class="kn">import</span> <span class="n">token_hex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">http_get_async</span><span class="p">,</span> <span class="n">http_get_sync</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="make_timezone_aware">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.make_timezone_aware">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_timezone_aware</span><span class="p">(</span>
+    <span class="n">dt</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
+    <span class="n">tz</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span> <span class="o">|</span> <span class="n">datetime</span><span class="o">.</span><span class="n">tzinfo</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a datetime timezone aware.</span>
+
+<span class="sd">    :param dt: The datetime to make timezone aware</span>
+<span class="sd">    :type dt: datetime.datetime</span>
+<span class="sd">    :param tz: The timezone to use</span>
+<span class="sd">    :type tz: datetime.timezone | datetime.tzinfo</span>
+
+<span class="sd">    :returns: The timezone aware datetime</span>
+<span class="sd">    :rtype: datetime.datetime</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dt</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;datetime is already timezone aware&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="iat_now">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.iat_now">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iat_now</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the current timestamp in seconds.</span>
+
+<span class="sd">    :returns: The current timestamp in seconds</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="exp_from_now">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.exp_from_now">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">exp_from_now</span><span class="p">(</span><span class="n">minutes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">33</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the expiration timestamp in seconds for the given minutes from now.</span>
+
+<span class="sd">    :param minutes: The minutes from now</span>
+<span class="sd">    :type minutes: int</span>
+
+<span class="sd">    :returns: The timestamp in seconds for the given minutes from now</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">((</span><span class="n">now</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minutes</span><span class="p">))</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="datetime_from_timestamp">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.datetime_from_timestamp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">datetime_from_timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a datetime from a timestamp.</span>
+
+<span class="sd">    :param value: The timestamp</span>
+<span class="sd">    :type value: int | float</span>
+
+<span class="sd">    :returns: The datetime</span>
+<span class="sd">    :rtype: datetime.datetime</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">make_timezone_aware</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="timestamp_from_datetime">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.timestamp_from_datetime">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">timestamp_from_datetime</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a timestamp from a datetime.</span>
+
+<span class="sd">    :param dt: The datetime</span>
+<span class="sd">    :type dt: datetime.datetime</span>
+
+<span class="sd">    :returns: The timestamp</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="get_http_url">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.get_http_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_http_url</span><span class="p">(</span><span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">http_async</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform an HTTP Request returning the payload of the call.</span>
+
+<span class="sd">    :param urls: The url or a list of url where perform the GET HTTP calls</span>
+<span class="sd">    :type urls: list[str] | str</span>
+<span class="sd">    :param httpc_params: parameters to perform http requests.</span>
+<span class="sd">    :type httpc_params: dict</span>
+<span class="sd">    :param http_async: if is set to True the operation will be performed in async (deafault True)</span>
+<span class="sd">    :type http_async: bool</span>
+
+<span class="sd">    :returns: A list of responses.</span>
+<span class="sd">    :rtype: list[dict]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">urls</span> <span class="o">=</span> <span class="n">urls</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">urls</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">http_async</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">http_get_async</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">))</span>  <span class="c1"># pragma: no cover</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">http_get_sync</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">responses</span></div>
+
+
+
+<div class="viewcode-block" id="random_token">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.random_token">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">random_token</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">254</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a random token.</span>
+
+<span class="sd">    :param n: The length of the token</span>
+<span class="sd">    :type n: int</span>
+
+<span class="sd">    :returns: The random token</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">token_hex</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_dynamic_class">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.get_dynamic_class">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dynamic_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a class type dynamically.</span>
+
+<span class="sd">    :param module_name: The name of the module</span>
+<span class="sd">    :type module_name: str</span>
+<span class="sd">    :param class_name: The name of the class</span>
+<span class="sd">    :type class_name: str</span>
+
+<span class="sd">    :returns: The class type</span>
+<span class="sd">    :rtype: Type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="n">instance_class</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">instance_class</span></div>
+
+
+
+<div class="viewcode-block" id="dynamic_class_loader">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.dynamic_class_loader">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dynamic_class_loader</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">init_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a class dynamically.</span>
+
+<span class="sd">    :param module_name: The name of the module</span>
+<span class="sd">    :type module_name: str</span>
+<span class="sd">    :param class_name: The name of the class</span>
+<span class="sd">    :type class_name: str</span>
+<span class="sd">    :param init_params: The parameters to pass to the class constructor</span>
+<span class="sd">    :type init_params: dict</span>
+
+<span class="sd">    :returns: The class instance</span>
+<span class="sd">    :rtype: object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dynamic_class</span> <span class="o">=</span> <span class="n">get_dynamic_class</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">dynamic_class</span><span class="p">):</span>
+        <span class="n">storage_instance</span> <span class="o">=</span> <span class="n">dynamic_class</span><span class="p">(</span><span class="o">**</span><span class="n">init_params</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The class &#39;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">&#39; in module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39; is not callable.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">storage_instance</span></div>
+
+
+
+<span class="n">_HttpcParams_T</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s2">&quot;_HttpcParams_T&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;ssl&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)])</span>
+
+
+<div class="viewcode-block" id="cacheable_get_http_url">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tools.html#pyeudiw.tools.utils.cacheable_get_http_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cacheable_get_http_url</span><span class="p">(</span><span class="n">cache_ttl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">httpc_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">http_async</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cached HTTP GET with TTL (seconds) implemented via lru_cache.</span>
+<span class="sd">    The TTL is enforced by rounding a timestamp argument; entries expire after</span>
+<span class="sd">    up to cache_ttl seconds. Minimum TTL is 1 second.</span>
+<span class="sd">    Only httpc_params.connection.ssl (bool) and httpc_params.session.timeout (int)</span>
+<span class="sd">    are supported and required. Non-200 responses will cause the cache to be cleared.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ssl</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">httpc_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ssl&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">httpc_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ssl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid parameter </span><span class="si">{</span><span class="n">httpc_params</span><span class="si">=}</span><span class="s2">: [&#39;connection&#39;][&#39;ssl&#39;] and [&#39;session&#39;][&#39;timeout&#39;] MUST be defined&quot;</span><span class="p">)</span>
+    <span class="n">curr_time_s</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">//</span> <span class="mi">1_000_000_000</span>
+    <span class="k">if</span> <span class="n">cache_ttl</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ttl_timestamp</span> <span class="o">=</span> <span class="n">curr_time_s</span> <span class="o">//</span> <span class="n">cache_ttl</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ttl_timestamp</span> <span class="o">=</span> <span class="n">curr_time_s</span>
+    <span class="n">httpc_p_tuple</span> <span class="o">=</span> <span class="n">_HttpcParams_T</span><span class="p">(</span><span class="n">ssl</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_lru_cached_get_http_url</span><span class="p">(</span><span class="n">ttl_timestamp</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">httpc_p_tuple</span><span class="p">,</span> <span class="n">http_async</span><span class="o">=</span><span class="n">http_async</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">_lru_cached_get_http_url</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">resp</span></div>
+
+
+
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;PYEUDIW_LRU_CACHE_MAXSIZE&quot;</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_lru_cached_get_http_url</span><span class="p">(</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">httpc_params_tuple</span><span class="p">:</span> <span class="n">_HttpcParams_T</span><span class="p">,</span>
+    <span class="n">http_async</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wraps method &#39;get_http_url&#39; around a ttl cache.</span>
+<span class="sd">    This is done by including a timestamp in the function argument. For more,</span>
+<span class="sd">    see the documentation of cacheable_get_http_url.</span>
+
+<span class="sd">    Note that dictionary argument cannot be cached due to how lru_cache</span>
+<span class="sd">    works; hence they are converted to a tuple.</span>
+
+<span class="sd">    Moreover, a negative HTTP reponse might be cached. It is caller</span>
+<span class="sd">    responsability to eventually clear the cache when it happens.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># explicitly delete dummy argument timestamp since it is only needed for caching lifetime</span>
+    <span class="k">del</span> <span class="n">timestamp</span>
+    <span class="n">httpc_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="n">httpc_params_tuple</span><span class="o">.</span><span class="n">ssl</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="n">httpc_params_tuple</span><span class="o">.</span><span class="n">timeout</span><span class="p">},</span>
+    <span class="p">}</span>
+    <span class="n">resp</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_http_url</span><span class="p">([</span><span class="n">url</span><span class="p">],</span> <span class="n">httpc_params</span><span class="p">,</span> <span class="n">http_async</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.sd_jwt.common &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.sd_jwt.common</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.sd_jwt.common</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlsafe_b64decode</span><span class="p">,</span> <span class="n">urlsafe_b64encode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">sha256</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">loads</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSON_SER_DISCLOSURE_KEY</span><span class="p">,</span> <span class="n">JSON_SER_KB_JWT_KEY</span><span class="p">,</span> <span class="n">SD_DIGESTS_KEY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SDJWTHasSDClaimException</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SDObj">
+<a class="viewcode-back" href="../../../rst/pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDObj">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SDObj</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class can be used to make this part of the object selective disclosable.&quot;&quot;&quot;</span>
+
+    <span class="n">value</span><span class="p">:</span> <span class="nb">any</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Hash the object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SDJWTCommon">
+<a class="viewcode-back" href="../../../rst/pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.common.SDJWTCommon">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SDJWTCommon</span><span class="p">:</span>
+    <span class="n">SD_JWT_HEADER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
+        <span class="c1"># TODO: dc is only for digital credential, while you might use another typ ...</span>
+        <span class="s2">&quot;SD_JWT_HEADER&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># overwriteable with extra_header_parameters = {&quot;typ&quot;: &quot;other-example+sd-jwt&quot;}</span>
+    <span class="n">KB_JWT_TYP_HEADER</span> <span class="o">=</span> <span class="s2">&quot;kb+jwt&quot;</span>
+    <span class="n">HASH_ALG</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;sha-256&quot;</span><span class="p">,</span> <span class="s2">&quot;fn&quot;</span><span class="p">:</span> <span class="n">sha256</span><span class="p">}</span>
+
+    <span class="n">COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;~&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serialization_format</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">serialization_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;compact&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown serialization format: </span><span class="si">{</span><span class="n">serialization_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">=</span> <span class="n">serialization_format</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_b64hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the SHA 256 hash and output it base64 encoded.</span>
+
+<span class="sd">        :param raw: The raw data to hash.</span>
+<span class="sd">        :type raw: bytes</span>
+
+<span class="sd">        :return: The base64 encoded hash.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base64url_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HASH_ALG</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">](</span><span class="n">raw</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_combine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">parts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combine the parts with the separator.</span>
+
+<span class="sd">        :param parts: The parts to combine.</span>
+<span class="sd">        :type parts: str</span>
+
+<span class="sd">        :return: The combined string.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">combined</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Split the combined string.</span>
+
+<span class="sd">        :param combined: The combined string.</span>
+<span class="sd">        :type combined: str</span>
+
+<span class="sd">        :return: The parts.</span>
+<span class="sd">        :rtype: List[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">combined</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_base64url_encode</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encode the data in base64url encoding.</span>
+
+<span class="sd">        :param data: The data to encode.</span>
+<span class="sd">        :type data: bytes</span>
+
+<span class="sd">        :return: The base64url encoded data.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_base64url_decode</span><span class="p">(</span><span class="n">b64data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode the base64url encoded data.</span>
+
+<span class="sd">        :param b64data: The base64url encoded data.</span>
+<span class="sd">        :type b64data: str</span>
+
+<span class="sd">        :return: The decoded data.</span>
+<span class="sd">        :rtype: bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">padded</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">b64data</span><span class="si">}{</span><span class="s1">&#39;=&#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">divmod</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b64data</span><span class="p">),</span><span class="mi">4</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">padded</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_salt</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a salt.</span>
+
+<span class="sd">        :return: The salt.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base64url_encode</span><span class="p">(</span><span class="n">secrets</span><span class="o">.</span><span class="n">token_bytes</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_hash_mappings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disclosurses_list</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the hash mappings for the disclosures.</span>
+
+<span class="sd">        :param disclosurses_list: The list of disclosures.</span>
+<span class="sd">        :type disclosurses_list: List</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Mapping from hash of disclosure to the decoded disclosure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Mapping from hash of disclosure to the raw disclosure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_disclosure</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">disclosure</span> <span class="ow">in</span> <span class="n">disclosurses_list</span><span class="p">:</span>
+            <span class="n">decoded_disclosure</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base64url_decode</span><span class="p">(</span><span class="n">disclosure</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="n">_hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b64hash</span><span class="p">(</span><span class="n">disclosure</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">_hash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duplicate disclosure hash </span><span class="si">{</span><span class="n">_hash</span><span class="si">}</span><span class="s2"> for disclosure </span><span class="si">{</span><span class="n">decoded_disclosure</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_decoded_disclosure</span><span class="p">[</span><span class="n">_hash</span><span class="p">]</span> <span class="o">=</span> <span class="n">decoded_disclosure</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hash_to_disclosure</span><span class="p">[</span><span class="n">_hash</span><span class="p">]</span> <span class="o">=</span> <span class="n">disclosure</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_for_sd_claim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for the presence of the _sd claim in the object.</span>
+
+<span class="sd">        :param obj: The object to check.</span>
+<span class="sd">        :type obj: Union[dict, list, any]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Recursively check for the presence of the _sd claim, also</span>
+        <span class="c1"># works for arrays and nested objects.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">SD_DIGESTS_KEY</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">SDJWTHasSDClaimException</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_sd_claim</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_sd_claim</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_sd_jwt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sd_jwt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse the SD-JWT.</span>
+
+<span class="sd">        :param sd_jwt: The SD-JWT to parse.</span>
+<span class="sd">        :type sd_jwt: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="p">,</span>
+                <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_disclosures</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_key_binding_jwt</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span><span class="n">sd_jwt</span><span class="p">)</span>
+
+            <span class="c1"># Extract only the body from SD-JWT without verifying the signature</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">jwt_body</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base64url_decode</span><span class="p">(</span><span class="n">jwt_body</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_compact_serialized_input_sd_jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if the SD-JWT is in JSON format, parse the json and extract the disclosures.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt</span> <span class="o">=</span> <span class="n">sd_jwt</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">sd_jwt</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_payload</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_base64url_decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">]))</span>
+
+            <span class="c1"># distinguish between flattened and general JSON serialization (RFC7515)</span>
+            <span class="k">if</span> <span class="s2">&quot;signature&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">:</span>
+                <span class="c1"># flattened</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_input_disclosures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="n">JSON_SER_DISCLOSURE_KEY</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_key_binding_jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">JSON_SER_KB_JWT_KEY</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_compact_serialized_input_sd_jwt</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;protected&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">],</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="s2">&quot;signatures&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">:</span>
+                <span class="c1"># general, look at the header in the first signature</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_input_disclosures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;signatures&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="n">JSON_SER_DISCLOSURE_KEY</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_key_binding_jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;signatures&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;header&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">JSON_SER_KB_JWT_KEY</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_compact_serialized_input_sd_jwt</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;signatures&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;protected&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_unverified_input_sd_jwt_parsed</span><span class="p">[</span><span class="s2">&quot;signatures&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;signature&quot;</span><span class="p">],</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid JSON serialization of SD-JWT&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_kb_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disclosures</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the hash over the key binding.</span>
+
+<span class="sd">        :param disclosures: The list of disclosures.</span>
+<span class="sd">        :type disclosures: List[str]</span>
+
+<span class="sd">        :return: The hash over the key binding.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Temporarily create the combined presentation in order to create the hash over it</span>
+        <span class="c1"># Note: For JSON Serialization, the compact representation of the SD-JWT is restored from the parsed JSON (see common.py)</span>
+        <span class="n">string_to_hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unverified_compact_serialized_input_sd_jwt</span><span class="p">,</span> <span class="o">*</span><span class="n">disclosures</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b64hash</span><span class="p">(</span><span class="n">string_to_hash</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

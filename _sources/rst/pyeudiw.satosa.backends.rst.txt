@@ -1,0 +1,18 @@
+pyeudiw.satosa.backends package
+===============================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.satosa.backends.openid4vp
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.backends
+   :members:
+   :show-inheritance:
+   :undoc-members:

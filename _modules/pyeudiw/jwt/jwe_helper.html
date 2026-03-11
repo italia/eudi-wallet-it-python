@@ -1,0 +1,226 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.jwt.jwe_helper &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.jwt.jwe_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.jwt.jwe_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">binascii</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">cryptojwt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwe.jwe</span><span class="w"> </span><span class="kn">import</span> <span class="n">factory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwe.jwe_ec</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWE_EC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwe.jwe_rsa</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWE_RSA</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWEDecryptionError</span><span class="p">,</span> <span class="n">JWEEncryptionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWHelperInterface</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_ENC_ALG_MAP</span><span class="p">,</span> <span class="n">DEFAULT_ENC_ENC_MAP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_jwt_header</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="JWEHelper">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">JWEHelper</span><span class="p">(</span><span class="n">JWHelperInterface</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The helper class for work with JWEs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="JWEHelper.encrypt">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper.encrypt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">encrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plain_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a encrypted JWE string.</span>
+
+<span class="sd">        :param plain_dict: The payload of JWE.</span>
+<span class="sd">        :type plain_dict: Union[dict, str, int, None]</span>
+<span class="sd">        :param kwargs: Other optional fields to generate the JWE.</span>
+
+<span class="sd">        :returns: A string that represents the JWE.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">_payload</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">plain_dict</span><span class="p">:</span>
+            <span class="n">_payload</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="n">_payload</span> <span class="o">=</span> <span class="n">plain_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_payload</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">encryption_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">appropriate_for</span><span class="p">(</span><span class="s2">&quot;encrypt&quot;</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">encryption_keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWEEncryptionError</span><span class="p">(</span><span class="s2">&quot;unable to produce JWE: no available encryption key(s)&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jwks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">cryptojwt</span><span class="o">.</span><span class="n">jwk</span><span class="o">.</span><span class="n">rsa</span><span class="o">.</span><span class="n">RSAKey</span><span class="p">):</span>
+                <span class="n">JWE_CLASS</span> <span class="o">=</span> <span class="n">JWE_RSA</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">cryptojwt</span><span class="o">.</span><span class="n">jwk</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">ECKey</span><span class="p">):</span>
+                <span class="n">JWE_CLASS</span> <span class="o">=</span> <span class="n">JWE_EC</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># unsupported key: go to next one</span>
+                <span class="k">continue</span>
+
+            <span class="n">_keyobj</span> <span class="o">=</span> <span class="n">JWE_CLASS</span><span class="p">(</span>
+                <span class="n">_payload</span><span class="p">,</span>
+                <span class="n">alg</span><span class="o">=</span><span class="n">DEFAULT_ENC_ALG_MAP</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">kty</span><span class="p">],</span>
+                <span class="n">enc</span><span class="o">=</span><span class="n">DEFAULT_ENC_ENC_MAP</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">kty</span><span class="p">],</span>
+                <span class="n">kid</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">kid</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">kty</span> <span class="o">==</span> <span class="s2">&quot;EC&quot;</span><span class="p">:</span>
+                <span class="n">_keyobj</span><span class="p">:</span> <span class="n">JWE_EC</span>
+                <span class="n">cek</span><span class="p">,</span> <span class="n">encrypted_key</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_keyobj</span><span class="o">.</span><span class="n">enc_setup</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">_payload</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params</span><span class="p">,</span>
+                    <span class="s2">&quot;cek&quot;</span><span class="p">:</span> <span class="n">cek</span><span class="p">,</span>
+                    <span class="s2">&quot;iv&quot;</span><span class="p">:</span> <span class="n">iv</span><span class="p">,</span>
+                    <span class="s2">&quot;encrypted_key&quot;</span><span class="p">:</span> <span class="n">encrypted_key</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="n">_keyobj</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_keyobj</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">public_key</span><span class="p">())</span>
+
+        <span class="k">raise</span> <span class="n">JWEEncryptionError</span><span class="p">(</span><span class="s2">&quot;unable to produce JWE: no supported encryption key(s)&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="JWEHelper.decrypt">
+<a class="viewcode-back" href="../../../rst/pyeudiw.jwt.html#pyeudiw.jwt.jwe_helper.JWEHelper.decrypt">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">jwe</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a dict containing the content of decrypted JWE string.</span>
+
+<span class="sd">        :param jwe: A string representing the jwe.</span>
+<span class="sd">        :type jwe: str</span>
+
+<span class="sd">        :raises JWEDecryptionError: if jwe field is not in a JWE Format</span>
+
+<span class="sd">        :returns: A dict that represents the payload of decrypted JWE.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">jwe_header</span> <span class="o">=</span> <span class="n">decode_jwt_header</span><span class="p">(</span><span class="n">jwe</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">JWEDecryptionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not a valid JWE format for the following reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">_alg</span> <span class="o">=</span> <span class="n">jwe_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alg&quot;</span><span class="p">)</span>
+        <span class="n">_enc</span> <span class="o">=</span> <span class="n">jwe_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;enc&quot;</span><span class="p">)</span>
+        <span class="n">_kid</span> <span class="o">=</span> <span class="n">jwe_header</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kid&quot;</span><span class="p">)</span>
+        <span class="n">_jwk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jwk_by_kid</span><span class="p">(</span><span class="n">_kid</span><span class="p">)</span>
+
+        <span class="n">_decryptor</span> <span class="o">=</span> <span class="n">factory</span><span class="p">(</span><span class="n">jwe</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">_alg</span><span class="p">,</span> <span class="n">enc</span><span class="o">=</span><span class="n">_enc</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_jwk</span><span class="p">,</span> <span class="n">cryptojwt</span><span class="o">.</span><span class="n">jwk</span><span class="o">.</span><span class="n">ec</span><span class="o">.</span><span class="n">ECKey</span><span class="p">):</span>
+            <span class="n">jwdec</span> <span class="o">=</span> <span class="n">JWE_EC</span><span class="p">()</span>
+            <span class="n">jwdec</span><span class="o">.</span><span class="n">dec_setup</span><span class="p">(</span><span class="n">_decryptor</span><span class="o">.</span><span class="n">jwt</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_jwk</span><span class="o">.</span><span class="n">private_key</span><span class="p">())</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">jwdec</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">_decryptor</span><span class="o">.</span><span class="n">jwt</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_decryptor</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">jwe</span><span class="p">,</span> <span class="p">[</span><span class="n">_jwk</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="n">msg_dict</span> <span class="o">=</span> <span class="n">msg</span>
+        <span class="k">return</span> <span class="n">msg_dict</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

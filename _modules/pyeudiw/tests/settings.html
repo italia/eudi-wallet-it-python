@@ -1,0 +1,847 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.tests.settings &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.tests.settings</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.tests.settings</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ssl</span><span class="w"> </span><span class="kn">import</span> <span class="n">DER_cert_to_PEM_cert</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives.asymmetric</span><span class="w"> </span><span class="kn">import</span> <span class="n">ec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.ec</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_ec_key</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.federation.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ta_jwk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tests.x509.test_x509</span><span class="w"> </span><span class="kn">import</span> <span class="n">gen_chain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">exp_from_now</span><span class="p">,</span> <span class="n">iat_now</span>
+
+<span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://example.com&quot;</span>
+<span class="n">AUTHZ_PAGE</span> <span class="o">=</span> <span class="s2">&quot;example.com&quot;</span>
+<span class="n">AUTH_ENDPOINT</span> <span class="o">=</span> <span class="s2">&quot;https://example.com/auth&quot;</span>
+<span class="n">CLIENT_ID</span> <span class="o">=</span> <span class="s2">&quot;client_id&quot;</span>
+<span class="n">BACKEND_NAME</span> <span class="o">=</span> <span class="s2">&quot;OpenID4VP&quot;</span>
+
+
+<div class="viewcode-block" id="base64url_to_int">
+<a class="viewcode-back" href="../../../rst/pyeudiw.tests.html#pyeudiw.tests.settings.base64url_to_int">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">base64url_to_int</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+
+    <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">val</span> <span class="o">+</span> <span class="s2">&quot;==&quot;</span><span class="p">),</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">jwk</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;EC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;i0HQiqDPXf-MqC776ztbgOCI9-eARhcUczqJ-7_httc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="s2">&quot;sig&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;crv&quot;</span><span class="p">:</span> <span class="s2">&quot;P-256&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;SQgNjv4yU8sfuafJ2DPWq2tnOlK1JSibd3V5KqYRhOk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;Q46FDkhMjewZIP9qP8ZKZIP-ZEemctvjxeP0l3vWHMI&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;IT7lsGxdJewmonk9l1_TAVYx_nixydTtI1Sbn0LkfEA&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="s2">&quot;ES256&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_d</span> <span class="o">=</span> <span class="n">base64url_to_int</span><span class="p">(</span><span class="n">jwk</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">])</span>
+<span class="n">_x</span> <span class="o">=</span> <span class="n">base64url_to_int</span><span class="p">(</span><span class="n">jwk</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+<span class="n">_y</span> <span class="o">=</span> <span class="n">base64url_to_int</span><span class="p">(</span><span class="n">jwk</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="n">private_key</span> <span class="o">=</span> <span class="n">ec</span><span class="o">.</span><span class="n">EllipticCurvePrivateNumbers</span><span class="p">(</span><span class="n">private_value</span><span class="o">=</span><span class="n">_d</span><span class="p">,</span> <span class="n">public_numbers</span><span class="o">=</span><span class="n">ec</span><span class="o">.</span><span class="n">EllipticCurvePublicNumbers</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">_x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">_y</span><span class="p">,</span> <span class="n">curve</span><span class="o">=</span><span class="n">ec</span><span class="o">.</span><span class="n">SECP256R1</span><span class="p">()))</span><span class="o">.</span><span class="n">private_key</span><span class="p">()</span>
+
+<span class="n">DEFAULT_X509_CHAIN</span> <span class="o">=</span> <span class="n">gen_chain</span><span class="p">(</span><span class="n">leaf_dns</span><span class="o">=</span><span class="s2">&quot;example.com&quot;</span><span class="p">,</span> <span class="n">leaf_private_key</span><span class="o">=</span><span class="n">private_key</span><span class="p">)</span>
+
+<span class="n">DEFAULT_X509_LEAF_JWK</span> <span class="o">=</span> <span class="n">jwk</span>
+<span class="n">DEFAULT_X509_LEAF_PRIVATE_KEY</span> <span class="o">=</span> <span class="n">private_key</span>
+
+<span class="n">httpc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">_METADATA</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;application_type&quot;</span><span class="p">:</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;authorization_encrypted_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;RSA-OAEP-256&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;authorization_encrypted_response_enc&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;A128CBC-HS256&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A192CBC-HS384&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A128GCM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A192GCM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A256GCM&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;authorization_signed_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES256&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;client_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Name of an example organization&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;contacts&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ops@verifier.example.org&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;default_acr_values&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;https://www.spid.gov.it/SpidL2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;https://www.spid.gov.it/SpidL3&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;default_max_age&quot;</span><span class="p">:</span> <span class="mi">1111</span><span class="p">,</span>
+    <span class="s2">&quot;id_token_encrypted_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;RSA-OAEP-256&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;id_token_encrypted_response_enc&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;A128CBC-HS256&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A192CBC-HS384&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A128GCM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A192GCM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;A256GCM&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;id_token_signed_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES256&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;response_uris&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP/response-uri&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;request_uris&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP/request-uri&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;require_auth_time&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;subject_type&quot;</span><span class="p">:</span> <span class="s2">&quot;pairwise&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vp_formats&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;sd-jwt_alg_values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES384&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kb-jwt_alg_values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES384&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;jwks&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;keys&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">jwk</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7v&quot;</span>
+                <span class="s2">&quot;tyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVG&quot;</span>
+                <span class="s2">&quot;H9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;AQAB&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx&quot;</span>
+                <span class="s2">&quot;6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBK&quot;</span>
+                <span class="s2">&quot;woxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG6&quot;</span>
+                <span class="s2">&quot;8XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPvi&quot;</span>
+                <span class="s2">&quot;H5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;EC&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;crv&quot;</span><span class="p">:</span> <span class="s2">&quot;P-256&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">]</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;base_url&quot;</span><span class="p">:</span> <span class="n">BASE_URL</span><span class="p">,</span>
+    <span class="s2">&quot;ui&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;static_storage_url&quot;</span><span class="p">:</span> <span class="n">BASE_URL</span><span class="p">,</span>
+        <span class="s2">&quot;template_folder&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span><span class="si">}</span><span class="s2">/pyeudiw/tests/satosa/templates&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;qrcode_template&quot;</span><span class="p">:</span> <span class="s2">&quot;qrcode.html&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;authorization_error_template&quot;</span><span class="p">:</span> <span class="s2">&quot;authorization_error.html&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;endpoints&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;pre_request&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.endpoints.pre_request_endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;PreRequestHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/pre-request&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;ResponseHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/response&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.endpoints.request_endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;RequestHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/request&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.endpoints.status_endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;StatusHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/status&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;get_response&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.endpoints.get_response_endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;GetResponseHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/get-response&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;response_code&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sym_key&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;qrcode&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#2B4375&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;expiration_time&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+        <span class="s2">&quot;logo_path&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw/tests/satosa/static/logo.png&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;jwt&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;default_sig_alg&quot;</span><span class="p">:</span> <span class="s2">&quot;ES256&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;default_exp&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="s2">&quot;enc_alg_supported&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;RSA-OAEP-256&quot;</span><span class="p">,</span> <span class="s2">&quot;ECDH-ES&quot;</span><span class="p">,</span> <span class="s2">&quot;ECDH-ES+A128KW&quot;</span><span class="p">,</span> <span class="s2">&quot;ECDH-ES+A192KW&quot;</span><span class="p">,</span> <span class="s2">&quot;ECDH-ES+A256KW&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;enc_enc_supported&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;A128CBC-HS256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192CBC-HS384&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A128GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256GCM&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;sig_alg_supported&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;RS256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ES256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ES384&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ES512&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;EdDSA&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;authorization&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;url_scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;haip&quot;</span><span class="p">,</span>  <span class="c1"># haip://</span>
+        <span class="s2">&quot;default_acr_value&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.spid.gov.it/SpidL2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;expiration_time&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># minutes</span>
+        <span class="s2">&quot;aud&quot;</span><span class="p">:</span> <span class="s2">&quot;https://self-issued.me/v2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;response_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;direct_post&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;dcql_query&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;credentials&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;personal id data&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;vct_values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata&quot;</span><span class="p">]},</span>
+                <span class="s2">&quot;claims&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;user_claims&quot;</span><span class="p">,</span> <span class="s2">&quot;given_name&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;user_claims&quot;</span><span class="p">,</span> <span class="s2">&quot;family_name&quot;</span><span class="p">]}],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;user_attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;unique_identifiers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tax_id_code&quot;</span><span class="p">,</span> <span class="s2">&quot;unique_id&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;subject_id_random_value&quot;</span><span class="p">:</span> <span class="s2">&quot;CHANGEME!&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;httpc_params&quot;</span><span class="p">:</span> <span class="n">httpc_params</span><span class="p">},</span>
+    <span class="s2">&quot;trust&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;direct_trust_sd_jwt_vc&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.trust.handler.direct_trust_sd_jwt_vc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;DirectTrustSdJwtVc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;jwk_endpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;/.well-known/jwt-vc-issuer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;httpc_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                    <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;federation&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.trust.handler.federation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;FederationHandler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;openid_federation:</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">BACKEND_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;entity_configuration_exp&quot;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+                <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">_METADATA</span><span class="p">,</span>
+                <span class="s2">&quot;metadata_type&quot;</span><span class="p">:</span> <span class="s2">&quot;openid_credential_verifier&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;authority_hints&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;https://trust-anchor.example.org&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;trust_anchors&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;https://trust-anchor.example.org&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="n">ta_jwk</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;default_sig_alg&quot;</span><span class="p">:</span> <span class="s2">&quot;RS256&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;federation_jwks&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="n">jwk</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7v&quot;</span>
+                        <span class="s2">&quot;tyCoA-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVG&quot;</span>
+                        <span class="s2">&quot;H9U3W_djh4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;AQAB&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx&quot;</span>
+                        <span class="s2">&quot;6nq1uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBK&quot;</span>
+                        <span class="s2">&quot;woxeRyD3zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG6&quot;</span>
+                        <span class="s2">&quot;8XNT1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPvi&quot;</span>
+                        <span class="s2">&quot;H5jGoWM5RHyl_HDDMI-UeLkzP7ImxGizrM&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;EC&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;xPFTWxeGHTVTaDlzGad0MKN5JmWOSnRqEjJCtvQpoyg&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;crv&quot;</span><span class="p">:</span> <span class="s2">&quot;P-256&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;EkMoe7qPLGMydWO_evC3AXEeXJlLQk9tNRkYcpp7xHo&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;VLoHFl90D1SdTTjMvNf3WssWiCBXcU1lGNPbOmcCqdU&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;oGzjgBbIYNL9opdJ_rDPnCJF89yN8yj8wegdkYfaxw0&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;trust_marks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;...&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;federation_entity_metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;organization_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Example RP&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;homepage_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://developers.italia.it&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;policy_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://developers.italia.it/privacy-policy&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;tos_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://developers.italia.it/privacy-policy&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;logo_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://developers.italia.it/assets/img/io-it-logo-white.svg&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;x509&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.trust.handler.x509&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;X509Handler&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;x509_san_dns:</span><span class="si">{</span><span class="n">BASE_URL</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;://&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;include_issued_jwt_header_param&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;leaf_certificate_chains_by_ca&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;ca.example.com&quot;</span><span class="p">:</span> <span class="n">DEFAULT_X509_CHAIN</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;certificate_authorities&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;ca.example.com&quot;</span><span class="p">:</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">DEFAULT_X509_CHAIN</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                    <span class="s2">&quot;https://credential-issuer.example.org&quot;</span><span class="p">:</span> <span class="s2">&quot;-----BEGIN CERTIFICATE-----</span><span class="se">\n</span><span class="s2">MIIB/jCCAaSgAwIBAgIUUMBi34bUh6gnoMbxypdmBk/JeUMwCgYIKoZIzj0EAwIw</span><span class="se">\n</span><span class="s2">ZDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNh</span><span class="se">\n</span><span class="s2">biBGcmFuY2lzY28xEzARBgNVBAoMCk15IENvbXBhbnkxEzARBgNVBAMMCm15c2l0</span><span class="se">\n</span><span class="s2">ZS5jb20wHhcNMjUwMzI1MTQyMTE0WhcNMjUwNDA0MTQyMTE0WjBkMQswCQYDVQQG</span><span class="se">\n</span><span class="s2">EwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj</span><span class="se">\n</span><span class="s2">bzETMBEGA1UECgwKTXkgQ29tcGFueTETMBEGA1UEAwwKbXlzaXRlLmNvbTBZMBMG</span><span class="se">\n</span><span class="s2">ByqGSM49AgEGCCqGSM49AwEHA0IABEXbtJ1tl7OFv1FF4q3BSy7kFlDUxvdQr03c</span><span class="se">\n</span><span class="s2">cT72OoZw/BR+q735qhltuHSuDeAt5O7yNbSbS0KQbQvf4HQWzDujNDAyMDAGA1Ud</span><span class="se">\n</span><span class="s2">EQQpMCeGJWh0dHBzOi8vY3JlZGVudGlhbC1pc3N1ZXIuZXhhbXBsZS5vcmcwCgYI</span><span class="se">\n</span><span class="s2">KoZIzj0EAwIDSAAwRQIgFgMjgF11XRv0E1rtNmWWOarprjbmu6tqOsulAMFXxV4C</span><span class="se">\n</span><span class="s2">IQDrpFoPCc2uDlEY4BzS10prwAgonpZeg/lm8/ll0IjVkQ==</span><span class="se">\n</span><span class="s2">-----END CERTIFICATE-----</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;private_keys&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="n">jwk</span><span class="p">,</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="s2">&quot;sig&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="s2">&quot;RS256&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;123114cf-ebef-48d9-9602-3be85e6e12dd&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;b41VkvQv083zdtsqX9Q4RqW6DOH7LcSMSSK-KaUi-jtR4SdPkans1vY9QwfZ1gL-iQm0UP50Txow1Xawnh_-O45efpTOJ0sEXno5gXregQQNXxum-ATh7npYTv3Zjfl1lw4GX9UvXwtko3zHA01OtvOdXxtDHtatvoojFEwTisBT5j9f_q7Dmmgmtml17U_M1heANv9O9PqOey2U7_wZRji2lLGpeP7DxeBpTVztyKdnBZCjBnwfyrES3eAPlO5GI3zWAxHuaSsms3F8WQKJqHQs8xDxHpC1MCPMqmnCZnrBxZXxeeg6gMuEJ72RtzziOwH2gr3alND6gpARwwgEYQ&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;oV1dBQQpxKhVpJzouceEvuJQ_0nIvK3GVF4FEKRunCWK1amBupkegZgIXq98WsvfNHLwKPhhFXO1unONb44Q51VeFet7ThWyJSB9dhXmr21wvqFA4HVQj4vGPLiGUmacKL-9W4vd_ElLyf1TEtcolUafEI83zfg6bsVkJrwdSRDkxYU5Kh28ayCgoaqXUwLsuR-xT5EiksJESHtqW5_8sqrp5v95UOxxK8NdbEQ54Fr2pfeKQ6Id5VyUlwOnfnV6zgJJ7qBM1NxcyQ7OkQHrh03LfoPF2Hl7-EuZ0ET8p9RVC7eC2NH033O9rSiWljwwsvmRG7nyVN7bkB5wbInp0Q&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;AQAB&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;0RHnCQZiI6VomMmRcfDyRgqZjUEHLPF17u4TAxqFys3-lgxuRCn8cjXkzJ7t9C0FmGNQy2zrwhQZRUlKotPwB9t0qTRwshqmG40O4EHfdgqu_sqNe8toCJ9xGqkDJFdYvmPy-SkqMYyszRf1GEwMjgj1Ncyx4WciaEbHZUllQo0&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;xZYanwkJJGOD4b7Z2PwCA_ubEYU8O2C3UoeINv2P5fXicXRK278o4WelaQBhyvDcPyS3lJyyusB_ro3Fax1fm4IDV1buITar671NzooWKOUQgG0MoVHS8k7qFmGXGDhFBrO_khsvc3FNAjdqkNpH5slo8AwvN2SrbHO3GX6aVVU&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;dp&quot;</span><span class="p">:</span> <span class="s2">&quot;tk7iJCCI24SVXQYH6k-tNB5yH5ag5zP3Hs5DjeVG3b4bTkSwsofaNs2AIl5EKTRJOMUB4yGrw6U7FAwBJVOib3eSlym_S8-pIUUzv6IxdgGC73M5RMXuhfZi7liLANmZ7QvDCDo5LNP6qy1E8FcAa6qsCKniQydn_X4aydvijNE&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;dq&quot;</span><span class="p">:</span> <span class="s2">&quot;Ml9mQg1Hq2NDiBXj7BGzYdiPXBQfmvO5SO0MqRhTy0i4hjwjqYo-ndiSrwZN6DMns2Fk_BpG5p2U76dtITXH3hlzSJz88LLDecI1R-akZ6CeaF9kzOvTX7sGqtYOczpFPsQsns8XddL40wvVu0Aq_Id0nV49211q5qdJktJX_lE&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;qi&quot;</span><span class="p">:</span> <span class="s2">&quot;rQ5SbqNeVrGOZ1rJXWbiAxux_-E1HBunOKWN6HQpoStLpRzJ6zz8aEXhSXMAnbeQOi1ZBS1escmlSupkgz4TEnrhionAJ2orIJ1rOiZIii7stJVkB3fs2LBoxs17Msj9AVrBA-tHhWpoBj63t-ahhEuxhgReq_0DjzQgcP7xUA&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;metadata_jwks&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">jwk</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;crv&quot;</span><span class="p">:</span> <span class="s2">&quot;P-256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;EC&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCo&quot;</span>
+            <span class="s2">&quot;A-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_dj&quot;</span>
+            <span class="s2">&quot;h4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;AQAB&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="s2">&quot;enc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1&quot;</span>
+            <span class="s2">&quot;uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3&quot;</span>
+            <span class="s2">&quot;zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT&quot;</span>
+            <span class="s2">&quot;1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG&quot;</span>
+            <span class="s2">&quot;oWM5RHyl_HDDMI-UeLkzP7ImxGizrM&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;storage&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;mongo_db&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;cache&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.storage.mongo_cache&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;MongoCache&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;init_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;mongodb://</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYEUDIW_MONGO_TEST_AUTH_INLINE&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">localhost:27017/?timeoutMS=15000&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;conf&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;db_name&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw_test&quot;</span><span class="p">},</span>
+                    <span class="s2">&quot;connection_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;serverSelectionTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span>
+                        <span class="s2">&quot;connectTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+                        <span class="s2">&quot;maxPoolSize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;storage&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.storage.mongo_storage&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;MongoStorage&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;init_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;mongodb://</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYEUDIW_MONGO_TEST_AUTH_INLINE&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">localhost:27017/?timeoutMS=15000&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;conf&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;db_name&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw_test&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_sessions_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;sessions&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_attestations&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_anchors&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_trust_sources_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_sources&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;connection_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;serverSelectionTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span>
+                        <span class="s2">&quot;connectTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+                        <span class="s2">&quot;maxPoolSize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">_METADATA</span><span class="p">,</span>
+    <span class="s2">&quot;credential_presentation_handlers&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;max_submission_size&quot;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="s2">&quot;formats&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc&quot;</span><span class="p">,</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;VpVcSdJwtParserVerifier&quot;</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+            <span class="p">{</span><span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor&quot;</span><span class="p">,</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;VpMDocCbor&quot;</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mso_mdoc&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.duckle_ql.handler&quot;</span><span class="p">,</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;DuckleHandler&quot;</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;duckle&quot;</span><span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">CREDENTIAL_ISSUER_ENTITY_ID</span> <span class="o">=</span> <span class="s2">&quot;https://issuer.example.com&quot;</span>
+
+<span class="n">MODULE_DIRECT_TRUST_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.trust.default.direct_trust_sd_jwt_vc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;DirectTrustSdJwtVc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;jwk_endpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;/.well-known/jwt-vc-issuer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;httpc_params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}},</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">CONFIG_DIRECT_TRUST</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;base_url&quot;</span><span class="p">:</span> <span class="n">BASE_URL</span><span class="p">,</span>
+    <span class="s2">&quot;ui&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;static_storage_url&quot;</span><span class="p">:</span> <span class="n">BASE_URL</span><span class="p">,</span>
+        <span class="s2">&quot;template_folder&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span><span class="si">}</span><span class="s2">/pyeudiw/tests/satosa/templates&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;qrcode_template&quot;</span><span class="p">:</span> <span class="s2">&quot;qrcode.html&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;endpoints&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;entity_configuration&quot;</span><span class="p">:</span> <span class="s2">&quot;/.well-known/openid-federation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pre_request&quot;</span><span class="p">:</span> <span class="s2">&quot;/pre-request&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;/response-uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;/request-uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;/status-uri&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;get_response&quot;</span><span class="p">:</span> <span class="s2">&quot;/get-response&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;response_code&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sym_key&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;qrcode&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#2B4375&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;expiration_time&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+        <span class="s2">&quot;logo_path&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw/tests/satosa/static/logo.png&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;jwt&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;default_sig_alg&quot;</span><span class="p">:</span> <span class="s2">&quot;ES256&quot;</span><span class="p">,</span> <span class="s2">&quot;default_exp&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
+    <span class="s2">&quot;authorization&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;url_scheme&quot;</span><span class="p">:</span> <span class="s2">&quot;haip&quot;</span><span class="p">,</span>  <span class="c1"># haip://</span>
+        <span class="s2">&quot;default_acr_value&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.spid.gov.it/SpidL2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;expiration_time&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># minutes</span>
+        <span class="s2">&quot;aud&quot;</span><span class="p">:</span> <span class="s2">&quot;https://self-issued.me/v2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;response_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;direct_post&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;dcql_query&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;credentials&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;personal id data&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;vct_values&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata&quot;</span><span class="p">,</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;claims&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;given_name&quot;</span><span class="p">]},</span>
+                    <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;family_name&quot;</span><span class="p">]},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;wallet attestation&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;mso_mdoc&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;vct_values&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;https://itwallet.registry.example.it/WalletAttestation&quot;</span><span class="p">,</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;claims&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;wallet_link&quot;</span><span class="p">]},</span>
+                    <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;wallet_name&quot;</span><span class="p">]},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;user_attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;unique_identifiers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tax_id_code&quot;</span><span class="p">,</span> <span class="s2">&quot;unique_id&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;subject_id_random_value&quot;</span><span class="p">:</span> <span class="s2">&quot;CHANGEME!&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;httpc_params&quot;</span><span class="p">:</span> <span class="n">httpc_params</span><span class="p">},</span>
+    <span class="s2">&quot;trust&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;direct_trust_sd_jwt_vc&quot;</span><span class="p">:</span> <span class="n">MODULE_DIRECT_TRUST_CONFIG</span><span class="p">},</span>
+    <span class="s2">&quot;metadata_jwks&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">jwk</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;crv&quot;</span><span class="p">:</span> <span class="s2">&quot;P-256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;KzQBowMMoPmSZe7G8QsdEWc1IvR2nsgE8qTOYmMcLtc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;dDwPWXz5sCtczj7CJbqgPGJ2qQ83gZ9Sfs-tJyULi6s&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;EC&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;TSO-KOqdnUj5SUuasdlRB2VVFSqtJOxuR5GftUTuBdk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;ByWgQt1wGBSnF56jQqLdoO1xKUynMY-BHIDB3eXlR7&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;kty&quot;</span><span class="p">:</span> <span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="s2">&quot;QUZsh1NqvpueootsdSjFQz-BUvxwd3Qnzm5qNb-WeOsvt3rWMEv0Q8CZrla2tndHTJhwioo1U4NuQey7znijhZ177bUwPPxSW1r68dEnL2U74nKwwoYeeMdEXnUfZSPxzs7nY6b7vtyCo&quot;</span>
+            <span class="s2">&quot;A-AjiVYFOlgKNAItspv1HxeyGCLhLYhKvS_YoTdAeLuegETU5D6K1xGQIuw0nS13Icjz79Y8jC10TX4FdZwdX-NmuIEDP5-s95V9DMENtVqJAVE3L-wO-NdDilyjyOmAbntgsCzYVGH9U3W_dj&quot;</span>
+            <span class="s2">&quot;h4t3qVFCv3r0S-DA2FD3THvlrFi655L0QHR3gu_Fbj3b9Ybtajpue_Q&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="s2">&quot;AQAB&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="s2">&quot;enc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="s2">&quot;9Cquk0X-fNPSdePQIgQcQZtD6J0IjIRrFigW2PPK_-w&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;utqtxbs-jnK0cPsV7aRkkZKA9t4S-WSZa3nCZtYIKDpgLnR_qcpeF0diJZvKOqXmj2cXaKFUE-8uHKAHo7BL7T-Rj2x3vGESh7SG1pE0thDGlXj4yNsg0qNvCXtk703L2H3i1UXwx6nq1&quot;</span>
+            <span class="s2">&quot;uFxD2EcOE4a6qDYBI16Zl71TUZktJwmOejoHl16CPWqDLGo9GUSk_MmHOV20m4wXWkB4qbvpWVY8H6b2a0rB1B1YPOs5ZLYarSYZgjDEg6DMtZ4NgiwZ-4N1aaLwyO-GLwt9Vf-NBKwoxeRyD3&quot;</span>
+            <span class="s2">&quot;zWE2FXRFBbhKGksMrCGnFDsNl5JTlPjaM3kYyImE941ggcuc495m-Fw&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;2zmGXIMCEHPphw778YjVTar1eycih6fFSJ4I4bl1iq167GqO0PjlOx6CZ1-OdBTVU7HfrYRiUK_BnGRdPDn-DQghwwkB79ZdHWL14wXnpB5y-boHz_LxvjsEqXtuQYcIkidOGaMG68XNT&quot;</span>
+            <span class="s2">&quot;1nM4F9a8UKFr5hHYT5_UIQSwsxlRQ0&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="s2">&quot;2jMFt2iFrdaYabdXuB4QMboVjPvbLA-IVb6_0hSG_-EueGBvgcBxdFGIZaG6kqHqlB7qMsSzdptU0vn6IgmCZnX-Hlt6c5X7JB_q91PZMLTO01pbZ2Bk58GloalCHnw_mjPh0YPviH5jG&quot;</span>
+            <span class="s2">&quot;oWM5RHyl_HDDMI-UeLkzP7ImxGizrM&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;storage&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;mongo_db&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;cache&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.storage.mongo_cache&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;MongoCache&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;init_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;mongodb://localhost:27017/?timeoutMS=15000&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;conf&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;db_name&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw_test&quot;</span><span class="p">},</span>
+                    <span class="s2">&quot;connection_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;serverSelectionTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span>
+                        <span class="s2">&quot;connectTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+                        <span class="s2">&quot;maxPoolSize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;storage&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw.storage.mongo_storage&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;MongoStorage&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;init_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;mongodb://localhost:27017/?timeoutMS=15000&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;conf&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;db_name&quot;</span><span class="p">:</span> <span class="s2">&quot;pyeudiw_test&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_sessions_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;sessions&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_trust_attestations_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_attestations&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;db_trust_anchors_collection&quot;</span><span class="p">:</span> <span class="s2">&quot;trust_anchors&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;connection_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;serverSelectionTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">15000</span><span class="p">,</span>
+                        <span class="s2">&quot;connectTimeoutMS&quot;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+                        <span class="s2">&quot;maxPoolSize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;application_type&quot;</span><span class="p">:</span> <span class="s2">&quot;web&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;authorization_encrypted_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;RSA-OAEP-256&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;authorization_encrypted_response_enc&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;A128CBC-HS256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192CBC-HS384&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A128GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256GCM&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;authorization_signed_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES256&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Name of an example organization&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;contacts&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ops@verifier.example.org&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;default_acr_values&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.spid.gov.it/SpidL2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;https://www.spid.gov.it/SpidL3&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;default_max_age&quot;</span><span class="p">:</span> <span class="mi">1111</span><span class="p">,</span>
+        <span class="s2">&quot;id_token_encrypted_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RSA-OAEP&quot;</span><span class="p">,</span> <span class="s2">&quot;RSA-OAEP-256&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;id_token_encrypted_response_enc&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;A128CBC-HS256&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192CBC-HS384&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256CBC-HS512&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A128GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A192GCM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;A256GCM&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;id_token_signed_response_alg&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES256&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;response_uris&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP/response-uri&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;request_uris&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">BASE_URL</span><span class="si">}</span><span class="s2">/OpenID4VP/request-uri&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;require_auth_time&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;subject_type&quot;</span><span class="p">:</span> <span class="s2">&quot;pairwise&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;vp_formats&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;dc+sd-jwt&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;sd-jwt_alg_values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES384&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;kb-jwt_alg_values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">,</span> <span class="s2">&quot;ES384&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">CREDENTIAL_ISSUER_CONF</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;sd_specification&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        user_claims:</span>
+<span class="s2">            !sd unique_id: &quot;xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;</span>
+<span class="s2">            !sd given_name: &quot;Mario&quot;</span>
+<span class="s2">            !sd family_name: &quot;Rossi&quot;</span>
+<span class="s2">            !sd birthdate: &quot;1980-01-10&quot;</span>
+<span class="s2">            !sd place_of_birth:</span>
+<span class="s2">                country: &quot;IT&quot;</span>
+<span class="s2">                locality: &quot;Rome&quot;</span>
+<span class="s2">            !sd tax_id_code: &quot;TINIT-XXXXXXXXXXXXXXXX&quot;</span>
+
+<span class="s2">        holder_disclosed_claims:</span>
+<span class="s2">            { &quot;given_name&quot;: &quot;Mario&quot;, &quot;family_name&quot;: &quot;Rossi&quot;, &quot;place_of_birth&quot;: {country: &quot;IT&quot;, locality: &quot;Rome&quot;} }</span>
+
+<span class="s2">        key_binding: True</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+<span class="p">}</span>
+
+
+<span class="n">INTERNAL_ATTRIBUTES</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;address.street_address&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;addresses.str&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;postaladdress&quot;</span><span class="p">,</span> <span class="s2">&quot;addressS&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;displayname&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;nickname&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name.credit-name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;github&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;login&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">,</span> <span class="s2">&quot;familyname&quot;</span><span class="p">,</span> <span class="s2">&quot;FamilyName&quot;</span><span class="p">,</span> <span class="s2">&quot;familyName&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;edupersontargetedid&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;linkedin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;orcid&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;github&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;eduPersonTargetedID&quot;</span><span class="p">,</span> <span class="s2">&quot;eduPersonTargetedId&quot;</span><span class="p">,</span> <span class="s2">&quot;spidCode&quot;</span><span class="p">,</span> <span class="s2">&quot;sub&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;edupersonprincipalname&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;eduPersonPrincipalName&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;edupersonscopedaffiliation&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;eduPersonScopedAffiliation&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;edupersonentilement&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;eduPersonEntitlement&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;schacpersonaluniqueid&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;schacPersonalUniqueID&quot;</span><span class="p">,</span> <span class="s2">&quot;fiscalNumber&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;schacpersonaluniquecode&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;schacPersonalUniqueCode&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;schachomeorganizationtype&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;schacHomeOrganizationType&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;schachomeorganization&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;schacHomeOrganization&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;givenname&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;first_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;linkedin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email-address&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name.given-names.value&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;given_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;given_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;givenName&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;mail&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;linkedin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email-address&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;emails.str&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;github&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mail&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mail&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name.credit-name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;github&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;given_name&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;surname&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;last_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;linkedin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;lastName&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name.family-name.value&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;family_name&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sn&quot;</span><span class="p">,</span> <span class="s2">&quot;surname&quot;</span><span class="p">,</span> <span class="s2">&quot;familyName&quot;</span><span class="p">,</span> <span class="s2">&quot;FamilyName&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;family_name&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="c1"># spid related</span>
+        <span class="s2">&quot;spidcode&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;spidcode&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;spidCode&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="c1"># decommentando questo la email rilasciata anche in caso di account linking sarà quella di spid</span>
+        <span class="c1"># commentando: email sarà rilasciato in formato URI</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;facebook&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;linkedin&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email-address&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;orcid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;emails.str&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;github&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;openid4vp&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mail&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mail&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;familyname&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;familyName&quot;</span><span class="p">,</span> <span class="s2">&quot;familyname&quot;</span><span class="p">,</span> <span class="s2">&quot;FamilyName&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;fiscalnumber&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;fiscalNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;fiscalnumber&quot;</span><span class="p">,</span> <span class="s2">&quot;FiscalNumber&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;gender&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;gender&quot;</span><span class="p">,</span> <span class="s2">&quot;Gender&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;companyName&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;companyName&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;registeredOffice&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;registeredOffice&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;ivaCode&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ivaCode&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;idCard&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;idCard&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;digitalAddress&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;digitalAddress&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;placeOfBirth&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;placeOfBirth&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;countyOfBirth&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;countyOfBirth&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;dateOfBirth&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dateOfBirth&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;address_saml&quot;</span><span class="p">:</span> <span class="p">{</span>  <span class="c1"># renamed to avoid duplicate key</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;mobilePhone&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mobilePhone&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;expirationDate&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;saml&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;expirationDate&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="c1"># user identification mapping</span>
+    <span class="s2">&quot;user_id_from_attrs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;edupersontargetedid&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;user_id_to_attr&quot;</span><span class="p">:</span> <span class="s2">&quot;spidcode&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="n">PRIVATE_JWK</span> <span class="o">=</span> <span class="n">new_ec_key</span><span class="p">(</span><span class="s2">&quot;P-256&quot;</span><span class="p">)</span>
+<span class="n">PUBLIC_JWK</span> <span class="o">=</span> <span class="n">PRIVATE_JWK</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="n">WALLET_INSTANCE_ATTESTATION</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;iss&quot;</span><span class="p">:</span> <span class="s2">&quot;https://wallet-provider.example.org&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sub&quot;</span><span class="p">:</span> <span class="s2">&quot;vbeXJksM45xphtANnCiG6mCyuU4jfGNzopGuKvogg9c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;WalletInstanceAttestation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;policy_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://wallet-provider.example.org/privacy_policy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tos_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://wallet-provider.example.org/info_policy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;logo_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://wallet-provider.example.org/logo.svg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;aal&quot;</span><span class="p">:</span> <span class="s2">&quot;https://wallet-provider.example.org/LoA/basic&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cnf&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;jwk&quot;</span><span class="p">:</span> <span class="n">PUBLIC_JWK</span><span class="p">},</span>
+    <span class="s2">&quot;authorization_endpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;haip:&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;response_types_supported&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;vp_token&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;vp_formats_supported&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;jwt_vp_json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;alg_values_supported&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">]},</span>
+        <span class="s2">&quot;jwt_vc_json&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;alg_values_supported&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">]},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;request_object_signing_alg_values_supported&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ES256&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">iat_now</span><span class="p">(),</span>
+    <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">exp_from_now</span><span class="p">(),</span>
+<span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.satosa.backends package" href="pyeudiw.satosa.backends.html" />
+    <link rel="prev" title="pyeudiw.oauth2 package" href="pyeudiw.oauth2.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.satosa.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-satosa-package">
+<h1>pyeudiw.satosa package<a class="headerlink" href="#pyeudiw-satosa-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.backends.html">pyeudiw.satosa.backends package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html">pyeudiw.satosa.backends.openid4vp package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.authorization_request">pyeudiw.satosa.backends.openid4vp.authorization_request module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.authorization_response">pyeudiw.satosa.backends.openid4vp.authorization_response module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.exceptions">pyeudiw.satosa.backends.openid4vp.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.interface">pyeudiw.satosa.backends.openid4vp.interface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.openid4vp">pyeudiw.satosa.backends.openid4vp.openid4vp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#pyeudiw-satosa-backends-openid4vp-utils-module">pyeudiw.satosa.backends.openid4vp.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.vp">pyeudiw.satosa.backends.openid4vp.vp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor">pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc">pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.backends.openid4vp.html#module-pyeudiw.satosa.backends.openid4vp">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.backends.html#module-pyeudiw.satosa.backends">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyeudiw.satosa.frontends.html">pyeudiw.satosa.frontends package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.html">pyeudiw.satosa.frontends.openid4vci package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.html#pyeudiw-satosa-frontends-openid4vci-openid4vci-module">pyeudiw.satosa.frontends.openid4vci.openid4vci module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.satosa.frontends.openid4vci.html#module-pyeudiw.satosa.frontends.openid4vci">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyeudiw.satosa.frontends.html#module-pyeudiw.satosa.frontends">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.exceptions">
+<span id="pyeudiw-satosa-exceptions-module"></span><h2>pyeudiw.satosa.exceptions module<a class="headerlink" href="#module-pyeudiw.satosa.exceptions" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.AuthorizeUnmatchedResponse">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">AuthorizeUnmatchedResponse</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#AuthorizeUnmatchedResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.AuthorizeUnmatchedResponse" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when an authorization response cannot be matched to an authentication request</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.BadRequestError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">BadRequestError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#BadRequestError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.BadRequestError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Bad Request error.</p>
+<p>This exception should be raised when we want to return an HTTP 400 Bad Request</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.DiscoveryFailedError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">DiscoveryFailedError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#DiscoveryFailedError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.DiscoveryFailedError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when the discovery fails</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.EmptyHTTPError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">EmptyHTTPError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#EmptyHTTPError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.EmptyHTTPError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.exceptions.HTTPError" title="pyeudiw.satosa.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a></p>
+<p>Default HTTP empty error</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.FinalizedSessionError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">FinalizedSessionError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#FinalizedSessionError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.FinalizedSessionError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.exceptions.BadRequestError" title="pyeudiw.satosa.exceptions.BadRequestError"><code class="xref py py-class docutils literal notranslate"><span class="pre">BadRequestError</span></code></a></p>
+<p>Raised when an authorization request or respsonse attempts at updating or modifying
+an already finalized authentication session.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.HTTPError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">HTTPError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#HTTPError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.HTTPError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when an error occurs during an HTTP request</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.InternalServerError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">InternalServerError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#InternalServerError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.InternalServerError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Bad Request error.</p>
+<p>This exception should be raised when we want to return an HTTP 400 Bad Request</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.InvalidInternalStateError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidInternalStateError</span></span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#InvalidInternalStateError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.InvalidInternalStateError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyeudiw.satosa.exceptions.InternalServerError" title="pyeudiw.satosa.exceptions.InternalServerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">InternalServerError</span></code></a></p>
+<p>This is specification of InternalServerError that specify that the internal
+error is caused by an invalid backend, storage or cache state.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pyeudiw.satosa.exceptions.InvalidRequestException">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidRequestException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/exceptions.html#InvalidRequestException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.exceptions.InvalidRequestException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised when a request is invalid according to OpenID4VCI specifications.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>message (str): A human-readable explanation of why the request is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.satosa" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.oauth2.html" class="btn btn-neutral float-left" title="pyeudiw.oauth2 package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.satosa.backends.html" class="btn btn-neutral float-right" title="pyeudiw.satosa.backends package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

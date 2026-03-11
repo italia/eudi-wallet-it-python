@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.trust.handler.interface &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.trust.handler.interface</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.trust.handler.interface</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.trust.model.trust_source</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrustSourceData</span>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TrustHandlerInterface</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;default_client_id&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrustHandlerInterface.extract_and_update_trust_materials">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.extract_and_update_trust_materials">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_and_update_trust_materials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">issuer</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrustSourceData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract the trust material of a certain issuer using a trust handler implementation.</span>
+
+<span class="sd">        :param issuer: The issuer</span>
+<span class="sd">        :type issuer: str</span>
+<span class="sd">        :param trust_source: The trust source to update</span>
+<span class="sd">        :type trust_source: TrustSourceData</span>
+
+<span class="sd">        :returns: The updated trust source</span>
+<span class="sd">        :rtype: TrustSourceData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.get_metadata">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">issuer</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrustSourceData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the metadata of a certain issuer if is needed by the specifics.</span>
+
+<span class="sd">        :param issuer: The issuer</span>
+<span class="sd">        :type issuer: str</span>
+<span class="sd">        :param trust_source: The trust source to update</span>
+<span class="sd">        :type trust_source: TrustSourceData</span>
+
+<span class="sd">        :returns: The updated trust source</span>
+<span class="sd">        :rtype: TrustSourceData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.build_metadata_endpoints">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.build_metadata_endpoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_metadata_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">entity_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Context</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Response</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Expose one or more metadata endpoints required to publish metadata</span>
+<span class="sd">        information about this handler (for example public keys, configurations,</span>
+<span class="sd">        policies, etc.). The endpoints are attached to a backend whose name is the</span>
+<span class="sd">        first function argument.</span>
+
+<span class="sd">        The result of this method is a list of elements where each one is of type</span>
+<span class="sd">        List[Tuple[str, Callable[[Context, Any], Response]]], compliant with</span>
+<span class="sd">        satosa.backend.BackendModule.register_endpoints:</span>
+<span class="sd">        1. the first element of the tuple is a regexp used for routing to that endpoint;</span>
+<span class="sd">        2. the second element is an HTTP handler that can provide a Response given the Context.</span>
+
+<span class="sd">        The entity_uri is the full path component of the exposed satosa module and</span>
+<span class="sd">        may be used as issuer value when signing tokens. Due to satosa routing</span>
+<span class="sd">        restrictions, exposed endpoints must start with the satosa module name.</span>
+
+<span class="sd">        If the TrustHandler has no associated metadata endpoints, return an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.get_handled_trust_material_name">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_handled_trust_material_name">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_handled_trust_material_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the name of the trust material that this handler can handle.</span>
+
+<span class="sd">        :returns: The name of the trust material</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.extract_jwt_header_trust_parameters">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.extract_jwt_header_trust_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_jwt_header_trust_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a trust source to extract the trust parameters (in the source)</span>
+<span class="sd">        that can be used as a JWT header according to what this very own trust</span>
+<span class="sd">        evaluation mechanism is capable of understanding.</span>
+
+<span class="sd">        Some trust evaluation mechanism is not associated to any JWT header</span>
+<span class="sd">        mechanism, in which case an empty dictionary is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.validate_trust_material">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.validate_trust_material">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_trust_material</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">chain</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">trust_source</span><span class="p">:</span> <span class="n">TrustSourceData</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">TrustSourceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate the trust chain using the trust handler.</span>
+
+<span class="sd">        :param trust_chain: The trust chain to validate</span>
+<span class="sd">        :type trust_chain: list[str]</span>
+<span class="sd">        :param trust_source: The trust source</span>
+<span class="sd">        :type trust_source: TrustSourceData</span>
+<span class="sd">        :param db_engine: The database engine</span>
+<span class="sd">        :type db_engine: DBEngine</span>
+
+<span class="sd">        :returns: True if the trust chain is valid, False otherwise</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.get_client_id">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.get_client_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the client ID associated with this trust evaluator.</span>
+<span class="sd">        This is typically used for OAuth2 or OpenID Connect flows.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TrustHandlerInterface.is_it_me">
+<a class="viewcode-back" href="../../../../rst/pyeudiw.trust.handler.html#pyeudiw.trust.handler.interface.TrustHandlerInterface.is_it_me">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_it_me</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns true if, according to this trust framework implementation,</span>
+<span class="sd">        the argument client_id refers to the implementation itself as a</span>
+<span class="sd">        *member* of the trust framework.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">client_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_client_id</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the name of the trust handler.</span>
+
+<span class="sd">        :returns: The name of the trust handler</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the default client id of the trust handler.</span>
+
+<span class="sd">        :returns: The default client id of the trust handler</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.sd_jwt.issuer &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.sd_jwt.issuer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.sd_jwt.issuer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jwk.jwk</span><span class="w"> </span><span class="kn">import</span> <span class="n">key_from_jwk_dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptojwt.jws.jws</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWS</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_SIGNING_ALG</span><span class="p">,</span>
+    <span class="n">DIGEST_ALG_KEY</span><span class="p">,</span>
+    <span class="n">JSON_SER_DISCLOSURE_KEY</span><span class="p">,</span>
+    <span class="n">SD_DIGESTS_KEY</span><span class="p">,</span>
+    <span class="n">SD_LIST_PREFIX</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">SDJWTCommon</span><span class="p">,</span> <span class="n">SDObj</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.sd_jwt.disclosure</span><span class="w"> </span><span class="kn">import</span> <span class="n">SDJWTDisclosure</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SDJWTIssuer">
+<a class="viewcode-back" href="../../../rst/pyeudiw.sd_jwt.html#pyeudiw.sd_jwt.issuer.SDJWTIssuer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SDJWTIssuer</span><span class="p">(</span><span class="n">SDJWTCommon</span><span class="p">):</span>
+    <span class="n">DECOY_MIN_ELEMENTS</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">DECOY_MAX_ELEMENTS</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="n">sd_jwt_payload</span><span class="p">:</span> <span class="n">Dict</span>
+    <span class="n">sd_jwt</span><span class="p">:</span> <span class="n">JWS</span>
+    <span class="n">serialized_sd_jwt</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">ii_disclosures</span><span class="p">:</span> <span class="n">List</span>
+    <span class="n">sd_jwt_issuance</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">decoy_digests</span><span class="p">:</span> <span class="n">List</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">user_claims</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">issuer_keys</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]],</span>
+        <span class="n">holder_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sign_alg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">add_decoy_claims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">serialization_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;compact&quot;</span><span class="p">,</span>
+        <span class="n">extra_header_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">serialization_format</span><span class="o">=</span><span class="n">serialization_format</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_claims</span> <span class="o">=</span> <span class="n">user_claims</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">issuer_keys</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">issuer_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">issuer_keys</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">issuer_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not valid jwk dict instance for one or more issuer_keys&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span> <span class="o">=</span> <span class="n">issuer_keys</span>
+
+        <span class="k">if</span> <span class="n">holder_key</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">holder_key</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not valid jwk dict instance for holder_key&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_holder_key</span> <span class="o">=</span> <span class="n">holder_key</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sign_alg</span> <span class="o">=</span> <span class="n">sign_alg</span> <span class="ow">or</span> <span class="n">DEFAULT_SIGNING_ALG</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_decoy_claims</span> <span class="o">=</span> <span class="n">add_decoy_claims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_header_parameters</span> <span class="o">=</span> <span class="n">extra_header_parameters</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ii_disclosures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoy_digests</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">!=</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Multiple issuer keys (here </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">) are only supported with JSON serialization.&quot;</span> <span class="sa">f</span><span class="s2">&quot;Keys found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_sd_claim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_claims</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assemble_sd_jwt_payload</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_signed_jws</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_combined</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_assemble_sd_jwt_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Create the JWS payload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_user_claims</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_payload</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">DIGEST_ALG_KEY</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">HASH_ALG</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_holder_key</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_payload</span><span class="p">[</span><span class="s2">&quot;cnf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;jwk&quot;</span><span class="p">:</span> <span class="n">key_from_jwk_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_holder_key</span><span class="p">)</span><span class="o">.</span><span class="n">serialize</span><span class="p">()}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_decoy_claim_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b64hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generate_salt</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoy_digests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">digest</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">digest</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_sd_claims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_claims</span><span class="p">):</span>
+        <span class="c1"># This function can be called recursively.</span>
+        <span class="c1">#</span>
+        <span class="c1"># If the user claims are a list, apply this function</span>
+        <span class="c1"># to each item in the list.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_claims</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims_list</span><span class="p">(</span><span class="n">user_claims</span><span class="p">)</span>
+
+        <span class="c1"># If the user claims are a dictionary, apply this function</span>
+        <span class="c1"># to each key/value pair in the dictionary.</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_claims</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims_object</span><span class="p">(</span><span class="n">user_claims</span><span class="p">)</span>
+
+        <span class="c1"># For other types, assume that the value can be disclosed.</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user_claims</span><span class="p">,</span> <span class="n">SDObj</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDObj found in illegal place. The claim value &#39;</span><span class="si">{</span><span class="n">user_claims</span><span class="si">}</span><span class="s2">&#39; should not be wrapped by SDObj.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">user_claims</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_sd_claims_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_claims</span><span class="p">:</span> <span class="n">List</span><span class="p">):</span>
+        <span class="c1"># Walk through all elements in the list.</span>
+        <span class="c1"># If an element is marked as SD, then create a proper disclosure for it.</span>
+        <span class="c1"># Otherwise, just return the element.</span>
+
+        <span class="n">output_user_claims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">claim</span> <span class="ow">in</span> <span class="n">user_claims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">claim</span><span class="p">,</span> <span class="n">SDObj</span><span class="p">):</span>
+                <span class="n">subtree_from_here</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims</span><span class="p">(</span><span class="n">claim</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="c1"># Create a new disclosure</span>
+                <span class="n">disclosure</span> <span class="o">=</span> <span class="n">SDJWTDisclosure</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">subtree_from_here</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Add to ii_disclosures</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ii_disclosures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">disclosure</span><span class="p">)</span>
+
+                <span class="c1"># Assemble all hash digests in the disclosures list.</span>
+                <span class="n">output_user_claims</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">SD_LIST_PREFIX</span><span class="p">:</span> <span class="n">disclosure</span><span class="o">.</span><span class="n">hash</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subtree_from_here</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims</span><span class="p">(</span><span class="n">claim</span><span class="p">)</span>
+                <span class="n">output_user_claims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subtree_from_here</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_user_claims</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_sd_claims_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_claims</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="n">sd_claims</span> <span class="o">=</span> <span class="p">{</span><span class="n">SD_DIGESTS_KEY</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">user_claims</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">subtree_from_here</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_sd_claims</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">SDObj</span><span class="p">):</span>
+                <span class="c1"># Create a new disclosure</span>
+                <span class="n">disclosure</span> <span class="o">=</span> <span class="n">SDJWTDisclosure</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">subtree_from_here</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Add to ii_disclosures</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ii_disclosures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">disclosure</span><span class="p">)</span>
+
+                <span class="c1"># Assemble all hash digests in the disclosures list.</span>
+                <span class="n">sd_claims</span><span class="p">[</span><span class="n">SD_DIGESTS_KEY</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">disclosure</span><span class="o">.</span><span class="n">hash</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sd_claims</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">subtree_from_here</span>
+
+        <span class="c1"># Add decoy claims if requested</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_decoy_claims</span><span class="p">:</span>
+            <span class="n">sr</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">SystemRandom</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sr</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DECOY_MIN_ELEMENTS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DECOY_MAX_ELEMENTS</span><span class="p">)):</span>
+                <span class="n">sd_claims</span><span class="p">[</span><span class="n">SD_DIGESTS_KEY</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_decoy_claim_entry</span><span class="p">())</span>
+
+        <span class="c1"># Delete the SD_DIGESTS_KEY if it is empty</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sd_claims</span><span class="p">[</span><span class="n">SD_DIGESTS_KEY</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">sd_claims</span><span class="p">[</span><span class="n">SD_DIGESTS_KEY</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Sort the hash digests otherwise</span>
+            <span class="n">sd_claims</span><span class="p">[</span><span class="n">SD_DIGESTS_KEY</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">sd_claims</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_signed_jws</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the SD-JWT.</span>
+
+<span class="sd">        If serialization_format is &quot;compact&quot;, then the SD-JWT is a JWT (JWS in compact serialization).</span>
+<span class="sd">        If serialization_format is &quot;json&quot;, then the SD-JWT is a JWS in JSON serialization. The disclosures in this case</span>
+<span class="sd">        will be added in a separate &quot;disclosures&quot; property of the JSON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Assemble protected headers starting with default</span>
+        <span class="n">_protected_headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;alg&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sign_alg</span><span class="p">,</span> <span class="s2">&quot;typ&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">SD_JWT_HEADER</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s2">&quot;kid&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">_protected_headers</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;kid&quot;</span><span class="p">]</span>
+
+        <span class="c1"># override if any</span>
+        <span class="n">_protected_headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_header_parameters</span><span class="p">)</span>
+
+        <span class="n">_unprotected_headers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">):</span>
+            <span class="n">_unprotected_headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">[</span><span class="s2">&quot;kid&quot;</span><span class="p">]}</span> <span class="k">if</span> <span class="s2">&quot;kid&quot;</span> <span class="ow">in</span> <span class="n">key</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">_unprotected_headers</span> <span class="o">=</span> <span class="n">_unprotected_headers</span> <span class="ow">or</span> <span class="p">{}</span>
+                <span class="n">_unprotected_headers</span><span class="p">[</span><span class="n">JSON_SER_DISCLOSURE_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">b64</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ii_disclosures</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="n">jwks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_issuer_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serialized_sd_jwt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_payload</span><span class="p">,</span>
+            <span class="n">protected</span><span class="o">=</span><span class="n">_protected_headers</span><span class="p">,</span>
+            <span class="n">unprotected</span><span class="o">=</span><span class="n">_unprotected_headers</span><span class="p">,</span>
+            <span class="n">serialization_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_combined</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialization_format</span> <span class="o">==</span> <span class="s2">&quot;compact&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_issuance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialized_sd_jwt</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">b64</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ii_disclosures</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_issuance</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMBINED_SERIALIZATION_FORMAT_SEPARATOR</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sd_jwt_issuance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialized_sd_jwt</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

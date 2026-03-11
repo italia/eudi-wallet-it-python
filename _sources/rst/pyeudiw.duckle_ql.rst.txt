@@ -1,0 +1,61 @@
+pyeudiw.duckle\_ql package
+==========================
+
+Submodules
+----------
+
+pyeudiw.duckle\_ql.attribute\_mapper module
+-------------------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.attribute_mapper
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.duckle\_ql.credential module
+------------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.credential
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.duckle\_ql.exceptions module
+------------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.duckle\_ql.handler module
+---------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.handler
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.duckle\_ql.parser\_validator module
+-------------------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.parser_validator
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.duckle\_ql.utils module
+-------------------------------
+
+.. automodule:: pyeudiw.duckle_ql.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.duckle_ql
+   :members:
+   :show-inheritance:
+   :undoc-members:

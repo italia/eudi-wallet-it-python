@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp.schemas package &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyeudiw.satosa.frontends package" href="pyeudiw.satosa.frontends.html" />
+    <link rel="prev" title="pyeudiw.satosa.backends.openid4vp.endpoints package" href="pyeudiw.satosa.backends.openid4vp.endpoints.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyeudiw</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyeudiw.html">pyeudiw package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyeudiw.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.duckle_ql.html">pyeudiw.duckle_ql package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.federation.html">pyeudiw.federation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwk.html">pyeudiw.jwk package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.jwt.html">pyeudiw.jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.oauth2.html">pyeudiw.oauth2 package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.sd_jwt.html">pyeudiw.sd_jwt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.status_list.html">pyeudiw.status_list package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.storage.html">pyeudiw.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tests.html">pyeudiw.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.tools.html">pyeudiw.tools package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.trust.html">pyeudiw.trust package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.wallet_instance_attestation.html">pyeudiw.wallet_instance_attestation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyeudiw.x509.html">pyeudiw.x509 package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw.exceptions">pyeudiw.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyeudiw.html#module-pyeudiw">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyeudiw</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.html">pyeudiw package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.html">pyeudiw.satosa package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.backends.html">pyeudiw.satosa.backends package</a></li>
+          <li class="breadcrumb-item"><a href="pyeudiw.satosa.backends.openid4vp.html">pyeudiw.satosa.backends.openid4vp package</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp.schemas package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/rst/pyeudiw.satosa.backends.openid4vp.schemas.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyeudiw-satosa-backends-openid4vp-schemas-package">
+<h1>pyeudiw.satosa.backends.openid4vp.schemas package<a class="headerlink" href="#pyeudiw-satosa-backends-openid4vp-schemas-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas.flow">
+<span id="pyeudiw-satosa-backends-openid4vp-schemas-flow-module"></span><h2>pyeudiw.satosa.backends.openid4vp.schemas.flow module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas.flow" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.flow.</span></span><span class="sig-name descname"><span class="pre">RemoteFlowType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/flow.html#RemoteFlowType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.CROSS_DEVICE">
+<span class="sig-name descname"><span class="pre">CROSS_DEVICE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cross_device'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.CROSS_DEVICE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.SAME_DEVICE">
+<span class="sig-name descname"><span class="pre">SAME_DEVICE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'same_device'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.flow.RemoteFlowType.SAME_DEVICE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas.response">
+<span id="pyeudiw-satosa-backends-openid4vp-schemas-response-module"></span><h2>pyeudiw.satosa.backends.openid4vp.schemas.response module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas.response" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.response.</span></span><span class="sig-name descname"><span class="pre">AuthorizeResponseDirectPostJwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/response.html#AuthorizeResponseDirectPostJwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt.response">
+<span class="sig-name descname"><span class="pre">response</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponseDirectPostJwt.response" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.response.</span></span><span class="sig-name descname"><span class="pre">AuthorizeResponsePayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/response.html#AuthorizeResponsePayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>AuthorizeResponsePayload is a simple schema class for <a class="reference external" href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters">https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters</a>
+for the DCQL (Duckle Query Language) flow.</p>
+<p>This class validates that the response contains the expected claims for DCQL.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.state">
+<span class="sig-name descname"><span class="pre">state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.vp_token">
+<span class="sig-name descname"><span class="pre">vp_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.AuthorizeResponsePayload.vp_token" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.response.</span></span><span class="sig-name descname"><span class="pre">ErrorResponsePayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/response.html#ErrorResponsePayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error_description">
+<span class="sig-name descname"><span class="pre">error_description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.error_description" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.state">
+<span class="sig-name descname"><span class="pre">state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ErrorResponsePayload.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.response.</span></span><span class="sig-name descname"><span class="pre">ResponseMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/response.html#ResponseMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post">
+<span class="sig-name descname"><span class="pre">direct_post</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'direct_post'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post_jwt">
+<span class="sig-name descname"><span class="pre">direct_post_jwt</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'direct_post.jwt'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.direct_post_jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'error'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseMode.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.response.</span></span><span class="sig-name descname"><span class="pre">ResponseSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/response.html#ResponseSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.nonce">
+<span class="sig-name descname"><span class="pre">nonce</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.nonce" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.state">
+<span class="sig-name descname"><span class="pre">state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.vp_token">
+<span class="sig-name descname"><span class="pre">vp_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.response.ResponseSchema.vp_token" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas.vp_formats">
+<span id="pyeudiw-satosa-backends-openid4vp-schemas-vp-formats-module"></span><h2>pyeudiw.satosa.backends.openid4vp.schemas.vp_formats module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas.vp_formats" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.</span></span><span class="sig-name descname"><span class="pre">Algorithms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/vp_formats.html#Algorithms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es256">
+<span class="sig-name descname"><span class="pre">es256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES256'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es384">
+<span class="sig-name descname"><span class="pre">es384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES384'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es512">
+<span class="sig-name descname"><span class="pre">es512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ES512'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.es512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs256">
+<span class="sig-name descname"><span class="pre">rs256</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS256'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs256" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs384">
+<span class="sig-name descname"><span class="pre">rs384</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS384'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs384" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs512">
+<span class="sig-name descname"><span class="pre">rs512</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RS512'</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms.rs512" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.</span></span><span class="sig-name descname"><span class="pre">VcSdJwt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd_jwt_alg_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms"><span class="pre">Algorithms</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kb_jwt_alg_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms"><span class="pre">Algorithms</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/vp_formats.html#VcSdJwt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.kb_jwt_alg_values">
+<span class="sig-name descname"><span class="pre">kb_jwt_alg_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms"><span class="pre">Algorithms</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.kb_jwt_alg_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.sd_jwt_alg_values">
+<span class="sig-name descname"><span class="pre">sd_jwt_alg_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.Algorithms"><span class="pre">Algorithms</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt.sd_jwt_alg_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.</span></span><span class="sig-name descname"><span class="pre">VpFormats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">vc_sd_jwt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt"><span class="pre">VcSdJwt</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/vp_formats.html#VpFormats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.vc_sd_jwt">
+<span class="sig-name descname"><span class="pre">vc_sd_jwt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt" title="pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VcSdJwt"><span class="pre">VcSdJwt</span></a></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_formats.VpFormats.vc_sd_jwt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas.vp_token">
+<span id="pyeudiw-satosa-backends-openid4vp-schemas-vp-token-module"></span><h2>pyeudiw.satosa.backends.openid4vp.schemas.vp_token module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas.vp_token" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.vp_token.</span></span><span class="sig-name descname"><span class="pre">VPTokenHeader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'JWT'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/vp_token.html#VPTokenHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.alg">
+<span class="sig-name descname"><span class="pre">alg</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.alg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.kid">
+<span class="sig-name descname"><span class="pre">kid</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.kid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.typ">
+<span class="sig-name descname"><span class="pre">typ</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'JWT'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenHeader.typ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.vp_token.</span></span><span class="sig-name descname"><span class="pre">VPTokenPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">iss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jti</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aud</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HttpUrl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/vp_token.html#VPTokenPayload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.aud">
+<span class="sig-name descname"><span class="pre">aud</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.aud" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.exp">
+<span class="sig-name descname"><span class="pre">exp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.exp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iat">
+<span class="sig-name descname"><span class="pre">iat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iss">
+<span class="sig-name descname"><span class="pre">iss</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">HttpUrl</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.iss" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.jti">
+<span class="sig-name descname"><span class="pre">jti</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.jti" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.nonce">
+<span class="sig-name descname"><span class="pre">nonce</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.nonce" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.vp">
+<span class="sig-name descname"><span class="pre">vp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.vp_token.VPTokenPayload.vp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata">
+<span id="pyeudiw-satosa-backends-openid4vp-schemas-wallet-metadata-module"></span><h2>pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata module<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.</span></span><span class="sig-name descname"><span class="pre">WalletMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">vp_formats_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alg_values_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id_schemes_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authorization_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request_object_signing_alg_values_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_types_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_modes_supported</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.alg_values_supported">
+<span class="sig-name descname"><span class="pre">alg_values_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.alg_values_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.authorization_endpoint">
+<span class="sig-name descname"><span class="pre">authorization_endpoint</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.authorization_endpoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.client_id_schemes_supported">
+<span class="sig-name descname"><span class="pre">client_id_schemes_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.client_id_schemes_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.request_object_signing_alg_values_supported">
+<span class="sig-name descname"><span class="pre">request_object_signing_alg_values_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.request_object_signing_alg_values_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_modes_supported">
+<span class="sig-name descname"><span class="pre">response_modes_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_modes_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_types_supported">
+<span class="sig-name descname"><span class="pre">response_types_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.response_types_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_alg_values_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_alg_values_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_alg_values_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_alg_values_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_authorization_endpoint">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_authorization_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_authorization_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_authorization_endpoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_client_id_schemes_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_client_id_schemes_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_client_id_schemes_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_client_id_schemes_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_request_object_signing_alg_values_supported_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_request_object_signing_alg_values_supported_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_request_object_signing_alg_values_supported_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_request_object_signing_alg_values_supported_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_modes_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_response_modes_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_response_modes_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_modes_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_types_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_response_types_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_response_types_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_response_types_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_vp_formats_supported">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">validate_vp_formats_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletMetadata.validate_vp_formats_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.validate_vp_formats_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.vp_formats_supported">
+<span class="sig-name descname"><span class="pre">vp_formats_supported</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata.vp_formats_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.</span></span><span class="sig-name descname"><span class="pre">WalletPostRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">wallet_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata" title="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata"><span class="pre">WalletMetadata</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wallet_nonce</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyeudiw/satosa/backends/openid4vp/schemas/wallet_metadata.html#WalletPostRequest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_metadata">
+<span class="sig-name descname"><span class="pre">wallet_metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata" title="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletMetadata"><span class="pre">WalletMetadata</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_nonce">
+<span class="sig-name descname"><span class="pre">wallet_nonce</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata.WalletPostRequest.wallet_nonce" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyeudiw.satosa.backends.openid4vp.schemas">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyeudiw.satosa.backends.openid4vp.schemas" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pyeudiw.satosa.backends.openid4vp.endpoints.html" class="btn btn-neutral float-left" title="pyeudiw.satosa.backends.openid4vp.endpoints package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pyeudiw.satosa.frontends.html" class="btn btn-neutral float-right" title="pyeudiw.satosa.frontends package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,597 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.storage.db_engine &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.storage.db_engine</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.storage.db_engine</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.base_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseCache</span><span class="p">,</span> <span class="n">RetrieveStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.base_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseStorage</span><span class="p">,</span> <span class="n">TrustType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChainNotExist</span><span class="p">,</span> <span class="n">EntryNotFound</span><span class="p">,</span> <span class="n">StorageWriteError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.base_logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseLogger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynamic_class_loader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.base_db</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDB</span>
+
+
+<div class="viewcode-block" id="DBEngine">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DBEngine</span><span class="p">(</span><span class="n">BaseStorage</span><span class="p">,</span> <span class="n">BaseCache</span><span class="p">,</span> <span class="n">BaseLogger</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DB Engine class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a DB Engine instance.</span>
+
+<span class="sd">        :param config: the configuration of all the DBs.</span>
+<span class="sd">        :type config: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseCache</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseStorage</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_conf</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">storage_instance</span><span class="p">,</span> <span class="n">cache_instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_instance</span><span class="p">(</span><span class="n">db_conf</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">storage_instance</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">db_name</span><span class="p">,</span> <span class="n">storage_instance</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">cache_instance</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">db_name</span><span class="p">,</span> <span class="n">cache_instance</span><span class="p">))</span>
+
+<div class="viewcode-block" id="DBEngine.init_session">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.init_session">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">remote_flow_typ</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">document_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">storage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">storage</span><span class="o">.</span><span class="n">init_session</span><span class="p">(</span>
+                    <span class="n">document_id</span><span class="p">,</span>
+                    <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+                    <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+                    <span class="n">remote_flow_typ</span><span class="o">=</span><span class="n">remote_flow_typ</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">StorageWriteError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error while initializing session with document_id </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Cannot write document with id </span><span class="si">{</span><span class="n">document_id</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="k">return</span> <span class="n">document_id</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.close">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_close_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_close_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.write">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.write">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a write operation on the storages.</span>
+
+<span class="sd">        :param method: the method to call.</span>
+<span class="sd">        :type method: str</span>
+<span class="sd">        :param args: the arguments to pass to the method.</span>
+<span class="sd">        :type args: Any</span>
+<span class="sd">        :param kwargs: the keyword arguments to pass to the method.</span>
+<span class="sd">        :type kwargs: Any</span>
+
+<span class="sd">        :raises StorageWriteError: if the write operation fails on all the storages.</span>
+
+<span class="sd">        :returns: the number of replicas where the write operation is successful.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">replica_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">_err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cannot apply write method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; with </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">storage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">replica_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">_err_msg</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">replica_count</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">StorageWriteError</span><span class="p">(</span><span class="n">_err_msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">replica_count</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_dpop_proof_and_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_dpop_proof_and_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dpop_proof_and_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">,</span> <span class="n">dpop_proof</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">attestation</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;add_dpop_proof_and_attestation&quot;</span><span class="p">,</span>
+            <span class="n">document_id</span><span class="p">,</span>
+            <span class="n">dpop_proof</span><span class="o">=</span><span class="n">dpop_proof</span><span class="p">,</span>
+            <span class="n">attestation</span><span class="o">=</span><span class="n">attestation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.upsert_session">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.upsert_session">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upsert_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;upsert_session&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.search_session_by_field">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.search_session_by_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search_session_by_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;search_session_by_field&quot;</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.set_finalized">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.set_finalized">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_finalized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;set_finalized&quot;</span><span class="p">,</span> <span class="n">document_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.update_request_object">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_request_object">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_request_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request_object</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;update_request_object&quot;</span><span class="p">,</span> <span class="n">document_id</span><span class="p">,</span> <span class="n">request_object</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.update_response_object">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_response_object">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_response_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response_object</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">isError</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;update_response_object&quot;</span><span class="p">,</span> <span class="n">nonce</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">response_object</span><span class="p">,</span> <span class="n">isError</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a get operation on the storages.</span>
+
+<span class="sd">        :param method: the method to call.</span>
+<span class="sd">        :type method: str</span>
+<span class="sd">        :param args: the arguments to pass to the method.</span>
+<span class="sd">        :type args: Any</span>
+<span class="sd">        :param kwargs: the keyword arguments to pass to the method.</span>
+<span class="sd">        :type kwargs: Any</span>
+
+<span class="sd">        :raises EntryNotFound: if the entry is not found on any storage.</span>
+
+<span class="sd">        :returns: the result of the first elment found on DBs.</span>
+<span class="sd">        :rtype: Union[dict, None]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">storage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">res</span>
+
+            <span class="k">except</span> <span class="n">EntryNotFound</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_debug</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot find result by method </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">EntryNotFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find any result by method </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_trust_attestation&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_trust_anchor&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.has_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_attestation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trust_attestation</span><span class="p">(</span><span class="n">entity_id</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.has_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trust_anchor</span><span class="p">(</span><span class="n">entity_id</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.has_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.has_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trust_source</span><span class="p">(</span><span class="n">entity_id</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_attestation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span> <span class="o">=</span> <span class="n">TrustType</span><span class="o">.</span><span class="n">FEDERATION</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_trust_attestation&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">attestation</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">jwks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_trust_attestation_metadata">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_attestation_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_attestation_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadat_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_trust_attestation_metadata&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">metadat_type</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_trust_source&quot;</span><span class="p">,</span> <span class="n">trust_source</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_trust_source">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_trust_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trust_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_trust_source&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_empty_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_empty_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_empty_trust_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_empty_trust_anchor&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_trust_anchor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_configuration</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span> <span class="o">=</span> <span class="n">TrustType</span><span class="o">.</span><span class="n">FEDERATION</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_trust_anchor&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">entity_configuration</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.update_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_trust_attestation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span> <span class="o">=</span> <span class="n">TrustType</span><span class="o">.</span><span class="n">FEDERATION</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;update_trust_attestation&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">attestation</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">jwks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.add_or_update_trust_attestation">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.add_or_update_trust_attestation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_or_update_trust_attestation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">attestation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span> <span class="o">=</span> <span class="n">TrustType</span><span class="o">.</span><span class="n">FEDERATION</span><span class="p">,</span>
+        <span class="n">jwks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_trust_attestation</span><span class="p">(</span><span class="n">entity_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;update_trust_attestation&quot;</span><span class="p">,</span>
+                <span class="n">entity_id</span><span class="p">,</span>
+                <span class="n">attestation</span><span class="p">,</span>
+                <span class="n">exp</span><span class="p">,</span>
+                <span class="n">trust_type</span><span class="p">,</span>
+                <span class="n">jwks</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">EntryNotFound</span><span class="p">,</span> <span class="n">ChainNotExist</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;add_trust_attestation&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">attestation</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">,</span> <span class="n">jwks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.update_trust_anchor">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.update_trust_anchor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_trust_anchor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entity_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">exp</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+        <span class="n">trust_type</span><span class="p">:</span> <span class="n">TrustType</span> <span class="o">=</span> <span class="n">TrustType</span><span class="o">.</span><span class="n">FEDERATION</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;update_trust_anchor&quot;</span><span class="p">,</span> <span class="n">entity_id</span><span class="p">,</span> <span class="n">entity_configuration</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">trust_type</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.try_retrieve">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.try_retrieve">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">try_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">on_not_found</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># if no cache instance exist return the object</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">on_not_found</span><span class="p">()</span>
+
+        <span class="c1"># if almost one cache instance exist try to retrieve</span>
+        <span class="n">cache_object</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_try_retrieve</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="n">on_not_found</span><span class="p">)</span>
+
+        <span class="c1"># if the status is retrieved return the object</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">RetrieveStatus</span><span class="o">.</span><span class="n">RETRIEVED</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cache_object</span>
+
+        <span class="c1"># else try replicate the data on all the other istances</span>
+        <span class="n">replica_instances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">for</span> <span class="n">cache_name</span><span class="p">,</span> <span class="n">cache</span> <span class="ow">in</span> <span class="n">replica_instances</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cache_object</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot replicate cache object with identifier </span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2"> on cache </span><span class="si">{</span><span class="n">cache_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cache_object</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.is_par_jti_replay">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.is_par_jti_replay">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_par_jti_replay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">jti</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if PAR jti was already used (replay attack). If first use, record it.</span>
+<span class="sd">        Returns True if replay (jti already seen for this client_id), False if first use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;par_jti:</span><span class="si">{</span><span class="n">client_id</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">jti</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">_cache_name</span><span class="p">,</span> <span class="n">cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">try_retrieve</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span> <span class="o">==</span> <span class="n">RetrieveStatus</span><span class="o">.</span><span class="n">RETRIEVED</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.overwrite">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.overwrite">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">overwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value_gen_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">cache_name</span><span class="p">,</span> <span class="n">cache</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">:</span>
+            <span class="n">cache_object</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cache_object</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">overwrite</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="n">value_gen_fn</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot overwrite cache object with identifier </span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2"> on cache </span><span class="si">{</span><span class="n">cache_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">cache_object</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.exists_by_state_and_session_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.exists_by_state_and_session_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exists_by_state_and_session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">storage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">exists_by_state_and_session_id</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_by_state">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_by_state_and_session_id</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_by_nonce_state">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_nonce_state">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_nonce_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_by_nonce_state&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_by_state_and_session_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_state_and_session_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_state_and_session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_by_state_and_session_id&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">session_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DBEngine.get_by_session_id">
+<a class="viewcode-back" href="../../../rst/pyeudiw.storage.html#pyeudiw.storage.db_engine.DBEngine.get_by_session_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;get_by_session_id&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_connected</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">_cons</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">storage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storages</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_connected</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">is_connected</span>
+                <span class="n">_cons</span><span class="p">[</span><span class="n">db_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_connected</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_debug</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error while checking db engine connection on </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="kc">True</span> <span class="ow">in</span> <span class="n">_cons</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">_cons</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_warning</span><span class="p">(</span>
+                <span class="s2">&quot;DB Engine&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Not all the storage are found available, storages misalignment: &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_cons</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_connected</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_try_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">on_not_found</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">RetrieveStatus</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to retrieve an object from the cache. If the object is not found, call the on_not_found function.</span>
+
+<span class="sd">        :param object_name: the name of the object to retrieve.</span>
+<span class="sd">        :type object_name: str</span>
+<span class="sd">        :param on_not_found: the function to call if the object is not found.</span>
+<span class="sd">        :type on_not_found: Callable[[], str]</span>
+
+<span class="sd">        :raises ConnectionRefusedError: if the object cannot be retrieved on any instance.</span>
+
+<span class="sd">        :returns: a tuple with the retrieved object, a status and the index of the cache instance.</span>
+<span class="sd">        :rtype: tuple[dict, RetrieveStatus, int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">cache_name</span><span class="p">,</span> <span class="n">cache_istance</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">caches</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cache_object</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">cache_istance</span><span class="o">.</span><span class="n">try_retrieve</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="n">on_not_found</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">cache_object</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">i</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot retrieve cache object with identifier </span><span class="si">{</span><span class="n">object_name</span><span class="si">}</span><span class="s2"> on cache database </span><span class="si">{</span><span class="n">cache_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ConnectionRefusedError</span><span class="p">(</span><span class="s2">&quot;Cannot write cache object on any instance&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_close_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseDB</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close a list of db.</span>
+
+<span class="sd">        :param db_list: the list of db to close.</span>
+<span class="sd">        :type db_list: list[Tuple[str,BaseDB]]</span>
+
+<span class="sd">        :raises Exception: if an error occurs while closing a db.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">db_list</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_critical</span><span class="p">(</span>
+                    <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error while closing db engine </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BaseStorage</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BaseCache</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle the initialization of a storage/cache instance.</span>
+
+<span class="sd">        :param instance: the instance configuration.</span>
+<span class="sd">        :type instance: dict</span>
+
+<span class="sd">        :returns: a tuple with the storage and cache instance.</span>
+<span class="sd">        :rtype: tuple[BaseStorage | None, BaseCache | None]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cache_conf</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">storage_conf</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;storage&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">storage_instance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">storage_conf</span><span class="p">:</span>
+            <span class="n">storage_instance</span> <span class="o">=</span> <span class="n">dynamic_class_loader</span><span class="p">(</span>
+                <span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">],</span>
+                <span class="n">storage_conf</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">],</span>
+                <span class="n">storage_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;init_params&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="p">)</span>
+
+        <span class="n">cache_instance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">cache_conf</span><span class="p">:</span>
+            <span class="n">cache_instance</span> <span class="o">=</span> <span class="n">dynamic_class_loader</span><span class="p">(</span>
+                <span class="n">cache_conf</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">],</span>
+                <span class="n">cache_conf</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">],</span>
+                <span class="n">cache_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;init_params&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">storage_instance</span><span class="p">,</span> <span class="n">cache_instance</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
