@@ -254,6 +254,18 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
         return cache_object
 
+    def is_par_jti_replay(self, client_id: str, jti: str) -> bool:
+        """
+        Check if PAR jti was already used (replay attack). If first use, record it.
+        Returns True if replay (jti already seen for this client_id), False if first use.
+        """
+        if not self.caches:
+            return False
+        object_name = f"par_jti:{client_id}:{jti}"
+        _cache_name, cache = self.caches[0]
+        _, status = cache.try_retrieve(object_name, lambda: "1")
+        return status == RetrieveStatus.RETRIEVED
+
     def overwrite(self, object_name: str, value_gen_fn: Callable[[], str]) -> dict:
         for cache_name, cache in self.caches:
             cache_object = None

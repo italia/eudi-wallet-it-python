@@ -70,18 +70,7 @@ def _create_vp_token(nonce: str, aud: str, holder_jwk: JWK, sign_alg: str) -> st
 def _generate_response(state: str, vp_token: str) -> dict:
     return {
         "state": state,
-        "vp_token": vp_token,
-        "presentation_submission": {
-            "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-            "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-            "descriptor_map": [
-                {
-                    "id": "pid-sd-jwt:unique_id+given_name+family_name",
-                    "path": "$.vp_token.verified_claims.claims._sd[0]",
-                    "format": "dc+sd-jwt",
-                }
-            ],
-        },
+        "vp_token": vp_token
     }
 
 

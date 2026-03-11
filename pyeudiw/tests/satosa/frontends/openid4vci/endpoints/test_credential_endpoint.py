@@ -8,6 +8,7 @@ from satosa.context import Context
 from cryptojwt.jwk.ec import new_ec_key
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint import CredentialHandler
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import MissingProofJWTException
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
 from pyeudiw.storage.credential_entity import CredentialEntity
@@ -222,6 +223,46 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
     req["proof"]["jwt"] = value
     context.request = req
     assert_invalid_request_application_json(credential_handler.endpoint(context), error_desc)
+
+
+def test_proof_jwt_required_and_missing_raises_missing_proof_jwt_exception(credential_handler, context, request_without_open_id_credential):
+    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+    config["security"] = config.get("security", {}) | {"dpop_required": True, "proof_jwt_required": True}
+    with (
+        patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine"),
+        patch(f"{_CREDENTIAL_BASE_PATH}.CombinedTrustEvaluator"),
+    ):
+        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler.db_engine = MagicMock()
+        handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    req = deepcopy(request_without_open_id_credential)
+    del req["proof"]
+    context.request = req
+    result = handler.endpoint(context)
+    assert result.status == "400"
+    response = json.loads(result.message)
+    assert "missing proof jwt" in response.get("error_description", "").lower()
+
+
+def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handler, context, request_without_open_id_credential):
+    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+    config["security"] = config.get("security", {}) | {"dpop_required": True, "proof_jwt_required": False}
+    with (
+        patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
+        patch(f"{_CREDENTIAL_BASE_PATH}.CombinedTrustEvaluator"),
+    ):
+        usc_mock_engine = MagicMock()
+        usc_mock_engine.db_user_storage_engine = MagicMock()
+        usc_mock_engine.db_credential_storage_engine = MagicMock()
+        user_cred_eng_class.return_value = usc_mock_engine
+        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler.db_engine = MagicMock()
+        handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    req = deepcopy(request_without_open_id_credential)
+    del req["proof"]
+    context.request = req
+    handler.endpoint(context)
+    assert "Missing JWTProof since it is not configured" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -497,6 +538,18 @@ def test_request_invalid_prof_jwt(credential_handler, context, request_without_o
                 "nonce": "random-random-nonce-abc123",
             },
             "invalid `proof.jwt.nonce` parameter",
+        ),
+        (
+            {
+                "alg": "ES256",
+                "typ": JWT_PROOF_TYP,
+                "jwk": '{"crv":"P-256","x":"abc","y":"def"}',
+                "iss": "client123",
+                "aud": "example.com/openid4vcimock",
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "nonce": "random-nonce-abc123",
+            },
+            "missing proof.jwt.jwk kty",
         ),
     ],
 )

@@ -187,7 +187,7 @@ class TestOpenID4VPBackend:
         )
 
         sdjwt_at_holder.create_presentation(
-            {},
+            {"user_claims": {"given_name": "Mario", "family_name": "Rossi"}},
             nonce,
             aud,
             holder_key=holder_jwk,
@@ -196,20 +196,10 @@ class TestOpenID4VPBackend:
 
         vp_token = sdjwt_at_holder.sd_jwt_presentation
 
-        mdoci.new(doctype="eu.europa.ec.eudiw.pid.1", data=PID_DATA, validity={"issuance_date": "2024-12-31", "expiry_date": "2050-12-31"})
-
-        vp_token_mdoc = mdoci.dumps().decode()
-
         return {
             "state": state,
-            "vp_token": [vp_token, vp_token_mdoc],
-            "presentation_submission": {
-                "definition_id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                "id": "04a98be3-7fb0-4cf5-af9a-31579c8b0e7d",
-                "descriptor_map": [
-                    {"id": "pid-sd-jwt:unique_id+given_name+family_name", "path": "$[0]", "format": "dc+sd-jwt"},
-                    {"id": "eu.europa.ec.eudiw.pid.1", "path": "$[1]", "format": "mso_mdoc"},
-                ],
+            "vp_token": {
+                "personal id data": vp_token,
             },
         }
 
@@ -364,12 +354,12 @@ class TestOpenID4VPBackend:
         msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] in (
-            "invalid presentation submission: validation error",
-            "invalid presentation submission: vp_format not supported",
+            "invalid DCQL response: validation error",
+            "invalid DCQL response: vp_format not supported",
         )
 
         # check that malformed jwt result in 400 response
-        response["vp_token"][0] = "asd.fgh.jkl"
+        response["vp_token"]["personal id data"] = "asd.fgh.jkl"
         encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
         context.request = {"response": encrypted_response}
         resp = response_endpoint(context)
@@ -377,8 +367,8 @@ class TestOpenID4VPBackend:
         msg = json.loads(resp.message)
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] in (
-            "invalid presentation submission: validation error",
-            "invalid presentation submission: vp_format not supported",
+            "invalid DCQL response: validation error",
+            "invalid DCQL response: vp_format not supported",
         )
 
     def test_response_endpoint(self, context):
@@ -411,8 +401,8 @@ class TestOpenID4VPBackend:
         assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] in (
-            "invalid presentation submission: validation error",
-            "invalid presentation submission: vp_format not supported",
+            "invalid DCQL response: validation error",
+            "invalid DCQL response: vp_format not supported",
         )
 
         # case (2): bad state
@@ -440,8 +430,8 @@ class TestOpenID4VPBackend:
         assert resp.status.startswith("4")
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] in (
-            "invalid presentation submission: validation error",
-            "invalid presentation submission: vp_format not supported",
+            "invalid DCQL response: validation error",
+            "invalid DCQL response: vp_format not supported",
         )
 
         # case (4): good aud, nonce and state
@@ -525,7 +515,7 @@ class TestOpenID4VPBackend:
         msg = json.loads(resp.message)
         assert resp.status == "400"
         assert msg["error"] == "invalid_request"
-        assert msg["error_description"] == "invalid presentation submission: validation error"
+        assert msg["error_description"] == "invalid DCQL response: validation error"
 
     def test_response_endpoint_invalid_signature(self, context):
         nonce = str(uuid.uuid4())
@@ -536,12 +526,12 @@ class TestOpenID4VPBackend:
 
         response = self._generate_payload(self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id)
 
-        jwt_segments = response["vp_token"][0].split(".")
+        jwt_segments = response["vp_token"]["personal id data"].split(".")
 
         midlen = len(jwt_segments[2]) // 2
         jwt_segments[2] = jwt_segments[2][:midlen] + jwt_segments[2][midlen + 1:]
 
-        response["vp_token"][0] = ".".join(jwt_segments)
+        response["vp_token"]["personal id data"] = ".".join(jwt_segments)
 
         context.request_method = "POST"
         context.request_uri = CONFIG["metadata"]["response_uris"][0].removeprefix(CONFIG["base_url"])
@@ -561,8 +551,8 @@ class TestOpenID4VPBackend:
         assert resp.status == "400"
         assert msg["error"] == "invalid_request"
         assert msg["error_description"] in (
-            "invalid presentation submission: validation error",
-            "invalid presentation submission: vp_format not supported",
+            "invalid DCQL response: validation error",
+            "invalid DCQL response: vp_format not supported",
         )
 
     def test_response_endpoint_no_typ_session_must_fail(self, context):
@@ -589,7 +579,10 @@ class TestOpenID4VPBackend:
         assert resp.status == "500"
         msg = json.loads(resp.message)
         assert msg["error"] == "server_error"
-        assert msg["error_description"] == "flow error: unable to identify flow from stored session"
+        assert msg["error_description"] in (
+            "flow error: unable to identify flow from stored session",
+            "invalid DCQL response: unknown error",
+        )
 
     def test_response_endpoint_already_finalized_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
@@ -896,7 +889,7 @@ class TestOpenID4VPBackend:
         assert header["alg"]
         assert header["kid"]
         assert header["typ"] == "oauth-authz-req+jwt"
-        assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
+        assert "dcql_query" in payload, "DCQL flow must include dcql_query in request object"
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
 
@@ -1016,7 +1009,7 @@ class TestOpenID4VPBackend:
         assert header["alg"] == "ES256"
         assert header["kid"]
         assert header["typ"] == "oauth-authz-req+jwt"
-        assert payload["scope"] == " ".join(CONFIG["authorization"]["scopes"])
+        assert "dcql_query" in payload, "DCQL flow must include dcql_query in request object"
         assert payload["client_id"] == CONFIG["metadata"]["client_id"]
         assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         assert payload["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"

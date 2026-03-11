@@ -13,6 +13,7 @@ ENDPOINT_CTX = "endpoint"
 AUTHORIZATION_DETAILS_CTX = "authorization_details"
 ENTITY_ID_CTX = "entity_id"
 NONCE_CTX = "nonce"
+PROOF_JWT_REQUIRED_CTX = "proof_jwt_required"
 
 logger = logging.getLogger(__name__)
 

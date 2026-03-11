@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import cast
 
@@ -11,6 +12,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
     NONCE_CTX,
+    PROOF_JWT_REQUIRED_CTX,
 )
 from pyeudiw.tools.date import is_valid_unix_timestamp
 
@@ -69,7 +71,15 @@ class ProofJWT(OpenId4VciBaseModel):
         self.check_invalid_parameter(self.typ != JWT_PROOF_TYP, self.typ, "proof.jwt.typ", CREDENTIAL_ENDPOINT)
 
     def validate_jwk(self):
-        pass
+        self.jwk = self.strip(self.jwk)
+        self.check_missing_parameter(self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT)
+        try:
+            jwk_dict = json.loads(self.jwk)
+        except (json.JSONDecodeError, TypeError):
+            self.check_invalid_parameter(True, self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT)
+        if not isinstance(jwk_dict, dict) or "kty" not in jwk_dict:
+            logger.error("proof.jwt.jwk missing kty in request `credential` endpoint")
+            raise InvalidRequestException("missing proof.jwt.jwk kty")
 
     def validate_iss(self):
         self.iss = self.strip(self.iss)
@@ -176,8 +186,14 @@ class CredentialEndpointRequest(OpenId4VciBaseModel):
             self.check_unexpected_parameter(self.credential_identifier, "credential_identifier", CREDENTIAL_ENDPOINT)
 
     def validate_proof(self):
-        self.check_missing_parameter(self.proof, "proof", CREDENTIAL_ENDPOINT)
-        Proof.model_validate(self.proof)
+        try:
+            proof_required = self.get_ctx(PROOF_JWT_REQUIRED_CTX)
+        except ValueError:
+            proof_required = False
+        if proof_required:
+            self.check_missing_parameter(self.proof, "proof", CREDENTIAL_ENDPOINT)
+        if self.proof:
+            Proof.model_validate(self.proof)
 
     def validate_transaction_id(self):
         pass

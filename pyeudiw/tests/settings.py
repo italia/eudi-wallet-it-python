@@ -180,16 +180,22 @@ CONFIG = {
             "EdDSA",
         ],
     },
-    "security": {
-        "wallet_attestation_required": False,
-    },
     "authorization": {
         "url_scheme": "haip",  # haip://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
         "aud": "https://self-issued.me/v2",
         "response_mode": "direct_post",
+    },
+    "dcql_query": {
+        "credentials": [
+            {
+                "id": "personal id data",
+                "format": "dc+sd-jwt",
+                "meta": {"vct_values": ["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},
+                "claims": [{"path": ["user_claims", "given_name"]}, {"path": ["user_claims", "family_name"]}],
+            },
+        ],
     },
     "user_attributes": {
         "unique_identifiers": ["tax_id_code", "unique_id"],
@@ -361,11 +367,8 @@ CONFIG = {
         "max_submission_size": 4096,
         "formats": [
             {"module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc", "class": "VpVcSdJwtParserVerifier", "format": "dc+sd-jwt", "config": {}},
-            {
-                "module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor",
-                "class": "VpMDocCbor",
-                "format": "mso_mdoc",
-            },
+            {"module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor", "class": "VpMDocCbor", "format": "mso_mdoc"},
+            {"module": "pyeudiw.duckle_ql.handler", "class": "DuckleHandler", "format": "duckle"},
         ],
     },
 }
@@ -406,7 +409,6 @@ CONFIG_DIRECT_TRUST = {
     "jwt": {"default_sig_alg": "ES256", "default_exp": 6},
     "authorization": {
         "url_scheme": "haip",  # haip://
-        "scopes": ["pid-sd-jwt:unique_id+given_name+family_name"],
         "default_acr_value": "https://www.spid.gov.it/SpidL2",
         "expiration_time": 5,  # minutes
         "aud": "https://self-issued.me/v2",

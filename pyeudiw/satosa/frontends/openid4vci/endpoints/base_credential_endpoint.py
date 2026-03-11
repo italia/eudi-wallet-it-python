@@ -19,7 +19,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request impo
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, MissingProofJWTException
 from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
 from pyeudiw.satosa.schemas.metadata import CredentialConfigurationFormatEnum, CredentialConfiguration
 from pyeudiw.satosa.utils.session import get_session_id
@@ -92,7 +92,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 credential_id = req.credential_identifier or req.credential_configuration_id
             return self.to_response(context, entity, credential_id)
 
-        except (InvalidRequestException, InvalidScopeException, ValidationError) as e:
+        except (InvalidRequestException, InvalidScopeException, ValidationError, MissingProofJWTException) as e:
             return self._handle_400(context, self._handle_validate_request_error(e, "credential"), e)
         except Exception as e:
             self._log_error(e.__class__.__name__, f"Error during invoke credential endpoint: {e}")

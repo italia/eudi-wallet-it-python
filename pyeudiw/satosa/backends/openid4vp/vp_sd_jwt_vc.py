@@ -1,7 +1,7 @@
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.satosa.backends.openid4vp.exceptions import MissingIssuer, VPRevoked, VPExpired
-from pyeudiw.satosa.backends.openid4vp.presentation_submission.base_vp_parser import BaseVPParser
+from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt

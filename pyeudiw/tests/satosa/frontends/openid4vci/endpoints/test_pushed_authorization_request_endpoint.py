@@ -176,6 +176,19 @@ def test_invalid_request(par_handler, context, client_id, request_par):
     assert_invalid_request_application_json(par_handler.endpoint(context), "invalid request parameters")
 
 
+def test_par_rejects_request_uri_in_body(par_handler, context):
+    """RFC 9126: PAR request MUST be rejected if it contains the request_uri parameter."""
+    context.request = {
+        "client_id": _MOCK_VALID_THUMBPRINT,
+        "request": "valid.jwt",
+        "request_uri": "urn:ietf:params:oauth:request_uri:existing",
+    }
+    assert_invalid_request_application_json(
+        par_handler.endpoint(context),
+        "invalid request parameters: request_uri must not be present",
+    )
+
+
 def _mock_request_deserialized(overrides=None):
     return mock_deserialized_overridable(_MOCK_REQUEST_DESERIALIZED, overrides)
 
@@ -310,6 +323,20 @@ def test_valid_request(par_handler, context):
     _assert_valid_request(par_handler, context)
 
 
+def test_jti_replay_rejected(par_handler, context):
+    with (
+        patch(JWS_HELPER_VERIFY_MODULE, return_value=_mock_request_deserialized()),
+        patch(_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET, return_value={"thumbprint": _MOCK_VALID_THUMBPRINT}),
+    ):
+        context.request = _MOCK_PAR_REQUEST
+        par_handler.db_engine = MagicMock()
+        par_handler.db_engine.is_par_jti_replay.return_value = True
+        result = par_handler.endpoint(context)
+        assert result.status == "400"
+        response = json.loads(result.message)
+        assert "jti replay" in response.get("error_description", "").lower()
+
+
 def _assert_valid_request(par_handler: ParHandler, context: Context):
     with (
         patch(JWS_HELPER_VERIFY_MODULE, return_value=_mock_request_deserialized()),
@@ -317,6 +344,7 @@ def _assert_valid_request(par_handler: ParHandler, context: Context):
     ):
         context.request = _MOCK_PAR_REQUEST
         par_handler.db_engine = MagicMock()
+        par_handler.db_engine.is_par_jti_replay.return_value = False
         result = par_handler.endpoint(context)
 
         assert result.status == "201 Created"

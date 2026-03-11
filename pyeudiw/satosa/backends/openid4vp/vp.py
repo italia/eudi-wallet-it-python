@@ -2,10 +2,9 @@ from pyeudiw.tools.base_logger import BaseLogger
 
 JWT_TYPE = "JWT"
 VC_SD_JWT_TYPE = "dc+sd-jwt"
-WALLET_ATTESTATION_TYPE = "wallet-attestation+jwt"
 MDOC_BCOR_TYPE = "mdoc_cbor"
 
-SUPPORTED_VC_TYPES = (JWT_TYPE, VC_SD_JWT_TYPE, WALLET_ATTESTATION_TYPE, MDOC_BCOR_TYPE)
+SUPPORTED_VC_TYPES = (JWT_TYPE, VC_SD_JWT_TYPE, MDOC_BCOR_TYPE)
 
 
 class Vp(BaseLogger):

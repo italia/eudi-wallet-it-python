@@ -1,5 +1,7 @@
+import base64
 from enum import Enum
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pydantic import BaseModel, ValidationError
 from satosa.context import Context
 
@@ -72,6 +74,7 @@ class TokenHandler(VCIBaseEndpoint):
                     self._log_error(e.__class__.__name__, f"Error during OAuth client attestation validation in `par` endpoint: {e}")
                     return self._handle_400(context, str(e), e)
 
+            dpop_verifier = None
             if self.dpop_required:
                 if not context.http_headers or ("DPoP" not in context.http_headers):
                     raise InvalidRequestException("Missing DPoP header")
@@ -113,9 +116,10 @@ class TokenHandler(VCIBaseEndpoint):
                 for ad in authorization_details:
                     ad.credential_identifiers = self.config_utils.get_credential_configurations_supported(ad.credential_configuration_id).scope
 
+            cnf = self._build_dpop_cnf(dpop_verifier) if dpop_verifier else {}
             return TokenResponse.to_created_response(
-                self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP),
-                self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP),
+                self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP, cnf),
+                self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP, cnf),
                 iat + self.config_utils.get_jwt().access_token_exp,
                 authorization_details,
             )
@@ -125,10 +129,18 @@ class TokenHandler(VCIBaseEndpoint):
             self._log_error(e.__class__.__name__, f"Error during invoke token endpoint: {e}")
             return self._handle_500(context, "error during invoke token endpoint", e)
 
-    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum) -> str:
+    def _build_dpop_cnf(self, dpop_verifier: DPoPVerifier) -> dict:
+        """Build cnf with jkt (RFC 9449) to bind token to DPoP key."""
+        jwk = key_from_jwk_dict(dpop_verifier.public_jwk)
+        thumbprint = jwk.thumbprint("SHA-256")
+        jkt = base64.urlsafe_b64encode(thumbprint).rstrip(b"=").decode()
+        return {"jkt": jkt}
+
+    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum, cnf: dict = None) -> str:
 
         if isinstance(entity, dict):
             entity = OpenId4VCIEntity(**entity)
+        cnf = cnf or {}
 
         match typ:
             case TokenTypsEnum.ACCESS_TOKEN_TYP:
@@ -146,6 +158,7 @@ class TokenHandler(VCIBaseEndpoint):
             iat=iat,
             client_id=entity.client_id,
             sub=entity.client_id,
+            cnf=cnf,
         )
         if typ == TokenTypsEnum.REFRESH_TOKEN_TYP:
             token = RefreshToken(**token.model_dump())

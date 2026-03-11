@@ -11,7 +11,7 @@ from typing import Any
 from pyeudiw.duckle_ql.handler import DuckleHandler
 from pyeudiw.exceptions import ValidationError
 from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
-from pyeudiw.satosa.backends.openid4vp.presentation_submission import MissingHandler
+from pyeudiw.duckle_ql.exceptions import MissingHandler
 
 
 class ParserValidator:

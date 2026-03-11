@@ -102,6 +102,57 @@ Please refer to the dedicate README files for details on how to configure SaToSa
 - [OpenID4VP Relying Party backend](docs/OPENID4VP-SATOSA-BACKEND.md);
 - [OpenID4VCI Issuer fronted](docs/OPENID4VCI-SATOSA-FRONTEND.md).
 
+### Protocol Support Recap
+
+Compliance checklist against the [Italian Wallet implementation profile](https://italia.github.io/eid-wallet-it-docs/versione-corrente/en/) and related OpenID4VCI/OpenID4VP specifications.
+
+#### OpenID4VCI (Credential Issuer Frontend)
+
+🟢 Supported · 🟠 Partial · 🔴 Not supported
+
+| Feature | Status |
+|---------|--------|
+| Pushed Authorization Requests (PAR) | 🟢 |
+| PAR: reject `request_uri` in request body (RFC 9126) | 🟢 |
+| OAuth 2.0 Attestation-Based Client Authentication | 🟢 |
+| PKCE | 🟢 |
+| Authorization Code Flow | 🟢 |
+| DPoP at Token endpoint | 🟢 |
+| Immediate Issuance | 🟢 |
+| JWT Proof of Possession (`openid4vci-proof+jwt`) | 🟢 |
+| Nonce endpoint (`c_nonce`) | 🟢 |
+| Credential Offer (by value and QR code) | 🟢 |
+| Notification endpoint | 🟢 |
+| SD-JWT VC credential format | 🟢 |
+| mso_mdoc credential format | 🟢 |
+| Refresh Token (DPoP-bound) | 🟢 |
+| Batch Credential Issuance | 🔴 |
+| Deferred Issuance Flow | 🔴 |
+
+#### OpenID4VP (Relying Party Backend)
+
+🟢 Supported · 🟠 Partial · 🔴 Not supported
+
+| Feature | Status |
+|---------|--------|
+| DCQL (Duckle) query language | 🟢 |
+| Same Device flow | 🟢 |
+| Cross Device flow (QR code) | 🟢 |
+| Request Object by reference (`request_uri`) | 🟢 |
+| Request URI method GET | 🟢 |
+| Request URI method POST (wallet metadata) | 🟢 |
+| `wallet_metadata` and `wallet_nonce` | 🟢 |
+| Response mode `direct_post.jwt` (encrypted) | 🟢 |
+| Response mode `direct_post` | 🟢 |
+| `vp_token` keyed by credential id | 🟢 |
+| `dc+sd-jwt` format | 🟢 |
+| `mso_mdoc` format | 🟢 |
+| Status endpoint (session polling) | 🟢 |
+| Trust evaluation (X.509 PKI, OpenID Federation) | 🟢 |
+| Credential revocation (status list) | 🟢 |
+| Custom URL schemes (`haip`, configurable) | 🟢 |
+| `transaction_data` / `transaction_data_hashes` | 🔴 |
+
 ## Executing Tests Using Preexisting MongoDb Instances
 
 Use the env variable `PYEUDIW_MONGO_TEST_AUTH_INLINE` so tests connect with credentials.
@@ -181,6 +232,8 @@ PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 
 ## Acknowledgments
 
+- Manuel Pacella
+- Manuel Ciofo
 - Thomas Chiozzi
 - Pasquale De Rose
 - Elisa Nicolussi Paolaz

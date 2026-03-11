@@ -5,7 +5,6 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 
 from pyeudiw.jwt.utils import is_jwe_format, is_jwt_format
-from pyeudiw.satosa.backends.openid4vp.presentation_submission.schemas import PresentationSubmissionSchema
 
 
 class ResponseMode(str, Enum):
@@ -18,7 +17,6 @@ class ResponseSchema(BaseModel):
     state: Optional[str]
     nonce: str
     vp_token: str
-    presentation_submission: PresentationSubmissionSchema
 
     @field_validator("vp_token")
     @classmethod
@@ -43,16 +41,13 @@ class AuthorizeResponseDirectPostJwt:
 class AuthorizeResponsePayload:
     """
     AuthorizeResponsePayload is a simple schema class for https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-parameters
-    only for the case when presentation submission is used over DCQL.
+    for the DCQL (Duckle Query Language) flow.
 
-    This class is a weaker validation than pyeudiw.satosa.backends.openid4vp.schema.ResponseSchema
-    as it is not meant to validate the _content_ of the response; just that the
-    representation lands with the proper expected claims
+    This class validates that the response contains the expected claims for DCQL.
     """
 
     state: str
     vp_token: str | list[str] | dict
-    presentation_submission: Optional[dict] = None
 
 
 @dataclass

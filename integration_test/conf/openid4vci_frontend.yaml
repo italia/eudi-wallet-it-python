@@ -668,8 +668,9 @@ config:
         private_keys: *metadata_jwks # the keys must be the same because the key at position 0 must correspond to the one from which the certificate at position 0 of the chain `leaf_certificate_chains_by_ca` is derived
 
   security:
-    dpop_required: true # this is the flag to enable the DPOD interoperability, if missing it will be set to true by default
+    dpop_required: true # when true, DPoP is required and tokens are bound to DPoP key (RFC 9449); when false or missing, DPoP is optional
     wallet_attestation_required: true # this is the flag to enable the wallet attestation interoperability, if missing it will be set to true by default
+    proof_jwt_required: false # if true, credential endpoint requires proof JWT; if false, proof is optional and missing proof is logged at debug level
     signed_par_request: "true" # can be "true", "false" or "both", this field is used to enable the signed par request interoperability, if missing it will be set to "true" by default
 
   force_same_device_flow_referer_criteria: # Optional list of regex patterns matched against the HTTP_REFERER header. If the list is empty or the key is missing, no referer-based enforcement is applied and all referers are accepted. If any regex matches, the flow is forced to SAME_DEVICE.

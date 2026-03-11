@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pyeudiw.satosa.backends.openid4vp.schemas.wallet_instance_attestation_request import (
+from pyeudiw.wallet_instance_attestation import (
     WalletInstanceAttestationRequestHeader,
     WalletInstanceAttestationRequestPayload,
 )

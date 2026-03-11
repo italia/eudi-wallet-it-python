@@ -88,8 +88,7 @@ To install the OpenID4VP SATOSA backend you just need to:
 |----------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
 | config.authorization.client_id               | client_id to be set only in the request object; if not set default to entity id value               | IT-PYEUDIRP (as requested by Potential LSP)         |
 | config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
-| config.authorization.scopes                  | The list of scopes for the authorization                                                            | [pid-sd-jwt:unique_id+given_name+family_name]       |
-| config.authorization.default_acr_value       | The default authentication context class reference value for the authorization                      | https://www.spid.gov.it/SpidL2                      |
+| config.authorization.default_acr_value       | ACR fallback for the upstream IdP. **Not part of OpenID4VP.** VP responses rarely include `acr`/`amr`; when building `AuthenticationInformation` for the IdP (SAML/OIDC), this value is used. Must match your IdP's expected authentication context. | https://www.spid.gov.it/SpidL2                      |
 | config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                           |
 | config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
 
@@ -192,14 +191,6 @@ For more deatils on available trust implementations and their configurations, se
 | config.metadata.token_endpoint_auth_methods_supported               | Token endpoint authentication methods                                                                               | [attest_jwt_client_auth]                                         |
 | config.metadata.client_attestation_signing_alg_values_supported     | Optional supported algorithm for validate client attestation signing, if missing every value in cnf is admitted .   | [ES256, ES384]                                                   |
 | config.metadata.client_attestation_pop_signing_alg_values_supported | Optional supported algorithm for validate client attestation PoP signin, if missing every value in cnf is admitted. | [ES256, ES384]                                                   |
-
-### Security
-
-Root section for security configuration.
-
-| Key                                         | Description                                                                                                                                                                                                                      |
-|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| config.security.wallet_attestation_required | This flag enables the [OAuth 2.0 Attestation-Based Client Authentication](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-06.html). If this setting is missing it will be set to true by default. |
 
 ### Other config
 

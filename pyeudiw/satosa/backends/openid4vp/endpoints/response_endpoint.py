@@ -14,6 +14,8 @@ from satosa.response import Response
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.duckle_ql.exceptions import MissingHandler
+from pyeudiw.exceptions import ValidationError as CredentialValidationError
 from pyeudiw.duckle_ql.parser_validator import ParserValidator
 from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     AuthorizeResponsePayload,
@@ -23,14 +25,6 @@ from pyeudiw.satosa.backends.openid4vp.authorization_response import (
 )
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
-from pyeudiw.satosa.backends.openid4vp.presentation_submission import PresentationSubmissionHandler
-from pyeudiw.satosa.backends.openid4vp.presentation_submission.exceptions import (
-    MissingHandler,
-    SubmissionValidationError,
-    VPTokenDescriptorMapMismatch,
-    ParseError,
-    ValidationError,
-)
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.backends.openid4vp.schemas.response import ErrorResponsePayload
 from pyeudiw.satosa.backends.openid4vp.schemas.response import ResponseMode
@@ -75,7 +69,7 @@ class ResponseHandler(VPBaseEndpoint):
 
         self.trust_evaluator = trust_evaluator
 
-        self.vp_token_parser = PresentationSubmissionHandler(self.load_credential_presentation_handlers())
+        self.credential_presentation_handlers = self.load_credential_presentation_handlers()
 
     def _extract_all_user_attributes(self, extracted_attributes: list[dict]) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
@@ -177,69 +171,26 @@ class ResponseHandler(VPBaseEndpoint):
         except FinalizedSessionError as e400:
             return self._handle_400(context, "invalid authorization response: session already finalized or corrupted", e400)
 
-        # the flow below is a simplified algorithm of authentication response processing, where:
-        # (1) we don't check that presentation submission matches definition (yet)
-        # (2) we don't check that vp tokens are aligned with information declared in the presentation submission
-        # (3) we use all disclosed claims in vp tokens to build the user identity
+        # DCQL (Duckle Query Language) flow: vp_token is a dict keyed by credential id
         extracted_attributes: list[dict[str, Any]] = []
         credential_issuers: list[str] = []
-        encoded_vps: list[str] = []
-        presentation_submission = authz_payload.presentation_submission
         try:
             challenge = self._get_verifier_challenge(request_session)
             request_vp_formats_supported = request_session.get("wallet_metadata", {}).get("vp_formats_supported")
             vp_token_handlers = (
-                self.vp_token_parser.handlers
+                self.credential_presentation_handlers.handlers
                 if not request_vp_formats_supported
-                else {k: v for k, v in self.vp_token_parser.handlers.items() if k in request_vp_formats_supported}
+                else {k: v for k, v in self.credential_presentation_handlers.handlers.items() if k in request_vp_formats_supported}
             )
             parser_validator = ParserValidator(authz_payload.vp_token, vp_token_handlers, self.config)
-            if parser_validator.is_active_duckle_request():
-                parser_validator.validate(challenge["aud"], challenge["nonce"])
-            else:
-                if isinstance(authz_payload.vp_token, str):
-                    encoded_vps = [authz_payload.vp_token]
-                elif isinstance(authz_payload.vp_token, list):
-                    encoded_vps = authz_payload.vp_token
-                else:
-                    raise AuthRespValidationException(
-                        "vp_token must be a string or a list of strings", Exception(f"Invalid vp_token type: {type(authz_payload.vp_token)}")
-                    )
-
-                if not presentation_submission:
-                    raise AuthRespValidationException(
-                        "presentation_submission is required when vp_token is a list of strings",
-                        Exception("vp_token is a list but presentation_submission is not provided"),
-                    )
-
-                self.vp_token_parser.validate(
-                    presentation_submission,
-                    encoded_vps,
-                    challenge["aud"],
-                    challenge["nonce"],
-                )
-
-        except VPTokenDescriptorMapMismatch as e400:
-            return self._handle_400(context, "invalid presentation submission: the number of token and descriptors does not match", e400)
-        except SubmissionValidationError as e400:
-            return self._handle_400(context, "invalid presentation submission: the submission is invalid", e400)
+            parser_validator.validate(challenge["aud"], challenge["nonce"])
+            extracted_attributes = parser_validator.parse()
         except MissingHandler as e400:
-            return self._handle_400(context, "invalid presentation submission: vp_format not supported", e400)
-        except ValidationError as e400:
-            return self._handle_400(context, "invalid presentation submission: validation error", e400)
+            return self._handle_400(context, "invalid DCQL response: vp_format not supported", e400)
+        except CredentialValidationError as e400:
+            return self._handle_400(context, "invalid DCQL response: validation error", e400)
         except Exception as e500:
-            return self._handle_500(context, "invalid presentation submission: unknown error", e500)
-
-        try:
-            if presentation_submission:
-                extracted_attributes = self.vp_token_parser.parse(presentation_submission, encoded_vps)
-            else:
-                extracted_attributes = parser_validator.parse()
-
-        except ParseError as e400:
-            return self._handle_400(context, "invalid presentation submission: parsing error", e400)
-        except Exception as e500:
-            return self._handle_500(context, "invalid presentation submission: unknown error", e500)
+            return self._handle_500(context, "invalid DCQL response: unknown error", e500)
 
         all_attributes = self._extract_all_user_attributes(extracted_attributes)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
@@ -289,12 +240,13 @@ class ResponseHandler(VPBaseEndpoint):
         :param subject_type: public or pairwise according to oidc standard.
         :return: A SATOSA internal response.
         """
-        # it may depends by credential type and attested security context evaluated
-        # if WIA was previously submitted by the Wallet
+        # Credential type and security context (if applicable)
         timestamp_epoch = response.get("auth_time") or response.get("iat") or iat_now()
         timestamp_dt = datetime.fromtimestamp(timestamp_epoch, timezone.utc)
         timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
 
+        # default_acr_value is not part of OpenID4VP; VP responses typically lack acr/amr.
+        # It is used as a fallback when building SATOSA InternalData for the upstream IdP.
         auth_class_ref = response.get("acr") or response.get("amr") or self.config["authorization"]["default_acr_value"]
         auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
 

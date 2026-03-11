@@ -92,9 +92,6 @@ def build_authorization_request_claims(
         if client_metadata:
             claims["client_metadata"] = client_metadata
 
-        if default_claims.get("scopes"):
-            claims["scope"] = " ".join(default_claims["scopes"])
-
     if wallet_nonce:
         claims["wallet_nonce"] = wallet_nonce
 
