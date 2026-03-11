@@ -4,7 +4,7 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.tools.schema_utils import check_algorithm
-from pyeudiw.wallet_instance_attestation.cnf import CNFSchema
+from pyeudiw.wallet_instance_attestation.models.cnf import CNFSchema
 
 _default_supported_algorithms = [
     "RS256",
@@ -26,29 +26,27 @@ class VPFormatSchema(BaseModel):
 
 class WalletInstanceAttestationHeader(BaseModel):
     alg: str
-    typ: Literal["wallet-attestation+jwt"]
-    kid: str
+    typ: Literal["oauth-client-attestation+jwt"]
+    kid: str #id pub-key wallet provider
     trust_chain: Optional[List[str]] = None
+    x5c: List[str] = None
+
 
     @field_validator("alg")
     @classmethod
     def _check_alg(cls, alg, info: ValidationInfo):
-        return check_algorithm(alg, info)
+        check_algorithm(alg, info)
+        return alg
 
 
 class WalletInstanceAttestationPayload(BaseModel):
     iss: HttpUrl
     sub: str
-    iat: int
     exp: int
-    aal: HttpUrl
     cnf: CNFSchema
-    # Wallet Capabilities
-    type: Optional[Literal["WalletInstanceAttestation"]] = None
-    policy_uri: Optional[HttpUrl] = None
-    tos_uri: Optional[HttpUrl] = None
-    logo_uri: Optional[HttpUrl] = None
-    authorization_endpoint: Optional[str] = None
-    response_types_supported: Optional[List[str]] = None
-    vp_formats_supported: Optional[VPFormatSchema] = None
-    request_object_signing_alg_values_supported: Optional[List[str]] = None
+
+    iat: Optional[int] = None
+    nbf: Optional[int] = None
+    wallet_link: Optional[HttpUrl] = None
+    wallet_name: Optional[str] = None
+    status: Optional[str] = None
