@@ -82,27 +82,32 @@ class JwkSchema(BaseModel):
         kty = values.data.get("kty")
         if v not in _SUPPORTED_ALG_BY_KTY[kty]:
             raise ValueError(f"alg value {v} is not compatible or not supported with kty {kty}")
-        return
+        return v
 
     @field_validator("n")
     def validate_n(cls, v, values):
         cls._must_specific_kty_only(v, "RSA", "n", values.data)
+        return v
 
     @field_validator("e")
     def valisate_e(cls, v, values):
         cls._must_specific_kty_only(v, "RSA", "e", values.data)
+        return v
 
     @field_validator("x")
     def validate_x(cls, v, values):
         cls._must_specific_kty_only(v, "EC", "x", values.data)
+        return v
 
     @field_validator("y")
     def validate_y(cls, v, values):
         cls._must_specific_kty_only(v, "EC", "y", values.data)
+        return v
 
     @field_validator("crv")
     def validate_crv(cls, v, values):
         cls._must_specific_kty_only(v, "EC", "crv", values.data)
+        return v
 
 
 _JwkSchema_T = Annotated[Union[ECJwkSchema, RSAJwkSchema], Field(discriminator="kty")]
