@@ -4,7 +4,7 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.tools.schema_utils import check_algorithm
-from pyeudiw.wallet_instance_attestation.models.cnf import CNFSchema
+from pyeudiw.wallet_instance_attestations.models.cnf import CNFSchema
 
 
 class WalletInstanceAttestationRequestHeader(BaseModel):
@@ -17,7 +17,7 @@ class WalletInstanceAttestationRequestHeader(BaseModel):
     def _check_alg(cls, alg, info: ValidationInfo):
         check_algorithm(alg, info)
         return alg
-
+    # todo add claims validators
 
 class WalletInstanceAttestationRequestPayload(BaseModel):
     iss: str
@@ -32,3 +32,5 @@ class WalletInstanceAttestationRequestPayload(BaseModel):
     hardware_key_tag: str
 
     cnf: CNFSchema
+
+    # todo add claims validators

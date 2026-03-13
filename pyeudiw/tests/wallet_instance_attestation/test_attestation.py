@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pyeudiw.wallet_instance_attestation import (
+from pyeudiw.wallet_instance_attestations import (
     WalletInstanceAttestationHeader,
     WalletInstanceAttestationPayload,
 )

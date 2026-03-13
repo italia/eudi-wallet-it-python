@@ -6,16 +6,16 @@ attestation-based flows. This module is independent of OpenID4VP and can be used
 by other modules (e.g. OpenID4VCI) that require WIA validation or production.
 """
 
-from pyeudiw.wallet_instance_attestation.models.attestation import (
+from pyeudiw.wallet_instance_attestations.models.attestations import (
     VPFormatSchema,
     WalletInstanceAttestationHeader,
     WalletInstanceAttestationPayload,
 )
-from pyeudiw.wallet_instance_attestation.models.attestation_request import (
+from pyeudiw.wallet_instance_attestations.models.attestations_request import (
     WalletInstanceAttestationRequestHeader,
     WalletInstanceAttestationRequestPayload,
 )
-from pyeudiw.wallet_instance_attestation.models.cnf import CNFSchema
+from pyeudiw.wallet_instance_attestations.models.cnf import CNFSchema
 
 __all__ = [
     "CNFSchema",

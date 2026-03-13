@@ -15,7 +15,7 @@ used by other modules (e.g. OpenID4VCI) that require WIA validation or productio
 ## Usage
 
 ```python
-from pyeudiw.wallet_instance_attestation import (
+from pyeudiw.wallet_instance_attestations import (
     WalletInstanceAttestationHeader,
     WalletInstanceAttestationPayload,
     WalletInstanceAttestationRequestHeader,
