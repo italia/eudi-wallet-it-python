@@ -3,7 +3,7 @@ from pyeudiw.wallet_instance_attestations.models.attestations import WalletUnitA
     WalletUnitAttestationPayload
 
 
-class WiaJswIssuer(BaseJwsIssuer):
+class WuaJswIssuer(BaseJwsIssuer):
 
     _JWT_TYPE = "key-attestation+jwt"
 

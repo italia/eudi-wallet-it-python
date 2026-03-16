@@ -14,7 +14,7 @@ class WaJswRequestIssuer(BaseJwsIssuer):
                  hardware_priv_key: dict, #wallet instance hardware keypair
                  hardware_key_tag: str, #wallet instance hardware keypair tag
                  nonce: str,
-                 hardware_signature,
+                 hardware_signature: str,
                  integrity_assertion: str,
                  attested_key):
         super().__init__(wallet_provider_id, hardware_priv_key)
