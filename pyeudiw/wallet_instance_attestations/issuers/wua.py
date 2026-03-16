@@ -24,16 +24,16 @@ class WuaJswIssuer(BaseJwsIssuer):
     def set_certification(self, cert_url: str):
         self._certification = cert_url
 
-    def set_status(self, status: str):
+    def set_status(self, status: dict[str, dict]):
         self._status = status
 
-    def set_user_authentication(self, user_authentication: str):
+    def set_user_authentication(self, user_authentication: list[str]):
         self._user_authentication = user_authentication
 
-    def set_key_storage(self, key_storage: str):
+    def set_key_storage(self, key_storage: list[str]):
         self._key_storage = key_storage
 
-    def set_attested_keys(self, attested_keys: dict):
+    def set_attested_keys(self, attested_keys: list[dict]):
         self._attested_keys = attested_keys
 
     def _get_jwt_payload(self) -> dict:
