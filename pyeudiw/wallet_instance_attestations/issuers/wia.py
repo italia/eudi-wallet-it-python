@@ -53,7 +53,9 @@ class WiaJswIssuer(BaseJwsIssuer):
         claims["sub"] = self._instance_pubkey_thumbprint
         claims["cnf"] = dict(jwk=self._instance_pubkey)
 
-        if self._nbf_delta is not None: claims["nbf"] = claims["iat"] + self._nbf_delta
+        if self._nbf_delta is not None:
+            claims["nbf"] = claims["iat"] + self._nbf_delta
+            claims["exp"] = claims["nbf"] + self._lifetime
         if self._wallet_link: claims["wallet_link"] = self._wallet_link
         if self._wallet_name: claims["wallet_name"] = self._wallet_name
         if self._status is not None: claims["status"] = self._status
