@@ -74,13 +74,24 @@ def test_header():
         context={"supported_algorithms": ["ES256"]},
     )
 
-    # x5c and trust_chain are not required
-    WALLET_INSTANCE_ATTESTATION["header"]["x5c"] = None
-    WALLET_INSTANCE_ATTESTATION["header"]["trust_chain"] = None
-    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
-    del WALLET_INSTANCE_ATTESTATION["header"]["x5c"]
-    del WALLET_INSTANCE_ATTESTATION["header"]["trust_chain"]
-    WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
+    # x5c is REQUIRED per EUDI TS3 (Section 2.2.1.2): verifiers SHALL use the signing cert
+    # in x5c to verify the WIA signature against the Trusted List for Wallet Providers.
+    # trust_chain is optional.
+    WIA_HEADER_WITH_X5C = dict(WALLET_INSTANCE_ATTESTATION["header"])
+    WalletInstanceAttestationHeader(**WIA_HEADER_WITH_X5C)
+
+    # WIA without x5c MUST fail (x5c required per EUDI TS3)
+    header_no_x5c = {
+        k: v for k, v in WALLET_INSTANCE_ATTESTATION["header"].items() if k != "x5c"
+    }
+    with pytest.raises(ValidationError):
+        WalletInstanceAttestationHeader(**header_no_x5c)
+
+    # WIA with x5c=None MUST fail
+    header_x5c_none = dict(WALLET_INSTANCE_ATTESTATION["header"])
+    header_x5c_none["x5c"] = None
+    with pytest.raises(ValidationError):
+        WalletInstanceAttestationHeader(**header_x5c_none)
 
     # kid is required
     WALLET_INSTANCE_ATTESTATION["header"]["kid"] = None
@@ -90,7 +101,7 @@ def test_header():
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
 
-    # typ must be "wallet-attestation-jwt"
+    # typ must be "oauth-client-attestation+jwt"
     WALLET_INSTANCE_ATTESTATION["header"]["typ"] = "asd"
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])

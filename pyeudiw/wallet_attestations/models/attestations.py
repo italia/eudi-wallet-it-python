@@ -22,6 +22,9 @@ class WalletInstanceAttestationHeader(BaseModel):
     alg: str
     typ: Literal["oauth-client-attestation+jwt"]
     kid: str  # id pub-key wallet provider
+    # x5c REQUIRED per EUDI TS3 (Wallet Unit Attestation): PID/Attestation Providers SHALL verify
+    # the WIA signature under the public key in the signing cert in x5c and against the Trusted
+    # List for Wallet Providers. See ts3-wallet-unit-attestation Section 2.2.1.2.
     x5c: List[str]
     trust_chain: Optional[List[str]] = None
 
