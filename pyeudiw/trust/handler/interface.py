@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from satosa.context import Context
 from satosa.response import Response
@@ -10,7 +10,9 @@ class TrustHandlerInterface:
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("client_id", "default_client_id")
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer using a trust handler implementation.
 
@@ -25,7 +27,9 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Get the metadata of a certain issuer if is needed by the specifics.
 
@@ -40,7 +44,9 @@ class TrustHandlerInterface:
 
         raise NotImplementedError
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> List[Tuple[str, Callable[[Context, Any], Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> List[Tuple[str, Callable[[Context, Any], Response]]]:
         """
         Expose one or more metadata endpoints required to publish metadata
         information about this handler (for example public keys, configurations,
@@ -71,7 +77,9 @@ class TrustHandlerInterface:
         """
         raise NotImplementedError
 
-    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(
+        self, trust_source: TrustSourceData
+    ) -> dict:
         """
         Parse a trust source to extract the trust parameters (in the source)
         that can be used as a JWT header according to what this very own trust

@@ -21,12 +21,18 @@ def test_entity_config_header():
     header["typ"] = "entity-statement+jwt"
 
     with pytest.raises(ValidationError):
-        EntityConfigurationHeader.model_validate(header, context={"supported_algorithms": []})
+        EntityConfigurationHeader.model_validate(
+            header, context={"supported_algorithms": []}
+        )
 
     with pytest.raises(ValidationError):
-        EntityConfigurationHeader.model_validate(header, context={"supported_algorithms": ["asd"]})
+        EntityConfigurationHeader.model_validate(
+            header, context={"supported_algorithms": ["asd"]}
+        )
 
-    EntityConfigurationHeader.model_validate(header, context={"supported_algorithms": ["RS256"]})
+    EntityConfigurationHeader.model_validate(
+        header, context={"supported_algorithms": ["RS256"]}
+    )
 
 
 def test_entity_config_payload():

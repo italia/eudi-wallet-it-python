@@ -12,7 +12,11 @@ class TestMongoCache:
         self.cache = MongoCache(
             {"db_name": "pyeudiw_test"},
             f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
-            {"serverSelectionTimeoutMS": 15000, "connectTimeoutMS": 10000, "maxPoolSize": 10},
+            {
+                "serverSelectionTimeoutMS": 15000,
+                "connectTimeoutMS": 10000,
+                "maxPoolSize": 10,
+            },
         )
 
     def test_try_retrieve(self):

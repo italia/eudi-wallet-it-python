@@ -54,7 +54,11 @@ class UserStorage(MongoStorage):
         self._connect()
         fiscal_code_query = {"fiscal_code": entity["fiscal_code"]}
         result = self.users.update_one(fiscal_code_query, {"$set": entity}, upsert=True)
-        return result.upserted_id if result.upserted_id is not None else (self.users.find_one(fiscal_code_query, {"_id": 1}) or {}).get("_id")
+        return (
+            result.upserted_id
+            if result.upserted_id is not None
+            else (self.users.find_one(fiscal_code_query, {"_id": 1}) or {}).get("_id")
+        )
 
     def close(self):
         self._connect()
@@ -67,4 +71,6 @@ class UserStorage(MongoStorage):
             if self.users.index_information().get("creation_date_1"):
                 self.users.drop_index("creation_date_1")
         else:
-            self.users.create_index([("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)
+            self.users.create_index(
+                [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
+            )

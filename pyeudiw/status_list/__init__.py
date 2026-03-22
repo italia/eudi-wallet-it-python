@@ -1,19 +1,20 @@
 import zlib
-from binascii import hexlify
-from binascii import unhexlify
-from typing import Literal, Union, Tuple, Any
-from typing import Optional
+from binascii import hexlify, unhexlify
+from typing import Any, Literal, Optional, Tuple, Union
 
 import cbor2
 import pycose.algorithms
 import pycose.keys.curves as curves
-from pycose.headers import Algorithm, KID
-from pycose.keys import CoseKey
-from pycose.keys import EC2Key
+from pycose.headers import KID, Algorithm
+from pycose.keys import CoseKey, EC2Key
 from pycose.messages import Sign1Message
 
-from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
-from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
+from pyeudiw.jwt.utils import (
+    base64_urldecode,
+    base64_urlencode,
+    decode_jwt_header,
+    decode_jwt_payload,
+)
 
 StatusListFormat = Literal["jwt", "cwt"]
 
@@ -101,16 +102,24 @@ def encode_cwt_status_list_token(
             phdr.setdefault(KID, kid)
             phdr.setdefault(Algorithm, pycose.algorithms.Es256)
 
-    mso = Sign1Message(phdr=phdr, uhdr=payload_parts[1], payload=cbor2.dumps(payload, canonical=True))
+    mso = Sign1Message(
+        phdr=phdr, uhdr=payload_parts[1], payload=cbor2.dumps(payload, canonical=True)
+    )
     if private_key:
         private_d = private_key["D"]
         kid = phdr[KID]
         if private_key["KTY"] == "EC2":
-            mso.key = EC2Key(crv=getattr(curves, private_key["CURVE"].replace("_", ""), None), d=private_d, optional_params={"KID": kid})
+            mso.key = EC2Key(
+                crv=getattr(curves, private_key["CURVE"].replace("_", ""), None),
+                d=private_d,
+                optional_params={"KID": kid},
+            )
         else:
             mso.key = CoseKey.from_dict(private_key)
 
-    return hexlify(mso.encode(tag=(private_key is not None), sign=(private_key is not None)))
+    return hexlify(
+        mso.encode(tag=(private_key is not None), sign=(private_key is not None))
+    )
 
 
 def decode_cwt_status_list_token(token: bytes) -> tuple[bool, dict, dict, int, bytes]:
@@ -158,7 +167,12 @@ def _compress_bitstring(bitstring: bytes) -> bytes:
     return base64_urlencode(compressed_data)
 
 
-def generate_status_list(bitstring: bytes, bits: int = 1, aggregation_uri: Optional[str] = None, format: StatusListFormat = "jwt") -> Union[dict, bytes]:
+def generate_status_list(
+    bitstring: bytes,
+    bits: int = 1,
+    aggregation_uri: Optional[str] = None,
+    format: StatusListFormat = "jwt",
+) -> Union[dict, bytes]:
     """
     Generate a status list.
 
@@ -238,7 +252,10 @@ def _replace_keys(input_dict: dict, field_map: dict) -> dict:
         # Returns: {"fullName": "Alice", "info": {"years": 30, "city": "Rome"}}
     """
 
-    return {field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v) for k, v in input_dict.items()}
+    return {
+        field_map.get(k, k): (_replace_keys(v, field_map) if isinstance(v, dict) else v)
+        for k, v in input_dict.items()
+    }
 
 
 def _loads_cbor_data(data: Any, index: int):

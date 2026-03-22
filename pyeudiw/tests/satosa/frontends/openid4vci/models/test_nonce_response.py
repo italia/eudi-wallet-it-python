@@ -2,7 +2,11 @@ import json
 import re
 
 from pyeudiw.satosa.frontends.openid4vci.models.nonce_response import NonceResponse
-from pyeudiw.tools.content_type import get_content_type_header, APPLICATION_JSON, CACHE_CONTROL_HEADER
+from pyeudiw.tools.content_type import (
+    APPLICATION_JSON,
+    CACHE_CONTROL_HEADER,
+    get_content_type_header,
+)
 
 
 def test_nonce_response_default():

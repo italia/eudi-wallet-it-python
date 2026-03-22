@@ -62,6 +62,7 @@ setup(
             "jinja2>=3.1.5,<4.0.0",
             "pymongo>=4.10.1,<5.0.0",
             "beautifulsoup4",
+            "pyOpenSSL>=26.0.0",  # CVE-2026-27459, CVE-2026-27448
         ],
         "federation": [
             "asyncio>=3.4.3,<4.0.0",

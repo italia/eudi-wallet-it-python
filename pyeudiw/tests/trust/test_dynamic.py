@@ -1,6 +1,6 @@
+import time
 from uuid import uuid4
 
-import time
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tests.settings import CONFIG
 from pyeudiw.tests.trust import correct_config, not_conformant
@@ -36,7 +36,9 @@ def test_not_conformant_CombinedTrusstEvaluation_handler_loading():
 
 
 def test_if_no_conf_default_handler_instanciated():
-    trust_ev = CombinedTrustEvaluator.from_config({}, DBEngine(CONFIG["storage"]), default_client_id="default-client-id")
+    trust_ev = CombinedTrustEvaluator.from_config(
+        {}, DBEngine(CONFIG["storage"]), default_client_id="default-client-id"
+    )
     # both jar issuer and direct trust sd jwt vc are default if not trust handlers are configured
     assert len(trust_ev.handlers) == 2
     assert isinstance(trust_ev.handlers[0], DirectTrustSdJwtVc)
@@ -59,7 +61,9 @@ def test_public_key_and_metadata_retrive():
     )
 
     uuid_url = f"http://{uuid4()}.issuer.it"
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
     metadata = trust_ev.get_metadata()
 
     assert metadata["default_key"] == "default_value"
@@ -91,8 +95,12 @@ def test_update_first_strategy():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}
+    }
 
 
 def test_cache_first_strategy():
@@ -113,8 +121,12 @@ def test_cache_first_strategy():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
 
 
 def test_cache_first_strategy_expired():
@@ -135,9 +147,13 @@ def test_cache_first_strategy_expired():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
     time.sleep(1)
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}
+    }
 
 
 def test_cache_first_strategy_expired_revoked():
@@ -158,12 +174,16 @@ def test_cache_first_strategy_expired_revoked():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
 
     trust_ev.revoke(uuid_url)
 
     assert trust_ev.is_revoked(uuid_url) is True
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}
+    }
 
 
 def test_cache_first_strategy_expired_force_update():
@@ -184,7 +204,9 @@ def test_cache_first_strategy_expired_force_update():
 
     uuid_url = f"http://{uuid4()}.issuer.it"
 
-    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {"trust_param_name": {"trust_param_key": "trust_param_value"}}
+    assert trust_ev.get_jwt_header_trust_parameters(uuid_url) == {
+        "trust_param_name": {"trust_param_key": "trust_param_value"}
+    }
     assert trust_ev.get_jwt_header_trust_parameters(uuid_url, force_update=True) == {
         "trust_param_name": {"updated_trust_param_key": "updated_trust_param_value"}
     }

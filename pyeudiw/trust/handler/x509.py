@@ -1,24 +1,25 @@
 import logging
 from typing import Union
 
-from pyeudiw.x509.crl_helper import CRLHelper
-from pyeudiw.x509.exceptions import CRLReadError, CRLParseError
-from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
-from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.jwk.parse import parse_x5c_keys, parse_certificate
 from cryptojwt.jwk.jwk import key_from_jwk_dict
+
+from pyeudiw.jwk.parse import parse_certificate, parse_x5c_keys
 from pyeudiw.tools.utils import timestamp_from_datetime
+from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
+from pyeudiw.trust.model.trust_source import TrustEvaluationType, TrustSourceData
+from pyeudiw.x509.crl_helper import CRLHelper
+from pyeudiw.x509.exceptions import CRLParseError, CRLReadError
 from pyeudiw.x509.verify import (
     PEM_cert_to_B64DER_cert,
-    to_DER_cert,
-    verify_x509_attestation_chain,
-    get_expiry_date_from_x5c,
-    to_pem_list,
-    to_der_list,
-    get_x509_info,
-    get_trust_anchor_from_x5c,
     get_certificate_type,
+    get_expiry_date_from_x5c,
+    get_trust_anchor_from_x5c,
+    get_x509_info,
+    to_DER_cert,
+    to_der_list,
+    to_pem_list,
+    verify_x509_attestation_chain,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,9 @@ class X509Handler(TrustHandlerInterface):
         self.include_issued_jwt_header_param = include_issued_jwt_header_param
 
         if not leaf_certificate_chains_by_ca:
-            raise InvalidTrustHandlerConfiguration("No x509 certificate chains provided in the configuration")
+            raise InvalidTrustHandlerConfiguration(
+                "No x509 certificate chains provided in the configuration"
+            )
 
         self.leaf_certificate_chains_by_ca = {}
 
@@ -56,10 +59,12 @@ class X509Handler(TrustHandlerInterface):
             return cert
 
         private_keys_thumbprints = [
-            key_from_jwk_dict(priv_key, private=False).thumbprint("SHA-256") for priv_key in private_keys
+            key_from_jwk_dict(priv_key, private=False).thumbprint("SHA-256")
+            for priv_key in private_keys
         ]
         certificate_authorities_thumbprint = [
-            parse_certificate(_strip_pem(ca_cert)).thumbprint for ca_cert in certificate_authorities.values()
+            parse_certificate(_strip_pem(ca_cert)).thumbprint
+            for ca_cert in certificate_authorities.values()
         ]
 
         has_a_valid_chain = False
@@ -83,7 +88,10 @@ class X509Handler(TrustHandlerInterface):
                     "The chain's root cert must be the same as the cert in certificate_authorities for this CA."
                 )
                 failure_reasons.append(reason)
-                logger.error("Invalid x509 leaf certificate using CA %s. Unmatching root certificate, the chain will be removed", ca_key)
+                logger.error(
+                    "Invalid x509 leaf certificate using CA %s. Unmatching root certificate, the chain will be removed",
+                    ca_key,
+                )
                 continue
 
             found_client_id = False
@@ -131,7 +139,10 @@ class X509Handler(TrustHandlerInterface):
                     "Regenerate the chain using the key that matches metadata_jwks[0], or ensure the chain was built with that key."
                 )
                 failure_reasons.append(reason)
-                logger.error("Invalid x509 leaf certificate using CA %s. Unmatching private key, the chain will be removed", ca_key)
+                logger.error(
+                    "Invalid x509 leaf certificate using CA %s. Unmatching private key, the chain will be removed",
+                    ca_key,
+                )
                 continue
 
             chain = to_der_list(pem_chain)
@@ -143,13 +154,20 @@ class X509Handler(TrustHandlerInterface):
                     "Check that the chain order is [leaf, intermediate, root], each cert is signed by the next, and none are expired."
                 )
                 failure_reasons.append(reason)
-                logger.error("Invalid x509 certificate chain using CA %s. Chain validation failed, the chain will be removed", ca_key)
+                logger.error(
+                    "Invalid x509 certificate chain using CA %s. Chain validation failed, the chain will be removed",
+                    ca_key,
+                )
                 continue
 
             has_a_valid_chain = True
 
         if not has_a_valid_chain:
-            reasons_text = " | ".join(failure_reasons) if failure_reasons else " (no detailed reasons captured)"
+            reasons_text = (
+                " | ".join(failure_reasons)
+                if failure_reasons
+                else " (no detailed reasons captured)"
+            )
             guidance = (
                 "How to resolve: (1) client_id must be x509_san_dns:<dns> matching leaf SAN. "
                 "(2) Leaf cert must be issued for the same key as metadata_jwks[0]; regenerate chain with that key. "
@@ -186,7 +204,9 @@ class X509Handler(TrustHandlerInterface):
             return False
 
         if issuer not in self.certificate_authorities:
-            logger.error("Invalid x509 certificate chain. Issuer not found in the list of trusted CAs")
+            logger.error(
+                "Invalid x509 certificate chain. Issuer not found in the list of trusted CAs"
+            )
             return False
 
         issuer_cert = self.certificate_authorities[issuer]
@@ -199,19 +219,25 @@ class X509Handler(TrustHandlerInterface):
             return False
 
         if not issuer_jwk.thumbprint == chain_jwks[-1].thumbprint:
-            logger.error("Invalid x509 certificate chain. Issuer thumbprint does not match")
+            logger.error(
+                "Invalid x509 certificate chain. Issuer thumbprint does not match"
+            )
             return False
 
         return True
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         # Return the first valid chain
         if issuer.split("://")[-1].split("/")[0] == self.client_id.split(":", 1)[-1]:
             for ca_name, chain in self.leaf_certificate_chains_by_ca.items():
                 crls = self._extract_crls(trust_source, chain)
 
                 if not self._verify_chain(chain, crls):
-                    logger.error(f"Invalid x509 certificate chain using CA {ca_name}. Chain will be ignored")
+                    logger.error(
+                        f"Invalid x509 certificate chain using CA {ca_name}. Chain will be ignored"
+                    )
                     continue
 
                 exp = get_expiry_date_from_x5c(chain)
@@ -261,7 +287,9 @@ class X509Handler(TrustHandlerInterface):
 
         return True, trust_source
 
-    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(
+        self, trust_source: TrustSourceData
+    ) -> dict:
         tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
         if x5c_pem := tp.get(X509Handler._TRUST_PARAMETER_NAME, None):
             x5c = [PEM_cert_to_B64DER_cert(pem) for pem in x5c_pem]
@@ -271,11 +299,15 @@ class X509Handler(TrustHandlerInterface):
     def get_handled_trust_material_name(self) -> str:
         return X509Handler._TRUST_PARAMETER_NAME
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         return trust_source
 
     @staticmethod
-    def _extract_crls(trust_source: TrustSourceData, chain: list[str]) -> list[CRLHelper]:
+    def _extract_crls(
+        trust_source: TrustSourceData, chain: list[str]
+    ) -> list[CRLHelper]:
         x509_param = trust_source.get_trust_param("x509")
         crls: list[CRLHelper] = []
 
@@ -295,14 +327,23 @@ class X509Handler(TrustHandlerInterface):
                 try:
                     crls = crls + CRLHelper.from_certificate(cert)
                 except CRLParseError as err:
-                    logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {err}")
+                    logger.error(
+                        f"Invalid x509 certificate chain. CRL parsing failed: {err}"
+                    )
                     continue
                 except CRLReadError as err:
-                    if "No CRL distribution points found in the certificate." not in str(err):
-                        logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {err}")
+                    if (
+                        "No CRL distribution points found in the certificate."
+                        not in str(err)
+                    ):
+                        logger.error(
+                            f"Invalid x509 certificate chain. CRL parsing failed: {err}"
+                        )
                     continue
                 except Exception as err:
-                    logger.error(f"Invalid x509 certificate chain. CRL parsing failed: {err}")
+                    logger.error(
+                        f"Invalid x509 certificate chain. CRL parsing failed: {err}"
+                    )
                     continue
 
         return crls

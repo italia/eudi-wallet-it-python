@@ -1,11 +1,11 @@
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptojwt.jwk.ec import ECKey
 
+import pyeudiw.tests.x509.test_x509 as test_x509
 from pyeudiw.jwk import JWK
 from pyeudiw.jwt.helper import validate_jwt_timestamps_claims
 from pyeudiw.jwt.jws_helper import _validate_key_with_jws_header
 from pyeudiw.tools.utils import iat_now
-import pyeudiw.tests.x509.test_x509 as test_x509
 from pyeudiw.x509.verify import DER_cert_to_B64DER_cert
 
 
@@ -15,7 +15,9 @@ def test_validate_jwt_timestamps_claims_ok():
     try:
         validate_jwt_timestamps_claims(payload)
     except Exception as e:
-        assert True, f"encountered unexpeted error when validating the lifetime of a good token payload: {e}"
+        assert (
+            True
+        ), f"encountered unexpeted error when validating the lifetime of a good token payload: {e}"
 
 
 def test_validate_jwt_timestamps_claims_bad_iat():
@@ -23,7 +25,9 @@ def test_validate_jwt_timestamps_claims_bad_iat():
     payload = {"iat": now + 100, "exp": now + 9999}
     try:
         validate_jwt_timestamps_claims(payload)
-        assert False, "failed to raise exception when validating a token payload with bad iat"
+        assert (
+            False
+        ), "failed to raise exception when validating a token payload with bad iat"
     except Exception:
         pass
 
@@ -33,7 +37,9 @@ def test_validate_jwt_timestamps_claims_bad_nbf():
     payload = {"nbf": now + 100, "exp": now + 9999}
     try:
         validate_jwt_timestamps_claims(payload)
-        assert False, "failed to raise exception when validating a token payload with bad nbf"
+        assert (
+            False
+        ), "failed to raise exception when validating a token payload with bad nbf"
     except Exception:
         pass
 
@@ -43,7 +49,9 @@ def test_validate_jwt_timestamps_claims_bad_exp():
     payload = {"iat": now - 100, "exp": now - 10}
     try:
         validate_jwt_timestamps_claims(payload)
-        assert False, "failed to raise exception when validating a token payload with bad exp"
+        assert (
+            False
+        ), "failed to raise exception when validating a token payload with bad exp"
     except Exception:
         pass
 
@@ -57,7 +65,9 @@ def test_test_validate_jwt_timestamps_claims_tolerance_window():
     try:
         validate_jwt_timestamps_claims(payload, tolerance_window)
     except Exception as e:
-        assert False, f"encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for iat, nbf): {e}"
+        assert (
+            False
+        ), f"encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for iat, nbf): {e}"
 
     # case 1: tolerance window covers a token "slightly" expired
     now = iat_now()
@@ -65,7 +75,9 @@ def test_test_validate_jwt_timestamps_claims_tolerance_window():
     try:
         validate_jwt_timestamps_claims(payload, tolerance_window)
     except Exception as e:
-        assert False, f"encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for exp): {e}"
+        assert (
+            False
+        ), f"encountered unexpeted error when validating the lifetime of a token payload with a tolerance window (for exp): {e}"
 
 
 def test_validate_key_with_jws_header_x5c_ok():
@@ -81,7 +93,9 @@ def test_validate_key_with_jws_header_x5c_ok():
         _validate_key_with_jws_header(key, {"x5c": x5c}, {})
         assert True
     except Exception as e:
-        assert False, f"unexpected exception when validating header for correct key: {e}"
+        assert (
+            False
+        ), f"unexpected exception when validating header for correct key: {e}"
 
 
 def test_validate_key_with_jws_header_kid_ok():
@@ -93,7 +107,9 @@ def test_validate_key_with_jws_header_kid_ok():
         _validate_key_with_jws_header(key, {"kid": kid}, {})
         assert True
     except Exception as e:
-        assert False, f"unexpected exception when validating header for correct key: {e}"
+        assert (
+            False
+        ), f"unexpected exception when validating header for correct key: {e}"
 
 
 def test_validate_key_with_jws_header_expect_x5c_fail():
@@ -108,7 +124,9 @@ def test_validate_key_with_jws_header_expect_x5c_fail():
 
     try:
         _validate_key_with_jws_header(wrong_key, {"x5c": x5c}, {})
-        assert False, "should have encountered exception when validating header 'x5c' for wrong key"
+        assert (
+            False
+        ), "should have encountered exception when validating header 'x5c' for wrong key"
     except Exception:
         assert True
 
@@ -124,6 +142,8 @@ def test_validate_key_with_jws_header_expect_kid_fail():
 
     try:
         _validate_key_with_jws_header(key, {"kid": "1234567890"}, {})
-        assert False, "should have encountered exception when validating header 'kid' for wrong key"
+        assert (
+            False
+        ), "should have encountered exception when validating header 'kid' for wrong key"
     except Exception:
         assert True

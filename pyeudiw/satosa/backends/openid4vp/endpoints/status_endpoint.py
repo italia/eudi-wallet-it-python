@@ -36,11 +36,22 @@ class StatusHandler(VPBaseEndpoint):
         :raises ValueError: If storage or QR code settings are not configured.
         """
 
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
+        super().__init__(
+            config,
+            internal_attributes,
+            base_url,
+            name,
+            auth_callback_func,
+            converter,
+            trust_evaluator,
+            db_engine,
+        )
 
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
 
-        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
+        self.response_code_helper = ResponseCodeSource(
+            self.config["response_code"]["sym_key"]
+        )
 
     def endpoint(self, context: Context) -> Redirect | Response:
         """
@@ -56,7 +67,11 @@ class StatusHandler(VPBaseEndpoint):
         self._log_function_debug("status_endpoint", context)
 
         if not context.state or "SESSION_ID" not in context.state:
-            return self._handle_400(context, "request error: missing SESSION_ID in context state", ValueError("Missing SESSION_ID in context state"))
+            return self._handle_400(
+                context,
+                "request error: missing SESSION_ID in context state",
+                ValueError("Missing SESSION_ID in context state"),
+            )
         session_id = context.state["SESSION_ID"]
 
         try:
@@ -69,16 +84,29 @@ class StatusHandler(VPBaseEndpoint):
                 raise ValueError("id")
 
         except Exception as e400:
-            return self._handle_400(context, "request error: missing or invalid parameter [id]", e400)
+            return self._handle_400(
+                context, "request error: missing or invalid parameter [id]", e400
+            )
 
         try:
-            session = self.db_engine.get_by_state_and_session_id(state=state, session_id=session_id)
+            session = self.db_engine.get_by_state_and_session_id(
+                state=state, session_id=session_id
+            )
         except Exception as e401:
-            self._log_error(context, f"Error while retrieving session by state {state} and session_id {session_id}: {e401}")
-            return self._handle_401(context, "client error: no session associated to the state", e401)
+            self._log_error(
+                context,
+                f"Error while retrieving session by state {state} and session_id {session_id}: {e401}",
+            )
+            return self._handle_401(
+                context, "client error: no session associated to the state", e401
+            )
 
         if session is None:
-            return self._handle_401(context, "client error: no session found for the given state and session_id", Exception("Session is None"))
+            return self._handle_401(
+                context,
+                "client error: no session found for the given state and session_id",
+                Exception("Session is None"),
+            )
 
         request_object = session.get("request_object", None)
         if request_object:
@@ -87,7 +115,9 @@ class StatusHandler(VPBaseEndpoint):
 
         if session.get("finalized"):
             if session.get("error_response"):
-                return self._status_session_finished_error_response(context, session["error_response"])
+                return self._status_session_finished_error_response(
+                    context, session["error_response"]
+                )
             return self._status_session_finished_ok_response(state)
 
         if request_object is not None:
@@ -104,13 +134,18 @@ class StatusHandler(VPBaseEndpoint):
     def _status_session_finished_ok_response(self, state: str) -> Response:
         resp_code = self.response_code_helper.create_code(state)
         return JsonResponse(
-            {"redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"},
+            {
+                "redirect_uri": f"{self.registered_get_response_endpoint}?response_code={resp_code}"
+            },
             status="200",
         )
 
-    def _status_session_finished_error_response(self, context, wallet_error: dict) -> Response:
+    def _status_session_finished_error_response(
+        self, context, wallet_error: dict
+    ) -> Response:
         self._log_error(
-            context, f"the wallet rejected the authentication attempt and responsed with the following Authorization Response Error: {wallet_error}"
+            context,
+            f"the wallet rejected the authentication attempt and responsed with the following Authorization Response Error: {wallet_error}",
         )
         return JsonResponse(
             {

@@ -9,23 +9,32 @@ from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, POST_ACCEPTED_METHODS
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
+    POST_ACCEPTED_METHODS,
+    VCIBaseEndpoint,
+)
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.satosa.frontends.openid4vci.models.token import AccessToken, RefreshToken
-from pyeudiw.satosa.frontends.openid4vci.models.token_request import TokenRequest, REDIRECT_URI_CTX, CODE_CHALLENGE_CTX, CODE_CHALLENGE_METHOD_CTX, SCOPE_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
+    CODE_CHALLENGE_CTX,
+    CODE_CHALLENGE_METHOD_CTX,
+    REDIRECT_URI_CTX,
+    SCOPE_CTX,
+    TokenRequest,
+)
 from pyeudiw.satosa.frontends.openid4vci.models.token_response import TokenResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
-    validate_request_method,
     validate_oauth_client_attestation,
     validate_oauth_client_attestation_pop,
-    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+    validate_request_method,
 )
-from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
+from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 from pyeudiw.tools.utils import iat_now
 
 
@@ -36,7 +45,14 @@ class TokenTypsEnum(Enum):
 
 class TokenHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        *args,
+    ):
         """
         Initialize the token endpoint class.
 
@@ -64,14 +80,21 @@ class TokenHandler(VCIBaseEndpoint):
 
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED)
+            validate_content_type(
+                context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED
+            )
 
             if self.wallet_attestation_required:
                 try:
                     validate_oauth_client_attestation_pop(context)
-                    validate_oauth_client_attestation(context, self.dpop_signing_alg_values_supported)
+                    validate_oauth_client_attestation(
+                        context, self.dpop_signing_alg_values_supported
+                    )
                 except InvalidRequestException as e:
-                    self._log_error(e.__class__.__name__, f"Error during OAuth client attestation validation in `par` endpoint: {e}")
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during OAuth client attestation validation in `par` endpoint: {e}",
+                    )
                     return self._handle_400(context, str(e), e)
 
             dpop_verifier = None
@@ -86,10 +109,15 @@ class TokenHandler(VCIBaseEndpoint):
                     if not dpop_verifier.is_valid:
                         raise InvalidRequestException("Invalid DPoP proof")
                 except ValueError as e:
-                    self._log_error(e.__class__.__name__, f"Error during DPoP validation in `token` endpoint: {e}")
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"Error during DPoP validation in `token` endpoint: {e}",
+                    )
                     return self._handle_400(context, str(e), e)
 
-            oauth_client_attestation = self._get_oauth_client_attestation(context, self.wallet_attestation_required)
+            oauth_client_attestation = self._get_oauth_client_attestation(
+                context, self.wallet_attestation_required
+            )
             if oauth_client_attestation:
                 self.jws_helper.verify(oauth_client_attestation)
 
@@ -114,7 +142,11 @@ class TokenHandler(VCIBaseEndpoint):
             authorization_details = vci_entity.authorization_details
             if authorization_details or len(authorization_details) > 0:
                 for ad in authorization_details:
-                    ad.credential_identifiers = self.config_utils.get_credential_configurations_supported(ad.credential_configuration_id).scope
+                    ad.credential_identifiers = (
+                        self.config_utils.get_credential_configurations_supported(
+                            ad.credential_configuration_id
+                        ).scope
+                    )
 
             cnf = self._build_dpop_cnf(dpop_verifier) if dpop_verifier else {}
             return TokenResponse.to_created_response(
@@ -123,10 +155,20 @@ class TokenHandler(VCIBaseEndpoint):
                 iat + self.config_utils.get_jwt().access_token_exp,
                 authorization_details,
             )
-        except (InvalidRequestException, InvalidScopeException, JWSVerificationError, ValidationError, TypeError) as e:
-            return self._handle_400(context, self._handle_validate_request_error(e, "token"), e)
+        except (
+            InvalidRequestException,
+            InvalidScopeException,
+            JWSVerificationError,
+            ValidationError,
+            TypeError,
+        ) as e:
+            return self._handle_400(
+                context, self._handle_validate_request_error(e, "token"), e
+            )
         except Exception as e:
-            self._log_error(e.__class__.__name__, f"Error during invoke token endpoint: {e}")
+            self._log_error(
+                e.__class__.__name__, f"Error during invoke token endpoint: {e}"
+            )
             return self._handle_500(context, "error during invoke token endpoint", e)
 
     def _build_dpop_cnf(self, dpop_verifier: DPoPVerifier) -> dict:
@@ -136,7 +178,9 @@ class TokenHandler(VCIBaseEndpoint):
         jkt = base64.urlsafe_b64encode(thumbprint).rstrip(b"=").decode()
         return {"jkt": jkt}
 
-    def _to_token(self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum, cnf: dict = None) -> str:
+    def _to_token(
+        self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum, cnf: dict = None
+    ) -> str:
 
         if isinstance(entity, dict):
             entity = OpenId4VCIEntity(**entity)
@@ -148,7 +192,9 @@ class TokenHandler(VCIBaseEndpoint):
             case TokenTypsEnum.REFRESH_TOKEN_TYP:
                 exp = iat + self.config_utils.get_jwt().refresh_token_exp
             case _:
-                self._log_error(self.__class__.__name__, f"unexpected typ {typ} for token ")
+                self._log_error(
+                    self.__class__.__name__, f"unexpected typ {typ} for token "
+                )
                 raise Exception(f"Invalid token typ {typ}")
 
         token = AccessToken(
@@ -169,10 +215,14 @@ class TokenHandler(VCIBaseEndpoint):
         jws_headers = {
             "typ": typ,
         }
-        return self.jws_helper.sign(protected=jws_headers, plain_dict=token.model_dump())
+        return self.jws_helper.sign(
+            protected=jws_headers, plain_dict=token.model_dump()
+        )
 
     @staticmethod
-    def _get_oauth_client_attestation(context: Context, required: bool = True) -> str | None:
+    def _get_oauth_client_attestation(
+        context: Context, required: bool = True
+    ) -> str | None:
         """
         Retrieve oauth client attestation pop header
         """
@@ -192,7 +242,10 @@ class TokenHandler(VCIBaseEndpoint):
         self._validate_required_configs(
             [
                 ("jwt.access_token_exp", self.config_utils.get_jwt().access_token_exp),
-                ("jwt.refresh_token_exp", self.config_utils.get_jwt().refresh_token_exp),
+                (
+                    "jwt.refresh_token_exp",
+                    self.config_utils.get_jwt().refresh_token_exp,
+                ),
             ]
         )
         oauth_authorization_server = self.config_utils.get_oauth_authorization_server()
@@ -204,6 +257,9 @@ class TokenHandler(VCIBaseEndpoint):
             )
         self._validate_required_configs(
             [
-                ("metadata.oauth_authorization_server.scopes_supported", oauth_authorization_server.scopes_supported),
+                (
+                    "metadata.oauth_authorization_server.scopes_supported",
+                    oauth_authorization_server.scopes_supported,
+                ),
             ]
         )

@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Optional, List
+from typing import List, Optional
 
 from satosa.context import Context
 
@@ -10,7 +10,10 @@ from pyeudiw.tools.mobile import is_smartphone
 logger = logging.getLogger(__name__)
 
 
-def detect_flow_typ(context: Context, force_same_device_flow_referer_criteria: Optional[List[str]] = None) -> RemoteFlowType:
+def detect_flow_typ(
+    context: Context,
+    force_same_device_flow_referer_criteria: Optional[List[str]] = None,
+) -> RemoteFlowType:
     """
     Identify or guess the remote flow type based on the authentication context. The logic is as follows:
     If the User-Agent clearly indicates a smartphone -> SAME_DEVICE
@@ -26,10 +29,15 @@ def detect_flow_typ(context: Context, force_same_device_flow_referer_criteria: O
     """
 
     if is_smartphone(context.http_headers.get("HTTP_USER_AGENT", "")):
-        logger.info("Flow detected as SAME_DEVICE because User-Agent indicates smartphone.")
+        logger.info(
+            "Flow detected as SAME_DEVICE because User-Agent indicates smartphone."
+        )
         return RemoteFlowType.SAME_DEVICE
 
-    if context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site" and force_same_device_flow_referer_criteria:
+    if (
+        context.http_headers.get("HTTP_SEC_FETCH_SITE", "").lower() == "cross-site"
+        and force_same_device_flow_referer_criteria
+    ):
         referer = context.http_headers.get("HTTP_REFERER", "")
         for pattern in force_same_device_flow_referer_criteria:
             if re.match(pattern, referer):

@@ -3,7 +3,11 @@ import logging
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CLIENT_ID_CTX, ENDPOINT_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    CLIENT_ID_CTX,
+    ENDPOINT_CTX,
+    OpenId4VciBaseModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +44,9 @@ class AuthorizationRequest(OpenId4VciBaseModel):
         self.client_id = self.strip(self.client_id)
         self.check_missing_parameter(self.client_id, "client_id", endpoint)
         if self.client_id != self.get_ctx(CLIENT_ID_CTX):
-            logger.error(f"invalid request `client_id` {self.client_id} in `authorization` endpoint")
+            logger.error(
+                f"invalid request `client_id` {self.client_id} in `authorization` endpoint"
+            )
             raise InvalidRequestException("invalid `client_id` parameter")
 
     def validate_request_uri(self, endpoint: str):

@@ -17,7 +17,13 @@ def test_check_only_valid_format():
 
 
 def test_invalid_unix_timestamp_one_year_ago():
-    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year - 1)).timestamp())
+    ts = int(
+        (
+            datetime.datetime.now(datetime.timezone.utc).replace(
+                year=datetime.datetime.now(datetime.timezone.utc).year - 1
+            )
+        ).timestamp()
+    )
     assert is_valid_unix_timestamp(ts) is False
 
 
@@ -36,12 +42,24 @@ def test_zero_as_timestamp():
 
 
 def test_too_old_unix_timestamp():
-    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year - 2)).timestamp())
+    ts = int(
+        (
+            datetime.datetime.now(datetime.timezone.utc).replace(
+                year=datetime.datetime.now(datetime.timezone.utc).year - 2
+            )
+        ).timestamp()
+    )
     assert is_valid_unix_timestamp(ts) is False
 
 
 def test_too_future_unix_timestamp():
-    ts = int((datetime.datetime.now(datetime.timezone.utc).replace(year=datetime.datetime.now(datetime.timezone.utc).year + 2)).timestamp())
+    ts = int(
+        (
+            datetime.datetime.now(datetime.timezone.utc).replace(
+                year=datetime.datetime.now(datetime.timezone.utc).year + 2
+            )
+        ).timestamp()
+    )
     assert is_valid_unix_timestamp(ts) is False
 
 

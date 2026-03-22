@@ -77,7 +77,9 @@ def decode_key(key: str) -> bytes:
         raise ValueError("key in format different than hex currently not supported")
     key_len = len(key)
     if key_len != 2 * CODE_SYM_KEY_LEN:
-        raise ValueError(f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}")
+        raise ValueError(
+            f"invalid key: key should be {CODE_SYM_KEY_LEN} bytes, obtained instead: {key_len//2}"
+        )
     return bytes.fromhex(key)
 
 

@@ -9,8 +9,13 @@ from satosa.response import Response
 
 from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.tools.config import Openid4VciFrontendConfigUtils
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException, MissingProofJWTException
+from pyeudiw.satosa.frontends.openid4vci.tools.config import (
+    Openid4VciFrontendConfigUtils,
+)
+from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
+    InvalidScopeException,
+    MissingProofJWTException,
+)
 from pyeudiw.tools.base_endpoint import BaseEndpoint
 
 REQUEST_URI_PREFIX = "urn:ietf:params:oauth:request_uri"
@@ -40,21 +45,31 @@ class VCIBaseEndpoint(BaseEndpoint):
             auth_callback (Callable, optional): A callback function to handle authorization requests. Defaults to None.
         """
 
-        super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
+        super().__init__(
+            config, internal_attributes, base_url, name, auth_callback, converter
+        )
         self.config_utils = Openid4VciFrontendConfigUtils(config)
         self._validate_configs()
 
     def _handle_validate_request_error(self, e: Exception, endpoint_name: str):
-        if isinstance(e, (InvalidRequestException, InvalidScopeException, MissingProofJWTException)):
+        if isinstance(
+            e,
+            (InvalidRequestException, InvalidScopeException, MissingProofJWTException),
+        ):
             return e.message
         elif isinstance(e, JWSVerificationError):
-            self._log_error(e.__class__.__name__, f"{str(e)} in`{endpoint_name}` endpoint")
+            self._log_error(
+                e.__class__.__name__, f"{str(e)} in`{endpoint_name}` endpoint"
+            )
             return "Not a valid JWS format"
         elif isinstance(e, TypeError):
             match = re.search(r"got an unexpected keyword argument '([^']+)'", str(e))
             if match:
                 parameter_name = match.group(1)
-                self._log_error(e.__class__.__name__, f"missing {parameter_name} in request `{endpoint_name}` endpoint")
+                self._log_error(
+                    e.__class__.__name__,
+                    f"missing {parameter_name} in request `{endpoint_name}` endpoint",
+                )
                 return f"missing `{parameter_name}` parameter"
             else:
                 return "invalid request"
@@ -63,9 +78,15 @@ class VCIBaseEndpoint(BaseEndpoint):
             for err in errors:
                 parameter_name = err["loc"][0] if len(err["loc"]) > 0 else None
                 if parameter_name:
-                    self._log_error(e.__class__.__name__, f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}")
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid {parameter_name} in request `{endpoint_name}` endpoint: {err['msg']}",
+                    )
                 else:
-                    self._log_error(e.__class__.__name__, f"invalid request in `{endpoint_name}` endpoint: {err['msg']}")
+                    self._log_error(
+                        e.__class__.__name__,
+                        f"invalid request in `{endpoint_name}` endpoint: {err['msg']}",
+                    )
             return "invalid request"
         else:
             raise e
@@ -109,7 +130,9 @@ class VCIBaseEndpoint(BaseEndpoint):
     @property
     def status_endpoint(self) -> str | None:
         try:
-            status_path = self.config_utils.get_credential_configurations().status_list.path
+            status_path = (
+                self.config_utils.get_credential_configurations().status_list.path
+            )
             status_path = status_path.lstrip("/")
             return f"{self._backend_url}/{status_path}"
         except AttributeError:

@@ -1,7 +1,6 @@
-from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.trust.model.trust_source import TrustEvaluationType
 from pyeudiw.tools.utils import exp_from_now
+from pyeudiw.trust.handler.interface import TrustHandlerInterface
+from pyeudiw.trust.model.trust_source import TrustEvaluationType, TrustSourceData
 
 mock_jwk = {
     "crv": "P-256",
@@ -32,7 +31,9 @@ class MockTrustHandler(TrustHandlerInterface):
     def __init__(self, *args, **kwargs):
         self.client_id = kwargs.get("default_client_id", None)
         self.exp = kwargs.get("exp", 10)
-        self.include_issued_jwt_header_param = kwargs.get("include_issued_jwt_header_param", False)
+        self.include_issued_jwt_header_param = kwargs.get(
+            "include_issued_jwt_header_param", False
+        )
 
     def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> dict:
         if issuer == self.client_id:
@@ -45,7 +46,9 @@ class MockTrustHandler(TrustHandlerInterface):
         trust_source.metadata = {"json_key": "json_value"}
         return trust_source
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         trust_source = self.get_metadata(issuer, trust_source)
 
         if issuer == self.client_id:
@@ -69,7 +72,9 @@ class MockTrustHandler(TrustHandlerInterface):
 
         return trust_source
 
-    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(
+        self, trust_source: TrustSourceData
+    ) -> dict:
         return {"trust_param_name": trust_source.test_trust_param.trust_param_name}
 
 
@@ -82,7 +87,9 @@ class UpdateTrustHandler(MockTrustHandler):
         super().__init__(*args, **kwargs)
         self.updated = False
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
 
         if not self.updated:
             self.updated = True
@@ -102,7 +109,9 @@ class UpdateTrustHandler(MockTrustHandler):
 
         return trust_source
 
-    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(
+        self, trust_source: TrustSourceData
+    ) -> dict:
         return {"trust_param_name": trust_source.test_trust_param.trust_param_name}
 
 

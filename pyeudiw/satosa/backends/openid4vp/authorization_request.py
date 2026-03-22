@@ -73,7 +73,9 @@ def build_authorization_request_claims(
     claims = {
         "client_id_scheme": "http",  # that's federation.
         "client_id": client_id,
-        "response_mode": default_claims.get("response_mode", ResponseMode.direct_post_jwt),
+        "response_mode": default_claims.get(
+            "response_mode", ResponseMode.direct_post_jwt
+        ),
         "response_type": "vp_token",
         "response_uri": response_uri,
         "nonce": nonce,

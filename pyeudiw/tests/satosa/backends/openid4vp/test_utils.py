@@ -44,7 +44,10 @@ def test_detect_flow_typ_as_same_device_with_accepted_referer(useragent):
         "HTTP_SEC_FETCH_SITE": "cross-site",
         "HTTP_REFERER": "https://example.wallet.org/",
     }
-    assert detect_flow_typ(context, ["https://example.wallet.org/"]) is RemoteFlowType.SAME_DEVICE
+    assert (
+        detect_flow_typ(context, ["https://example.wallet.org/"])
+        is RemoteFlowType.SAME_DEVICE
+    )
 
 
 @pytest.mark.parametrize("useragent", _SMARTPHONE_USER_AGENTS)
@@ -55,32 +58,71 @@ def test_detect_flow_typ_as_same_device_with_invalid_accepted_referer(useragent)
         "HTTP_SEC_FETCH_SITE": "cross-site",
         "HTTP_REFERER": "https://wrongexample.wallet.org/",
     }
-    assert detect_flow_typ(context, ["https://example.wallet.org/"]) is RemoteFlowType.SAME_DEVICE
+    assert (
+        detect_flow_typ(context, ["https://example.wallet.org/"])
+        is RemoteFlowType.SAME_DEVICE
+    )
 
 
 @pytest.mark.parametrize("useragent", _SMARTPHONE_USER_AGENTS)
 def test_detect_flow_typ_as_same_device_regex_match(useragent):
     context = Context()
-    context.http_headers = {"HTTP_USER_AGENT": useragent, "HTTP_REFERER": "https://eudi-wallet.example.com/dashboard", "HTTP_SEC_FETCH_SITE": "cross-site"}
-    assert detect_flow_typ(context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]) is RemoteFlowType.SAME_DEVICE
+    context.http_headers = {
+        "HTTP_USER_AGENT": useragent,
+        "HTTP_REFERER": "https://eudi-wallet.example.com/dashboard",
+        "HTTP_SEC_FETCH_SITE": "cross-site",
+    }
+    assert (
+        detect_flow_typ(
+            context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]
+        )
+        is RemoteFlowType.SAME_DEVICE
+    )
 
 
 @pytest.mark.parametrize("useragent", _SMARTPHONE_USER_AGENTS)
 def test_detect_flow_typ_as_same_device_regex_no_match(useragent):
     context = Context()
-    context.http_headers = {"HTTP_USER_AGENT": useragent, "HTTP_REFERER": "https://untrusted.example.com", "HTTP_SEC_FETCH_SITE": "cross-site"}
-    assert detect_flow_typ(context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]) is RemoteFlowType.SAME_DEVICE
+    context.http_headers = {
+        "HTTP_USER_AGENT": useragent,
+        "HTTP_REFERER": "https://untrusted.example.com",
+        "HTTP_SEC_FETCH_SITE": "cross-site",
+    }
+    assert (
+        detect_flow_typ(
+            context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]
+        )
+        is RemoteFlowType.SAME_DEVICE
+    )
 
 
 @pytest.mark.parametrize("useragent", _DESKTOP_USER_AGENTS)
 def test_detect_flow_typ_as_same_device_regex_match_desktop(useragent):
     context = Context()
-    context.http_headers = {"HTTP_USER_AGENT": useragent, "HTTP_REFERER": "https://eudi-wallet.example.com/dashboard", "HTTP_SEC_FETCH_SITE": "cross-site"}
-    assert detect_flow_typ(context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]) is RemoteFlowType.SAME_DEVICE
+    context.http_headers = {
+        "HTTP_USER_AGENT": useragent,
+        "HTTP_REFERER": "https://eudi-wallet.example.com/dashboard",
+        "HTTP_SEC_FETCH_SITE": "cross-site",
+    }
+    assert (
+        detect_flow_typ(
+            context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]
+        )
+        is RemoteFlowType.SAME_DEVICE
+    )
 
 
 @pytest.mark.parametrize("useragent", _DESKTOP_USER_AGENTS)
 def test_detect_flow_typ_as_cross_device_regex_no_match(useragent):
     context = Context()
-    context.http_headers = {"HTTP_USER_AGENT": useragent, "HTTP_REFERER": "https://untrusted.example.com", "HTTP_SEC_FETCH_SITE": "cross-site"}
-    assert detect_flow_typ(context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]) is RemoteFlowType.CROSS_DEVICE
+    context.http_headers = {
+        "HTTP_USER_AGENT": useragent,
+        "HTTP_REFERER": "https://untrusted.example.com",
+        "HTTP_SEC_FETCH_SITE": "cross-site",
+    }
+    assert (
+        detect_flow_typ(
+            context, [r"^https://eudi-wallet\.example\.(it|org|com|eu|dev)"]
+        )
+        is RemoteFlowType.CROSS_DEVICE
+    )

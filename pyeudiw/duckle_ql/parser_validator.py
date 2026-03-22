@@ -8,10 +8,10 @@ the backend is configured with config.dcql_query (DCQL flow).
 import logging
 from typing import Any
 
-from pyeudiw.duckle_ql.handler import DuckleHandler
-from pyeudiw.exceptions import ValidationError
-from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
 from pyeudiw.duckle_ql.exceptions import MissingHandler
+from pyeudiw.duckle_ql.handler import DuckleHandler
+from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
+from pyeudiw.exceptions import ValidationError
 
 
 class ParserValidator:

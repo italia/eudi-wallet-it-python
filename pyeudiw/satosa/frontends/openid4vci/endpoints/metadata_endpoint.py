@@ -3,16 +3,25 @@ import json
 from satosa.context import Context
 from satosa.response import Response
 
+from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
+    VCIBaseEndpoint,
+)
 from pyeudiw.tools.content_type import APPLICATION_JSON, ENTITY_STATEMENT_JWT
 from pyeudiw.tools.utils import exp_from_now, iat_now
-from pyeudiw.jwk import JWK
 
 
 class MetadataHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        *args
+    ):
         """
         Initialize the OpenID4VCI metadata endpoint class.
 
@@ -23,13 +32,21 @@ class MetadataHandler(VCIBaseEndpoint):
             name (str): The name of the SATOSA module to append to the URL.
         """
 
-        self.federation_config = config.get("trust", {}).get("federation", {}).get("config", {})
+        self.federation_config = (
+            config.get("trust", {}).get("federation", {}).get("config", {})
+        )
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
 
-    def _ensure_credential_issuer(self, metadata: dict, metadata_key: str, issuer_key: str):
+    def _ensure_credential_issuer(
+        self, metadata: dict, metadata_key: str, issuer_key: str
+    ):
         metadata_val = metadata.get(metadata_key)
-        if metadata_val and isinstance(metadata_val, dict) and not metadata_val.get(issuer_key):
+        if (
+            metadata_val
+            and isinstance(metadata_val, dict)
+            and not metadata_val.get(issuer_key)
+        ):
             metadata_val[issuer_key] = self._backend_url
 
     @property
@@ -40,20 +57,31 @@ class MetadataHandler(VCIBaseEndpoint):
                 for metadata_key, issuer_key in mapping_config.items():
                     self._ensure_credential_issuer(metadata, metadata_key, issuer_key)
         for cred_issuer in metadata.values():
-            if isinstance(cred_issuer, dict) and "jwks" in cred_issuer and not isinstance(cred_issuer["jwks"], dict):
-                cred_issuer["jwks"] = {"keys": [JWK(k).as_public_dict() for k in cred_issuer["jwks"]]}
+            if (
+                isinstance(cred_issuer, dict)
+                and "jwks" in cred_issuer
+                and not isinstance(cred_issuer["jwks"], dict)
+            ):
+                cred_issuer["jwks"] = {
+                    "keys": [JWK(k).as_public_dict() for k in cred_issuer["jwks"]]
+                }
         return metadata
 
     @property
     def pub_federation_jwks(self) -> dict:
-        return [JWK(_k).as_public_dict() for _k in self.federation_config.get("federation_jwks")]
+        return [
+            JWK(_k).as_public_dict()
+            for _k in self.federation_config.get("federation_jwks")
+        ]
 
     @property
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
 
         ec_payload = {
-            "exp": exp_from_now(minutes=self.federation_config.get("entity_configuration_exp")),
+            "exp": exp_from_now(
+                minutes=self.federation_config.get("entity_configuration_exp")
+            ),
             "iat": iat_now(),
             "iss": self.entity_id,
             "sub": self.entity_id,
@@ -96,7 +124,11 @@ class MetadataHandler(VCIBaseEndpoint):
 
         is_json = context.qs_params.get("format", "") == "json"
         return Response(
-            json.dumps(self.entity_configuration_as_dict) if is_json else self.entity_configuration,
+            (
+                json.dumps(self.entity_configuration_as_dict)
+                if is_json
+                else self.entity_configuration
+            ),
             status="200",
             content=APPLICATION_JSON if is_json else ENTITY_STATEMENT_JWT,
         )

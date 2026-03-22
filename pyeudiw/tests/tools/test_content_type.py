@@ -1,4 +1,8 @@
-from pyeudiw.tools.content_type import is_application_json, is_form_urlencoded, get_content_type_header
+from pyeudiw.tools.content_type import (
+    get_content_type_header,
+    is_application_json,
+    is_form_urlencoded,
+)
 
 
 def test_is_application_json():
@@ -13,7 +17,11 @@ def test_is_form_urlencoded():
 
 
 def test_get_content_type_header_present():
-    headers_present = [("X-Test", "value"), ("Content-Type", "application/json"), ("Another-Header", "xyz")]
+    headers_present = [
+        ("X-Test", "value"),
+        ("Content-Type", "application/json"),
+        ("Another-Header", "xyz"),
+    ]
     assert get_content_type_header(headers_present) == "application/json"
 
     headers_case_insensitive = [("content-TYPE", "application/json")]

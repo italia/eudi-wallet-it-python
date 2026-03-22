@@ -3,20 +3,18 @@ import json
 import logging
 from dataclasses import asdict
 from datetime import date, datetime, timezone
-from typing import Any, Union, Callable
+from typing import Any, Callable, Union
 
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
-from satosa.internal import AuthenticationInformation
-from satosa.internal import InternalData
-from satosa.response import Redirect
-from satosa.response import Response
+from satosa.internal import AuthenticationInformation, InternalData
+from satosa.response import Redirect, Response
 
+from pyeudiw.duckle_ql.exceptions import MissingHandler
+from pyeudiw.duckle_ql.parser_validator import ParserValidator
+from pyeudiw.exceptions import ValidationError as CredentialValidationError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.duckle_ql.exceptions import MissingHandler
-from pyeudiw.exceptions import ValidationError as CredentialValidationError
-from pyeudiw.duckle_ql.parser_validator import ParserValidator
 from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     AuthorizeResponsePayload,
     DirectPostJwtJweParser,
@@ -24,10 +22,15 @@ from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     detect_response_mode,
 )
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
-from pyeudiw.satosa.backends.openid4vp.exceptions import AuthRespParsingException, AuthRespValidationException
+from pyeudiw.satosa.backends.openid4vp.exceptions import (
+    AuthRespParsingException,
+    AuthRespValidationException,
+)
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
-from pyeudiw.satosa.backends.openid4vp.schemas.response import ErrorResponsePayload
-from pyeudiw.satosa.backends.openid4vp.schemas.response import ResponseMode
+from pyeudiw.satosa.backends.openid4vp.schemas.response import (
+    ErrorResponsePayload,
+    ResponseMode,
+)
 from pyeudiw.satosa.exceptions import (
     AuthorizeUnmatchedResponse,
     FinalizedSessionError,
@@ -57,11 +60,22 @@ class ResponseHandler(VPBaseEndpoint):
         trust_evaluator: CombinedTrustEvaluator,
         db_engine=None,
     ) -> None:
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
+        super().__init__(
+            config,
+            internal_attributes,
+            base_url,
+            name,
+            auth_callback_func,
+            converter,
+            trust_evaluator,
+            db_engine,
+        )
 
         self.registered_get_response_endpoint = f"{self.client_id}/get_response"
 
-        self.response_code_helper = ResponseCodeSource(self.config["response_code"]["sym_key"])
+        self.response_code_helper = ResponseCodeSource(
+            self.config["response_code"]["sym_key"]
+        )
 
         # This loads all the configured trust evaluation mechanisms
         self.config.get("trust", {})
@@ -69,7 +83,9 @@ class ResponseHandler(VPBaseEndpoint):
 
         self.trust_evaluator = trust_evaluator
 
-        self.credential_presentation_handlers = self.load_credential_presentation_handlers()
+        self.credential_presentation_handlers = (
+            self.load_credential_presentation_handlers()
+        )
 
     def _extract_all_user_attributes(self, extracted_attributes: list[dict]) -> dict:
         # for all the valid credentials, take the payload and the disclosure and disclose user attributes
@@ -99,22 +115,34 @@ class ResponseHandler(VPBaseEndpoint):
             request_session = self.db_engine.get_by_state(state=state)
 
             if not request_session:
-                raise AuthorizeUnmatchedResponse(f"unable to find document-session associated to state {state}")
+                raise AuthorizeUnmatchedResponse(
+                    f"unable to find document-session associated to state {state}"
+                )
         except Exception as err:
-            raise AuthorizeUnmatchedResponse(f"unable to find document-session associated to state {state}", err)
+            raise AuthorizeUnmatchedResponse(
+                f"unable to find document-session associated to state {state}", err
+            )
 
         if not request_session:
-            raise InvalidInternalStateError(f"unable to find document-session associated to state {state}")
+            raise InvalidInternalStateError(
+                f"unable to find document-session associated to state {state}"
+            )
 
         if request_session.get("finalized", True):
-            raise FinalizedSessionError(f"cannot accept response: session for state {state} corrupted or already finalized")
+            raise FinalizedSessionError(
+                f"cannot accept response: session for state {state} corrupted or already finalized"
+            )
 
         nonce = request_session.get("nonce", None)
         if not nonce:
-            raise InvalidInternalStateError(f"unable to find nonce in session associated to state {state}: corrupted data")
+            raise InvalidInternalStateError(
+                f"unable to find nonce in session associated to state {state}: corrupted data"
+            )
         return request_session
 
-    def _handle_error_response(self, context: Context, error_response: ErrorResponsePayload) -> JsonResponse:
+    def _handle_error_response(
+        self, context: Context, error_response: ErrorResponsePayload
+    ) -> JsonResponse:
         state = error_response.state
         request_session: dict = {}
         try:
@@ -123,21 +151,27 @@ class ResponseHandler(VPBaseEndpoint):
             return self._handle_400(
                 context,
                 "the response state is associated to an invalid, corrupted, expired or non existing authentication request",
-                Exception(f"exception found when associating authorization error respons {error_response} with a rewquest: {e400}"),
+                Exception(
+                    f"exception found when associating authorization error respons {error_response} with a rewquest: {e400}"
+                ),
             )
 
         flow_type, response_code = None, ""
         try:
             flow_type = RemoteFlowType(request_session["remote_flow_typ"])
             response_code = self.response_code_helper.create_code(error_response.state)
-            self.db_engine.update_response_object(request_session["nonce"], state, asdict(error_response), True)
+            self.db_engine.update_response_object(
+                request_session["nonce"], state, asdict(error_response), True
+            )
 
             self.db_engine.set_finalized(request_session["document_id"])
         except Exception as e500:
             return self._handle_500(context, "internal server error", e500)
 
         if flow_type == RemoteFlowType.SAME_DEVICE:
-            cb_redirect_uri = f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            cb_redirect_uri = (
+                f"{self.registered_get_response_endpoint}?response_code={response_code}"
+            )
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             return JsonResponse({}, status="200")
@@ -149,14 +183,20 @@ class ResponseHandler(VPBaseEndpoint):
         try:
             authz_payload = self._parse_authorization_response(context)
         except AuthRespParsingException as e400:
-            return self._handle_400(context, "invalid authorization response: cannot parse the payload", e400)
+            return self._handle_400(
+                context,
+                "invalid authorization response: cannot parse the payload",
+                e400,
+            )
         except AuthRespValidationException as e401:
             return self._handle_401(
                 context,
                 "invalid authentication method: token might be invalid or expired",
                 e401,
             )
-        self._log_debug(context, f"response URI endpoint response with payload {authz_payload}")
+        self._log_debug(
+            context, f"response URI endpoint response with payload {authz_payload}"
+        )
 
         if isinstance(authz_payload, ErrorResponsePayload):
             return self._handle_error_response(context, authz_payload)
@@ -165,70 +205,115 @@ class ResponseHandler(VPBaseEndpoint):
         try:
             request_session = self._retrieve_session_from_state(authz_payload.state)
         except AuthorizeUnmatchedResponse as e400:
-            return self._handle_400(context, "invalid authorization response: cannot find the session associated to the state", e400)
+            return self._handle_400(
+                context,
+                "invalid authorization response: cannot find the session associated to the state",
+                e400,
+            )
         except InvalidInternalStateError as e500:
             return self._handle_500(context, e500.args[0], Exception("invalid state"))
         except FinalizedSessionError as e400:
-            return self._handle_400(context, "invalid authorization response: session already finalized or corrupted", e400)
+            return self._handle_400(
+                context,
+                "invalid authorization response: session already finalized or corrupted",
+                e400,
+            )
 
         # DCQL (Duckle Query Language) flow: vp_token is a dict keyed by credential id
         extracted_attributes: list[dict[str, Any]] = []
         credential_issuers: list[str] = []
         try:
             challenge = self._get_verifier_challenge(request_session)
-            request_vp_formats_supported = request_session.get("wallet_metadata", {}).get("vp_formats_supported")
+            request_vp_formats_supported = request_session.get(
+                "wallet_metadata", {}
+            ).get("vp_formats_supported")
             vp_token_handlers = (
                 self.credential_presentation_handlers.handlers
                 if not request_vp_formats_supported
-                else {k: v for k, v in self.credential_presentation_handlers.handlers.items() if k in request_vp_formats_supported}
+                else {
+                    k: v
+                    for k, v in self.credential_presentation_handlers.handlers.items()
+                    if k in request_vp_formats_supported
+                }
             )
-            parser_validator = ParserValidator(authz_payload.vp_token, vp_token_handlers, self.config)
+            parser_validator = ParserValidator(
+                authz_payload.vp_token, vp_token_handlers, self.config
+            )
             parser_validator.validate(challenge["aud"], challenge["nonce"])
             extracted_attributes = parser_validator.parse()
         except MissingHandler as e400:
-            return self._handle_400(context, "invalid DCQL response: vp_format not supported", e400)
+            return self._handle_400(
+                context, "invalid DCQL response: vp_format not supported", e400
+            )
         except CredentialValidationError as e400:
-            return self._handle_400(context, "invalid DCQL response: validation error", e400)
+            return self._handle_400(
+                context, "invalid DCQL response: validation error", e400
+            )
         except Exception as e500:
-            return self._handle_500(context, "invalid DCQL response: unknown error", e500)
+            return self._handle_500(
+                context, "invalid DCQL response: unknown error", e500
+            )
 
         all_attributes = self._extract_all_user_attributes(extracted_attributes)
         iss_list_serialized = ";".join(credential_issuers)  # marshaling is whatever
-        internal_resp = self._translate_response(all_attributes, iss_list_serialized, context)
+        internal_resp = self._translate_response(
+            all_attributes, iss_list_serialized, context
+        )
 
         state = authz_payload.state
         response_code = self.response_code_helper.create_code(state)
         try:
-            self.db_engine.update_response_object(request_session["nonce"], state, internal_resp.to_dict())
+            self.db_engine.update_response_object(
+                request_session["nonce"], state, internal_resp.to_dict()
+            )
             # authentication finalized!
             self.db_engine.set_finalized(request_session["document_id"])
             if self.effective_log_level == logging.DEBUG:
                 request_session = self.db_engine.get_by_state(state=state)
-                self._log_debug(context, f"Session update on storage: {request_session}")
+                self._log_debug(
+                    context, f"Session update on storage: {request_session}"
+                )
 
                 if not request_session:
-                    self._log_error(context, f"Session update on storage failed: session with state {state} not found")
-                    return self._handle_500(context, "Update error: Cannot update response object.", Exception("session not found after update"))
+                    self._log_error(
+                        context,
+                        f"Session update on storage failed: session with state {state} not found",
+                    )
+                    return self._handle_500(
+                        context,
+                        "Update error: Cannot update response object.",
+                        Exception("session not found after update"),
+                    )
 
         except StorageWriteError as e500:
             # TODO - do we have to block in the case the update cannot be done?
             self._log_error(context, f"Session update on storage failed: {e500}")
-            return self._handle_500(context, "Update error: Cannot update response object.", e500)
+            return self._handle_500(
+                context, "Update error: Cannot update response object.", e500
+            )
 
         try:
             flow_type = RemoteFlowType(request_session["remote_flow_typ"])
         except Exception as e500:
-            self._log_error(context, f"unable to identify flow from stored session: {e500}")
-            return self._handle_500(context, "flow error: unable to identify flow from stored session", e500)
+            self._log_error(
+                context, f"unable to identify flow from stored session: {e500}"
+            )
+            return self._handle_500(
+                context, "flow error: unable to identify flow from stored session", e500
+            )
 
         if flow_type == RemoteFlowType.SAME_DEVICE:
-            auth_endpoint = request_session.get("wallet_metadata", {}).get("authorization_endpoint")
+            auth_endpoint = request_session.get("wallet_metadata", {}).get(
+                "authorization_endpoint"
+            )
             cb_redirect_uri = f"{auth_endpoint or self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             return JsonResponse({}, status="200")
 
-    def _translate_response(self, response: dict, issuer: str, context: Context) -> InternalData:
+    def _translate_response(
+        self, response: dict, issuer: str, context: Context
+    ) -> InternalData:
         """
         Translates wallet response to SATOSA internal response.
         :type response: dict[str, str]
@@ -247,7 +332,11 @@ class ResponseHandler(VPBaseEndpoint):
 
         # default_acr_value is not part of OpenID4VP; VP responses typically lack acr/amr.
         # It is used as a fallback when building SATOSA InternalData for the upstream IdP.
-        auth_class_ref = response.get("acr") or response.get("amr") or self.config["authorization"]["default_acr_value"]
+        auth_class_ref = (
+            response.get("acr")
+            or response.get("amr")
+            or self.config["authorization"]["default_acr_value"]
+        )
         auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
 
         # TODO - ACR values
@@ -266,26 +355,37 @@ class ResponseHandler(VPBaseEndpoint):
             self._log(
                 context,
                 level="warning",
-                message=("[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation " "setting a random one for interop for internal frontends"),
+                message=(
+                    "[USER ATTRIBUTES] Missing subject id from OpenID4VP presentation "
+                    "setting a random one for interop for internal frontends"
+                ),
             )
 
             def _json_default(obj: Any):
                 if isinstance(obj, (date, datetime)):
                     return obj.isoformat()
-                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+                raise TypeError(
+                    f"Object of type {type(obj).__name__} is not JSON serializable"
+                )
 
-            sub = hashlib.sha256(f"{json.dumps(response, default=_json_default).encode()}~{pepper}".encode()).hexdigest()
+            sub = hashlib.sha256(
+                f"{json.dumps(response, default=_json_default).encode()}~{pepper}".encode()
+            ).hexdigest()
         response["sub"] = [sub]
 
         if self._converter:
-            internal_resp.attributes = self._converter.to_internal("openid4vp", response)
+            internal_resp.attributes = self._converter.to_internal(
+                "openid4vp", response
+            )
         else:
             internal_resp.attributes = response
 
         internal_resp.subject_id = sub
         return internal_resp
 
-    def _parse_authorization_response(self, context: Context) -> Union[AuthorizeResponsePayload, ErrorResponsePayload]:
+    def _parse_authorization_response(
+        self, context: Context
+    ) -> Union[AuthorizeResponsePayload, ErrorResponsePayload]:
         response_mode = detect_response_mode(context)
         match response_mode:
             case ResponseMode.direct_post:
@@ -295,7 +395,10 @@ class ResponseHandler(VPBaseEndpoint):
                 jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
                 jws_verifier = JWSHelper(self.config["metadata_jwks"])
                 parser = DirectPostJwtJweParser(
-                    jwe_decrypter, jws_verifier, self.config["jwt"].get("enc_alg_supported", []), self.config["jwt"].get("enc_enc_supported", [])
+                    jwe_decrypter,
+                    jws_verifier,
+                    self.config["jwt"].get("enc_alg_supported", []),
+                    self.config["jwt"].get("enc_enc_supported", []),
                 )
                 return parser.parse_and_validate(context)
             case ResponseMode.error:
@@ -313,8 +416,14 @@ class ResponseHandler(VPBaseEndpoint):
 
     def load_credential_presentation_handlers(self):
         try:
-            from pyeudiw.credential_presentation.handler import load_credential_presentation_handlers
+            from pyeudiw.credential_presentation.handler import (
+                load_credential_presentation_handlers,
+            )
 
-            return load_credential_presentation_handlers(self.config, self.trust_evaluator, self.config.get("jwt", {}).get("sig_alg_supported", []))
+            return load_credential_presentation_handlers(
+                self.config,
+                self.trust_evaluator,
+                self.config.get("jwt", {}).get("sig_alg_supported", []),
+            )
         except ImportError as e:
             raise ImportError(f"Failed to import credential_presentation handlers: {e}")

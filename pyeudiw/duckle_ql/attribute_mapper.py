@@ -1,7 +1,9 @@
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 
-def extract_claims(data: Dict[str, Any], paths: List[Dict[str, List[str]]]) -> Dict[str, Any]:
+def extract_claims(
+    data: Dict[str, Any], paths: List[Dict[str, List[str]]]
+) -> Dict[str, Any]:
     """
     Extracts values from a dictionary (nested or flat) based on the provided paths.
 

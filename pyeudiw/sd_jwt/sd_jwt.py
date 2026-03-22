@@ -10,14 +10,19 @@ from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.parse import DecodedJwt
 from pyeudiw.jwt.utils import base64_urldecode, base64_urlencode
 from pyeudiw.jwt.verification import verify_jws_with_key
-from pyeudiw.sd_jwt.common import SDJWTCommon
-from pyeudiw.sd_jwt.exceptions import InvalidKeyBinding, UnsupportedSdAlg, MissingConfirmationKey
-from pyeudiw.sd_jwt.schema import (
-    VerifierChallenge,
-    is_sd_jwt_format,
+from pyeudiw.sd_jwt import (
+    DEFAULT_SD_ALG,
+    DIGEST_ALG_KEY,
+    SD_DIGESTS_KEY,
+    SD_LIST_PREFIX,
 )
-
-from pyeudiw.sd_jwt import DEFAULT_SD_ALG, DIGEST_ALG_KEY, SD_DIGESTS_KEY, SD_LIST_PREFIX
+from pyeudiw.sd_jwt.common import SDJWTCommon
+from pyeudiw.sd_jwt.exceptions import (
+    InvalidKeyBinding,
+    MissingConfirmationKey,
+    UnsupportedSdAlg,
+)
+from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_format
 
 _JsonTypes = dict | list | str | int | float | bool | None
 _JsonTypes_T = TypeVar("_JsonTypes_T", bound=_JsonTypes)
@@ -25,7 +30,9 @@ _JsonTypes_T = TypeVar("_JsonTypes_T", bound=_JsonTypes)
 
 FORMAT_SEPARATOR = SDJWTCommon.COMBINED_SERIALIZATION_FORMAT_SEPARATOR
 
-SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {"sha-256": lambda s: base64_urlencode(sha256(s.encode("ascii")).digest())}
+SUPPORTED_SD_ALG_FN: dict[str, Callable[[str], str]] = {
+    "sha-256": lambda s: base64_urlencode(sha256(s.encode("ascii")).digest())
+}
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +45,9 @@ class SdJwt:
 
     def __init__(self, token: str):
         if not is_sd_jwt_format(token):
-            raise ValueError(f"input [token]={token} is not an sd-jwt with: maybe it is a regular jwt?")
+            raise ValueError(
+                f"input [token]={token} is not an sd-jwt with: maybe it is a regular jwt?"
+            )
         self.token = token
         # precomputed values
         self.token_without_kb: str = ""
@@ -49,7 +58,11 @@ class SdJwt:
 
     def _post_init_precomputed_values(self):
         iss_jwt, *disclosures, kb_jwt = self.token.split(FORMAT_SEPARATOR)
-        self.token_without_kb = iss_jwt + FORMAT_SEPARATOR + "".join(disc + FORMAT_SEPARATOR for disc in disclosures)
+        self.token_without_kb = (
+            iss_jwt
+            + FORMAT_SEPARATOR
+            + "".join(disc + FORMAT_SEPARATOR for disc in disclosures)
+        )
         self.issuer_jwt = DecodedJwt.parse(iss_jwt)
         self.disclosures = disclosures
         if kb_jwt:
@@ -68,7 +81,9 @@ class SdJwt:
 
         cnf: dict = self.issuer_jwt.payload.get("cnf", {}).get("jwk", {})
         if not cnf:
-            raise MissingConfirmationKey("missing confirmation (cnf) key from issuer payload claims")
+            raise MissingConfirmationKey(
+                "missing confirmation (cnf) key from issuer payload claims"
+            )
         return cnf
 
     def get_disclosed_claims(self) -> dict:
@@ -125,7 +140,9 @@ class SdJwt:
         """
         return self.holder_kb is not None
 
-    def verify_issuer_jwt_signature(self, keys: list[ECKey | RSAKey | dict] | ECKey | RSAKey | dict) -> None:
+    def verify_issuer_jwt_signature(
+        self, keys: list[ECKey | RSAKey | dict] | ECKey | RSAKey | dict
+    ) -> None:
         """
         Verify the issuer jwt signature
 
@@ -149,7 +166,9 @@ class SdJwt:
         """
         if not self.has_key_binding():
             return
-        _verify_key_binding(self.token_without_kb, self.get_sd_alg(), self.holder_kb, challenge)
+        _verify_key_binding(
+            self.token_without_kb, self.get_sd_alg(), self.holder_kb, challenge
+        )
         self.verify_holder_kb_jwt_signature()
 
     def verify_holder_kb_jwt_signature(self) -> None:
@@ -177,12 +196,18 @@ def _verify_challenge(hkb: DecodedJwt, challenge: VerifierChallenge) -> None:
     """
 
     if (obt := hkb.payload.get("aud", None)) != (exp := challenge["aud"]):
-        raise InvalidKeyBinding(f"challenge audience {exp} does not match obtained audience {obt}")
+        raise InvalidKeyBinding(
+            f"challenge audience {exp} does not match obtained audience {obt}"
+        )
     if (obt := hkb.payload.get("nonce", None)) != (exp := challenge["nonce"]):
-        raise InvalidKeyBinding(f"challenge nonce {exp} does not match obtained nonce {obt}")
+        raise InvalidKeyBinding(
+            f"challenge nonce {exp} does not match obtained nonce {obt}"
+        )
 
 
-def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: str) -> None:
+def _verify_sd_hash(
+    token_without_hkb: str, sd_hash_alg: str, expected_digest: str
+) -> None:
     """
     Verify the sd-jwt hash
 
@@ -201,7 +226,9 @@ def _verify_sd_hash(token_without_hkb: str, sd_hash_alg: str, expected_digest: s
     if not hash_fn:
         raise UnsupportedSdAlg(f"unsupported sd_alg: {sd_hash_alg}")
     if expected_digest != (obt_digest := hash_fn(token_without_hkb)):
-        raise InvalidKeyBinding(f"sd-jwt digest {obt_digest} does not match expected digest {expected_digest}")
+        raise InvalidKeyBinding(
+            f"sd-jwt digest {obt_digest} does not match expected digest {expected_digest}"
+        )
 
 
 def _verify_iat(payload: dict) -> None:
@@ -247,11 +274,15 @@ def _verify_key_binding(
     """
 
     _verify_challenge(hkb, challenge)
-    _verify_sd_hash(token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", "sha-256"))
+    _verify_sd_hash(
+        token_without_hkb, sd_hash_alg, hkb.payload.get("sd_hash", "sha-256")
+    )
     _verify_iat(hkb.payload)
 
 
-def _disclosures_to_hash_mappings(disclosures: list[str], sd_alg: Callable[[str], str]) -> tuple[dict[str, str], dict[str, Any]]:
+def _disclosures_to_hash_mappings(
+    disclosures: list[str], sd_alg: Callable[[str], str]
+) -> tuple[dict[str, str], dict[str, Any]]:
     """
     Convert a list of disclosures to a map of digests to disclosures
 
@@ -283,7 +314,9 @@ def _disclosures_to_hash_mappings(disclosures: list[str], sd_alg: Callable[[str]
     return hash_to_disclosure, hash_to_dec_disclosure
 
 
-def _extract_claims_from_payload(payload: dict, disclosures: list[str], sd_alg: Callable[[str], str]) -> dict:
+def _extract_claims_from_payload(
+    payload: dict, disclosures: list[str], sd_alg: Callable[[str], str]
+) -> dict:
     """
     Extract the disclosed claims from the payload
 
@@ -314,7 +347,12 @@ def _is_element_leaf(element: Any) -> bool:
     :returns: True if the element is a leaf, False otherwise
     :rtype: bool
     """
-    return type(element) is dict and len(element) == 1 and SD_LIST_PREFIX in element and type(element[SD_LIST_PREFIX]) is str
+    return (
+        type(element) is dict
+        and len(element) == 1
+        and SD_LIST_PREFIX in element
+        and type(element[SD_LIST_PREFIX]) is str
+    )
 
 
 def _unpack_json_array(
@@ -347,9 +385,17 @@ def _unpack_json_array(
             digest: str = element[SD_LIST_PREFIX]
             if digest in decoded_disclosures_by_digest:
                 _, value = decoded_disclosures_by_digest[digest]
-                result.append(_unpack_claims(value, decoded_disclosures_by_digest, sd_alg, processed_digests))
+                result.append(
+                    _unpack_claims(
+                        value, decoded_disclosures_by_digest, sd_alg, processed_digests
+                    )
+                )
         else:
-            result.append(_unpack_claims(element, decoded_disclosures_by_digest, sd_alg, processed_digests))
+            result.append(
+                _unpack_claims(
+                    element, decoded_disclosures_by_digest, sd_alg, processed_digests
+                )
+            )
     return result
 
 
@@ -383,7 +429,9 @@ def _unpack_json_dict(
     filtered_unpacked_claims = {}
     for k, v in claims.items():
         if k != SD_DIGESTS_KEY and k != DIGEST_ALG_KEY:
-            filtered_unpacked_claims[k] = _unpack_claims(v, decoded_disclosures_by_digest, sd_alg, proceessed_digests)
+            filtered_unpacked_claims[k] = _unpack_claims(
+                v, decoded_disclosures_by_digest, sd_alg, proceessed_digests
+            )
 
     for disclosed_digests in claims.get(SD_DIGESTS_KEY, []):
         if disclosed_digests in proceessed_digests:
@@ -393,8 +441,12 @@ def _unpack_json_dict(
         if disclosed_digests in decoded_disclosures_by_digest:
             _, key, value = decoded_disclosures_by_digest[disclosed_digests]
             if key in filtered_unpacked_claims:
-                raise ValueError(f"duplicate key found when unpacking disclosed claim: '{key}' in {filtered_unpacked_claims}; this is not allowed.")
-            unpacked_value = _unpack_claims(value, decoded_disclosures_by_digest, sd_alg, proceessed_digests)
+                raise ValueError(
+                    f"duplicate key found when unpacking disclosed claim: '{key}' in {filtered_unpacked_claims}; this is not allowed."
+                )
+            unpacked_value = _unpack_claims(
+                value, decoded_disclosures_by_digest, sd_alg, proceessed_digests
+            )
             filtered_unpacked_claims[key] = unpacked_value
     return filtered_unpacked_claims
 
@@ -424,8 +476,12 @@ def _unpack_claims(
     """
 
     if type(claims) is list:
-        return _unpack_json_array(claims, decoded_disclosures_by_digest, sd_alg, proceessed_digests)
+        return _unpack_json_array(
+            claims, decoded_disclosures_by_digest, sd_alg, proceessed_digests
+        )
     elif type(claims) is dict:
-        return _unpack_json_dict(claims, decoded_disclosures_by_digest, sd_alg, proceessed_digests)
+        return _unpack_json_dict(
+            claims, decoded_disclosures_by_digest, sd_alg, proceessed_digests
+        )
     else:
         return claims

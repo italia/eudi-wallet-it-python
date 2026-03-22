@@ -11,7 +11,9 @@ DEFAULT_HTTPC_PARAMS = {
 }
 
 
-def http_get_sync(urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+def http_get_sync(
+    urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> list[requests.Response]:
     """
     Perform a GET http call sync.
 
@@ -41,7 +43,9 @@ def http_get_sync(urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) ->
     return res
 
 
-async def http_get_async(urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+async def http_get_async(
+    urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> list[requests.Response]:
     """
     Perform a GET http call async.
 
@@ -58,14 +62,18 @@ async def http_get_async(urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> lis
     :rtype: list[requests.Response]
     """
     if not isinstance(httpc_params["session"]["timeout"], aiohttp.ClientTimeout):
-        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(total=httpc_params["session"]["timeout"])
+        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(
+            total=httpc_params["session"]["timeout"]
+        )
 
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)
         return text
 
 
-async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> aiohttp.ClientResponse:
+async def fetch(
+    session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> aiohttp.ClientResponse:
     """
     Fetches the content of a URL.
 
@@ -86,7 +94,11 @@ async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict = D
         return response
 
 
-async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+async def fetch_all(
+    session: aiohttp.ClientSession,
+    urls: list[str],
+    httpc_params: dict = DEFAULT_HTTPC_PARAMS,
+) -> list[requests.Response]:
     """
     Fetches the content of a list of URL.
 

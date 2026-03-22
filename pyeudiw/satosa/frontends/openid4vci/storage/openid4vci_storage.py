@@ -26,7 +26,9 @@ class OpenId4VciStorage(MongoStorage):
         :param entity: An instance of OpenId4VCIEntity containing session data.
         :return: The document ID assigned to the stored session.
         """
-        super().init_session(entity.document_id, entity.session_id, entity.state, entity.remote_flow_typ)
+        super().init_session(
+            entity.document_id, entity.session_id, entity.state, entity.remote_flow_typ
+        )
         return entity.document_id
 
     def get_by_session_id(self, session_id: str = "") -> OpenId4VCIEntity:
@@ -49,9 +51,14 @@ class OpenId4VciStorage(MongoStorage):
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
-        return self._update(self.get_by_session_id(session_id).document_id, updated_data={"nonce": c_nonce})
+        return self._update(
+            self.get_by_session_id(session_id).document_id,
+            updated_data={"nonce": c_nonce},
+        )
 
-    def update_attributes_by_session_id(self, session_id: str, attributes: dict) -> UpdateResult:
+    def update_attributes_by_session_id(
+        self, session_id: str, attributes: dict
+    ) -> UpdateResult:
         """
         Update the nonce value of a session based on the session ID.
 
@@ -60,7 +67,10 @@ class OpenId4VciStorage(MongoStorage):
         :return: The result of the update operation.
         :raises: ValueError if the document cannot be updated.
         """
-        return self._update(self.get_by_session_id(session_id).document_id, updated_data={"attributes": attributes})
+        return self._update(
+            self.get_by_session_id(session_id).document_id,
+            updated_data={"attributes": attributes},
+        )
 
     def _update(self, document_id: str, updated_data: dict) -> UpdateResult:
         """

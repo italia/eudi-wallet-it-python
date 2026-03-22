@@ -1,10 +1,17 @@
-from typing import Any
 from datetime import datetime
 from ipaddress import IPv4Network
 from ssl import DER_cert_to_PEM_cert
-from pyeudiw.x509.chain_builder import ChainBuilder
-from pyeudiw.x509.verify import get_issuer_from_x5c, is_der_format, verify_x509_attestation_chain, get_trust_anchor_from_x5c
+from typing import Any
+
 from cryptography import x509
+
+from pyeudiw.x509.chain_builder import ChainBuilder
+from pyeudiw.x509.verify import (
+    get_issuer_from_x5c,
+    get_trust_anchor_from_x5c,
+    is_der_format,
+    verify_x509_attestation_chain,
+)
 
 
 def gen_chain(
@@ -36,7 +43,11 @@ def gen_chain(
         #  x509.DNSName(ca_dns),
         #  x509.DNSName(intermediate_dns),
         #  ],
-        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32")),
+        ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
@@ -66,7 +77,11 @@ def gen_chain(
         #  x509.DNSName(intermediate_dns),
         #  x509.DNSName(leaf_dns),
         #  ],
-        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32")),
+        ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,
@@ -94,7 +109,11 @@ def gen_chain(
         "permitted_subtrees": [
             x509.DNSName(leaf_dns),
         ],
-        "excluded_subtrees": [x509.DNSName("localhost"), x509.DNSName("localhost.localdomain"), x509.IPAddress(IPv4Network("127.0.0.1/32"))],
+        "excluded_subtrees": [
+            x509.DNSName("localhost"),
+            x509.DNSName("localhost.localdomain"),
+            x509.IPAddress(IPv4Network("127.0.0.1/32")),
+        ],
         "key_usage": x509.KeyUsage(
             digital_signature=True,
             key_cert_sign=True,

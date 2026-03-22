@@ -1,8 +1,8 @@
 import json
 
 import pytest
-from satosa.context import Context
 from cryptojwt.jwk.rsa import new_rsa_key
+from satosa.context import Context
 
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
@@ -95,7 +95,12 @@ def test_direct_post_response_bad_parse_case():
 
 def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     ctx = Context()
     ctx.request_method = "POST"
@@ -112,7 +117,12 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
 
 def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     # case 0: bad method
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     ctx = Context()
     ctx.request_method = "GET"
@@ -147,7 +157,12 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
 
 
 def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     wrong_public_key = {
         "kid": "ybmSufrnl3Cu6OrNcsOF_g95g5zShf2aKpg59PMcMm8",
@@ -185,7 +200,12 @@ def test_normalize_json_string():
 
 
 def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     ctx = Context()
     ctx.request_method = "POST"
@@ -201,7 +221,12 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
 
 
 def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     wrong_public_key = new_rsa_key()
     wrong_helper = JWSHelper(wrong_public_key)
@@ -223,7 +248,12 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
 
 
 def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
-    parser = DirectPostJwtJweParser(jwe_helper, jws_helper, CONFIG["jwt"].get("enc_alg_supported", []), CONFIG["jwt"].get("enc_enc_supported", []))
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        CONFIG["jwt"].get("enc_alg_supported", []),
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
 
     ctx = Context()
     ctx.request_method = "POST"

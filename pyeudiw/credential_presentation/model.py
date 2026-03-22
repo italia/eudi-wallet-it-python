@@ -58,5 +58,7 @@ class CredentialPresentationHandlersConfig(BaseModel):
         """
         formats = values.get("formats")
         if not formats:
-            raise ValueError("credential_presentation_handlers must define at least one format.")
+            raise ValueError(
+                "credential_presentation_handlers must define at least one format."
+            )
         return values

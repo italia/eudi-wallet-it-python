@@ -6,7 +6,14 @@ from pyeudiw.satosa.frontends.openid4vci.models.token import AccessToken, Refres
 def get_access_token():
     now = int(time.time())
     exp = now + 3600
-    return AccessToken(iss="my_iss", aud="my_iss", exp=exp, iat=now, client_id="client123", sub="client123")
+    return AccessToken(
+        iss="my_iss",
+        aud="my_iss",
+        exp=exp,
+        iat=now,
+        client_id="client123",
+        sub="client123",
+    )
 
 
 def test_refresh_token_defaults_nbf_to_exp():

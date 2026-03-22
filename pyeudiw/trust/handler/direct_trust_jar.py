@@ -31,7 +31,9 @@ class DirectTrustJar(_DirectTrustJwkHandler):
             client_id=client_id,
         )
 
-    def _extract_and_update_own_trust_material(self, trust_source: TrustSourceData) -> TrustSourceData:
+    def _extract_and_update_own_trust_material(
+        self, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         if self.jwks is None:
             return trust_source
 
@@ -48,7 +50,9 @@ class DirectTrustJar(_DirectTrustJwkHandler):
         )
         return trust_source
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         if issuer == self.client_id:
             return self._extract_and_update_own_trust_material(trust_source)
         # In the context of an OID4VP protocol flow, no-one but ourself
@@ -56,7 +60,9 @@ class DirectTrustJar(_DirectTrustJwkHandler):
         # no reason to collect other parties JAR trust material.
         return trust_source
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         # NOTE: as of version 1 of Potential profile for OID4VP, there is
         # no such thing as online resolution of client metadata outside of
         # what already defined in different schemes OID4VP draft 21 section 5,

@@ -3,7 +3,9 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
+)
 
 NOTIFICATION_ENDPOINT = "notification"
 
@@ -30,18 +32,27 @@ class NotificationRequest(OpenId4VciBaseModel):
 
     def validate_notification_id(self):
         self.notification_id = self.strip(self.notification_id)
-        self.check_missing_parameter(self.notification_id, "notification_id", NOTIFICATION_ENDPOINT)
+        self.check_missing_parameter(
+            self.notification_id, "notification_id", NOTIFICATION_ENDPOINT
+        )
         # TODO: check MUST match the notification_id provided by the Credential Issuer.
-        self.check_invalid_parameter(False, self.notification_id, "notification_id", NOTIFICATION_ENDPOINT)
+        self.check_invalid_parameter(
+            False, self.notification_id, "notification_id", NOTIFICATION_ENDPOINT
+        )
 
     def validate_event(self):
         self.event = self.strip(self.event)
         self.check_missing_parameter(self.event, "event", NOTIFICATION_ENDPOINT)
-        self.check_invalid_parameter(self.event not in ACCEPTED_EVENT, self.event, "event", NOTIFICATION_ENDPOINT)
+        self.check_invalid_parameter(
+            self.event not in ACCEPTED_EVENT, self.event, "event", NOTIFICATION_ENDPOINT
+        )
 
     def validate_event_description(self):
         self.event_description = self.strip(self.event_description)
         if self.event_description:
             self.check_invalid_parameter(
-                not ALLOWED_EVENT_DESCRIPTION_REGEX.match(self.event_description), self.event_description, "event_description", NOTIFICATION_ENDPOINT
+                not ALLOWED_EVENT_DESCRIPTION_REGEX.match(self.event_description),
+                self.event_description,
+                "event_description",
+                NOTIFICATION_ENDPOINT,
             )

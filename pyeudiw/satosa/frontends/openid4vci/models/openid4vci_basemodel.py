@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
-from pyeudiw.satosa.frontends.openid4vci.tools.config import Openid4VciFrontendConfigUtils
+from pyeudiw.satosa.frontends.openid4vci.tools.config import (
+    Openid4VciFrontendConfigUtils,
+)
 
 CONFIG_CTX = "config"
 CLIENT_ID_CTX = "client_id"
@@ -46,21 +48,35 @@ class OpenId4VciBaseModel(BaseModel):
         return self._context[path]
 
     @staticmethod
-    def check_missing_parameter(parameter: Any, parameter_name: str, endpoint_name: str):
+    def check_missing_parameter(
+        parameter: Any, parameter_name: str, endpoint_name: str
+    ):
         if not parameter or (isinstance(parameter, list) and len(parameter) == 0):
-            logger.error(f"missing {parameter_name} in request `{endpoint_name}` endpoint")
+            logger.error(
+                f"missing {parameter_name} in request `{endpoint_name}` endpoint"
+            )
             raise InvalidRequestException(f"missing `{parameter_name}` parameter")
 
     @staticmethod
-    def check_unexpected_parameter(parameter: Any, parameter_name: str, endpoint_name: str):
+    def check_unexpected_parameter(
+        parameter: Any, parameter_name: str, endpoint_name: str
+    ):
         if parameter or (isinstance(parameter, list) and len(parameter) > 0):
-            logger.error(f"unexpected {parameter_name} in request `{endpoint_name}` endpoint")
+            logger.error(
+                f"unexpected {parameter_name} in request `{endpoint_name}` endpoint"
+            )
             raise InvalidRequestException(f"unexpected `{parameter_name}` parameter")
 
     @staticmethod
-    def check_invalid_parameter(check: bool, parameter: Any, parameter_name: str, endpoint_name: str):
+    def check_invalid_parameter(
+        check: bool, parameter: Any, parameter_name: str, endpoint_name: str
+    ):
         if check:
-            logger.error(f"invalid {parameter_name}" + (f" ({parameter})" if parameter is not None else "") + f" in request `{endpoint_name}` endpoint")
+            logger.error(
+                f"invalid {parameter_name}"
+                + (f" ({parameter})" if parameter is not None else "")
+                + f" in request `{endpoint_name}` endpoint"
+            )
             raise InvalidRequestException(f"invalid `{parameter_name}` parameter")
 
     @staticmethod

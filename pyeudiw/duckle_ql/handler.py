@@ -1,11 +1,11 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
+from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
 from pyeudiw.duckle_ql.credential import CredentialsRequest
 from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.exceptions import InvalidVPToken
-from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
 from pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
@@ -25,7 +25,12 @@ DC_SD_JWT_FORMAT = "dc+sd-jwt"
 class DuckleHandler(BaseVPParser):
     """Handler for processing Verifiable Presentations using DCQL."""
 
-    def __init__(self, trust_evaluator: CombinedTrustEvaluator, sig_alg_supported: list[str] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        trust_evaluator: CombinedTrustEvaluator,
+        sig_alg_supported: list[str] = None,
+        **kwargs,
+    ) -> None:
         """
         Initialize the DuckleHandler with the trust evaluator.
 
@@ -38,7 +43,9 @@ class DuckleHandler(BaseVPParser):
         if sig_alg_supported is None:
             sig_alg_supported = []
         self.sig_alg_supported = sig_alg_supported
-        dcql_value = kwargs.get(DUCKLE_QUERY_KEY) or (kwargs.get(DUCKLE_PRESENTATION) or {}).get(DUCKLE_QUERY_KEY)
+        dcql_value = kwargs.get(DUCKLE_QUERY_KEY) or (
+            kwargs.get(DUCKLE_PRESENTATION) or {}
+        ).get(DUCKLE_QUERY_KEY)
         if dcql_value is None:
             self.queries = CredentialsRequest(credentials=[])
         elif isinstance(dcql_value, dict):
@@ -60,7 +67,9 @@ class DuckleHandler(BaseVPParser):
             try:
                 paths = [{"path": claim.path} for claim in cred.claims]
                 if cred.format == VC_SD_JWT_FORMAT or cred.format == DC_SD_JWT_FORMAT:
-                    parser = VpVcSdJwtParserVerifier(self.trust_evaluator, self.sig_alg_supported)
+                    parser = VpVcSdJwtParserVerifier(
+                        self.trust_evaluator, self.sig_alg_supported
+                    )
                     data = parser.parse(token_str)
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
@@ -107,7 +116,9 @@ class DuckleHandler(BaseVPParser):
             token_str = token[cred.id]
             try:
                 if cred.format == VC_SD_JWT_FORMAT or cred.format == DC_SD_JWT_FORMAT:
-                    parser = VpVcSdJwtParserVerifier(self.trust_evaluator, self.sig_alg_supported)
+                    parser = VpVcSdJwtParserVerifier(
+                        self.trust_evaluator, self.sig_alg_supported
+                    )
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
                 else:

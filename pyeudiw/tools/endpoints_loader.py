@@ -1,9 +1,11 @@
-from typing import Callable, Any
-from pyeudiw.tools.utils import get_dynamic_class
+from typing import Any, Callable
+
+from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Response
-from satosa.attribute_mapping import AttributeMapper
+
+from pyeudiw.tools.utils import get_dynamic_class
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
@@ -58,7 +60,14 @@ class EndpointsLoader:
 
             if module and class_name and path:
                 endpoint_class = get_dynamic_class(module, class_name)
-                args = [config, internal_attributes, base_url, name, auth_callback_func, converter]
+                args = [
+                    config,
+                    internal_attributes,
+                    base_url,
+                    name,
+                    auth_callback_func,
+                    converter,
+                ]
                 if trust_evaluator is not None:
                     args.append(trust_evaluator)
                 if db_engine is not None:

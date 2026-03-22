@@ -4,7 +4,10 @@ import string
 import pytest
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.notification_request import NotificationRequest, ACCEPTED_EVENT
+from pyeudiw.satosa.frontends.openid4vci.models.notification_request import (
+    ACCEPTED_EVENT,
+    NotificationRequest,
+)
 
 
 @pytest.mark.parametrize(
@@ -17,7 +20,11 @@ from pyeudiw.satosa.frontends.openid4vci.models.notification_request import Noti
     ],
 )
 def test_valid_event_descriptions(event_description):
-    payload = {"notification_id": "notif123", "event": "credential_accepted", "event_description": event_description}
+    payload = {
+        "notification_id": "notif123",
+        "event": "credential_accepted",
+        "event_description": event_description,
+    }
     model = NotificationRequest.model_validate(payload)
     assert model.event_description == event_description.strip()
 
@@ -29,7 +36,9 @@ def test_empty_or_missing_event_descriptions(event_description):
         payload["event_description"] = event_description
 
     model = NotificationRequest.model_validate(payload)
-    assert model.event_description == (event_description.strip() if event_description is not None else None)
+    assert model.event_description == (
+        event_description.strip() if event_description is not None else None
+    )
 
 
 @pytest.mark.parametrize(
@@ -48,7 +57,9 @@ def test_invalid_event_descriptions(event_description):
     if event_description is not None:
         payload["event_description"] = event_description
 
-    with pytest.raises(InvalidRequestException, match="invalid `event_description` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="invalid `event_description` parameter"
+    ):
         NotificationRequest.model_validate(payload)
 
 
@@ -72,7 +83,9 @@ def test_empty_or_missing_notification_id(notification_id):
     if notification_id is not None:
         payload["notification_id"] = notification_id
 
-    with pytest.raises(InvalidRequestException, match="missing `notification_id` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `notification_id` parameter"
+    ):
         NotificationRequest.model_validate(payload)
 
 
@@ -82,14 +95,20 @@ def test_invalid_event_value(event):
         "notification_id": "notif123",
     }
     if event is not None:
-        payload["event"] = event.join(random.choices(string.ascii_letters + string.digits, k=8))
+        payload["event"] = event.join(
+            random.choices(string.ascii_letters + string.digits, k=8)
+        )
 
     with pytest.raises(InvalidRequestException, match="invalid `event` parameter"):
         NotificationRequest.model_validate(payload)
 
 
 def test_valid_complete_request():
-    payload = {"notification_id": "notif123", "event": "credential_accepted", "event_description": "Valid description!"}
+    payload = {
+        "notification_id": "notif123",
+        "event": "credential_accepted",
+        "event_description": "Valid description!",
+    }
     model = NotificationRequest.model_validate(payload)
     assert model.notification_id == "notif123"
     assert model.event == "credential_accepted"

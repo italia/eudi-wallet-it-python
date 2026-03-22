@@ -1,12 +1,21 @@
 from satosa.context import Context
-from pyeudiw.satosa.utils.response import JsonResponse
 
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
+    VCIBaseEndpoint,
+)
+from pyeudiw.satosa.utils.response import JsonResponse
 
 
 class OauthAuthorizationServerMetadataHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        *args
+    ):
         """
         Initialize the OpenID4VCI metadata endpoint class.
 
@@ -20,13 +29,17 @@ class OauthAuthorizationServerMetadataHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
 
         if not self.config.get("metadata", {}).get("oauth_authorization_server"):
-            raise ValueError("Missing 'oauth_authorization_server' in metadata configuration.")
+            raise ValueError(
+                "Missing 'oauth_authorization_server' in metadata configuration."
+            )
 
     @property
     def oauth_authorization_server_metadata_as_dict(self) -> dict:
         """Returns the OAuth authorization server metadata as a dictionary."""
 
-        ec_payload = self.config.get("metadata", {}).get("oauth_authorization_server", {})
+        ec_payload = self.config.get("metadata", {}).get(
+            "oauth_authorization_server", {}
+        )
         return ec_payload
 
     def endpoint(self, context: Context) -> JsonResponse:

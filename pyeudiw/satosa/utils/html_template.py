@@ -21,7 +21,11 @@ class Jinja2TemplateHandler:
             loader=FileSystemLoader(searchpath=config["template_folder"]),
             autoescape=select_autoescape(["html"]),
         )
-        _static_url = config["static_storage_url"] if config["static_storage_url"][-1] == "/" else config["static_storage_url"] + "/"
+        _static_url = (
+            config["static_storage_url"]
+            if config["static_storage_url"][-1] == "/"
+            else config["static_storage_url"] + "/"
+        )
         self.loader.globals.update(
             {
                 "static": _static_url,
@@ -29,4 +33,6 @@ class Jinja2TemplateHandler:
         )
 
         self.qrcode_page = self.loader.get_template(config["qrcode_template"])
-        self.authorization_error_response_page = self.loader.get_template(config["authorization_error_template"])
+        self.authorization_error_response_page = self.loader.get_template(
+            config["authorization_error_template"]
+        )

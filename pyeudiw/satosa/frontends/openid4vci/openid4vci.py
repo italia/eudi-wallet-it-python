@@ -11,7 +11,9 @@ from satosa.internal import InternalData
 from satosa.response import Response
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
+from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import (
+    AuthorizationResponse,
+)
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 from pyeudiw.satosa.utils.session import get_session_id
@@ -33,7 +35,9 @@ class OpenID4VCIFrontend(FrontendModule):
         base_url: str,
         name: str,
     ):
-        FrontendModule.__init__(self, auth_req_callback_func, internal_attributes, base_url, name)
+        FrontendModule.__init__(
+            self, auth_req_callback_func, internal_attributes, base_url, name
+        )
         self.internal_attributes = internal_attributes
         self.config = config
         self.base_url = base_url
@@ -81,16 +85,22 @@ class OpenID4VCIFrontend(FrontendModule):
 
             if not entity:
                 logger.error(f"Session with ID {session_id} not found in storage")
-                raise InvalidRequestException(f"Session with ID {session_id} not found in storage")
+                raise InvalidRequestException(
+                    f"Session with ID {session_id} not found in storage"
+                )
 
             vci_entity = OpenId4VCIEntity(**entity)
             vci_entity.attributes = internal_resp.attributes
 
-            self.db_engine.upsert_session(vci_entity.session_id, vci_entity.model_dump())
+            self.db_engine.upsert_session(
+                vci_entity.session_id, vci_entity.model_dump()
+            )
 
             return AuthorizationResponse(
                 state=vci_entity.state,
-                iss=self.config.get("metadata", {}).get("openid_credential_issuer", {}).get("credential_issuer", ""),
+                iss=self.config.get("metadata", {})
+                .get("openid_credential_issuer", {})
+                .get("credential_issuer", ""),
             ).to_redirect_response(vci_entity.redirect_uri)
         except InvalidRequestException as e:
             logger.error(f"Invalid request: {e}")

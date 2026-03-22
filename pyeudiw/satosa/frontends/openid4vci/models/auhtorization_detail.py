@@ -4,7 +4,10 @@ from typing import List, Optional
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, ENDPOINT_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    ENDPOINT_CTX,
+    OpenId4VciBaseModel,
+)
 
 logger = logging.getLogger(__name__)
 OPEN_ID_CREDENTIAL_TYPE = "openid_credential"
@@ -24,15 +27,31 @@ class AuthorizationDetail(OpenId4VciBaseModel):
 
     def validate_credential_configuration_id(self, endpoint: str):
         self.credential_configuration_id = self.strip(self.credential_configuration_id)
-        self.check_missing_parameter(self.credential_configuration_id, "authorization_details.credential_configuration_id", endpoint)
-        credential_configurations_supported = self.get_config_utils().get_credential_configurations_supported()
-        if self.credential_configuration_id not in [ccs.id for ccs in credential_configurations_supported.values()]:
-            logger.error(f"invalid credential_configuration_ids {self.credential_configuration_id} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `authorization_details.credential_configuration_id` parameter")
+        self.check_missing_parameter(
+            self.credential_configuration_id,
+            "authorization_details.credential_configuration_id",
+            endpoint,
+        )
+        credential_configurations_supported = (
+            self.get_config_utils().get_credential_configurations_supported()
+        )
+        if self.credential_configuration_id not in [
+            ccs.id for ccs in credential_configurations_supported.values()
+        ]:
+            logger.error(
+                f"invalid credential_configuration_ids {self.credential_configuration_id} in request `{endpoint}` endpoint"
+            )
+            raise InvalidRequestException(
+                "invalid `authorization_details.credential_configuration_id` parameter"
+            )
 
     def validate_type(self, endpoint: str):
         self.type = self.strip(self.type)
         self.check_missing_parameter(self.type, "authorization_details.type", endpoint)
         if self.type != OPEN_ID_CREDENTIAL_TYPE:
-            logger.error(f"invalid authorization_details.type {self.type} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `authorization_details.type` parameter")
+            logger.error(
+                f"invalid authorization_details.type {self.type} in request `{endpoint}` endpoint"
+            )
+            raise InvalidRequestException(
+                "invalid `authorization_details.type` parameter"
+            )

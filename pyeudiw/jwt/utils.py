@@ -27,7 +27,9 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
         raise JWTInvalidElementPosition(f"Cannot accept negative position {position}")
 
     if position > 2:
-        raise JWTInvalidElementPosition(f"Cannot accept position greater than 2 {position}")
+        raise JWTInvalidElementPosition(
+            f"Cannot accept position greater than 2 {position}"
+        )
 
     try:
 
@@ -37,7 +39,9 @@ def decode_jwt_element(jwt: str, position: int) -> dict:
         splitted_jwt = jwt.split(".")
 
         if (len(splitted_jwt) - 1) < position:
-            raise JWTInvalidElementPosition(f"JWT has no element in position {position}")
+            raise JWTInvalidElementPosition(
+                f"JWT has no element in position {position}"
+            )
 
         b64_data = jwt.split(".")[position]
         data = json.loads(base64_urldecode(b64_data))

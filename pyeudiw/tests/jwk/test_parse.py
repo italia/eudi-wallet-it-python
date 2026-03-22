@@ -1,5 +1,5 @@
-from pyeudiw.jwk.parse import parse_x5c_keys
 from pyeudiw.jwk.exceptions import InvalidJwk
+from pyeudiw.jwk.parse import parse_x5c_keys
 
 
 def test_parse_x5c_keys():

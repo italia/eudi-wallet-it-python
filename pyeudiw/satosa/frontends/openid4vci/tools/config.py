@@ -1,9 +1,15 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 from pyeudiw.jwt.schemas.jwt import JWTConfig
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
-from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
-from pyeudiw.satosa.schemas.metadata import OauthAuthorizationServerMetadata, OpenidCredentialIssuerMetadata, CredentialConfiguration
+from pyeudiw.satosa.schemas.credential_configurations import (
+    CredentialConfigurationsConfig,
+)
+from pyeudiw.satosa.schemas.metadata import (
+    CredentialConfiguration,
+    OauthAuthorizationServerMetadata,
+    OpenidCredentialIssuerMetadata,
+)
 
 
 class Openid4VciFrontendConfigUtils:
@@ -38,7 +44,9 @@ class Openid4VciFrontendConfigUtils:
     def get_openid_credential_issuer(self) -> OpenidCredentialIssuerMetadata:
         return self.config.metadata.openid_credential_issuer
 
-    def get_credential_configurations_supported(self) -> Dict[str, CredentialConfiguration] | None:
+    def get_credential_configurations_supported(
+        self,
+    ) -> Dict[str, CredentialConfiguration] | None:
         ccs = self.get_openid_credential_issuer().credential_configurations_supported
         if not ccs:
             return None
