@@ -7,7 +7,9 @@ from .event_handler import EventHandlerInterface
 
 
 class OpenID4VPBackendInterface(EventHandlerInterface):
-    def pre_request_endpoint(self, context: Context, internal_request, **kwargs) -> Response:
+    def pre_request_endpoint(
+        self, context: Context, internal_request, **kwargs
+    ) -> Response:
         """
         This endpoint is called by the User-Agent/Wallet Instance before calling the request endpoint.
         It initializes the session and returns the request_uri to be used by the User-Agent/Wallet Instance.

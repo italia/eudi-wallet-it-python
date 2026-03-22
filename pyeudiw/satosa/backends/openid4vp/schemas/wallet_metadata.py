@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, field_validator
@@ -6,7 +6,9 @@ from pydantic import BaseModel, field_validator
 RESPONSE_MODES_SUPPORTED_CTX = "valid_response_mode_supported"
 VP_FORMATS_SUPPORTED_CTX = "valid_vp_formats"
 CLIENT_ID_SCHEMES_SUPPORTED_CTX = "valid_client_id_schemes_supported"
-REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED = "valid_request_object_signing_alg_values_supported"
+REQUEST_OBJ_SIG_ALG_VALUES_SUPPORTED = (
+    "valid_request_object_signing_alg_values_supported"
+)
 
 # TODO: Move this to a global file
 _default_supported_algorithms = [
@@ -49,7 +51,11 @@ class WalletMetadata(BaseModel):
     def validate_authorization_endpoint(cls, v):
         try:
             parsed_redirect_uri = urlparse(v)
-            if not parsed_redirect_uri.scheme or not parsed_redirect_uri.netloc or not parsed_redirect_uri.path:
+            if (
+                not parsed_redirect_uri.scheme
+                or not parsed_redirect_uri.netloc
+                or not parsed_redirect_uri.path
+            ):
                 raise ValueError("Invalid value for authorization_endpoint")
             return v
         except Exception:
@@ -74,7 +80,9 @@ class WalletMetadata(BaseModel):
         if isinstance(v, str) and v == _default_response_types_supported:
             return [v]
         elif isinstance(v, list):
-            return cls._valid_element_list(v, _default_response_types_supported, "response_types_supported")
+            return cls._valid_element_list(
+                v, _default_response_types_supported, "response_types_supported"
+            )
         elif v is None:
             return [_default_response_types_supported]
         else:
@@ -113,17 +121,31 @@ class WalletMetadata(BaseModel):
         elif isinstance(v, str) and v in valid:
             return [v]
         elif isinstance(v, list):
-            return cls._valid_element_list(v, valid, "request_object_signing_alg_values_supported")
+            return cls._valid_element_list(
+                v, valid, "request_object_signing_alg_values_supported"
+            )
         elif v is None:
             return valid
         else:
-            raise ValueError("Invalid value for request_object_signing_alg_values_supported")
+            raise ValueError(
+                "Invalid value for request_object_signing_alg_values_supported"
+            )
 
     @staticmethod
     def _valid_element_list(v: list, expected_value: str | list, field_name: str):
         if len(v) == 0:
-            return [expected_value] if isinstance(expected_value, str) else expected_value
-        filtered = [mode for mode in v if (mode == expected_value if isinstance(expected_value, str) else mode in expected_value)]
+            return (
+                [expected_value] if isinstance(expected_value, str) else expected_value
+            )
+        filtered = [
+            mode
+            for mode in v
+            if (
+                mode == expected_value
+                if isinstance(expected_value, str)
+                else mode in expected_value
+            )
+        ]
         if not filtered or len(filtered) == 0:
             raise ValueError(f"Invalid value for {field_name}")
         return filtered

@@ -1,13 +1,11 @@
 import base64
 import hashlib
 import logging
-
 from typing import Optional
 
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.jws_helper import JWSHelper
-
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop.exceptions import InvalidDPoP, InvalidDPoPKid
 from pyeudiw.oauth2.dpop.schema import DPoPTokenHeaderSchema, DPoPTokenPayloadSchema
@@ -45,7 +43,9 @@ class DPoPVerifier:
 
         if http_header_authz:
             self.dpop_authz_token = (
-                http_header_authz.replace(self.dpop_header_prefix, "") if self.dpop_header_prefix in http_header_authz else http_header_authz
+                http_header_authz.replace(self.dpop_header_prefix, "")
+                if self.dpop_header_prefix in http_header_authz
+                else http_header_authz
             )
 
         # If the jwt is invalid, this will raise an exception
@@ -88,9 +88,13 @@ class DPoPVerifier:
         try:
             jws_verifier.verify(self.proof)
         except KidError as e:
-            raise InvalidDPoPKid(("DPoP proof validation error, " f"kid does not match: {e}"))
+            raise InvalidDPoPKid(
+                ("DPoP proof validation error, " f"kid does not match: {e}")
+            )
         except Exception as e:
-            raise InvalidDPoP("DPoP proof validation error, " f"{e.__class__.__name__}: {e}")
+            raise InvalidDPoP(
+                "DPoP proof validation error, " f"{e.__class__.__name__}: {e}"
+            )
 
         header = decode_jwt_header(self.proof)
         DPoPTokenHeaderSchema(**header)

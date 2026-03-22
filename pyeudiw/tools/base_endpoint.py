@@ -56,7 +56,9 @@ class BaseEndpoint(BaseHTTPResponseHandler, BaseLogger):
         """
         missing_fields = [name for name, value in fields if not value]
         if missing_fields:
-            raise ValueError(f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}")
+            raise ValueError(
+                f"The following configuration fields must be provided and non-empty: {', '.join(missing_fields)}"
+            )
 
     def endpoint(self, context: Context) -> Redirect | Response:
         """

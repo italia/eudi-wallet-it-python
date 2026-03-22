@@ -41,7 +41,9 @@ class EntityResponseWithIntermediate(EntityResponse):
         if self.result:
             return self.result
         else:
-            raise NotImplementedError("The mocked resposes seems to be not aligned with the correct flow")
+            raise NotImplementedError(
+                "The mocked resposes seems to be not aligned with the correct flow"
+            )
 
 
 # class EntityResponseNoIntermediateSignedJwksUri(EntityResponse):

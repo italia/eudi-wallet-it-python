@@ -8,7 +8,12 @@ from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON, is_form_urlencoded, is_application_json
+from pyeudiw.tools.content_type import (
+    APPLICATION_JSON,
+    FORM_URLENCODED,
+    is_application_json,
+    is_form_urlencoded,
+)
 
 OAUTH_CLIENT_ATTESTATION_POP_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION_POP"
 OAUTH_CLIENT_ATTESTATION_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION"
@@ -25,11 +30,19 @@ def validate_content_type(content_type_header: str, accepted_content_type: str):
     Raises:
         InvalidRequestException: If the header does not match.
     """
-    if accepted_content_type == FORM_URLENCODED and not is_form_urlencoded(content_type_header):
-        logger.error(f"Invalid content-type for check `{FORM_URLENCODED}`: {content_type_header}")
+    if accepted_content_type == FORM_URLENCODED and not is_form_urlencoded(
+        content_type_header
+    ):
+        logger.error(
+            f"Invalid content-type for check `{FORM_URLENCODED}`: {content_type_header}"
+        )
         raise InvalidRequestException("invalid content-type")
-    elif accepted_content_type == APPLICATION_JSON and not is_application_json(content_type_header):
-        logger.error(f"Invalid content-type for check `{APPLICATION_JSON}`: {content_type_header}")
+    elif accepted_content_type == APPLICATION_JSON and not is_application_json(
+        content_type_header
+    ):
+        logger.error(
+            f"Invalid content-type for check `{APPLICATION_JSON}`: {content_type_header}"
+        )
         raise InvalidRequestException("invalid content-type")
 
 
@@ -46,14 +59,22 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         logger.error(f"endpoint invoked with wrong request method: {request_method}")
         raise InvalidRequestException("invalid request method")
 
-def _validate_client_attestation(header_attestation: str, signing_alg_values_supported: list[str] | None) -> Optional[dict]:
+
+def _validate_client_attestation(
+    header_attestation: str, signing_alg_values_supported: list[str] | None
+) -> Optional[dict]:
     if header_attestation:
         payload = decode_jwt_payload(header_attestation)
         cnf = payload["cnf"]
         jws_helper = JWSHelper(cnf)
 
-        if signing_alg_values_supported and jws_helper.jwks[0].alg not in signing_alg_values_supported:
-            raise InvalidRequestException(f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {signing_alg_values_supported}")
+        if (
+            signing_alg_values_supported
+            and jws_helper.jwks[0].alg not in signing_alg_values_supported
+        ):
+            raise InvalidRequestException(
+                f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {signing_alg_values_supported}"
+            )
 
         jws_helper.verify(header_attestation)
 
@@ -65,7 +86,9 @@ def _validate_client_attestation(header_attestation: str, signing_alg_values_sup
 validate_client_attestation = _validate_client_attestation
 
 
-def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_values_supported: list[str] | None = None) -> None:
+def validate_oauth_client_attestation_pop(
+    context: Context, dpop_signing_alg_values_supported: list[str] | None = None
+) -> None:
     """
     Validates the presence of the OAuth-Client-Attestation-PoP header in the request.
     Args:
@@ -92,7 +115,9 @@ def validate_oauth_client_attestation_pop(context: Context, dpop_signing_alg_val
             raise InvalidRequestException("Invalid Wallet Attestation JWT header")
 
 
-def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_supported: list[str] | None) -> Optional[dict]:
+def validate_oauth_client_attestation(
+    context: Context, pop_signing_alg_values_supported: list[str] | None
+) -> Optional[dict]:
     """
     Validates the presence and correctness of OAuth-Client-Attestation headers in the request.
 
@@ -121,7 +146,9 @@ def validate_oauth_client_attestation(context: Context, pop_signing_alg_values_s
         raise InvalidRequestException("Missing Wallet Attestation JWT header")
 
     try:
-        return validate_client_attestation(header_attestation, pop_signing_alg_values_supported)
+        return validate_client_attestation(
+            header_attestation, pop_signing_alg_values_supported
+        )
     except Exception as e:
         logger.error(
             f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "

@@ -1,9 +1,11 @@
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 from satosa.response import Redirect
 
-from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
+from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import (
+    AuthorizationResponse,
+)
 from pyeudiw.tools.content_type import FORM_URLENCODED, get_content_type_header
 
 

@@ -4,8 +4,11 @@ import cbor2
 from cryptography.hazmat.primitives import serialization
 from pymdoccbor.mdoc.verifier import MdocCbor
 
-from pyeudiw.satosa.backends.openid4vp.exceptions import MdocCborValidationError, VPRevoked
 from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
+from pyeudiw.satosa.backends.openid4vp.exceptions import (
+    MdocCborValidationError,
+    VPRevoked,
+)
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.x509.verify import get_issuer_from_x5c
 
@@ -29,11 +32,17 @@ def _validate_session_transcript_openid4vp(st: dict) -> None:
     ereader = _get_val(st, _ST_KEY_EREADER)
     handover = _get_val(st, _ST_KEY_HANDOVER)
     if dev_eng is not None:
-        raise MdocCborValidationError("SessionTranscript must have deviceEngagementBytes=null for OpenID4VP")
+        raise MdocCborValidationError(
+            "SessionTranscript must have deviceEngagementBytes=null for OpenID4VP"
+        )
     if ereader is not None:
-        raise MdocCborValidationError("SessionTranscript must have eReaderKeyBytes=null for OpenID4VP")
+        raise MdocCborValidationError(
+            "SessionTranscript must have eReaderKeyBytes=null for OpenID4VP"
+        )
     if handover is None:
-        raise MdocCborValidationError("SessionTranscript must include handover for OpenID4VP")
+        raise MdocCborValidationError(
+            "SessionTranscript must include handover for OpenID4VP"
+        )
 
 
 def _check_session_transcripts_in_mdoc(mdoc: MdocCbor) -> None:
@@ -60,7 +69,9 @@ def _check_session_transcripts_in_mdoc(mdoc: MdocCbor) -> None:
             try:
                 st = cbor2.loads(st)
             except cbor2.CBORDecodeError:
-                raise MdocCborValidationError("invalid SessionTranscript in deviceSigned")
+                raise MdocCborValidationError(
+                    "invalid SessionTranscript in deviceSigned"
+                )
         if isinstance(st, dict):
             _validate_session_transcript_openid4vp(st)
 
@@ -69,7 +80,9 @@ class VpMDocCbor(BaseVPParser):
     def _is_expired(self, mdoc: MdocCbor) -> bool:
         for document in mdoc.documents:
             try:
-                if document.issuersigned.issuer_auth.payload_as_dict["validityInfo"]["validUntil"] < datetime.now(timezone.utc):
+                if document.issuersigned.issuer_auth.payload_as_dict["validityInfo"][
+                    "validUntil"
+                ] < datetime.now(timezone.utc):
                     return True
             except KeyError:
                 return True
@@ -86,9 +99,14 @@ class VpMDocCbor(BaseVPParser):
 
         try:
             for document in mdoc.documents:
-                x5c = [cert.public_bytes(encoding=serialization.Encoding.PEM).decode() for cert in document.issuersigned.issuer_auth.x509_certificates]
+                x5c = [
+                    cert.public_bytes(encoding=serialization.Encoding.PEM).decode()
+                    for cert in document.issuersigned.issuer_auth.x509_certificates
+                ]
 
-                self.trust_evaluator.get_public_keys(get_issuer_from_x5c(x5c), {"x5c": x5c})
+                self.trust_evaluator.get_public_keys(
+                    get_issuer_from_x5c(x5c), {"x5c": x5c}
+                )
         except Exception as e:
             raise MdocCborValidationError(f"Error validating keys: {e}")
 
@@ -97,7 +115,10 @@ class VpMDocCbor(BaseVPParser):
 
         if mdoc.status:
             status_list = StatusListTokenHelper.from_status(mdoc.status)
-            if status_list.is_expired() or status_list.get_status(mdoc.status["status_list"]["idx"]) > 0:
+            if (
+                status_list.is_expired()
+                or status_list.get_status(mdoc.status["status_list"]["idx"]) > 0
+            ):
                 raise VPRevoked("Status list indicates that the token is revoked")
 
     def parse(self, token: str) -> dict:

@@ -10,11 +10,11 @@ from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_HEADER,
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
-    validate_request_method,
     validate_oauth_client_attestation,
     validate_oauth_client_attestation_pop,
+    validate_request_method,
 )
-from pyeudiw.tools.content_type import FORM_URLENCODED, APPLICATION_JSON
+from pyeudiw.tools.content_type import APPLICATION_JSON, FORM_URLENCODED
 
 
 @pytest.fixture
@@ -54,9 +54,14 @@ def test_validate_request_method_invalid(method):
         validate_request_method(method, ["GET", "POST"])
 
 
-def test_validate_oauth_client_attestation_valid_without_dpop_signing_alg_values_supported(valid_oauth_client_attestation_jwt):
+def test_validate_oauth_client_attestation_valid_without_dpop_signing_alg_values_supported(
+    valid_oauth_client_attestation_jwt,
+):
     context = Context()
-    context.http_headers = {OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"}
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2",
+    }
     result = validate_oauth_client_attestation(context, None)
     assert isinstance(result, dict)
     assert "thumbprint" in result
@@ -65,23 +70,36 @@ def test_validate_oauth_client_attestation_valid_without_dpop_signing_alg_values
 
 def test_validate_oauth_client_attestation_valid(valid_oauth_client_attestation_jwt):
     context = Context()
-    context.http_headers = {OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"}
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2",
+    }
     result = validate_oauth_client_attestation(context, ["ES256", "ES384", "ES512"])
     assert isinstance(result, dict)
     assert "thumbprint" in result
     assert result["thumbprint"]
 
 
-def test_validate_oauth_client_attestation_valid_with_invalid_dpop_signing_alg_values_supported(valid_oauth_client_attestation_jwt):
+def test_validate_oauth_client_attestation_valid_with_invalid_dpop_signing_alg_values_supported(
+    valid_oauth_client_attestation_jwt,
+):
     context = Context()
-    context.http_headers = {OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2"}
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: valid_oauth_client_attestation_jwt,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "header2",
+    }
     with pytest.raises(InvalidRequestException):
         validate_oauth_client_attestation(context, ["ES384", "ES512"])
 
 
-def test_validate_oauth_client_attestation_pop_valid(valid_oauth_client_attestation_jwt):
+def test_validate_oauth_client_attestation_pop_valid(
+    valid_oauth_client_attestation_jwt,
+):
     context = Context()
-    context.http_headers = {OAUTH_CLIENT_ATTESTATION_HEADER: "header", OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt}
+    context.http_headers = {
+        OAUTH_CLIENT_ATTESTATION_HEADER: "header",
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: valid_oauth_client_attestation_jwt,
+    }
     with pytest.raises(InvalidRequestException):
         validate_oauth_client_attestation_pop(context, ["ES384", "ES512"])
 
@@ -89,14 +107,44 @@ def test_validate_oauth_client_attestation_pop_valid(valid_oauth_client_attestat
 @pytest.mark.parametrize(
     "headers",
     [
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: "",
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid",
+            }
+        ),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: None,
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid",
+            }
+        ),
         ({OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"}),
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}),
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: "valid",
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: "",
+            }
+        ),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: "valid",
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: None,
+            }
+        ),
         ({OAUTH_CLIENT_ATTESTATION_HEADER: "valid"}),
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""}),
-        ({OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None}),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: "",
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: "",
+            }
+        ),
+        (
+            {
+                OAUTH_CLIENT_ATTESTATION_HEADER: None,
+                OAUTH_CLIENT_ATTESTATION_POP_HEADER: None,
+            }
+        ),
         ({}),
     ],
 )

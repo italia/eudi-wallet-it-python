@@ -1,20 +1,27 @@
 import datetime
-from pyeudiw.tests.settings import DEFAULT_X509_LEAF_PRIVATE_KEY, DEFAULT_X509_LEAF_JWK
-from pyeudiw.trust.handler.x509 import X509Handler
-from pyeudiw.tests.x509.test_x509 import gen_chain
-from pyeudiw.trust.model.trust_source import TrustSourceData
-from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
-from pyeudiw.tools.utils import iat_now
 from unittest.mock import patch
+
 from cryptography.hazmat.primitives.asymmetric import ec
+from requests import Response
+
+from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK, DEFAULT_X509_LEAF_PRIVATE_KEY
+from pyeudiw.tests.x509.test_x509 import gen_chain
+from pyeudiw.tools.utils import iat_now
+from pyeudiw.trust.handler.exceptions import InvalidTrustHandlerConfiguration
+from pyeudiw.trust.handler.x509 import X509Handler
+from pyeudiw.trust.model.trust_source import TrustSourceData
 from pyeudiw.x509.chain_builder import ChainBuilder
 from pyeudiw.x509.crl_builder import CRLBuilder
-from requests import Response
 
 
 def test_wrong_configuration_must_fail():
     try:
-        X509Handler(client_id="https://test.com", leaf_certificate_chains_by_ca={}, private_keys=[], certificate_authorities={})
+        X509Handler(
+            client_id="https://test.com",
+            leaf_certificate_chains_by_ca={},
+            private_keys=[],
+            certificate_authorities={},
+        )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
         assert str(e) == "No x509 certificate chains provided in the configuration"
@@ -22,7 +29,11 @@ def test_wrong_configuration_must_fail():
     try:
         X509Handler(
             client_id="https://test.com",
-            leaf_certificate_chains_by_ca={"example.com": gen_chain(ca_cn="wrong_example.com", ca_dns="wrong_example.com")},
+            leaf_certificate_chains_by_ca={
+                "example.com": gen_chain(
+                    ca_cn="wrong_example.com", ca_dns="wrong_example.com"
+                )
+            },
             private_keys=[],
             certificate_authorities={},
         )
@@ -32,7 +43,12 @@ def test_wrong_configuration_must_fail():
 
 
 def test_extract_trust_material_from_x509_handler():
-    chain = gen_chain(leaf_cn="example.com", leaf_dns="example.com", leaf_uri="https://example.com", leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY)
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_uri="https://example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
 
     trust_handler = X509Handler(
         client_id="example.com",
@@ -57,7 +73,9 @@ def test_extract_trust_material_from_x509_handler():
 
 
 def test_fail_if_all_chains_are_invalid():
-    invalid_chain = gen_chain(leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01"))
+    invalid_chain = gen_chain(
+        leaf_cn="example.com", date=datetime.datetime.fromisoformat("1990-01-01")
+    )
     try:
         X509Handler(
             client_id="https://example.com",
@@ -68,7 +86,9 @@ def test_fail_if_all_chains_are_invalid():
     except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
-        assert False, "Should have raised InvalidTrustHandlerConfiguration due to invalid certificate chain"
+        assert (
+            False
+        ), "Should have raised InvalidTrustHandlerConfiguration due to invalid certificate chain"
 
 
 def test_chain_crl_passing():
@@ -204,4 +224,6 @@ def test_chain_crl_fail():
     except InvalidTrustHandlerConfiguration:
         assert True
     except Exception:
-        assert False, "Should have raised InvalidTrustHandlerConfiguration due to revoked certificate"
+        assert (
+            False
+        ), "Should have raised InvalidTrustHandlerConfiguration due to revoked certificate"

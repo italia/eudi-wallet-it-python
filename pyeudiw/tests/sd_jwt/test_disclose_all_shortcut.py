@@ -62,7 +62,9 @@ def test_e2e(testcase, settings):
 
     if testcase.get("key_binding", False):
         demo_keys["holder_key"]
-        expected_claims["cnf"] = {"jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()}
+        expected_claims["cnf"] = {
+            "jwk": key_from_jwk_dict(demo_keys["holder_key"], private=False).serialize()
+        }
 
     assert verified == expected_claims
 

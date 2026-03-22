@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -32,7 +32,10 @@ jwk = {
 _d = base64url_to_int(jwk["d"])
 _x = base64url_to_int(jwk["x"])
 _y = base64url_to_int(jwk["y"])
-private_key = ec.EllipticCurvePrivateNumbers(private_value=_d, public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1())).private_key()
+private_key = ec.EllipticCurvePrivateNumbers(
+    private_value=_d,
+    public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1()),
+).private_key()
 
 chain = ChainBuilder()
 chain.gen_certificate(
@@ -107,7 +110,10 @@ trust_ev = CombinedTrustEvaluator.from_config(
             "class": "DirectTrustSdJwtVc",
             "config": {
                 "jwk_endpoint": "/.well-known/jwt-vc-issuer",
-                "httpc_params": {"connection": {"ssl": True}, "session": {"timeout": 6}},
+                "httpc_params": {
+                    "connection": {"ssl": True},
+                    "session": {"timeout": 6},
+                },
             },
         },
         "x509": {
@@ -181,7 +187,9 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
     status = None
 
     if status_list:
-        status = {"status_list": {"idx": idx, "uri": "https://example.com/statuslists/1"}}
+        status = {
+            "status_list": {"idx": idx, "uri": "https://example.com/statuslists/1"}
+        }
 
     mdoci = MdocCborIssuer(
         private_key=PKEY,
@@ -228,10 +236,14 @@ def test_handler_correct_parsing():
     expected_birth_date = (date(1922, 3, 13), "1922-03-13")
     assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["family_name"] == "Raffaello"
     assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["given_name"] == "Mascetti"
-    assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_date"] in expected_birth_date
+    assert (
+        parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_date"] in expected_birth_date
+    )
     assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_place"] == "Rome"
     assert parsed_tokens["eu.europa.ec.eudiw.pid.1"]["birth_country"] == "IT"
-    assert parsed_tokens["eu.europa.ec.eudiw.pid.it.1"] == {"tax_id_code": "TINIT-XXXXXXXXXXXXXXX"}
+    assert parsed_tokens["eu.europa.ec.eudiw.pid.it.1"] == {
+        "tax_id_code": "TINIT-XXXXXXXXXXXXXXX"
+    }
 
 
 def test_handler_correct_validation():
@@ -270,6 +282,8 @@ def test_handler_correct_validation_with_status_list_revoked():
 
         assert False, "Validation should have failed with revoked status list."
     except Exception as e:
-        assert str(e) == "Status list indicates that the token is revoked", "Incorrect exception message."
+        assert (
+            str(e) == "Status list indicates that the token is revoked"
+        ), "Incorrect exception message."
     finally:
         mock_staus_list_endpoint.stop()

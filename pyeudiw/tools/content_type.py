@@ -78,5 +78,14 @@ def _get_header(headers, key):
     if isinstance(headers, dict):
         return headers.get(key) or headers.get(key.lower())
     elif isinstance(headers, list):
-        return next((v for h in headers if isinstance(h, (tuple, list)) and len(h) == 2 for k, v in [h] if k.lower() == key.lower()), None)
+        return next(
+            (
+                v
+                for h in headers
+                if isinstance(h, (tuple, list)) and len(h) == 2
+                for k, v in [h]
+                if k.lower() == key.lower()
+            ),
+            None,
+        )
     return None

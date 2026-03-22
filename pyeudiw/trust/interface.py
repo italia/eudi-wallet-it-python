@@ -37,7 +37,9 @@ class TrustEvaluator:
 
         raise NotImplementedError
 
-    def build_metadata_endpoints(self, base_path: str) -> list[tuple[str, Callable[[Context, Any], Response]]]:
+    def build_metadata_endpoints(
+        self, base_path: str
+    ) -> list[tuple[str, Callable[[Context, Any], Response]]]:
         """
         Return metadata endpoints for this trust evaluator (e.g. keys, config, policies).
 

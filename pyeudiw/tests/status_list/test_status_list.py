@@ -5,10 +5,13 @@ from pycose.headers import KID, Algorithm
 from pycose.messages import Sign1Message
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.status_list import encode_cwt_status_list_token, decode_cwt_status_list_token
+from pyeudiw.status_list import (
+    decode_cwt_status_list_token,
+    encode_cwt_status_list_token,
+)
 from pyeudiw.status_list.exceptions import (
-    PositionOutOfRangeError,
     InvalidTokenFormatError,
+    PositionOutOfRangeError,
 )
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK
@@ -127,8 +130,14 @@ def test_encode_cwt_status_list_token_unsigned_and_with_map(cwt_payload):
     payload_parts = ({}, {}, payload_data | payload_to_decode)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_unsigned = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534})
-    _cwt_token_payload(token_unsigned, {"bits": bits, "lst": lst}, payload_data | {65534: payload_to_decode["ttl"]})
+    token_unsigned = encode_cwt_status_list_token(
+        payload_parts, bits, lst, {"ttl": 65534}
+    )
+    _cwt_token_payload(
+        token_unsigned,
+        {"bits": bits, "lst": lst},
+        payload_data | {65534: payload_to_decode["ttl"]},
+    )
 
 
 def test_encode_cwt_status_list_token_signed_and_without_map(cwt_payload):
@@ -136,8 +145,12 @@ def test_encode_cwt_status_list_token_signed_and_without_map(cwt_payload):
     payload_parts = ({}, {}, payload_data)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, private_key=cwt_payload[0])
-    _cwt_token_payload(token_signed, {"bits": bits, "lst": lst}, payload_data, payload_parts)
+    token_signed = encode_cwt_status_list_token(
+        payload_parts, bits, lst, private_key=cwt_payload[0]
+    )
+    _cwt_token_payload(
+        token_signed, {"bits": bits, "lst": lst}, payload_data, payload_parts
+    )
 
 
 def test_encode_cwt_status_list_token_signed_and_with_map(cwt_payload):
@@ -146,15 +159,29 @@ def test_encode_cwt_status_list_token_signed_and_with_map(cwt_payload):
     payload_parts = ({}, {}, payload_data | payload_to_decode)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534}, cwt_payload[0])
-    _cwt_token_payload(token_signed, {"bits": bits, "lst": lst}, payload_data | {65534: payload_to_decode["ttl"]}, payload_parts)
+    token_signed = encode_cwt_status_list_token(
+        payload_parts, bits, lst, {"ttl": 65534}, cwt_payload[0]
+    )
+    _cwt_token_payload(
+        token_signed,
+        {"bits": bits, "lst": lst},
+        payload_data | {65534: payload_to_decode["ttl"]},
+        payload_parts,
+    )
 
 
-def _cwt_token_payload(token, expected_status_list, payload_data: dict | None = None, payload_parts: tuple | None = None):
+def _cwt_token_payload(
+    token,
+    expected_status_list,
+    payload_data: dict | None = None,
+    payload_parts: tuple | None = None,
+):
     assert isinstance(token, bytes)
     decoded_payload = decode_cwt_status_list_token(token)
     assert 65533 in decoded_payload[2]  # check contains status_list
-    assert zlib.decompress(decoded_payload[2][65533]["lst"]) == expected_status_list["lst"]
+    assert (
+        zlib.decompress(decoded_payload[2][65533]["lst"]) == expected_status_list["lst"]
+    )
     assert decoded_payload[2][65533]["bits"] == expected_status_list["bits"]
     if payload_data:
         assert payload_data.items() <= decoded_payload[2].items()

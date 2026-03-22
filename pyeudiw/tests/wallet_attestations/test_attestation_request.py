@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pyeudiw.wallet_instance_attestations import (
+from pyeudiw.wallet_attestations import (
     WalletInstanceAttestationRequestHeader,
     WalletInstanceAttestationRequestPayload,
 )
@@ -48,7 +48,9 @@ WALLET_INSTANCE_ATTESTATION_REQUEST = {
 
 
 def test_header():
-    WalletInstanceAttestationRequestHeader(**WALLET_INSTANCE_ATTESTATION_REQUEST["header"])
+    WalletInstanceAttestationRequestHeader(
+        **WALLET_INSTANCE_ATTESTATION_REQUEST["header"]
+    )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationRequestHeader.model_validate(
             WALLET_INSTANCE_ATTESTATION_REQUEST["header"],
@@ -60,18 +62,28 @@ def test_header():
     )
     WALLET_INSTANCE_ATTESTATION_REQUEST["header"]["typ"] = "wrong"
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestHeader(**WALLET_INSTANCE_ATTESTATION_REQUEST["header"])
+        WalletInstanceAttestationRequestHeader(
+            **WALLET_INSTANCE_ATTESTATION_REQUEST["header"]
+        )
 
 
 def test_payload():
-    WalletInstanceAttestationRequestPayload(**WALLET_INSTANCE_ATTESTATION_REQUEST["payload"])
+    WalletInstanceAttestationRequestPayload(
+        **WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]
+    )
     WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]["type"] = "wrong"
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestPayload(**WALLET_INSTANCE_ATTESTATION_REQUEST["payload"])
+        WalletInstanceAttestationRequestPayload(
+            **WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]
+        )
 
-    WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]["cnf"] = {"wrong_name_jwk": WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]["cnf"]["jwk"]}
+    WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]["cnf"] = {
+        "wrong_name_jwk": WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]["cnf"]["jwk"]
+    }
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestPayload.model_validate(WALLET_INSTANCE_ATTESTATION_REQUEST["payload"])
+        WalletInstanceAttestationRequestPayload.model_validate(
+            WALLET_INSTANCE_ATTESTATION_REQUEST["payload"]
+        )
 
 
 def test_wir():
@@ -118,20 +130,32 @@ def test_wir():
     WalletInstanceAttestationRequestHeader(**wir_dict["header"])
     WalletInstanceAttestationRequestPayload(**wir_dict["payload"])
 
-    WalletInstanceAttestationRequestHeader.model_validate(wir_dict["header"], context={"supported_algorithms": ["RS256"]})
+    WalletInstanceAttestationRequestHeader.model_validate(
+        wir_dict["header"], context={"supported_algorithms": ["RS256"]}
+    )
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestHeader.model_validate(wir_dict["header"], context={"supported_algorithms": []})
+        WalletInstanceAttestationRequestHeader.model_validate(
+            wir_dict["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestHeader.model_validate(wir_dict["header"], context={"supported_algorithms": None})
+        WalletInstanceAttestationRequestHeader.model_validate(
+            wir_dict["header"], context={"supported_algorithms": None}
+        )
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestHeader.model_validate(wir_dict["header"], context={"supported_algorithms": ["RS384"]})
+        WalletInstanceAttestationRequestHeader.model_validate(
+            wir_dict["header"], context={"supported_algorithms": ["RS384"]}
+        )
 
     wir_dict["payload"]["type"] = "NOT_WalletInstanceAttestationRequest"
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestPayload.model_validate(wir_dict["payload"], context={"supported_algorithms": ["RS256"]})
+        WalletInstanceAttestationRequestPayload.model_validate(
+            wir_dict["payload"], context={"supported_algorithms": ["RS256"]}
+        )
     wir_dict["payload"]["type"] = "WalletInstanceAttestationRequest"
 
     wir_dict["payload"]["cnf"] = {"wrong_name_jwk": wir_dict["payload"]["cnf"]["jwk"]}
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationRequestPayload.model_validate(wir_dict["payload"], context={"supported_algorithms": ["RS256"]})
+        WalletInstanceAttestationRequestPayload.model_validate(
+            wir_dict["payload"], context={"supported_algorithms": ["RS256"]}
+        )
     wir_dict["payload"]["cnf"] = {"jwk": wir_dict["payload"]["cnf"]["wrong_name_jwk"]}

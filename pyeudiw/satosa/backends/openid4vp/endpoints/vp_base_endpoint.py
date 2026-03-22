@@ -32,7 +32,9 @@ class VPBaseEndpoint(BaseEndpoint):
             trust_evaluator: Optional trust evaluator (used by some subclasses).
             db_engine: Optional shared DBEngine; if None, a new one is created (reuse from backend to limit MongoClient count).
         """
-        super().__init__(config, internal_attributes, base_url, name, auth_callback, converter)
+        super().__init__(
+            config, internal_attributes, base_url, name, auth_callback, converter
+        )
 
         if self.config["authorization"].get("client_id"):
             self.client_id = self.config["authorization"]["client_id"]
@@ -43,7 +45,11 @@ class VPBaseEndpoint(BaseEndpoint):
 
         self.storage_settings = self.config.get("storage", {})
         if not self.storage_settings:
-            raise ValueError("Storage settings are not configured. Please check your configuration.")
+            raise ValueError(
+                "Storage settings are not configured. Please check your configuration."
+            )
 
         # Reuse shared db_engine from backend when provided to avoid multiple MongoClient instances per backend.
-        self.db_engine = db_engine if db_engine is not None else DBEngine(self.storage_settings)
+        self.db_engine = (
+            db_engine if db_engine is not None else DBEngine(self.storage_settings)
+        )

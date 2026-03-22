@@ -2,15 +2,14 @@ import base64
 import hashlib
 import logging
 import uuid
-
 from typing import Optional
-from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.tools.utils import iat_now
 
 from cryptojwt.jwk.ec import ECKey
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from cryptojwt.jwk.rsa import RSAKey
 
-from cryptojwt.jwk.jwk import key_from_jwk_dict
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.tools.utils import iat_now
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,9 @@ class DPoPIssuer:
     Helper class for generate DPoP proofs.
     """
 
-    def __init__(self, htu: str, private_jwk: dict | ECKey | RSAKey, token: Optional[str] = None) -> None:
+    def __init__(
+        self, htu: str, private_jwk: dict | ECKey | RSAKey, token: Optional[str] = None
+    ) -> None:
         """
         Generates an instance of DPoPIssuer.
 
@@ -59,7 +60,11 @@ class DPoPIssuer:
         }
 
         if self.token:
-            data["ath"] = base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest()).rstrip(b"=").decode()
+            data["ath"] = (
+                base64.urlsafe_b64encode(hashlib.sha256(self.token.encode()).digest())
+                .rstrip(b"=")
+                .decode()
+            )
 
         jwt = self.signer.sign(
             data,

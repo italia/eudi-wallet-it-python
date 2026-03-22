@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from pyeudiw.wallet_instance_attestations import (
+from pyeudiw.wallet_attestations import (
     WalletInstanceAttestationHeader,
     WalletInstanceAttestationPayload,
 )
@@ -72,7 +72,9 @@ def test_header():
             context={"supported_algorithms": None},
         )
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationHeader.model_validate(WALLET_INSTANCE_ATTESTATION["header"], context={"supported_algorithms": []})
+        WalletInstanceAttestationHeader.model_validate(
+            WALLET_INSTANCE_ATTESTATION["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader.model_validate(
             WALLET_INSTANCE_ATTESTATION["header"],
@@ -108,26 +110,42 @@ def test_header():
 
 def test_payload():
     WalletInstanceAttestationPayload(**WALLET_INSTANCE_ATTESTATION["payload"])
-    WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
+    WalletInstanceAttestationPayload.model_validate(
+        WALLET_INSTANCE_ATTESTATION["payload"]
+    )
 
     # iss is not HttpUrl
-    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = WALLET_INSTANCE_ATTESTATION["payload"]["iss"][4:]
+    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = WALLET_INSTANCE_ATTESTATION[
+        "payload"
+    ]["iss"][4:]
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
-    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = "http" + WALLET_INSTANCE_ATTESTATION["payload"]["iss"]
-    WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
+        WalletInstanceAttestationPayload.model_validate(
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
+    WALLET_INSTANCE_ATTESTATION["payload"]["iss"] = (
+        "http" + WALLET_INSTANCE_ATTESTATION["payload"]["iss"]
+    )
+    WalletInstanceAttestationPayload.model_validate(
+        WALLET_INSTANCE_ATTESTATION["payload"]
+    )
 
     # empty cnf
     cnf = WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]
     WALLET_INSTANCE_ATTESTATION["payload"]["cnf"] = {}
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
+        WalletInstanceAttestationPayload.model_validate(
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
     del WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
+        WalletInstanceAttestationPayload.model_validate(
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )
     WALLET_INSTANCE_ATTESTATION["payload"]["cnf"] = cnf
 
     # cnf jwk is not a JWK
     WALLET_INSTANCE_ATTESTATION["payload"]["cnf"]["jwk"] = {}
     with pytest.raises(ValidationError):
-        WalletInstanceAttestationPayload.model_validate(WALLET_INSTANCE_ATTESTATION["payload"])
+        WalletInstanceAttestationPayload.model_validate(
+            WALLET_INSTANCE_ATTESTATION["payload"]
+        )

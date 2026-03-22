@@ -1,19 +1,19 @@
 import re
-import requests
 from typing import Any, Callable, Literal
 from urllib.parse import urlparse
 
+import requests
 from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.jwk import JWK
-from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.satosa.utils.response import JsonResponse
+from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
-from pyeudiw.trust.model.trust_source import TrustSourceData, TrustEvaluationType
+from pyeudiw.trust.model.trust_source import TrustEvaluationType, TrustSourceData
 
 
 class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
@@ -96,7 +96,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         jwks: dict[Literal["keys"], list[dict]] | None = metadata.get("jwks", None)
         jwks_uri: str | None = metadata.get("jwks_uri", None)
         if (not jwks) and (not jwks_uri):
-            raise InvalidJwkMetadataException("invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]")
+            raise InvalidJwkMetadataException(
+                "invalid issuing key metadata: missing both claims [jwks] and [jwks_uri]"
+            )
         if jwks:
             # get jwks by value
             return jwks
@@ -113,7 +115,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
                 http_async=self.http_async_calls,
             )
         else:
-            resp = get_http_url([endpoint], self.httpc_params, http_async=self.http_async_calls)[0]
+            resp = get_http_url(
+                [endpoint], self.httpc_params, http_async=self.http_async_calls
+            )[0]
 
         return resp
 
@@ -132,7 +136,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             if resp and resp.status_code == 200:
                 return resp.json()
 
-        raise InvalidJwkMetadataException(f"failed to fetch valid jwk metadata: obtained {resp}")
+        raise InvalidJwkMetadataException(
+            f"failed to fetch valid jwk metadata: obtained {resp}"
+        )
 
     def _get_jwks_by_reference(self, jwks_reference_uri: str) -> requests.Response:
         """
@@ -140,7 +146,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         return self._get_url(jwks_reference_uri)
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[Context, Any], Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> list[tuple[str, Callable[[Context, Any], Response]]]:
         if not self.jwk_endpoint:
             return []
 
@@ -152,7 +160,9 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
 
         return [(metadata_path, metadata_response_fn)]
 
-    def extract_and_update_trust_materials(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def extract_and_update_trust_materials(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Fetches the public key of the issuer by querying a given endpoint.
         Previous responses might or might not be cached based on the cache_ttl
@@ -164,7 +174,10 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
             raise ValueError("invalid issuer: cannot be empty value")
 
         if not is_url(issuer):
-            self._log_warning("Extracting JWK", f"invalid issuer: issuer should be an URL, observed instead {issuer}")
+            self._log_warning(
+                "Extracting JWK",
+                f"invalid issuer: issuer should be an URL, observed instead {issuer}",
+            )
             return trust_source
 
         try:
@@ -178,11 +191,15 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         try:
             md = self._get_jwk_metadata(issuer)
             if not issuer == (obt_issuer := md.get("issuer", None)):
-                raise InvalidJwkMetadataException(f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}")
+                raise InvalidJwkMetadataException(
+                    f"invalid jwk metadata: obtained issuer :{obt_issuer}, expected issuer: {issuer}"
+                )
             jwks = self._extract_jwks_from_jwk_metadata(md)
             jwk_l: list[dict] = jwks.get("keys", [])
             if not jwk_l:
-                raise InvalidJwkMetadataException("unable to find jwks in issuer jwk metadata")
+                raise InvalidJwkMetadataException(
+                    "unable to find jwks in issuer jwk metadata"
+                )
 
             trust_source.add_trust_param(
                 "direct_trust_sd_jwt_vc",
@@ -194,11 +211,15 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
                 ),
             )
         except Exception as e:
-            self._log_warning("Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}")
+            self._log_warning(
+                "Extracting JWK", f"Failed to extract jwks from issuer {issuer}: {e}"
+            )
 
         return trust_source
 
-    def validate_trust_material(self, trust_chain: list[str], trust_source: TrustSourceData, db_engine: DBEngine) -> tuple[bool, TrustSourceData]:
+    def validate_trust_material(
+        self, trust_chain: list[str], trust_source: TrustSourceData, db_engine: DBEngine
+    ) -> tuple[bool, TrustSourceData]:
         """
         Validate the trust material of the trust source.
         """
@@ -210,25 +231,39 @@ class _DirectTrustJwkHandler(TrustHandlerInterface, BaseLogger):
         """
         return "direct_trust_sd_jwt_vc"
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         # this class does not handle generic metadata information: it fetches and exposes cryptographic material only
         return trust_source
 
-    def extract_jwt_header_trust_parameters(self, trust_source: TrustSourceData) -> dict:
+    def extract_jwt_header_trust_parameters(
+        self, trust_source: TrustSourceData
+    ) -> dict:
         """
         Direct Trust is not formally associated to any trust parameter
         """
         return {}
 
 
-def build_jwk_issuer_endpoint(issuer_id: str, endpoint_component: str, conform: bool = True) -> str:
+def build_jwk_issuer_endpoint(
+    issuer_id: str, endpoint_component: str, conform: bool = True
+) -> str:
     if not endpoint_component:
         return issuer_id
 
-    issuer_id = f"https://{issuer_id.strip('/')}" if not issuer_id.startswith("http") else issuer_id
+    issuer_id = (
+        f"https://{issuer_id.strip('/')}"
+        if not issuer_id.startswith("http")
+        else issuer_id
+    )
 
     baseurl = urlparse(issuer_id)
-    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}" if conform else f"{baseurl.path}/{endpoint_component.strip('/')}"
+    full_endpoint_path = (
+        f"/{endpoint_component.strip('/')}{baseurl.path}"
+        if conform
+        else f"{baseurl.path}/{endpoint_component.strip('/')}"
+    )
     return baseurl._replace(path=full_endpoint_path).geturl()
 
 

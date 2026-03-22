@@ -6,12 +6,11 @@ import os
 import time
 from functools import lru_cache
 from secrets import token_hex
-from typing import NamedTuple
+from typing import NamedTuple, Type
 
 import requests
 
 from pyeudiw.tools.http import http_get_async, http_get_sync
-from typing import Type
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,9 @@ def timestamp_from_datetime(dt: datetime.datetime) -> int:
     return int(dt.timestamp())
 
 
-def get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[requests.Response]:
+def get_http_url(
+    urls: list[str] | str, httpc_params: dict, http_async: bool = True
+) -> list[requests.Response]:
     """
     Perform an HTTP Request returning the payload of the call.
 
@@ -142,7 +143,9 @@ def get_dynamic_class(module_name: str, class_name: str) -> Type:
     return instance_class
 
 
-def dynamic_class_loader(module_name: str, class_name: str, init_params: dict = {}) -> object:
+def dynamic_class_loader(
+    module_name: str, class_name: str, init_params: dict = {}
+) -> object:
     """
     Load a class dynamically.
 
@@ -161,14 +164,18 @@ def dynamic_class_loader(module_name: str, class_name: str, init_params: dict = 
     if callable(dynamic_class):
         storage_instance = dynamic_class(**init_params)
     else:
-        raise TypeError(f"The class '{class_name}' in module '{module_name}' is not callable.")
+        raise TypeError(
+            f"The class '{class_name}' in module '{module_name}' is not callable."
+        )
     return storage_instance
 
 
 _HttpcParams_T = NamedTuple("_HttpcParams_T", [("ssl", bool), ("timeout", int)])
 
 
-def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True) -> requests.Response:
+def cacheable_get_http_url(
+    cache_ttl: int, url: str, httpc_params: dict, http_async: bool = True
+) -> requests.Response:
     """
     Cached HTTP GET with TTL (seconds) implemented via lru_cache.
     The TTL is enforced by rounding a timestamp argument; entries expire after
@@ -180,14 +187,18 @@ def cacheable_get_http_url(cache_ttl: int, url: str, httpc_params: dict, http_as
     ssl: bool | None = httpc_params.get("connection", {}).get("ssl", None)
     timeout: int | None = httpc_params.get("session", {}).get("timeout", None)
     if (ssl is None) or (timeout is None):
-        raise ValueError(f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session']['timeout'] MUST be defined")
+        raise ValueError(
+            f"invalid parameter {httpc_params=}: ['connection']['ssl'] and ['session']['timeout'] MUST be defined"
+        )
     curr_time_s = time.time_ns() // 1_000_000_000
     if cache_ttl != 0:
         ttl_timestamp = curr_time_s // cache_ttl
     else:
         ttl_timestamp = curr_time_s
     httpc_p_tuple = _HttpcParams_T(ssl, timeout)
-    resp = _lru_cached_get_http_url(ttl_timestamp, url, httpc_p_tuple, http_async=http_async)
+    resp = _lru_cached_get_http_url(
+        ttl_timestamp, url, httpc_p_tuple, http_async=http_async
+    )
 
     if resp.status_code != 200:
         _lru_cached_get_http_url.cache_clear()

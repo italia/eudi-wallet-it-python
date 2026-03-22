@@ -2,7 +2,9 @@ import logging
 
 from pydantic import model_validator
 
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,9 @@ class DeferredCredentialEndpointRequest(OpenId4VciBaseModel):
     transaction_id: str = None
 
     @model_validator(mode="after")
-    def check_deferred_credential_endpoint_request(self) -> "DeferredCredentialEndpointRequest":
+    def check_deferred_credential_endpoint_request(
+        self,
+    ) -> "DeferredCredentialEndpointRequest":
         self.validate_transaction_id()
         return self
 

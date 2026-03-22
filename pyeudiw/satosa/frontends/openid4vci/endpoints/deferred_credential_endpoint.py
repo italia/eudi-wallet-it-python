@@ -1,10 +1,19 @@
 from satosa.context import Context
 from satosa.response import Response
 
-from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import BaseCredentialEndpoint
-from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request import DeferredCredentialEndpointRequest
-from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import DeferredCredentialEndpointResponse, CredentialItem
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
+from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import (
+    BaseCredentialEndpoint,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request import (
+    DeferredCredentialEndpointRequest,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response import (
+    CredentialItem,
+    DeferredCredentialEndpointResponse,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
+)
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
 
 
@@ -13,7 +22,9 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
     Handle a POST request to the deferred_credential endpoint.
     """
 
-    def validate_request(self, context: Context, entity: OpenId4VCIEntity) -> OpenId4VciBaseModel:
+    def validate_request(
+        self, context: Context, entity: OpenId4VCIEntity
+    ) -> OpenId4VciBaseModel:
         """
         Validate a POST request to the deferred credential endpoint.
 
@@ -29,9 +40,13 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
 
-        return DeferredCredentialEndpointRequest.model_validate(**context.request.body.decode("utf-8"))
+        return DeferredCredentialEndpointRequest.model_validate(
+            **context.request.body.decode("utf-8")
+        )
 
-    def to_response(self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None) -> Response:
+    def to_response(
+        self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None
+    ) -> Response:
         """
         Generate a response containing the issued credential.
 
@@ -47,4 +62,9 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
             Response: A SATOSA HTTP response with the issued credential.
         """
 
-        return DeferredCredentialEndpointResponse.to_response([CredentialItem(credential=cred) for cred in self.build_credential(context, credential_id)])
+        return DeferredCredentialEndpointResponse.to_response(
+            [
+                CredentialItem(credential=cred)
+                for cred in self.build_credential(context, credential_id)
+            ]
+        )

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
@@ -42,7 +42,11 @@ class TrustEvaluationType:
         self.jwks = []
 
         for jwk in jwks:
-            jwk = key_from_jwk_dict(jwk).serialize(private=False) if isinstance(jwk, dict) else jwk.as_public_dict()
+            jwk = (
+                key_from_jwk_dict(jwk).serialize(private=False)
+                if isinstance(jwk, dict)
+                else jwk.as_public_dict()
+            )
             self.jwks.append(jwk)
 
         for ttype, tp in kwargs.items():
@@ -60,7 +64,9 @@ class TrustEvaluationType:
         return {
             "attribute_name": self.attribute_name,
             "expiration_date": self.expiration_date,
-            "jwks": [key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks],
+            "jwks": [
+                key_from_jwk_dict(jwk).serialize(private=False) for jwk in self.jwks
+            ],
             "trust_handler_name": self.trust_handler_name,
             "crls": self.crls,
             self.attribute_name: getattr(self, self.attribute_name),
@@ -86,7 +92,14 @@ class TrustSourceData:
     TrustSourceData is a dataclass that holds the trust data of a trust source.
     """
 
-    def __init__(self, entity_id: str, policies: dict = {}, metadata: dict = {}, revoked: bool = False, **kwargs) -> None:
+    def __init__(
+        self,
+        entity_id: str,
+        policies: dict = {},
+        metadata: dict = {},
+        revoked: bool = False,
+        **kwargs
+    ) -> None:
         """
         Initialize the trust source data.
 
@@ -104,7 +117,10 @@ class TrustSourceData:
         self.revoked = revoked
 
         if "jwks" in metadata and "keys" in metadata["jwks"]:
-            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
+            metadata["jwks"]["keys"] = [
+                key_from_jwk_dict(jwk).serialize(private=False)
+                for jwk in metadata["jwks"]["keys"]
+            ]
 
         self.metadata = metadata
         for _type, tp in kwargs.items():
@@ -145,7 +161,9 @@ class TrustSourceData:
             return None
         return getattr(self, ttype)
 
-    def get_trust_evaluation_type_by_handler_name(self, handler_name: str) -> Optional[TrustEvaluationType]:
+    def get_trust_evaluation_type_by_handler_name(
+        self, handler_name: str
+    ) -> Optional[TrustEvaluationType]:
         """
         Return the trust source of the given handler name.
 
@@ -177,7 +195,10 @@ class TrustSourceData:
         tmp_metadata = self.metadata.copy()
 
         if "jwks" in tmp_metadata and "keys" in tmp_metadata["jwks"]:
-            tmp_metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in tmp_metadata["jwks"]["keys"]]
+            tmp_metadata["jwks"]["keys"] = [
+                key_from_jwk_dict(jwk).serialize(private=False)
+                for jwk in tmp_metadata["jwks"]["keys"]
+            ]
 
         trust_source["metadata"] = tmp_metadata
 

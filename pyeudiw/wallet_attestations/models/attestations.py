@@ -1,13 +1,15 @@
 from typing import Dict, List, Literal, Optional
 
-from pydantic import BaseModel, HttpUrl, field_validator, Field
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.tools.schema_utils import check_algorithm
-from pyeudiw.wallet_instance_attestations.models.cnf import CNFSchema
+from pyeudiw.wallet_attestations.models.cnf import CNFSchema
 
-_user_authentications = Literal["iso_18045_high", "iso_18045_moderate", "iso_18045_basic"]
+_user_authentications = Literal[
+    "iso_18045_high", "iso_18045_moderate", "iso_18045_basic"
+]
 _key_storage = Literal["iso_18045_high", "iso_18045_moderate", "iso_18045_basic"]
 
 
@@ -19,17 +21,18 @@ class VPFormatSchema(BaseModel):
 class WalletInstanceAttestationHeader(BaseModel):
     alg: str
     typ: Literal["oauth-client-attestation+jwt"]
-    kid: str #id pub-key wallet provider
+    kid: str  # id pub-key wallet provider
     x5c: List[str]
     trust_chain: Optional[List[str]] = None
-
 
     @field_validator("alg")
     @classmethod
     def _check_alg(cls, alg, info: ValidationInfo):
         check_algorithm(alg, info)
         return alg
+
     # todo add claims validators
+
 
 class WalletInstanceAttestationPayload(BaseModel):
     iss: HttpUrl
@@ -47,7 +50,7 @@ class WalletInstanceAttestationPayload(BaseModel):
 class WalletUnitAttestationHeader(BaseModel):
     alg: str
     typ: Literal["key-attestation+jwt"]
-    kid: str #id pub-key wallet provider
+    kid: str  # id pub-key wallet provider
     x5c: List[str]
     trust_chain: Optional[List[str]] = None
 
@@ -56,6 +59,7 @@ class WalletUnitAttestationHeader(BaseModel):
     def _check_alg(cls, alg, info: ValidationInfo):
         check_algorithm(alg, info)
         return alg
+
 
 class WalletUnitAttestationPayload(BaseModel):
     iss: HttpUrl
@@ -66,4 +70,3 @@ class WalletUnitAttestationPayload(BaseModel):
     user_authentication: list[_user_authentications] = Field(..., min_length=1)
     status: dict[str, dict] = None
     certification: Optional[HttpUrl] = None
-

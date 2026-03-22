@@ -18,7 +18,11 @@ class TestMongoStorage:
                 "db_trust_sources_collection": "trust_source",
             },
             f"mongodb://{os.getenv('PYEUDIW_MONGO_TEST_AUTH_INLINE', '')}localhost:27017/?timeoutMS=15000",
-            {"serverSelectionTimeoutMS": 15000, "connectTimeoutMS": 10000, "maxPoolSize": 10},
+            {
+                "serverSelectionTimeoutMS": 15000,
+                "connectTimeoutMS": 10000,
+                "maxPoolSize": 10,
+            },
         )
 
     def test_mongo_connection(self):
@@ -34,13 +38,17 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
         session_id = str(uuid.uuid4())
 
-        document_id = self.storage.init_session(str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ="")
+        document_id = self.storage.init_session(
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
         dpop_proof = {"dpop": "test"}
         attestation = {"attestation": "test"}
-        self.storage.add_dpop_proof_and_attestation(document_id, dpop_proof=dpop_proof, attestation=attestation)
+        self.storage.add_dpop_proof_and_attestation(
+            document_id, dpop_proof=dpop_proof, attestation=attestation
+        )
 
         document = self.storage.get_by_id(document_id)
 
@@ -54,7 +62,9 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
         session_id = str(uuid.uuid4())
 
-        document_id = self.storage.init_session(str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ="")
+        document_id = self.storage.init_session(
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
@@ -76,7 +86,9 @@ class TestMongoStorage:
         state = str(uuid.uuid4())
         session_id = str(uuid.uuid4())
 
-        document_id = self.storage.init_session(str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ="")
+        document_id = self.storage.init_session(
+            str(uuid.uuid4()), session_id=session_id, state=state, remote_flow_typ=""
+        )
 
         assert document_id
 
@@ -85,7 +97,9 @@ class TestMongoStorage:
 
         request_object = {"nonce": nonce, "state": state}
         self.storage.update_request_object(document_id, request_object)
-        documentStatus = self.storage.update_response_object(nonce, state, {"response": "test"})
+        documentStatus = self.storage.update_response_object(
+            nonce, state, {"response": "test"}
+        )
         self.storage.add_dpop_proof_and_attestation(
             document_id,
             dpop_proof={"dpop": "test"},

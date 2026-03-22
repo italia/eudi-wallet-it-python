@@ -113,7 +113,9 @@ def test_cacheable_get_http_url():
     ok_response.status_code = 200
     ok_response.headers.update({"Content-Type": "text/plain"})
     ok_response._content = b"Hello automated test"
-    mocked_endpoint = unittest.mock.patch("pyeudiw.tools.utils.get_http_url", return_value=[ok_response])
+    mocked_endpoint = unittest.mock.patch(
+        "pyeudiw.tools.utils.get_http_url", return_value=[ok_response]
+    )
 
     cache_ttl: int = 60 * 60 * 24 * 365  # 1 year
     httpc_p = {
@@ -127,7 +129,9 @@ def test_cacheable_get_http_url():
     _lru_cached_get_http_url.cache_clear()
     mocked_endpoint.start()
     for _ in range(tries):
-        resp = cacheable_get_http_url(cache_ttl, "http://location.example", httpc_p, http_async=False)
+        resp = cacheable_get_http_url(
+            cache_ttl, "http://location.example", httpc_p, http_async=False
+        )
         assert resp.status_code == 200
         assert resp._content == b"Hello automated test"
     mocked_endpoint.stop()
@@ -136,5 +140,9 @@ def test_cacheable_get_http_url():
     exp_cache_misses = 1
     cache_hits = _lru_cached_get_http_url.cache_info().hits
     exp_cache_hits = tries - 1
-    assert cache_misses == exp_cache_misses, f"cache missed more that {exp_cache_misses} time: {cache_misses}; {_lru_cached_get_http_url.cache_info()}"
-    assert cache_hits == exp_cache_hits, f"cache hit less than {exp_cache_hits} times: {cache_hits}"
+    assert (
+        cache_misses == exp_cache_misses
+    ), f"cache missed more that {exp_cache_misses} time: {cache_misses}; {_lru_cached_get_http_url.cache_info()}"
+    assert (
+        cache_hits == exp_cache_hits
+    ), f"cache hit less than {exp_cache_hits} times: {cache_hits}"

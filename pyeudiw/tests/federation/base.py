@@ -45,7 +45,9 @@ leaf_cred = {
     "authority_hints": ["https://intermediate.eidas.example.org"],
 }
 leaf_cred["jwks"]["keys"] = [leaf_cred_jwk.serialize()]
-leaf_cred["metadata"]["openid_credential_issuer"]["jwks"]["keys"] = [leaf_cred_jwk_prot.serialize()]
+leaf_cred["metadata"]["openid_credential_issuer"]["jwks"]["keys"] = [
+    leaf_cred_jwk_prot.serialize()
+]
 
 
 # Define intermediate Entity Statement for credential
@@ -153,11 +155,19 @@ intermediate_signer_ec = JWS(intermediate_ec, alg=ec_alg, typ="entity-statement+
 intermediate_ec_signed = intermediate_signer_ec.sign_compact([intermediate_jwk])
 
 
-intermediate_signer_es_cred = JWS(intermediate_es_cred, alg=ec_alg, typ="entity-statement+jwt")
-intermediate_es_cred_signed = intermediate_signer_es_cred.sign_compact([intermediate_jwk])
+intermediate_signer_es_cred = JWS(
+    intermediate_es_cred, alg=ec_alg, typ="entity-statement+jwt"
+)
+intermediate_es_cred_signed = intermediate_signer_es_cred.sign_compact(
+    [intermediate_jwk]
+)
 
-intermediate_signer_es_wallet = JWS(intermediate_es_wallet, alg=ec_alg, typ="entity-statement+jwt")
-intermediate_es_wallet_signed = intermediate_signer_es_wallet.sign_compact([intermediate_jwk])
+intermediate_signer_es_wallet = JWS(
+    intermediate_es_wallet, alg=ec_alg, typ="entity-statement+jwt"
+)
+intermediate_es_wallet_signed = intermediate_signer_es_wallet.sign_compact(
+    [intermediate_jwk]
+)
 
 ta_es_signer = JWS(ta_es, alg=ec_alg, typ="entity-statement+jwt")
 ta_es_signed = ta_es_signer.sign_compact([ta_jwk])
@@ -175,10 +185,14 @@ trust_chain_issuer = [
 
 trust_chain_wallet = [leaf_wallet_signed, intermediate_es_wallet_signed, ta_es_signed]
 
-test_cred = tcv_test.StaticTrustChainValidator(trust_chain_issuer, [ta_jwk.serialize()], httpc_params=httpc_params)
+test_cred = tcv_test.StaticTrustChainValidator(
+    trust_chain_issuer, [ta_jwk.serialize()], httpc_params=httpc_params
+)
 assert test_cred.is_valid
 
-test_wallet = tcv_test.StaticTrustChainValidator(trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params)
+test_wallet = tcv_test.StaticTrustChainValidator(
+    trust_chain_wallet, [ta_jwk.serialize()], httpc_params=httpc_params
+)
 assert test_wallet.is_valid
 
 print(json.dumps(trust_chain_issuer, indent=2))

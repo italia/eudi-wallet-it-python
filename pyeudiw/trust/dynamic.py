@@ -1,16 +1,19 @@
 import logging
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Literal, Optional, Union
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
 from satosa.response import Response
-from cryptojwt.jwk.jwk import key_from_jwk_dict
 
-from typing import Union, Literal
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.storage.exceptions import EntryNotFound
 from pyeudiw.tools.base_logger import BaseLogger
 from pyeudiw.tools.utils import dynamic_class_loader
-from pyeudiw.trust.exceptions import NoCriptographicMaterial, TrustConfigurationError, NoMetadata
+from pyeudiw.trust.exceptions import (
+    NoCriptographicMaterial,
+    NoMetadata,
+    TrustConfigurationError,
+)
 from pyeudiw.trust.handler.direct_trust_jar import DirectTrustJar
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import DirectTrustSdJwtVc
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
@@ -28,7 +31,12 @@ class CombinedTrustEvaluator(BaseLogger):
     A trust evaluator that combines multiple trust models.
     """
 
-    def __init__(self, handlers: list[TrustHandlerInterface], db_engine: DBEngine, mode: UpsertMode = "update_first") -> None:
+    def __init__(
+        self,
+        handlers: list[TrustHandlerInterface],
+        db_engine: DBEngine,
+        mode: UpsertMode = "update_first",
+    ) -> None:
         """
         Initialize the CombinedTrustEvaluator.
 
@@ -63,7 +71,9 @@ class CombinedTrustEvaluator(BaseLogger):
         except EntryNotFound:
             return None
 
-    def _update_upsert_source_trust_materials(self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None) -> TrustSourceData:
+    def _update_upsert_source_trust_materials(
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers using the update_first mode.
         It always updates first the trust material of the issuer and, if it is not found, it extracts it from cache.
@@ -75,13 +85,17 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: Optional[TrustSourceData]
         """
         for handler in self.handlers:
-            trust_source = handler.extract_and_update_trust_materials(issuer, trust_source)
+            trust_source = handler.extract_and_update_trust_materials(
+                issuer, trust_source
+            )
 
         self.db_engine.add_trust_source(trust_source.serialize())
 
         return trust_source
 
-    def _cache_upsert_source_trust_materials(self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None) -> TrustSourceData:
+    def _cache_upsert_source_trust_materials(
+        self, trust_source: Optional[TrustSourceData], issuer: Optional[str] = None
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers using the cache_first mode.
         It always extracts first the trust material of the issuer from cache and, if it is not found, it updates it.
@@ -95,16 +109,25 @@ class CombinedTrustEvaluator(BaseLogger):
         for handler in self.handlers:
             handler_name = handler.__class__.__name__
 
-            trust_param = trust_source.get_trust_evaluation_type_by_handler_name(handler_name)
+            trust_param = trust_source.get_trust_evaluation_type_by_handler_name(
+                handler_name
+            )
 
             if not trust_param or trust_param.expired or trust_source.revoked:
-                trust_source = handler.extract_and_update_trust_materials(issuer, trust_source)
+                trust_source = handler.extract_and_update_trust_materials(
+                    issuer, trust_source
+                )
 
         self.db_engine.add_trust_source(trust_source.serialize())
 
         return trust_source
 
-    def _upsert_source_trust_materials(self, trust_source: Optional[TrustSourceData], entity_id: Optional[str], force_update: bool = False) -> TrustSourceData:
+    def _upsert_source_trust_materials(
+        self,
+        trust_source: Optional[TrustSourceData],
+        entity_id: Optional[str],
+        force_update: bool = False,
+    ) -> TrustSourceData:
         """
         Extract the trust material of a certain issuer from all the trust handlers.
         If the trust material is not found for a certain issuer the structure remain unchanged.
@@ -124,7 +147,9 @@ class CombinedTrustEvaluator(BaseLogger):
         else:
             return self._cache_upsert_source_trust_materials(trust_source, entity_id)
 
-    def _get_trust_source(self, entity_id: Optional[str], force_update: bool = False) -> TrustSourceData:
+    def _get_trust_source(
+        self, entity_id: Optional[str], force_update: bool = False
+    ) -> TrustSourceData:
         """
         Retrieve the trust source from the database or extract it from the trust handlers.
 
@@ -136,9 +161,16 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         trust_source = self._retrieve_trust_source(entity_id)
 
-        return self._upsert_source_trust_materials(trust_source, entity_id, force_update)
+        return self._upsert_source_trust_materials(
+            trust_source, entity_id, force_update
+        )
 
-    def get_public_keys(self, issuer: Optional[str] = None, static_trust_materials: dict = {}, force_update: bool = False) -> list[dict]:
+    def get_public_keys(
+        self,
+        issuer: Optional[str] = None,
+        static_trust_materials: dict = {},
+        force_update: bool = False,
+    ) -> list[dict]:
         """
         Yields a list of public keys for an issuer, according to some trust model.
         If trust materials are provided, they are used to derive the public keys.
@@ -165,12 +197,21 @@ class CombinedTrustEvaluator(BaseLogger):
             for key, trust_material in static_trust_materials.items():
                 for handler in self.handlers:
                     if handler.get_handled_trust_material_name() == key:
-                        status, trust_source = handler.validate_trust_material(trust_material, trust_source)
+                        status, trust_source = handler.validate_trust_material(
+                            trust_material, trust_source
+                        )
 
                         if status:
                             self.db_engine.add_trust_source(trust_source.serialize())
-                            evaluation_type = trust_source.get_trust_evaluation_type_by_handler_name(handler.__class__.__name__)
-                            return [key_from_jwk_dict(jwk).serialize(private=False) for jwk in evaluation_type.jwks]
+                            evaluation_type = (
+                                trust_source.get_trust_evaluation_type_by_handler_name(
+                                    handler.__class__.__name__
+                                )
+                            )
+                            return [
+                                key_from_jwk_dict(jwk).serialize(private=False)
+                                for jwk in evaluation_type.jwks
+                            ]
                         else:
                             used_handlers.append(handler.__class__.__name__)
 
@@ -180,10 +221,18 @@ class CombinedTrustEvaluator(BaseLogger):
             )
 
         # try with handlers that don't use static trust materials like DirectTrustJar
-        filetered_handlers = [handler for handler in self.handlers if handler.__class__.__name__ not in used_handlers]
+        filetered_handlers = [
+            handler
+            for handler in self.handlers
+            if handler.__class__.__name__ not in used_handlers
+        ]
 
         for handler in filetered_handlers:
-            if (evaluation_type := trust_source.get_trust_evaluation_type_by_handler_name(handler.__class__.__name__)) is not None:
+            if (
+                evaluation_type := trust_source.get_trust_evaluation_type_by_handler_name(
+                    handler.__class__.__name__
+                )
+            ) is not None:
                 for jwk in evaluation_type.jwks:
                     key = key_from_jwk_dict(jwk)
                     thumbprint = key.thumbprint("SHA-256")
@@ -192,11 +241,16 @@ class CombinedTrustEvaluator(BaseLogger):
                         keys.append(key.serialize(private=False))
 
         if not keys:
-            raise NoCriptographicMaterial(f"no trust evaluator can provide cyptographic material " f"for {issuer}: searched among: {self.handlers_names}")
+            raise NoCriptographicMaterial(
+                f"no trust evaluator can provide cyptographic material "
+                f"for {issuer}: searched among: {self.handlers_names}"
+            )
 
         return keys
 
-    def get_metadata(self, issuer: Optional[str] = None, force_update: bool = False) -> dict:
+    def get_metadata(
+        self, issuer: Optional[str] = None, force_update: bool = False
+    ) -> dict:
         """
         Yields a dictionary of metadata about an issuer, according to some trust model.
 
@@ -211,16 +265,24 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.metadata:
-            raise NoMetadata(f"no trust evaluator can provide metadata for {issuer}: " f"searched among: {self.handlers_names}")
+            raise NoMetadata(
+                f"no trust evaluator can provide metadata for {issuer}: "
+                f"searched among: {self.handlers_names}"
+            )
 
         metadata = trust_source.metadata.copy()
 
         if "jwks" in metadata and "keys" in metadata["jwks"]:
-            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
+            metadata["jwks"]["keys"] = [
+                key_from_jwk_dict(jwk).serialize(private=False)
+                for jwk in metadata["jwks"]["keys"]
+            ]
 
         return metadata
 
-    def is_revoked(self, issuer: Optional[str] = None, force_update: bool = False) -> bool:
+    def is_revoked(
+        self, issuer: Optional[str] = None, force_update: bool = False
+    ) -> bool:
         """
         Yield if the trust toward the issuer was revoked according to some trust model;
         This asusmed that  the isser exists, is valid, but is not trusted.
@@ -245,7 +307,9 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source.revoked = True
         self.db_engine.add_trust_source(trust_source.serialize())
 
-    def get_policies(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, any]:
+    def get_policies(
+        self, issuer: Optional[str] = None, force_update: bool = False
+    ) -> dict[str, any]:
         """
         Get the policies of a certain issuer according to some trust model.
 
@@ -258,11 +322,16 @@ class CombinedTrustEvaluator(BaseLogger):
         trust_source = self._get_trust_source(issuer, force_update)
 
         if not trust_source.policies:
-            raise Exception(f"no trust evaluator can provide policies for {issuer}: " f"searched among: {self.handlers_names}")
+            raise Exception(
+                f"no trust evaluator can provide policies for {issuer}: "
+                f"searched among: {self.handlers_names}"
+            )
 
         return trust_source.policies
 
-    def get_jwt_header_trust_parameters(self, issuer: Optional[str] = None, force_update: bool = False) -> dict[str, Any]:
+    def get_jwt_header_trust_parameters(
+        self, issuer: Optional[str] = None, force_update: bool = False
+    ) -> dict[str, Any]:
         """
         Get the trust parameters of a certain issuer according to some trust model.
 
@@ -281,7 +350,9 @@ class CombinedTrustEvaluator(BaseLogger):
                     headers_params.update(header)
         return headers_params
 
-    def build_metadata_endpoints(self, backend_name: str, entity_uri: str) -> list[tuple[str, Callable[[Context, Any], Response]]]:
+    def build_metadata_endpoints(
+        self, backend_name: str, entity_uri: str
+    ) -> list[tuple[str, Callable[[Context, Any], Response]]]:
         endpoints = []
         for handler in self.handlers:
             endpoints += handler.build_metadata_endpoints(backend_name, entity_uri)
@@ -311,7 +382,12 @@ class CombinedTrustEvaluator(BaseLogger):
         return False
 
     @staticmethod
-    def from_config(config: dict, db_engine: DBEngine, default_client_id: str, mode: UpsertMode = "update_first") -> "CombinedTrustEvaluator":
+    def from_config(
+        config: dict,
+        db_engine: DBEngine,
+        default_client_id: str,
+        mode: UpsertMode = "update_first",
+    ) -> "CombinedTrustEvaluator":
         """
         Create a CombinedTrustEvaluator from a configuration.
 
@@ -332,7 +408,9 @@ class CombinedTrustEvaluator(BaseLogger):
                 client_id = handler_config["config"].get("client_id")
                 issuer_id = handler_config["config"].get("issuer_id")
                 if client_id and issuer_id:
-                    raise TrustConfigurationError(f"invalid configuration for {handler_name}: client_id and issuer_id both configurated")
+                    raise TrustConfigurationError(
+                        f"invalid configuration for {handler_name}: client_id and issuer_id both configurated"
+                    )
                 if not client_id and not issuer_id:
                     handler_config["config"]["client_id"] = default_client_id
                 else:
@@ -344,13 +422,19 @@ class CombinedTrustEvaluator(BaseLogger):
                     handler_config["config"],
                 )
             except Exception as e:
-                raise TrustConfigurationError(f"invalid configuration for {handler_name}: {e}", e)
+                raise TrustConfigurationError(
+                    f"invalid configuration for {handler_name}: {e}", e
+                )
 
             if not isinstance(trust_handler, TrustHandlerInterface):
-                raise TrustConfigurationError(f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator")
+                raise TrustConfigurationError(
+                    f"class {trust_handler.__class__} does not satisfy the interface TrustEvaluator"
+                )
 
             handlers.append(trust_handler)
-            logger.debug(f"TrustHandlers loaded: [{', '.join([str(i.__class__) for i in handlers])}].")
+            logger.debug(
+                f"TrustHandlers loaded: [{', '.join([str(i.__class__) for i in handlers])}]."
+            )
 
         if not handlers:
             logger.warning("No configured trust model, using direct trust model")

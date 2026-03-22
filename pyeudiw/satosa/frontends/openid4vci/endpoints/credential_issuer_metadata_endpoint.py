@@ -1,12 +1,21 @@
 from satosa.context import Context
-from pyeudiw.satosa.utils.response import JsonResponse
 
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
+    VCIBaseEndpoint,
+)
+from pyeudiw.satosa.utils.response import JsonResponse
 
 
 class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        *args
+    ):
         """
         Initialize the OpenID4VCI metadata endpoint class.
 
@@ -20,7 +29,9 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
 
         if not self.config.get("metadata", {}).get("openid_credential_issuer"):
-            raise ValueError("Missing 'openid_credential_issuer' in metadata configuration.")
+            raise ValueError(
+                "Missing 'openid_credential_issuer' in metadata configuration."
+            )
 
     @property
     def metadata(self) -> dict:

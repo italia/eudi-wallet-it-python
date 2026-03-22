@@ -1,8 +1,10 @@
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from pyeudiw.satosa.schemas.credential_specification import CredentialSpecificationConfig
+from pyeudiw.satosa.schemas.credential_specification import (
+    CredentialSpecificationConfig,
+)
 from pyeudiw.satosa.schemas.status_list import StatusListConfig
 
 

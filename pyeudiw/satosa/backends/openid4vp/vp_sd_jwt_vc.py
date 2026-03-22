@@ -1,9 +1,12 @@
+from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.jwt.helper import is_jwt_expired
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
-from pyeudiw.satosa.backends.openid4vp.exceptions import MissingIssuer, VPRevoked, VPExpired
-from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
-from pyeudiw.sd_jwt.schema import VerifierChallenge
-from pyeudiw.sd_jwt.schema import is_sd_jwt_kb_format
+from pyeudiw.satosa.backends.openid4vp.exceptions import (
+    MissingIssuer,
+    VPExpired,
+    VPRevoked,
+)
+from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_kb_format
 from pyeudiw.sd_jwt.sd_jwt import SdJwt
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
@@ -11,7 +14,12 @@ from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 class VpVcSdJwtParserVerifier(BaseVPParser):
 
-    def __init__(self, trust_evaluator: CombinedTrustEvaluator, sig_alg_supported: list[str] = [], **kwargs) -> None:
+    def __init__(
+        self,
+        trust_evaluator: CombinedTrustEvaluator,
+        sig_alg_supported: list[str] = [],
+        **kwargs,
+    ) -> None:
         """
         Initialize the VpVcSdJwtParserVerifier with the trust evaluator.
 
@@ -71,7 +79,9 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
         if "trust_chain" in header:
             static_trust_materials["trust_chain"] = header["trust_chain"]
 
-        public_keys = self.trust_evaluator.get_public_keys(self._get_issuer_name(sdjwt), static_trust_materials)
+        public_keys = self.trust_evaluator.get_public_keys(
+            self._get_issuer_name(sdjwt), static_trust_materials
+        )
 
         sdjwt.verify_issuer_jwt_signature(public_keys)
 
@@ -88,5 +98,8 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
 
         if "status" in payload and "status_list" in payload["status"]:
             status_list = StatusListTokenHelper.from_status(payload["status"])
-            if status_list.is_expired() or status_list.get_status(payload["status"]["status_list"]["idx"]) > 0:
+            if (
+                status_list.is_expired()
+                or status_list.get_status(payload["status"]["status_list"]["idx"]) > 0
+            ):
                 raise VPRevoked("Status list indicates that the token is revoked")

@@ -1,12 +1,28 @@
 from typing import Optional
-from pyeudiw.tools.utils import iat_now
+
+from pyeudiw.status_list import (
+    decode_cwt_status_list_token,
+    decode_jwt_status_list_token,
+)
+from pyeudiw.status_list.exceptions import (
+    InvalidTokenFormatError,
+    MissingStatusListUriError,
+    PositionOutOfRangeError,
+    StatusListRetrievalError,
+)
 from pyeudiw.tools.http import http_get_sync
-from pyeudiw.status_list import decode_jwt_status_list_token, decode_cwt_status_list_token
-from pyeudiw.status_list.exceptions import PositionOutOfRangeError, InvalidTokenFormatError, MissingStatusListUriError, StatusListRetrievalError
+from pyeudiw.tools.utils import iat_now
 
 
 class StatusListTokenHelper:
-    def __init__(self, header: dict, payload: dict, bits: int, status_list: bytes, aggregation_uri: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        header: dict,
+        payload: dict,
+        bits: int,
+        status_list: bytes,
+        aggregation_uri: Optional[str] = None,
+    ) -> None:
         """
         Initializes the StatusListTokenHelper instance.
 
@@ -142,7 +158,9 @@ class StatusListTokenHelper:
         raise InvalidTokenFormatError(f"Token is not a valid JWT or CWT {token}")
 
     @staticmethod
-    def from_status(status: dict, httpc_params: Optional[dict] = None) -> "StatusListTokenHelper":
+    def from_status(
+        status: dict, httpc_params: Optional[dict] = None
+    ) -> "StatusListTokenHelper":
         """
         Create a StatusListTokenHelper instance from a status dictionary.
         :param status: The status dictionary.

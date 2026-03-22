@@ -1,6 +1,5 @@
 import abc
 import time
-
 from functools import cached_property
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
@@ -20,14 +19,11 @@ class BaseJwsIssuer(abc.ABC):
         self._payload = dict()
         self._lifetime = self._DEFAULT_LIFETIME
 
+    @abc.abstractmethod
+    def _get_jwt_header(self) -> dict: ...
 
     @abc.abstractmethod
-    def _get_jwt_header(self) -> dict:
-        ...
-
-    @abc.abstractmethod
-    def _get_jwt_payload(self) ->  dict:
-        ...
+    def _get_jwt_payload(self) -> dict: ...
 
     @cached_property
     def _private_key(self) -> dict:
@@ -57,7 +53,7 @@ class BaseJwsIssuer(abc.ABC):
         default_claims["exp"] = iat + int(self._lifetime)
         return default_claims
 
-    def generate_jws(self, include_iat=True, lifetime: int=None) -> str|None:
+    def generate_jws(self, include_iat=True, lifetime: int = None) -> str | None:
         if lifetime is not None:
             self._lifetime = lifetime
 
@@ -65,7 +61,8 @@ class BaseJwsIssuer(abc.ABC):
         payload = self._get_jwt_payload()
 
         if not include_iat:
-            if "iat" in payload: del payload["iat"]
+            if "iat" in payload:
+                del payload["iat"]
 
         jws_helper = JWSHelper([self._private_key])
         return jws_helper.sign(plain_dict=payload, protected=header)
@@ -79,7 +76,7 @@ class BaseJwsIssuer(abc.ABC):
             return "RS256"
 
         if kty == "EC":
-            _crv = jwk_key.get("crv")
+            jwk_key.get("crv")
             return ec_mapping.get(jwk_key.get("crv"))
         return None
 

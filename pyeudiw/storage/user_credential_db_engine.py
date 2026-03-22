@@ -35,7 +35,10 @@ class UserCredentialEngine:
             self._db_user_engine.is_connected
         except Exception as e:
             if getattr(self, "_db_engine", None):
-                self._log_error(e.__class__.__name__, f"db user_storage handling, connection check silently fails and get restored: {e}")
+                self._log_error(
+                    e.__class__.__name__,
+                    f"db user_storage handling, connection check silently fails and get restored: {e}",
+                )
             self._db_user_engine = DBEngine(user_storage_config)
 
         return self._db_user_engine
@@ -57,7 +60,10 @@ class UserCredentialEngine:
             self._db_credential_engine.is_connected
         except Exception as e:
             if getattr(self, "_db_engine", None):
-                self._log_error(e.__class__.__name__, f"db credential_storage handling, connection check silently fails and get restored: {e}")
+                self._log_error(
+                    e.__class__.__name__,
+                    f"db credential_storage handling, connection check silently fails and get restored: {e}",
+                )
             self._db_credential_engine = DBEngine(credential_storage_config)
 
         return self._db_user_engine

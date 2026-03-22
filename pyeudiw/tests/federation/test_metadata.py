@@ -235,7 +235,9 @@ RES = {
         "default": ["openid", "eduperson"],
     },
     "id_token_signed_response_alg": {"one_of": ["ES256", "ES384"], "default": "ES256"},
-    "contacts": {"add": ["helpdesk@federation.example.org", "helpdesk@org.example.org"]},
+    "contacts": {
+        "add": ["helpdesk@federation.example.org", "helpdesk@org.example.org"]
+    },
     "application_type": {"value": "web"},
 }
 

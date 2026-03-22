@@ -1,13 +1,21 @@
-from pyeudiw.wallet_instance_attestations.issuers.base import BaseJwsIssuer
-from pyeudiw.wallet_instance_attestations.models.attestations import WalletUnitAttestationHeader, \
-    WalletUnitAttestationPayload
+from pyeudiw.wallet_attestations.issuers.base import BaseJwsIssuer
+from pyeudiw.wallet_attestations.models.attestations import (
+    WalletUnitAttestationHeader,
+    WalletUnitAttestationPayload,
+)
 
 
 class WuaJswIssuer(BaseJwsIssuer):
 
     _JWT_TYPE = "key-attestation+jwt"
 
-    def __init__(self, issuer_id: str, provider_priv_key: dict, instance_pub_key: dict, x5c: list[str]):
+    def __init__(
+        self,
+        issuer_id: str,
+        provider_priv_key: dict,
+        instance_pub_key: dict,
+        x5c: list[str],
+    ):
         super().__init__(issuer_id, provider_priv_key)
         self._instance_pubkey = instance_pub_key
         self._x5c = x5c
@@ -44,11 +52,12 @@ class WuaJswIssuer(BaseJwsIssuer):
         claims["status"] = self._status
         claims["certification"] = self._certification
         WalletUnitAttestationPayload.model_validate(claims)
-        return claims # todo use model_dump
+        return claims  # todo use model_dump
 
     def _get_jwt_header(self) -> dict:
         claims = self._get_default_header_claims()
         claims["x5c"] = self._x5c
-        if self._trust_chain is not None: claims["trust_chain"] = self._trust_chain
+        if self._trust_chain is not None:
+            claims["trust_chain"] = self._trust_chain
         WalletUnitAttestationHeader.model_validate(claims)
         return claims  # todo use model_dump

@@ -3,7 +3,9 @@ from typing import List, Optional
 from pydantic import BaseModel
 from satosa.response import Created
 
-from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import AuthorizationDetail
+from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
+    AuthorizationDetail,
+)
 from pyeudiw.tools.content_type import APPLICATION_JSON
 
 
@@ -19,7 +21,12 @@ class TokenResponse(BaseModel):
     authorization_details: Optional[List[AuthorizationDetail]] = None
 
     @staticmethod
-    def to_created_response(access_token: str, refresh_token: str, expires_in: int, authorization_details: List[AuthorizationDetail]) -> Created:
+    def to_created_response(
+        access_token: str,
+        refresh_token: str,
+        expires_in: int,
+        authorization_details: List[AuthorizationDetail],
+    ) -> Created:
         """
         Converts the token response to a `Created` HTTP response object.
 
@@ -32,7 +39,11 @@ class TokenResponse(BaseModel):
             refresh_token=refresh_token,
             token_type="DPOP",  # nosec B106
             expires_in=expires_in,
-            authorization_details=None if not authorization_details and len(authorization_details) == 0 else authorization_details,
+            authorization_details=(
+                None
+                if not authorization_details and len(authorization_details) == 0
+                else authorization_details
+            ),
         )
         return Created(
             message=data.model_dump_json(),

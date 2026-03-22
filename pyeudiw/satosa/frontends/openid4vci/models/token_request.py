@@ -5,7 +5,9 @@ from typing import Optional
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    OpenId4VciBaseModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,49 +69,76 @@ class TokenRequest(OpenId4VciBaseModel):
             par_scope_ctx = self.get_ctx(SCOPE_CTX)
             par_scopes = par_scope_ctx.split(" ") if par_scope_ctx is not None else None
             for s in scopes:
-                if s not in self.get_config().metadata.oauth_authorization_server.scopes_supported:
+                if (
+                    s
+                    not in self.get_config().metadata.oauth_authorization_server.scopes_supported
+                ):
                     logger.error(f"invalid scope value '{s}' in `token` endpoint")
                     raise InvalidRequestException(f"invalid scope value '{s}'")
                 elif par_scopes and (s not in par_scopes):
-                    logger.error(f"invalid scope in `token` endpoint: value '{s}' not present in previous `par` endpoint")
+                    logger.error(
+                        f"invalid scope in `token` endpoint: value '{s}' not present in previous `par` endpoint"
+                    )
                     raise InvalidRequestException(f"invalid scope value '{s}'")
 
     def validate_refresh_token(self, is_authorization_code_grant):
         self.refresh_token = self.strip(self.refresh_token)
         if is_authorization_code_grant:
-            self.check_unexpected_parameter(self.refresh_token, "refresh_token", TOKEN_ENDPOINT)
+            self.check_unexpected_parameter(
+                self.refresh_token, "refresh_token", TOKEN_ENDPOINT
+            )
         else:
-            self.check_missing_parameter(self.refresh_token, "refresh_token", TOKEN_ENDPOINT)
+            self.check_missing_parameter(
+                self.refresh_token, "refresh_token", TOKEN_ENDPOINT
+            )
 
     def validate_code_verifier(self, is_authorization_code_grant):
         self.code_verifier = self.strip(self.code_verifier)
         if is_authorization_code_grant:
-            self.check_missing_parameter(self.code_verifier, "code_verifier", TOKEN_ENDPOINT)
+            self.check_missing_parameter(
+                self.code_verifier, "code_verifier", TOKEN_ENDPOINT
+            )
 
             match self.get_ctx(CODE_CHALLENGE_METHOD_CTX).upper():
                 case "S256":
-                    code_verifier_encode = sha256(self.code_verifier.encode("utf-8")).hexdigest()
+                    code_verifier_encode = sha256(
+                        self.code_verifier.encode("utf-8")
+                    ).hexdigest()
                 case "S512":
-                    code_verifier_encode = sha512(self.code_verifier.encode("utf-8")).hexdigest()
+                    code_verifier_encode = sha512(
+                        self.code_verifier.encode("utf-8")
+                    ).hexdigest()
                 case _:
-                    logger.error(f"unexpected code_challenge_method {self.get_ctx(CODE_CHALLENGE_METHOD_CTX)} for code_verifier in token request")
+                    logger.error(
+                        f"unexpected code_challenge_method {self.get_ctx(CODE_CHALLENGE_METHOD_CTX)} for code_verifier in token request"
+                    )
                     raise InvalidRequestException("Invalid `code_verifier`")
 
             if code_verifier_encode != self.get_ctx(CODE_CHALLENGE_CTX):
-                logger.error(f"Invalid `code_verifier` {code_verifier_encode} in token request with authorization_code as `grant_type`")
+                logger.error(
+                    f"Invalid `code_verifier` {code_verifier_encode} in token request with authorization_code as `grant_type`"
+                )
                 raise InvalidRequestException("Invalid `code_verifier`")
         else:
-            self.check_unexpected_parameter(self.code_verifier, "code_verifier", TOKEN_ENDPOINT)
+            self.check_unexpected_parameter(
+                self.code_verifier, "code_verifier", TOKEN_ENDPOINT
+            )
 
     def validate_redirect_uri(self, is_authorization_code_grant):
         self.redirect_uri = self.strip(self.redirect_uri)
         if is_authorization_code_grant:
-            self.check_missing_parameter(self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT)
+            self.check_missing_parameter(
+                self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT
+            )
             if self.get_ctx(REDIRECT_URI_CTX) != self.redirect_uri:
-                logger.error("Invalid `redirect_uri` in token request with authorization_code as `grant_type`")
+                logger.error(
+                    "Invalid `redirect_uri` in token request with authorization_code as `grant_type`"
+                )
                 raise InvalidRequestException("Invalid `redirect_uri`")
         else:
-            self.check_unexpected_parameter(self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT)
+            self.check_unexpected_parameter(
+                self.redirect_uri, "redirect_uri", TOKEN_ENDPOINT
+            )
 
     def validate_grant_type(self):
         self.grant_type = self.strip(self.grant_type)

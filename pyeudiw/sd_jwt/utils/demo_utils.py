@@ -1,6 +1,7 @@
 import logging
 import random
 import sys
+
 import yaml
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
@@ -20,7 +21,9 @@ def load_yaml_settings(file):
         if "issuer_keys" in settings["key_settings"]:
             sys.exit("Settings file cannot define both 'issuer_key' and 'issuer_keys'.")
 
-        settings["key_settings"]["issuer_keys"] = [settings["key_settings"]["issuer_key"]]
+        settings["key_settings"]["issuer_keys"] = [
+            settings["key_settings"]["issuer_key"]
+        ]
 
     return settings
 
