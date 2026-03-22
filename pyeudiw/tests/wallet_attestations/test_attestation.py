@@ -8,14 +8,14 @@ from pyeudiw.wallet_attestations import (
 
 WALLET_INSTANCE_ATTESTATION = {
     "header": {
-        "alg": "RS256",
+        "alg": "ES256",
         "kid": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
         "trust_chain": [
             "eyJhbGciOiJFUz...6S0A",
             "eyJhbGciOiJFUz...jJLA",
             "eyJhbGciOiJFUz...H9gw",
         ],
-        "typ": "wallet-attestation+jwt",
+        "typ": "oauth-client-attestation+jwt",  # OAUTH-ATTESTATION-CLIENT-AUTH (draft-ietf-oauth-attestation-based-client-auth)
         "x5c": ["MIIBjDCC ... XFehgKQA=="],
     },
     "payload": {
@@ -28,34 +28,22 @@ WALLET_INSTANCE_ATTESTATION = {
         "aal": "https://wallet-provider.example.org/LoA/basic",
         "cnf": {
             "jwk": {
-                "alg": "RS256",
-                "kty": "RSA",
+                "alg": "ES256",
+                "kty": "EC",
+                "crv": "P-256",
                 "use": "sig",
-                "x5c": [
-                    "MIIC+DCCAeCgAwIBAgIJBIGjYW6hFpn2MA0GCSqGSIb3DQEBBQUAMCMxITAfBgNVBAMTGGN1c3RvbWVyLWRlbW9zLmF1dGgwLmNvbTAeFw0xNjExMjIyMjIyMDVaFw0zMDA4MD"
-                    "EyMjIyMDVaMCMxITAfBgNVBAMTGGN1c3RvbWVyLWRlbW9zLmF1dGgwLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMnjZc5bm/eGIHq09N9HKHahM7Y31P0u"
-                    "l+A2wwP4lSpIwFrWHzxw88/7Dwk9QMc+orGXX95R6av4GF+Es/nG3uK45ooMVMa/hYCh0Mtx3gnSuoTavQEkLzCvSwTqVwzZ+5noukWVqJuMKNwjL77GNcPLY7Xy2/skMCT5bR"
-                    "8UoWaufooQvYq6SyPcRAU4BtdquZRiBT4U5f+4pwNTxSvey7ki50yc1tG49Per/0zA4O6Tlpv8x7Red6m1bCNHt7+Z5nSl3RX/QYyAEUX1a28VcYmR41Osy+o2OUCXYdUAphDa"
-                    "Ho4/8rbKTJhlu8jEcc1KoMXAKjgaVZtG/v5ltx6AXY0CAwEAAaMvMC0wDAYDVR0TBAUwAwEB/zAdBgNVHQ4EFgQUQxFG602h1cG+pnyvJoy9pGJJoCswDQYJKoZIhvcNAQEFBQ"
-                    "ADggEBAGvtCbzGNBUJPLICth3mLsX0Z4z8T8iu4tyoiuAshP/Ry/ZBnFnXmhD8vwgMZ2lTgUWwlrvlgN+fAtYKnwFO2G3BOCFw96Nm8So9sjTda9CCZ3dhoH57F/hVMBB0K6xh"
-                    "klAc0b5ZxUpCIN92v/w+xZoz1XQBHe8ZbRHaP1HpRM4M7DJk2G5cgUCyu3UBvYS41sHvzrxQ3z7vIePRA4WF4bEkfX12gvny0RsPkrbVMXX1Rj9t6V7QXrbPYBAO+43JvDGYaw"
-                    "xYVvLhz+BJ45x50GFQmHszfY3BR9TPK8xmMmQwtIvLu1PMttNCs7niCYkSiUv2sc2mlq1i3IashGkkgmo="
-                ],
-                "n": "yeNlzlub94YgerT030codqEztjfU_S6X4DbDA_iVKkjAWtYfPHDzz_sPCT1Axz6isZdf3lHpq_gYX4Sz-cbe4rjmigxUxr-FgKHQy3HeCdK6hNq9ASQvMK9LBOpXDNn7mei6R"
-                "ZWom4wo3CMvvsY1w8tjtfLb-yQwJPltHxShZq5-ihC9irpLI9xEBTgG12q5lGIFPhTl_7inA1PFK97LuSLnTJzW0bj096v_TMDg7pOWm_zHtF53qbVsI0e3v5nmdKXdFf9BjIARRfV"
-                "rbxVxiZHjU6zL6jY5QJdh1QCmENoejj_ytspMmGW7yMRxzUqgxcAqOBpVm0b-_mW3HoBdjQ",
-                "e": "AQAB",
+                "x": "VcKVNBZ4IaBAYW3jxM4w3TJFVA7myeUGQyGt-g_yvpQ",
+                "y": "f-E-hYE3TAWKwhVv9pej9NABs9SX9XsNO80x57jFTyU",
                 "kid": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
-                "x5t": "NjVBRjY5MDlCMUIwNzU4RTA2QzZFMDQ4QzQ2MDAyQjVDNjk1RTM2Qg",
             }
         },
         "authorization_endpoint": "haip:",
         "response_types_supported": ["vp_token"],
         "vp_formats_supported": {
-            "jwt_vp_json": {"alg_values_supported": ["RS256"]},
-            "jwt_vc_json": {"alg_values_supported": ["RS256"]},
+            "jwt_vp_json": {"alg_values_supported": ["ES256"]},
+            "jwt_vc_json": {"alg_values_supported": ["ES256"]},
         },
-        "request_object_signing_alg_values_supported": ["RS256"],
+        "request_object_signing_alg_values_supported": ["ES256"],
         "iat": 1687281195,
         "exp": 1687288395,
     },
@@ -64,7 +52,7 @@ WALLET_INSTANCE_ATTESTATION = {
 
 def test_header():
     WalletInstanceAttestationHeader(**WALLET_INSTANCE_ATTESTATION["header"])
-    # alg is RS256
+    # alg is ES256 (per eIDAS/IT-Wallet spec, OAUTH-ATTESTATION-CLIENT-AUTH)
     # it should fail if alg is not in supported_algorithms
     with pytest.raises(ValidationError):
         WalletInstanceAttestationHeader.model_validate(
@@ -83,7 +71,7 @@ def test_header():
 
     WalletInstanceAttestationHeader.model_validate(
         WALLET_INSTANCE_ATTESTATION["header"],
-        context={"supported_algorithms": ["RS256"]},
+        context={"supported_algorithms": ["ES256"]},
     )
 
     # x5c and trust_chain are not required
