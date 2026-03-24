@@ -37,6 +37,7 @@ class MetadataHandler(VCIBaseEndpoint):
         )
         super().__init__(config, internal_attributes, base_url, name)
         self.metadata_jwks = config.get("metadata_jwks", [])
+        self.federation_jwks = self.federation_config.get("federation_jwks", [])
 
     def _ensure_credential_issuer(
         self, metadata: dict, metadata_key: str, issuer_key: str
@@ -71,7 +72,7 @@ class MetadataHandler(VCIBaseEndpoint):
     def pub_federation_jwks(self) -> dict:
         return [
             JWK(_k).as_public_dict()
-            for _k in self.federation_config.get("federation_jwks")
+            for _k in self.federation_jwks
         ]
 
     @property
@@ -102,14 +103,14 @@ class MetadataHandler(VCIBaseEndpoint):
 
         data = self.entity_configuration_as_dict
         _jwk = self.metadata_jwks[0]
-        jwshelper = JWSHelper(_jwk)
+        jwshelper = JWSHelper(self.federation_jwks)
         return jwshelper.sign(
             protected={
                 "alg": self.federation_config.get("default_sig_alg"),
-                "kid": _jwk["kid"],
                 "typ": "entity-statement+jwt",
             },
             plain_dict=data,
+            kid_in_header=True
         )
 
     def endpoint(self, context: Context) -> Response:
