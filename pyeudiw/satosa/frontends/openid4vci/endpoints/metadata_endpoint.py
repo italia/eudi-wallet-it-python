@@ -66,6 +66,10 @@ class MetadataHandler(VCIBaseEndpoint):
                 cred_issuer["jwks"] = {
                     "keys": [JWK(k).as_public_dict() for k in cred_issuer["jwks"]]
                 }
+
+            for k in cred_issuer: #automatically add <base_url>/<name> if only path was specified in config
+                if "endpoint" in k and isinstance(cred_issuer[k], str) and "http" not in cred_issuer[k]:
+                    cred_issuer[k] = self._backend_url + cred_issuer[k]
         return metadata
 
     @property
