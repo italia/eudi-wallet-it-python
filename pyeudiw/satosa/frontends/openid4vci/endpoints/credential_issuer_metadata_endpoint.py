@@ -43,6 +43,9 @@ class CredentialIssuerMetadataHandler(VCIBaseEndpoint):
         """Returns the entity configuration as a dictionary."""
 
         ec_payload = self.metadata.get("openid_credential_issuer", {})
+        for k in ec_payload: #automatically add <base_url>/<name> if only path was specified in config
+            if "endpoint" in k and "http" not in ec_payload[k]:
+                ec_payload[k] = self._backend_url + ec_payload[k]
         return ec_payload
 
     def endpoint(self, context: Context) -> JsonResponse:
