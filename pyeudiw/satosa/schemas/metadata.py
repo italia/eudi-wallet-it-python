@@ -10,6 +10,8 @@ class OauthAuthorizationServerMetadata(BaseModel):
     code_challenge_methods_supported: Optional[List[str]] = None
     scopes_supported: Optional[List[str]] = None
     dpop_signing_alg_values_supported: Optional[List[str]] = None
+    client_attestation_pop_signing_alg_values_supported: Optional[List[str]] = None
+    client_attestation_signing_alg_values_supported: Optional[List[str]] = None
 
 
 class CredentialConfigurationFormatEnum(Enum):

@@ -2,11 +2,13 @@ import logging
 from typing import Optional
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
-from satosa.context import Context
 
-from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.federation.trust_chain_builder import TrustChainBuilder
+from pyeudiw.wallet_attestations import WalletInstanceAttestationHeader, WalletInstanceAttestationPayload
+
+from pyeudiw.jwt.exceptions import JWSVerificationError, JWTInvalidElementPosition, JWTDecodeError
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.jwt.utils import decode_jwt_payload
+from pyeudiw.jwt.utils import decode_jwt_payload, decode_jwt_header
 from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.tools.content_type import (
     APPLICATION_JSON,
@@ -15,8 +17,10 @@ from pyeudiw.tools.content_type import (
     is_form_urlencoded,
 )
 
+#todo move constants
 OAUTH_CLIENT_ATTESTATION_POP_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION_POP"
 OAUTH_CLIENT_ATTESTATION_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION"
+DPOP_HEADER = "HTTP_DPOP"
 
 logger = logging.getLogger(__name__)
 
@@ -60,98 +64,161 @@ def validate_request_method(request_method: str, accepted_methods: list[str]):
         raise InvalidRequestException("invalid request method")
 
 
-def _validate_client_attestation(
-    header_attestation: str, signing_alg_values_supported: list[str] | None
-) -> Optional[dict]:
-    if header_attestation:
-        payload = decode_jwt_payload(header_attestation)
-        cnf = payload["cnf"]
-        jws_helper = JWSHelper(cnf)
-
-        if (
-            signing_alg_values_supported
-            and jws_helper.jwks[0].alg not in signing_alg_values_supported
-        ):
-            raise InvalidRequestException(
-                f"Unsupported JWS algorithm: {jws_helper.jwks[0].alg}. Supported algorithms: {signing_alg_values_supported}"
-            )
-
-        jws_helper.verify(header_attestation)
-
-        return {"thumbprint": str(key_from_jwk_dict(cnf).thumbprint("SHA-256"))}
-    return None
-
-
-# Public alias for OpenID4VCI OAuth client attestation only (not used by OpenID4VP/DCQL)
-validate_client_attestation = _validate_client_attestation
-
-
-def validate_oauth_client_attestation_pop(
-    context: Context, dpop_signing_alg_values_supported: list[str] | None = None
-) -> None:
+def validate_jws(jws: str, sign_jwks: dict|list[dict], supported_sign_algs: list[str]|None = None) -> bool:
     """
-    Validates the presence of the OAuth-Client-Attestation-PoP header in the request.
-    Args:
-        :param context: (Context) The SATOSA context containing the HTTP request.
-        :param dpop_signing_alg_values_supported: as list of accepted DPoP signing algorithms.
-            May be empty.
-    Raises:
-        InvalidRequestException: If the OAuth-Client-Attestation-PoP header is missing.
-    """
-    header_pop = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
-
-    if not header_pop:
-        logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header")
-        raise InvalidRequestException("Missing OAuth-Client-Attestation-PoP header")
-
-    if dpop_signing_alg_values_supported:
-        try:
-            validate_client_attestation(header_pop, dpop_signing_alg_values_supported)
-        except Exception as e:
-            logger.error(
-                f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
-                f"during {OAUTH_CLIENT_ATTESTATION_POP_HEADER} header validation: {e}"
-            )
-            raise InvalidRequestException("Invalid Wallet Attestation JWT header")
-
-
-def validate_oauth_client_attestation(
-    context: Context, pop_signing_alg_values_supported: list[str] | None
-) -> Optional[dict]:
-    """
-    Validates the presence and correctness of OAuth-Client-Attestation headers in the request.
-
-    This function checks that the `OAuth-Client-Attestation` and
-    `OAuth-Client-Attestation-PoP` headers are present in the incoming HTTP request
-    and verifies their cryptographic validity according to the
-    Attestation-based Client Authentication specification. It also validates
-    the DPoP proof using the provided list of supported signing algorithms.
+    Validates JWS signature and algorithm against a whitelist.
 
     Args:
-        :param context: (Context) The SATOSA context containing the HTTP request.
-        :param pop_signing_alg_values_supported: (list[str]): A list of accepted DPoP signing algorithms.
-            May be empty if DPoP is not required.
+        jws: JWS in compact serialization.
+        sign_jwks: Public JWKs for verification. If the list contains multiple values the choice of the key will be according to the logic of the class JWSHelper
+        supported_sign_algs: List of allowed signing algorithms.
 
     Returns:
-        Optional[dict]: A dictionary containing client attestation information if verification succeeds;
-        None if attestation is not required and not present.
+        boolean True if is valid or False otherwise.
+    """
+    try:
+        if not jws or not sign_jwks:
+            logger.error("Input parameter jws or sign_jwk is empty")
+            return False
+
+        supported_sign_algs = [] if supported_sign_algs is None else supported_sign_algs
+
+        jws_helper = JWSHelper(sign_jwks)
+        header = decode_jwt_header(jws)
+        signing_alg = header.get("alg")
+        if not supported_sign_algs:
+            logger.warning("No supported signing algorithms whitelist provided")
+        elif signing_alg not in supported_sign_algs:
+            logger.error("Unsupported JWS signing algorithm")
+        else:
+            jws_helper.verify(jws)
+            return True
+
+    except (JWTInvalidElementPosition, JWTDecodeError) as e:
+        logger.error("Cannot decode JWS, error: %s".format(e))
+    except JWSVerificationError as e:
+        logger.error("An error occurring while try to verify JWS: %s".format(e))
+    except Exception as e:
+        logger.error("An error occurred: %s".format(e))
+    return False
+
+
+def validate_subject_trust_chain(subject_url: str, authority_hints: list, httpc_params: dict) -> dict|None:
+    """
+    Validate subject trust chain and return it entity configuration
+
+    Args:
+        subject_url (str): url of federation subject.
+        authority_hints (list): List of supported authority hints.
+        httpc_params (dict): httpc params.
+
+    Returns: issuer entity configuration or None
+    """
+
+    if not authority_hints or not subject_url:
+        logger.error("Input parameter subject or authority_hints is empty")
+        return None
+
+    for _authority in authority_hints:
+        _builder = TrustChainBuilder(subject_url, _authority, httpc_params)
+        _builder.start()
+        if _builder.is_valid:
+            logger.info("Trust chain as been validated")
+            return _builder.subject_configuration.payload
+    logger.error("Invalid Trust Chain")
+    return None
+
+def validate_oauth_client_attestation_pop(client_attestation_pop: str,
+                                          cnf_jwk: dict, signing_alg_values_supported: list[str] | None = None) -> dict:
+    """
+    Decodes and validates OAuth-Client-Attestation-PoP.
+
+    Args:
+        client_attestation_pop (str): JWS string.
+        authority_hints (list): List of supported authority hints.
+        httpc_params (dict): HTTP parameters.JWK
+        cnf_jwk: signing public key as jwk.
+        signing_alg_values_supported (list): List of supported signing algorithm values.
+
+    Returns:
+        dict: OAuth-Client-Attestation-PoP as decoded JWT payload.
+
+    Raises: InvalidRequestException: If validation fails.
+
+    References:
+        - OAuth 2.0 Attestation-Based Client Authentication: https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/07/
+    """
+
+    if not client_attestation_pop:
+        logger.error(f"Invalid OAuth-Client-Attestation-PoP")
+        raise InvalidRequestException("JWS validation failed: invalid OAuth-Client-Attestation-PoP")
+
+    try: #decode and validate header & payload of attestation
+        attestation_jwt_header = decode_jwt_header(client_attestation_pop)
+        attestation_jwt_payload = decode_jwt_payload(client_attestation_pop)
+        #todo define and validate with basemodel
+    except Exception as exc:
+        logger.error("Invalid OAuth-Client-Attestation-PoP: %s", exc)
+        raise InvalidRequestException("JWT validation failed: OAuth-Client-Attestation-PoP invalid structure") from exc
+
+    if not validate_jws(client_attestation_pop, cnf_jwk, signing_alg_values_supported):
+        raise InvalidRequestException("JWS verification failed: invalid OAuth-Client-Attestation-PoP")
+
+    # references: - Page 8 (Version 07) of OAuth 2.0 Attestation-Based Client Authentication in docstring
+    if attestation_jwt_payload.get("iss") != key_from_jwk_dict(cnf_jwk).thumbprint("SHA-256").decode(): #thumbprint is equivalent to sub claim in Client Attestation JWT.
+        raise InvalidRequestException("OAuth-Client-Attestation-PoP verification failed: invalid iss value")
+    return attestation_jwt_payload
+
+
+def validate_oauth_client_attestation(client_attestation: str, authority_hints: list, httpc_params: dict,
+                                      signing_alg_values_supported: list[str] | None = None) -> Optional[dict]:
+    """
+    Decodes and validates OAuth-Client-Attestation.
+
+    Args:
+        client_attestation (str): JWS string.
+        authority_hints (list): List of supported authority hints.
+        httpc_params (dict): HTTP parameters.
+        signing_alg_values_supported (list): List of supported signing algorithm values.
+
+    Returns:
+        dict: Client attestation as decoded JWT payload.
 
     Raises:
-        InvalidRequestException: If any required header is missing, malformed, or fails verification.
+        InvalidRequestException: If validation fails.
+
+    References:
+        - IT-WALLET v1.3.3 IT specifications: https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/wallet-attestation-issuance.html#wallet-app-and-wallet-unit-attestation-issuance
+        - OAuth 2.0 Attestation-Based Client Authentication: https://datatracker.ietf.org/doc/draft-ietf-oauth-attestation-based-client-auth/07/
     """
-    header_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
+    if not client_attestation:
+        logger.error(f"Invalid OAuth-Client-Attestation")
+        raise InvalidRequestException("JWS validation failed: invalid OAuth-Client-Attestation")
+    print("client_attestation: ", client_attestation)
+    try: #decode and validate header & payload of attestation
+        attestation_jwt_header = decode_jwt_header(client_attestation)
+        attestation_jwt_payload = decode_jwt_payload(client_attestation)
+        WalletInstanceAttestationHeader.model_validate(attestation_jwt_header)
+        WalletInstanceAttestationPayload.model_validate(attestation_jwt_payload)
+    except Exception as exc:
+        logger.error("Invalid OAuth-Client-Attestation: %s", exc)
+        raise InvalidRequestException("JWT validation failed: OAuth-Client-Attestation-PoP invalid structure") from exc
 
-    if not header_attestation:
-        logger.error(f"Missing {OAUTH_CLIENT_ATTESTATION_HEADER} header")
-        raise InvalidRequestException("Missing Wallet Attestation JWT header")
+    if not (iss_ec_payload := validate_subject_trust_chain(attestation_jwt_payload["iss"], authority_hints, httpc_params)):
+        raise InvalidRequestException("Invalid Trust Chain: Cannot verify issuer for OAuth-Client-Attestation")
 
-    try:
-        return validate_client_attestation(
-            header_attestation, pop_signing_alg_values_supported
-        )
-    except Exception as e:
-        logger.error(
-            f"{'JWS verification failed' if isinstance(e, JWSVerificationError) else 'Unexpected error'} "
-            f"during {OAUTH_CLIENT_ATTESTATION_HEADER} header validation: {e}"
-        )
-        raise InvalidRequestException("Invalid Wallet Attestation JWT header")
+    def extract_core_jwks() -> list[dict]: #todo generalize
+        return iss_ec_payload.get("metadata", {}).get("wallet_provider", {}).get("jwks", {}).get("keys", [])
+
+    sign_core_jwks = extract_core_jwks()
+
+    #validate OAuth-Client-Attestation
+    if not validate_jws(client_attestation, sign_core_jwks, signing_alg_values_supported):
+        raise InvalidRequestException("JWS OAuth-Client-Attestation validation failed")
+
+    #reference IT-WALLET v1.3.3 IT specifications
+    cnf_key = attestation_jwt_payload.get("cnf", {}).get("jwk", {})
+    if attestation_jwt_payload.get("sub") != key_from_jwk_dict(cnf_key).thumbprint("SHA-256").decode():
+        raise InvalidRequestException("JWS OAuth-Client-Attestation validation failed: invalid sub")
+
+    return attestation_jwt_payload

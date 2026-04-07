@@ -17,7 +17,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     CLIENT_ID_CTX,
-    ENDPOINT_CTX,
+    ENDPOINT_CTX, CONFIG_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
@@ -111,9 +111,11 @@ class AuthorizationHandler(VCIBaseEndpoint):
                 raise InvalidRequestException(
                     f"request_uri `{req_uri}` not found in storage"
                 )
-
-            vci_entity = OpenId4VCIEntity(**entity)
-
+            vci_entity = OpenId4VCIEntity.model_validate(entity,
+                                                         context={
+                                                             ENDPOINT_CTX: AUTHORIZATION_ENDPOINT,
+                                                             CONFIG_CTX: self.config_utils.config
+                                                         })
             old_session_id = vci_entity.session_id
 
             vci_entity.session_id = get_session_id(context)

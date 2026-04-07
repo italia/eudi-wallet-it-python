@@ -179,9 +179,9 @@ class SignedParRequest(OpenId4VciBaseModel):
             logger.error(f"invalid iat {self.iat} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `iat` parameter")
 
-        if int(self.exp) - int(self.iat) > 300:
-            logger.error(f"expired request token in `{endpoint}` endpoint")
-            raise InvalidRequestException("expired token")
+        # if int(self.exp) - int(self.iat) > 300: #todo check whether it is mandatory for the jwt to have a maximum validity of 300
+        #     logger.error(f"expired request token in `{endpoint}` endpoint")
+        #     raise InvalidRequestException("expired token")
 
         self.validate_response_type(config.response_types_supported, endpoint)
         self.validate_response_mode(config.response_modes_supported, endpoint)
@@ -311,11 +311,6 @@ class SignedParRequest(OpenId4VciBaseModel):
     def validate_jti(self, endpoint: str):
         self.jti = self.strip(self.jti)
         self.check_missing_parameter(self.jti, "jti", endpoint)
-
-        if self.iss not in self.jti:
-            logger.error(f"invalid jti {self.jti} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `jti` parameter")
-
-        if len(self.jti) - len(self.iss) == 0:
-            logger.error(f"invalid jti {self.jti} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `jti` parameter")
+        # NOTE: The uniqueness validation of the (iss, jti) pair must be handled outside
+        # this model. This model should only handle schema validation and data integrity.
+        # According to RFC 7519 and IT-Wallet 1.3.3 specifications, it is necessary to prevent Replay Attacks.

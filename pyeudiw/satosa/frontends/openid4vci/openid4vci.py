@@ -5,6 +5,7 @@ The OpenID4vci (Credential Issuer) frontend module for the satosa proxy
 import logging
 from typing import Callable
 
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import ENDPOINT_CTX, CONFIG_CTX
 from satosa.context import Context
 from satosa.frontends.base import FrontendModule
 from satosa.internal import InternalData
@@ -26,6 +27,7 @@ class OpenID4VCIFrontend(FrontendModule):
     """
     OpenID Connect frontend module based on satosa.
     """
+    _CTX = "OpenID4VCI_frontend" #todo It is only used for logging trace, maybe it can be removed
 
     def __init__(
         self,
@@ -88,8 +90,10 @@ class OpenID4VCIFrontend(FrontendModule):
                 raise InvalidRequestException(
                     f"Session with ID {session_id} not found in storage"
                 )
-
-            vci_entity = OpenId4VCIEntity(**entity)
+            vci_entity = OpenId4VCIEntity.model_validate(entity, context={
+                                                                            ENDPOINT_CTX: self._CTX,
+                                                                            CONFIG_CTX: self.config
+                                                                        })
             vci_entity.attributes = internal_resp.attributes
 
             self.db_engine.upsert_session(
@@ -100,7 +104,7 @@ class OpenID4VCIFrontend(FrontendModule):
                 state=vci_entity.state,
                 iss=self.config.get("metadata", {})
                 .get("openid_credential_issuer", {})
-                .get("credential_issuer", ""),
+                .get("credential_issuer") or f"{self.base_url}/{self.name}"
             ).to_redirect_response(vci_entity.redirect_uri)
         except InvalidRequestException as e:
             logger.error(f"Invalid request: {e}")
