@@ -21,6 +21,7 @@ from pyeudiw.tools.content_type import (
 OAUTH_CLIENT_ATTESTATION_POP_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION_POP"
 OAUTH_CLIENT_ATTESTATION_HEADER = "HTTP_OAUTH_CLIENT_ATTESTATION"
 DPOP_HEADER = "HTTP_DPOP"
+METADATA_TYPE_WALLET_PROVIDER = "wallet_solution"
 
 logger = logging.getLogger(__name__)
 
@@ -204,13 +205,11 @@ def validate_oauth_client_attestation(client_attestation: str, authority_hints: 
         logger.error("Invalid OAuth-Client-Attestation: %s", exc)
         raise InvalidRequestException("JWT validation failed: OAuth-Client-Attestation-PoP invalid structure") from exc
 
-    if not (iss_ec_payload := validate_subject_trust_chain(attestation_jwt_payload["iss"], authority_hints, httpc_params)):
+    if not (iss_ec_jwt := validate_subject_trust_chain(attestation_jwt_payload["iss"], authority_hints, httpc_params)):
         raise InvalidRequestException("Invalid Trust Chain: Cannot verify issuer for OAuth-Client-Attestation")
 
-    def extract_core_jwks() -> list[dict]: #todo generalize
-        return iss_ec_payload.get("metadata", {}).get("wallet_provider", {}).get("jwks", {}).get("keys", [])
-
-    sign_core_jwks = extract_core_jwks()
+    wallet_provider_metadata = iss_ec_jwt.get("metadata", {}).get(METADATA_TYPE_WALLET_PROVIDER, {})
+    sign_core_jwks = wallet_provider_metadata.get("jwks", {}).get("keys", [])
 
     #validate OAuth-Client-Attestation
     if not validate_jws(client_attestation, sign_core_jwks, signing_alg_values_supported):
