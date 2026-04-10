@@ -23,7 +23,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.par_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.models.par_response import ParResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
@@ -251,7 +251,7 @@ class ParHandler(VCIBaseEndpoint):
             Exception: If the DB operation fails.
         """
 
-        entity = OpenId4VCIEntity.new_entity(
+        entity = AuthorizationSession.new_entity(
             context,
             request_uri_part,
             par_request,

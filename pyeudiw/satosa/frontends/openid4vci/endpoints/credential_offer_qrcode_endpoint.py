@@ -12,7 +12,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import 
 )
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.satosa.utils.session import get_session_id
@@ -89,7 +89,7 @@ class CredentialOfferQrCodeHandler(VCIBaseEndpoint):
                 context, "error during invoke credential_offer endpoint", e
             )
 
-    def to_qr_code_response(self, entity: OpenId4VCIEntity) -> Response:
+    def to_qr_code_response(self, entity: AuthorizationSession) -> Response:
         result = self.qrcode_template.qrcode_page.render(
             {
                 "qrcode_color": self.qrcode_settings["color"],

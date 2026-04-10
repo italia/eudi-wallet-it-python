@@ -15,11 +15,12 @@ from pyeudiw.satosa.frontends.openid4vci.models.par_request import (
 )
 
 
-class OpenId4VCIEntity(BaseModel):
+class AuthorizationSession(BaseModel):
     document_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     creation_date: float = Field(
         default_factory=lambda: datetime.now(tz=timezone.utc).timestamp()
     )
+    auth_code: Optional[str] = None
     state: str
     client_id: str
     code_challenge: str
@@ -30,7 +31,6 @@ class OpenId4VCIEntity(BaseModel):
     redirect_uri: str
     authorization_details: Optional[List[AuthorizationDetail]] = None
     scope: Optional[str] = None
-    c_nonce: Optional[str] = None
     finalized: bool = False
     attributes: Optional[dict] = None
 
@@ -40,11 +40,11 @@ class OpenId4VCIEntity(BaseModel):
         request_uri_part: str,
         par_request: ParRequest | SignedParRequest,
         force_same_device_flow_referer_criteria: Optional[List[str]] = None,
-    ) -> "OpenId4VCIEntity":
+    ) -> "AuthorizationSession":
         if not context.state:
             raise ValueError("Invalid context state")
 
-        return OpenId4VCIEntity(
+        return AuthorizationSession(
             request_uri_part=request_uri_part,
             state=par_request.state,
             session_id=context.state["SESSION_ID"],

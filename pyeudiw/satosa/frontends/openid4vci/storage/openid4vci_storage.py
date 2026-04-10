@@ -1,6 +1,6 @@
 from pymongo.results import UpdateResult
 
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.storage.mongo_storage import MongoStorage
 
 # TODO: This class is never used. The code inside must be integrated and standardized in the DBEngine class and the MongoStorage class.
@@ -19,7 +19,7 @@ class OpenId4VciStorage(MongoStorage):
             connection_params = {}
         super().__init__(conf, url, connection_params)
 
-    def init_session(self, entity: OpenId4VCIEntity) -> str:
+    def init_session(self, entity: AuthorizationSession) -> str:
         """
         Store a new session entity in the MongoDB collection.
 
@@ -31,7 +31,7 @@ class OpenId4VciStorage(MongoStorage):
         )
         return entity.document_id
 
-    def get_by_session_id(self, session_id: str = "") -> OpenId4VCIEntity:
+    def get_by_session_id(self, session_id: str = "") -> AuthorizationSession:
         """
         Retrieve a session entity by its session ID.
 
@@ -40,7 +40,7 @@ class OpenId4VciStorage(MongoStorage):
         :raises: ValueError if the session is not found or cannot be parsed.
         """
         docs = super().get_by_session_id(session_id)
-        return OpenId4VCIEntity(**docs)
+        return AuthorizationSession(**docs)
 
     def update_nonce_by_session_id(self, session_id: str, c_nonce: str) -> UpdateResult:
         """

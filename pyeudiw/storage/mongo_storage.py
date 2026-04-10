@@ -350,12 +350,30 @@ class MongoStorage(BaseStorage):
 
         return entity
 
-    def upsert_session(self, session_id: str, data: dict) -> tuple[str, dict]:
-        return self._upsert_entry(
-            "session_id",
-            self.storage_conf["db_sessions_collection"],
-            {"session_id": session_id, **data},
-        )
+    def upsert_session(self, session_id: str, data: dict) -> bool | None:
+        try:
+            db_collection = getattr(self, self.storage_conf["db_sessions_collection"])
+            result = db_collection.update_one({"session_id": session_id}, {"$set": data}, upsert=True)
+
+            if not result.acknowledged:
+                print("Operation not acknowledged by the database.")
+                return False
+
+            elif result.upserted_id is not None:
+                print(f"Upsert successful: New document created with ID {result.upserted_id}.")
+                return True
+
+            if result.modified_count > 0:
+                print("Update successful: Existing document has been modified.")
+                return True
+
+            if result.matched_count > 0:
+                print("No changes required: Existing document already matches the update data.")
+                return True
+
+            return False
+        except Exception as e:
+            raise StorageEntryUpdateFailed("Database operation failed: an error occurring while upsert session") from e
 
     def search_session_by_field(self, field: str, value: str) -> dict:
         self._connect()

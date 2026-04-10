@@ -30,7 +30,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     PROOF_JWT_REQUIRED_CTX,
     OpenId4VciBaseModel,
 )
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     MissingProofJWTException,
 )
@@ -160,7 +160,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         return c_req
 
     def to_response(
-        self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None
+        self, context: Context, entity: AuthorizationSession, credential_id: str | None
     ) -> Response:
         """
         Generate a response containing the issued credential.
@@ -171,7 +171,7 @@ class CredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context.
-            entity (OpenId4VCIEntity): The entity containing stateful session data.
+            entity (AuthorizationSession): The entity containing stateful session data.
 
         Returns:
             Response: A SATOSA HTTP response with the issued credential.

@@ -16,7 +16,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import (
     AuthorizationResponse,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 
@@ -90,22 +90,24 @@ class OpenID4VCIFrontend(FrontendModule):
                 raise InvalidRequestException(
                     f"Session with ID {session_id} not found in storage"
                 )
-            vci_entity = OpenId4VCIEntity.model_validate(entity, context={
+
+            auth_session = AuthorizationSession.model_validate(entity, context={
                                                                             ENDPOINT_CTX: self._CTX,
                                                                             CONFIG_CTX: self.config
                                                                         })
-            vci_entity.attributes = internal_resp.attributes
-
-            self.db_engine.upsert_session(
-                vci_entity.session_id, vci_entity.model_dump()
-            )
-
-            return AuthorizationResponse(
-                state=vci_entity.state,
+            auth_session.attributes = internal_resp.attributes
+            response = AuthorizationResponse(
+                state=auth_session.state,
                 iss=self.config.get("metadata", {})
                 .get("openid_credential_issuer", {})
                 .get("credential_issuer") or f"{self.base_url}/{self.name}"
-            ).to_redirect_response(vci_entity.redirect_uri)
+            )
+
+            auth_session.auth_code = response.code
+            auth_session.finalized = True
+            self.db_engine.upsert_session(auth_session.session_id, auth_session.model_dump())
+            return response.to_redirect_response(auth_session.redirect_uri)
+
         except InvalidRequestException as e:
             logger.error(f"Invalid request: {e}")
             return Response(status="400", message=str(e))

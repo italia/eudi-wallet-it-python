@@ -13,7 +13,7 @@ from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
     POST_ACCEPTED_METHODS,
     VCIBaseEndpoint,
 )
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, ENDPOINT_CTX
 from pyeudiw.satosa.frontends.openid4vci.models.token import AccessToken, RefreshToken
 from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
     CODE_CHALLENGE_CTX,
@@ -24,15 +24,14 @@ from pyeudiw.satosa.frontends.openid4vci.models.token_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.models.token_response import TokenResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
-from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     OAUTH_CLIENT_ATTESTATION_POP_HEADER,
     validate_content_type,
     validate_oauth_client_attestation,
     validate_oauth_client_attestation_pop,
-    validate_request_method,
+    validate_request_method, OAUTH_CLIENT_ATTESTATION_HEADER, DPOP_HEADER
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 from pyeudiw.tools.utils import iat_now
@@ -44,6 +43,8 @@ class TokenTypsEnum(Enum):
 
 
 class TokenHandler(VCIBaseEndpoint):
+
+    _ENDPOINT_NAME = "token"
 
     def __init__(
         self,
@@ -66,6 +67,7 @@ class TokenHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
+        self.federation_config = self.config.get("trust", {}).get("federation", {}).get("config", {})
 
     def endpoint(self, context: Context):
         """
@@ -86,10 +88,18 @@ class TokenHandler(VCIBaseEndpoint):
 
             if self.wallet_attestation_required:
                 try:
-                    validate_oauth_client_attestation_pop(context)
-                    validate_oauth_client_attestation(
-                        context, self.dpop_signing_alg_values_supported
-                    )
+
+                    header_client_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
+                    oauth_client_attestation = validate_oauth_client_attestation(header_client_attestation,
+                                                                          self.federation_config.get("authority_hints"),
+                                                                          self.federation_config.get("httpc_params"),
+                                                                          self.client_attestation_signing_alg_values_supported)
+
+                    cnf_key = oauth_client_attestation.get("cnf", {}).get("jwk", {})
+                    pop_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
+                    oauth_client_attestation_pop = validate_oauth_client_attestation_pop(pop_attestation,
+                                                          cnf_key,
+                                                          self.client_attestation_pop_signing_alg_values_supported)
                 except InvalidRequestException as e:
                     self._log_error(
                         e.__class__.__name__,
@@ -99,10 +109,9 @@ class TokenHandler(VCIBaseEndpoint):
 
             dpop_verifier = None
             if self.dpop_required:
-                if not context.http_headers or ("DPoP" not in context.http_headers):
+                dpop = context.http_headers.get(DPOP_HEADER)
+                if not context.http_headers or not dpop:
                     raise InvalidRequestException("Missing DPoP header")
-
-                dpop = context.http_headers.get("DPoP")
 
                 try:
                     dpop_verifier = DPoPVerifier(http_header_dpop=dpop)
@@ -115,22 +124,29 @@ class TokenHandler(VCIBaseEndpoint):
                     )
                     return self._handle_400(context, str(e), e)
 
-            oauth_client_attestation = self._get_oauth_client_attestation(
-                context, self.wallet_attestation_required
-            )
-            if oauth_client_attestation:
-                self.jws_helper.verify(oauth_client_attestation)
+            data = self._get_body(context)
+            if data.get("grant_type") != "authorization_code": #refresh token unsupported
+                raise InvalidRequestException("Unsupported grant_type: %f".format(data.get("grant_type")))
 
-            entity = self.db_engine.get_by_session_id(get_session_id(context))
 
+            entity = self.db_engine.search_session_by_field("auth_code", data.get("code"))
             if not entity:
-                raise InvalidRequestException("session not found")
+                raise InvalidRequestException("session by auth code not found")
 
-            vci_entity = OpenId4VCIEntity(**entity)
+            vci_entity = AuthorizationSession.model_validate(entity, context={
+                                                                            ENDPOINT_CTX: self._ENDPOINT_NAME,
+                                                                            CONFIG_CTX: self.config
+                                                                        })
+            if self.wallet_attestation_required:
+                attestation_client_id = oauth_client_attestation.get("sub")
+                if not attestation_client_id or attestation_client_id != vci_entity.client_id:
+                    raise InvalidRequestException("attestation client_id mismatch")
+
 
             TokenRequest.model_validate(
-                self._get_body(context),
+                data,
                 context={
+                    ENDPOINT_CTX: self._ENDPOINT_NAME,
                     CONFIG_CTX: self.config,
                     REDIRECT_URI_CTX: vci_entity.redirect_uri,
                     CODE_CHALLENGE_METHOD_CTX: vci_entity.code_challenge_method,
@@ -142,16 +158,12 @@ class TokenHandler(VCIBaseEndpoint):
             authorization_details = vci_entity.authorization_details
             if authorization_details or len(authorization_details) > 0:
                 for ad in authorization_details:
-                    ad.credential_identifiers = (
-                        self.config_utils.get_credential_configurations_supported(
-                            ad.credential_configuration_id
-                        ).scope
-                    )
+                    ad.credential_identifiers = [] #todo fix it
 
             cnf = self._build_dpop_cnf(dpop_verifier) if dpop_verifier else {}
             return TokenResponse.to_created_response(
-                self._to_token(iat, entity, TokenTypsEnum.ACCESS_TOKEN_TYP, cnf),
-                self._to_token(iat, entity, TokenTypsEnum.REFRESH_TOKEN_TYP, cnf),
+                self._to_token(iat, vci_entity, TokenTypsEnum.ACCESS_TOKEN_TYP, cnf),
+                self._to_token(iat, vci_entity, TokenTypsEnum.REFRESH_TOKEN_TYP, cnf),
                 iat + self.config_utils.get_jwt().access_token_exp,
                 authorization_details,
             )
@@ -163,7 +175,7 @@ class TokenHandler(VCIBaseEndpoint):
             TypeError,
         ) as e:
             return self._handle_400(
-                context, self._handle_validate_request_error(e, "token"), e
+                context, self._handle_validate_request_error(e, self._ENDPOINT_NAME), e
             )
         except Exception as e:
             self._log_error(
@@ -179,11 +191,14 @@ class TokenHandler(VCIBaseEndpoint):
         return {"jkt": jkt}
 
     def _to_token(
-        self, iat: int, entity: OpenId4VCIEntity, typ: TokenTypsEnum, cnf: dict = None
+        self, iat: int, entity: AuthorizationSession, typ: TokenTypsEnum, cnf: dict = None
     ) -> str:
 
         if isinstance(entity, dict):
-            entity = OpenId4VCIEntity(**entity)
+            entity = AuthorizationSession.model_validate(entity, context={
+                                                                    ENDPOINT_CTX: self._ENDPOINT_NAME,
+                                                                    CONFIG_CTX: self.config
+                                                                 })
         cnf = cnf or {}
 
         match typ:

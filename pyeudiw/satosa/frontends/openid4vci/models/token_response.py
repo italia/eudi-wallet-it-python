@@ -37,7 +37,7 @@ class TokenResponse(BaseModel):
         data = TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            token_type="DPOP",  # nosec B106
+            token_type="DPoP",
             expires_in=expires_in,
             authorization_details=(
                 None

@@ -1,3 +1,4 @@
+import base64
 import logging
 from hashlib import sha256, sha512
 from typing import Optional
@@ -101,22 +102,23 @@ class TokenRequest(OpenId4VciBaseModel):
 
             match self.get_ctx(CODE_CHALLENGE_METHOD_CTX).upper():
                 case "S256":
-                    code_verifier_encode = sha256(
+                    _hash = sha256(
                         self.code_verifier.encode("utf-8")
-                    ).hexdigest()
+                    ).digest()
                 case "S512":
-                    code_verifier_encode = sha512(
+                    _hash = sha512(
                         self.code_verifier.encode("utf-8")
-                    ).hexdigest()
+                    ).digest()
                 case _:
                     logger.error(
                         f"unexpected code_challenge_method {self.get_ctx(CODE_CHALLENGE_METHOD_CTX)} for code_verifier in token request"
                     )
                     raise InvalidRequestException("Invalid `code_verifier`")
 
-            if code_verifier_encode != self.get_ctx(CODE_CHALLENGE_CTX):
+            challenge_by_verifier = base64.urlsafe_b64encode(_hash).decode("utf-8").rstrip("=")
+            if challenge_by_verifier != self.get_ctx(CODE_CHALLENGE_CTX):
                 logger.error(
-                    f"Invalid `code_verifier` {code_verifier_encode} in token request with authorization_code as `grant_type`"
+                    f"Invalid `code_verifier` {challenge_by_verifier} in token request with authorization_code as `grant_type`"
                 )
                 raise InvalidRequestException("Invalid `code_verifier`")
         else:
