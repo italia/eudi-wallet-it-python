@@ -25,7 +25,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import (
     InvalidScopeException,
     MissingProofJWTException,
@@ -166,7 +166,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     @abstractmethod
     def to_response(
-        self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None
+        self, context: Context, entity: AuthorizationSession, credential_id: str | None
     ) -> Response:
         pass
 
@@ -182,7 +182,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             )
             return credential_list
 
-        vci_entity = OpenId4VCIEntity(**entity)
+        vci_entity = AuthorizationSession(**entity)
 
         user = self._db_user_engine.get_by_fields(
             self._extract_lookup_identifiers(vci_entity.attributes or {})
@@ -196,7 +196,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def _build_credential(
         self,
-        opendid4vci_entity: OpenId4VCIEntity,
+        opendid4vci_entity: AuthorizationSession,
         user_entity: tuple[str, UserEntity],
         cred_key: str,
     ) -> str:
@@ -246,7 +246,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         return mdoci.dumps().decode()
 
     def _issue_sd_jwt(
-        self, user_entity: tuple[str, UserEntity], entity: OpenId4VCIEntity, template
+        self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template
     ) -> dict:
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
