@@ -14,9 +14,9 @@ QR code settings are configured in the SATOSA backend/frontend YAML under `confi
 ```yaml
 qrcode:
   size: 250              # Size in pixels
-  color: "#000000"       # Hex color for QR modules
+  color: "#0072CE"       # Hex color for QR modules
   expiration_time: 120   # Seconds until expiration
-  logo_path: "wallet-it/wallet-icon-blue.svg"  # Logo in center (relative to static_storage_url)
+  logo_path: "it-wallet/wallet-icon-blue.svg"  # Logo in center (relative to static_storage_url)
   ui:
     static_storage_url: "https://localhost/static"
     template_folder: "templates"
