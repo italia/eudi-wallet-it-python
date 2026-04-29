@@ -33,6 +33,9 @@ class AuthorizationSession(BaseModel):
     scope: Optional[str] = None
     finalized: bool = False
     attributes: Optional[dict] = None
+    access_token_jti: Optional[str] = None
+    refresh_token_jti: Optional[str] = None # todo: manage refresh tokens
+    dpop_jkt: Optional[str] = None
 
     @staticmethod
     def new_entity(

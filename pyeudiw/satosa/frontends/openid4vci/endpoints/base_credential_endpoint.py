@@ -1,13 +1,17 @@
 import datetime
 import json
+import time
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any
 from uuid import uuid4
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from jinja2 import Template
 from pydantic import ValidationError
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
+
+from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from satosa.context import Context
 from satosa.response import Response
 
@@ -18,11 +22,8 @@ from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
     POST_ACCEPTED_METHODS,
     VCIBaseEndpoint,
 )
-from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import (
-    CredentialEndpointRequest,
-)
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
-    OpenId4VciBaseModel,
+    OpenId4VciBaseModel, ENDPOINT_CTX, CONFIG_CTX,
 )
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
@@ -37,10 +38,9 @@ from pyeudiw.satosa.schemas.metadata import (
     CredentialConfiguration,
     CredentialConfigurationFormatEnum,
 )
-from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
-    validate_request_method,
+    validate_request_method, DPOP_HEADER, AUTHORIZATION_HEADER,
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import (
@@ -62,6 +62,8 @@ FIELD_TRANSFORMS = {
 
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
+
+    _ENDPOINT_NAME = "credential"
 
     def __init__(
         self,
@@ -111,15 +113,17 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if self.dpop_required:
                 if (
                     not context.http_headers
-                    or ("DPoP" not in context.http_headers)
-                    or ("Authorization" not in context.http_headers)
+                    or (DPOP_HEADER not in context.http_headers)
+                    or (AUTHORIZATION_HEADER not in context.http_headers)
                 ):
                     raise InvalidRequestException(
                         "Missing DPoP and/or Authorization header"
                     )
 
-                dpop = context.http_headers.get("DPoP")
-                authz = context.http_headers.get("Authorization")
+                dpop = context.http_headers.get(DPOP_HEADER)
+                authz = context.http_headers.get(AUTHORIZATION_HEADER)
+                if not dpop or not authz:
+                    raise InvalidRequestException("Invalid headers")
 
                 try:
                     dpop_verifier = DPoPVerifier(
@@ -134,14 +138,54 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                     )
                     return self._handle_400(context, str(e), e)
 
-            entity = self.db_engine.get_by_session_id(get_session_id(context))
-            req = self.validate_request(context, entity)
-            credential_id = None
-            if isinstance(req, CredentialEndpointRequest):
-                credential_id = (
-                    req.credential_identifier or req.credential_configuration_id
-                )
-            return self.to_response(context, entity, credential_id)
+            auth_token = decode_jwt_payload(dpop_verifier.dpop_authz_token)
+            entity = self.db_engine.search_session_by_field("access_token_jti", auth_token.get("jti"))
+            auth_session = AuthorizationSession.model_validate(entity, context={
+                ENDPOINT_CTX: self._ENDPOINT_NAME,
+                CONFIG_CTX: self.config
+            })
+
+            data = self._get_body(context) or {}
+            credential_identifier = data.get("credential_identifier") or ""
+            # TODO: check/validate scope
+            if data.get("credential_configuration_id"):
+                credential_configuration_id = data
+            else:  # validate credential_identifier with authorization_details of token
+                if auth_session.authorization_details:
+                    for auth_details in auth_session.authorization_details:
+                        if auth_details.credential_identifiers:
+                            if credential_identifier in auth_details.credential_identifiers:
+                                credential_configuration_id = "_".join(credential_identifier.split("_")[:-1])
+                                break
+                    else:
+                        raise InvalidRequestException(
+                            "credential_identifier not match with token authorization_details")
+                else:
+                    raise InvalidRequestException("Invalid credential_configuration_id")
+
+            self.validate_request(context, entity)
+
+            proof_jwt = data.get("proof", {}).get("jwt") or ""
+            request_header = decode_jwt_header(proof_jwt)
+            request_payload = decode_jwt_payload(proof_jwt)
+            client_id = request_payload.get("iss")
+
+            #validate nonce
+            self._consume_nonce(request_payload.get("nonce"))
+
+            #validate client --> todo: move to self.validate_request
+            if not (key_attestation := request_header.get("key_attestation")):
+                return self._handle_400(context, "invalid key_attestation", InvalidRequestException("invalid_proof"))
+
+            k_payload = decode_jwt_payload(key_attestation)
+            for _k in k_payload.get("attested_keys") or []:
+                t_print = key_from_jwk_dict(_k).thumbprint("SHA-256").decode()
+                if t_print == client_id:
+                    break
+            else:
+                return self._handle_400(context, "client_id mismatch", InvalidRequestException("invalid_proof"))
+
+            return self.to_response(context, auth_session, credential_configuration_id)
 
         except (
             InvalidRequestException,
@@ -160,6 +204,17 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 context, "error during invoke credential endpoint", e
             )
 
+    def _consume_nonce(self, nonce):
+        if not (found_nonce := self.db_engine.get("get_nonce", nonce)):
+            raise InvalidRequestException("Invalid nonce")
+
+        now = round(time.time() * 1000)
+        if found_nonce["created_at"] + found_nonce["expires_in"] <= now:
+            raise InvalidRequestException("Expired nonce")
+
+        if self.db_engine.write("consume_nonce", nonce, now) < 1:
+            raise Exception("Unable to consume nonce, storage error")
+
     @abstractmethod
     def validate_request(self, context: Context, entity: dict) -> OpenId4VciBaseModel:
         pass
@@ -171,20 +226,16 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         pass
 
     def build_credential(
-        self, context: Context, credential_id: str | None
+        self, vci_entity: AuthorizationSession, credential_id: str | None
     ) -> list[str]:
         credential_list = []
-        entity = self.db_engine.get_by_session_id(get_session_id(context))
-
-        if not entity:
+        if not vci_entity:
             self._log_error(
                 self.__class__.__name__, "No entity found for the current session."
             )
             return credential_list
 
-        vci_entity = AuthorizationSession(**entity)
-
-        user = self._db_user_engine.get_by_fields(
+        user = self._db_user_engine.get("get_by_fields",
             self._extract_lookup_identifiers(vci_entity.attributes or {})
         )
         if credential_id:
@@ -315,11 +366,11 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 )
 
     def _build_status_list_payload(self, user_id: str):
-        credential = self._db_credential_engine.get_credential_by_user_id(user_id)
+        # credential = self._db_credential_engine.get("get_credential_by_user_id", user_id) # todo: store credential
         return {
             "status_list": {
-                "idx": credential.incremental_id,
-                "uri": f"{self.status_endpoint}/{credential.incremental_id}",
+                "idx": "credential.incremental_id",
+                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
             }
         }
 

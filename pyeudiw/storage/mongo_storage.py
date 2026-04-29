@@ -410,6 +410,31 @@ class MongoStorage(BaseStorage):
 
         return entity_id
 
+    def insert_nonce(self, nonce: str, created_at: int, expires_in: int):
+        self._connect()
+        entity = {"nonce": nonce, "created_at": created_at, "expires_in": expires_in, "used_at": None}
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.insert_one(entity)
+
+    def get_nonce(self, nonce: str):
+        """Returns a non-consumed nonce"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        try:
+            entity = _db.find_one({"nonce": nonce, "used_at": None})
+        except:
+            return None
+        return entity
+
+    def consume_nonce(self, nonce: str, ts):
+        """Set used_at timestamp"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.update_one(
+            {"nonce": nonce},
+            {"$set": {"used_at": ts}}
+        )
+
     def add_trust_source(self, trust_source: dict) -> str:
         return self._upsert_entry(
             "entity_id", self.storage_conf["db_trust_sources_collection"], trust_source

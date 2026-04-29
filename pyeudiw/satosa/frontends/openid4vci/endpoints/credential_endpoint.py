@@ -146,21 +146,22 @@ class CredentialHandler(BaseCredentialEndpoint):
         if not c_req.proof or not c_req.proof.jwt:
             return c_req
 
-        proof_jws_helper = JWSHelper(self.config["metadata_jwks"])
+        proof_header = decode_jwt_header(c_req.proof.jwt)
+        proof_jws_helper = JWSHelper(proof_header.get("jwk"))
         proof_payload = proof_jws_helper.verify(c_req.proof.jwt)
-        _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator)
+
+        # _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator) #todo check it
         ProofJWT.model_validate(
-            proof_payload,
+            (proof_payload | proof_header), #todo split header and payload for Proof model
             context={
                 CLIENT_ID_CTX: entity["client_id"],
-                ENTITY_ID_CTX: self.entity_id,
-                NONCE_CTX: entity["c_nonce"],
+                ENTITY_ID_CTX: self.entity_id
             },
         )
         return c_req
 
     def to_response(
-        self, context: Context, entity: AuthorizationSession, credential_id: str | None
+        self, context: Context, auth_session: AuthorizationSession, credential_id: str | None
     ) -> Response:
         """
         Generate a response containing the issued credential.
@@ -171,7 +172,7 @@ class CredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context.
-            entity (AuthorizationSession): The entity containing stateful session data.
+            auth_session (AuthorizationSession): session data.
 
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
@@ -180,6 +181,6 @@ class CredentialHandler(BaseCredentialEndpoint):
         return CredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)
-                for cred in self.build_credential(context, credential_id)
+                for cred in self.build_credential(auth_session, credential_id)
             ]
         )

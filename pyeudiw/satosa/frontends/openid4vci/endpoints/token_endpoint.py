@@ -1,4 +1,5 @@
 import base64
+import secrets
 from enum import Enum
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
@@ -156,14 +157,32 @@ class TokenHandler(VCIBaseEndpoint):
             )
             iat = iat_now()
             authorization_details = vci_entity.authorization_details
+
             if authorization_details or len(authorization_details) > 0:
                 for ad in authorization_details:
-                    ad.credential_identifiers = [] #todo fix it
+                    if ad.credential_identifiers is None:
+                        ad.credential_identifiers = []
+
+                    # TODO: review dataset credential identifier
+                    dataset_cred_id = secrets.token_hex(16) #authentic source dataset identifier
+                    cred_type = ad.credential_configuration_id + "_" + dataset_cred_id
+                    ad.credential_identifiers.append(cred_type)
 
             cnf = self._build_dpop_cnf(dpop_verifier) if dpop_verifier else {}
+
+            access_token = self._to_token(iat, vci_entity, TokenTypsEnum.ACCESS_TOKEN_TYP, cnf)
+            refresh_token = self._to_token(iat, vci_entity, TokenTypsEnum.REFRESH_TOKEN_TYP, cnf)
+
+            vci_entity.access_token_jti = access_token.jti
+            vci_entity.refresh_token_jti = refresh_token.jti
+            vci_entity.dpop_jkt = cnf.get("jkt")
+
+            self.db_engine.upsert_session(vci_entity.session_id, vci_entity.model_dump())
+
+
             return TokenResponse.to_created_response(
-                self._to_token(iat, vci_entity, TokenTypsEnum.ACCESS_TOKEN_TYP, cnf),
-                self._to_token(iat, vci_entity, TokenTypsEnum.REFRESH_TOKEN_TYP, cnf),
+                self._sign_token(access_token, TokenTypsEnum.ACCESS_TOKEN_TYP.value),
+                self._sign_token(refresh_token, TokenTypsEnum.REFRESH_TOKEN_TYP.value),
                 iat + self.config_utils.get_jwt().access_token_exp,
                 authorization_details,
             )
@@ -192,7 +211,7 @@ class TokenHandler(VCIBaseEndpoint):
 
     def _to_token(
         self, iat: int, entity: AuthorizationSession, typ: TokenTypsEnum, cnf: dict = None
-    ) -> str:
+    ) -> AccessToken:
 
         if isinstance(entity, dict):
             entity = AuthorizationSession.model_validate(entity, context={
@@ -223,8 +242,7 @@ class TokenHandler(VCIBaseEndpoint):
         )
         if typ == TokenTypsEnum.REFRESH_TOKEN_TYP:
             token = RefreshToken(**token.model_dump())
-
-        return self._sign_token(token, typ.value)
+        return token
 
     def _sign_token(self, token: BaseModel, typ: str) -> str:
         jws_headers = {

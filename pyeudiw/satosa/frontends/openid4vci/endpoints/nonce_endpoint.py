@@ -1,3 +1,4 @@
+import time
 from uuid import uuid4
 
 from satosa.context import Context
@@ -21,6 +22,8 @@ from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
 class NonceHandler(VCIBaseEndpoint):
 
+    _DEFAULT_DURATION = 300
+
     def __init__(
         self,
         config: dict,
@@ -43,6 +46,7 @@ class NonceHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
+        self.expired_sec = self.config.get("nonce_duration") or self._DEFAULT_DURATION
 
     def endpoint(self, context: Context) -> Response:
         """
@@ -64,8 +68,11 @@ class NonceHandler(VCIBaseEndpoint):
                     context, "Request body must be empty for nonce endpoint"
                 )
             c_nonce = str(uuid4())
-            #todo cipher text + cache
+            ts = round(time.time() * 1000)
+            if self.db_engine.write("insert_nonce", nonce=c_nonce, created_at=ts, expires_in=self.expired_sec) < 1:
+                return self._handle_500(context, "error during nonce generating", Exception("Nonce error"))
             return NonceResponse.to_response(c_nonce)
+
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:

@@ -45,7 +45,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         )
 
     def to_response(
-        self, context: Context, entity: AuthorizationSession, credential_id: str | None
+        self, context: Context, auth_session: AuthorizationSession, credential_id: str | None
     ) -> Response:
         """
         Generate a response containing the issued credential.
@@ -56,7 +56,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context.
-            entity (AuthorizationSession): The entity containing stateful session data.
+            auth_session (AuthorizationSession): The entity containing stateful session data.
 
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
@@ -65,6 +65,6 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         return DeferredCredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)
-                for cred in self.build_credential(context, credential_id)
+                for cred in self.build_credential(auth_session, credential_id)
             ]
         )
