@@ -1,6 +1,9 @@
 import datetime
 import json
 import time
+import logging
+import inspect
+from pyeudiw.storage.exceptions import EntryNotFound
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any
@@ -55,15 +58,21 @@ from pyeudiw.tools.mso_mdoc import (
 )
 from pyeudiw.tools.utils import exp_from_now, iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.storage.parse import parse_credential_entity
+
 
 FIELD_TRANSFORMS = {
     "portrait": {"if_type": "bytes", "transform": "base64", "output": "portrait_b64"}
 }
 
+logger = logging.getLogger(__name__)
 
 class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     _ENDPOINT_NAME = "credential"
+
+    # @TODO get from Env? Talking with Giuseppe about it, as it is currently used only for testing purposes, to identify the credential in the status list and manage revocation in a simple way
+    _PID_CREDENTIAL_ID = "dc_sd_jwt_pid"
 
     def __init__(
         self,
@@ -82,7 +91,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             base_url (str): The base URL of the service.
             name (str): The name of the SATOSA module to append to the URL.
         """
-
         super().__init__(config, internal_attributes, base_url, name)
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
@@ -92,9 +100,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
         _user_credential_engine = UserCredentialEngine(config)
         self._db_user_engine = _user_credential_engine.db_user_storage_engine
-        self._db_credential_engine = (
-            _user_credential_engine.db_credential_storage_engine
-        )
+        self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
         self._trust_evaluator = CombinedTrustEvaluator.from_config(
             self.config.get("trust", {}),
             self.db_engine,
@@ -228,6 +234,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def build_credential(
         self, vci_entity: AuthorizationSession, credential_id: str | None
     ) -> list[str]:
+        print(f"Params [credential_id {credential_id}, vci_entity {vci_entity}]")
         credential_list = []
         if not vci_entity:
             self._log_error(
@@ -251,6 +258,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         user_entity: tuple[str, UserEntity],
         cred_key: str,
     ) -> str:
+        print(f"Params [user_entity {user_entity}, opendid4vci_entity {opendid4vci_entity}, cred_key {cred_key}]")
         config = self.config_utils.get_credential_configurations_supported()[cred_key]
         credential = self.specification[cred_key]
         match config.format:
@@ -299,11 +307,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def _issue_sd_jwt(
         self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template
     ) -> dict:
+        print(f"Params [user_entity {user_entity}, entity {entity}, template {template}]")
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         claims = {"iss": entity.client_id, "iat": now, "exp": exp}
-        specification = self._loader(
-            user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value
+        specification = self._loader_v1(
+            user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value, entity
         )
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
@@ -335,9 +344,14 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         user_data["unique_id"] = uuid4()
         return user_data
 
-    def _loader(
-        self, user_entity: tuple[str, UserEntity], template, credential_type: str
+    def _loader_v1(
+        self, user_entity: tuple[str, UserEntity], template, credential_type: str, auth_session: AuthorizationSession
     ) -> dict:
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_entity: {user_entity}, credential_type: {credential_type}, auth_session: {auth_session}]"
+        )
+        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}, auth_session: {auth_session}]")
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
@@ -348,6 +362,42 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 user_data = self._retrieve_user_data(user_data)
                 json_filled = template.render(**user_data)
                 data = json.loads(json_filled)
+                data["status"] = self._build_credential_for_user(user_id, credential_type, auth_session)
+                print(f"data: {data}")
+                return data
+            case CredentialConfigurationFormatEnum.MSO_MDOC.value:
+                data = render_mso_mdoc_template(
+                    template, user_data.model_dump(), FIELD_TRANSFORMS
+                )
+                data["status"] = self._build_status_list_payload(user_id)
+                return data
+            case _:
+                self._log_error(
+                    self.__class__.__name__,
+                    f"unexpected template format {credential_type}",
+                )
+                raise Exception(
+                    f"Invalid credential_configurations_supported format {credential_type}"
+                )
+
+    # @TODO DEPRECATED
+    def _loader(
+        self, user_entity: tuple[str, UserEntity], template, credential_type: str
+    ) -> dict:
+        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}]")
+        user_id, user_data = user_entity
+        match credential_type:
+            case CredentialConfigurationFormatEnum.SD_JWT.value:
+                template = json.dumps(
+                    yaml_load_specification_with_placeholder(template)
+                )
+                template = Template(template)
+                user_data = self._retrieve_user_data(user_data)
+                json_filled = template.render(**user_data)
+                data = json.loads(json_filled)
+
+                print(f"data: {data}")
+
                 data["status"] = self._build_status_list_payload(user_id)
                 return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
@@ -366,7 +416,38 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 )
 
     def _build_status_list_payload(self, user_id: str):
-        # credential = self._db_credential_engine.get("get_credential_by_user_id", user_id) # todo: store credential
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_id: {user_id}]"
+        )
+        credential = self._db_credential_engine.get("get_credential_by_user_id", user_id)
+        return {
+            "status_list": {
+                "idx": "credential.incremental_id",
+                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
+            }
+        }
+
+    def _build_credential_for_user(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
+        )
+        print(f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]")
+
+        credential = None
+        try:
+            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=self._PID_CREDENTIAL_ID)
+        except EntryNotFound as entry_not_found:
+            logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
+
+        if credential:
+            logger.debug(f"credential: {credential}")
+            self._db_credential_engine.get("revoke_credential", credential)
+            print("Credential revoked")
+
+        credential = self._db_credential_engine.get("add_credential_for_user",
+                                                    parse_credential_entity(user_id, credential_type, auth_session))
         return {
             "status_list": {
                 "idx": "credential.incremental_id",

@@ -1,5 +1,7 @@
 import pymongo
+from datetime import datetime, timezone
 
+from pyeudiw.exceptions import ValidationError
 from pyeudiw.storage.credential_entity import CredentialEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
 
@@ -42,6 +44,12 @@ class CredentialStorage(MongoStorage):
         query = {field_name: field_value}
         return self.get_by_fields(query)
 
+    def get_credential_by_fields(self, **kargs) -> CredentialEntity:
+        document = self.credentials.find_one(kargs)
+        if not document:
+            return None
+        return CredentialEntity(**document)
+
     def get_by_fields(self, query: dict) -> CredentialEntity:
         self._connect()
         document = self.credentials.find_one(query)
@@ -50,6 +58,30 @@ class CredentialStorage(MongoStorage):
             raise ValueError(f"Credential with {query} not found.")
 
         return CredentialEntity(**document)
+
+
+    def add_credential_for_user(self, credential_entity: CredentialEntity) -> CredentialEntity:
+        print(f"Entering method: add_credential_for_user. Params [credential_entity: {credential_entity}]")
+        self._connect()
+        output = self.credentials.insert_one(credential_entity.__dict__)
+        return output
+
+    def revoke_credential(self, credential_entity: CredentialEntity) -> CredentialEntity:
+        print(f"Entering method: revoke_credential. Params [credential_entity: {credential_entity}]")
+        self._connect()
+        query = {"document_id": credential_entity.document_id}
+        update = {
+            "$set": {
+                "revoked": True,
+                "revocation_date": datetime.now(
+                    tz=timezone.utc
+                ).timestamp(),
+                "update_date": datetime.now(
+                    tz=timezone.utc
+                ).timestamp(),
+            }
+        }
+        return self.credentials.update_one(query, update)
 
     def get_all_sorted_by_incremental_id(
         self, sort_direction=pymongo.ASCENDING
