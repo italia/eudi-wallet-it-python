@@ -362,7 +362,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 user_data = self._retrieve_user_data(user_data)
                 json_filled = template.render(**user_data)
                 data = json.loads(json_filled)
-                data["status"] = self._build_credential_for_user(user_id, credential_type, auth_session)
+                revoke_on_credential_reissuance = self.config["endpoints"]["credential"]["revoke_on_credential_reissuance"]
+                print(f"revoke_on_credential_reissuance: {revoke_on_credential_reissuance}")
+                if revoke_on_credential_reissuance:
+                    data["status"] = self._build_credential_for_user_with_revoke(user_id, credential_type, auth_session)
+                else:
+                    data["status"] = self._build_credential_for_user_without_revoke(user_id, credential_type, auth_session)
                 print(f"data: {data}")
                 return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
@@ -428,7 +433,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             }
         }
 
-    def _build_credential_for_user(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+    def _build_credential_for_user_with_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
@@ -447,6 +452,35 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             print("Credential revoked")
 
         credential = self._db_credential_engine.get("add_credential_for_user",
+                                                    parse_credential_entity(user_id, credential_type, auth_session))
+        return {
+            "status_list": {
+                "idx": "credential.incremental_id",
+                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
+            }
+        }
+
+    def _build_credential_for_user_without_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
+        )
+        print(f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]")
+
+        credential = None
+        try:
+            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=self._PID_CREDENTIAL_ID)
+        except EntryNotFound as entry_not_found:
+            logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
+        #@TODO Need to talking with Giuseppe for business logic without revocation, as it is currently used only for testing purposes,
+        # to identify the credential in the status list and manage revocation in a simple way.
+        # In this case, if the credential already exists and is not revoked, we can decide to not issue a new credential and return the existing one,
+        # or we can decide to issue a new credential anyway to update the status_list index and manage revocation with status list without the need to revoke the previous credential.
+        # For now, I choose the second option, but it needs to be validated with business logic.
+        if not credential:
+            logger.warning(
+                "credential is not present or revoked, but a new credential is issued anyway to update the status_list index and manage revocation with status list without the need to revoke the previous credential")
+            credential = self._db_credential_engine.get("add_credential_for_user",
                                                     parse_credential_entity(user_id, credential_type, auth_session))
         return {
             "status_list": {
