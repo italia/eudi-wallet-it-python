@@ -150,7 +150,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         proof_jws_helper = JWSHelper(proof_header.get("jwk"))
         proof_payload = proof_jws_helper.verify(c_req.proof.jwt)
 
-        # _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator) #todo check it
+        # _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator) #todo check it <--- CifiCifi
         ProofJWT.model_validate(
             (proof_payload | proof_header), #todo split header and payload for Proof model
             context={
@@ -177,7 +177,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
-
+        print(f"self.config: {self.config}")
         return CredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)

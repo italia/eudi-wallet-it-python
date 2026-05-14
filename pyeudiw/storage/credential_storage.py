@@ -1,10 +1,13 @@
 import pymongo
+import logging
 from datetime import datetime, timezone
 
 from pyeudiw.exceptions import ValidationError
 from pyeudiw.storage.credential_entity import CredentialEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
+from pyeudiw.storage.exceptions import EntryNotFound
 
+logger = logging.getLogger(__name__)
 
 class CredentialStorage(MongoStorage):
     """
@@ -59,12 +62,22 @@ class CredentialStorage(MongoStorage):
 
         return CredentialEntity(**document)
 
+    def count_credential(self) -> CredentialEntity | None:
+        print(f"Entering method: count_credential.")
+        self._connect()
+        output = self.credentials.find_one(sort=[("incremental_id", -1)])
+        return output
 
-    def add_credential_for_user(self, credential_entity: CredentialEntity) -> CredentialEntity:
+    def add_credential_for_user(self, credential_entity: CredentialEntity) -> int:
         print(f"Entering method: add_credential_for_user. Params [credential_entity: {credential_entity}]")
         self._connect()
-        output = self.credentials.insert_one(credential_entity.__dict__)
-        return output
+        max_id = self.count_credential()
+        if max_id is None:
+            credential_entity.incremental_id = 1
+        else:
+            credential_entity.incremental_id = max_id["incremental_id"] + 1
+        self.credentials.insert_one(credential_entity.__dict__)
+        return credential_entity.incremental_id
 
     def revoke_credential(self, credential_entity: CredentialEntity) -> CredentialEntity:
         print(f"Entering method: revoke_credential. Params [credential_entity: {credential_entity}]")

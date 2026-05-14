@@ -438,7 +438,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
         )
-        print(f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]")
 
         credential = None
         try:
@@ -449,14 +448,13 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         if credential:
             logger.debug(f"credential: {credential}")
             self._db_credential_engine.get("revoke_credential", credential)
-            print("Credential revoked")
 
-        credential = self._db_credential_engine.get("add_credential_for_user",
+        incremental_id = self._db_credential_engine.get("add_credential_for_user",
                                                     parse_credential_entity(user_id, credential_type, auth_session))
         return {
             "status_list": {
                 "idx": "credential.incremental_id",
-                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
+                "uri": f"{self.status_endpoint}/{incremental_id}",
             }
         }
 
@@ -465,27 +463,23 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
         )
-        print(f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]")
-
         credential = None
         try:
             credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=self._PID_CREDENTIAL_ID)
         except EntryNotFound as entry_not_found:
             logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
-        #@TODO Need to talking with Giuseppe for business logic without revocation, as it is currently used only for testing purposes,
-        # to identify the credential in the status list and manage revocation in a simple way.
-        # In this case, if the credential already exists and is not revoked, we can decide to not issue a new credential and return the existing one,
-        # or we can decide to issue a new credential anyway to update the status_list index and manage revocation with status list without the need to revoke the previous credential.
-        # For now, I choose the second option, but it needs to be validated with business logic.
+        incremental_id = 1
         if not credential:
             logger.warning(
                 "credential is not present or revoked, but a new credential is issued anyway to update the status_list index and manage revocation with status list without the need to revoke the previous credential")
-            credential = self._db_credential_engine.get("add_credential_for_user",
+            incremental_id = self._db_credential_engine.get("add_credential_for_user",
                                                     parse_credential_entity(user_id, credential_type, auth_session))
+        else:
+            incremental_id = credential.incremental_id
         return {
             "status_list": {
                 "idx": "credential.incremental_id",
-                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
+                "uri": f"{self.status_endpoint}/{incremental_id}",
             }
         }
 

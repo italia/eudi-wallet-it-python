@@ -54,6 +54,7 @@ def parse_credential_entity(
 
     credential_data = {
         "user_id": user_id,
+        "incremental_id": 0, # This will be set when adding to the database
         "credential_type": credential_type,
         "identifier": auth_session.authorization_details[0].credential_identifiers[0],
         "document_id": auth_session.document_id,
