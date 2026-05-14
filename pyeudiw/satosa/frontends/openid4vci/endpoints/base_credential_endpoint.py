@@ -183,6 +183,8 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if not (key_attestation := request_header.get("key_attestation")):
                 return self._handle_400(context, "invalid key_attestation", InvalidRequestException("invalid_proof"))
 
+            print(f"key_attestation: {key_attestation}")
+
             k_payload = decode_jwt_payload(key_attestation)
             for _k in k_payload.get("attested_keys") or []:
                 t_print = key_from_jwk_dict(_k).thumbprint("SHA-256").decode()
@@ -264,7 +266,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         match config.format:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 return self._issue_sd_jwt(
-                    user_entity, opendid4vci_entity, credential.template
+                    user_entity, opendid4vci_entity, credential.template, cred_key
                 )["issuance"]
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 return self._issue_mso_mdoc(user_entity, credential, config)
@@ -305,14 +307,14 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         return mdoci.dumps().decode()
 
     def _issue_sd_jwt(
-        self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template
+        self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template, cred_key: str
     ) -> dict:
-        print(f"Params [user_entity {user_entity}, entity {entity}, template {template}]")
+        print(f"Params [user_entity {user_entity}, entity {entity}, template {template}, cred_key: {cred_key}]")
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         claims = {"iss": entity.client_id, "iat": now, "exp": exp}
         specification = self._loader_v1(
-            user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value, entity
+            user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value, entity, cred_key
         )
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
@@ -345,13 +347,13 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         return user_data
 
     def _loader_v1(
-        self, user_entity: tuple[str, UserEntity], template, credential_type: str, auth_session: AuthorizationSession
+        self, user_entity: tuple[str, UserEntity], template, credential_type: str, auth_session: AuthorizationSession, cred_key: str
     ) -> dict:
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-            f"Params [user_entity: {user_entity}, credential_type: {credential_type}, auth_session: {auth_session}]"
+            f"Params [user_entity: {user_entity}, credential_type: {credential_type}, auth_session: {auth_session}, cred_key: {cred_key}]"
         )
-        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}, auth_session: {auth_session}]")
+        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}, auth_session: {auth_session}, cred_key: {cred_key}]")
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
@@ -363,11 +365,20 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 json_filled = template.render(**user_data)
                 data = json.loads(json_filled)
                 revoke_on_credential_reissuance = self.config["endpoints"]["credential"]["revoke_on_credential_reissuance"]
-                print(f"revoke_on_credential_reissuance: {revoke_on_credential_reissuance}")
-                if revoke_on_credential_reissuance:
-                    data["status"] = self._build_credential_for_user_with_revoke(user_id, credential_type, auth_session)
-                else:
-                    data["status"] = self._build_credential_for_user_without_revoke(user_id, credential_type, auth_session)
+                match revoke_on_credential_reissuance:
+                    case "true":
+                        logger.debug("revoke_on_credential_reissuance true.")
+                        data["status"] = self._build_credential_for_user_with_revoke(user_id, credential_type,auth_session)
+                    case "false":
+                        logger.debug("revoke_on_credential_reissuance false.")
+                        data["status"] = self._build_credential_for_user_without_revoke(user_id, credential_type,auth_session, cred_key)
+                    case "true_same_wallet_solution" | "default":
+                        logger.debug("revoke_on_credential_reissuance true_same_wallet_solution.")
+                        data["status"] = self._build_credential_for_user(user_id, credential_type,auth_session, cred_key)
+                    case _:
+                        logger.warning(f"Invalid value for revoke_on_credential_reissuance: {revoke_on_credential_reissuance} - expected 'true', 'false' or 'true_same_wallet_solution'. The default behavior is to revoke the existing credential on reissuance.")
+                        raise ValueError("Invalid value for revoke_on_credential_reissuance")
+
                 print(f"data: {data}")
                 return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
@@ -433,7 +444,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             }
         }
 
-    def _build_credential_for_user_with_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+    def _build_credential_for_user(self, user_id: str, credential_type: str, auth_session: AuthorizationSession, cred_key: str):
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
@@ -441,7 +452,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
         credential = None
         try:
-            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=self._PID_CREDENTIAL_ID)
+            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=cred_key)
         except EntryNotFound as entry_not_found:
             logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
 
@@ -458,14 +469,39 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             }
         }
 
-    def _build_credential_for_user_without_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+    def _build_credential_for_user_with_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession):
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
+        )
+
+        credential = None
+        try:
+            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False)
+        except EntryNotFound as entry_not_found:
+            logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
+
+        if credential:
+            logger.debug(f"credential: {credential}")
+            self._db_credential_engine.get("revoke_credential", credential)
+
+        incremental_id = self._db_credential_engine.get("add_credential_for_user",
+                                                    parse_credential_entity(user_id, credential_type, auth_session))
+        return {
+            "status_list": {
+                "idx": "credential.incremental_id",
+                "uri": f"{self.status_endpoint}/{incremental_id}",
+            }
+        }
+
+    def _build_credential_for_user_without_revoke(self, user_id: str, credential_type: str, auth_session: AuthorizationSession, cred_key: str):
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
         )
         credential = None
         try:
-            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=self._PID_CREDENTIAL_ID)
+            credential = self._db_credential_engine.get("get_credential_by_fields", user_id=user_id, revoked=False, credential_id=cred_key)
         except EntryNotFound as entry_not_found:
             logger.warning(f"No existing credential found for user_id {user_id}. A new credential will")
         incremental_id = 1
