@@ -309,7 +309,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def _issue_sd_jwt(
         self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template, cred_key: str
     ) -> dict:
-        print(f"Params [user_entity {user_entity}, entity {entity}, template {template}, cred_key: {cred_key}]")
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         claims = {"iss": entity.client_id, "iat": now, "exp": exp}
@@ -353,7 +352,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_entity: {user_entity}, credential_type: {credential_type}, auth_session: {auth_session}, cred_key: {cred_key}]"
         )
-        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}, auth_session: {auth_session}, cred_key: {cred_key}]")
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
@@ -378,8 +376,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                     case _:
                         logger.warning(f"Invalid value for revoke_on_credential_reissuance: {revoke_on_credential_reissuance} - expected 'true', 'false' or 'true_same_wallet_solution'. The default behavior is to revoke the existing credential on reissuance.")
                         raise ValueError("Invalid value for revoke_on_credential_reissuance")
-
-                print(f"data: {data}")
                 return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 data = render_mso_mdoc_template(
@@ -400,7 +396,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def _loader(
         self, user_entity: tuple[str, UserEntity], template, credential_type: str
     ) -> dict:
-        print(f"Params [user_entity {user_entity}, template: {template}, credential_type {credential_type}]")
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
@@ -411,9 +406,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 user_data = self._retrieve_user_data(user_data)
                 json_filled = template.render(**user_data)
                 data = json.loads(json_filled)
-
-                print(f"data: {data}")
-
                 data["status"] = self._build_status_list_payload(user_id)
                 return data
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:

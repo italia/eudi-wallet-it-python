@@ -63,13 +63,11 @@ class CredentialStorage(MongoStorage):
         return CredentialEntity(**document)
 
     def count_credential(self) -> CredentialEntity | None:
-        print(f"Entering method: count_credential.")
         self._connect()
         output = self.credentials.find_one(sort=[("incremental_id", -1)])
         return output
 
     def add_credential_for_user(self, credential_entity: CredentialEntity) -> int:
-        print(f"Entering method: add_credential_for_user. Params [credential_entity: {credential_entity}]")
         self._connect()
         max_id = self.count_credential()
         if max_id is None:
@@ -80,7 +78,6 @@ class CredentialStorage(MongoStorage):
         return credential_entity.incremental_id
 
     def revoke_credential(self, credential_entity: CredentialEntity) -> CredentialEntity:
-        print(f"Entering method: revoke_credential. Params [credential_entity: {credential_entity}]")
         self._connect()
         query = {"document_id": credential_entity.document_id}
         update = {

@@ -1,5 +1,6 @@
 from enum import Enum
-
+import logging
+import inspect
 from satosa.context import Context
 from satosa.response import Response
 
@@ -24,10 +25,13 @@ from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.tools.content_type import (
     APPLICATION_JSON,
     HTTP_CONTENT_TYPE_HEADER,
-    get_accept_header,
+    HTTP_ACCEPT_HEADER,
+    get_value_from_key
 )
 from pyeudiw.tools.mso_mdoc import from_jwk_to_mso_mdoc_private_key
 from pyeudiw.tools.utils import iat_now
+
+logger = logging.getLogger(__name__)
 
 
 class AcceptHeaderEnum(Enum):
@@ -61,9 +65,8 @@ class StatusListHandler(VCIBaseEndpoint):
         """
 
         super().__init__(config, internal_attributes, base_url, name)
-        self._db_credential_engine = UserCredentialEngine(
-            config
-        ).db_credential_storage_engine
+        _user_credential_engine = UserCredentialEngine(config)
+        self._db_credential_engine = _user_credential_engine.db_credential_storage_engine
         self._metadata_jwks = self.config["metadata_jwks"]
         self.jws_helper = JWSHelper(self._metadata_jwks)
         self._mso_mdoc_private_key = from_jwk_to_mso_mdoc_private_key(
@@ -71,13 +74,16 @@ class StatusListHandler(VCIBaseEndpoint):
         )
 
     def endpoint(self, context: Context):
+        logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
+        print(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         try:
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(
                 context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
             )
-            accept_header = get_accept_header(context.http_headers)
+            accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
             payload = self._build_status_list_payload()
+            print(f"accept_header: {accept_header}, payload: {payload}")
             match accept_header:
                 case AcceptHeaderEnum.STATUS_LIST_JWT.value:
                     jws_headers = {"typ": self._handle_header(STATUS_LIST_JWT)}
@@ -126,10 +132,17 @@ class StatusListHandler(VCIBaseEndpoint):
         return accepted_header.removeprefix("application/")
 
     def _build_status_list_payload(self) -> dict:
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+        )
+        print(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+        )
         status_path = self.status_list.path
         status_path = status_path.lstrip("/")
         iat = iat_now()
-        credentials = self._db_credential_engine.get_all_sorted_by_incremental_id()
+        credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
+        print(f"credentials: {credentials}")
         if not credentials or len(credentials) == 0:
             lst = ""
         else:
