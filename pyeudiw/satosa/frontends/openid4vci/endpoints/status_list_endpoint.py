@@ -1,6 +1,7 @@
 from enum import Enum
 import logging
 import inspect
+import zlib
 from satosa.context import Context
 from satosa.response import Response
 
@@ -144,14 +145,18 @@ class StatusListHandler(VCIBaseEndpoint):
         credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
         print(f"credentials: {credentials}")
         if not credentials or len(credentials) == 0:
-            lst = ""
+            compressed_lst = ""
         else:
             bit_bytes = array_to_bitstring(credentials)
             lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
+            bit_string = lst
+            byte_list = int(bit_string.ljust(8, '0'), 2).to_bytes((len(bit_string) + 7) // 8, byteorder='big')
+            compressed_lst = zlib.compress(byte_list)
+
         return {
             "exp": iat + self.status_list.exp,
             "iat": iat,
-            "status_list": {"bits": _STATUS_LIST_BITS, "lst": lst},
+            "status_list": {"bits": _STATUS_LIST_BITS, "lst": compressed_lst},
             "sub": f"{self._backend_url}/{status_path}/1",
             "ttl": self.status_list.ttl,
         }
