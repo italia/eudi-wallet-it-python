@@ -78,12 +78,14 @@ class StatusListHandler(VCIBaseEndpoint):
         logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         print(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         try:
+            requested_id = context.path.split('/')[-1]
+            print(f"Requested status list id: {requested_id}")
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(
                 context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
             )
             accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
-            payload = self._build_status_list_payload()
+            payload = self._build_status_list_payload(requested_id)
             print(f"accept_header: {accept_header}, payload: {payload}")
             match accept_header:
                 case AcceptHeaderEnum.STATUS_LIST_JWT.value:
@@ -91,18 +93,18 @@ class StatusListHandler(VCIBaseEndpoint):
                     return Response(
                         message=self.jws_helper.sign(
                             protected=jws_headers,
-                            plain_dict=self._build_status_list_payload(),
+                            plain_dict=self._build_status_list_payload(requested_id),
                         ),
                         content=APPLICATION_JSON,
                     )
                 case AcceptHeaderEnum.STATUS_LIST_CWT.value:
-                    lst = payload["status_list"]["lst"].encode("utf-8")
+                    lst_bytes = payload["status_list"]["lst"]
                     del payload["status_list"]
                     payload_parts = ({}, {}, payload)
                     token = encode_cwt_status_list_token(
                         payload_parts,
                         _STATUS_LIST_BITS,
-                        lst,
+                        lst_bytes,
                         _PAYLOAD_CWT_KEYS,
                         self._mso_mdoc_private_key,
                     )
@@ -132,7 +134,7 @@ class StatusListHandler(VCIBaseEndpoint):
     def _handle_header(accepted_header: str):
         return accepted_header.removeprefix("application/")
 
-    def _build_status_list_payload(self) -> dict:
+    def _build_status_list_payload(self, status_id: str) -> dict:
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
         )
@@ -149,15 +151,14 @@ class StatusListHandler(VCIBaseEndpoint):
         else:
             bit_bytes = array_to_bitstring(credentials)
             lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
-            bit_string = lst
-            byte_list = int(bit_string.ljust(8, '0'), 2).to_bytes((len(bit_string) + 7) // 8, byteorder='big')
+            byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_string) + 7) // 8, byteorder='big')
             compressed_lst = zlib.compress(byte_list)
 
         return {
             "exp": iat + self.status_list.exp,
             "iat": iat,
             "status_list": {"bits": _STATUS_LIST_BITS, "lst": compressed_lst},
-            "sub": f"{self._backend_url}/{status_path}/1",
+            "sub": f"{self._backend_url}/{status_path}/{status_id}",
             "ttl": self.status_list.ttl,
         }
 
