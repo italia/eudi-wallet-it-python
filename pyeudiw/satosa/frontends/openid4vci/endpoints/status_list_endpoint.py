@@ -76,17 +76,15 @@ class StatusListHandler(VCIBaseEndpoint):
 
     def endpoint(self, context: Context):
         logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
-        print(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         try:
             requested_id = context.path.split('/')[-1]
-            print(f"Requested status list id: {requested_id}")
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(
                 context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
             )
             accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
             payload = self._build_status_list_payload(requested_id)
-            print(f"accept_header: {accept_header}, payload: {payload}")
+            logger.debug("Accept header: %s, Payload: %s", accept_header, payload)
             match accept_header:
                 case AcceptHeaderEnum.STATUS_LIST_JWT.value:
                     jws_headers = {"typ": self._handle_header(STATUS_LIST_JWT)}
@@ -138,26 +136,24 @@ class StatusListHandler(VCIBaseEndpoint):
         logger.debug(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
         )
-        print(
-            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-        )
+        bits = 1
         status_path = self.status_list.path
         status_path = status_path.lstrip("/")
         iat = iat_now()
         credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
-        print(f"credentials: {credentials}")
         if not credentials or len(credentials) == 0:
             compressed_lst = ""
         else:
+            bits = (len(credentials) + 7) // 8
+            print(f"bits: {bits}")
             bit_bytes = array_to_bitstring(credentials)
             lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
-            byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_string) + 7) // 8, byteorder='big')
+            byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')
             compressed_lst = zlib.compress(byte_list)
-
         return {
             "exp": iat + self.status_list.exp,
             "iat": iat,
-            "status_list": {"bits": _STATUS_LIST_BITS, "lst": compressed_lst},
+            "status_list": {"bits": bits, "lst": compressed_lst},
             "sub": f"{self._backend_url}/{status_path}/{status_id}",
             "ttl": self.status_list.ttl,
         }

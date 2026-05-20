@@ -98,7 +98,14 @@ def encode_cwt_status_list_token(
     if 16 not in phdr:
         phdr[16] = STATUS_LIST_CWT
         if private_key:
-            kid = bytes.fromhex(private_key["KID"].decode("utf-8"))
+            # kid = bytes.fromhex(private_key["KID"].decode("utf-8"))
+            # phdr.setdefault(KID, kid)
+            # phdr.setdefault(Algorithm, pycose.algorithms.Es256)
+            kid = (
+                private_key["KID"].encode("utf-8")
+                if isinstance(private_key["KID"], str)
+                else private_key["KID"]
+            )
             phdr.setdefault(KID, kid)
             phdr.setdefault(Algorithm, pycose.algorithms.Es256)
 
