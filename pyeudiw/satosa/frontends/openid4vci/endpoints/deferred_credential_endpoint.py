@@ -46,7 +46,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
 
     def to_response(
         self, context: Context, auth_session: AuthorizationSession, credential_id: str | None
-    ) -> Response:
+    , **kwargs) -> Response:
         """
         Generate a response containing the issued credential.
 
