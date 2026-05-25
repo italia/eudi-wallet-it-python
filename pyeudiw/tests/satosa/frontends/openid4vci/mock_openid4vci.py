@@ -267,9 +267,9 @@ MOCK_STORAGE_CONFIG = {
 
 MOCK_QR_CODE_CONFIG = {
     "size": 250,
-    "color": "#000000",
+    "color": "#0072CE",
     "expiration_time": 120,
-    "logo_path": "wallet-it/wallet-icon-blue.svg",
+    "logo_path": "it-wallet/wallet-icon-blue.svg",
     "ui": {
         "static_storage_url": "http://localhost:static",
         "template_folder": "templates",

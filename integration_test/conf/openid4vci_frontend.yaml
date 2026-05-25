@@ -64,9 +64,9 @@ config:
       qrcode_template: "qr_code.html"
       authorization_error_template: "authorization_error.html"
     size: 250 # px
-    color: '#000000'  # hex
+    color: '#0072CE'  # hex
     expiration_time: 120 # seconds
-    logo_path: 'wallet-it/wallet-icon-blue.svg' # relative to static_storage_url
+    logo_path: 'it-wallet/wallet-icon-blue.svg' # relative to static_storage_url
 
   network:
     httpc_params: &httpc_params
