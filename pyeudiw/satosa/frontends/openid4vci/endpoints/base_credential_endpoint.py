@@ -183,8 +183,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if not (key_attestation := request_header.get("key_attestation")):
                 return self._handle_400(context, "invalid key_attestation", InvalidRequestException("invalid_proof"))
 
-            print(f"key_attestation: {key_attestation}")
-
             k_payload = decode_jwt_payload(key_attestation)
             for _k in k_payload.get("attested_keys") or []:
                 t_print = key_from_jwk_dict(_k).thumbprint("SHA-256").decode()
@@ -236,7 +234,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def build_credential(
         self, vci_entity: AuthorizationSession, credential_id: str | None
     ) -> list[str]:
-        print(f"Params [credential_id {credential_id}, vci_entity {vci_entity}]")
         credential_list = []
         if not vci_entity:
             self._log_error(
@@ -260,7 +257,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         user_entity: tuple[str, UserEntity],
         cred_key: str,
     ) -> str:
-        print(f"Params [user_entity {user_entity}, opendid4vci_entity {opendid4vci_entity}, cred_key {cred_key}]")
         config = self.config_utils.get_credential_configurations_supported()[cred_key]
         credential = self.specification[cred_key]
         match config.format:
@@ -317,7 +313,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         )
         specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
-
         sdjwt_at_issuer = SDJWTIssuer(
             user_claims=specification,
             issuer_keys=self._metadata_jwks,
@@ -438,6 +433,10 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     def _build_credential_for_user(self, user_id: str, credential_type: str, auth_session: AuthorizationSession, cred_key: str):
         logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
+        )
+        print(
             f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
             f"Params [user_id: {user_id}, credential_type: {credential_type}, auth_session: {auth_session}]"
         )

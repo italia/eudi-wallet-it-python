@@ -1,4 +1,5 @@
 import logging
+import inspect
 from typing import Any, Callable, Literal, Optional, Union
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
@@ -62,7 +63,6 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         try:
             trust_source = self.db_engine.get_trust_source(issuer)
-
             if trust_source:
                 del trust_source["_id"]
                 return TrustSourceData.from_dict(trust_source)
@@ -88,7 +88,6 @@ class CombinedTrustEvaluator(BaseLogger):
             trust_source = handler.extract_and_update_trust_materials(
                 issuer, trust_source
             )
-
         self.db_engine.add_trust_source(trust_source.serialize())
 
         return trust_source
@@ -108,16 +107,13 @@ class CombinedTrustEvaluator(BaseLogger):
         """
         for handler in self.handlers:
             handler_name = handler.__class__.__name__
-
             trust_param = trust_source.get_trust_evaluation_type_by_handler_name(
                 handler_name
             )
-
             if not trust_param or trust_param.expired or trust_source.revoked:
                 trust_source = handler.extract_and_update_trust_materials(
                     issuer, trust_source
                 )
-
         self.db_engine.add_trust_source(trust_source.serialize())
 
         return trust_source
@@ -138,10 +134,8 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The trust source
         :rtype: Optional[TrustSourceData]
         """
-
         if not trust_source:
             trust_source = TrustSourceData.empty(entity_id)
-
         if self.mode == "update_first" or force_update:
             return self._update_upsert_source_trust_materials(trust_source, entity_id)
         else:
@@ -160,7 +154,6 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: TrustSourceData
         """
         trust_source = self._retrieve_trust_source(entity_id)
-
         return self._upsert_source_trust_materials(
             trust_source, entity_id, force_update
         )
@@ -186,6 +179,10 @@ class CombinedTrustEvaluator(BaseLogger):
         :returns: The public keys
         :rtype: list[dict]
         """
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [issuer: {issuer}, force_update: {force_update}]"
+        )
         keys = []
         thumbprints = []
         used_handlers = []
@@ -239,13 +236,14 @@ class CombinedTrustEvaluator(BaseLogger):
                     if thumbprint not in thumbprints:
                         thumbprints.append(thumbprint)
                         keys.append(key.serialize(private=False))
+            else:
+                logger.warning(f"No evaluation type found for handler {handler.__class__.__name__}")
 
         if not keys:
             raise NoCriptographicMaterial(
                 f"no trust evaluator can provide cyptographic material "
                 f"for {issuer}: searched among: {self.handlers_names}"
             )
-
         return keys
 
     def get_metadata(
@@ -342,7 +340,6 @@ class CombinedTrustEvaluator(BaseLogger):
         :rtype: list[dict]
         """
         trust_source = self._get_trust_source(issuer, force_update)
-
         headers_params = {}
         for handler in self.handlers:
             if getattr(handler, INCLUDE_JWT_HEADER_CONFIG_NAME, None):

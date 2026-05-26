@@ -138,7 +138,6 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
         :returns: the result of the first elment found on DBs.
         :rtype: Union[dict, None]
         """
-
         for db_name, storage in self.storages:
             try:
                 res = getattr(storage, method)(*args, **kwargs)

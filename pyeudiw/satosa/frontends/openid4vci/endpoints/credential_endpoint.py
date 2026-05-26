@@ -1,5 +1,6 @@
 import json
 import logging
+import inspect
 
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
@@ -47,11 +48,15 @@ def _verify_key_attestation(
     proof_jwt: str, proof_payload: dict, trust_evaluator
 ) -> None:
     """Verify key_attestation (WUA) in proof JWT header when present."""
+    logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. Params [proof_jwt: {proof_jwt}, proof_payload: {proof_payload}, trust_evaluator: {trust_evaluator}]")
+
     try:
         header = decode_jwt_header(proof_jwt)
     except Exception:
         return
+
     wua_jwt = header.get("key_attestation")
+
     if not wua_jwt:
         return
     try:
@@ -59,8 +64,11 @@ def _verify_key_attestation(
         wua_iss = wua_payload_unverified.get("iss")
     except Exception:
         raise InvalidRequestException("invalid key_attestation in credential proof")
+
+
     if not wua_iss:
         raise InvalidRequestException("key_attestation missing iss")
+
     try:
         wp_keys = trust_evaluator.get_public_keys(wua_iss)
     except NoCriptographicMaterial:
@@ -68,23 +76,32 @@ def _verify_key_attestation(
             "cannot resolve Wallet Provider keys for key_attestation"
         )
     wua_helper = JWSHelper(wp_keys)
+
     try:
         wua_payload = wua_helper.verify(wua_jwt)
     except JWSVerificationError:
         raise InvalidRequestException("invalid key_attestation signature")
-    cnf = wua_payload.get("cnf") or {}
-    wua_jwk = cnf.get("jwk")
+
+    # cnf = wua_payload.get("cnf") or {}
+    # print(f"cnf: {cnf}")
+    wua_jwk = wua_payload.get("attested_keys")[0] # @Todo Talking with Giuseppe -> https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/wallet-provider-endpoint.html#wallet-unit-attestation-jwt
     if not wua_jwk:
         raise InvalidRequestException("key_attestation missing cnf.jwk")
-    proof_jwk_str = proof_payload.get("jwk")
+
+    # proof_jwk_str = proof_payload.get("jwk")
+    # print(f"proof_jwk_str: {proof_jwk_str}")
+    proof_jwk_str = header.get("jwk") # @Todo Talking with Giuseppe -> https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-issuance-endpoint.html#credential-request:~:text=The%20JWT%20proof%20type%20MUST
+
     if not proof_jwk_str:
         raise InvalidRequestException("proof missing jwk")
+
     try:
         proof_jwk = (
             json.loads(proof_jwk_str)
             if isinstance(proof_jwk_str, str)
             else proof_jwk_str
         )
+
     except (json.JSONDecodeError, TypeError):
         raise InvalidRequestException("invalid proof.jwk")
     if _jwk_thumbprint(proof_jwk) != _jwk_thumbprint(wua_jwk):
@@ -149,8 +166,7 @@ class CredentialHandler(BaseCredentialEndpoint):
         proof_header = decode_jwt_header(c_req.proof.jwt)
         proof_jws_helper = JWSHelper(proof_header.get("jwk"))
         proof_payload = proof_jws_helper.verify(c_req.proof.jwt)
-
-        # _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator) #todo check it <--- CifiCifi
+        _verify_key_attestation(c_req.proof.jwt, proof_payload, self._trust_evaluator)
         ProofJWT.model_validate(
             (proof_payload | proof_header), #todo split header and payload for Proof model
             context={
@@ -177,7 +193,6 @@ class CredentialHandler(BaseCredentialEndpoint):
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
         """
-        print(f"self.config: {self.config}")
         return CredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)

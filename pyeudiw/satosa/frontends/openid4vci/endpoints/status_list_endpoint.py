@@ -145,7 +145,6 @@ class StatusListHandler(VCIBaseEndpoint):
             compressed_lst = ""
         else:
             bits = (len(credentials) + 7) // 8
-            print(f"bits: {bits}")
             bit_bytes = array_to_bitstring(credentials)
             lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
             byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')
