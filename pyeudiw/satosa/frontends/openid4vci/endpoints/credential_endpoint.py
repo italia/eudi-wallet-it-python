@@ -178,7 +178,7 @@ class CredentialHandler(BaseCredentialEndpoint):
 
     def to_response(
         self, context: Context, auth_session: AuthorizationSession, credential_id: str | None
-    ) -> Response:
+    , **kwargs) -> Response:
         """
         Generate a response containing the issued credential.
 
@@ -196,6 +196,6 @@ class CredentialHandler(BaseCredentialEndpoint):
         return CredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)
-                for cred in self.build_credential(auth_session, credential_id)
+                for cred in self.build_credential(auth_session, credential_id, **kwargs)
             ]
         )

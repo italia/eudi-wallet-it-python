@@ -1,5 +1,4 @@
 import datetime
-import json
 import time
 import logging
 import inspect
@@ -47,7 +46,7 @@ from pyeudiw.satosa.utils.validation import (
 )
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import (
-    yaml_load_specification_with_placeholder,
+    yaml_load_specification,
 )
 from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.storage.user_entity import UserEntity
@@ -56,7 +55,7 @@ from pyeudiw.tools.mso_mdoc import (
     from_jwk_to_mso_mdoc_private_key,
     render_mso_mdoc_template,
 )
-from pyeudiw.tools.utils import exp_from_now, iat_now
+from pyeudiw.tools.utils import exp_from_now, iat_now, datetime_from_timestamp
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.storage.parse import parse_credential_entity
 
@@ -187,11 +186,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             for _k in k_payload.get("attested_keys") or []:
                 t_print = key_from_jwk_dict(_k).thumbprint("SHA-256").decode()
                 if t_print == client_id:
+                    holder_key = _k
                     break
             else:
                 return self._handle_400(context, "client_id mismatch", InvalidRequestException("invalid_proof"))
 
-            return self.to_response(context, auth_session, credential_configuration_id)
+            return self.to_response(context, auth_session, credential_configuration_id, holder_key=holder_key)
 
         except (
             InvalidRequestException,
@@ -228,11 +228,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     @abstractmethod
     def to_response(
         self, context: Context, entity: AuthorizationSession, credential_id: str | None
-    ) -> Response:
+    , **kwargs) -> Response:
         pass
 
     def build_credential(
         self, vci_entity: AuthorizationSession, credential_id: str | None
+        , **kwargs
     ) -> list[str]:
         credential_list = []
         if not vci_entity:
@@ -245,7 +246,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             self._extract_lookup_identifiers(vci_entity.attributes or {})
         )
         if credential_id:
-            return [self._build_credential(vci_entity, user, credential_id)]
+            credential_list.append(self._build_credential(user, credential_id, kwargs.get("holder_key")))
         else:
             pass  # todo: manage deferred
 
@@ -256,13 +257,14 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         opendid4vci_entity: AuthorizationSession,
         user_entity: tuple[str, UserEntity],
         cred_key: str,
+        holder_key: dict|None = None
     ) -> str:
         config = self.config_utils.get_credential_configurations_supported()[cred_key]
         credential = self.specification[cred_key]
         match config.format:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 return self._issue_sd_jwt(
-                    user_entity, opendid4vci_entity, credential.template, cred_key
+                    user_entity, auth_session=opendid4vci_entity, cred_type_id=cred_key, holder_key=holder_key
                 )["issuance"]
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 return self._issue_mso_mdoc(user_entity, credential, config)
@@ -303,18 +305,31 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         return mdoci.dumps().decode()
 
     def _issue_sd_jwt(
-        self, user_entity: tuple[str, UserEntity], entity: AuthorizationSession, template, cred_key: str
+        self,  user_entity: tuple[str, UserEntity],auth_session: AuthorizationSession, cred_type_id: str, holder_key: dict = None
     ) -> dict:
+        """Reference: https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model.html#digital-credential-sd-jwt-metadata-attributes"""
         now = iat_now()
-        exp = exp_from_now(self.config_utils.get_jwt().default_exp)
-        claims = {"iss": entity.client_id, "iat": now, "exp": exp}
-        specification = self._loader_v1(
-            user_entity, template, CredentialConfigurationFormatEnum.SD_JWT.value, entity, cred_key
+        exp = exp_from_now(self.config_utils.get_jwt().default_exp) # TODO check date_of_expiry
+        cred_config: 'CredentialConfigurationsConfig' = self.config_utils.get_credential_configurations()
+        iss_cred_supp_conf = self.config_utils.get_credential_configurations_supported()[cred_type_id] # TODO: verify algorithms and claims with the supported ones
+        cred_specification: 'CredentialSpecificationConfig' = cred_config.credential_specification[cred_type_id]
+        required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority,
+                           "issuing_country": cred_config.issuing_country, "vct": iss_cred_supp_conf.vct}
+        user_id, _ = user_entity # TODO: Generalize for issuing credentials other than PID
+        supported_optional_claims = {"sub": str(uuid4()), "iat": now, "nbf": now + cred_config.nbf_delta,
+            "issuance_date": datetime_from_timestamp(now).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
+            "date_of_expiry": (datetime_from_timestamp(now) + timedelta(cred_specification.expiry_days)).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
+            "status": self._build_status_list_payload(user_id),
+            "trust_framework": cred_specification.trust_framework,
+            "assurance_level": cred_specification.assurance_level,
+            "vct#integrity": "..."} # TODO: generate it
+        specification = self._loader(
+            user_entity, cred_specification.template, CredentialConfigurationFormatEnum.SD_JWT.value, extra_claims=supported_optional_claims
         )
-        specification.update(claims)
         use_decoys = specification.get("add_decoy_claims", True)
+
         sdjwt_at_issuer = SDJWTIssuer(
-            user_claims=specification,
+            user_claims=required_claims | (specification.get("user_claims" ) or {}), holder_key=holder_key,
             issuer_keys=self._metadata_jwks,
             add_decoy_claims=use_decoys,
             extra_header_parameters=self._trust_evaluator.get_jwt_header_trust_parameters(
@@ -390,19 +405,15 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     # @TODO DEPRECATED
     def _loader(
         self, user_entity: tuple[str, UserEntity], template, credential_type: str
-    ) -> dict:
+        , extra_claims: dict = None) -> dict:
         user_id, user_data = user_entity
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
-                template = json.dumps(
-                    yaml_load_specification_with_placeholder(template)
-                )
                 template = Template(template)
                 user_data = self._retrieve_user_data(user_data)
+                user_data = user_data | (extra_claims or {})
                 json_filled = template.render(**user_data)
-                data = json.loads(json_filled)
-                data["status"] = self._build_status_list_payload(user_id)
-                return data
+                return yaml_load_specification(json_filled)
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 data = render_mso_mdoc_template(
                     template, user_data.model_dump(), FIELD_TRANSFORMS
