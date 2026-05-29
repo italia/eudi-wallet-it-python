@@ -130,7 +130,6 @@ class CredentialHandler(BaseCredentialEndpoint):
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
         """
-
         body = self._get_body(context)
         if body is None:
             body_dict = {}

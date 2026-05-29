@@ -246,7 +246,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             self._extract_lookup_identifiers(vci_entity.attributes or {})
         )
         if credential_id:
-            credential_list.append(self._build_credential(user, credential_id, kwargs.get("holder_key")))
+            credential_list.append(self._build_credential(vci_entity, user, credential_id, kwargs.get("holder_key")))
         else:
             pass  # todo: manage deferred
 
@@ -316,10 +316,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority,
                            "issuing_country": cred_config.issuing_country, "vct": iss_cred_supp_conf.vct}
         user_id, _ = user_entity # TODO: Generalize for issuing credentials other than PID
+
         supported_optional_claims = {"sub": str(uuid4()), "iat": now, "nbf": now + cred_config.nbf_delta,
             "issuance_date": datetime_from_timestamp(now).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
             "date_of_expiry": (datetime_from_timestamp(now) + timedelta(cred_specification.expiry_days)).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
-            "status": self._build_status_list_payload(user_id),
+            # "status": self._build_status_list_payload(user_id),
+            "status": self.revoke_on_credential_reissuance(user_id, auth_session, cred_type_id),
             "trust_framework": cred_specification.trust_framework,
             "assurance_level": cred_specification.assurance_level,
             "vct#integrity": "..."} # TODO: generate it
@@ -355,54 +357,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         user_data["unique_id"] = uuid4()
         return user_data
 
-    def _loader_v1(
-        self, user_entity: tuple[str, UserEntity], template, credential_type: str, auth_session: AuthorizationSession, cred_key: str
-    ) -> dict:
-        logger.debug(
-            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-            f"Params [user_entity: {user_entity}, credential_type: {credential_type}, auth_session: {auth_session}, cred_key: {cred_key}]"
-        )
-        user_id, user_data = user_entity
-        match credential_type:
-            case CredentialConfigurationFormatEnum.SD_JWT.value:
-                template = json.dumps(
-                    yaml_load_specification_with_placeholder(template)
-                )
-                template = Template(template)
-                user_data = self._retrieve_user_data(user_data)
-                json_filled = template.render(**user_data)
-                data = json.loads(json_filled)
-                revoke_on_credential_reissuance = self.config["endpoints"]["credential"]["revoke_on_credential_reissuance"]
-                match revoke_on_credential_reissuance:
-                    case "true":
-                        logger.debug("revoke_on_credential_reissuance true.")
-                        data["status"] = self._build_credential_for_user_with_revoke(user_id, credential_type,auth_session)
-                    case "false":
-                        logger.debug("revoke_on_credential_reissuance false.")
-                        data["status"] = self._build_credential_for_user_without_revoke(user_id, credential_type,auth_session, cred_key)
-                    case "true_same_wallet_solution" | "default":
-                        logger.debug("revoke_on_credential_reissuance true_same_wallet_solution.")
-                        data["status"] = self._build_credential_for_user(user_id, credential_type,auth_session, cred_key)
-                    case _:
-                        logger.warning(f"Invalid value for revoke_on_credential_reissuance: {revoke_on_credential_reissuance} - expected 'true', 'false' or 'true_same_wallet_solution'. The default behavior is to revoke the existing credential on reissuance.")
-                        raise ValueError("Invalid value for revoke_on_credential_reissuance")
-                return data
-            case CredentialConfigurationFormatEnum.MSO_MDOC.value:
-                data = render_mso_mdoc_template(
-                    template, user_data.model_dump(), FIELD_TRANSFORMS
-                )
-                data["status"] = self._build_status_list_payload(user_id)
-                return data
-            case _:
-                self._log_error(
-                    self.__class__.__name__,
-                    f"unexpected template format {credential_type}",
-                )
-                raise Exception(
-                    f"Invalid credential_configurations_supported format {credential_type}"
-                )
-
-    # @TODO DEPRECATED
     def _loader(
         self, user_entity: tuple[str, UserEntity], template, credential_type: str
         , extra_claims: dict = None) -> dict:
@@ -441,6 +395,24 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
             }
         }
+
+    def revoke_on_credential_reissuance(self, user_id: str, auth_session: AuthorizationSession, cred_key: str):
+        revoke_on_credential_reissuance = self.config["endpoints"]["credential"]["revoke_on_credential_reissuance"]
+        match revoke_on_credential_reissuance:
+            case "true":
+                logger.debug("revoke_on_credential_reissuance true.")
+                return self._build_credential_for_user_with_revoke(user_id, CredentialConfigurationFormatEnum.SD_JWT.value, auth_session)
+            case "false":
+                logger.debug("revoke_on_credential_reissuance false.")
+                return self._build_credential_for_user_without_revoke(user_id, CredentialConfigurationFormatEnum.SD_JWT.value, auth_session,
+                                                                                cred_key)
+            case "true_same_wallet_solution" | "default":
+                logger.debug("revoke_on_credential_reissuance true_same_wallet_solution.")
+                return self._build_credential_for_user(user_id, CredentialConfigurationFormatEnum.SD_JWT.value, auth_session, cred_key)
+            case _:
+                logger.warning(
+                    f"Invalid value for revoke_on_credential_reissuance: {revoke_on_credential_reissuance} - expected 'true', 'false' or 'true_same_wallet_solution'. The default behavior is to revoke the existing credential on reissuance.")
+                raise ValueError("Invalid value for revoke_on_credential_reissuance")
 
     def _build_credential_for_user(self, user_id: str, credential_type: str, auth_session: AuthorizationSession, cred_key: str):
         logger.debug(
