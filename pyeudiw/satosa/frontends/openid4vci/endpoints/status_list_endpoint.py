@@ -21,6 +21,7 @@ from pyeudiw.status_list import (
     STATUS_LIST_JWT,
     array_to_bitstring,
     encode_cwt_status_list_token,
+    array_to_bitstring_v1
 )
 from pyeudiw.storage.user_credential_db_engine import UserCredentialEngine
 from pyeudiw.tools.content_type import (
@@ -132,30 +133,56 @@ class StatusListHandler(VCIBaseEndpoint):
     def _handle_header(accepted_header: str):
         return accepted_header.removeprefix("application/")
 
-    def _build_status_list_payload(self, status_id: str) -> dict:
-        logger.debug(
-            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-        )
-        bits = 1
-        status_path = self.status_list.path
-        status_path = status_path.lstrip("/")
+    def _build_status_list_payload(self,status_id: str) -> dict:
+        logger.debug(f"Entering method:{inspect.getframeinfo(inspect.currentframe()).function}")
+        status_path = self.status_list.path.lstrip("/")
         iat = iat_now()
-        credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
-        if not credentials or len(credentials) == 0:
-            compressed_lst = ""
-        else:
-            bits = (len(credentials) + 7) // 8
-            bit_bytes = array_to_bitstring(credentials)
-            lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
-            byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')
-            compressed_lst = zlib.compress(byte_list)
+        credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id") or []
+        bits = 1
+        bit_bytes = array_to_bitstring_v1(credentials,bits=bits)
+        compressed_lst = zlib.compress(bit_bytes)
         return {
             "exp": iat + self.status_list.exp,
             "iat": iat,
-            "status_list": {"bits": bits, "lst": compressed_lst},
-            "sub": f"{self._backend_url}/{status_path}/{status_id}",
+            "status_list": {"bits": bits,"lst": compressed_lst},
+            "sub": (f"{self._backend_url}/"f"{status_path}/"f"{status_id}"
+            ),
             "ttl": self.status_list.ttl,
         }
+
+    # def _build_status_list_payload(self, status_id: str) -> dict:
+    #     logger.debug(
+    #         f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+    #     )
+    #     print(f"Entering method: _build_status_list_payload status: {status_id}. ")
+    #     bits = 1
+    #     status_path = self.status_list.path
+    #     print(f"status_path: {status_path}")
+    #     status_path = status_path.lstrip("/")
+    #     print(f"status_path: {status_path}")
+    #     iat = iat_now()
+    #     credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
+    #     print(f"credentials: {credentials}")
+    #     if not credentials or len(credentials) == 0:
+    #         compressed_lst = ""
+    #     else:
+    #         bits = (len(credentials) + 7) // 8
+    #         print(f"bits: {bits}")
+    #         bit_bytes = array_to_bitstring(credentials)
+    #         print(f"bit_bytes: {bit_bytes}")
+    #         lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
+    #         print(f"lst: {lst}")
+    #         byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')
+    #         print(f"byte_list: {byte_list}")
+    #         compressed_lst = zlib.compress(byte_list)
+    #         print(f"compressed_lst: {compressed_lst}")
+    #     return {
+    #         "exp": iat + self.status_list.exp,
+    #         "iat": iat,
+    #         "status_list": {"bits": bits, "lst": compressed_lst},
+    #         "sub": f"{self._backend_url}/{status_path}/{status_id}",
+    #         "ttl": self.status_list.ttl,
+    #     }
 
     def _validate_configs(self):
         cred_config = self.config_utils.get_credential_configurations()

@@ -79,16 +79,12 @@ def encode_cwt_status_list_token(
     :return: The encoded CWT as a byte string.
     :rtype: bytes
     """
-
     # Compress the status list
     compressed_status_list = zlib.compress(status_list)
-
     # Insert the 'decoded_status_list' structure into the payload under claim key 65533
     payload = payload_parts[2]
-
     if payload_map:
         payload = _replace_keys(payload, payload_map)
-
     payload[65533] = {
         "bits": bits,
         "lst": compressed_status_list,
@@ -208,6 +204,20 @@ def generate_status_list(
 
     return cbor2.dumps(status_list)
 
+def array_to_bitstring_v1(status_array: list[dict],bits: int = 1) -> bytes:
+
+    if bits not in (1, 2, 4, 8):
+        raise ValueError("Error: bits must be one of: 1, 2, 4, 8")
+
+    status_array = sorted(status_array,key=lambda x: x["incremental_id"])
+    bitstring = 0
+    for idx, status in enumerate(status_array):
+        value = 1 if status["revoked"] else 0
+        shift = (len(status_array) - idx - 1) * bits
+        bitstring |= value << shift
+    total_bits = len(status_array) * bits
+    total_bytes = (total_bits + 7) // 8
+    return bitstring.to_bytes(total_bytes,byteorder="big",signed=False)
 
 def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     """
