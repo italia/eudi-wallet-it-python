@@ -2,6 +2,7 @@ from enum import Enum
 import logging
 import inspect
 import zlib
+from base64 import urlsafe_b64encode
 from satosa.context import Context
 from satosa.response import Response
 
@@ -89,10 +90,12 @@ class StatusListHandler(VCIBaseEndpoint):
             match accept_header:
                 case AcceptHeaderEnum.STATUS_LIST_JWT.value:
                     jws_headers = {"typ": self._handle_header(STATUS_LIST_JWT)}
+                    plain_dict = self._build_status_list_payload(requested_id)
+                    plain_dict["status_list"]["lst"] = (urlsafe_b64encode(plain_dict["status_list"]["lst"]).decode("ascii").rstrip("="))
                     return Response(
                         message=self.jws_helper.sign(
                             protected=jws_headers,
-                            plain_dict=self._build_status_list_payload(requested_id),
+                            plain_dict=plain_dict,
                         ),
                         content=APPLICATION_JSON,
                     )
