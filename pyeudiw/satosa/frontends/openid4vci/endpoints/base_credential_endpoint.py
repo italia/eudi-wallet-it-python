@@ -2,6 +2,7 @@ import datetime
 import time
 import logging
 import inspect
+from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.storage.exceptions import EntryNotFound
 from abc import ABC, abstractmethod
 from datetime import timedelta
@@ -260,14 +261,14 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         holder_key: dict|None = None
     ) -> str:
         config = self.config_utils.get_credential_configurations_supported()[cred_key]
-        credential = self.specification[cred_key]
+        cred_config: CredentialConfigurationsConfig = self.config_utils.get_credential_configurations()
         match config.format:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 return self._issue_sd_jwt(
-                    user_entity, auth_session=opendid4vci_entity, cred_type_id=cred_key, holder_key=holder_key
+                    user_entity, opendid4vci_entity, cred_config, config, holder_key=holder_key
                 )["issuance"]
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
-                return self._issue_mso_mdoc(user_entity, credential, config)
+                return self._issue_mso_mdoc(user_entity, opendid4vci_entity, cred_config, config, holder_key=holder_key)
             case _:
                 self._log_error(
                     self.__class__.__name__,
@@ -278,11 +279,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 )
 
     def _issue_mso_mdoc(
-        self,
-        user_entity: tuple[str, UserEntity],
-        credential: CredentialSpecificationConfig,
-        config: CredentialConfiguration,
+            self,
+            user_entity: tuple[str, UserEntity],
+            auth_session: AuthorizationSession, cred_config: CredentialConfigurationsConfig,
+            config: CredentialConfiguration, holder_key: dict = None
     ) -> str:
+        credential: CredentialSpecificationConfig = cred_config.credential_specification[config.id] #todo
         mdoci = MdocCborIssuer(
             private_key=self._mso_mdoc_private_key,
             alg=self._mso_mdoc_private_key["ALG"],
@@ -305,22 +307,21 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         return mdoci.dumps().decode()
 
     def _issue_sd_jwt(
-        self,  user_entity: tuple[str, UserEntity],auth_session: AuthorizationSession, cred_type_id: str, holder_key: dict = None
+        self, user_entity: tuple[str, UserEntity], auth_session: AuthorizationSession,
+            cred_config: CredentialConfigurationsConfig, iss_cred_supp_conf: CredentialConfiguration, holder_key: dict = None
     ) -> dict:
         """Reference: https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model.html#digital-credential-sd-jwt-metadata-attributes"""
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp) # TODO check date_of_expiry
-        cred_config: 'CredentialConfigurationsConfig' = self.config_utils.get_credential_configurations()
-        iss_cred_supp_conf = self.config_utils.get_credential_configurations_supported()[cred_type_id] # TODO: verify algorithms and claims with the supported ones
-        cred_specification: 'CredentialSpecificationConfig' = cred_config.credential_specification[cred_type_id]
-        required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority,
-                           "issuing_country": cred_config.issuing_country, "vct": iss_cred_supp_conf.vct}
-        user_id, _ = user_entity # TODO: Generalize for issuing credentials other than PID
+        cred_type_id = iss_cred_supp_conf.id
+        cred_specification: CredentialSpecificationConfig = cred_config.credential_specification[cred_type_id]
+        required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority, "issuing_country": cred_config.issuing_country,
+                           "vct": iss_cred_supp_conf.vct}
+        user_id, _ = user_entity
 
         supported_optional_claims = {"sub": str(uuid4()), "iat": now, "nbf": now + cred_config.nbf_delta,
             "issuance_date": datetime_from_timestamp(now).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
             "date_of_expiry": (datetime_from_timestamp(now) + timedelta(cred_specification.expiry_days)).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
-            # "status": self._build_status_list_payload(user_id),
             "status": self.revoke_on_credential_reissuance(user_id, auth_session, cred_type_id),
             "trust_framework": cred_specification.trust_framework,
             "assurance_level": cred_specification.assurance_level,
@@ -330,6 +331,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         )
         use_decoys = specification.get("add_decoy_claims", True)
 
+        # TODO: verify/validate algorithms and claims with the exposed credential_configurations_supported (EC)
         sdjwt_at_issuer = SDJWTIssuer(
             user_claims=required_claims | (specification.get("user_claims" ) or {}), holder_key=holder_key,
             issuer_keys=self._metadata_jwks,
@@ -372,7 +374,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 data = render_mso_mdoc_template(
                     template, user_data.model_dump(), FIELD_TRANSFORMS
                 )
-                data["status"] = self._build_status_list_payload(user_id)
                 return data
             case _:
                 self._log_error(
@@ -382,19 +383,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 raise Exception(
                     f"Invalid credential_configurations_supported format {credential_type}"
                 )
-
-    def _build_status_list_payload(self, user_id: str):
-        logger.debug(
-            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-            f"Params [user_id: {user_id}]"
-        )
-        credential = self._db_credential_engine.get("get_credential_by_user_id", user_id)
-        return {
-            "status_list": {
-                "idx": "credential.incremental_id",
-                "uri": f"{self.status_endpoint}/{"credential.incremental_id"}",
-            }
-        }
 
     def revoke_on_credential_reissuance(self, user_id: str, auth_session: AuthorizationSession, cred_key: str):
         revoke_on_credential_reissuance = self.config["endpoints"]["credential"]["revoke_on_credential_reissuance"]
@@ -438,7 +426,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                                                     parse_credential_entity(user_id, credential_type, auth_session))
         return {
             "status_list": {
-                "idx": "credential.incremental_id",
+                "idx": incremental_id,
                 "uri": f"{self.status_endpoint}/{incremental_id}",
             }
         }
@@ -463,7 +451,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                                                     parse_credential_entity(user_id, credential_type, auth_session))
         return {
             "status_list": {
-                "idx": "credential.incremental_id",
+                "idx": incremental_id,
                 "uri": f"{self.status_endpoint}/{incremental_id}",
             }
         }
@@ -488,7 +476,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             incremental_id = credential.incremental_id
         return {
             "status_list": {
-                "idx": "credential.incremental_id",
+                "idx": incremental_id,
                 "uri": f"{self.status_endpoint}/{incremental_id}",
             }
         }
