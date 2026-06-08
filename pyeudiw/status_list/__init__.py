@@ -311,7 +311,7 @@ def _loads_cbor_data(data: Any, index: int):
         Any: The Python object resulting from CBOR decoding the selected item.
     """
 
-    if isinstance(data, list):
+    if isinstance(data, (list, tuple)):
         return cbor2.loads(data[index])
-    else:
-        return cbor2.loads(data.value[index])
+
+    return cbor2.loads(data.value[index])
