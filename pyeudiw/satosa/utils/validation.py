@@ -88,11 +88,11 @@ def validate_jws(jws: str, sign_jwks: dict|list[dict], supported_sign_algs: list
         jws_helper = JWSHelper(sign_jwks)
         header = decode_jwt_header(jws)
         signing_alg = header.get("alg")
-        if not supported_sign_algs:
-            logger.warning("No supported signing algorithms whitelist provided")
-        elif signing_alg not in supported_sign_algs:
+        if supported_sign_algs and signing_alg not in supported_sign_algs:
             logger.error("Unsupported JWS signing algorithm")
         else:
+            if not supported_sign_algs:
+                logger.warning("No supported signing algorithms whitelist provided")
             jws_helper.verify(jws)
             return True
 
@@ -196,7 +196,6 @@ def validate_oauth_client_attestation(client_attestation: str, authority_hints: 
     if not client_attestation:
         logger.error(f"Invalid OAuth-Client-Attestation")
         raise InvalidRequestException("JWS validation failed: invalid OAuth-Client-Attestation")
-    print("client_attestation: ", client_attestation)
     try: #decode and validate header & payload of attestation
         attestation_jwt_header = decode_jwt_header(client_attestation)
         attestation_jwt_payload = decode_jwt_payload(client_attestation)

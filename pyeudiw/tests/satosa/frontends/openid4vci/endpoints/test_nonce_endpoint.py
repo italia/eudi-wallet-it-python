@@ -12,7 +12,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     do_test_invalid_request_method,
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
-    INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
+    INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED,
     INVALID_METHOD_FOR_POST_REQ,
     MOCK_BASE_URL,
     MOCK_INTERNAL_ATTRIBUTES,
@@ -20,7 +20,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     MOCK_PYEUDIW_FRONTEND_CONFIG,
     get_mocked_satosa_context,
 )
-from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
+from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def nonce_handler() -> NonceHandler:
 
 @pytest.fixture
 def context() -> Context:
-    return get_mocked_satosa_context(content_type=APPLICATION_JSON)
+    return get_mocked_satosa_context(content_type=FORM_URLENCODED)
 
 
 @pytest.mark.parametrize("method", INVALID_METHOD_FOR_POST_REQ)
@@ -40,7 +40,7 @@ def test_invalid_request_method(nonce_handler, context, method):
     do_test_invalid_request_method(nonce_handler, context, method)
 
 
-@pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON)
+@pytest.mark.parametrize("content_type", INVALID_CONTENT_TYPES_NOT_FORM_URLENCODED)
 def test_invalid_content_type(nonce_handler, context, content_type):
     context.http_headers[HTTP_CONTENT_TYPE_HEADER] = content_type
     do_test_invalid_content_type(nonce_handler, context, content_type)
@@ -64,6 +64,7 @@ def test_invalid_request(nonce_handler, context, request_nonce):
 
 def test_valid_request(nonce_handler, context):
     nonce_handler.db_engine = MagicMock()
+    nonce_handler.db_engine.write.return_value = 1
     result = nonce_handler.endpoint(context)
 
     assert result.status == "200 OK"

@@ -127,7 +127,7 @@ class TokenHandler(VCIBaseEndpoint):
 
             data = self._get_body(context)
             if data.get("grant_type") != "authorization_code": #refresh token unsupported
-                raise InvalidRequestException("Unsupported grant_type: %f".format(data.get("grant_type")))
+                raise InvalidRequestException(f"Unsupported grant_type: {data.get('grant_type')}")
 
 
             entity = self.db_engine.search_session_by_field("auth_code", data.get("code"))

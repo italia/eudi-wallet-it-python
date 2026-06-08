@@ -182,11 +182,13 @@ MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG = {
         "dc_sd_jwt_EuropeanDisabilityCard": {
             "format": "dc+sd-jwt",
             "scope": "EuropeanDisabilityCard",
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/EuropeanDisabilityCard",
         },
         "dc_sd_jwt_mDL": {
             "format": "dc+sd-jwt",
             "scope": "mDL",
             "cryptographic_binding_methods_supported": ["jwk"],
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/mDL",
         },
         "mso_mdoc_mDL": {
             "doctype": "org.iso.18013.5.1.mDL",
@@ -407,7 +409,7 @@ def get_mocked_openid4vpi_entity() -> dict:
         "session_id": "sessionid",
         "remote_flow_typ": RemoteFlowType.SAME_DEVICE,
         "client_id": "client123",
-        "code_challenge": "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043",  # as sha256("code_verifier".encode('utf-8')).hexdigest()
+        "code_challenge": "73oehA2tBul5grZPhXUGQwNAjxh69zNES8bu2bVD0EM",  # base64url(sha256("code_verifier")) per PKCE S256
         "code_challenge_method": "S256",
         "redirect_uri": "https://client.com",
         "authorization_details": [],

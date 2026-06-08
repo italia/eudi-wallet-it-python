@@ -79,11 +79,11 @@ class StatusListHandler(VCIBaseEndpoint):
     def endpoint(self, context: Context):
         logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         try:
-            requested_id = context.path.split('/')[-1]
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
             validate_content_type(
                 context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
             )
+            requested_id = (context.path or "").split('/')[-1]
             accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
             payload = self._build_status_list_payload(requested_id)
             logger.debug("Accept header: %s, Payload: %s", accept_header, payload)
@@ -100,7 +100,9 @@ class StatusListHandler(VCIBaseEndpoint):
                         content=APPLICATION_JSON,
                     )
                 case AcceptHeaderEnum.STATUS_LIST_CWT.value:
-                    lst_bytes = payload["status_list"]["lst"]
+                    # encode_cwt_status_list_token compresses internally, so pass
+                    # the uncompressed bitstring to avoid double compression.
+                    lst_bytes = zlib.decompress(payload["status_list"]["lst"])
                     del payload["status_list"]
                     payload_parts = ({}, {}, payload)
                     token = encode_cwt_status_list_token(

@@ -16,6 +16,9 @@ class CredentialStorage(MongoStorage):
     This class provides methods to initialize, retrieve, and update session data stored in a MongoDB database.
     """
 
+    #: Identifier of the counter document used to allocate status list indexes.
+    _INCREMENTAL_ID_COUNTER = "credential_incremental_id"
+
     def __init__(self, conf: dict, url: str, connection_params=None) -> None:
         if connection_params is None:
             connection_params = {}
@@ -39,6 +42,15 @@ class CredentialStorage(MongoStorage):
             self.credentials = getattr(
                 self.db, self.storage_conf["db_credentials_collection"]
             )
+            self.counters = getattr(
+                self.db,
+                self.storage_conf.get("db_counters_collection", "credential_counters"),
+            )
+            # Defense in depth: even if two issuers ever computed the same id,
+            # the unique index makes the duplicate insert fail rather than
+            # silently corrupting the status list. Creating an index is
+            # idempotent, so it is safe to call on every (re)connect.
+            self.credentials.create_index("incremental_id", unique=True)
 
     def get_credential_by_user_id(self, user_id: str) -> CredentialEntity:
         return self.get_by_field("user_id", user_id)
@@ -67,13 +79,30 @@ class CredentialStorage(MongoStorage):
         output = self.credentials.find_one(sort=[("incremental_id", -1)])
         return output
 
+    def _next_incremental_id(self) -> int:
+        """
+        Atomically allocate a unique, monotonically increasing status list index.
+
+        This relies on a single MongoDB ``findAndModify`` (``$inc``) operation,
+        which the server guarantees to execute atomically. Unlike a
+        read-max-then-increment approach, concurrent issuers can never observe
+        the same value, so parallel workers never collide on a status list
+        index. The first allocated id is ``1``.
+
+        :return: the freshly allocated incremental id.
+        :rtype: int
+        """
+        counter = self.counters.find_one_and_update(
+            {"_id": self._INCREMENTAL_ID_COUNTER},
+            {"$inc": {"seq": 1}},
+            upsert=True,
+            return_document=pymongo.ReturnDocument.AFTER,
+        )
+        return counter["seq"]
+
     def add_credential_for_user(self, credential_entity: CredentialEntity) -> int:
         self._connect()
-        max_id = self.count_credential()
-        if max_id is None:
-            credential_entity.incremental_id = 1
-        else:
-            credential_entity.incremental_id = max_id["incremental_id"] + 1
+        credential_entity.incremental_id = self._next_incremental_id()
         self.credentials.insert_one(credential_entity.__dict__)
         return credential_entity.incremental_id
 

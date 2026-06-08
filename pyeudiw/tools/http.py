@@ -33,7 +33,8 @@ def http_get(
         "timeout": httpc_params["session"]["timeout"],
     }
     try:
-        response = requests.get(url, **_conf)
+        # nosec B113: timeout is set via _conf["timeout"], which Bandit cannot detect through **_conf unpacking
+        response = requests.get(url, **_conf)  # nosec B113
     except requests.exceptions.ConnectionError as e:
         raise HttpError(f"Connection error: {e}")
     if response.status_code != 200:

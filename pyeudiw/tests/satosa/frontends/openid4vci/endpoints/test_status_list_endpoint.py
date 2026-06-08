@@ -1,4 +1,5 @@
 import zlib
+from base64 import urlsafe_b64decode
 from copy import deepcopy
 from unittest.mock import patch
 
@@ -14,6 +15,7 @@ from pyeudiw.status_list import (
     STATUS_LIST_JWT,
     decode_cwt_status_list_token,
 )
+from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
     assert_invalid_request_application_json,
     do_test_invalid_content_type,
@@ -33,7 +35,7 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     get_mocked_satosa_context,
     mock_deserialized_overridable,
 )
-from pyeudiw.tools.content_type import ACCEPT_HEADER, APPLICATION_JSON
+from pyeudiw.tools.content_type import HTTP_ACCEPT_HEADER, APPLICATION_JSON
 
 _STATUS_LIST_BASE_PATH = f"{BASE_PACKAGE}.endpoints.status_list_endpoint"
 
@@ -128,7 +130,7 @@ def test_missing_configurations_raises(config, missing_fields):
 def test_invalid_accept_header(status_list_handler, context, accept_header, error_desc):
     ctx = deepcopy(context)
     if accept_header:
-        ctx.http_headers[ACCEPT_HEADER] = accept_header
+        ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
     assert_invalid_request_application_json(
         status_list_handler.endpoint(ctx), error_desc
     )
@@ -145,38 +147,26 @@ status_array = [
 
 def test_should_return_status_list_jwt_credentials(status_list_handler, context):
     should_return_status_list(
-        status_list_handler,
-        context,
-        STATUS_LIST_JWT,
-        status_array,
-        {"bits": 1, "lst": "01010"},
+        status_list_handler, context, STATUS_LIST_JWT, status_array
     )
 
 
 def test_should_return_status_list_jwt_without_credentials(
     status_list_handler, context
 ):
-    should_return_status_list(
-        status_list_handler, context, STATUS_LIST_JWT, [], {"bits": 1, "lst": ""}
-    )
+    should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, [])
 
 
 def test_should_return_status_list_cwt_credentials(status_list_handler, context):
     should_return_status_list(
-        status_list_handler,
-        context,
-        STATUS_LIST_CWT,
-        status_array,
-        {"bits": 1, "lst": "01010"},
+        status_list_handler, context, STATUS_LIST_CWT, status_array
     )
 
 
 def test_should_return_status_list_cwt_without_credentials(
     status_list_handler, context
 ):
-    should_return_status_list(
-        status_list_handler, context, STATUS_LIST_CWT, [], {"bits": 1, "lst": ""}
-    )
+    should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, [])
 
 
 def should_return_status_list(
@@ -184,30 +174,32 @@ def should_return_status_list(
     context: Context,
     accept_header: str,
     status_list: list[dict],
-    expected_status_list: dict,
+    expected_bits: int = 1,
 ):
-    status_list_handler._db_credential_engine.get_all_sorted_by_incremental_id.return_value = (
-        status_list
-    )
+    status_list_handler._db_credential_engine.get.return_value = status_list
     ctx = deepcopy(context)
-    ctx.http_headers[ACCEPT_HEADER] = accept_header
+    ctx.path = f"{MOCK_NAME}/status/1"
+    ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
     result = status_list_handler.endpoint(ctx)
     assert result.status == "200 OK"
     if accept_header == STATUS_LIST_JWT:
         credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(
             result.message
         )
+        encoded_lst = credential["status_list"]["lst"]
+        padded = encoded_lst + "=" * (-len(encoded_lst) % 4)
+        lst_bytes = zlib.decompress(urlsafe_b64decode(padded))
+        bits = credential["status_list"]["bits"]
     elif accept_header == STATUS_LIST_CWT:
         cwt = decode_cwt_status_list_token(result.message)
+        lst_bytes = zlib.decompress(cwt[2][65533]["lst"])
+        bits = cwt[2][65533]["bits"]
         credential = {
             "exp": cwt[2][6],
             "sub": cwt[2][2],
             "ttl": cwt[2][65534],
             "iat": cwt[2][4],
-            "status_list": {
-                "bits": cwt[2][65533]["bits"],
-                "lst": zlib.decompress(cwt[2][65533]["lst"]).decode(),
-            },
+            "status_list": {"bits": bits},
         }
     else:
         pytest.fail(f"Unexpected accept header value: {accept_header}")
@@ -219,5 +211,15 @@ def should_return_status_list(
     )
     assert credential["ttl"] == MOCK_STATUS_LIST_CONFIG["ttl"]
     assert credential["exp"] - credential["iat"] == MOCK_STATUS_LIST_CONFIG["exp"]
-    assert credential["status_list"]["bits"] == expected_status_list["bits"]
-    assert credential["status_list"]["lst"] == expected_status_list["lst"]
+    assert credential["status_list"]["bits"] == expected_bits
+
+    # The published list must report each credential's status at exactly the
+    # index advertised as `idx` in the Referenced Token (== incremental_id).
+    if not status_list:
+        assert lst_bytes == b""
+        return
+    helper = StatusListTokenHelper(
+        header={}, payload={}, bits=bits, status_list=lst_bytes
+    )
+    for entry in status_list:
+        assert helper.get_status(entry["incremental_id"]) == int(entry["revoked"])
