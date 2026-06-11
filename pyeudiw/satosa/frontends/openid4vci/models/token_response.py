@@ -8,6 +8,11 @@ from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
 )
 from pyeudiw.tools.content_type import APPLICATION_JSON
 
+# OAuth token_type value for DPoP-bound access tokens (RFC 9449). The literal is
+# a public token-type label, not a credential; nosec silences bandit's B105
+# heuristic that flags any identifier containing "token".
+TOKEN_TYPE = "DPoP"  # nosec B105
+
 
 class TokenResponse(BaseModel):
     """
@@ -37,7 +42,7 @@ class TokenResponse(BaseModel):
         data = TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token,
-            token_type="DPOP",  # nosec B106
+            token_type=TOKEN_TYPE,
             expires_in=expires_in,
             authorization_details=(
                 None

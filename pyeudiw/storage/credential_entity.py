@@ -1,9 +1,5 @@
-import itertools
-
 from pydantic import BaseModel, Field
-
-_incremental_counter = itertools.count(1)
-
+from datetime import datetime, timezone
 
 class CredentialEntity(BaseModel):
     """
@@ -11,6 +7,14 @@ class CredentialEntity(BaseModel):
     """
 
     user_id: str  # as fk for user.document_id
-    incremental_id: int = Field(default_factory=lambda: next(_incremental_counter))
+    incremental_id: int
     revoked: bool = False
     identifier: str
+    document_id: str
+    creation_date: float
+    update_date: float = Field(
+        default_factory=lambda: datetime.now(tz=timezone.utc).timestamp()
+    )
+    revocation_date: float = 0.0
+    type: str
+    credential_id: str

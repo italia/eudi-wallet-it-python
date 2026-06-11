@@ -66,4 +66,4 @@ class UserCredentialEngine:
                 )
             self._db_credential_engine = DBEngine(credential_storage_config)
 
-        return self._db_user_engine
+        return self._db_credential_engine

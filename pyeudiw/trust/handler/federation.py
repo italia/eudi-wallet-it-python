@@ -1,5 +1,6 @@
 import json
 import logging
+import inspect
 from typing import Any, Callable, List, Union
 
 from satosa.context import Context
@@ -20,6 +21,7 @@ from pyeudiw.trust.exceptions import MissingProtocolSpecificJwks, UnknownTrustAn
 from pyeudiw.trust.handler.commons import DEFAULT_HTTPC_PARAMS
 from pyeudiw.trust.handler.interface import TrustHandlerInterface
 from pyeudiw.trust.model.trust_source import TrustEvaluationType, TrustSourceData
+from ...tools.http import http_get
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,95 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 )
 
     def extract_and_update_trust_materials(self, issuer, trust_source):
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [issuer: {issuer}, trust_source: {trust_source}]"
+        )
+        # check if issuer is not null
+        if issuer:
+            #check entity configuration for issuer
+            metadata = ""
+            try:
+                metadata = http_get(f'{issuer.strip("/")}/.well-known/openid-federation')
+            except Exception as e:
+                logger.warning(f"Cannot fetch metadata for issuer {issuer}: {e}")
+            if not metadata:
+                logger.warning("Cannot find metadata for issuer, cannot extract trust materials.")
+                return trust_source
+            metadata_list = [self.__get_entity_configuration(authority) for authority in metadata["authority_hints"]]
+            if not metadata_list:
+                logger.warning("Cannot find metadata for issuer authorities, cannot extract trust materials.")
+            for metadata_ta in metadata_list:
+                subordinate_statement = self.__get_subordinate_statement(metadata_ta, issuer)
+                if subordinate_statement:
+                    check = self.__check_subordinate_statement(subordinate_statement, metadata_ta, issuer)
+                    if check:
+                        _jwk = metadata.get("metadata", {}).get("wallet_solution", {}).get("jwks",{}).get("keys",[])
+                        trust_source.add_trust_param(
+                            FederationHandler._TRUST_TYPE,
+                            TrustEvaluationType(
+                                attribute_name=FederationHandler._TRUST_PARAMETER_NAME,
+                                trust_chain=metadata.get("metadata", {}).get("federation_entity", {}).get("federation_fetch_endpoint",""), # @Todo We need to talking with Giuseppe
+                                jwks=_jwk,
+                                expiration_date=0,
+                                trust_handler_name=str(self.__class__.__name__),
+                            ),
+                        )
+                        break
         return trust_source
+
+    def __check_subordinate_statement(self, jwt: str, metadata_trust_anchor: dict, sub: str ) -> bool:
+        """
+        Check if the given JWT is a valid subordinate statement for trust anchor.
+        :param jwt: The JWT to check
+        :param metadata_trust_anchor: The metadata of the trust anchor to check against
+        """
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [sub: {sub}]"
+        )
+        _jwk = JWK(metadata_trust_anchor["jwks"]["keys"][0]) # @Todo we should check all the jwks, but for now we take the first one. Talking with Giuseppe about it.
+        jwshelper = JWSHelper(_jwk.as_dict())
+        try:
+            jwshelper.verify(jwt)
+            output = decode_jwt_payload(jwt)
+            if output.get("sub") != sub:
+                logger.warning(f"Subordinate statement sub {output.get('sub')} does not match expected sub {sub}")
+                return False
+            return True
+        except Exception as e:
+            logger.warning(f"Cannot verify subordinate statement: {e}")
+            return False
+
+    def __get_subordinate_statement(self, metadata: dict, endpoint: str) -> str:
+        """
+        Get the subordinate statement for the given endpoint.
+        :param endpoint: The endpoint to get the subordinate statement for
+        """
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [metadata: {metadata}, endpoint: {endpoint}]"
+        )
+        fetch_endpoint = metadata.get("metadata", {}).get("federation_entity", {}).get("federation_fetch_endpoint","")
+        if not fetch_endpoint:
+            logger.warning(f"Cannot find fetch endpoint, cannot get subordinate statement.")
+        jwt = http_get(f'{fetch_endpoint.strip("/")}?sub={endpoint}', decode_output= False)
+        return jwt
+
+
+    def __get_entity_configuration(self, endpoint: str) -> str:
+        """
+        Check if the given endpoint is a trust anchor.
+        :param endpoint: The endpoint to check
+        """
+        logger.debug(
+            f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
+            f"Params [endpoint: {endpoint}]"
+        )
+        metadata_ta = http_get(f'{endpoint.strip("/")}/.well-known/openid-federation')
+        if not metadata_ta:
+            logger.warning(f"Cannot find metadata for endpoint {endpoint}, cannot check if it's a trust anchor.")
+        return metadata_ta
 
     def get_metadata(self, issuer, trust_source):
         return trust_source

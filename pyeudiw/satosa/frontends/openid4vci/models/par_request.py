@@ -48,9 +48,7 @@ class ParRequest(OpenId4VciBaseModel):
                 config.code_challenge_methods_supported, endpoint
             )
 
-        if config.scopes_supported:
-            self.validate_scope(config.scopes_supported, endpoint)
-
+        self.validate_scope(config.scopes_supported, endpoint)
         self.validate_authorization_details(endpoint)
         if not self.scope and (
             not self.authorization_details or len(self.authorization_details) == 0
@@ -136,8 +134,11 @@ class ParRequest(OpenId4VciBaseModel):
 
     def validate_scope(self, scopes_supported: list[str], endpoint: str):
         self.scope = self.strip(self.scope)
-        if self.scope:
-            scopes = self.scope.split(" ")
+        if not self.scope:
+            raise InvalidRequestException("invalid `scope` parameter")
+        else:
+            if not (scopes := self.scope.split(" ")):
+                raise InvalidRequestException("invalid `scope` parameter")
             for s in scopes:
                 if s not in scopes_supported:
                     logger.error(f"invalid scope value '{s}' in `{endpoint}` endpoint")
@@ -150,7 +151,6 @@ class SignedParRequest(OpenId4VciBaseModel):
     exp: int = None
     iat: int = None
     response_type: str = None
-    response_mode: str = None
     client_id: str = None
     state: str = None
     code_challenge: str = None
@@ -179,12 +179,11 @@ class SignedParRequest(OpenId4VciBaseModel):
             logger.error(f"invalid iat {self.iat} in request `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `iat` parameter")
 
-        if int(self.exp) - int(self.iat) > 300:
-            logger.error(f"expired request token in `{endpoint}` endpoint")
-            raise InvalidRequestException("expired token")
+        # if int(self.exp) - int(self.iat) > 300: #todo check whether it is mandatory for the jwt to have a maximum validity of 300
+        #     logger.error(f"expired request token in `{endpoint}` endpoint")
+        #     raise InvalidRequestException("expired token")
 
         self.validate_response_type(config.response_types_supported, endpoint)
-        self.validate_response_mode(config.response_modes_supported, endpoint)
         self.validate_code_challenge(endpoint)
         self.validate_code_challenge_method(
             config.code_challenge_methods_supported, endpoint
@@ -211,8 +210,11 @@ class SignedParRequest(OpenId4VciBaseModel):
 
     def validate_scope(self, scopes_supported: list[str], endpoint: str):
         self.scope = self.strip(self.scope)
-        if self.scope:
-            scopes = self.scope.split(" ")
+        if not self.scope:
+            raise InvalidRequestException("invalid `scope` parameter")
+        else:
+            if not (scopes := self.scope.split(" ")):
+                raise InvalidRequestException("invalid `scope` parameter")
             for s in scopes:
                 if s not in scopes_supported:
                     logger.error(f"invalid scope value '{s}' in `{endpoint}` endpoint")
@@ -234,17 +236,6 @@ class SignedParRequest(OpenId4VciBaseModel):
                 f"invalid code_challenge_method {self.code_challenge_method} in `{endpoint}` endpoint"
             )
             raise InvalidRequestException("invalid `code_challenge_method` parameter")
-
-    def validate_response_mode(
-        self, response_modes_supported: list[str], endpoint: str
-    ):
-        self.response_mode = self.strip(self.response_mode)
-        self.check_missing_parameter(self.response_mode, "response_mode", endpoint)
-        if self.response_mode not in response_modes_supported:
-            logger.error(
-                f"invalid response_mode {self.response_mode} in `{endpoint}` endpoint"
-            )
-            raise InvalidRequestException("invalid `response_mode` parameter")
 
     def validate_response_type(
         self, response_types_supported: list[str], endpoint: str
@@ -311,11 +302,6 @@ class SignedParRequest(OpenId4VciBaseModel):
     def validate_jti(self, endpoint: str):
         self.jti = self.strip(self.jti)
         self.check_missing_parameter(self.jti, "jti", endpoint)
-
-        if self.iss not in self.jti:
-            logger.error(f"invalid jti {self.jti} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `jti` parameter")
-
-        if len(self.jti) - len(self.iss) == 0:
-            logger.error(f"invalid jti {self.jti} in request `{endpoint}` endpoint")
-            raise InvalidRequestException("invalid `jti` parameter")
+        # NOTE: The uniqueness validation of the (iss, jti) pair must be handled outside
+        # this model. This model should only handle schema validation and data integrity.
+        # According to RFC 7519 and IT-Wallet 1.3.3 specifications, it is necessary to prevent Replay Attacks.

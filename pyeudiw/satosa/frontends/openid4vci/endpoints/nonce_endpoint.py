@@ -1,3 +1,4 @@
+import time
 from uuid import uuid4
 
 from satosa.context import Context
@@ -12,15 +13,16 @@ from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
 from pyeudiw.satosa.frontends.openid4vci.models.nonce_response import NonceResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
-from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_request_method,
 )
-from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
+from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
 
 
 class NonceHandler(VCIBaseEndpoint):
+
+    _DEFAULT_DURATION = 300
 
     def __init__(
         self,
@@ -29,6 +31,7 @@ class NonceHandler(VCIBaseEndpoint):
         base_url: str,
         name: str,
         *args,
+        **kwargs
     ):
         """
         Initialize the nonce endpoint class.
@@ -43,6 +46,7 @@ class NonceHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
+        self.expired_sec = self.config.get("nonce_duration") or self._DEFAULT_DURATION
 
     def endpoint(self, context: Context) -> Response:
         """
@@ -57,15 +61,18 @@ class NonceHandler(VCIBaseEndpoint):
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
             validate_content_type(
-                context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
+                context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED
             )
             if self._get_body(context):
                 return self._handle_400(
                     context, "Request body must be empty for nonce endpoint"
                 )
             c_nonce = str(uuid4())
-            self.db_engine.update_nonce_by_session_id(get_session_id(context), c_nonce)
+            ts = round(time.time() * 1000)
+            if self.db_engine.write("insert_nonce", nonce=c_nonce, created_at=ts, expires_in=self.expired_sec) < 1:
+                return self._handle_500(context, "error during nonce generating", Exception("Nonce error"))
             return NonceResponse.to_response(c_nonce)
+
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:

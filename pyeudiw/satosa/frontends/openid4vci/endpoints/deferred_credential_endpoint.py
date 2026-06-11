@@ -14,7 +14,7 @@ from pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_res
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     OpenId4VciBaseModel,
 )
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 
 
 class DeferredCredentialHandler(BaseCredentialEndpoint):
@@ -23,7 +23,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
     """
 
     def validate_request(
-        self, context: Context, entity: OpenId4VCIEntity
+        self, context: Context, entity: AuthorizationSession
     ) -> OpenId4VciBaseModel:
         """
         Validate a POST request to the deferred credential endpoint.
@@ -34,7 +34,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context containing request data.
-            entity (OpenId4VCIEntity): The stored session/entity related to the request.
+            entity (AuthorizationSession): The stored session/entity related to the request.
 
         Raises:
             pydantic.ValidationError: If the request body does not match the expected schema.
@@ -45,8 +45,8 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         )
 
     def to_response(
-        self, context: Context, entity: OpenId4VCIEntity, credential_id: str | None
-    ) -> Response:
+        self, context: Context, auth_session: AuthorizationSession, credential_id: str | None
+    , **kwargs) -> Response:
         """
         Generate a response containing the issued credential.
 
@@ -56,7 +56,7 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
 
         Args:
             context (Context): The SATOSA context.
-            entity (OpenId4VCIEntity): The entity containing stateful session data.
+            auth_session (AuthorizationSession): The entity containing stateful session data.
 
         Returns:
             Response: A SATOSA HTTP response with the issued credential.
@@ -65,6 +65,6 @@ class DeferredCredentialHandler(BaseCredentialEndpoint):
         return DeferredCredentialEndpointResponse.to_response(
             [
                 CredentialItem(credential=cred)
-                for cred in self.build_credential(context, credential_id)
+                for cred in self.build_credential(auth_session, credential_id)
             ]
         )

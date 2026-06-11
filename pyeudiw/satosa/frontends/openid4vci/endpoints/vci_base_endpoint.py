@@ -174,6 +174,35 @@ class VCIBaseEndpoint(BaseEndpoint):
             return authz_server.dpop_signing_alg_values_supported
         return None
 
+
+    @property
+    def client_attestation_signing_alg_values_supported(self) -> list[str] | None:
+        """
+        Get the supported client attestation signing algorithms.
+
+        Returns:
+            list[str]: List of supported signing algorithms.
+        """
+
+        authz_server = self.config_utils.get_oauth_authorization_server()
+        if authz_server:
+            return authz_server.client_attestation_signing_alg_values_supported
+        return None
+
+    @property
+    def client_attestation_pop_signing_alg_values_supported(self) -> list[str] | None:
+        """
+        Get the supported attestation pop signing algorithms.
+
+        Returns:
+            list[str]: List of supported signing algorithms.
+        """
+
+        authz_server = self.config_utils.get_oauth_authorization_server()
+        if authz_server:
+            return authz_server.client_attestation_pop_signing_alg_values_supported
+        return None
+
     @property
     def proof_jwt_required(self) -> bool:
         """

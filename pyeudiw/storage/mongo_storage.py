@@ -350,12 +350,30 @@ class MongoStorage(BaseStorage):
 
         return entity
 
-    def upsert_session(self, session_id: str, data: dict) -> tuple[str, dict]:
-        return self._upsert_entry(
-            "session_id",
-            self.storage_conf["db_sessions_collection"],
-            {"session_id": session_id, **data},
-        )
+    def upsert_session(self, session_id: str, data: dict) -> bool | None:
+        try:
+            db_collection = getattr(self, self.storage_conf["db_sessions_collection"])
+            result = db_collection.update_one({"session_id": session_id}, {"$set": data}, upsert=True)
+
+            if not result.acknowledged:
+                print("Operation not acknowledged by the database.")
+                return False
+
+            elif result.upserted_id is not None:
+                print(f"Upsert successful: New document created with ID {result.upserted_id}.")
+                return True
+
+            if result.modified_count > 0:
+                print("Update successful: Existing document has been modified.")
+                return True
+
+            if result.matched_count > 0:
+                print("No changes required: Existing document already matches the update data.")
+                return True
+
+            return False
+        except Exception as e:
+            raise StorageEntryUpdateFailed("Database operation failed: an error occurring while upsert session") from e
 
     def search_session_by_field(self, field: str, value: str) -> dict:
         self._connect()
@@ -391,6 +409,31 @@ class MongoStorage(BaseStorage):
         )
 
         return entity_id
+
+    def insert_nonce(self, nonce: str, created_at: int, expires_in: int):
+        self._connect()
+        entity = {"nonce": nonce, "created_at": created_at, "expires_in": expires_in, "used_at": None}
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.insert_one(entity)
+
+    def get_nonce(self, nonce: str):
+        """Returns a non-consumed nonce"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        try:
+            entity = _db.find_one({"nonce": nonce, "used_at": None})
+        except:
+            return None
+        return entity
+
+    def consume_nonce(self, nonce: str, ts):
+        """Set used_at timestamp"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.update_one(
+            {"nonce": nonce},
+            {"$set": {"used_at": ts}}
+        )
 
     def add_trust_source(self, trust_source: dict) -> str:
         return self._upsert_entry(

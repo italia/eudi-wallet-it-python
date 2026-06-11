@@ -1,5 +1,6 @@
 HTTP_CONTENT_TYPE_HEADER = "HTTP_CONTENT_TYPE"
 CONTENT_TYPE_HEADER = "content-type"
+HTTP_ACCEPT_HEADER = "HTTP_ACCEPT"
 ACCEPT_HEADER = "accept"
 CACHE_CONTROL_HEADER = "Cache-Control"
 APPLICATION_JSON = "application/json"
@@ -58,6 +59,17 @@ def get_accept_header(headers: list[tuple[str, str]]) -> str | None:
     """
     return _get_header(headers, ACCEPT_HEADER)
 
+def get_value_from_key(headers: list[tuple[str, str]], key: str) -> str | None:
+    """
+    Retrieve the value of a header from a collection of headers based on a specified key.
+    Args:
+        headers (list[tuple[str, str]]): A list of header key-value pairs.
+        key (str): The header name to search for.
+    Returns:
+        str | None: The value of the specified header if found, None otherwise.
+    """
+    return _get_header(headers, key)
+
 
 def _get_header(headers, key):
     """
@@ -82,7 +94,7 @@ def _get_header(headers, key):
             (
                 v
                 for h in headers
-                if isinstance(h, (tuple, list)) and len(h) == 2
+                if isinstance(h, (tuple, list)) # and len(h) == 2
                 for k, v in [h]
                 if k.lower() == key.lower()
             ),

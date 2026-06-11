@@ -3,6 +3,7 @@ import hashlib
 import logging
 from typing import Optional
 
+from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import KidError
 from pyeudiw.jwk.schemas.public import JwkSchema
 from pyeudiw.jwt.jws_helper import JWSHelper
@@ -105,8 +106,13 @@ class DPoPVerifier:
         if self.dpop_authz_token:
             _ath = hashlib.sha256(self.dpop_authz_token.encode())
             _ath_b64 = base64.urlsafe_b64encode(_ath.digest()).rstrip(b"=").decode()
-            proof_valid = _ath_b64 == payload["ath"]
+            if _ath_b64 != payload["ath"]:
+                logger.warning("ath validaton failed")
+                return False
 
-            return proof_valid
-
+            token_payload = decode_jwt_payload(self.dpop_authz_token)   #dpop/token binding
+            b64_thumbprint = base64.urlsafe_b64encode(JWK(key=self.public_jwk).thumbprint).decode("utf-8").rstrip("=")
+            if b64_thumbprint != token_payload.get("cnf", {}).get("jkt"):
+                logger.warning("dpop/token binding failed")
+                return False
         return True

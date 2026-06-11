@@ -1,5 +1,6 @@
 import secrets
 
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from pydantic import ValidationError
 from satosa.context import Context
 
@@ -22,13 +23,13 @@ from pyeudiw.satosa.frontends.openid4vci.models.par_request import (
 )
 from pyeudiw.satosa.frontends.openid4vci.models.par_response import ParResponse
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
 from pyeudiw.satosa.utils.validation import (
     validate_content_type,
     validate_oauth_client_attestation,
     validate_oauth_client_attestation_pop,
-    validate_request_method,
+    validate_request_method, OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER,
 )
 from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 
@@ -56,11 +57,11 @@ class ParHandler(VCIBaseEndpoint):
         """
 
         super().__init__(config, internal_attributes, base_url, name)
-        self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
         self.force_same_device_flow_referer_criteria = self.config.get(
             "force_same_device_flow_referer_criteria"
         )
+        self.federation_config = self.config.get("trust", {}).get("federation", {}).get("config", {})
 
     def endpoint(self, context: Context):
         """
@@ -124,10 +125,18 @@ class ParHandler(VCIBaseEndpoint):
 
             if self.wallet_attestation_required:
                 try:
-                    validate_oauth_client_attestation_pop(context)
-                    oauth_attestation = validate_oauth_client_attestation(
-                        context, self.dpop_signing_alg_values_supported
-                    )
+                    header_client_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_HEADER)
+                    oauth_attestation = validate_oauth_client_attestation(header_client_attestation,
+                                                                          self.federation_config.get("authority_hints"),
+                                                                          self.federation_config.get("httpc_params"),
+                                                                          self.client_attestation_signing_alg_values_supported)
+
+                    cnf_key = oauth_attestation.get("cnf", {}).get("jwk", {})
+                    pop_attestation = context.http_headers.get(OAUTH_CLIENT_ATTESTATION_POP_HEADER)
+                    validate_oauth_client_attestation_pop(pop_attestation,
+                                                          cnf_key,
+                                                          self.client_attestation_pop_signing_alg_values_supported)
+
                 except InvalidRequestException as e:
                     self._log_error(
                         e.__class__.__name__,
@@ -135,13 +144,10 @@ class ParHandler(VCIBaseEndpoint):
                     )
                     return self._handle_400(context, str(e), e)
 
-                if (
-                    not oauth_attestation
-                    or oauth_attestation["thumbprint"] != client_id
-                ):
+                if key_from_jwk_dict(cnf_key).thumbprint("SHA-256").decode() != client_id: #reference RFC 6749 + IT-WALLET 1.3.3 IT specifications
                     self._log_error(
                         CLASS_NAME,
-                        "invalid request parameters for `par` endpoint, missing OAuth-Client-Attestation-PoP",
+                        "invalid request parameters for `par` endpoint, invalid client_id in PAR request",
                     )
                     return self._handle_400(
                         context,
@@ -151,11 +157,12 @@ class ParHandler(VCIBaseEndpoint):
 
             request = data.get("request", "").strip()
 
-            if request and (
+            if request and self.wallet_attestation_required and (
                 self.signed_par_request == "true" or self.signed_par_request == "both"
             ):
                 try:
-                    payload = self.jws_helper.verify(request)
+                    jws_helper = JWSHelper(cnf_key) #todo check if it is right key
+                    payload = jws_helper.verify(request)
 
                     if not isinstance(payload, dict):
                         self._log_error(
@@ -244,7 +251,7 @@ class ParHandler(VCIBaseEndpoint):
             Exception: If the DB operation fails.
         """
 
-        entity = OpenId4VCIEntity.new_entity(
+        entity = AuthorizationSession.new_entity(
             context,
             request_uri_part,
             par_request,

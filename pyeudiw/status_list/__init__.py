@@ -79,16 +79,12 @@ def encode_cwt_status_list_token(
     :return: The encoded CWT as a byte string.
     :rtype: bytes
     """
-
     # Compress the status list
     compressed_status_list = zlib.compress(status_list)
-
     # Insert the 'decoded_status_list' structure into the payload under claim key 65533
     payload = payload_parts[2]
-
     if payload_map:
         payload = _replace_keys(payload, payload_map)
-
     payload[65533] = {
         "bits": bits,
         "lst": compressed_status_list,
@@ -98,7 +94,14 @@ def encode_cwt_status_list_token(
     if 16 not in phdr:
         phdr[16] = STATUS_LIST_CWT
         if private_key:
-            kid = bytes.fromhex(private_key["KID"].decode("utf-8"))
+            # kid = bytes.fromhex(private_key["KID"].decode("utf-8"))
+            # phdr.setdefault(KID, kid)
+            # phdr.setdefault(Algorithm, pycose.algorithms.Es256)
+            kid = (
+                private_key["KID"].encode("utf-8")
+                if isinstance(private_key["KID"], str)
+                else private_key["KID"]
+            )
             phdr.setdefault(KID, kid)
             phdr.setdefault(Algorithm, pycose.algorithms.Es256)
 
@@ -201,34 +204,69 @@ def generate_status_list(
 
     return cbor2.dumps(status_list)
 
+def array_to_bitstring_v1(status_array: list[dict], bits: int = 1) -> bytes:
+    """
+    Encode a list of credential status entries into a Token Status List byte array.
+
+    Each entry is placed at the bit position equal to its ``incremental_id`` (the
+    same value advertised as ``idx`` in the Referenced Token's ``status_list``
+    claim), so the position the issuer writes is exactly the position a Relying
+    Party reads with :meth:`StatusListTokenHelper.get_status`.
+
+    Bits are packed least-significant-bit first within each byte, and bytes are
+    in natural ascending order, per draft-ietf-oauth-status-list Section 4.1.
+
+    :param status_array: status entries, each with ``incremental_id`` and ``revoked``.
+    :type status_array: list[dict]
+    :param bits: number of bits per status (one of 1, 2, 4, 8).
+    :type bits: int
+
+    :return: the uncompressed status list byte array.
+    :rtype: bytes
+    """
+
+    if bits not in (1, 2, 4, 8):
+        raise ValueError("Error: bits must be one of: 1, 2, 4, 8")
+
+    entries = list(status_array)
+    if not entries:
+        return b""
+
+    # Size the array to cover the highest index. Indexing by incremental_id
+    # (rather than the dense enumeration order) keeps idx == bit position even
+    # if some indices are absent from this snapshot.
+    max_index = max(status["incremental_id"] for status in entries)
+    total_bytes = (((max_index + 1) * bits) + 7) // 8
+    buffer = bytearray(total_bytes)
+    mask = (1 << bits) - 1
+
+    for status in entries:
+        index = status["incremental_id"]
+        value = (1 if status["revoked"] else 0) & mask
+        bit_position = index * bits
+        buffer[bit_position // 8] |= value << (bit_position % 8)
+
+    return bytes(buffer)
+
 
 def array_to_bitstring(status_array: list[dict], bit_size: int = 1) -> bytes:
     """
     Convert an array of status objects to a bitstring.
 
+    Thin wrapper around :func:`array_to_bitstring_v1` kept for backward
+    compatibility; both produce the same least-significant-bit-first layout
+    indexed by ``incremental_id``.
+
     :param status_array: The array of status objects.
     :type status_array: list[dict]
-    :param bit_size: The size of each bit in the bitstring.
+    :param bit_size: The size of each status in bits.
     :type bit_size: int
 
     :return: The resulting bitstring.
     :rtype: bytes
     """
 
-    status_array = sorted(status_array, key=lambda x: x["incremental_id"])
-
-    bitstring: int = 0
-    for status in status_array:
-        if status["revoked"]:
-            # Set bit to 1 if revoked
-            bitstring |= 1 << (len(status_array) - status["incremental_id"])
-        else:
-            # Clear bit to 0 if not revoked
-            bitstring &= ~(1 << (len(status_array) - status["incremental_id"]))
-
-    bit_length = len(status_array)
-    byte_length = (bit_length + 7) // 8
-    return bitstring.to_bytes(byte_length, byteorder="big", signed=False)
+    return array_to_bitstring_v1(status_array, bits=bit_size)
 
 
 def _replace_keys(input_dict: dict, field_map: dict) -> dict:
@@ -273,7 +311,7 @@ def _loads_cbor_data(data: Any, index: int):
         Any: The Python object resulting from CBOR decoding the selected item.
     """
 
-    if isinstance(data, list):
+    if isinstance(data, (list, tuple)):
         return cbor2.loads(data[index])
-    else:
-        return cbor2.loads(data.value[index])
+
+    return cbor2.loads(data.value[index])

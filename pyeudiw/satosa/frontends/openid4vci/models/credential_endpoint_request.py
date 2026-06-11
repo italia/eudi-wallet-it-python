@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import cast
 
@@ -12,7 +11,6 @@ from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
     AUTHORIZATION_DETAILS_CTX,
     CLIENT_ID_CTX,
     ENTITY_ID_CTX,
-    NONCE_CTX,
     PROOF_JWT_REQUIRED_CTX,
     OpenId4VciBaseModel,
 )
@@ -46,7 +44,7 @@ class ProofJWT(OpenId4VciBaseModel):
 
     alg: str = None
     typ: str = None
-    jwk: str = None
+    jwk: dict = None
     iss: str = None
     aud: str = None
     iat: int = None
@@ -75,15 +73,8 @@ class ProofJWT(OpenId4VciBaseModel):
         )
 
     def validate_jwk(self):
-        self.jwk = self.strip(self.jwk)
         self.check_missing_parameter(self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT)
-        try:
-            jwk_dict = json.loads(self.jwk)
-        except (json.JSONDecodeError, TypeError):
-            self.check_invalid_parameter(
-                True, self.jwk, "proof.jwt.jwk", CREDENTIAL_ENDPOINT
-            )
-        if not isinstance(jwk_dict, dict) or "kty" not in jwk_dict:
+        if not isinstance(self.jwk, dict) or "kty" not in self.jwk:
             logger.error("proof.jwt.jwk missing kty in request `credential` endpoint")
             raise InvalidRequestException("missing proof.jwt.jwk kty")
 
@@ -118,12 +109,6 @@ class ProofJWT(OpenId4VciBaseModel):
     def validate_nonce(self):
         self.nonce = self.strip(self.nonce)
         self.check_missing_parameter(self.nonce, "proof.jwt.nonce", CREDENTIAL_ENDPOINT)
-        self.check_invalid_parameter(
-            self.nonce != self.get_ctx(NONCE_CTX),
-            self.nonce,
-            "proof.jwt.nonce",
-            CREDENTIAL_ENDPOINT,
-        )
 
 
 class Proof(OpenId4VciBaseModel):

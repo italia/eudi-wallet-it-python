@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from pyeudiw.satosa.schemas.credential_specification import (
     CredentialSpecificationConfig,
@@ -22,3 +22,12 @@ class CredentialConfigurationsConfig(BaseModel):
     )
     credential_specification: Optional[Dict[str, CredentialSpecificationConfig]] = None
     status_list: Optional[StatusListConfig] = None
+    issuing_country: Optional[str] = None
+    issuing_authority: Optional[str] = None
+    nbf_delta: Optional[int] = 0
+
+    @field_validator('nbf_delta', mode='before')
+    @classmethod
+    def nbf_delta_default(cls, v):
+        if v is None: return 0
+        return v
