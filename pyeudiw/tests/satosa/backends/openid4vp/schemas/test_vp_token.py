@@ -1,7 +1,10 @@
 import pytest
 from pydantic import ValidationError
 
-from pyeudiw.satosa.backends.openid4vp.schemas.vp_token import VPTokenHeader, VPTokenPayload
+from pyeudiw.satosa.backends.openid4vp.schemas.vp_token import (
+    VPTokenHeader,
+    VPTokenPayload,
+)
 
 VP_TOKEN = {
     "header": {
@@ -35,13 +38,21 @@ def test_vp_token_header():
     # alg is ES256
     # it should fail if alg is not in supported_algorithms
     with pytest.raises(ValidationError):
-        VPTokenHeader.model_validate(VP_TOKEN["header"], context={"supported_algorithms": None})
+        VPTokenHeader.model_validate(
+            VP_TOKEN["header"], context={"supported_algorithms": None}
+        )
     with pytest.raises(ValidationError):
-        VPTokenHeader.model_validate(VP_TOKEN["header"], context={"supported_algorithms": []})
+        VPTokenHeader.model_validate(
+            VP_TOKEN["header"], context={"supported_algorithms": []}
+        )
     with pytest.raises(ValidationError):
-        VPTokenHeader.model_validate(VP_TOKEN["header"], context={"supported_algorithms": ["asd"]})
+        VPTokenHeader.model_validate(
+            VP_TOKEN["header"], context={"supported_algorithms": ["asd"]}
+        )
 
-    VPTokenHeader.model_validate(VP_TOKEN["header"], context={"supported_algorithms": ["ES256"]})
+    VPTokenHeader.model_validate(
+        VP_TOKEN["header"], context={"supported_algorithms": ["ES256"]}
+    )
 
 
 def test_vp_token_payload():

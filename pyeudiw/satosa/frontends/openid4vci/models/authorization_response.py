@@ -30,4 +30,6 @@ class AuthorizationResponse(BaseModel):
         Returns:
             Redirect: A SATOSA Redirect object containing the full redirect URI with parameters.
         """
-        return Redirect(f"{url}?{urlencode(self.model_dump())}", content=FORM_URLENCODED)
+        return Redirect(
+            f"{url}?{urlencode(self.model_dump())}", content=FORM_URLENCODED
+        )

@@ -4,28 +4,35 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from pyeudiw.tools.schema_utils import check_algorithm
-from pyeudiw.wallet_instance_attestation.cnf import CNFSchema
+from pyeudiw.wallet_attestations.models.cnf import CNFSchema
 
 
 class WalletInstanceAttestationRequestHeader(BaseModel):
     alg: str
-    typ: Literal["var+jwt"]
+    typ: Literal["attestations-request+jwt"]
     kid: str
 
     @field_validator("alg")
     @classmethod
     def _check_alg(cls, alg, info: ValidationInfo):
-        return check_algorithm(alg, info)
+        check_algorithm(alg, info)
+        return alg
+
+    # todo add claims validators
 
 
 class WalletInstanceAttestationRequestPayload(BaseModel):
     iss: str
     aud: HttpUrl
-    jti: str
-    type: Literal["WalletInstanceAttestationRequest"]
-    nonce: str
-    cnf: CNFSchema
-    # TODO: check if `iat` and `exp` are required. They are not listed in the table but are in the example.
-    # https://github.com/italia/eudi-wallet-it-docs/blob/versione-corrente/docs/en/wallet-instance-attestation.rst#format-of-the-wallet-instance-attestation-request
-    iat: int
     exp: int
+    iat: int
+    nonce: str
+
+    hardware_signature: str
+    integrity_assertion: str
+    attested_key: str
+    hardware_key_tag: str
+
+    cnf: CNFSchema
+
+    # todo add claims validators

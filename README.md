@@ -12,21 +12,21 @@ to the [Italian Wallet implementation profile](https://italia.github.io/eid-wall
 
 The toolchain contains the following components:
 
-| Name                | Description                                                                                                                                                                                                                            |
-|:--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| __jwk__             | JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517).                                                                                                                                              | 
-| __jwt__             | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | 
-| __tools.qrcode__    | QRCodes creation                                                                                                                                                                                                                       | 
-| __oauth2.dpop__     | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 Demonstrating Proof-of-Possession at the Application Layer (DPoP)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop)                                  |
-| __federation__      | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html)                                                                                                         |
-| __x509__            | Trust evaluation mechanism using X.509 PKI, according to [RFC5280](https://datatracker.ietf.org/doc/html/rfc5280)                                                                                                                      |
-| __trust__           | trust handlers bringing multiple evaluation mechanisms                                                                                                                                                                                 |
-| __satosa.backend__  | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                       |
-| __satosa.frontend__ | SATOSA Issuer frontend, according to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                            |
-| __openid4vp__       | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                                   |
-| __openid4vci__      | Classes and schemas related to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                                                   |
-| __sd_jwt__          | Issuance and verification of SD-JWT(-VC) according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/)                                                            |
-| __status_list__     | Credential revocation check mechanisms according to [Token Status List](https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/)                                                                                                |
+| Name                | Description                                                                                                                                                                                                                            | Documentation |
+|:--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------|
+| __jwk__             | JSON Web Key (JWK) according to [RFC7517](https://datatracker.ietf.org/doc/html/rfc7517).                                                                                                                                              | [JWK.md](docs/JWK.md) |
+| __jwt__             | Signed and encrypted JSON Web Token (JWT) according to [RFC7519](https://datatracker.ietf.org/doc/html/rfc7519), [RFC7515](https://datatracker.ietf.org/doc/html/rfc7515) and [RFC7516](https://datatracker.ietf.org/doc/html/rfc7516) | [JWT.md](docs/JWT.md) |
+| __tools.qrcode__    | QR codes for cross-device flows (OpenID4VP, OpenID4VCI)                                                                                                                                                                                | [TOOLS-QRCODE.md](docs/TOOLS-QRCODE.md) |
+| __oauth2.dpop__     | Tools for issuing and parsing DPoP artifacts, according to [OAuth 2.0 DPoP](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop)                                                                                              | [OAUTH2-DPOP.md](docs/OAUTH2-DPOP.md) |
+| __federation__      | Trust evaluation mechanisms, according to [OpenID Federation 1.0](https://openid.net/specs/openid-connect-federation-1_0.html)                                                                                                         | [FEDERATION.md](docs/FEDERATION.md) |
+| __x509__            | Trust evaluation mechanism using X.509 PKI, according to [RFC5280](https://datatracker.ietf.org/doc/html/rfc5280)                                                                                                                      | [X509.md](docs/X509.md) |
+| __trust__           | Trust handlers bringing multiple evaluation mechanisms                                                                                                                                                                                 | [TRUST.md](docs/TRUST.md) |
+| __satosa.backend__  | SATOSA Relying Party backend, according to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                       | [OPENID4VP-SATOSA-BACKEND.md](docs/OPENID4VP-SATOSA-BACKEND.md) |
+| __satosa.frontend__ | SATOSA Issuer frontend, according to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                            | [OPENID4VCI-SATOSA-FRONTEND.md](docs/OPENID4VCI-SATOSA-FRONTEND.md) |
+| __openid4vp__       | Classes and schemas related to [OpenID for Verifiable Presentations](https://openid.bitbucket.io/connect/openid-4-verifiable-presentations-1_0.html)                                                                                   | [OPENID4VP.md](docs/OPENID4VP.md) |
+| __openid4vci__      | Classes and schemas related to [OpenID for Verifiable Credential Issuance](https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html)                                                                  | [OPENID4VCI.md](docs/OPENID4VCI.md) |
+| __sd_jwt__          | Issuance and verification of SD-JWT(-VC) according to [Selective Disclosure for JWTs (SD-JWT)](https://datatracker.ietf.org/doc/draft-ietf-oauth-selective-disclosure-jwt/)                                                          | [SD-JWT.md](docs/SD-JWT.md) |
+| __status_list__     | Credential revocation check mechanisms according to [Token Status List](https://datatracker.ietf.org/doc/draft-ietf-oauth-status-list/)                                                                                                | [STATUS_LIST.md](docs/STATUS_LIST.md) |
 
 
 ## Setup
@@ -61,7 +61,23 @@ Optionally for generate the documentation you need to install the following pack
 
 The API documentation is available in the githubpages, [here](https://italia.github.io/eudi-wallet-it-python/).
 
-In the [docs/](docs) folder there are some common example for some specific tasks.
+In the [docs/](docs) folder you will find:
+
+- **Component-specific guides** (usage, examples):
+  - [JWK](docs/JWK.md)
+  - [JWT](docs/JWT.md)
+  - [SD-JWT](docs/SD-JWT.md)
+  - [OAUTH2 DPoP](docs/OAUTH2-DPOP.md)
+  - [Federation](docs/FEDERATION.md)
+  - [X509](docs/X509.md)
+  - [Trust](docs/TRUST.md)
+  - [Status List](docs/STATUS_LIST.md)
+  - [tools.qrcode](docs/TOOLS-QRCODE.md)
+  - [OpenID4VP](docs/OPENID4VP.md)
+  - [OpenID4VCI](docs/OPENID4VCI.md)
+- **SATOSA setup**:
+  - [OpenID4VP Backend](docs/OPENID4VP-SATOSA-BACKEND.md)
+  - [OpenID4VCI Frontend](docs/OPENID4VCI-SATOSA-FRONTEND.md)
 
 
 ### Build the Documentation

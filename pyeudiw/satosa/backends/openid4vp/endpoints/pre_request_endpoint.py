@@ -4,9 +4,11 @@ from uuid import uuid4
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import InternalData
-from satosa.response import Response, Redirect
+from satosa.response import Redirect, Response
 
-from pyeudiw.satosa.backends.openid4vp.authorization_request import build_authorization_request_url
+from pyeudiw.satosa.backends.openid4vp.authorization_request import (
+    build_authorization_request_url,
+)
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
@@ -37,14 +39,25 @@ class PreRequestHandler(VPBaseEndpoint):
 
         :raises ValueError: If storage or QR code settings are not configured.
         """
-        super().__init__(config, internal_attributes, base_url, name, auth_callback_func, converter, trust_evaluator, db_engine)
+        super().__init__(
+            config,
+            internal_attributes,
+            base_url,
+            name,
+            auth_callback_func,
+            converter,
+            trust_evaluator,
+            db_engine,
+        )
 
         self.absolute_request_url = f"{self.client_id}/request-uri"
         self.absolute_status_url = f"{self.client_id}/status"
 
         self.qrcode_settings: dict[str, str] = self.config.get("qrcode") or {}
         if not self.qrcode_settings:
-            raise ValueError("QR code settings are not configured. Please check your configuration.")
+            raise ValueError(
+                "QR code settings are not configured. Please check your configuration."
+            )
 
         # HTML template loader
         self.template = Jinja2TemplateHandler(self.config["ui"])
@@ -54,7 +67,9 @@ class PreRequestHandler(VPBaseEndpoint):
         self.config.get("trust_caching_mode", "update_first")
 
         self.trust_evaluator = trust_evaluator
-        self.force_same_device_flow_referer_criteria = self.config.get("force_same_device_flow_referer_criteria")
+        self.force_same_device_flow_referer_criteria = self.config.get(
+            "force_same_device_flow_referer_criteria"
+        )
 
     def endpoint(self, context: Context) -> Response:
         """
@@ -73,7 +88,10 @@ class PreRequestHandler(VPBaseEndpoint):
         self._log_function_debug("pre_request_endpoint", context, "internal_request")
 
         if context.state is None or "SESSION_ID" not in context.state:
-            self._log_error(context, "SESSION_ID not found in context.state or context.state is None")
+            self._log_error(
+                context,
+                "SESSION_ID not found in context.state or context.state is None",
+            )
             return self._handle_400(context, "Session ID not found in request context.")
 
         session_id = context.state["SESSION_ID"]
@@ -84,21 +102,36 @@ class PreRequestHandler(VPBaseEndpoint):
             self._log_warning(context, _msg)
             return self._handle_400(
                 context,
-                "previous authn session not found. It seems that the flow did " "not started with a valid authn request to one of the configured frontend.",
+                "previous authn session not found. It seems that the flow did "
+                "not started with a valid authn request to one of the configured frontend.",
             )
 
-        flow_typ = detect_flow_typ(context, self.force_same_device_flow_referer_criteria)
+        flow_typ = detect_flow_typ(
+            context, self.force_same_device_flow_referer_criteria
+        )
 
         # Init session
         try:
-            self.db_engine.init_session(state=state, session_id=session_id, remote_flow_typ=flow_typ.value)
+            self.db_engine.init_session(
+                state=state, session_id=session_id, remote_flow_typ=flow_typ.value
+            )
         except Exception as e500:
-            self._log_error(context, f"Error while initializing session with state {state} and {session_id}: {e500}")
-            return self._handle_500(context, "internal error: something went wrong when creating your authentication request", e500)
+            self._log_error(
+                context,
+                f"Error while initializing session with state {state} and {session_id}: {e500}",
+            )
+            return self._handle_500(
+                context,
+                "internal error: something went wrong when creating your authentication request",
+                e500,
+            )
 
         qs_params = getattr(context, "qs_params") or {}
         client_id_hint = qs_params.get("client_id_hint", None)
-        has_client_id_hint = client_id_hint is not None and self.trust_evaluator.has_client_id(client_id_hint)
+        has_client_id_hint = (
+            client_id_hint is not None
+            and self.trust_evaluator.has_client_id(client_id_hint)
+        )
 
         # PAR
         payload = {
@@ -106,7 +139,9 @@ class PreRequestHandler(VPBaseEndpoint):
             "request_uri": f"{self.absolute_request_url}?id={state}",
         }
 
-        response_url = build_authorization_request_url(self.config["authorization"]["url_scheme"], payload)
+        response_url = build_authorization_request_url(
+            self.config["authorization"]["url_scheme"], payload
+        )
 
         if flow_typ == RemoteFlowType.SAME_DEVICE:
             return self._same_device_http_response(response_url)

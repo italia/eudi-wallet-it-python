@@ -89,13 +89,17 @@ def find_self_contained_key(header: dict) -> tuple[set[str], JWK] | None:
             candidate_key = parse_x5c_keys(header["x5c"])[0]
             return set(["5xc"]), candidate_key
         except Exception as e:
-            logger.debug(f"failed to parse key from x5c chain {header['x5c']}", exc_info=e)
+            logger.debug(
+                f"failed to parse key from x5c chain {header['x5c']}", exc_info=e
+            )
     if "jwk" in header:
         candidate_key = JWK(header["jwk"])
         return set(["jwk"]), candidate_key
     unsupported_claims = set(("trust_chain", "jku", "x5u", "x5t"))
     if unsupported_claims.intersection(header):
-        raise NotImplementedError(f"self contained key extraction form header with claims {unsupported_claims} not supported yet")
+        raise NotImplementedError(
+            f"self contained key extraction form header with claims {unsupported_claims} not supported yet"
+        )
     return None
 
 

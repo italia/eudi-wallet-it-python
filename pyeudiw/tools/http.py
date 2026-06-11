@@ -4,6 +4,7 @@ import aiohttp
 import requests
 
 from pyeudiw.tools.exceptions import HttpError
+from pyeudiw.jwt.utils import decode_jwt_payload, is_jwt_format
 
 DEFAULT_HTTPC_PARAMS = {
     "connection": {"ssl": True},
@@ -11,7 +12,46 @@ DEFAULT_HTTPC_PARAMS = {
 }
 
 
-def http_get_sync(urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+def http_get(
+    url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS, decode_output: bool = True
+) -> str:
+    """
+    Perform a GET http call.
+
+    :param urls: the url list where fetch the content
+    :type urls: list[str]
+    :param httpc_params: parameters to perform http requests.
+    :type httpc_params: dict
+
+    :raises HttpError: if the response status code is not 200 or a connection error occurs
+
+    :returns: the list of responses
+    :rtype: list[requests.Response] | list[str]
+    """
+    _conf = {
+        "verify": httpc_params["connection"]["ssl"],
+        "timeout": httpc_params["session"]["timeout"],
+    }
+    try:
+        # nosec B113: timeout is set via _conf["timeout"], which Bandit cannot detect through **_conf unpacking
+        response = requests.get(url, **_conf)  # nosec B113
+    except requests.exceptions.ConnectionError as e:
+        raise HttpError(f"Connection error: {e}")
+    if response.status_code != 200:
+        raise HttpError(f"HTTP error: {response.status_code} -- {response.reason}")
+    output = response.content
+    if isinstance(output, bytes):
+        output = output.decode("utf-8")
+    if decode_output:
+        if is_jwt_format(output):
+            output = decode_jwt_payload(output)
+        else:
+            output = response.json()
+    return output
+
+def http_get_sync(
+    urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> list[requests.Response]:
     """
     Perform a GET http call sync.
 
@@ -33,15 +73,15 @@ def http_get_sync(urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) ->
         res = [requests.get(url, **_conf) for url in urls]  # nosec - B113
     except requests.exceptions.ConnectionError as e:
         raise HttpError(f"Connection error: {e}")
-
     for r in res:
         if r.status_code != 200:
             raise HttpError(f"HTTP error: {r.status_code} -- {r.reason}")
-
     return res
 
 
-async def http_get_async(urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+async def http_get_async(
+    urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> list[requests.Response]:
     """
     Perform a GET http call async.
 
@@ -58,14 +98,18 @@ async def http_get_async(urls, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> lis
     :rtype: list[requests.Response]
     """
     if not isinstance(httpc_params["session"]["timeout"], aiohttp.ClientTimeout):
-        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(total=httpc_params["session"]["timeout"])
+        httpc_params["session"]["timeout"] = aiohttp.ClientTimeout(
+            total=httpc_params["session"]["timeout"]
+        )
 
     async with aiohttp.ClientSession(**httpc_params.get("session", {})) as session:
         text = await fetch_all(session, urls, httpc_params)
         return text
 
 
-async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> aiohttp.ClientResponse:
+async def fetch(
+    session: aiohttp.ClientSession, url: str, httpc_params: dict = DEFAULT_HTTPC_PARAMS
+) -> aiohttp.ClientResponse:
     """
     Fetches the content of a URL.
 
@@ -86,7 +130,11 @@ async def fetch(session: aiohttp.ClientSession, url: str, httpc_params: dict = D
         return response
 
 
-async def fetch_all(session: aiohttp.ClientSession, urls: list[str], httpc_params: dict = DEFAULT_HTTPC_PARAMS) -> list[requests.Response]:
+async def fetch_all(
+    session: aiohttp.ClientSession,
+    urls: list[str],
+    httpc_params: dict = DEFAULT_HTTPC_PARAMS,
+) -> list[requests.Response]:
     """
     Fetches the content of a list of URL.
 

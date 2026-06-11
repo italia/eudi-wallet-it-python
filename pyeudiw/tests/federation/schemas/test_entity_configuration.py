@@ -98,7 +98,9 @@ def test_entity_configuration_header():
     EntityConfigurationHeader(**ENTITY_CONFIGURATION["header"])
 
     with pytest.raises(ValidationError):
-        EntityConfigurationHeader.model_validate(ENTITY_CONFIGURATION["header"], context={"supported_algorithms": ["ES256"]})
+        EntityConfigurationHeader.model_validate(
+            ENTITY_CONFIGURATION["header"], context={"supported_algorithms": ["ES256"]}
+        )
 
     ENTITY_CONFIGURATION["header"]["typ"] = "NOT-entity-statement+jwt"
     with pytest.raises(ValidationError):

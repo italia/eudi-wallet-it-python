@@ -2,17 +2,32 @@ from satosa.context import Context
 from satosa.response import Response
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import VCIBaseEndpoint, GET_ACCEPTED_METHODS
-from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import CredentialOfferRequest
+from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
+    GET_ACCEPTED_METHODS,
+    VCIBaseEndpoint,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request import (
+    CredentialOfferRequest,
+)
 from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX
 from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import InvalidScopeException
-from pyeudiw.satosa.utils.validation import validate_content_type, validate_request_method
-from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
+from pyeudiw.satosa.utils.validation import (
+    validate_content_type,
+    validate_request_method,
+)
+from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
 
 
 class CredentialOfferHandler(VCIBaseEndpoint):
 
-    def __init__(self, config: dict, internal_attributes: dict[str, dict[str, str | list[str]]], base_url: str, name: str, *args):
+    def __init__(
+        self,
+        config: dict,
+        internal_attributes: dict[str, dict[str, str | list[str]]],
+        base_url: str,
+        name: str,
+        *args,
+    ):
         """
         Initialize the Credential offer endpoints class.
 
@@ -37,19 +52,34 @@ class CredentialOfferHandler(VCIBaseEndpoint):
 
         try:
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
-            validate_content_type(context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON)
-            CredentialOfferRequest.model_validate(context.request.query, context={CONFIG_CTX: self.config_utils})
+            validate_content_type(
+                context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
+            )
+            CredentialOfferRequest.model_validate(
+                context.request.query, context={CONFIG_CTX: self.config_utils}
+            )
             return Response(status="204 No Content")
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
-            self._log_error(e.__class__.__name__, f"Error during invoke credential_offer endpoint: {e}")
-            return self._handle_500(context, "error during invoke credential_offer endpoint", e)
+            self._log_error(
+                e.__class__.__name__,
+                f"Error during invoke credential_offer endpoint: {e}",
+            )
+            return self._handle_500(
+                context, "error during invoke credential_offer endpoint", e
+            )
 
     def _validate_configs(self):
         self._validate_required_configs(
             [
-                ("metadata.oauth_authorization_server", self.config_utils.get_oauth_authorization_server()),
-                ("metadata.openid_credential_issuer.credential_configurations_supported", self.config_utils.get_credential_configurations_supported()),
+                (
+                    "metadata.oauth_authorization_server",
+                    self.config_utils.get_oauth_authorization_server(),
+                ),
+                (
+                    "metadata.openid_credential_issuer.credential_configurations_supported",
+                    self.config_utils.get_credential_configurations_supported(),
+                ),
             ]
         )

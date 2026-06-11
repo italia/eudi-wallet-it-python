@@ -49,7 +49,9 @@ class VcSdJwtHeaderSchema(BaseModel):
     @field_validator("typ")
     def validate_typ(cls, v: str) -> str:
         if v != _IDENTIFYING_VC_TYP:
-            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'")
+            raise ValueError(
+                f"header parameter [typ] must be '{_IDENTIFYING_VC_TYP}', found instead '{v}'"
+            )
         return v
 
     @model_validator(mode="after")
@@ -95,7 +97,9 @@ class VcSdJwtPayloadSchema(BaseModel):
         try:
             _StatusSchema(**v)
         except ValueError as e:
-            raise ValueError(f"parameter [status] value '{v}' does not comply with schema {_StatusSchema.model_fields}: {e}")
+            raise ValueError(
+                f"parameter [status] value '{v}' does not comply with schema {_StatusSchema.model_fields}: {e}"
+            )
         return v
 
     @field_validator("verification")
@@ -103,7 +107,9 @@ class VcSdJwtPayloadSchema(BaseModel):
         try:
             _VerificationSchema(**v)
         except ValueError as e:
-            raise ValueError(f"parameter [verification] value '{v}' does not comply with schema {_VerificationSchema.model_fields}: {e}")
+            raise ValueError(
+                f"parameter [verification] value '{v}' does not comply with schema {_VerificationSchema.model_fields}: {e}"
+            )
         return v
 
 
@@ -114,7 +120,9 @@ class KeyBindingJwtHeader(BaseModel):
     @field_validator("typ")
     def validate_typ(cls, v: str) -> str:
         if v != _IDENTIFYING_KB_TYP:
-            raise ValueError(f"header parameter [typ] must be '{_IDENTIFYING_KB_TYP}', found instead '{v}'")
+            raise ValueError(
+                f"header parameter [typ] must be '{_IDENTIFYING_KB_TYP}', found instead '{v}'"
+            )
         return v
 
 

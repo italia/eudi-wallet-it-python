@@ -91,7 +91,9 @@ def test_direct_trust_jar_build_metadata_path(direct_trust_jar):
 
     for i, case in enumerate(test_cases):
         path_component = direct_trust_jar._build_metadata_path(case.backend_name)
-        assert path_component == case.expected_path, f"failed case {i+1}: test scenario: {case.explanation}"
+        assert (
+            path_component == case.expected_path
+        ), f"failed case {i+1}: test scenario: {case.explanation}"
 
 
 def test_direct_trust_jat_custom_path(all_private_keys):
@@ -117,9 +119,13 @@ def test_direct_trust_jat_custom_path(all_private_keys):
         ),
     ]
     for i, case in enumerate(test_cases):
-        dtj = DirectTrustJar(jwks=all_private_keys, jwk_endpoint=case.endpoint_component)
+        dtj = DirectTrustJar(
+            jwks=all_private_keys, jwk_endpoint=case.endpoint_component
+        )
         path_component = dtj._build_metadata_path(case.backend_name)
-        assert path_component == case.expected_path, f"failed case {i+1}: test scenario: {case.explanation}"
+        assert (
+            path_component == case.expected_path
+        ), f"failed case {i+1}: test scenario: {case.explanation}"
 
 
 def test_direct_trust_jar_metadata(direct_trust_jar):
@@ -133,7 +139,9 @@ def test_direct_trust_jar_metadata(direct_trust_jar):
     assert pub_key.get("use", "") != "enc"
 
 
-def test_direct_trust_jar_metadata_no_private_key(all_private_keys, rsa_signing_private_key):
+def test_direct_trust_jar_metadata_no_private_key(
+    all_private_keys, rsa_signing_private_key
+):
     dtj = DirectTrustJar(jwks=all_private_keys + rsa_signing_private_key)
 
     backend = "openid4vp"

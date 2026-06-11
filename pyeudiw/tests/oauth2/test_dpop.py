@@ -1,9 +1,11 @@
 import base64
 import hashlib
+from copy import deepcopy
 
 import pytest
 from cryptojwt.jwk.ec import new_ec_key
 
+from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
@@ -48,8 +50,17 @@ def jwshelper(private_jwk):
 
 @pytest.fixture
 def wia_jws(jwshelper):
-    wia = jwshelper.sign(WALLET_INSTANCE_ATTESTATION, protected={"trust_chain": [], "x5c": []})
-    return wia
+    # The token must be bound to the DPoP key via cnf.jkt (the base64url-encoded
+    # JWK thumbprint), matching the binding check in DPoPVerifier.validate. The
+    # DPoP proof in the test is issued with PRIVATE_JWK_EC, so bind to it.
+    jkt = (
+        base64.urlsafe_b64encode(JWK(key=PUBLIC_JWK).thumbprint)
+        .decode("utf-8")
+        .rstrip("=")
+    )
+    wia = deepcopy(WALLET_INSTANCE_ATTESTATION)
+    wia["cnf"] = {"jwk": PUBLIC_JWK, "jkt": jkt}
+    return jwshelper.sign(wia, protected={"trust_chain": [], "x5c": []})
 
 
 def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
@@ -60,7 +71,9 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert isinstance(header["x5c"], list)
     assert header["alg"]
 
-    new_dpop = DPoPIssuer(htu="https://example.org/redirect", private_jwk=private_jwk, token=wia_jws)
+    new_dpop = DPoPIssuer(
+        htu="https://example.org/redirect", private_jwk=private_jwk, token=wia_jws
+    )
     proof = new_dpop.proof
     assert proof
 
@@ -71,7 +84,12 @@ def test_create_validate_dpop_http_headers(wia_jws, private_jwk=PRIVATE_JWK_EC):
     assert "d" not in header["jwk"]
 
     payload = decode_jwt_payload(proof)
-    assert payload["ath"] == base64.urlsafe_b64encode(hashlib.sha256(wia_jws.encode()).digest()).rstrip(b"=").decode()
+    assert (
+        payload["ath"]
+        == base64.urlsafe_b64encode(hashlib.sha256(wia_jws.encode()).digest())
+        .rstrip(b"=")
+        .decode()
+    )
     assert payload["htm"] in ["GET", "POST", "get", "post"]
     assert payload["htu"] == "https://example.org/redirect"
     assert payload["jti"]

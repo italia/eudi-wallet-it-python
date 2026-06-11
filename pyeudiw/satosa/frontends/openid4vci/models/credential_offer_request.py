@@ -5,7 +5,10 @@ from urllib.parse import urlparse
 from pydantic import model_validator
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import OpenId4VciBaseModel, CONFIG_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    CONFIG_CTX,
+    OpenId4VciBaseModel,
+)
 
 logger = logging.getLogger(__name__)
 CREDENTIAL_OFFER_ENDPOINT = "credential_offer"
@@ -45,7 +48,9 @@ class AuthorizationCode(OpenId4VciBaseModel):
             InvalidRequestException: On missing or invalid fields.
         """
         self.issuer_state = self.strip(self.issuer_state)
-        self.check_missing_parameter(self.issuer_state, "grants.issuer_state", CREDENTIAL_OFFER_ENDPOINT)
+        self.check_missing_parameter(
+            self.issuer_state, "grants.issuer_state", CREDENTIAL_OFFER_ENDPOINT
+        )
 
         self.validate_authorization_server()
         return self
@@ -58,10 +63,23 @@ class AuthorizationCode(OpenId4VciBaseModel):
             InvalidRequestException: If the authorization server is missing or not allowed.
         """
         self.authorization_server = self.strip(self.authorization_server)
-        self.check_missing_parameter(self.authorization_server, "grants.authorization_server", CREDENTIAL_OFFER_ENDPOINT)
-        if self.authorization_server not in self.get_config_utils().get_openid_credential_issuer().authorization_servers:
-            logger.error(f"invalid 'grants.authorization_server' {self.authorization_server} in request `credential_offer` endpoint")
-            raise InvalidRequestException("invalid `grants.authorization_server` parameter")
+        self.check_missing_parameter(
+            self.authorization_server,
+            "grants.authorization_server",
+            CREDENTIAL_OFFER_ENDPOINT,
+        )
+        if (
+            self.authorization_server
+            not in self.get_config_utils()
+            .get_openid_credential_issuer()
+            .authorization_servers
+        ):
+            logger.error(
+                f"invalid 'grants.authorization_server' {self.authorization_server} in request `credential_offer` endpoint"
+            )
+            raise InvalidRequestException(
+                "invalid `grants.authorization_server` parameter"
+            )
 
 
 class CredentialOfferRequest(OpenId4VciBaseModel):
@@ -112,7 +130,9 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
             InvalidRequestException: If `grants` is missing or invalid.
         """
         self.check_missing_parameter(self.grants, "grants", CREDENTIAL_OFFER_ENDPOINT)
-        AuthorizationCode.model_validate(self.grants, context={CONFIG_CTX: self.get_config()})
+        AuthorizationCode.model_validate(
+            self.grants, context={CONFIG_CTX: self.get_config()}
+        )
 
     def validate_credential_configuration_ids(self):
         """
@@ -123,13 +143,23 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
         Raises:
             InvalidRequestException: If the list is empty or contains unsupported IDs.
         """
-        self.check_missing_parameter(self.credential_configuration_ids, "credential_configuration_ids", CREDENTIAL_OFFER_ENDPOINT)
-        credential_configurations_supported = self.get_config_utils().get_credential_configurations_supported()
+        self.check_missing_parameter(
+            self.credential_configuration_ids,
+            "credential_configuration_ids",
+            CREDENTIAL_OFFER_ENDPOINT,
+        )
+        credential_configurations_supported = (
+            self.get_config_utils().get_credential_configurations_supported()
+        )
         supported_ids = [ccs.id for ccs in credential_configurations_supported.values()]
         for req_id in self.credential_configuration_ids:
             if req_id not in supported_ids:
-                logger.error(f"invalid credential_configuration_ids {self.credential_configuration_ids} in request `credential_offer` endpoint")
-                raise InvalidRequestException("invalid `credential_configuration_ids` parameter")
+                logger.error(
+                    f"invalid credential_configuration_ids {self.credential_configuration_ids} in request `credential_offer` endpoint"
+                )
+                raise InvalidRequestException(
+                    "invalid `credential_configuration_ids` parameter"
+                )
 
     def validate_credential_issuer(self):
         """
@@ -141,12 +171,22 @@ class CredentialOfferRequest(OpenId4VciBaseModel):
             InvalidRequestException: If the issuer URI is missing or invalid.
         """
         self.credential_issuer = self.strip(self.credential_issuer)
-        self.check_missing_parameter(self.credential_issuer, "credential_issuer", CREDENTIAL_OFFER_ENDPOINT)
+        self.check_missing_parameter(
+            self.credential_issuer, "credential_issuer", CREDENTIAL_OFFER_ENDPOINT
+        )
         try:
             parsed_redirect_uri = urlparse(self.credential_issuer)
-            if not parsed_redirect_uri.scheme or not parsed_redirect_uri.netloc or not parsed_redirect_uri.path:
-                logger.error(f"invalid credential_issuer value '{self.credential_issuer}' in `credential_offer` endpoint")
+            if (
+                not parsed_redirect_uri.scheme
+                or not parsed_redirect_uri.netloc
+                or not parsed_redirect_uri.path
+            ):
+                logger.error(
+                    f"invalid credential_issuer value '{self.credential_issuer}' in `credential_offer` endpoint"
+                )
                 raise InvalidRequestException("invalid `credential_issuer` parameter")
         except Exception as e:
-            logger.error(f"invalid credential_issuer value '{self.credential_issuer}' in `credential_offer` endpoint: {e}")
+            logger.error(
+                f"invalid credential_issuer value '{self.credential_issuer}' in `credential_offer` endpoint: {e}"
+            )
             raise InvalidRequestException("invalid `credential_issuer` parameter")

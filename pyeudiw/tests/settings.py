@@ -36,7 +36,10 @@ jwk = {
 _d = base64url_to_int(jwk["d"])
 _x = base64url_to_int(jwk["x"])
 _y = base64url_to_int(jwk["y"])
-private_key = ec.EllipticCurvePrivateNumbers(private_value=_d, public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1())).private_key()
+private_key = ec.EllipticCurvePrivateNumbers(
+    private_value=_d,
+    public_numbers=ec.EllipticCurvePublicNumbers(x=_x, y=_y, curve=ec.SECP256R1()),
+).private_key()
 
 DEFAULT_X509_CHAIN = gen_chain(leaf_dns="example.com", leaf_private_key=private_key)
 
@@ -153,7 +156,9 @@ CONFIG = {
             "path": "/get-response",
         },
     },
-    "response_code": {"sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"},
+    "response_code": {
+        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
@@ -163,7 +168,14 @@ CONFIG = {
     "jwt": {
         "default_sig_alg": "ES256",
         "default_exp": 6,
-        "enc_alg_supported": ["RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"],
+        "enc_alg_supported": [
+            "RSA-OAEP",
+            "RSA-OAEP-256",
+            "ECDH-ES",
+            "ECDH-ES+A128KW",
+            "ECDH-ES+A192KW",
+            "ECDH-ES+A256KW",
+        ],
         "enc_enc_supported": [
             "A128CBC-HS256",
             "A192CBC-HS384",
@@ -192,8 +204,15 @@ CONFIG = {
             {
                 "id": "personal id data",
                 "format": "dc+sd-jwt",
-                "meta": {"vct_values": ["https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"]},
-                "claims": [{"path": ["user_claims", "given_name"]}, {"path": ["user_claims", "family_name"]}],
+                "meta": {
+                    "vct_values": [
+                        "https://trust-registry.eid-wallet.example.it/credentials/v1.0/personidentificationdata"
+                    ]
+                },
+                "claims": [
+                    {"path": ["user_claims", "given_name"]},
+                    {"path": ["user_claims", "family_name"]},
+                ],
             },
         ],
     },
@@ -366,9 +385,22 @@ CONFIG = {
     "credential_presentation_handlers": {
         "max_submission_size": 4096,
         "formats": [
-            {"module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc", "class": "VpVcSdJwtParserVerifier", "format": "dc+sd-jwt", "config": {}},
-            {"module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor", "class": "VpMDocCbor", "format": "mso_mdoc"},
-            {"module": "pyeudiw.duckle_ql.handler", "class": "DuckleHandler", "format": "duckle"},
+            {
+                "module": "pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc",
+                "class": "VpVcSdJwtParserVerifier",
+                "format": "dc+sd-jwt",
+                "config": {},
+            },
+            {
+                "module": "pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor",
+                "class": "VpMDocCbor",
+                "format": "mso_mdoc",
+            },
+            {
+                "module": "pyeudiw.duckle_ql.handler",
+                "class": "DuckleHandler",
+                "format": "duckle",
+            },
         ],
     },
 }
@@ -399,7 +431,9 @@ CONFIG_DIRECT_TRUST = {
         "status": "/status-uri",
         "get_response": "/get-response",
     },
-    "response_code": {"sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"},
+    "response_code": {
+        "sym_key": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
     "qrcode": {
         "size": 100,
         "color": "#2B4375",
@@ -595,7 +629,13 @@ INTERNAL_ATTRIBUTES: dict = {
             "orcid": ["orcid"],
             "github": ["id"],
             "openid": ["sub"],
-            "saml": ["eduPersonTargetedID", "eduPersonTargetedId", "spidCode", "sub", "id"],
+            "saml": [
+                "eduPersonTargetedID",
+                "eduPersonTargetedId",
+                "spidCode",
+                "sub",
+                "id",
+            ],
             "openid4vp": ["sub"],
         },
         "edupersonprincipalname": {

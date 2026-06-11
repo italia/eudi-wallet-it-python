@@ -1,10 +1,11 @@
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.serialization import Encoding
-from cryptography.x509.oid import NameOID
 from datetime import datetime, timedelta
 from typing import Literal
+
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.x509.oid import NameOID
 
 
 class ChainBuilder:
@@ -27,8 +28,12 @@ class ChainBuilder:
         crl_distr_point: str | None = None,
         not_valid_before: datetime = datetime.now() - timedelta(days=1),
         not_valid_after: datetime = datetime.now() + timedelta(days=365),
-        excluded_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
-        permitted_subtrees: list[x509.DNSName | x509.UniformResourceIdentifier] | None = None,
+        excluded_subtrees: (
+            list[x509.DNSName | x509.UniformResourceIdentifier] | None
+        ) = None,
+        permitted_subtrees: (
+            list[x509.DNSName | x509.UniformResourceIdentifier] | None
+        ) = None,
         key_usage: x509.KeyUsage | None = None,
         organization_identifier: str | None = None,
     ) -> None:
@@ -86,7 +91,11 @@ class ChainBuilder:
         subject_names = x509.Name(x5c_names)
 
         if organization_identifier:
-            x5c_names.append(x509.NameAttribute(NameOID.ORGANIZATION_IDENTIFIER, organization_identifier))
+            x5c_names.append(
+                x509.NameAttribute(
+                    NameOID.ORGANIZATION_IDENTIFIER, organization_identifier
+                )
+            )
 
         cert = cert.subject_name(subject_names)
 
@@ -98,7 +107,9 @@ class ChainBuilder:
         cert = (
             cert.issuer_name(issuer_name)
             .public_key(private_key.public_key())
-            .serial_number(x509.random_serial_number() if not serial_number else serial_number)
+            .serial_number(
+                x509.random_serial_number() if not serial_number else serial_number
+            )
             .not_valid_before(not_valid_before)
             .not_valid_after(not_valid_after)
             .add_extension(
@@ -123,34 +134,63 @@ class ChainBuilder:
             )
 
         if excluded_subtrees or permitted_subtrees:
-            cert = cert.add_extension(x509.NameConstraints(permitted_subtrees=permitted_subtrees, excluded_subtrees=excluded_subtrees), critical=True)
+            cert = cert.add_extension(
+                x509.NameConstraints(
+                    permitted_subtrees=permitted_subtrees,
+                    excluded_subtrees=excluded_subtrees,
+                ),
+                critical=True,
+            )
 
         if key_usage:
             cert = cert.add_extension(key_usage, True)
 
-        cert = cert.add_extension(x509.SubjectAlternativeName([x509.UniformResourceIdentifier(uri), x509.DNSName(dns)]), critical=False).add_extension(
-            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()), critical=False
+        cert = cert.add_extension(
+            x509.SubjectAlternativeName(
+                [x509.UniformResourceIdentifier(uri), x509.DNSName(dns)]
+            ),
+            critical=False,
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+            critical=False,
         )
 
         if self.certificates_attributes:
             cert = cert.add_extension(
-                x509.AuthorityKeyIdentifier.from_issuer_public_key(self.certificates_attributes[0]["certificate"].public_key()), critical=False
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    self.certificates_attributes[0]["certificate"].public_key()
+                ),
+                critical=False,
             )
 
-        cert = cert.sign(private_key if len(self.certificates_attributes) == 0 else self.certificates_attributes[0]["private_key"], hashes.SHA256())
+        cert = cert.sign(
+            (
+                private_key
+                if len(self.certificates_attributes) == 0
+                else self.certificates_attributes[0]["private_key"]
+            ),
+            hashes.SHA256(),
+        )
 
-        self.certificates_attributes.insert(0, {"private_key": private_key, "certificate": cert})
+        self.certificates_attributes.insert(
+            0, {"private_key": private_key, "certificate": cert}
+        )
 
         self.chain.insert(0, cert)
 
-    def get_chain(self, encoding: Literal["DER"] | Literal["PEM"] = "DER") -> list[bytes] | list[str]:
+    def get_chain(
+        self, encoding: Literal["DER"] | Literal["PEM"] = "DER"
+    ) -> list[bytes] | list[str]:
         """
         Get the certificate chain.
 
         :return: The certificate chain
         :rtype: list[bytes] | list[str]
         """
-        return [cert.public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM) for cert in self.chain]
+        return [
+            cert.public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM)
+            for cert in self.chain
+        ]
 
     def get_ca(self, encoding: Literal["DER"] | Literal["PEM"] = "DER") -> bytes | str:
         """
@@ -159,4 +199,6 @@ class ChainBuilder:
         :return: The CA certificate
         :rtype: bytes | str
         """
-        return self.chain[-1].public_bytes(Encoding.DER if encoding == "DER" else Encoding.PEM)
+        return self.chain[-1].public_bytes(
+            Encoding.DER if encoding == "DER" else Encoding.PEM
+        )

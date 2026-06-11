@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Any
+from typing import Any, Callable
 
 from satosa.backends.base import BackendModule
 from satosa.context import Context
@@ -49,7 +49,9 @@ class OpenID4VPBackend(BackendModule):
 
         self.storage_settings = self.config.get("storage", {})
         if not self.storage_settings:
-            raise ValueError("Storage settings are not configured. Please check your configuration.")
+            raise ValueError(
+                "Storage settings are not configured. Please check your configuration."
+            )
 
         # Initialize the database engine
         self.db_engine = DBEngine(self.storage_settings)
@@ -59,7 +61,10 @@ class OpenID4VPBackend(BackendModule):
         trust_caching_mode = self.config.get("trust_caching_mode", "update_first")
 
         self.trust_evaluator = CombinedTrustEvaluator.from_config(
-            trust_configuration, self.db_engine, default_client_id=self.client_id, mode=trust_caching_mode
+            trust_configuration,
+            self.db_engine,
+            default_client_id=self.client_id,
+            mode=trust_caching_mode,
         )
 
         self.endpoints = {}
@@ -73,7 +78,14 @@ class OpenID4VPBackend(BackendModule):
         """
 
         el = EndpointsLoader(
-            self.config, self.internal_attributes, self.base_url, self.name, self.auth_callback_func, self.converter, self.trust_evaluator, self.db_engine
+            self.config,
+            self.internal_attributes,
+            self.base_url,
+            self.name,
+            self.auth_callback_func,
+            self.converter,
+            self.trust_evaluator,
+            self.db_engine,
         )
 
         url_map = []
@@ -81,12 +93,16 @@ class OpenID4VPBackend(BackendModule):
         for path, inst in el.endpoint_instances.items():
             url_map.append((f"{self.name}/{path}", inst))
 
-        metadata_map = self.trust_evaluator.build_metadata_endpoints(self.name, self._backend_url)
+        metadata_map = self.trust_evaluator.build_metadata_endpoints(
+            self.name, self._backend_url
+        )
 
         url_map.extend(metadata_map)
 
         for path, inst in url_map:
-            self.endpoints[f"{path.split('/')[-1].replace('-', '_').replace('$', '')}"] = inst
+            self.endpoints[
+                f"{path.split('/')[-1].replace('-', '_').replace('$', '')}"
+            ] = inst
 
         logger.debug(f"Loaded OpenID4VP endpoints: {url_map}")
         return url_map
@@ -106,11 +122,15 @@ class OpenID4VPBackend(BackendModule):
 
         pre_request_endpoint = self.endpoints.get("pre_request")
         if not pre_request_endpoint:
-            raise ValueError("No pre-request endpoint configured in the OpenID4VP backend")
+            raise ValueError(
+                "No pre-request endpoint configured in the OpenID4VP backend"
+            )
 
         return pre_request_endpoint(context)
 
-    def get_trust_backend_by_class_name(self, class_name: str) -> TrustHandlerInterface | None:
+    def get_trust_backend_by_class_name(
+        self, class_name: str
+    ) -> TrustHandlerInterface | None:
         for i in self.trust_evaluator.handlers:
             if i.__class__.__name__ == class_name:
                 return i

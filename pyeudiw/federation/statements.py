@@ -42,7 +42,9 @@ def get_federation_jwks(jwt_payload: dict) -> list[dict]:
     return keys
 
 
-def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[bytes]:
+def get_entity_statements(
+    urls: list[str] | str, httpc_params: dict, http_async: bool = True
+) -> list[bytes]:
     """
     Fetches an entity statement from the specified urls.
 
@@ -64,7 +66,9 @@ def get_entity_statements(urls: list[str] | str, httpc_params: dict, http_async:
     return [i.content for i in get_http_url(urls, httpc_params, http_async)]
 
 
-def get_entity_configurations(subjects: list[str] | str, httpc_params: dict, http_async: bool = False) -> list[bytes]:
+def get_entity_configurations(
+    subjects: list[str] | str, httpc_params: dict, http_async: bool = False
+) -> list[bytes]:
     """
     Fetches an entity configuration from the specified subjects.
 
@@ -140,7 +144,10 @@ class TrustMark:
         _kid = self.header["kid"]
 
         if _kid not in ec.kids:
-            raise UnknownKid(f"Trust Mark validation failed: " f"{self.header.get('kid')} not found in {ec.jwks}")  # pragma: no cover
+            raise UnknownKid(
+                f"Trust Mark validation failed: "
+                f"{self.header.get('kid')} not found in {ec.jwks}"
+            )  # pragma: no cover
 
         _jwk = find_jwk_by_kid(ec.jwks, _kid)
 
@@ -158,14 +165,21 @@ class TrustMark:
         :rtype: bool
         """
         if not self.issuer_entity_configuration:
-            self.issuer_entity_configuration = [i.content for i in get_entity_configurations(self.iss, self.httpc_params, False)]
+            self.issuer_entity_configuration = [
+                i.content
+                for i in get_entity_configurations(self.iss, self.httpc_params, False)
+            ]
 
         _kid = self.header.get("kid")
         try:
             ec = EntityStatement(self.issuer_entity_configuration[0])
             ec.validate_by_itself()
         except UnknownKid:
-            logger.warning(f"Trust Mark validation failed by its Issuer: " f"{_kid} not found in " f"{self.issuer_entity_configuration.jwks}")
+            logger.warning(
+                f"Trust Mark validation failed by its Issuer: "
+                f"{_kid} not found in "
+                f"{self.issuer_entity_configuration.jwks}"
+            )
             return False
         except Exception:
             logger.warning(f"Issuer {self.iss} of trust mark {self.id} is not valid.")
@@ -246,7 +260,9 @@ class EntityStatement:
         self.verified_trust_marks = []
         self.is_valid = False
 
-    def update_trust_anchor_conf(self, trust_anchor_entity_conf: "EntityStatement") -> None:
+    def update_trust_anchor_conf(
+        self, trust_anchor_entity_conf: "EntityStatement"
+    ) -> None:
         """
         Updates the internal Trust Anchor conf.
 
@@ -287,13 +303,20 @@ class EntityStatement:
         """
 
         if not self.trust_anchor_entity_conf:
-            raise TrustAnchorNeeded("To validate the trust marks the " "Trust Anchor Entity Configuration " "is needed.")
+            raise TrustAnchorNeeded(
+                "To validate the trust marks the "
+                "Trust Anchor Entity Configuration "
+                "is needed."
+            )
 
         if not self.filter_by_allowed_trust_marks:
             return True
 
         if not self.payload.get("trust_marks"):
-            logger.warning(f"{self.sub} doesn't have the trust marks claim " "in its Entity Configuration")
+            logger.warning(
+                f"{self.sub} doesn't have the trust marks claim "
+                "in its Entity Configuration"
+            )
             return False
 
         trust_marks = []
@@ -306,7 +329,10 @@ class EntityStatement:
             try:
                 trust_mark = TrustMark(tm["trust_mark"])
             except KeyError:
-                logger.warning(f"Trust Mark decoding failed on [{tm}]. " "Missing 'trust_mark' claim in it")
+                logger.warning(
+                    f"Trust Mark decoding failed on [{tm}]. "
+                    "Missing 'trust_mark' claim in it"
+                )
             except Exception:
                 logger.warning(f"Trust Mark decoding failed on [{tm}]")
                 continue
@@ -314,9 +340,13 @@ class EntityStatement:
                 trust_marks.append(trust_mark)
 
         if not trust_marks:
-            raise MissingTrustMark("Required Trust marks are missing.")  # pragma: no cover
+            raise MissingTrustMark(
+                "Required Trust marks are missing."
+            )  # pragma: no cover
 
-        trust_mark_issuers_by_id = self.trust_anchor_entity_conf.payload.get("trust_marks_issuers", {})
+        trust_mark_issuers_by_id = self.trust_anchor_entity_conf.payload.get(
+            "trust_marks_issuers", {}
+        )
 
         # TODO : cache of issuers -> it would be better to have a proxy function
         #
@@ -385,8 +415,13 @@ class EntityStatement:
         :rtype: dict
         """
         # apply limits if defined
-        authority_hints = authority_hints or deepcopy(self.payload.get("authority_hints", []))
-        if max_authority_hints and authority_hints != authority_hints[:max_authority_hints]:
+        authority_hints = authority_hints or deepcopy(
+            self.payload.get("authority_hints", [])
+        )
+        if (
+            max_authority_hints
+            and authority_hints != authority_hints[:max_authority_hints]
+        ):
             logger.warning(
                 f"Found {len(authority_hints)} but "
                 f"authority maximum hints is set to {max_authority_hints}. "
@@ -397,7 +432,10 @@ class EntityStatement:
 
         for sup in superiors_hints:
             if sup.sub in authority_hints:
-                logger.info("Getting Cached Entity Configurations for " f"{[i.sub for i in superiors_hints]}")
+                logger.info(
+                    "Getting Cached Entity Configurations for "
+                    f"{[i.sub for i in superiors_hints]}"
+                )
                 authority_hints.pop(authority_hints.index(sup.sub))
                 self.verified_superiors[sup.sub] = sup
 
@@ -433,7 +471,9 @@ class EntityStatement:
 
         for ahints in authority_hints:
             if not self.verified_superiors.get(ahints, None):
-                logger.warning(f"{ahints} is not available, missing or not valid authority hint")
+                logger.warning(
+                    f"{ahints} is not available, missing or not valid authority hint"
+                )
                 continue
 
         return self.verified_superiors
@@ -454,12 +494,16 @@ class EntityStatement:
         try:
             EntityConfigurationHeader(**header)
         except pydantic.ValidationError as e:
-            raise InvalidEntityHeader(f"Trust Mark validation failed: " f"{e}")  # pragma: no cover
+            raise InvalidEntityHeader(
+                f"Trust Mark validation failed: " f"{e}"
+            )  # pragma: no cover
 
         try:
             EntityStatementPayload(**payload)
         except pydantic.ValidationError as e:
-            raise InvalidEntityStatementPayload(f"Trust Mark validation failed: " f"{e}")  # pragma: no cover
+            raise InvalidEntityStatementPayload(
+                f"Trust Mark validation failed: " f"{e}"
+            )  # pragma: no cover
 
         _kid = header.get("kid")
 
@@ -500,7 +544,11 @@ class EntityStatement:
 
             is_valid = True
         except Exception as e:
-            logger.warning(f"{self.sub} failed validation with " f"{ec.sub}'s superior statement '{payload or jwt}'. " f"Exception: {e}")
+            logger.warning(
+                f"{self.sub} failed validation with "
+                f"{ec.sub}'s superior statement '{payload or jwt}'. "
+                f"Exception: {e}"
+            )
             is_valid = False
 
         if is_valid:
@@ -536,9 +584,14 @@ class EntityStatement:
 
             try:
                 # get superior fetch url
-                fetch_api_url = ec.payload["metadata"]["federation_entity"]["federation_fetch_endpoint"]
+                fetch_api_url = ec.payload["metadata"]["federation_entity"][
+                    "federation_fetch_endpoint"
+                ]
             except KeyError:
-                logger.warning("Missing federation_fetch_endpoint in  " f"federation_entity metadata for {self.sub} by {ec.sub}.")
+                logger.warning(
+                    "Missing federation_fetch_endpoint in  "
+                    f"federation_entity metadata for {self.sub} by {ec.sub}."
+                )
                 self.failed_superiors[ec.sub] = None
                 continue
 

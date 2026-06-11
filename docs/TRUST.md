@@ -1,6 +1,40 @@
-# Trust
+# trust — Trust Handlers and Combined Trust Evaluator
 
-# Trust Module
+The `pyeudiw.trust` module provides trust handlers that evaluate cryptographic material, metadata, and revocation status for the [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) protocol.
+
+## Creating a Trust Evaluator from Configuration
+
+```python
+from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+from pyeudiw.storage.db_engine import DBEngine
+
+config = {
+    "direct_trust_sd_jwt_vc": {
+        "module": "pyeudiw.trust.handler.direct_trust_sd_jwt_vc",
+        "class": "DirectTrustSdJwtVc",
+        "config": {
+            "jwk_endpoint": "/.well-known/jwt-vc-issuer",
+            "cache_ttl": 60,
+        },
+    },
+}
+
+storage_config = {"type": "mongodb", "host": "localhost", "db_name": "pyeudiw"}
+db_engine = DBEngine(storage_config)
+
+trust_evaluator = CombinedTrustEvaluator.from_config(
+    config,
+    db_engine,
+    default_client_id="https://verifier.example.com",
+    mode="update_first",
+)
+
+# Get public keys for an issuer
+keys = trust_evaluator.get_public_keys(issuer="https://issuer.example.com")
+
+# Get metadata
+metadata = trust_evaluator.get_metadata()
+```
 
 ## Caching modes
 

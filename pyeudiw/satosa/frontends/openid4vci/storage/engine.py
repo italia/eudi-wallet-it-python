@@ -1,4 +1,5 @@
 import logging
+
 from pyeudiw.storage.db_engine import DBEngine
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,10 @@ class OpenId4VciDBEngineHandler:
             self._db_engine.is_connected
         except Exception as e:
             if getattr(self, "_db_engine", None):
-                logger.error(e.__class__.__name__, f"OpenID4VCI db storage handling, connection check silently fails and get restored: {e}")
+                logger.error(
+                    e.__class__.__name__,
+                    f"OpenID4VCI db storage handling, connection check silently fails and get restored: {e}",
+                )
             self._db_engine = DBEngine(self._storage)
 
         return self._db_engine

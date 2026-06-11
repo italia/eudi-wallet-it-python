@@ -38,7 +38,9 @@ DEFAULT_ENC_ALG_MAP = {"RSA": "RSA-OAEP", "EC": "ECDH-ES+A256KW"}
 
 DEFAULT_ENC_ENC_MAP = {"RSA": "A256CBC-HS512", "EC": "A256GCM"}
 
-DEFAULT_TOKEN_TIME_TOLERANCE = int(os.getenv("PYEUDIW_TOKEN_TIME_TOLERANCE", "60"), base=10)
+DEFAULT_TOKEN_TIME_TOLERANCE = int(
+    os.getenv("PYEUDIW_TOKEN_TIME_TOLERANCE", "60"), base=10
+)
 
 
 class JWSHelper(JWHelperInterface):
@@ -103,7 +105,9 @@ class JWSHelper(JWHelperInterface):
             unprotected = {}
 
         # Select the signing key
-        signing_key = self._select_signing_key((protected, unprotected), signing_kid, signing_algs)
+        signing_key = self._select_signing_key(
+            (protected, unprotected), signing_kid, signing_algs
+        )
 
         if signing_key["kty"] == "oct":
             raise JWSSigningError(f"Key {signing_key['kid']} is a symmetric key")
@@ -111,7 +115,10 @@ class JWSHelper(JWHelperInterface):
         try:
             _validate_key_with_jws_header(signing_key, protected, unprotected)
         except Exception as e:
-            raise JWSSigningError(f"failed to validate signing key: it's content it not valid for current header claims: {e}", e)
+            raise JWSSigningError(
+                f"failed to validate signing key: it's content it not valid for current header claims: {e}",
+                e,
+            )
 
         payload = serialize_payload(plain_dict)
 
@@ -174,12 +181,16 @@ class JWSHelper(JWHelperInterface):
         :raises JWSSigningError: If no suitable signing key is found or if the key cannot be used for signing.
         """
         if len(self.jwks) == 0:
-            raise JWSSigningError("signing error: no key available for signature; note that {'alg':'none'} is not supported")
+            raise JWSSigningError(
+                "signing error: no key available for signature; note that {'alg':'none'} is not supported"
+            )
         # Case 1: key forced by the user
         if signing_kid:
             signing_key = self.get_jwk_by_kid(signing_kid)
             if not signing_key:
-                raise JWSSigningError(f"signing forced by using key with {signing_kid=}, but no such key is available")
+                raise JWSSigningError(
+                    f"signing forced by using key with {signing_kid=}, but no such key is available"
+                )
             return signing_key.to_dict()
 
         # Case 2: key forced by the user by a list of alg
@@ -192,7 +203,9 @@ class JWSHelper(JWHelperInterface):
             if signing_key:
                 return signing_key
             else:
-                raise JWSSigningError(f"signing forced by using algs {signing_algs}, but no such key is available")
+                raise JWSSigningError(
+                    f"signing forced by using algs {signing_algs}, but no such key is available"
+                )
 
         # Case 3: only one key
         if signing_key := self._select_signing_key_by_uniqueness():
@@ -206,7 +219,9 @@ class JWSHelper(JWHelperInterface):
         # Case 6: match key by x5c
         if signing_key := self._select_key_by_x5c(headers):
             return signing_key
-        raise JWSSigningError("signing error: not possible to uniquely determine the signing key")
+        raise JWSSigningError(
+            "signing error: not possible to uniquely determine the signing key"
+        )
 
     def _select_signing_key_by_uniqueness(self) -> dict | None:
         if len(self.jwks) == 1:
@@ -235,7 +250,9 @@ class JWSHelper(JWHelperInterface):
 
         return None
 
-    def _select_key_by_kid(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
+    def _select_key_by_kid(
+        self, headers: tuple[dict[str, Any], dict[str, Any]]
+    ) -> dict | None:
         if not headers:
             return None
         if "kid" in headers[0]:
@@ -246,7 +263,9 @@ class JWSHelper(JWHelperInterface):
             return None
         return find_jwk_by_kid([key.to_dict() for key in self.jwks], kid)
 
-    def _select_key_by_x5c(self, headers: tuple[dict[str, Any], dict[str, Any]]) -> dict | None:
+    def _select_key_by_x5c(
+        self, headers: tuple[dict[str, Any], dict[str, Any]]
+    ) -> dict | None:
         if not headers:
             return None
         x5c: list[str] | None = headers[0].get("x5c") or headers[1].get("x5c")
@@ -259,7 +278,9 @@ class JWSHelper(JWHelperInterface):
                 return key_d
         return None
 
-    def verify(self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE) -> dict | bytes | str | Any:
+    def verify(
+        self, jwt: str, tolerance_s: int = DEFAULT_TOKEN_TIME_TOLERANCE
+    ) -> dict | bytes | str | Any:
         """Verify a JWS with one of the initialized keys and validate standard
         standard claims if possible, such as 'iat' and 'exp'.
         Verification of tokens in JSON serialization format is not supported.
@@ -281,11 +302,15 @@ class JWSHelper(JWHelperInterface):
         try:
             header = decode_jwt_header(jwt)
         except (binascii.Error, Exception) as e:
-            raise JWSVerificationError(f"Not a valid JWS format for the following reason: {e}")
+            raise JWSVerificationError(
+                f"Not a valid JWS format for the following reason: {e}"
+            )
 
         verifying_key = self._select_verifying_key(header)
         if not verifying_key:
-            raise JWSVerificationError(f"Verification error: unable to find matching public key for header {header}")
+            raise JWSVerificationError(
+                f"Verification error: unable to find matching public key for header {header}"
+            )
 
         # sanity check: kid must match if present
         if expected_kid := header.get("kid"):
@@ -327,10 +352,14 @@ class JWSHelper(JWHelperInterface):
             # check if the self contained key matches a trusted jwk
             _, candidate_key = self_contained_claims_key_pair
             if hasattr(candidate_key, "thumbprint"):
-                if verifying_key := find_jwk_by_thumbprint(available_keys, candidate_key.thumbprint):
+                if verifying_key := find_jwk_by_thumbprint(
+                    available_keys, candidate_key.thumbprint
+                ):
                     return verifying_key
                 else:
-                    logger.error(f"Candidate key {candidate_key} does not have a thumbprint attribute.")
+                    logger.error(
+                        f"Candidate key {candidate_key} does not have a thumbprint attribute."
+                    )
                     raise ValueError("Invalid key: missing thumbprint.")
 
         # case 3: if only one key and there is no header claim that can identitfy any key, than that MUST
@@ -367,8 +396,14 @@ def _validate_key_with_header_kid(key: dict, header: dict) -> None:
     """
     :raises Exception: if the key is not compatible with the header content kid (if any)
     """
-    if (key_kid := key.get("kid")) and (header_kid := header.get("kid")) and (key_kid != header_kid):
-        raise Exception(f"token header contains a kid {header_kid} that does not match the signing key kid {key_kid}")
+    if (
+        (key_kid := key.get("kid"))
+        and (header_kid := header.get("kid"))
+        and (key_kid != header_kid)
+    ):
+        raise Exception(
+            f"token header contains a kid {header_kid} that does not match the signing key kid {key_kid}"
+        )
     return
 
 
@@ -397,11 +432,15 @@ def _validate_key_with_header_x5c(key: dict, header: dict) -> None:
         return
     header_key = parse_b64der(leaf_cert)
     if header_key.thumbprint != JWK(key).thumbprint:
-        raise Exception(f"public material of the key does not matches the key in the leaf certificate {leaf_cert}")
+        raise Exception(
+            f"public material of the key does not matches the key in the leaf certificate {leaf_cert}"
+        )
     return
 
 
-def _validate_key_with_jws_header(key: dict, protected_jws_header: dict, unprotected_jws_header: dict) -> None:
+def _validate_key_with_jws_header(
+    key: dict, protected_jws_header: dict, unprotected_jws_header: dict
+) -> None:
     """
     Validate that a key used for some operations (sign, verify) on a token
     is compatible with the token header itself.

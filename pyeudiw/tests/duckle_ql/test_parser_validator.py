@@ -30,7 +30,12 @@ def duckle_handler_instance():
     ],
 )
 def test_is_active_duckle_request(duckle_handler_instance, config, active):
-    assert ParserValidator({"some": "token"}, duckle_handler_instance, config).is_active_duckle_request() is active
+    assert (
+        ParserValidator(
+            {"some": "token"}, duckle_handler_instance, config
+        ).is_active_duckle_request()
+        is active
+    )
 
 
 @pytest.mark.parametrize(
@@ -41,5 +46,12 @@ def test_is_active_duckle_request(duckle_handler_instance, config, active):
         {"some_other_config": {}},
     ],
 )
-def test_is_active_duckle_request_always_false_when_token_is_a_list(duckle_handler_instance, config):
-    assert ParserValidator([{"some": "token"}], duckle_handler_instance, config).is_active_duckle_request() is False
+def test_is_active_duckle_request_always_false_when_token_is_a_list(
+    duckle_handler_instance, config
+):
+    assert (
+        ParserValidator(
+            [{"some": "token"}], duckle_handler_instance, config
+        ).is_active_duckle_request()
+        is False
+    )

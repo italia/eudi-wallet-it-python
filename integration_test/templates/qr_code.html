@@ -6,12 +6,29 @@
     <div class="card-wrapper card-space">
        <div class="card card-bg no-after">
           <div class="card-body">
+             <div class="qr-slim-header mb-4">
+                <div class="qr-back-row">
+                   <a class="qr-back-link" href="{{ selection_page_url|default('/Saml2/disco', true) }}" aria-label="Torna alla pagina di selezione">
+                      <span aria-hidden="true">←</span> Torna indietro
+                   </a>
+                </div>
+                <div class="qr-slim-header-top">
+                   <p class="qr-org-name mb-0">{{ organization_name|default('Nome Organizzazione', true) }}</p>
+                   <div class="qr-language-selector">
+                      <label class="visually-hidden" for="qr-language">Lingua</label>
+                      <select id="qr-language" class="form-select form-select-sm" aria-label="Selettore lingua">
+                         <option selected>IT</option>
+                         <option>EN</option>
+                      </select>
+                   </div>
+                </div>
+             </div>
              <div class="row">
                 <p id="content-title" class="qr-code-title text-center">Inquadra il codice QR</p>
              </div>
              <div id="content" class="text-center">
                 <div class="row">
-                   <div id="content-text" class="qr-code-text">Usa la funzionalità "Inquadra" dell'app IO per accedere con IT Wallet al servizio.</div>
+                   <div id="content-text" class="lead-lg">Usa la funzionalità di <b>{{ selected_app_name|default('nome app scelta', true) }}</b> o la fotocamera del tuo smartphone</div>
                 </div>
                 <br>
                 <div id="content-qrcode" class="row">
@@ -20,7 +37,7 @@
                         contents="{{ qrcode_text }}"
                         module-color="{{ qrcode_color }}"
                         position-ring-color="{{ qrcode_color }}"
-                        position-center-color="{{ qrcode_color }}",
+                        position-center-color="{{ qrcode_color }}"
                         style="
                             width: {{ qrcode_size }}px;
                             height: {{ qrcode_size }}px;
@@ -28,7 +45,7 @@
                             background-color: #fff;
                         "
                         >
-                        <img class="icon-qr-code" src="{{ static+qrcode_logo_path }}" slot="icon" />
+                        <img class="icon-qr-code" src="{{ static + (selected_app_logo_path|default(qrcode_logo_path, true)) }}" slot="icon" />
                         </qr-code>
                     </div>
                    <div id="content-qrcode-info">
@@ -41,12 +58,15 @@
                          scegli su quale dispositivo preferisci ricevere le notifiche.
                       </p>
                       <div id="content-function" class="text-center button-container mt-2">
-                         <button class="btn btn-outline-primary"
-                            action="action"
+                         <a
+                            class="qr-cancel-link"
+                            {% if entry_page_url %}
+                            href="{{ entry_page_url }}"
+                            {% else %}
+                            href="#"
                             onclick="window.history.go(-1); return false;"
-                            >
-                         <span>Indietro</span>
-                         </button>
+                            {% endif %}
+                         >Annulla</a>
                       </div>
                    </div>
                 </div>

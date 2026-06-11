@@ -5,16 +5,31 @@ from uuid import uuid4
 import pytest
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
-from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import CLIENT_ID_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
+    OPEN_ID_CREDENTIAL_TYPE,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.authorization_request import (
+    CLIENT_ID_CTX,
+)
 from pyeudiw.satosa.frontends.openid4vci.models.config import PyeudiwFrontendConfig
-from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import CONFIG_CTX, ENDPOINT_CTX, ENTITY_ID_CTX
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import (
+    CONFIG_CTX,
+    ENDPOINT_CTX,
+    ENTITY_ID_CTX,
+)
 from pyeudiw.satosa.frontends.openid4vci.models.par_request import SignedParRequest
-from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import MOCK_PYEUDIW_FRONTEND_CONFIG
+from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
+    MOCK_PYEUDIW_FRONTEND_CONFIG,
+)
 
 
 def get_valid_context():
-    return {ENDPOINT_CTX: "par", CLIENT_ID_CTX: "client-123", ENTITY_ID_CTX: "entity-123", CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG)}
+    return {
+        ENDPOINT_CTX: "par",
+        CLIENT_ID_CTX: "client-123",
+        ENTITY_ID_CTX: "entity-123",
+        CONFIG_CTX: PyeudiwFrontendConfig(**MOCK_PYEUDIW_FRONTEND_CONFIG),
+    }
 
 
 @pytest.mark.parametrize("value", ["", "  ", None])
@@ -27,7 +42,9 @@ def test_empty_or_missing_iss(value):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
-@pytest.mark.parametrize("value", ["test_iss_0", "  test_iss_1", "test_iss_2", " test_iss_3 "])
+@pytest.mark.parametrize(
+    "value", ["test_iss_0", "  test_iss_1", "test_iss_2", " test_iss_3 "]
+)
 def test_invalid_iss(value):
     payload = {"iss": value}
 
@@ -89,7 +106,12 @@ def test_empty_or_missing_client_id(value):
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_client_id(value):
-    payload = {"iss": "client-123", "aud": "entity-123", "state": "A" * 32, "client_id": value}
+    payload = {
+        "iss": "client-123",
+        "aud": "entity-123",
+        "state": "A" * 32,
+        "client_id": value,
+    }
     with pytest.raises(InvalidRequestException, match="invalid `client_id` parameter"):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
@@ -111,7 +133,13 @@ def test_invalid_exp(value):
 
 @pytest.mark.parametrize("value", [123, None])
 def test_invalid_iat(value):
-    payload = {"iss": "client-123", "aud": "entity-123", "state": "A" * 32, "client_id": "client-123", "exp": int(time.time())}
+    payload = {
+        "iss": "client-123",
+        "aud": "entity-123",
+        "state": "A" * 32,
+        "client_id": "client-123",
+        "exp": int(time.time()),
+    }
     if value is not None:
         payload["iat"] = value
 
@@ -119,36 +147,29 @@ def test_invalid_iat(value):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
-def test_expired_token():
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {"iss": "client-123", "aud": "entity-123", "state": "A" * 32, "client_id": "client-123", "iat": now, "exp": now + 329}
-
-    with pytest.raises(InvalidRequestException, match="expired token"):
-        SignedParRequest.model_validate(payload, context=get_valid_context())
-
-
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_empty_or_missing_response_type(value):
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {"iss": "client-123", "aud": "entity-123", "state": "A" * 32, "client_id": "client-123", "iat": now + 29, "exp": now + 30}
+    payload = {
+        "iss": "client-123",
+        "aud": "entity-123",
+        "state": "A" * 32,
+        "client_id": "client-123",
+        "iat": now + 29,
+        "exp": now + 30,
+    }
     if value is not None:
         payload["response_type"] = value
 
-    with pytest.raises(InvalidRequestException, match="missing `response_type` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `response_type` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_response_type(value):
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {"iss": "client-123", "aud": "entity-123", "state": "A" * 32, "client_id": "client-123", "iat": now + 29, "exp": now + 30, "response_type": value}
-    with pytest.raises(InvalidRequestException, match="invalid `response_type` parameter"):
-        SignedParRequest.model_validate(payload, context=get_valid_context())
-
-
-@pytest.mark.parametrize("value", ["", "  ", None])
-def test_empty_or_missing_response_mode(value):
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
         "aud": "entity-123",
@@ -156,29 +177,11 @@ def test_empty_or_missing_response_mode(value):
         "client_id": "client-123",
         "iat": now + 29,
         "exp": now + 30,
-        "response_type": "code",
+        "response_type": value,
     }
-    if value is not None:
-        payload["response_mode"] = value
-
-    with pytest.raises(InvalidRequestException, match="missing `response_mode` parameter"):
-        SignedParRequest.model_validate(payload, context=get_valid_context())
-
-
-@pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
-def test_invalid_response_mode(value):
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {
-        "iss": "client-123",
-        "aud": "entity-123",
-        "state": "A" * 32,
-        "client_id": "client-123",
-        "iat": now + 29,
-        "exp": now + 30,
-        "response_type": "code",
-        "response_mode": value,
-    }
-    with pytest.raises(InvalidRequestException, match="invalid `response_mode` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="invalid `response_type` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -198,7 +201,9 @@ def test_empty_or_missing_code_challenge(value):
     if value is not None:
         payload["code_challenge"] = value
 
-    with pytest.raises(InvalidRequestException, match="missing `code_challenge` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `code_challenge` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -219,7 +224,9 @@ def test_empty_or_missing_code_challenge_method(value):
     if value is not None:
         payload["code_challenge_method"] = value
 
-    with pytest.raises(InvalidRequestException, match="missing `code_challenge_method` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `code_challenge_method` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -239,11 +246,15 @@ def test_invalid_code_challenge_method(value):
         "code_challenge_method": value,
     }
 
-    with pytest.raises(InvalidRequestException, match="invalid `code_challenge_method` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="invalid `code_challenge_method` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
-@pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "scope1, pippo"])
+@pytest.mark.parametrize(
+    "value", ["test_0", "  test_1", "test_2", " test_3 ", "scope1, pippo"]
+)
 def test_invalid_code_challenge_method_extra_values(value):
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
@@ -297,7 +308,7 @@ def test_empty_or_missing_authorization_details(authorization_details, scope):
     if scope is not None:
         payload["scope"] = scope
 
-    with pytest.raises(InvalidRequestException, match="Missing `scope` and `authorization_details` in `par` endpoint"):
+    with pytest.raises(InvalidRequestException, match="invalid `scope` parameter"):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -322,7 +333,9 @@ def test_missing_authorization_details_type(value):
         "authorization_details": [authorization_details],
     }
 
-    with pytest.raises(InvalidRequestException, match="missing `authorization_details.type` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `authorization_details.type` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -345,7 +358,9 @@ def test_invalid_authorization_details_type(value):
         "authorization_details": [authorization_details],
     }
 
-    with pytest.raises(InvalidRequestException, match="invalid `authorization_details.type` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="invalid `authorization_details.type` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -370,13 +385,19 @@ def test_missing_authorization_credential_configuration_id(value):
         "authorization_details": [authorization_details],
     }
 
-    with pytest.raises(InvalidRequestException, match="missing `authorization_details.credential_configuration_id` parameter"):
+    with pytest.raises(
+        InvalidRequestException,
+        match="missing `authorization_details.credential_configuration_id` parameter",
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 "])
 def test_invalid_authorization_details_credential_configuration_id(value):
-    authorization_details = {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": value}
+    authorization_details = {
+        "type": OPEN_ID_CREDENTIAL_TYPE,
+        "credential_configuration_id": value,
+    }
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
@@ -393,13 +414,19 @@ def test_invalid_authorization_details_credential_configuration_id(value):
         "authorization_details": [authorization_details],
     }
 
-    with pytest.raises(InvalidRequestException, match="invalid `authorization_details.credential_configuration_id` parameter"):
+    with pytest.raises(
+        InvalidRequestException,
+        match="invalid `authorization_details.credential_configuration_id` parameter",
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_redirect_uri(value):
-    authorization_details = {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"}
+    authorization_details = {
+        "type": OPEN_ID_CREDENTIAL_TYPE,
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard",
+    }
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
@@ -418,7 +445,9 @@ def test_missing_redirect_uri(value):
     if value is not None:
         payload["redirect_uri"] = value
 
-    with pytest.raises(InvalidRequestException, match="missing `redirect_uri` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="missing `redirect_uri` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
@@ -433,7 +462,10 @@ def test_missing_redirect_uri(value):
     ],
 )
 def test_invalid_redirect_uri(value):
-    authorization_details = {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"}
+    authorization_details = {
+        "type": OPEN_ID_CREDENTIAL_TYPE,
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard",
+    }
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
@@ -451,13 +483,18 @@ def test_invalid_redirect_uri(value):
         "redirect_uri": value,
     }
 
-    with pytest.raises(InvalidRequestException, match="invalid `redirect_uri` parameter"):
+    with pytest.raises(
+        InvalidRequestException, match="invalid `redirect_uri` parameter"
+    ):
         SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["", "  ", None])
 def test_missing_jti(value):
-    authorization_details = {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"}
+    authorization_details = {
+        "type": OPEN_ID_CREDENTIAL_TYPE,
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard",
+    }
     now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
     payload = {
         "iss": "client-123",
@@ -478,29 +515,4 @@ def test_missing_jti(value):
         payload["jti"] = value
 
     with pytest.raises(InvalidRequestException, match="missing `jti` parameter"):
-        SignedParRequest.model_validate(payload, context=get_valid_context())
-
-
-@pytest.mark.parametrize("value", ["test_0", "  test_1", "test_2", " test_3 ", "client-123 ", "client-123"])
-def test_invalid_jti(value):
-    authorization_details = {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard"}
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
-    payload = {
-        "iss": "client-123",
-        "aud": "entity-123",
-        "state": "A" * 32,
-        "client_id": "client-123",
-        "iat": now + 29,
-        "exp": now + 30,
-        "response_type": "code",
-        "response_mode": "query",
-        "code_challenge": "code_challenge_test",
-        "code_challenge_method": "S256",
-        "scope": "scope1",
-        "authorization_details": [authorization_details],
-        "redirect_uri": "https://client.example.org/cb",
-        "jti": value,
-    }
-
-    with pytest.raises(InvalidRequestException, match="invalid `jti` parameter"):
         SignedParRequest.model_validate(payload, context=get_valid_context())

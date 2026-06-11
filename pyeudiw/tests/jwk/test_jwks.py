@@ -63,17 +63,26 @@ def test_jwk_not_found():
     try:
         find_jwk_by_kid([], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
     except Exception as e:
-        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        assert (
+            str(e)
+            == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        )
 
     try:
         find_jwk_by_kid([raw_key_2], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
     except Exception as e:
-        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        assert (
+            str(e)
+            == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        )
 
     try:
         find_jwk_by_kid([raw_key_no_kid], "NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8")
     except Exception as e:
-        assert str(e) == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        assert (
+            str(e)
+            == "Key with Kid NMrR5wD0p-VqbRbR9ej6M16v5Fs7hLXwonO9vhJYsn8 not found"
+        )
 
 
 def test_find_jwk_by_thumbprint():
@@ -126,7 +135,9 @@ def test_find_jwk_by_thumbprint():
             expected=raw_key_1,
             explanation="one matching key out of two",
         ),
-        TestCase(jwks=[], thumbrpint=raw_thumprint_1, expected=None, explanation="no key"),
+        TestCase(
+            jwks=[], thumbrpint=raw_thumprint_1, expected=None, explanation="no key"
+        ),
         TestCase(
             jwks=[raw_key_1],
             thumbrpint=raw_thumprint_2,

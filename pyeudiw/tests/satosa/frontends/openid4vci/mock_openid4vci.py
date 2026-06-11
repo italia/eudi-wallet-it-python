@@ -7,8 +7,11 @@ from cryptojwt.jwk.ec import new_ec_key
 from satosa.context import Context
 
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
-from pyeudiw.satosa.utils.validation import OAUTH_CLIENT_ATTESTATION_POP_HEADER, OAUTH_CLIENT_ATTESTATION_HEADER
-from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, FORM_URLENCODED
+from pyeudiw.satosa.utils.validation import (
+    OAUTH_CLIENT_ATTESTATION_HEADER,
+    OAUTH_CLIENT_ATTESTATION_POP_HEADER,
+)
+from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 
 BASE_PACKAGE = "pyeudiw.satosa.frontends.openid4vci"
 _JWS_HELPER_MODULE = "pyeudiw.jwt.jws_helper.JWSHelper"
@@ -45,7 +48,11 @@ MOCK_USER_STORAGE_CONFIG = {
             "class": "UserStorage",
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
-                "conf": {"db_name": "pyeudiw_test", "db_users_collection": "users", "data_ttl": 63072000},
+                "conf": {
+                    "db_name": "pyeudiw_test",
+                    "db_users_collection": "users",
+                    "data_ttl": 63072000,
+                },
                 "connection_params": {"username": "user", "password": "psw"},
             },
         }
@@ -59,7 +66,11 @@ MOCK_CREDENTIAL_STORAGE_CONFIG = {
             "class": "CredentialStorage",
             "init_params": {
                 "url": "mongodb://satosa-mongo:27017",
-                "conf": {"db_name": "pyeudiw_test", "db_users_collection": "credentials", "data_ttl": 63072000},
+                "conf": {
+                    "db_name": "pyeudiw_test",
+                    "db_users_collection": "credentials",
+                    "data_ttl": 63072000,
+                },
                 "connection_params": {"username": "user", "password": "psw"},
             },
         }
@@ -67,19 +78,51 @@ MOCK_CREDENTIAL_STORAGE_CONFIG = {
 }
 
 MOCK_ENDPOINTS_CONFIG = {
-    "par": {"module": f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint", "class": "ParHandler", "path": "/par"},
-    "credential_offer": {"module": f"{BASE_PACKAGE}.endpoints.credential_offer_endpoint", "class": "CredentialOfferHandler", "path": "/credential"},
-    "authorization_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.authorization_endpoint", "class": "AuthorizationHandler", "path": "/authorization"},
-    "token_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.token_endpoint", "class": "TokenHandler", "path": "/token"},
-    "nonce_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.nonce_endpoint", "class": "NonceHandler", "path": "/nonce-endpoint"},
-    "credential_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.credential_endpoint", "class": "CredentialHandler", "path": "/credential"},
+    "par": {
+        "module": f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint",
+        "class": "ParHandler",
+        "path": "/par",
+    },
+    "credential_offer": {
+        "module": f"{BASE_PACKAGE}.endpoints.credential_offer_endpoint",
+        "class": "CredentialOfferHandler",
+        "path": "/credential",
+    },
+    "authorization_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.authorization_endpoint",
+        "class": "AuthorizationHandler",
+        "path": "/authorization",
+    },
+    "token_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.token_endpoint",
+        "class": "TokenHandler",
+        "path": "/token",
+    },
+    "nonce_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.nonce_endpoint",
+        "class": "NonceHandler",
+        "path": "/nonce-endpoint",
+    },
+    "credential_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.credential_endpoint",
+        "class": "CredentialHandler",
+        "path": "/credential",
+    },
     "deferred_credential_endpoint": {
         "module": f"{BASE_PACKAGE}.endpoints.deferred_credential_endpoint",
         "class": "DeferredCredentialHandler",
         "path": "/deferred-credential",
     },
-    "notification_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.notification_endpoint", "class": "NotificationHandler", "path": "/notification"},
-    "metadata_endpoint": {"module": f"{BASE_PACKAGE}.endpoints.metadata_endpoint", "class": "MetadataHandler", "path": "/.well-known/openid-federation"},
+    "notification_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.notification_endpoint",
+        "class": "NotificationHandler",
+        "path": "/notification",
+    },
+    "metadata_endpoint": {
+        "module": f"{BASE_PACKAGE}.endpoints.metadata_endpoint",
+        "class": "MetadataHandler",
+        "path": "/.well-known/openid-federation",
+    },
 }
 
 MOCK_STATUS_LIST_CONFIG = {
@@ -136,9 +179,23 @@ MOCK_CREDENTIAL_CONFIGURATIONS = {
 
 MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG = {
     "credential_configurations_supported": {
-        "dc_sd_jwt_EuropeanDisabilityCard": {"format": "dc+sd-jwt", "scope": "EuropeanDisabilityCard"},
-        "dc_sd_jwt_mDL": {"format": "dc+sd-jwt", "scope": "mDL", "cryptographic_binding_methods_supported": ["jwk"]},
-        "mso_mdoc_mDL": {"doctype": "org.iso.18013.5.1.mDL", "format": "mso_mdoc", "scope": "mDL", "cryptographic_binding_methods_supported": ["cose_key"]},
+        "dc_sd_jwt_EuropeanDisabilityCard": {
+            "format": "dc+sd-jwt",
+            "scope": "EuropeanDisabilityCard",
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/EuropeanDisabilityCard",
+        },
+        "dc_sd_jwt_mDL": {
+            "format": "dc+sd-jwt",
+            "scope": "mDL",
+            "cryptographic_binding_methods_supported": ["jwk"],
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/mDL",
+        },
+        "mso_mdoc_mDL": {
+            "doctype": "org.iso.18013.5.1.mDL",
+            "format": "mso_mdoc",
+            "scope": "mDL",
+            "cryptographic_binding_methods_supported": ["cose_key"],
+        },
     },
     "authorization_servers": [],
     "credential_issuer": "",
@@ -156,8 +213,22 @@ MOCK_JWT_CONFIG = {
     "default_enc_alg": "RSA-OAEP",
     "default_enc_enc": "A256CBC-HS512",
     "default_exp": 6,
-    "enc_alg_supported": ["RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"],
-    "enc_enc_supported": ["A128CBC-HS256", "A192CBC-HS384", "A256CBC-HS512", "A128GCM", "A192GCM", "A256GCM"],
+    "enc_alg_supported": [
+        "RSA-OAEP",
+        "RSA-OAEP-256",
+        "ECDH-ES",
+        "ECDH-ES+A128KW",
+        "ECDH-ES+A192KW",
+        "ECDH-ES+A256KW",
+    ],
+    "enc_enc_supported": [
+        "A128CBC-HS256",
+        "A192CBC-HS384",
+        "A256CBC-HS512",
+        "A128GCM",
+        "A192GCM",
+        "A256GCM",
+    ],
     "sig_alg_supported": ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"],
     "access_token_exp": 90,
     "refresh_token_exp": 120,
@@ -198,9 +269,9 @@ MOCK_STORAGE_CONFIG = {
 
 MOCK_QR_CODE_CONFIG = {
     "size": 250,
-    "color": "#000000",
+    "color": "#0072CE",
     "expiration_time": 120,
-    "logo_path": "wallet-it/wallet-icon-blue.svg",
+    "logo_path": "it-wallet/wallet-icon-blue.svg",
     "ui": {
         "static_storage_url": "http://localhost:static",
         "template_folder": "templates",
@@ -213,7 +284,10 @@ MOCK_PYEUDIW_FRONTEND_CONFIG = {
     "endpoints": MOCK_ENDPOINTS_CONFIG,
     "qrcode": MOCK_QR_CODE_CONFIG,
     "jwt": MOCK_JWT_CONFIG,
-    "metadata": {"oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG, "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG},
+    "metadata": {
+        "oauth_authorization_server": MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG,
+        "openid_credential_issuer": MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+    },
     "user_storage": MOCK_USER_STORAGE_CONFIG,
     "credential_storage": MOCK_CREDENTIAL_STORAGE_CONFIG,
     "metadata_jwks": MOCK_METADATA_JWKS_CONFIG,
@@ -233,7 +307,13 @@ MOCK_INTERNAL_ATTRIBUTES = {
         "placeOfBirth": {"openid4vci": ["placeOfBirth"]},
         "countyOfBirth": {"openid4vci": ["countyOfBirth"]},
         "dateOfBirth": {"openid4vci": ["dateOfBirth"]},
-        "fiscal_code": {"openid4vci": ["fiscal_code", "fiscal_number", "personal_administrative_number"]},
+        "fiscal_code": {
+            "openid4vci": [
+                "fiscal_code",
+                "fiscal_number",
+                "personal_administrative_number",
+            ]
+        },
     }
 }
 
@@ -295,10 +375,16 @@ INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON = [
 
 INVALID_ATTESTATION_HEADERS = [
     {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
-    {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
+    {
+        OAUTH_CLIENT_ATTESTATION_HEADER: None,
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid",
+    },
     {OAUTH_CLIENT_ATTESTATION_POP_HEADER: "valid"},
     {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
-    {OAUTH_CLIENT_ATTESTATION_HEADER: "valid", OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
+    {
+        OAUTH_CLIENT_ATTESTATION_HEADER: "valid",
+        OAUTH_CLIENT_ATTESTATION_POP_HEADER: None,
+    },
     {OAUTH_CLIENT_ATTESTATION_HEADER: "valid"},
     {OAUTH_CLIENT_ATTESTATION_HEADER: "", OAUTH_CLIENT_ATTESTATION_POP_HEADER: ""},
     {OAUTH_CLIENT_ATTESTATION_HEADER: None, OAUTH_CLIENT_ATTESTATION_POP_HEADER: None},
@@ -306,7 +392,9 @@ INVALID_ATTESTATION_HEADERS = [
 ]
 
 
-def mock_valid_oauth_client_attestation_jwt(crv="P-256", use="sig", kid="ec1", alg="ES256"):
+def mock_valid_oauth_client_attestation_jwt(
+    crv="P-256", use="sig", kid="ec1", alg="ES256"
+):
     ec_key = new_ec_key(crv=crv, use=use, kid=kid)
     payload = {"cnf": ec_key.serialize(private=False)}
     jws = JWS(json.dumps(payload), alg=alg)
@@ -321,7 +409,7 @@ def get_mocked_openid4vpi_entity() -> dict:
         "session_id": "sessionid",
         "remote_flow_typ": RemoteFlowType.SAME_DEVICE,
         "client_id": "client123",
-        "code_challenge": "ef7a1e840dad06e97982b64f8575064303408f187af733444bc6eed9b543d043",  # as sha256("code_verifier".encode('utf-8')).hexdigest()
+        "code_challenge": "73oehA2tBul5grZPhXUGQwNAjxh69zNES8bu2bVD0EM",  # base64url(sha256("code_verifier")) per PKCE S256
         "code_challenge_method": "S256",
         "redirect_uri": "https://client.com",
         "authorization_details": [],
@@ -329,7 +417,10 @@ def get_mocked_openid4vpi_entity() -> dict:
 
 
 def get_mocked_satosa_context(
-    method="POST", content_type=FORM_URLENCODED, headers=None, oauth_client_attestation_header=mock_valid_oauth_client_attestation_jwt()
+    method="POST",
+    content_type=FORM_URLENCODED,
+    headers=None,
+    oauth_client_attestation_header=mock_valid_oauth_client_attestation_jwt(),
 ) -> Context:
     if headers is None:
         headers = {
@@ -347,7 +438,9 @@ def get_mocked_satosa_context(
     return context
 
 
-def get_pyeudiw_frontend_config_with_openid_credential_issuer(openid_credential_issuer=None):
+def get_pyeudiw_frontend_config_with_openid_credential_issuer(
+    openid_credential_issuer=None,
+):
     if openid_credential_issuer:
         config = copy.deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
         metadata = config.get("metadata", {})

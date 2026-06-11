@@ -1,4 +1,5 @@
 import zlib
+from base64 import urlsafe_b64decode
 from copy import deepcopy
 from unittest.mock import patch
 
@@ -6,28 +7,35 @@ import pytest
 from satosa.context import Context
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint import StatusListHandler
-from pyeudiw.status_list import STATUS_LIST_CWT, STATUS_LIST_JWT, decode_cwt_status_list_token
+from pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint import (
+    StatusListHandler,
+)
+from pyeudiw.status_list import (
+    STATUS_LIST_CWT,
+    STATUS_LIST_JWT,
+    decode_cwt_status_list_token,
+)
+from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
+    assert_invalid_request_application_json,
+    do_test_invalid_content_type,
     do_test_invalid_request_method,
     do_test_missing_configurations_raises,
-    do_test_invalid_content_type,
-    assert_invalid_request_application_json,
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     BASE_PACKAGE,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
     INVALID_METHOD_FOR_GET_REQ,
-    MOCK_STATUS_LIST_CONFIG,
-    MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_BASE_URL,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
-    MOCK_BASE_URL,
+    MOCK_PYEUDIW_FRONTEND_CONFIG,
+    MOCK_STATUS_LIST_CONFIG,
+    REMOVE,
     get_mocked_satosa_context,
     mock_deserialized_overridable,
-    REMOVE,
 )
-from pyeudiw.tools.content_type import APPLICATION_JSON, ACCEPT_HEADER
+from pyeudiw.tools.content_type import HTTP_ACCEPT_HEADER, APPLICATION_JSON
 
 _STATUS_LIST_BASE_PATH = f"{BASE_PACKAGE}.endpoints.status_list_endpoint"
 
@@ -36,10 +44,19 @@ _STATUS_LIST_BASE_PATH = f"{BASE_PACKAGE}.endpoints.status_list_endpoint"
 def status_list_handler() -> StatusListHandler:
     with (
         patch(f"{_STATUS_LIST_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
-        patch("pyeudiw.storage.user_credential_db_engine.CredentialStorage") as credential_storage_mock,
+        patch(
+            "pyeudiw.storage.user_credential_db_engine.CredentialStorage"
+        ) as credential_storage_mock,
     ):
-        user_cred_eng_class.db_user_storage_engine = credential_storage_mock.return_value
-        handler = StatusListHandler(MOCK_PYEUDIW_FRONTEND_CONFIG, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        user_cred_eng_class.db_user_storage_engine = (
+            credential_storage_mock.return_value
+        )
+        handler = StatusListHandler(
+            MOCK_PYEUDIW_FRONTEND_CONFIG,
+            MOCK_INTERNAL_ATTRIBUTES,
+            MOCK_BASE_URL,
+            MOCK_NAME,
+        )
         return handler
 
 
@@ -61,21 +78,38 @@ def test_invalid_content_type(status_list_handler, context, content_type):
 @pytest.mark.parametrize(
     "config, missing_fields",
     [
-        (mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations": REMOVE}), ["credential_configurations"]),
         (
-            mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations.status_list": REMOVE}),
+            mock_deserialized_overridable(
+                MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations": REMOVE}
+            ),
+            ["credential_configurations"],
+        ),
+        (
+            mock_deserialized_overridable(
+                MOCK_PYEUDIW_FRONTEND_CONFIG,
+                {"credential_configurations.status_list": REMOVE},
+            ),
             ["credential_configurations.status_list"],
         ),
         (
-            mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations.status_list.exp": REMOVE}),
+            mock_deserialized_overridable(
+                MOCK_PYEUDIW_FRONTEND_CONFIG,
+                {"credential_configurations.status_list.exp": REMOVE},
+            ),
             ["credential_configurations.status_list.exp"],
         ),
         (
-            mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations.status_list.path": REMOVE}),
+            mock_deserialized_overridable(
+                MOCK_PYEUDIW_FRONTEND_CONFIG,
+                {"credential_configurations.status_list.path": REMOVE},
+            ),
             ["credential_configurations.status_list.path"],
         ),
         (
-            mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, {"credential_configurations.status_list.ttl": REMOVE}),
+            mock_deserialized_overridable(
+                MOCK_PYEUDIW_FRONTEND_CONFIG,
+                {"credential_configurations.status_list.ttl": REMOVE},
+            ),
             ["credential_configurations.status_list.ttl"],
         ),
     ],
@@ -96,8 +130,10 @@ def test_missing_configurations_raises(config, missing_fields):
 def test_invalid_accept_header(status_list_handler, context, accept_header, error_desc):
     ctx = deepcopy(context)
     if accept_header:
-        ctx.http_headers[ACCEPT_HEADER] = accept_header
-    assert_invalid_request_application_json(status_list_handler.endpoint(ctx), error_desc)
+        ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
+    assert_invalid_request_application_json(
+        status_list_handler.endpoint(ctx), error_desc
+    )
 
 
 status_array = [
@@ -110,44 +146,80 @@ status_array = [
 
 
 def test_should_return_status_list_jwt_credentials(status_list_handler, context):
-    should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, status_array, {"bits": 1, "lst": "01010"})
+    should_return_status_list(
+        status_list_handler, context, STATUS_LIST_JWT, status_array
+    )
 
 
-def test_should_return_status_list_jwt_without_credentials(status_list_handler, context):
-    should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, [], {"bits": 1, "lst": ""})
+def test_should_return_status_list_jwt_without_credentials(
+    status_list_handler, context
+):
+    should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, [])
 
 
 def test_should_return_status_list_cwt_credentials(status_list_handler, context):
-    should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, status_array, {"bits": 1, "lst": "01010"})
+    should_return_status_list(
+        status_list_handler, context, STATUS_LIST_CWT, status_array
+    )
 
 
-def test_should_return_status_list_cwt_without_credentials(status_list_handler, context):
-    should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, [], {"bits": 1, "lst": ""})
+def test_should_return_status_list_cwt_without_credentials(
+    status_list_handler, context
+):
+    should_return_status_list(status_list_handler, context, STATUS_LIST_CWT, [])
 
 
-def should_return_status_list(status_list_handler, context: Context, accept_header: str, status_list: list[dict], expected_status_list: dict):
-    status_list_handler._db_credential_engine.get_all_sorted_by_incremental_id.return_value = status_list
+def should_return_status_list(
+    status_list_handler,
+    context: Context,
+    accept_header: str,
+    status_list: list[dict],
+    expected_bits: int = 1,
+):
+    status_list_handler._db_credential_engine.get.return_value = status_list
     ctx = deepcopy(context)
-    ctx.http_headers[ACCEPT_HEADER] = accept_header
+    ctx.path = f"{MOCK_NAME}/status/1"
+    ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
     result = status_list_handler.endpoint(ctx)
     assert result.status == "200 OK"
     if accept_header == STATUS_LIST_JWT:
-        credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(result.message)
+        credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(
+            result.message
+        )
+        encoded_lst = credential["status_list"]["lst"]
+        padded = encoded_lst + "=" * (-len(encoded_lst) % 4)
+        lst_bytes = zlib.decompress(urlsafe_b64decode(padded))
+        bits = credential["status_list"]["bits"]
     elif accept_header == STATUS_LIST_CWT:
         cwt = decode_cwt_status_list_token(result.message)
+        lst_bytes = zlib.decompress(cwt[2][65533]["lst"])
+        bits = cwt[2][65533]["bits"]
         credential = {
             "exp": cwt[2][6],
             "sub": cwt[2][2],
             "ttl": cwt[2][65534],
             "iat": cwt[2][4],
-            "status_list": {"bits": cwt[2][65533]["bits"], "lst": zlib.decompress(cwt[2][65533]["lst"]).decode()},
+            "status_list": {"bits": bits},
         }
     else:
         pytest.fail(f"Unexpected accept header value: {accept_header}")
     assert credential is not None
     assert isinstance(credential, dict)
-    assert credential["sub"] == f'{MOCK_BASE_URL}/{MOCK_NAME}{MOCK_STATUS_LIST_CONFIG["path"]}/1'
+    assert (
+        credential["sub"]
+        == f'{MOCK_BASE_URL}/{MOCK_NAME}{MOCK_STATUS_LIST_CONFIG["path"]}/1'
+    )
     assert credential["ttl"] == MOCK_STATUS_LIST_CONFIG["ttl"]
     assert credential["exp"] - credential["iat"] == MOCK_STATUS_LIST_CONFIG["exp"]
-    assert credential["status_list"]["bits"] == expected_status_list["bits"]
-    assert credential["status_list"]["lst"] == expected_status_list["lst"]
+    assert credential["status_list"]["bits"] == expected_bits
+
+    # The published list must report each credential's status at exactly the
+    # index advertised as `idx` in the Referenced Token (== incremental_id).
+    if not status_list:
+        assert lst_bytes == b""
+        return
+    helper = StatusListTokenHelper(
+        header={}, payload={}, bits=bits, status_list=lst_bytes
+    )
+    for entry in status_list:
+        assert helper.get_status(entry["incremental_id"]) == int(entry["revoked"])

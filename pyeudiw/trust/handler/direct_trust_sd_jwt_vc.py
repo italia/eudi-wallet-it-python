@@ -1,7 +1,8 @@
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
 from pyeudiw.trust.handler._direct_trust_jwk import _DirectTrustJwkHandler
 from pyeudiw.trust.model.trust_source import TrustSourceData
-from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from .commons import DEFAULT_HTTPC_PARAMS, DEFAULT_OPENID4VCI_METADATA_ENDPOINT
 
@@ -34,7 +35,9 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
         )
         self.metadata_endpoint = metadata_endpoint
 
-    def get_metadata(self, issuer: str, trust_source: TrustSourceData) -> TrustSourceData:
+    def get_metadata(
+        self, issuer: str, trust_source: TrustSourceData
+    ) -> TrustSourceData:
         """
         Fetches the public metadata of an issuer by interrogating a given
         endpoint. The endpoint must yield information in a format that
@@ -44,12 +47,19 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
         """
         url = build_metadata_issuer_endpoint(issuer, self.metadata_endpoint)
         if self.cache_ttl == 0:
-            metadata = get_http_url(url, self.httpc_params, self.http_async_calls)[0].json()
+            metadata = get_http_url(url, self.httpc_params, self.http_async_calls)[
+                0
+            ].json()
         else:
-            metadata = cacheable_get_http_url(self.cache_ttl, url, self.httpc_params, self.http_async_calls).json()
+            metadata = cacheable_get_http_url(
+                self.cache_ttl, url, self.httpc_params, self.http_async_calls
+            ).json()
 
         if "jwks" in metadata and "keys" in metadata["jwks"]:
-            metadata["jwks"]["keys"] = [key_from_jwk_dict(jwk).serialize(private=False) for jwk in metadata["jwks"]["keys"]]
+            metadata["jwks"]["keys"] = [
+                key_from_jwk_dict(jwk).serialize(private=False)
+                for jwk in metadata["jwks"]["keys"]
+            ]
 
         trust_source.metadata = metadata
 

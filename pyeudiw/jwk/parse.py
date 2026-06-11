@@ -1,11 +1,11 @@
-from cryptojwt.jwk.ec import import_ec_key, ECKey
-from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 from ssl import DER_cert_to_PEM_cert
+from typing import Optional
+
+from cryptojwt.jwk.ec import ECKey, import_ec_key
+from cryptojwt.jwk.rsa import RSAKey, import_rsa_key
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.exceptions import InvalidJwk
-from typing import Optional
-
 from pyeudiw.x509.verify import B64DER_cert_to_DER_cert
 
 

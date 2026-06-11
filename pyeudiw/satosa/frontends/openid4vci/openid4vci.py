@@ -5,15 +5,18 @@ The OpenID4vci (Credential Issuer) frontend module for the satosa proxy
 import logging
 from typing import Callable
 
+from pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel import ENDPOINT_CTX, CONFIG_CTX
 from satosa.context import Context
 from satosa.frontends.base import FrontendModule
 from satosa.internal import InternalData
 from satosa.response import Response
 
 from pyeudiw.satosa.exceptions import InvalidRequestException
-from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import AuthorizationResponse
+from pyeudiw.satosa.frontends.openid4vci.models.authorization_response import (
+    AuthorizationResponse,
+)
 from pyeudiw.satosa.frontends.openid4vci.storage.engine import OpenId4VciDBEngineHandler
-from pyeudiw.satosa.frontends.openid4vci.storage.entity import OpenId4VCIEntity
+from pyeudiw.satosa.frontends.openid4vci.storage.entity import AuthorizationSession
 from pyeudiw.satosa.utils.session import get_session_id
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 
@@ -24,6 +27,7 @@ class OpenID4VCIFrontend(FrontendModule):
     """
     OpenID Connect frontend module based on satosa.
     """
+    _CTX = "OpenID4VCI_frontend" #todo It is only used for logging trace, maybe it can be removed
 
     def __init__(
         self,
@@ -33,7 +37,9 @@ class OpenID4VCIFrontend(FrontendModule):
         base_url: str,
         name: str,
     ):
-        FrontendModule.__init__(self, auth_req_callback_func, internal_attributes, base_url, name)
+        FrontendModule.__init__(
+            self, auth_req_callback_func, internal_attributes, base_url, name
+        )
         self.internal_attributes = internal_attributes
         self.config = config
         self.base_url = base_url
@@ -81,17 +87,27 @@ class OpenID4VCIFrontend(FrontendModule):
 
             if not entity:
                 logger.error(f"Session with ID {session_id} not found in storage")
-                raise InvalidRequestException(f"Session with ID {session_id} not found in storage")
+                raise InvalidRequestException(
+                    f"Session with ID {session_id} not found in storage"
+                )
 
-            vci_entity = OpenId4VCIEntity(**entity)
-            vci_entity.attributes = internal_resp.attributes
+            auth_session = AuthorizationSession.model_validate(entity, context={
+                                                                            ENDPOINT_CTX: self._CTX,
+                                                                            CONFIG_CTX: self.config
+                                                                        })
+            auth_session.attributes = internal_resp.attributes
+            response = AuthorizationResponse(
+                state=auth_session.state,
+                iss=self.config.get("metadata", {})
+                .get("openid_credential_issuer", {})
+                .get("credential_issuer") or f"{self.base_url}/{self.name}"
+            )
 
-            self.db_engine.upsert_session(vci_entity.session_id, vci_entity.model_dump())
+            auth_session.auth_code = response.code
+            auth_session.finalized = True
+            self.db_engine.upsert_session(auth_session.session_id, auth_session.model_dump())
+            return response.to_redirect_response(auth_session.redirect_uri)
 
-            return AuthorizationResponse(
-                state=vci_entity.state,
-                iss=self.config.get("metadata", {}).get("openid_credential_issuer", {}).get("credential_issuer", ""),
-            ).to_redirect_response(vci_entity.redirect_uri)
         except InvalidRequestException as e:
             logger.error(f"Invalid request: {e}")
             return Response(status="400", message=str(e))

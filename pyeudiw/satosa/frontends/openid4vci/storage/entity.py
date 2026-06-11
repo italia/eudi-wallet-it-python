@@ -1,18 +1,26 @@
 import uuid
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
 from satosa.context import Context
 
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
-from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import AuthorizationDetail
-from pyeudiw.satosa.frontends.openid4vci.models.par_request import ParRequest, SignedParRequest
+from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
+    AuthorizationDetail,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.par_request import (
+    ParRequest,
+    SignedParRequest,
+)
 
 
-class OpenId4VCIEntity(BaseModel):
+class AuthorizationSession(BaseModel):
     document_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    creation_date: float = Field(default_factory=lambda: datetime.now(tz=timezone.utc).timestamp())
+    creation_date: float = Field(
+        default_factory=lambda: datetime.now(tz=timezone.utc).timestamp()
+    )
+    auth_code: Optional[str] = None
     state: str
     client_id: str
     code_challenge: str
@@ -23,22 +31,29 @@ class OpenId4VCIEntity(BaseModel):
     redirect_uri: str
     authorization_details: Optional[List[AuthorizationDetail]] = None
     scope: Optional[str] = None
-    c_nonce: Optional[str] = None
     finalized: bool = False
     attributes: Optional[dict] = None
+    access_token_jti: Optional[str] = None
+    refresh_token_jti: Optional[str] = None # todo: manage refresh tokens
+    dpop_jkt: Optional[str] = None
 
     @staticmethod
     def new_entity(
-        context: Context, request_uri_part: str, par_request: ParRequest | SignedParRequest, force_same_device_flow_referer_criteria: Optional[List[str]] = None
-    ) -> "OpenId4VCIEntity":
+        context: Context,
+        request_uri_part: str,
+        par_request: ParRequest | SignedParRequest,
+        force_same_device_flow_referer_criteria: Optional[List[str]] = None,
+    ) -> "AuthorizationSession":
         if not context.state:
             raise ValueError("Invalid context state")
 
-        return OpenId4VCIEntity(
+        return AuthorizationSession(
             request_uri_part=request_uri_part,
             state=par_request.state,
             session_id=context.state["SESSION_ID"],
-            remote_flow_typ=detect_flow_typ(context, force_same_device_flow_referer_criteria).value,
+            remote_flow_typ=detect_flow_typ(
+                context, force_same_device_flow_referer_criteria
+            ).value,
             client_id=par_request.client_id,
             code_challenge=par_request.code_challenge,
             code_challenge_method=par_request.code_challenge_method,

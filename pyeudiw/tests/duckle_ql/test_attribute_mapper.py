@@ -22,7 +22,10 @@ DATA_TOKEN_DC_SD_JWT = data = {
 }
 
 DATA_TOKEN_MSO_MDOC = {
-    "eu.europa.ec.eudiw.pid.1": {"wallet_link": "https://user.example.com/wallet/abc123", "wallet_name": "Mario’s eID Wallet"},
+    "eu.europa.ec.eudiw.pid.1": {
+        "wallet_link": "https://user.example.com/wallet/abc123",
+        "wallet_name": "Mario’s eID Wallet",
+    },
     "eu.europa.ec.eudiw.pid.2": {
         "wallet_documents": {"typo": "CIE"},
     },
@@ -31,7 +34,10 @@ DATA_TOKEN_MSO_MDOC = {
 
 def test_extract_claims_from_token_dc_sd_jwt():
     nested_paths = [{"path": ["address", "zipcode"]}, {"path": ["given_name"]}]
-    assert extract_claims(DATA_TOKEN_DC_SD_JWT, nested_paths) == {"address": {"zipcode": "0042"}, "given_name": "Mario"}
+    assert extract_claims(DATA_TOKEN_DC_SD_JWT, nested_paths) == {
+        "address": {"zipcode": "0042"},
+        "given_name": "Mario",
+    }
 
     flat_paths = [{"path": ["given_name"]}]
     assert extract_claims(DATA_TOKEN_DC_SD_JWT, flat_paths) == {"given_name": "Mario"}
@@ -53,7 +59,9 @@ def test_extract_claims_from_token_mso_mdoc():
     }
 
     flat_paths = [{"path": ["wallet_link"]}]
-    assert extract_claims(flatten_namespace(DATA_TOKEN_MSO_MDOC), flat_paths) == {"wallet_link": "https://user.example.com/wallet/abc123"}
+    assert extract_claims(flatten_namespace(DATA_TOKEN_MSO_MDOC), flat_paths) == {
+        "wallet_link": "https://user.example.com/wallet/abc123"
+    }
 
 
 def test_missing_claim_raises_from_token_mso_mdoc():

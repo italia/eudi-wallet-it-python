@@ -1,10 +1,10 @@
+import pytest
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptojwt.jwk.ec import ECKey
-import pytest
 
+import pyeudiw.tests.x509.test_x509 as test_x509
 from pyeudiw.jwt.jws_helper import DEFAULT_TOKEN_TIME_TOLERANCE, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
-import pyeudiw.tests.x509.test_x509 as test_x509
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.x509.verify import DER_cert_to_B64DER_cert
 
@@ -208,7 +208,9 @@ class TestJWSHelperSignVerify:
         # case 1: using global configured tolerance
         DEFAULT_TOKEN_TIME_TOLERANCE
         claims = {
-            "iat": iat_now() + DEFAULT_TOKEN_TIME_TOLERANCE // 2,  # oops, issuer clock is slightly skewed!
+            "iat": iat_now()
+            + DEFAULT_TOKEN_TIME_TOLERANCE
+            // 2,  # oops, issuer clock is slightly skewed!
             "exp": iat_now() + 999,
             "iss": "token-issuer",
             "sub": "token-subject",

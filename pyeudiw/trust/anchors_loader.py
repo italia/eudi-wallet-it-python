@@ -1,8 +1,9 @@
 from datetime import datetime
+
 from pyeudiw.jwt.utils import decode_jwt_payload
 from pyeudiw.storage.db_engine import DBEngine, TrustType
-from pyeudiw.x509.verify import get_expiry_date_from_x5c
 from pyeudiw.storage.exceptions import EntryNotFound
+from pyeudiw.x509.verify import get_expiry_date_from_x5c
 
 
 class AnchorsLoader:
@@ -28,10 +29,17 @@ class AnchorsLoader:
                 db.add_empty_trust_anchor(entity_id)
 
             if "x509" in anchor:
-                db.update_trust_anchor(entity_id, anchor["x509"], get_expiry_date_from_x5c([anchor["x509"]["pem"]]), TrustType.X509)
+                db.update_trust_anchor(
+                    entity_id,
+                    anchor["x509"],
+                    get_expiry_date_from_x5c([anchor["x509"]["pem"]]),
+                    TrustType.X509,
+                )
 
             if "federation" in anchor:
-                decoded_ec = decode_jwt_payload(anchor["federation"]["entity_configuration"])
+                decoded_ec = decode_jwt_payload(
+                    anchor["federation"]["entity_configuration"]
+                )
 
                 exp = decoded_ec.get("exp")
                 if not exp:
@@ -39,4 +47,9 @@ class AnchorsLoader:
 
                 date = datetime.fromtimestamp(exp)
 
-                db.update_trust_anchor(entity_id, anchor["federation"]["entity_configuration"], date, TrustType.FEDERATION)
+                db.update_trust_anchor(
+                    entity_id,
+                    anchor["federation"]["entity_configuration"],
+                    date,
+                    TrustType.FEDERATION,
+                )

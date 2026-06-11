@@ -1,43 +1,58 @@
+import base64
 import datetime
 import json
+import time
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
 import pytest
-from satosa.context import Context
+from cryptojwt import JWS
 from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
+from satosa.context import Context
 
-from pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint import CredentialHandler
-from pyeudiw.satosa.frontends.openid4vci.tools.exceptions import MissingProofJWTException
-from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import OPEN_ID_CREDENTIAL_TYPE
-from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import JWT_PROOF_TYP
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
+from pyeudiw.satosa.utils.validation import (
+    AUTHORIZATION_HEADER,
+    DPOP_HEADER,
+)
+from pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint import (
+    CredentialHandler,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
+    OPEN_ID_CREDENTIAL_TYPE,
+)
+from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import (
+    JWT_PROOF_TYP,
+)
 from pyeudiw.storage.credential_entity import CredentialEntity
 from pyeudiw.storage.user_entity import UserEntity
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
-    do_test_missing_configurations_raises,
-    do_test_invalid_request_method,
+    assert_invalid_request_application_json,
     do_test_invalid_content_type,
     do_test_invalid_oauth_client_attestation,
-    assert_invalid_request_application_json,
+    do_test_invalid_request_method,
+    do_test_missing_configurations_raises,
 )
 from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     BASE_PACKAGE,
-    JWS_HELPER_VERIFY_MODULE,
     INVALID_ATTESTATION_HEADERS,
-    INVALID_METHOD_FOR_POST_REQ,
     INVALID_CONTENT_TYPES_NOT_APPLICATION_JSON,
-    MOCK_PYEUDIW_FRONTEND_CONFIG,
+    INVALID_METHOD_FOR_POST_REQ,
+    JWS_HELPER_VERIFY_MODULE,
+    MOCK_BASE_URL,
     MOCK_CREDENTIAL_CONFIGURATIONS,
-    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
     MOCK_INTERNAL_ATTRIBUTES,
     MOCK_NAME,
-    MOCK_BASE_URL,
-    mock_deserialized_overridable,
-    get_mocked_satosa_context,
+    MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG,
+    MOCK_PYEUDIW_FRONTEND_CONFIG,
     get_mocked_openid4vpi_entity,
+    get_mocked_satosa_context,
+    mock_deserialized_overridable,
 )
-from pyeudiw.tools.content_type import HTTP_CONTENT_TYPE_HEADER, APPLICATION_JSON
-from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
+from pyeudiw.tools.content_type import APPLICATION_JSON, HTTP_CONTENT_TYPE_HEADER
 
 VALID_PROOF = {"proof_type": "jwt", "jwt": "my_jwt"}
 
@@ -57,7 +72,10 @@ def valid_request_proof_jwt():
 
 @pytest.fixture
 def request_without_open_id_credential():
-    return {"credential_configuration_id": "example_configuration_id_456", "proof": VALID_PROOF}
+    return {
+        "credential_configuration_id": "example_configuration_id_456",
+        "proof": VALID_PROOF,
+    }
 
 
 @pytest.fixture
@@ -82,26 +100,80 @@ def credential_handler() -> CredentialHandler:
         config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
         config["security"]["dpop_required"] = True
 
-        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler = CredentialHandler(
+            config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
+        )
         handler.db_engine = MagicMock()
         handler.jws_helper = MagicMock()
         handler._trust_evaluator = trust_evaluator
         return handler
 
 
+_ACCESS_TOKEN_JTI = "access-token-jti"
+
+
+def _dpop_bound_headers() -> dict:
+    """Build DPoP + Authorization headers with a DPoP-bound access token (RFC 9449).
+
+    The access token carries ``cnf.jkt`` matching the DPoP key thumbprint, as
+    required by DPoPVerifier's token binding check.
+    """
+    dpop_key = new_ec_key("P-256")
+    dpop_pub = dpop_key.serialize(private=False)
+    jkt = (
+        base64.urlsafe_b64encode(JWK(key=dpop_pub).thumbprint)
+        .decode("utf-8")
+        .rstrip("=")
+    )
+    access_token = JWSHelper(dpop_key).sign(
+        {"jti": _ACCESS_TOKEN_JTI, "cnf": {"jkt": jkt}},
+        protected={"typ": "at+jwt"},
+    )
+    issuer = DPoPIssuer(
+        htu="https://example.org/redirect",
+        private_jwk=dpop_key,
+        token=access_token,
+    )
+    return {
+        DPOP_HEADER: issuer.proof,
+        AUTHORIZATION_HEADER: f"DPoP {access_token}",
+    }
+
+
 @pytest.fixture
 def context() -> Context:
-    verifier = DPoPIssuer(htu="https://example.org/redirect", private_jwk=new_ec_key("P-256"), token="valid-token")
-    return get_mocked_satosa_context(content_type=APPLICATION_JSON, headers={"DPoP": verifier.proof, "Authorization": f"DPoP {verifier.token}"})
+    verifier = DPoPIssuer(
+        htu="https://example.org/redirect",
+        private_jwk=new_ec_key("P-256"),
+        token="valid-token",
+    )
+    return get_mocked_satosa_context(
+        content_type=APPLICATION_JSON,
+        headers={"DPoP": verifier.proof, "Authorization": f"DPoP {verifier.token}"},
+    )
+
+
+@pytest.fixture
+def dpop_context() -> Context:
+    return get_mocked_satosa_context(
+        content_type=APPLICATION_JSON,
+        headers=_dpop_bound_headers(),
+    )
 
 
 def _mock_configurations(overrides=None):
     return mock_deserialized_overridable(MOCK_PYEUDIW_FRONTEND_CONFIG, overrides)
 
 
-_removed_credential_specification_template = {k: v for k, v in deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS).items() if k != "credential_specification"}
+_removed_credential_specification_template = {
+    k: v
+    for k, v in deepcopy(MOCK_CREDENTIAL_CONFIGURATIONS).items()
+    if k != "credential_specification"
+}
 _removed_credential_configurations_supported = {
-    k: v for k, v in deepcopy(MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG).items() if k != "credential_configurations_supported"
+    k: v
+    for k, v in deepcopy(MOCK_OPENID_CREDENTIAL_ISSUER_CONFIG).items()
+    if k != "credential_configurations_supported"
 }
 
 
@@ -109,11 +181,21 @@ _removed_credential_configurations_supported = {
     "config, missing_fields",
     [
         (
-            _mock_configurations({"credential_configurations": _removed_credential_specification_template}),
+            _mock_configurations(
+                {
+                    "credential_configurations": _removed_credential_specification_template
+                }
+            ),
             ["credential_configurations.credential_specification"],
         ),
         (
-            _mock_configurations({"metadata": {"openid_credential_issuer": _removed_credential_configurations_supported}}),
+            _mock_configurations(
+                {
+                    "metadata": {
+                        "openid_credential_issuer": _removed_credential_configurations_supported
+                    }
+                }
+            ),
             ["metadata.openid_credential_issuer.credential_configurations_supported"],
         ),
     ],
@@ -152,9 +234,15 @@ def test_invalid_oauth_client_attestation(credential_handler, headers):
     ],
 )
 def test_invalid_request_credential_id_without_openid_credential_in_auth_details(
-    credential_handler, context, credential_configuration_id, credential_identifier, error_desc
+    credential_handler,
+    context,
+    credential_configuration_id,
+    credential_identifier,
+    error_desc,
 ):
-    credential_handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+    credential_handler.db_engine.search_session_by_field.return_value = (
+        get_mocked_openid4vpi_entity()
+    )
     req = {"proof": VALID_PROOF}
     if credential_configuration_id:
         req["credential_configuration_id"] = credential_configuration_id
@@ -163,7 +251,9 @@ def test_invalid_request_credential_id_without_openid_credential_in_auth_details
 
     context.request = req
 
-    assert_invalid_request_application_json(credential_handler.endpoint(context), error_desc)
+    assert_invalid_request_application_json(
+        credential_handler.endpoint(context), error_desc
+    )
 
 
 @pytest.mark.parametrize(
@@ -172,18 +262,30 @@ def test_invalid_request_credential_id_without_openid_credential_in_auth_details
         ("", "", "missing `credential_identifier` parameter"),
         (None, "", "missing `credential_identifier` parameter"),
         (" ", "", "missing `credential_identifier` parameter"),
-        ("cred1", "cred_config_id", "`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint"),
+        (
+            "cred1",
+            "cred_config_id",
+            "`credential_identifier` and `credential_configuration_id` both evaluated in `credential` endpoint",
+        ),
         ("cred21", None, "invalid `credential_identifier` parameter"),
     ],
 )
 def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
-    credential_handler, context, credential_identifier, credential_configuration_id, error_desc
+    credential_handler,
+    context,
+    credential_identifier,
+    credential_configuration_id,
+    error_desc,
 ):
     entity = deepcopy(get_mocked_openid4vpi_entity())
     entity["authorization_details"] = [
-        {"type": OPEN_ID_CREDENTIAL_TYPE, "credential_configuration_id": "credential_configuration_id_test", "credential_identifiers": ["cred1", "cred2"]}
+        {
+            "type": OPEN_ID_CREDENTIAL_TYPE,
+            "credential_configuration_id": "credential_configuration_id_test",
+            "credential_identifiers": ["cred1", "cred2"],
+        }
     ]
-    credential_handler.db_engine.get_by_session_id.return_value = entity
+    credential_handler.db_engine.search_session_by_field.return_value = entity
     req = {"proof": VALID_PROOF}
     if credential_configuration_id:
         req["credential_configuration_id"] = credential_configuration_id
@@ -192,7 +294,9 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
 
     context.request = req
 
-    assert_invalid_request_application_json(credential_handler.endpoint(context), error_desc)
+    assert_invalid_request_application_json(
+        credential_handler.endpoint(context), error_desc
+    )
 
 
 @pytest.mark.parametrize(
@@ -203,11 +307,15 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
         (" ", "missing `proof.proof_type` parameter"),
     ],
 )
-def test_request_invalid_prof_type(credential_handler, context, value, error_desc, request_without_open_id_credential):
+def test_request_invalid_prof_type(
+    credential_handler, context, value, error_desc, request_without_open_id_credential
+):
     req = deepcopy(request_without_open_id_credential)
     req["proof"]["proof_type"] = value
     context.request = req
-    assert_invalid_request_application_json(credential_handler.endpoint(context), error_desc)
+    assert_invalid_request_application_json(
+        credential_handler.endpoint(context), error_desc
+    )
 
 
 @pytest.mark.parametrize(
@@ -218,35 +326,53 @@ def test_request_invalid_prof_type(credential_handler, context, value, error_des
         (" ", "missing `proof.jwt` parameter"),
     ],
 )
-def test_request_invalid_prof_jwt(credential_handler, context, request_without_open_id_credential, value, error_desc):
+def test_request_invalid_prof_jwt(
+    credential_handler, context, request_without_open_id_credential, value, error_desc
+):
     req = deepcopy(request_without_open_id_credential)
     req["proof"]["jwt"] = value
     context.request = req
-    assert_invalid_request_application_json(credential_handler.endpoint(context), error_desc)
+    assert_invalid_request_application_json(
+        credential_handler.endpoint(context), error_desc
+    )
 
 
-def test_proof_jwt_required_and_missing_raises_missing_proof_jwt_exception(credential_handler, context, request_without_open_id_credential):
+def test_proof_jwt_required_and_missing_raises_missing_proof_jwt_exception(
+    credential_handler, dpop_context, request_without_open_id_credential
+):
     config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
-    config["security"] = config.get("security", {}) | {"dpop_required": True, "proof_jwt_required": True}
+    config["security"] = config.get("security", {}) | {
+        "dpop_required": True,
+        "proof_jwt_required": True,
+    }
     with (
         patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine"),
         patch(f"{_CREDENTIAL_BASE_PATH}.CombinedTrustEvaluator"),
     ):
-        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler = CredentialHandler(
+            config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
+        )
         handler.db_engine = MagicMock()
-        handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+        handler.db_engine.search_session_by_field.return_value = (
+            get_mocked_openid4vpi_entity()
+        )
     req = deepcopy(request_without_open_id_credential)
     del req["proof"]
-    context.request = req
-    result = handler.endpoint(context)
+    dpop_context.request = req
+    result = handler.endpoint(dpop_context)
     assert result.status == "400"
     response = json.loads(result.message)
     assert "missing proof jwt" in response.get("error_description", "").lower()
 
 
-def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handler, context, request_without_open_id_credential):
+def test_proof_jwt_not_required_and_missing_logs_debug(
+    caplog, credential_handler, dpop_context, request_without_open_id_credential
+):
     config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
-    config["security"] = config.get("security", {}) | {"dpop_required": True, "proof_jwt_required": False}
+    config["security"] = config.get("security", {}) | {
+        "dpop_required": True,
+        "proof_jwt_required": False,
+    }
     with (
         patch(f"{_CREDENTIAL_BASE_PATH}.UserCredentialEngine") as user_cred_eng_class,
         patch(f"{_CREDENTIAL_BASE_PATH}.CombinedTrustEvaluator"),
@@ -255,13 +381,18 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
         usc_mock_engine.db_user_storage_engine = MagicMock()
         usc_mock_engine.db_credential_storage_engine = MagicMock()
         user_cred_eng_class.return_value = usc_mock_engine
-        handler = CredentialHandler(config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME)
+        handler = CredentialHandler(
+            config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
+        )
         handler.db_engine = MagicMock()
-        handler.db_engine.get_by_session_id.return_value = get_mocked_openid4vpi_entity()
+        handler.db_engine.search_session_by_field.return_value = (
+            get_mocked_openid4vpi_entity()
+        )
     req = deepcopy(request_without_open_id_credential)
     del req["proof"]
-    context.request = req
-    handler.endpoint(context)
+    dpop_context.request = req
+    with caplog.at_level("DEBUG"):
+        handler.endpoint(dpop_context)
     assert "Missing JWTProof since it is not configured" in caplog.text
 
 
@@ -275,7 +406,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.alg` parameter",
@@ -287,7 +419,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `alg` parameter",
@@ -299,7 +432,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.alg` parameter",
@@ -310,7 +444,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.alg` parameter",
@@ -322,7 +457,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.iss` parameter",
@@ -334,7 +470,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": None,
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `iss` parameter",
@@ -346,7 +483,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": " ",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.iss` parameter",
@@ -357,7 +495,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "typ": JWT_PROOF_TYP,
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.iss` parameter",
@@ -369,7 +508,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "randomiss",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `proof.jwt.iss` parameter",
@@ -381,7 +521,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.aud` parameter",
@@ -393,7 +534,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": None,
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `aud` parameter",
@@ -405,7 +547,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": " ",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.aud` parameter",
@@ -416,7 +559,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "typ": JWT_PROOF_TYP,
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing `proof.jwt.aud` parameter",
@@ -428,7 +572,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "randomaud",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `proof.jwt.aud` parameter",
@@ -440,7 +585,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) - 30000,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                - 30000,
                 "nonce": "random-nonce-abc123",
             },
             "invalid `proof.jwt.iat` parameter",
@@ -487,7 +633,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "",
             },
             "missing `proof.jwt.nonce` parameter",
@@ -499,7 +646,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": None,
             },
             "invalid `nonce` parameter",
@@ -511,7 +659,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": " ",
             },
             "missing `proof.jwt.nonce` parameter",
@@ -523,7 +672,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
             },
             "missing `proof.jwt.nonce` parameter",
         ),
@@ -534,7 +684,8 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"kty":"EC","crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-random-nonce-abc123",
             },
             "invalid `proof.jwt.nonce` parameter",
@@ -546,19 +697,22 @@ def test_proof_jwt_not_required_and_missing_logs_debug(caplog, credential_handle
                 "jwk": '{"crv":"P-256","x":"abc","y":"def"}',
                 "iss": "client123",
                 "aud": "example.com/openid4vcimock",
-                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()) + 30,
+                "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+                + 30,
                 "nonce": "random-nonce-abc123",
             },
             "missing proof.jwt.jwk kty",
         ),
     ],
 )
-def test_request_invalid_prof_jwt_decoded(credential_handler, context, request_without_open_id_credential, value, error_desc):
+def test_request_invalid_prof_jwt_decoded(
+    credential_handler, context, request_without_open_id_credential, value, error_desc
+):
     with patch(JWS_HELPER_VERIFY_MODULE, return_value=value):
         context.request = request_without_open_id_credential
         entity = deepcopy(get_mocked_openid4vpi_entity())
         entity["c_nonce"] = "random-nonce-abc123"
-        credential_handler.db_engine.get_by_session_id.return_value = entity
+        credential_handler.db_engine.search_session_by_field.return_value = entity
         result = credential_handler.endpoint(context)
         assert_invalid_request_application_json(result, error_desc)
 
@@ -584,14 +738,85 @@ def side_effect_user_entity(fields) -> tuple[str, UserEntity]:
 
 def side_effect_credential_entity(user_id) -> CredentialEntity:
     if user_id == _USER_DOC_ID:
-        return CredentialEntity(**{"user_id": _USER_DOC_ID, "incremental_id": 1, "identifier": "dc_sd_jwt_mDL"})
+        return CredentialEntity(
+            **{
+                "user_id": _USER_DOC_ID,
+                "incremental_id": 1,
+                "identifier": "dc_sd_jwt_mDL",
+            }
+        )
     pytest.fail(f"Unexpected user_id value: {user_id}")
 
 
-def test_request_without_open_id_credential_for_sd_jwt(credential_handler, context, valid_request_proof_jwt):
-    context.request = {"credential_configuration_id": "dc_sd_jwt_mDL", "proof": VALID_PROOF}
+def _build_proof_with_key_attestation():
+    """Build a real proof JWT carrying a key_attestation (WUA) in its header.
+
+    Returns a tuple ``(proof_jwt, holder_thumbprint, wallet_provider_pub_jwk)``.
+    """
+    holder_key = new_ec_key(crv="P-256", use="sig", kid="holder", alg="ES256")
+    holder_pub = holder_key.serialize(private=False)
+    holder_thumb = key_from_jwk_dict(holder_pub).thumbprint("SHA-256").decode()
+
+    wp_key = new_ec_key(crv="P-256", use="sig", kid="wp", alg="ES256")
+    wp_pub = wp_key.serialize(private=False)
+
+    wua = JWS(
+        json.dumps({"iss": "https://wp.example.org", "attested_keys": [holder_pub]}),
+        alg="ES256",
+    ).sign_compact(
+        [wp_key],
+        protected={"alg": "ES256", "typ": "key-attestation+jwt", "kid": wp_key.kid},
+    )
+
+    proof_header = {
+        "alg": "ES256",
+        "typ": JWT_PROOF_TYP,
+        "jwk": holder_pub,
+        "key_attestation": wua,
+        "kid": holder_key.kid,
+    }
+    proof_payload = {
+        "iss": holder_thumb,
+        "aud": "example.com/openid4vcimock",
+        "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+        "nonce": "random-nonce-abc123",
+    }
+    proof_jwt = JWS(json.dumps(proof_payload), alg="ES256").sign_compact(
+        [holder_key], protected=proof_header
+    )
+    return proof_jwt, holder_thumb, wp_pub
+
+
+def test_request_without_open_id_credential_for_sd_jwt(credential_handler, dpop_context):
+    proof_jwt, holder_thumb, wp_pub = _build_proof_with_key_attestation()
+
+    dpop_context.request = {
+        "credential_configuration_id": "dc_sd_jwt_mDL",
+        "proof": {"proof_type": "jwt", "jwt": proof_jwt},
+    }
+
     entity = deepcopy(get_mocked_openid4vpi_entity())
-    _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
+    entity["client_id"] = holder_thumb
+    entity["c_nonce"] = "random-nonce-abc123"
+
+    credential_handler.db_engine.search_session_by_field.return_value = entity
+    credential_handler.db_engine.get.return_value = {
+        "created_at": int(time.time() * 1000),
+        "expires_in": 1_000_000,
+    }
+    credential_handler.db_engine.write.return_value = 1
+    credential_handler._trust_evaluator.get_public_keys.return_value = [wp_pub]
+
+    with patch.object(
+        CredentialHandler, "build_credential", return_value=["fake-credential"]
+    ):
+        result = credential_handler.endpoint(dpop_context)
+
+    assert result.status == "200 OK"
+    response = json.loads(result.message)
+    assert response["credentials"] is not None
+    assert isinstance(response["credentials"], list)
+    assert len(response["credentials"]) == 1
 
 
 # TODO: fix me
@@ -627,7 +852,9 @@ def test_request_without_open_id_credential_for_sd_jwt(credential_handler, conte
 #     _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
 
 
-def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity):
+def _do_test_request_valid(
+    credential_handler, context, valid_request_proof_jwt, entity
+):
     with patch(JWS_HELPER_VERIFY_MODULE, return_value=valid_request_proof_jwt):
         entity["c_nonce"] = "random-nonce-abc123"
         entity["attributes"] = {
@@ -643,10 +870,12 @@ def _do_test_request_valid(credential_handler, context, valid_request_proof_jwt,
         credential_handler._db_user_engine = db_user_mock
 
         db_credential_mock = MagicMock()
-        db_credential_mock.get_credential_by_user_id.side_effect = side_effect_credential_entity
+        db_credential_mock.get_credential_by_user_id.side_effect = (
+            side_effect_credential_entity
+        )
         credential_handler._db_credential_engine = db_credential_mock
 
-        credential_handler.db_engine.get_by_session_id.return_value = entity
+        credential_handler.db_engine.search_session_by_field.return_value = entity
         result = credential_handler.endpoint(context)
 
         assert result.status == "200 OK"

@@ -1,6 +1,4 @@
-from pyeudiw.federation.exceptions import (
-    InvalidEntityStatement,
-)
+from pyeudiw.federation.exceptions import InvalidEntityStatement
 from pyeudiw.federation.utils import is_es
 from pyeudiw.tools.utils import exp_from_now, iat_now
 

@@ -1,9 +1,9 @@
 import importlib
-from typing import Optional, List
+from typing import List, Optional
 
+from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.credential_presentation.model import CredentialPresentationHandlersConfig
 from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
-from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 METADATA_JWKS_CONFIG_KEY = "metadata_jwks"
@@ -49,19 +49,33 @@ class CredentialPresentationHandlers:
                 cls = getattr(module, class_name)
 
                 if not issubclass(cls, BaseVPParser):
-                    raise TypeError(f"Class '{class_name}' must inherit from BaseVPParser.")
+                    raise TypeError(
+                        f"Class '{class_name}' must inherit from BaseVPParser."
+                    )
 
-                self.handlers[format_name] = cls(trust_evaluator=config.trust_evaluator, **module_config, sig_alg_supported=config.sig_alg_supported)
+                self.handlers[format_name] = cls(
+                    trust_evaluator=config.trust_evaluator,
+                    **module_config,
+                    sig_alg_supported=config.sig_alg_supported,
+                )
             except ModuleNotFoundError:
-                raise ImportError(f"Module '{module_name}' not found for format '{format_name}'.")
+                raise ImportError(
+                    f"Module '{module_name}' not found for format '{format_name}'."
+                )
             except AttributeError:
-                raise ImportError(f"Class '{class_name}' not found in module '{module_name}' for format '{format_name}'.")
+                raise ImportError(
+                    f"Class '{class_name}' not found in module '{module_name}' for format '{format_name}'."
+                )
             except Exception as e:
-                raise ImportError(f"Error loading class '{class_name}' from module '{module_name}': {e}")
+                raise ImportError(
+                    f"Error loading class '{class_name}' from module '{module_name}': {e}"
+                )
 
 
 def load_credential_presentation_handlers(
-    config: dict, trust_evaluator: CombinedTrustEvaluator, sig_alg_supported: Optional[List[str]] = None
+    config: dict,
+    trust_evaluator: CombinedTrustEvaluator,
+    sig_alg_supported: Optional[List[str]] = None,
 ) -> CredentialPresentationHandlers:
     """
     Loads and validates the configuration for credential presentation handlers.
@@ -88,8 +102,19 @@ def load_credential_presentation_handlers(
     if sig_alg_supported is None:
         sig_alg_supported = []
 
-    config_model = CredentialPresentationHandlersConfig(**raw_config, trust_evaluator=trust_evaluator, sig_alg_supported=sig_alg_supported)
-    duckle_handler = next((handler for handler in config_model.formats if handler.class_ == "DuckleHandler"), None)
+    config_model = CredentialPresentationHandlersConfig(
+        **raw_config,
+        trust_evaluator=trust_evaluator,
+        sig_alg_supported=sig_alg_supported,
+    )
+    duckle_handler = next(
+        (
+            handler
+            for handler in config_model.formats
+            if handler.class_ == "DuckleHandler"
+        ),
+        None,
+    )
     if duckle_handler and config.get(DUCKLE_QUERY_KEY):
         updated_config = {DUCKLE_QUERY_KEY: config[DUCKLE_QUERY_KEY]}
         duckle_handler.config = add_to_config(updated_config, duckle_handler.config)

@@ -59,10 +59,18 @@ class MongoStorage(BaseStorage):
             params.setdefault("maxPoolSize", 10)
             self.client = pymongo.MongoClient(self.url, **params)
             self.db = getattr(self.client, self.storage_conf["db_name"])
-            self.sessions = getattr(self.db, self.storage_conf["db_sessions_collection"])
-            self.trust_attestations = getattr(self.db, self.storage_conf["db_trust_attestations_collection"])
-            self.trust_anchors = getattr(self.db, self.storage_conf["db_trust_anchors_collection"])
-            self.trust_sources = getattr(self.db, self.storage_conf["db_trust_sources_collection"])
+            self.sessions = getattr(
+                self.db, self.storage_conf["db_sessions_collection"]
+            )
+            self.trust_attestations = getattr(
+                self.db, self.storage_conf["db_trust_attestations_collection"]
+            )
+            self.trust_anchors = getattr(
+                self.db, self.storage_conf["db_trust_anchors_collection"]
+            )
+            self.trust_sources = getattr(
+                self.db, self.storage_conf["db_trust_sources_collection"]
+            )
 
     def close(self):
         self._connect()
@@ -100,7 +108,9 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def get_by_state_and_session_id(self, state: str, session_id: str = "") -> Union[dict, None]:
+    def get_by_state_and_session_id(
+        self, state: str, session_id: str = ""
+    ) -> Union[dict, None]:
         self._connect()
         query = {"state": state}
         if session_id:
@@ -112,7 +122,9 @@ class MongoStorage(BaseStorage):
 
         return document
 
-    def init_session(self, document_id: str, session_id: str, state: str, remote_flow_typ: str) -> str:
+    def init_session(
+        self, document_id: str, session_id: str, state: str, remote_flow_typ: str
+    ) -> str:
         entity = {
             "document_id": document_id,
             "creation_date": dt.datetime.now(tz=dt.timezone.utc),
@@ -141,7 +153,9 @@ class MongoStorage(BaseStorage):
                 if self.sessions.index_information().get("creation_date_1"):
                     self.sessions.drop_index("creation_date_1")
             else:
-                self.sessions.create_index([("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl)
+                self.sessions.create_index(
+                    [("creation_date", pymongo.ASCENDING)], expireAfterSeconds=ttl
+                )
 
         try:
             _do_set_ttl()
@@ -158,7 +172,9 @@ class MongoStorage(BaseStorage):
         self._connect()
         return self.sessions.index_information().get("creation_date_1") is not None
 
-    def add_dpop_proof_and_attestation(self, document_id: str, dpop_proof: dict, attestation: dict) -> UpdateResult:
+    def add_dpop_proof_and_attestation(
+        self, document_id: str, dpop_proof: dict, attestation: dict
+    ) -> UpdateResult:
         self._connect()
         update_result: UpdateResult = self.sessions.update_one(
             {"document_id": document_id},
@@ -174,7 +190,9 @@ class MongoStorage(BaseStorage):
 
         return update_result
 
-    def update_request_object(self, document_id: str, request_object: dict) -> UpdateResult:
+    def update_request_object(
+        self, document_id: str, request_object: dict
+    ) -> UpdateResult:
         self.get_by_id(document_id)
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
@@ -203,7 +221,9 @@ class MongoStorage(BaseStorage):
             raise ValueError(f"Cannot update document {document_id}'")
         return update_result
 
-    def update_response_object(self, nonce: str, state: str, internal_response: dict, isError: bool = False) -> UpdateResult:
+    def update_response_object(
+        self, nonce: str, state: str, internal_response: dict, isError: bool = False
+    ) -> UpdateResult:
         document = self.get_by_nonce_state(nonce, state)
         document_id = document["_id"]
 
@@ -224,37 +244,55 @@ class MongoStorage(BaseStorage):
         return db_collection.find_one({"entity_id": entity_id})
 
     def get_trust_source(self, entity_id: str) -> dict | None:
-        return self._get_db_entity(self.storage_conf["db_trust_sources_collection"], entity_id)
+        return self._get_db_entity(
+            self.storage_conf["db_trust_sources_collection"], entity_id
+        )
 
     def get_trust_attestation(self, entity_id: str) -> dict | None:
-        return self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id)
+        return self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id
+        )
 
     def get_trust_anchor(self, entity_id: str) -> dict | None:
-        return self._get_db_entity(self.storage_conf["db_trust_anchors_collection"], entity_id)
+        return self._get_db_entity(
+            self.storage_conf["db_trust_anchors_collection"], entity_id
+        )
 
     def _has_db_entity(self, collection: str, entity_id: str) -> bool:
         return self._get_db_entity(collection, entity_id) is not None
 
     def has_trust_attestation(self, entity_id: str) -> bool:
-        return self._has_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id)
+        return self._has_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id
+        )
 
     def has_trust_anchor(self, entity_id: str) -> bool:
-        return self._has_db_entity(self.storage_conf["db_trust_anchors_collection"], entity_id)
+        return self._has_db_entity(
+            self.storage_conf["db_trust_anchors_collection"], entity_id
+        )
 
     def has_trust_source(self, entity_id: str) -> bool:
-        return self._has_db_entity(self.storage_conf["db_trust_sources_collection"], entity_id)
+        return self._has_db_entity(
+            self.storage_conf["db_trust_sources_collection"], entity_id
+        )
 
-    def _upsert_entry(self, key_label: str, collection: str, data: Union[str, dict]) -> tuple[str, dict]:
+    def _upsert_entry(
+        self, key_label: str, collection: str, data: Union[str, dict]
+    ) -> tuple[str, dict]:
         db_collection = getattr(self, collection)
 
-        document_status = db_collection.update_one({key_label: data[key_label]}, {"$set": data}, upsert=True)
+        document_status = db_collection.update_one(
+            {key_label: data[key_label]}, {"$set": data}, upsert=True
+        )
 
         if not document_status.acknowledged:
             raise StorageEntryUpdateFailed("Trust Anchor matched count is ZERO")
 
         return document_status
 
-    def _get_entry_by_key(self, key_label: str, collection: str, key_value: str) -> dict:
+    def _get_entry_by_key(
+        self, key_label: str, collection: str, key_value: str
+    ) -> dict:
         db_collection = getattr(self, collection)
 
         document = db_collection.find_one({key_label: key_value})
@@ -312,13 +350,37 @@ class MongoStorage(BaseStorage):
 
         return entity
 
-    def upsert_session(self, session_id: str, data: dict) -> tuple[str, dict]:
-        return self._upsert_entry("session_id", self.storage_conf["db_sessions_collection"], {"session_id": session_id, **data})
+    def upsert_session(self, session_id: str, data: dict) -> bool | None:
+        try:
+            db_collection = getattr(self, self.storage_conf["db_sessions_collection"])
+            result = db_collection.update_one({"session_id": session_id}, {"$set": data}, upsert=True)
+
+            if not result.acknowledged:
+                print("Operation not acknowledged by the database.")
+                return False
+
+            elif result.upserted_id is not None:
+                print(f"Upsert successful: New document created with ID {result.upserted_id}.")
+                return True
+
+            if result.modified_count > 0:
+                print("Update successful: Existing document has been modified.")
+                return True
+
+            if result.matched_count > 0:
+                print("No changes required: Existing document already matches the update data.")
+                return True
+
+            return False
+        except Exception as e:
+            raise StorageEntryUpdateFailed("Database operation failed: an error occurring while upsert session") from e
 
     def search_session_by_field(self, field: str, value: str) -> dict:
         self._connect()
 
-        return self._get_entry_by_key(field, self.storage_conf["db_sessions_collection"], value)
+        return self._get_entry_by_key(
+            field, self.storage_conf["db_sessions_collection"], value
+        )
 
     def add_trust_attestation(
         self,
@@ -336,7 +398,9 @@ class MongoStorage(BaseStorage):
             "metadata": {},
         }
 
-        updated_entity = self._update_attestation_metadata(entity, attestation, exp, trust_type, jwks)
+        updated_entity = self._update_attestation_metadata(
+            entity, attestation, exp, trust_type, jwks
+        )
 
         self._upsert_entry(
             "entity_id",
@@ -346,21 +410,56 @@ class MongoStorage(BaseStorage):
 
         return entity_id
 
-    def add_trust_source(self, trust_source: dict) -> str:
-        return self._upsert_entry("entity_id", self.storage_conf["db_trust_sources_collection"], trust_source)
+    def insert_nonce(self, nonce: str, created_at: int, expires_in: int):
+        self._connect()
+        entity = {"nonce": nonce, "created_at": created_at, "expires_in": expires_in, "used_at": None}
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.insert_one(entity)
 
-    def add_trust_attestation_metadata(self, entity_id: str, metadata_type: str, metadata: dict):
-        entity = self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id)
+    def get_nonce(self, nonce: str):
+        """Returns a non-consumed nonce"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        try:
+            entity = _db.find_one({"nonce": nonce, "used_at": None})
+        except:
+            return None
+        return entity
+
+    def consume_nonce(self, nonce: str, ts):
+        """Set used_at timestamp"""
+        self._connect()
+        _db = getattr(self.db, self.storage_conf["db_nonce_cache"])
+        return _db.update_one(
+            {"nonce": nonce},
+            {"$set": {"used_at": ts}}
+        )
+
+    def add_trust_source(self, trust_source: dict) -> str:
+        return self._upsert_entry(
+            "entity_id", self.storage_conf["db_trust_sources_collection"], trust_source
+        )
+
+    def add_trust_attestation_metadata(
+        self, entity_id: str, metadata_type: str, metadata: dict
+    ):
+        entity = self._get_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id
+        )
 
         if entity is None:
             raise ValueError(f"Document with entity_id {entity_id} not found.")
 
         entity["metadata"][metadata_type] = metadata
 
-        if not self._has_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id):
+        if not self._has_db_entity(
+            self.storage_conf["db_trust_attestations_collection"], entity_id
+        ):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
-        documentStatus = self._upsert_entry("entity_id", self.storage_conf["db_trust_attestations_collection"], entity)
+        documentStatus = self._upsert_entry(
+            "entity_id", self.storage_conf["db_trust_attestations_collection"], entity
+        )
 
         return documentStatus
 
@@ -384,7 +483,9 @@ class MongoStorage(BaseStorage):
     ):
         entity = {"entity_id": entity_id, "federation": {}, "x509": {}}
 
-        updated_entity = self._update_anchor_metadata(entity, entity_configuration, exp, trust_type, entity_id)
+        updated_entity = self._update_anchor_metadata(
+            entity, entity_configuration, exp, trust_type, entity_id
+        )
 
         self._upsert_entry(
             "entity_id",
@@ -402,8 +503,15 @@ class MongoStorage(BaseStorage):
         trust_type: TrustType,
         jwks: list[dict],
     ) -> str:
-        old_entity = self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id) or {}
-        upd_entity = self._update_attestation_metadata(old_entity, attestation, exp, trust_type, jwks)
+        old_entity = (
+            self._get_db_entity(
+                self.storage_conf["db_trust_attestations_collection"], entity_id
+            )
+            or {}
+        )
+        upd_entity = self._update_attestation_metadata(
+            old_entity, attestation, exp, trust_type, jwks
+        )
 
         return self._upsert_entry(
             "entity_id",
@@ -418,12 +526,21 @@ class MongoStorage(BaseStorage):
         exp: datetime,
         trust_type: TrustType,
     ) -> str:
-        old_entity = self._get_db_entity(self.storage_conf["db_trust_attestations_collection"], entity_id) or {}
-        upd_entity = self._update_anchor_metadata(old_entity, entity_configuration, exp, trust_type, entity_id)
+        old_entity = (
+            self._get_db_entity(
+                self.storage_conf["db_trust_attestations_collection"], entity_id
+            )
+            or {}
+        )
+        upd_entity = self._update_anchor_metadata(
+            old_entity, entity_configuration, exp, trust_type, entity_id
+        )
 
         if not self.has_trust_anchor(entity_id):
             raise ChainNotExist(f"Chain with entity id {entity_id} not exist")
 
-        documentStatus = self._upsert_entry("entity_id", self.storage_conf["db_trust_anchors_collection"], upd_entity)
+        documentStatus = self._upsert_entry(
+            "entity_id", self.storage_conf["db_trust_anchors_collection"], upd_entity
+        )
 
         return documentStatus

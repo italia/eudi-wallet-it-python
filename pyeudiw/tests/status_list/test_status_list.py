@@ -5,10 +5,15 @@ from pycose.headers import KID, Algorithm
 from pycose.messages import Sign1Message
 
 from pyeudiw.jwt.jws_helper import JWSHelper
-from pyeudiw.status_list import encode_cwt_status_list_token, decode_cwt_status_list_token
+from pyeudiw.status_list import (
+    array_to_bitstring,
+    array_to_bitstring_v1,
+    decode_cwt_status_list_token,
+    encode_cwt_status_list_token,
+)
 from pyeudiw.status_list.exceptions import (
-    PositionOutOfRangeError,
     InvalidTokenFormatError,
+    PositionOutOfRangeError,
 )
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK
@@ -127,8 +132,14 @@ def test_encode_cwt_status_list_token_unsigned_and_with_map(cwt_payload):
     payload_parts = ({}, {}, payload_data | payload_to_decode)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_unsigned = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534})
-    _cwt_token_payload(token_unsigned, {"bits": bits, "lst": lst}, payload_data | {65534: payload_to_decode["ttl"]})
+    token_unsigned = encode_cwt_status_list_token(
+        payload_parts, bits, lst, {"ttl": 65534}
+    )
+    _cwt_token_payload(
+        token_unsigned,
+        {"bits": bits, "lst": lst},
+        payload_data | {65534: payload_to_decode["ttl"]},
+    )
 
 
 def test_encode_cwt_status_list_token_signed_and_without_map(cwt_payload):
@@ -136,8 +147,12 @@ def test_encode_cwt_status_list_token_signed_and_without_map(cwt_payload):
     payload_parts = ({}, {}, payload_data)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, private_key=cwt_payload[0])
-    _cwt_token_payload(token_signed, {"bits": bits, "lst": lst}, payload_data, payload_parts)
+    token_signed = encode_cwt_status_list_token(
+        payload_parts, bits, lst, private_key=cwt_payload[0]
+    )
+    _cwt_token_payload(
+        token_signed, {"bits": bits, "lst": lst}, payload_data, payload_parts
+    )
 
 
 def test_encode_cwt_status_list_token_signed_and_with_map(cwt_payload):
@@ -146,15 +161,91 @@ def test_encode_cwt_status_list_token_signed_and_with_map(cwt_payload):
     payload_parts = ({}, {}, payload_data | payload_to_decode)
     bits = cwt_payload[1]
     lst = cwt_payload[2]
-    token_signed = encode_cwt_status_list_token(payload_parts, bits, lst, {"ttl": 65534}, cwt_payload[0])
-    _cwt_token_payload(token_signed, {"bits": bits, "lst": lst}, payload_data | {65534: payload_to_decode["ttl"]}, payload_parts)
+    token_signed = encode_cwt_status_list_token(
+        payload_parts, bits, lst, {"ttl": 65534}, cwt_payload[0]
+    )
+    _cwt_token_payload(
+        token_signed,
+        {"bits": bits, "lst": lst},
+        payload_data | {65534: payload_to_decode["ttl"]},
+        payload_parts,
+    )
 
 
-def _cwt_token_payload(token, expected_status_list, payload_data: dict | None = None, payload_parts: tuple | None = None):
+def _helper_for(lst_bytes: bytes, bits: int = 1) -> StatusListTokenHelper:
+    return StatusListTokenHelper(
+        header={}, payload={}, bits=bits, status_list=lst_bytes
+    )
+
+
+def test_array_to_bitstring_matches_spec_vector():
+    """draft-ietf-oauth-status-list Section 4.1 worked example (16 entries, 1 bit)."""
+    spec = [1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1]
+    status_array = [
+        {"incremental_id": i, "revoked": bool(spec[i])} for i in range(len(spec))
+    ]
+    assert array_to_bitstring_v1(status_array, bits=1).hex() == "b9a3"
+
+
+def test_array_to_bitstring_empty_is_empty():
+    assert array_to_bitstring_v1([], bits=1) == b""
+
+
+def test_array_to_bitstring_rejects_invalid_bits():
+    with pytest.raises(ValueError):
+        array_to_bitstring_v1([{"incremental_id": 0, "revoked": False}], bits=3)
+
+
+def test_array_to_bitstring_alias_is_consistent():
+    status_array = [
+        {"incremental_id": 0, "revoked": True},
+        {"incremental_id": 1, "revoked": False},
+        {"incremental_id": 2, "revoked": True},
+    ]
+    assert array_to_bitstring(status_array, bit_size=1) == array_to_bitstring_v1(
+        status_array, bits=1
+    )
+
+
+def test_encode_then_read_back_aligns_idx_with_status():
+    """The position the issuer writes must equal the position a verifier reads."""
+    status_array = [
+        {"incremental_id": 1, "revoked": False},
+        {"incremental_id": 2, "revoked": True},
+        {"incremental_id": 3, "revoked": False},
+        {"incremental_id": 4, "revoked": True},
+        {"incremental_id": 5, "revoked": False},
+    ]
+    helper = _helper_for(array_to_bitstring_v1(status_array, bits=1))
+    for entry in status_array:
+        assert helper.get_status(entry["incremental_id"]) == int(entry["revoked"])
+
+
+def test_encode_is_gap_safe():
+    """Non-contiguous indexes still map each status to its own bit position."""
+    status_array = [
+        {"incremental_id": 1, "revoked": False},
+        {"incremental_id": 3, "revoked": False},
+        {"incremental_id": 7, "revoked": True},
+    ]
+    helper = _helper_for(array_to_bitstring_v1(status_array, bits=1))
+    assert helper.get_status(1) == 0
+    assert helper.get_status(3) == 0
+    assert helper.get_status(7) == 1
+
+
+def _cwt_token_payload(
+    token,
+    expected_status_list,
+    payload_data: dict | None = None,
+    payload_parts: tuple | None = None,
+):
     assert isinstance(token, bytes)
     decoded_payload = decode_cwt_status_list_token(token)
     assert 65533 in decoded_payload[2]  # check contains status_list
-    assert zlib.decompress(decoded_payload[2][65533]["lst"]) == expected_status_list["lst"]
+    assert (
+        zlib.decompress(decoded_payload[2][65533]["lst"]) == expected_status_list["lst"]
+    )
     assert decoded_payload[2][65533]["bits"] == expected_status_list["bits"]
     if payload_data:
         assert payload_data.items() <= decoded_payload[2].items()

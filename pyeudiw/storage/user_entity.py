@@ -26,5 +26,5 @@ class UserEntity(BaseModel):
     fiscal_code: str
     countyOfBirth: str
     placeOfBirth: str
-    portrait: Optional[str] = None
     mail: str
+    nationalities: list[str] #list of ISO 3166-1

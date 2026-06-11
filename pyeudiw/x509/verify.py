@@ -1,24 +1,26 @@
-import re
 import base64
 import logging
+import re
 from datetime import datetime, timezone
 from ssl import DER_cert_to_PEM_cert, PEM_cert_to_DER_cert
-
 from typing import Optional
+
 from cryptography import x509
-from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
+from cryptography.x509 import load_der_x509_certificate, load_pem_x509_certificate
 from cryptojwt.jwk.ec import ECKey
 from cryptojwt.jwk.rsa import RSAKey
+
 from pyeudiw.x509.crl_helper import CRLHelper
 
 LOG_ERROR = "x509 verification failed: {}"
 
 logger = logging.getLogger(__name__)
 
-_BASE64_RE = re.compile("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$")
+_BASE64_RE = re.compile(
+    "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+)
 # PEM block: -----BEGIN LABEL----- ... -----END LABEL----- (no pyOpenSSL/pem dependency)
 _PEM_BLOCK_RE = re.compile(r"-----BEGIN [^-]+-----\n.*?-----END [^-]+-----", re.DOTALL)
 
@@ -34,7 +36,10 @@ def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bo
     :rtype: bool
     """
     try:
-        certs = [load_pem_x509_certificate(pem_str.encode(), default_backend()) for pem_str in pems]
+        certs = [
+            load_pem_x509_certificate(pem_str.encode(), default_backend())
+            for pem_str in pems
+        ]
         if len(certs) < 2:
             return False
 
@@ -67,7 +72,11 @@ def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bo
             serial_number = cert.serial_number
             for crl in crls:
                 if crl.is_revoked(serial_number):
-                    logging.warning(LOG_ERROR.format(f"certificate with serial number {serial_number} is revoked"))
+                    logging.warning(
+                        LOG_ERROR.format(
+                            f"certificate with serial number {serial_number} is revoked"
+                        )
+                    )
                     return False
 
         return True
@@ -209,7 +218,9 @@ def to_PEM_cert(cert: str | bytes) -> str:
     else:
         cert_b = cert
 
-    if isinstance(cert, bytes) and bytes(cert_b).startswith(b"-----BEGIN CERTIFICATE-----"):
+    if isinstance(cert, bytes) and bytes(cert_b).startswith(
+        b"-----BEGIN CERTIFICATE-----"
+    ):
         return bytes(cert_b).decode()
 
     try:
@@ -369,6 +380,7 @@ def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     :returns: The certificate information
     :rtype: str
     """
+
     def get_common_name(cert):
         return cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].value
 
@@ -376,7 +388,9 @@ def get_x509_info(cert: bytes | str, san_dns: bool = True) -> str:
     loaded_cert: x509.Certificate = load_der_x509_certificate(der, default_backend())
 
     try:
-        san = loaded_cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+        san = loaded_cert.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        )
         if san_dns:
             return san.value.get_values_for_type(x509.DNSName)[0]
 

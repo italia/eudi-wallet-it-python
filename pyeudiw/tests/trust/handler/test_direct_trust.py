@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass
 
 import requests
+from requests import Response
 
 from pyeudiw.tests.trust.handler import (
     _generate_empty_json_ok_response,
@@ -11,18 +12,18 @@ from pyeudiw.tests.trust.handler import (
     issuer,
 )
 from pyeudiw.tests.trust.handler import issuer_jwk as expected_jwk
+from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.handler._direct_trust_jwk import build_jwk_issuer_endpoint, is_url
 from pyeudiw.trust.handler.direct_trust_sd_jwt_vc import (
     DirectTrustSdJwtVc,
     build_metadata_issuer_endpoint,
 )
-from pyeudiw.trust.exceptions import InvalidJwkMetadataException
 from pyeudiw.trust.model.trust_source import TrustSourceData
 
-from requests import Response
 
-
-def fake_get_http_url(urls: list[str] | str, httpc_params: dict, http_async: bool = True) -> list[requests.Response]:
+def fake_get_http_url(
+    urls: list[str] | str, httpc_params: dict, http_async: bool = True
+) -> list[requests.Response]:
     issuer = "https://example-url.issuer.it/vct"
 
     if urls[0].endswith("vct"):
@@ -102,7 +103,9 @@ def test_direct_trust_extract_jwks_from_jwk_metadata_invalid():
     jwk_metadata = {"issuer": issuer}
     try:
         trust_source._extract_jwks_from_jwk_metadata(jwk_metadata)
-        assert False, "parsed invalid metadata: should have raised InvalidJwkMetadataException instead"
+        assert (
+            False
+        ), "parsed invalid metadata: should have raised InvalidJwkMetadataException instead"
     except InvalidJwkMetadataException:
         assert True
 
@@ -126,7 +129,9 @@ def test_direct_trust_jwk():
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(random_issuer)
-    trust_source = trust_handler.extract_and_update_trust_materials(random_issuer, trust_source)
+    trust_source = trust_handler.extract_and_update_trust_materials(
+        random_issuer, trust_source
+    )
 
     obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 
@@ -150,7 +155,9 @@ def test_direct_trust_jwk_not_conformat_url():
     mocked_issuer_jwt_vc_issuer_endpoint.start()
 
     trust_source = TrustSourceData.empty(issuer)
-    trust_source = trust_handler.extract_and_update_trust_materials(issuer, trust_source)
+    trust_source = trust_handler.extract_and_update_trust_materials(
+        issuer, trust_source
+    )
 
     obtained_jwks = trust_source.direct_trust_sd_jwt_vc.get_jwks()
 

@@ -34,7 +34,9 @@ def from_jwk_to_mso_mdoc_private_key(jwk_key: dict) -> dict:
     return mso_mdoc_private_key
 
 
-def render_mso_mdoc_template(template_str: str, data: dict, transform_config: dict = None) -> dict:
+def render_mso_mdoc_template(
+    template_str: str, data: dict, transform_config: dict = None
+) -> dict:
     """
     Render an mso_mdoc YAML template using the provided data.
     Handles base64 for images and CBOR tag 1004 for dates.
