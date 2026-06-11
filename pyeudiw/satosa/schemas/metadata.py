@@ -25,12 +25,12 @@ class CredentialConfiguration(BaseModel):
     scope: str
     doctype: Optional[str] = None
     vct: Optional[str] = None
-    cryptographic_binding_methods_supported: list[str]
-    credential_signing_alg_values_supported: list[str]
-    proof_types_supported: dict
-    credential_metadata: dict
-    schema_id: str
-    authentic_sources: dict
+    cryptographic_binding_methods_supported: Optional[List[str]] = None
+    credential_signing_alg_values_supported: Optional[List[str]] = None
+    proof_types_supported: Optional[dict] = None
+    credential_metadata: Optional[dict] = None
+    schema_id: Optional[str] = None
+    authentic_sources: Optional[dict] = None
 
     @model_validator(mode='after')
     def check_id_type(self) -> 'CredentialConfiguration':

@@ -1,13 +1,23 @@
+import base64
 import datetime
 import json
+import time
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
 import pytest
+from cryptojwt import JWS
 from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
 
+from pyeudiw.jwk import JWK
+from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.oauth2.dpop.issuer import DPoPIssuer
+from pyeudiw.satosa.utils.validation import (
+    AUTHORIZATION_HEADER,
+    DPOP_HEADER,
+)
 from pyeudiw.satosa.frontends.openid4vci.endpoints.credential_endpoint import (
     CredentialHandler,
 )
@@ -99,6 +109,37 @@ def credential_handler() -> CredentialHandler:
         return handler
 
 
+_ACCESS_TOKEN_JTI = "access-token-jti"
+
+
+def _dpop_bound_headers() -> dict:
+    """Build DPoP + Authorization headers with a DPoP-bound access token (RFC 9449).
+
+    The access token carries ``cnf.jkt`` matching the DPoP key thumbprint, as
+    required by DPoPVerifier's token binding check.
+    """
+    dpop_key = new_ec_key("P-256")
+    dpop_pub = dpop_key.serialize(private=False)
+    jkt = (
+        base64.urlsafe_b64encode(JWK(key=dpop_pub).thumbprint)
+        .decode("utf-8")
+        .rstrip("=")
+    )
+    access_token = JWSHelper(dpop_key).sign(
+        {"jti": _ACCESS_TOKEN_JTI, "cnf": {"jkt": jkt}},
+        protected={"typ": "at+jwt"},
+    )
+    issuer = DPoPIssuer(
+        htu="https://example.org/redirect",
+        private_jwk=dpop_key,
+        token=access_token,
+    )
+    return {
+        DPOP_HEADER: issuer.proof,
+        AUTHORIZATION_HEADER: f"DPoP {access_token}",
+    }
+
+
 @pytest.fixture
 def context() -> Context:
     verifier = DPoPIssuer(
@@ -109,6 +150,14 @@ def context() -> Context:
     return get_mocked_satosa_context(
         content_type=APPLICATION_JSON,
         headers={"DPoP": verifier.proof, "Authorization": f"DPoP {verifier.token}"},
+    )
+
+
+@pytest.fixture
+def dpop_context() -> Context:
+    return get_mocked_satosa_context(
+        content_type=APPLICATION_JSON,
+        headers=_dpop_bound_headers(),
     )
 
 
@@ -191,7 +240,7 @@ def test_invalid_request_credential_id_without_openid_credential_in_auth_details
     credential_identifier,
     error_desc,
 ):
-    credential_handler.db_engine.get_by_session_id.return_value = (
+    credential_handler.db_engine.search_session_by_field.return_value = (
         get_mocked_openid4vpi_entity()
     )
     req = {"proof": VALID_PROOF}
@@ -236,7 +285,7 @@ def test_invalid_request_credential_id_with_openid_credential_in_auth_details(
             "credential_identifiers": ["cred1", "cred2"],
         }
     ]
-    credential_handler.db_engine.get_by_session_id.return_value = entity
+    credential_handler.db_engine.search_session_by_field.return_value = entity
     req = {"proof": VALID_PROOF}
     if credential_configuration_id:
         req["credential_configuration_id"] = credential_configuration_id
@@ -289,7 +338,7 @@ def test_request_invalid_prof_jwt(
 
 
 def test_proof_jwt_required_and_missing_raises_missing_proof_jwt_exception(
-    credential_handler, context, request_without_open_id_credential
+    credential_handler, dpop_context, request_without_open_id_credential
 ):
     config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
     config["security"] = config.get("security", {}) | {
@@ -304,20 +353,20 @@ def test_proof_jwt_required_and_missing_raises_missing_proof_jwt_exception(
             config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
         )
         handler.db_engine = MagicMock()
-        handler.db_engine.get_by_session_id.return_value = (
+        handler.db_engine.search_session_by_field.return_value = (
             get_mocked_openid4vpi_entity()
         )
     req = deepcopy(request_without_open_id_credential)
     del req["proof"]
-    context.request = req
-    result = handler.endpoint(context)
+    dpop_context.request = req
+    result = handler.endpoint(dpop_context)
     assert result.status == "400"
     response = json.loads(result.message)
     assert "missing proof jwt" in response.get("error_description", "").lower()
 
 
 def test_proof_jwt_not_required_and_missing_logs_debug(
-    caplog, credential_handler, context, request_without_open_id_credential
+    caplog, credential_handler, dpop_context, request_without_open_id_credential
 ):
     config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
     config["security"] = config.get("security", {}) | {
@@ -336,13 +385,14 @@ def test_proof_jwt_not_required_and_missing_logs_debug(
             config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
         )
         handler.db_engine = MagicMock()
-        handler.db_engine.get_by_session_id.return_value = (
+        handler.db_engine.search_session_by_field.return_value = (
             get_mocked_openid4vpi_entity()
         )
     req = deepcopy(request_without_open_id_credential)
     del req["proof"]
-    context.request = req
-    handler.endpoint(context)
+    dpop_context.request = req
+    with caplog.at_level("DEBUG"):
+        handler.endpoint(dpop_context)
     assert "Missing JWTProof since it is not configured" in caplog.text
 
 
@@ -662,7 +712,7 @@ def test_request_invalid_prof_jwt_decoded(
         context.request = request_without_open_id_credential
         entity = deepcopy(get_mocked_openid4vpi_entity())
         entity["c_nonce"] = "random-nonce-abc123"
-        credential_handler.db_engine.get_by_session_id.return_value = entity
+        credential_handler.db_engine.search_session_by_field.return_value = entity
         result = credential_handler.endpoint(context)
         assert_invalid_request_application_json(result, error_desc)
 
@@ -698,15 +748,75 @@ def side_effect_credential_entity(user_id) -> CredentialEntity:
     pytest.fail(f"Unexpected user_id value: {user_id}")
 
 
-def test_request_without_open_id_credential_for_sd_jwt(
-    credential_handler, context, valid_request_proof_jwt
-):
-    context.request = {
-        "credential_configuration_id": "dc_sd_jwt_mDL",
-        "proof": VALID_PROOF,
+def _build_proof_with_key_attestation():
+    """Build a real proof JWT carrying a key_attestation (WUA) in its header.
+
+    Returns a tuple ``(proof_jwt, holder_thumbprint, wallet_provider_pub_jwk)``.
+    """
+    holder_key = new_ec_key(crv="P-256", use="sig", kid="holder", alg="ES256")
+    holder_pub = holder_key.serialize(private=False)
+    holder_thumb = key_from_jwk_dict(holder_pub).thumbprint("SHA-256").decode()
+
+    wp_key = new_ec_key(crv="P-256", use="sig", kid="wp", alg="ES256")
+    wp_pub = wp_key.serialize(private=False)
+
+    wua = JWS(
+        json.dumps({"iss": "https://wp.example.org", "attested_keys": [holder_pub]}),
+        alg="ES256",
+    ).sign_compact(
+        [wp_key],
+        protected={"alg": "ES256", "typ": "key-attestation+jwt", "kid": wp_key.kid},
+    )
+
+    proof_header = {
+        "alg": "ES256",
+        "typ": JWT_PROOF_TYP,
+        "jwk": holder_pub,
+        "key_attestation": wua,
+        "kid": holder_key.kid,
     }
+    proof_payload = {
+        "iss": holder_thumb,
+        "aud": "example.com/openid4vcimock",
+        "iat": int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+        "nonce": "random-nonce-abc123",
+    }
+    proof_jwt = JWS(json.dumps(proof_payload), alg="ES256").sign_compact(
+        [holder_key], protected=proof_header
+    )
+    return proof_jwt, holder_thumb, wp_pub
+
+
+def test_request_without_open_id_credential_for_sd_jwt(credential_handler, dpop_context):
+    proof_jwt, holder_thumb, wp_pub = _build_proof_with_key_attestation()
+
+    dpop_context.request = {
+        "credential_configuration_id": "dc_sd_jwt_mDL",
+        "proof": {"proof_type": "jwt", "jwt": proof_jwt},
+    }
+
     entity = deepcopy(get_mocked_openid4vpi_entity())
-    _do_test_request_valid(credential_handler, context, valid_request_proof_jwt, entity)
+    entity["client_id"] = holder_thumb
+    entity["c_nonce"] = "random-nonce-abc123"
+
+    credential_handler.db_engine.search_session_by_field.return_value = entity
+    credential_handler.db_engine.get.return_value = {
+        "created_at": int(time.time() * 1000),
+        "expires_in": 1_000_000,
+    }
+    credential_handler.db_engine.write.return_value = 1
+    credential_handler._trust_evaluator.get_public_keys.return_value = [wp_pub]
+
+    with patch.object(
+        CredentialHandler, "build_credential", return_value=["fake-credential"]
+    ):
+        result = credential_handler.endpoint(dpop_context)
+
+    assert result.status == "200 OK"
+    response = json.loads(result.message)
+    assert response["credentials"] is not None
+    assert isinstance(response["credentials"], list)
+    assert len(response["credentials"]) == 1
 
 
 # TODO: fix me
@@ -765,7 +875,7 @@ def _do_test_request_valid(
         )
         credential_handler._db_credential_engine = db_credential_mock
 
-        credential_handler.db_engine.get_by_session_id.return_value = entity
+        credential_handler.db_engine.search_session_by_field.return_value = entity
         result = credential_handler.endpoint(context)
 
         assert result.status == "200 OK"

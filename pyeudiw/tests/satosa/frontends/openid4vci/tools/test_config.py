@@ -50,11 +50,13 @@ def test_get_openid_credential_issuer(config_utils):
         "dc_sd_jwt_EuropeanDisabilityCard": {
             "format": "dc+sd-jwt",
             "scope": "EuropeanDisabilityCard",
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/EuropeanDisabilityCard",
         },
         "dc_sd_jwt_mDL": {
             "format": "dc+sd-jwt",
             "scope": "mDL",
             "cryptographic_binding_methods_supported": ["jwk"],
+            "vct": "https://trust-registry.eid-wallet.example.it/v1.0/mDL",
         },
         "mso_mdoc_mDL": {
             "cryptographic_binding_methods_supported": ["cose_key"],

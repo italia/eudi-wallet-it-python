@@ -4,6 +4,8 @@ from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
 import pytest
+from cryptojwt.jwk.ec import new_ec_key
+from cryptojwt.jwk.jwk import key_from_jwk_dict
 from satosa.context import Context
 
 from pyeudiw.satosa.frontends.openid4vci.endpoints.pushed_authorization_request_endpoint import (
@@ -42,7 +44,12 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
 from pyeudiw.tools.content_type import FORM_URLENCODED, HTTP_CONTENT_TYPE_HEADER
 
 _MOCK_VALID_OAUTH_CLIENT_ATTESTATION_JWT = mock_valid_oauth_client_attestation_jwt()
-_MOCK_VALID_THUMBPRINT = "b'i5blIsZsKuQAl93ygTPpa_PrZCQZ47Bw9MGPIK-RNnM'"
+_MOCK_CNF_KEY = new_ec_key(crv="P-256", use="sig", kid="par-cnf", alg="ES256")
+_MOCK_CNF_JWK = _MOCK_CNF_KEY.serialize(private=False)
+_MOCK_VALID_THUMBPRINT = (
+    key_from_jwk_dict(_MOCK_CNF_JWK).thumbprint("SHA-256").decode()
+)
+_MOCK_VALID_OAUTH_CLIENT_ATTESTATION = {"cnf": {"jwk": _MOCK_CNF_JWK}}
 _MOCK_PAR_REQUEST = {
     "request": "request.valid.jwt",
     "client_id": _MOCK_VALID_THUMBPRINT,
@@ -51,6 +58,9 @@ _MOCK_PAR_REQUEST = {
 _PAR_BASE_PATH = f"{BASE_PACKAGE}.endpoints.pushed_authorization_request_endpoint"
 _PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET = (
     f"{_PAR_BASE_PATH}.validate_oauth_client_attestation"
+)
+_PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_POP_TARGET = (
+    f"{_PAR_BASE_PATH}.validate_oauth_client_attestation_pop"
 )
 
 _MOCK_REQUEST_DESERIALIZED = {
@@ -552,7 +562,11 @@ def test_jti_replay_rejected(par_handler, context):
         patch(JWS_HELPER_VERIFY_MODULE, return_value=_mock_request_deserialized()),
         patch(
             _PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET,
-            return_value={"thumbprint": _MOCK_VALID_THUMBPRINT},
+            return_value=_MOCK_VALID_OAUTH_CLIENT_ATTESTATION,
+        ),
+        patch(
+            _PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_POP_TARGET,
+            return_value={},
         ),
     ):
         context.request = _MOCK_PAR_REQUEST
@@ -569,7 +583,11 @@ def _assert_valid_request(par_handler: ParHandler, context: Context):
         patch(JWS_HELPER_VERIFY_MODULE, return_value=_mock_request_deserialized()),
         patch(
             _PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_TARGET,
-            return_value={"thumbprint": _MOCK_VALID_THUMBPRINT},
+            return_value=_MOCK_VALID_OAUTH_CLIENT_ATTESTATION,
+        ),
+        patch(
+            _PAR_VALIDATE_OAUTH_CLIENT_ATTESTATION_POP_TARGET,
+            return_value={},
         ),
     ):
         context.request = _MOCK_PAR_REQUEST

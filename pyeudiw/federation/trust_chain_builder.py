@@ -71,8 +71,10 @@ class TrustChainBuilder:
                 jwts = get_entity_configurations(
                     trust_anchor, httpc_params=self.httpc_params
                 )
+                _jwt = jwts[0]
                 trust_anchor_configuration = EntityStatement(
-                    jwts[0].decode(), httpc_params=self.httpc_params
+                    _jwt.decode() if isinstance(_jwt, (bytes, bytearray)) else _jwt,
+                    httpc_params=self.httpc_params
                 )
 
                 if subject_configuration: #todo check if necessary
@@ -290,8 +292,9 @@ class TrustChainBuilder:
                 jwts = get_entity_configurations(
                     self.subject, httpc_params=self.httpc_params
                 )
+                _jwt = jwts[0]
                 self.subject_configuration = EntityStatement(
-                    jwts[0].decode(),
+                    _jwt.decode() if isinstance(_jwt, (bytes, bytearray)) else _jwt,
                     trust_anchor_entity_conf=self.trust_anchor_configuration,
                     httpc_params=self.httpc_params,
                 )

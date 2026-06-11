@@ -1,3 +1,4 @@
+import base64
 from hashlib import sha256, sha512
 
 import pytest
@@ -25,9 +26,17 @@ def get_valid_context(
 ):
     match challenge_method:
         case "s256":
-            code_challenge = sha256(code_verifier.encode("utf-8")).hexdigest()
+            code_challenge = (
+                base64.urlsafe_b64encode(sha256(code_verifier.encode("utf-8")).digest())
+                .decode("utf-8")
+                .rstrip("=")
+            )
         case "s512":
-            code_challenge = sha512(code_verifier.encode("utf-8")).hexdigest()
+            code_challenge = (
+                base64.urlsafe_b64encode(sha512(code_verifier.encode("utf-8")).digest())
+                .decode("utf-8")
+                .rstrip("=")
+            )
         case _:
             raise NotImplementedError(
                 f"{challenge_method} not supported in test context"
