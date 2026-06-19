@@ -1,7 +1,11 @@
-import datetime
 import time
 import logging
 import inspect
+import base64
+import cbor2
+
+from pycose.keys import CoseKey
+from pyeudiw.jwk import JWK
 from pyeudiw.satosa.schemas.credential_configurations import CredentialConfigurationsConfig
 from pyeudiw.storage.exceptions import EntryNotFound
 from abc import ABC, abstractmethod
@@ -157,17 +161,12 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if data.get("credential_configuration_id"):
                 credential_configuration_id = data
             else:  # validate credential_identifier with authorization_details of token
-                if auth_session.authorization_details:
-                    for auth_details in auth_session.authorization_details:
-                        if auth_details.credential_identifiers:
-                            if credential_identifier in auth_details.credential_identifiers:
-                                credential_configuration_id = "_".join(credential_identifier.split("_")[:-1])
-                                break
-                    else:
-                        raise InvalidRequestException(
-                            "credential_identifier not match with token authorization_details")
+                for auth_details in auth_session.authorization_details or []:
+                    if credential_identifier in (auth_details.credential_identifiers or []):
+                        credential_configuration_id = "_".join(credential_identifier.split("_")[:-1])
+                        break
                 else:
-                    raise InvalidRequestException("Invalid credential_configuration_id")
+                    raise InvalidRequestException("Invalid credential_configuration_id or credential_identifier not match with token authorization_details")
 
             self.validate_request(context, entity)
 
@@ -265,8 +264,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         match config.format:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 return self._issue_sd_jwt(
-                    user_entity, opendid4vci_entity, cred_config, config, holder_key=holder_key
-                )["issuance"]
+                    user_entity, opendid4vci_entity, cred_config, config, holder_key=holder_key)
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
                 return self._issue_mso_mdoc(user_entity, opendid4vci_entity, cred_config, config, holder_key=holder_key)
             case _:
@@ -281,38 +279,67 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
     def _issue_mso_mdoc(
             self,
             user_entity: tuple[str, UserEntity],
-            auth_session: AuthorizationSession, cred_config: CredentialConfigurationsConfig,
-            config: CredentialConfiguration, holder_key: dict = None
+            auth_session: AuthorizationSession, cred_config: CredentialConfigurationsConfig, config: CredentialConfiguration, holder_key: dict = None
     ) -> str:
-        credential: CredentialSpecificationConfig = cred_config.credential_specification[config.id] #todo
+        """References:
+        - https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model-pid.html#pid-data-model-in-mdoc-cbor-format
+        - https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model.html#mdoc-cbor-credential-format
+        """
+
         mdoci = MdocCborIssuer(
             private_key=self._mso_mdoc_private_key,
             alg=self._mso_mdoc_private_key["ALG"],
         )
-        issuance_date = datetime.date.today()
+        if not (x5c_chain := self._trust_evaluator.get_jwt_header_trust_parameters(issuer=self.entity_id).get("x5c", [])):
+            raise Exception("missing x5c chain")
+
+        for i in range(0, len(x5c_chain)):
+            x5c_chain[i] = b"-----BEGIN CERTIFICATE-----\n" + x5c_chain[i].encode('utf-8') + b"\n-----END CERTIFICATE-----\n"
+
+        user_id, _ = user_entity
+        credential: CredentialSpecificationConfig = cred_config.credential_specification[config.id]
+
+        now = iat_now()
+        exp = exp_from_now(self.config_utils.get_jwt().default_exp)  # TODO implement a config section for MobileSecurityObject and the related get_mso()
+        nbf = now + cred_config.nbf_delta
+        required_attrs = {"issuing_country": cred_config.issuing_country, "issuing_authority": cred_config.issuing_authority}
+        supported_optional_attrs = {
+            "sub": str(uuid4()),
+            "issuance_date": datetime_from_timestamp(now).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
+            "expiry_date": (datetime_from_timestamp(now) + timedelta(credential.expiry_days)).strftime('%Y-%m-%dT%H:%M:%SZ'),  # ISO 8601
+            "trust_framework": credential.trust_framework, "assurance_level": credential.assurance_level
+        }
+
+        holder_key = cbor2.loads(CoseKey.from_pem_public_key(JWK(key=holder_key).export_public_pem()).encode())
+        status_list = None
+        if credential.optional_mso_attrs:
+            if credential.optional_mso_attrs.get("status"):
+                status_list = self.revoke_on_credential_reissuance(user_id, auth_session, config.id)
+
         mdoci.new(
+            status=status_list, devicekeyinfo=holder_key, x509_chain=x5c_chain,
             doctype=config.doctype,
             data=self._loader(
                 user_entity,
                 credential.template,
                 CredentialConfigurationFormatEnum.MSO_MDOC.value,
+                extra_claims=required_attrs | supported_optional_attrs
             ),
             validity={
-                "issuance_date": issuance_date.isoformat(),
-                "expiry_date": (
-                    issuance_date + timedelta(credential.expiry_days)
-                ).isoformat(),
+                "issuance_date": datetime_from_timestamp(nbf).strftime("%Y-%m-%d"),
+                "expiry_date": datetime_from_timestamp(exp).strftime("%Y-%m-%d") #pymdoccbor==1.3.0 needs iso format "%Y-%m-%d"
             },
         )
-        return mdoci.dumps().decode()
+        issuer_signed_data = mdoci.signed["documents"][0]['issuerSigned']
+        data = cbor2.dumps(issuer_signed_data, canonical=True)
+        return base64.urlsafe_b64encode(data).decode()
 
     def _issue_sd_jwt(
-        self, user_entity: tuple[str, UserEntity], auth_session: AuthorizationSession,
-            cred_config: CredentialConfigurationsConfig, iss_cred_supp_conf: CredentialConfiguration, holder_key: dict = None
-    ) -> dict:
+        self, user_entity: tuple[str, UserEntity], auth_session: AuthorizationSession, cred_config: CredentialConfigurationsConfig,
+            iss_cred_supp_conf: CredentialConfiguration, holder_key: dict|None = None) -> str:
         """Reference: https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model.html#digital-credential-sd-jwt-metadata-attributes"""
         now = iat_now()
-        exp = exp_from_now(self.config_utils.get_jwt().default_exp) # TODO check date_of_expiry
+        exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         cred_type_id = iss_cred_supp_conf.id
         cred_specification: CredentialSpecificationConfig = cred_config.credential_specification[cred_type_id]
         required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority, "issuing_country": cred_config.issuing_country,
@@ -340,11 +367,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 issuer=self.entity_id
             ),
         )
-
-        return {
-            "jws": sdjwt_at_issuer.serialized_sd_jwt,
-            "issuance": sdjwt_at_issuer.sd_jwt_issuance,
-        }
+        return sdjwt_at_issuer.sd_jwt_issuance
 
     @staticmethod
     def _retrieve_user_data(
@@ -366,13 +389,16 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         match credential_type:
             case CredentialConfigurationFormatEnum.SD_JWT.value:
                 template = Template(template)
+                # TODO remove and generalize it to simulate data recovery from an Authentic Source
                 user_data = self._retrieve_user_data(user_data)
                 user_data = user_data | (extra_claims or {})
                 json_filled = template.render(**user_data)
                 return yaml_load_specification(json_filled)
             case CredentialConfigurationFormatEnum.MSO_MDOC.value:
+                user_data = self._retrieve_user_data(user_entity) # TODO remove and generalize it to simulate data recovery from an Authentic Source
+                data = user_data | (extra_claims or {})
                 data = render_mso_mdoc_template(
-                    template, user_data.model_dump(), FIELD_TRANSFORMS
+                    template, data, FIELD_TRANSFORMS
                 )
                 return data
             case _:
