@@ -1,241 +1,325 @@
-{% extends "base.html" %}
+{# Keep in sync with eudi-wallet-it-python/integration_test/templates/qr_code.html #}
+{% extends "base_shell.html" %}
 
+{% block content %}
+  <style>
+    :root {
+      --qr-size: {{ qrcode_size }}px;
+      --brand-blue: #0072CE;
+    }
 
-{% block body %}
-<div class="py-md-5 bd-content">
-    <div class="card-wrapper card-space">
-       <div class="card card-bg no-after">
-          <div class="card-body">
-             <div class="qr-slim-header mb-4">
-                <div class="qr-back-row">
-                   <a class="qr-back-link" href="{{ selection_page_url|default('/Saml2/disco', true) }}" aria-label="Torna alla pagina di selezione">
-                      <span aria-hidden="true">←</span> Torna indietro
-                   </a>
-                </div>
-                <div class="qr-slim-header-top">
-                   <p class="qr-org-name mb-0">{{ organization_name|default('Nome Organizzazione', true) }}</p>
-                   <div class="qr-language-selector">
-                      <label class="visually-hidden" for="qr-language">Lingua</label>
-                      <select id="qr-language" class="form-select form-select-sm" aria-label="Selettore lingua">
-                         <option selected>IT</option>
-                         <option>EN</option>
-                      </select>
-                   </div>
-                </div>
-             </div>
-             <div class="row">
-                <p id="content-title" class="qr-code-title text-center">Inquadra il codice QR</p>
-             </div>
-             <div id="content" class="text-center">
-                <div class="row">
-                   <div id="content-text" class="lead-lg">Usa la funzionalità di <b>{{ selected_app_name|default('nome app scelta', true) }}</b> o la fotocamera del tuo smartphone</div>
-                </div>
-                <br>
-                <div id="content-qrcode" class="row">
-                   <div id = "content-qrcode-payload">
-                    <qr-code
-                        contents="{{ qrcode_text }}"
-                        module-color="{{ qrcode_color }}"
-                        position-ring-color="{{ qrcode_color }}"
-                        position-center-color="{{ qrcode_color }}"
-                        style="
-                            width: {{ qrcode_size }}px;
-                            height: {{ qrcode_size }}px;
-                            margin: 2em auto;
-                            background-color: #fff;
-                        "
-                        >
-                        <img class="icon-qr-code" src="{{ static + (selected_app_logo_path|default(qrcode_logo_path, true)) }}" slot="icon" />
-                        </qr-code>
-                    </div>
-                   <div id="content-qrcode-info">
-                      <p id="content-qrcode-info-text" class="text-helper text-info">
-                         Il codice è valido per <b id="timer"></b> secondi
-                      </p>
-                      <p id="content-qrcode-subtitle" class="qr-code-text" hidden>
-                         Puoi trovarla direttamente all'interno dell'app IO. 
-                         Se hai più dispositivi mobili,
-                         scegli su quale dispositivo preferisci ricevere le notifiche.
-                      </p>
-                      <div id="content-function" class="text-center button-container mt-2">
-                         <a
-                            class="qr-cancel-link"
-                            {% if entry_page_url %}
-                            href="{{ entry_page_url }}"
-                            {% else %}
-                            href="#"
-                            onclick="window.history.go(-1); return false;"
-                            {% endif %}
-                         >Annulla</a>
-                      </div>
-                   </div>
-                </div>
-             </div>
-          </div>
-       </div>
+    .qr-code {
+      display: block;
+      margin: auto;
+      background-color: #fff;
+      width: var(--qr-size);
+      height: var(--qr-size);
+    }
+
+    .qr-code-img {
+      width: 10em;
+      height: 10em;
+    }
+
+    .qr-faded {
+      opacity: 0.2;
+    }
+
+    .btn-custom {
+      background-color: var(--brand-blue);
+      color: white;
+    }
+
+    .support-link {
+      margin-top: 0.5rem;
+      display: block;
+      color: var(--brand-blue);
+    }
+  </style>
+
+  <div class="container py-5 text-center">
+
+    <h1 id="content-title" class="h2 mb-4">
+      <!-- i18next -->
+    </h1>
+
+    <p id="content-text" class="text-secondary small mb-4">
+      <!-- i18next -->
+    </p>
+
+    <script src="{{ static }}js/qrcode/qr-code.js"></script>
+    <div id="content-qrcode" class="d-flex justify-content-center mb-4">
+      <div id="content-qrcode-payload">
+        <qr-code
+            contents="{{ qrcode_text }}"
+            module-color="{{ qrcode_color }}"
+            position-ring-color="{{ qrcode_color }}"
+            position-center-color="{{ qrcode_color }}"
+            class="qr-code"
+            aria-label="Codice QR per l'autenticazione con IT-Wallet"
+        >
+          <img class="icon-qr-code" src="{{ static }}{{ qrcode_logo_path }}" slot="icon" alt="" />
+        </qr-code>
+      </div>
     </div>
- </div>
 
-<script>
-    let failureTitle = "Autenticazione fallita.";
-    let failureText = "Qualcosa non ha funzionato. Premi “Riprova” per autenticarti nuovamente oppure segui le istruzioni visibili sull’app IO.";
-    let crossImg = "{{ static }}"+"img/cross.svg";
+    <p id="content-qrcode-info-text" class="text-muted mb-3" aria-live="polite" aria-atomic="true">
+      <!-- i18next -->
+    </p>
 
-    let startingConnectionTitle = "Continua sul tuo smartphone";
-    let startingConnectionText = "Per proseguire, segui le istruzioni sull'app IO e autorizza l'accesso";
-    let startingConnectionQRInfo = "<b>Non hai ricevuto la notifica?</b>";
+    <div id="content-function" class="mt-3">
+      <button id="btn-back"
+              type="button"
+              class="btn btn-outline-primary"
+              onclick="window.history.go(-1); return false;">
+        <!-- i18next -->
+      </button>
+    </div>
 
-    let clickAccessLabel = "Vai al servizio";
-    let connectedTitle = "Autenticazione completata";
-    let connectedText = "Da questo momento puoi iniziare a utilizzare il servizio";
-    let connectedImg = "{{ static }}"+"img/check.svg";
-    let qrCodeExpiredInfo = "Il QR code non è più valido.";
-    let qrCodeReloadLabel = "Aggiorna codice QR";
-    let retryLabel = "Riprova";
+    <noscript>
+      <p id="noscript-message">Per usare la pagina del codice QR è necessario abilitare JavaScript.</p>
+    </noscript>
 
-    let expirationTime = "{{ qrcode_expiration_time }}";
-    let pollingInterval;
+    <script>
+      let crossImg = "{{ static }}img/new_cross.svg";
+      let connectedImg = "{{ static }}img/new_check.svg";
+      let appImg = "{{ static }}img/app.svg";
+      let expirationTime = parseInt("{{ qrcode_expiration_time }}", 10);
+      let pollingInterval;
+      let countdown = null;
+      let countdownStarted = false;
 
-    function StartQRcodeScanCheck(){
-        $('#timer').text(expirationTime); 
-        let timeout = expirationTime*1000;
-        pollingInterval = setTimeout(QRcodeScanCheck, 1000);
-    }
+      function newWindowHintText(t) {
+        return t('footer.new_window_hint');
+      }
 
-    function Forbidden(data, textStatus, jqXHR){
-        console.log('403: Forbidden');
-        errorPage();
-    }
+      function setFooterLink($el, text, href, hint) {
+        if (!$el.length) return;
+        $el.text(text);
+        if (href) $el.attr('href', href);
+        $el.attr('aria-label', text + ' (' + hint + ')');
+      }
 
-    function connectionCompleted(data, textStatus, jqXHR) {
-        console.log('authenticated');
+      function updateTimerDisplay() {
+        const timer = document.getElementById('timer');
+        if (timer) {
+          timer.textContent = String(Math.max(expirationTime, 0));
+        }
+      }
 
-        clearInterval(countdown);
-        changeTitle(connectedTitle);
-        changeText(connectedText);
-        changeQrCodeImg(connectedImg);
-        $('#content-qrcode-info').html(`
-            <div id="content-function" class="text-center button-container mt-2">
-                <a href="${data.redirect_uri}" 
-                    class="btn btn-primary" 
-                    aria-haspopup="false" 
-                    aria-expanded="false" 
-                    data-focus-mouse="false"
-                >
-                <span>${clickAccessLabel}</span>
-                </a>
-            </div>`
+      function updateShellTexts(t) {
+        $('#header-region-name').text(t('header.region_name'));
+        $('.it-skip-links').attr('aria-label', t('skip_links.nav_label'));
+        $('#skip-main').text(t('skip_links.main_content'));
+        $('#skip-footer').text(t('skip_links.footer'));
+        $('#eid-title').text(t('header.logo_alt'));
+        $('#header-logo-text').text(t('header.logo_alt'));
+        $('.qr-header-logo-wallet').attr('alt', t('header.wallet_brand_alt'));
+
+        const hint = newWindowHintText(t);
+        setFooterLink($('#footer-legal'), t('footer.legal_notice'), t('footer.legal_url'), hint);
+        setFooterLink($('#footer-privacy'), t('footer.privacy_policy'), t('footer.privacy_url'), hint);
+        setFooterLink($('#footer-accessibility'), t('footer.accessibility_statement'), t('footer.accessibility_url'), hint);
+        $('#footer-legal-nav').attr('aria-label', t('footer.nav_label'));
+        $('#noscript-message').text(t('noscript.message'));
+
+        const pageTitle = t('page_title');
+        $('#tab-title').text(pageTitle);
+        document.title = pageTitle;
+        $('#meta-description').attr('content', t('meta.description'));
+      }
+
+      function updateTexts(t) {
+        updateShellTexts(t);
+        $('#content-title').html('<b>' + t('contentTitle') + '</b>');
+        $('#content-qrcode-info-text').html(
+          t('qrCodeValidInfo', { seconds: String(Math.max(expirationTime, 0)) })
         );
-    }
+        $('#content-text').html(t('supportText'));
+        $('#btn-back').text(t('backLabel'));
+      }
 
-    function QRcodeExpired(){
-        console.log('session expired');
-        blankQRcode();
-        clearInterval(countdown);
-        changeQrCodeInfo(qrCodeExpiredInfo);
-        $('#content-function').append(`
-            <button
-                class="btn btn-primary" 
-                aria-haspopup="false" 
-                aria-expanded="false" 
-                data-focus-mouse="false"
-                onclick="window.location.reload(true)"
-            >
-                <b>${qrCodeReloadLabel}</b>
-            </button>`
-        );
-    }
-
-    function serverError(data, textStatus, jqXHR){
-        console.log('500: Server Error');
-        errorPage()
-    }
-
-    function errorPage(){
-        clearInterval(countdown);
-        changeTitle(failureTitle);
-        changeText(failureText);
-        changeQrCodeImg(crossImg);
-        $('#content-qrcode-info').html(`
-            <div id="content-function" class="text-center button-container mt-2">
-                <button href="" 
-                    class="btn btn-outline-primary" 
-                    aria-haspopup="false" 
-                    aria-expanded="false" 
-                    data-focus-mouse="false"
-                >
-                <span>${retryLabel}</span>
-                </button>
-            </div>`
-        );
-    }
-
-    function changeTitle(str){
-        $('#content-title').html(str);
-    }
-
-    function changeText(str){
-        $('#content-text').html(str);
-    }
-
-    function changeQrCodeInfo(str){
-        $('#content-qrcode-info-text').html(str);
-    }
-    function changeQrCodeImg(str){
-        $('#content-qrcode-payload').html(`<img src="${str}" alt="qr-code" style="width: 10em; height: 10em;">`);
-    }
-    function blankQRcode(){
-        $('#content-qrcode-payload').css({
-            'opacity': '0.2'
-        });
-
-    }
-
-    var countdown = setInterval(function() {
-        $('#timer').text(expirationTime);
-        expirationTime--;
-        if (expirationTime < 0) {
+      function startCountdown(t) {
+        if (countdownStarted) return;
+        countdownStarted = true;
+        countdown = setInterval(function () {
+          expirationTime--;
+          updateTimerDisplay();
+          if (expirationTime < 0) {
             clearInterval(countdown);
+            countdown = null;
             clearTimeout(pollingInterval);
-            QRcodeExpired();
+            QRcodeExpired(t);
+          }
+        }, 1000);
+      }
+
+      function schedulePoll(t) {
+        clearTimeout(pollingInterval);
+        pollingInterval = setTimeout(function () {
+          QRcodeScanCheck(t);
+        }, 1000);
+      }
+
+      function stopTimers() {
+        if (countdown) {
+          clearInterval(countdown);
+          countdown = null;
         }
-    }, 1000);
+        clearTimeout(pollingInterval);
+      }
 
-    function statusEndpoint() {
-        let endpointSatosa = "{{ status_endpoint }}";
-        return endpointSatosa; 
-    }
+      function StartQRcodeScanCheck(t) {
+        updateTexts(t);
+        startCountdown(t);
+        schedulePoll(t);
+      }
 
-    function sessionIdentifier() {
-        let id = "{{ state }}";
-        return id; 
-    }
+      function onPollPending(t) {
+        schedulePoll(t);
+      }
 
+      function initI18n() {
+        const initialLang = localStorage.getItem('lang') || 'it';
 
-    function QRcodeScanCheck() {
-      let qrStatusUrl = statusEndpoint();
-      let data = {"id": sessionIdentifier()}
-      let ajaxRequest = $.ajax({
-        type: 'GET',
-        url: qrStatusUrl,
-        data,
-        statusCode: {
-          201: StartQRcodeScanCheck,
-          202: StartQRcodeScanCheck,
-          200: connectionCompleted,
-          400: Forbidden,
-          401: Forbidden,
-          403: Forbidden,
-          500: serverError,
-        }
+        i18next
+        .use(i18nextHttpBackend)
+        .init({
+          lng: initialLang,
+          fallbackLng: 'it',
+          backend: {
+            loadPath: '{{ static }}locales/qr-{% raw %}{{lng}}{% endraw %}.json'
+          }
+        }, function (err, t) {
+          if (err) {
+            console.error("Error i18next:", err);
+          }
+          if (typeof initHeaderLangDropdown === 'function') {
+            initHeaderLangDropdown(i18next, {
+              afterLanguageChange: function (lng) {
+                const code = (lng || 'it').split('-')[0];
+                localStorage.setItem('lang', code === 'en' ? 'en' : 'it');
+                updateTexts(i18next.t);
+              }
+            });
+          }
+          StartQRcodeScanCheck(t);
+        });
+      }
+
+      function connectionCompleted(data) {
+        stopTimers();
+        changeTitle(i18next.t('connectedTitle'));
+        changeQrCodeImg(connectedImg);
+        changeQrCodeInfo(i18next.t('connectedText'));
+        changeText('');
+        $('#content-function').html(`
+          <a href="${data.redirect_uri}" class="btn btn-primary btn-custom">
+            ${i18next.t('clickAccessLabel')}
+          </a>
+        `);
+      }
+
+      function redirectToApp() {
+        stopTimers();
+        changeTitle(i18next.t('appTitle'));
+        changeQrCodeImg(appImg);
+        changeQrCodeInfo(i18next.t('appText'));
+        changeText('');
+        $('#content-function').addClass('d-none');
+      }
+
+      function QRcodeExpired(t) {
+        blankQRcode();
+        stopTimers();
+        changeQrCodeInfo(t('qrCodeExpiredInfo'));
+        $('#content-function').html(`
+          <button id="qr-reload-btn" type="button" class="btn btn-primary">
+            ${t('qrCodeReloadLabel')}
+          </button>
+        `);
+        $('#qr-reload-btn').on('click', function () {
+          window.location.reload(true);
+        });
+      }
+
+      function errorPage(t) {
+        stopTimers();
+        changeTitle(i18next.t('failureTitle'));
+        changeQrCodeImg(crossImg);
+        changeQrCodeInfo(i18next.t('failureText'));
+        changeText('');
+        $('#content-function').html(`
+          <button type="button" class="btn btn-outline-primary btn-custom" onclick="window.location.reload(true)">
+            ${t('retryLabel')}
+          </button>
+          <br><br>
+          <a href="#" onclick="return false;" class="support-link">
+            ${t('contactSupportLabel')}
+          </a>
+        `);
+      }
+
+      function changeTitle(str) {
+        $('#content-title').html(str);
+      }
+
+      function changeText(str) {
+        $('#content-text').html(str);
+      }
+
+      function changeQrCodeInfo(str) {
+        $('#content-qrcode-info-text').html(str);
+      }
+
+      function changeQrCodeImg(str) {
+        $('#content-qrcode-payload').html(`<img src="${str}" alt="" class="qr-code-img" role="img">`);
+      }
+
+      function blankQRcode() {
+        $('#content-qrcode-payload').addClass('qr-faded');
+      }
+
+      function statusEndpoint() {
+        return "{{ status_endpoint }}";
+      }
+
+      function sessionIdentifier() {
+        return "{{ state }}";
+      }
+
+      function QRcodeScanCheck(t) {
+        $.ajax({
+          type: 'GET',
+          url: statusEndpoint(),
+          data: {"id": sessionIdentifier()},
+          statusCode: {
+            201: function () {
+              onPollPending(t);
+            },
+            202: function () {
+              onPollPending(t);
+            },
+            200: connectionCompleted,
+            400: function () {
+              errorPage(i18next.t);
+            },
+            401: function () {
+              errorPage(i18next.t);
+            },
+            403: function () {
+              errorPage(i18next.t);
+            },
+            500: function () {
+              errorPage(i18next.t);
+            },
+          }
+        });
+      }
+
+      $(document).ready(function () {
+        initI18n();
       });
-
-      return ajaxRequest;
-    }
-
-    StartQRcodeScanCheck();
-
-
-</script>
-
-{% endblock body %}
+    </script>
+  </div>
+{% endblock content %}
