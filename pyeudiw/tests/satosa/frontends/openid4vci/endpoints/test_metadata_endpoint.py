@@ -5,7 +5,7 @@ import pytest
 from satosa.context import Context
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwt.exceptions import JWSVerificationError
+from pyeudiw.jwk.exceptions import KidNotFoundError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import base64_urldecode
 from pyeudiw.satosa.frontends.openid4vci.endpoints.metadata_endpoint import (
@@ -179,16 +179,10 @@ def test_endpoint_returns_jwt(metadata_handler, context):
     assert header["kid"] == MOCK_FEDERATION_JWKS_CONFIG[0]["kid"]
     assert header["typ"] == "entity-statement+jwt"
 
-    federation_public_keys = [
-        JWK(k).as_public_dict() for k in MOCK_FEDERATION_JWKS_CONFIG
-    ]
-    JWSHelper(federation_public_keys).verify(response.message)
+    JWSHelper(MOCK_FEDERATION_JWKS_CONFIG).verify(response.message)
 
-    metadata_public_keys = [
-        JWK(k).as_public_dict() for k in MOCK_METADATA_JWKS_CONFIG
-    ]
-    with pytest.raises(JWSVerificationError):
-        JWSHelper(metadata_public_keys).verify(response.message)
+    with pytest.raises(KidNotFoundError):
+        JWSHelper(MOCK_METADATA_JWKS_CONFIG).verify(response.message)
 
     payload = json.loads(base64_urldecode(jwt_parts[1]))
     _assert_metadata(
