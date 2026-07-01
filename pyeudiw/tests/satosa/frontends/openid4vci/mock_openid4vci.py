@@ -30,12 +30,25 @@ MOCK_METADATA_JWKS_CONFIG = [
     }
 ]
 
+MOCK_FEDERATION_JWKS_CONFIG = [
+    {
+        "kty": "EC",
+        "d": "bp6MRMWoigS7NWYSgttPh3vG-smWbn10nUt3mozW4z0",
+        "use": "sig",
+        "crv": "P-256",
+        "kid": "DTPMAB4HYvbzjqHDA_7JA558_N7SARKtfwlba1gDUgc",
+        "x": "fqN7TJfZdx2idFkWKw3jxCshRDNpWpQ-Sntj-Vj6fiA",
+        "y": "tpS6deZDQFKOmYS8BAZgpcaEzy72kZBdE7OabBnKQo4",
+        "alg": "ES256",
+    }
+]
+
 MOCK_TRUST_CONFIG = {
     "federation": {
         "config": {
             "entity_configuration_exp": 600,
             "default_sig_alg": "ES256",
-            "federation_jwks": MOCK_METADATA_JWKS_CONFIG,
+            "federation_jwks": MOCK_FEDERATION_JWKS_CONFIG,
             "authority_hints": [],
         }
     }
