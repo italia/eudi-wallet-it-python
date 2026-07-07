@@ -1,3 +1,4 @@
+import json
 from copy import copy
 from typing import Any, Callable
 
@@ -276,7 +277,8 @@ class RequestHandler(VPBaseEndpoint):
         return self.config["metadata_jwks"][0]
 
     def _build_submission_data(self) -> dict[str, Any] | None:
-        dcql_query = self.config.get(DUCKLE_QUERY_KEY)
+        dcql_query = self.config.get(DUCKLE_PRESENTATION,{}).get(DUCKLE_QUERY_KEY)
+        dict_dcql_query = json.loads(dcql_query)
         if dcql_query:
-            return {DUCKLE_QUERY_KEY: dcql_query, "typo": DUCKLE_PRESENTATION}
+            return {DUCKLE_QUERY_KEY: dict_dcql_query, "typo": DUCKLE_PRESENTATION}
         return None
