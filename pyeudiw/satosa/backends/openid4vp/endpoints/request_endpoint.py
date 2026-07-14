@@ -85,9 +85,9 @@ class RequestHandler(VPBaseEndpoint):
 
         if context.request_method == "GET":
             try:
-                if not context.qs_params or "id" not in context.qs_params:
+                if not context.qs_params or "state" not in context.qs_params:
                     raise ValueError("state is missing")
-                state = context.qs_params["id"]
+                state = context.qs_params["state"]
 
                 if not state:
                     raise ValueError("state is missing")
