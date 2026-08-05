@@ -25,9 +25,59 @@ _BASE64_RE = re.compile(
 _PEM_BLOCK_RE = re.compile(r"-----BEGIN [^-]+-----\n.*?-----END [^-]+-----", re.DOTALL)
 
 
+def _is_ca_certificate(cert: x509.Certificate) -> bool:
+    """
+    Return True only if the certificate asserts, through a BasicConstraints
+    extension, that it is a Certification Authority.
+    """
+    try:
+        basic_constraints = cert.extensions.get_extension_for_class(
+            x509.BasicConstraints
+        ).value
+    except x509.ExtensionNotFound:
+        return False
+    return bool(basic_constraints.ca)
+
+
+def _ca_path_length(cert: x509.Certificate) -> int | None:
+    try:
+        basic_constraints = cert.extensions.get_extension_for_class(
+            x509.BasicConstraints
+        ).value
+    except x509.ExtensionNotFound:
+        return None
+    return basic_constraints.path_length
+
+
+def _can_sign_certificates(cert: x509.Certificate) -> bool:
+    """
+    Return True unless a KeyUsage extension is present and it does NOT allow
+    signing certificates (keyCertSign). KeyUsage is optional, so its absence is
+    not, by itself, a reason to reject.
+    """
+    try:
+        key_usage = cert.extensions.get_extension_for_class(x509.KeyUsage).value
+    except x509.ExtensionNotFound:
+        return True
+    return bool(key_usage.key_cert_sign)
+
+
+def _is_time_valid(cert: x509.Certificate, now: datetime) -> bool:
+    return cert.not_valid_before_utc <= now <= cert.not_valid_after_utc
+
+
 def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bool:
     """
     Verify the x509 certificate chain using cryptography (no pyOpenSSL).
+
+    Besides checking that each certificate is signed by the next one, this
+    enforces the issuing-authority hierarchy: names must chain (the issuer named
+    in a certificate must be the subject of the certificate that signs it), the
+    signing certificate must be a CA (BasicConstraints ca=TRUE) allowed to sign
+    certificates (KeyUsage keyCertSign), any pathlen constraint must be honoured
+    and every certificate must be within its validity period. Without these
+    checks any end-entity certificate issued by the trusted CA could be used to
+    mint arbitrary sub-certificates (CWE-295).
 
     :param pems: The x509 certificate chain (PEM strings)
     :type pems: list[str]
@@ -43,8 +93,58 @@ def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bo
         if len(certs) < 2:
             return False
 
+        now = datetime.now(timezone.utc)
+
         for i in range(len(certs) - 1):
             child, issuer = certs[i], certs[i + 1]
+
+            if not _is_time_valid(child, now):
+                logging.warning(
+                    LOG_ERROR.format(f"certificate {i} is outside its validity period")
+                )
+                return False
+
+            # The issuer named in the child MUST be the subject of the signing
+            # certificate: this is what ties every certificate to the correct
+            # issuing authority.
+            if child.issuer != issuer.subject:
+                logging.warning(
+                    LOG_ERROR.format(
+                        f"broken hierarchy: issuer of certificate {i} does not match "
+                        f"the subject of certificate {i+1}"
+                    )
+                )
+                return False
+
+            # The signing certificate MUST be a CA, otherwise any end-entity
+            # certificate could be abused to sign further certificates.
+            if not _is_ca_certificate(issuer):
+                logging.warning(
+                    LOG_ERROR.format(
+                        f"certificate {i+1} signs certificate {i} but is not a CA"
+                    )
+                )
+                return False
+
+            # Honour the pathlen constraint: the number of CA certificates below
+            # the issuer (certs[1..i]) must not exceed its path_length.
+            path_length = _ca_path_length(issuer)
+            if path_length is not None and path_length < i:
+                logging.warning(
+                    LOG_ERROR.format(
+                        f"certificate {i+1} pathlen constraint ({path_length}) violated"
+                    )
+                )
+                return False
+
+            if not _can_sign_certificates(issuer):
+                logging.warning(
+                    LOG_ERROR.format(
+                        f"certificate {i+1} KeyUsage does not allow signing certificates"
+                    )
+                )
+                return False
+
             pubkey = issuer.public_key()
             try:
                 if isinstance(pubkey, rsa.RSAPublicKey):
@@ -67,6 +167,12 @@ def _verify_x509_certificate_chain(pems: list[str], crls: list[CRLHelper]) -> bo
                 _message = f"chain signature invalid (cert {i} by {i+1}) -> {e}"
                 logging.warning(LOG_ERROR.format(_message))
                 return False
+
+        if not _is_time_valid(certs[-1], now):
+            logging.warning(
+                LOG_ERROR.format("the root certificate is outside its validity period")
+            )
+            return False
 
         for cert in certs:
             serial_number = cert.serial_number
