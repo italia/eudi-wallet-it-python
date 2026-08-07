@@ -224,7 +224,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         }
         return ec_payload
 
-    def entity_configuration_endpoint(self, context: Context) -> Response:
+    def entity_configuration_endpoint(self, context: Context, *args ) -> Response:
         """
         Entity Configuration endpoint.
 
@@ -251,14 +251,8 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[tuple[str, Callable[[Context, Any], Response]]]:
-
         metadata_path = f'{backend_name.strip("/")}/.well-known/openid-federation'
-        response = self.entity_configuration
-
-        def metadata_response_fn(ctx: Context, *args) -> Response:
-            return JsonResponse(message=response)
-
-        return [(metadata_path, metadata_response_fn)]
+        return [(metadata_path, self.entity_configuration_endpoint)]
 
     def get_handled_trust_material_name(self) -> str:
         return FederationHandler._TRUST_PARAMETER_NAME
