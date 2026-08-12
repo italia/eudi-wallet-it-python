@@ -10,7 +10,7 @@ from typing import Any
 
 from pyeudiw.duckle_ql.exceptions import MissingHandler
 from pyeudiw.duckle_ql.handler import DuckleHandler
-from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY
+from pyeudiw.duckle_ql.utils import DUCKLE_QUERY_KEY, DUCKLE_PRESENTATION
 from pyeudiw.exceptions import ValidationError
 
 
@@ -45,7 +45,7 @@ class ParserValidator:
             raise ValidationError(f"Error parsing token at position: {e}")
 
     def _extract_handler(self, handlers: dict):
-        if self.config.get(DUCKLE_QUERY_KEY):
+        if self.config.get(DUCKLE_PRESENTATION,"").get(DUCKLE_QUERY_KEY):
             for value in handlers.values():
                 if isinstance(value, DuckleHandler):
                     return value

@@ -115,7 +115,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 if subordinate_statement:
                     check = self.__check_subordinate_statement(subordinate_statement, metadata_ta, issuer)
                     if check:
-                        _jwk = metadata.get("metadata", {}).get("wallet_solution", {}).get("jwks",{}).get("keys",[])
+                        _jwk = self.__get_jwks_keys(metadata)
                         trust_source.add_trust_param(
                             FederationHandler._TRUST_TYPE,
                             TrustEvaluationType(
@@ -128,6 +128,18 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                         )
                         break
         return trust_source
+
+    def __get_jwks_keys(self, metadata: dict) -> list:
+        md = metadata.get("metadata", {})
+        provider = (
+                md.get("wallet_solution")
+                or md.get("openid_credential_verifier")
+                or md.get("openid_credential_issuer")
+                or {}
+        )
+        if provider:
+            return provider.get("jwks", {}).get("keys", [])
+        return md.get("jwks", {}).get("keys", [])
 
     def __check_subordinate_statement(self, jwt: str, metadata_trust_anchor: dict, sub: str ) -> bool:
         """

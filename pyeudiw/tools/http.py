@@ -7,7 +7,7 @@ from pyeudiw.tools.exceptions import HttpError
 from pyeudiw.jwt.utils import decode_jwt_payload, is_jwt_format
 
 DEFAULT_HTTPC_PARAMS = {
-    "connection": {"ssl": True},
+    "connection": {"ssl": False}, # @TODO FALSE ONLY DEV ENVIROnMENT
     "session": {"timeout": 4},
 }
 
@@ -69,6 +69,11 @@ def http_get_sync(
         "verify": httpc_params["connection"]["ssl"],
         "timeout": httpc_params["session"]["timeout"],
     }
+    if "headers" in httpc_params:
+        _conf["headers"] = httpc_params["headers"]
+
+    print(f"_config = {_conf}")
+
     try:
         res = [requests.get(url, **_conf) for url in urls]  # nosec - B113
     except requests.exceptions.ConnectionError as e:
