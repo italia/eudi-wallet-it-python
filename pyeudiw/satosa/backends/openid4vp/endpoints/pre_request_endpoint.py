@@ -134,13 +134,31 @@ class PreRequestHandler(VPBaseEndpoint):
         )
 
         # PAR
+        # # OLD CODE
+        # payload = {
+        #     "client_id": client_id_hint if has_client_id_hint else self.client_id,
+        #     "request_uri": f"{self.absolute_request_url},state={state}&request_uri_method=GET",
+        #     # "request_uri": f"{self.absolute_request_url}",
+        # }
+        #
+        # print(f"old code payload: {payload}")
+        #
+        # response_url = build_authorization_request_url(
+        #     self.config["authorization"]["url_scheme"], payload
+        # )
+        # print(f"old code response_url: {response_url}")
+        # # OLD CODE
+
+        # NEW CODE
         payload = {
             "client_id": client_id_hint if has_client_id_hint else self.client_id,
-            "request_uri": f"{self.absolute_request_url}&state={state}&request_uri_method=GET",
+            "request_uri": f"{self.absolute_request_url}",
+            "state": state,
+            "request_uri_method": "GET",
         }
 
         response_url = build_authorization_request_url(
-            self.config["authorization"]["url_scheme"], payload
+            self.absolute_request_url, payload
         )
 
         if flow_typ == RemoteFlowType.SAME_DEVICE:
