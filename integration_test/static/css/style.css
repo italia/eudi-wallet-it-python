@@ -471,3 +471,126 @@
         margin: 0;
     }
 }
+/* Pagina IT-Wallet: il layout globale html,body{height:100%} blocca l’altezza al viewport:
+   il footer resta “nella prima schermata”. Qui altezza = contenuto, scroll sul documento. */
+html.it-wallet-html {
+  height: auto;
+  min-height: 100%;
+}
+
+html.it-wallet-html body.it-wallet-body {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.it-wallet-body > .it-header-wrapper {
+  flex-shrink: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Header logos: gruppo compatto allineato a sinistra; si restringe solo se serve su viewport stretti. */
+.it-wallet-body .header-title-section .container.py-3 > .d-flex {
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.it-wallet-body .header-title-section .it-header-logo-placeholder,
+.it-wallet-body .header-title-section .it-wallet-navbar-logo {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 32px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.it-wallet-body .header-title-section .it-wallet-navbar-logo {
+  display: block;
+}
+
+.it-wallet-body .header-title-section .navbar-separator {
+  flex: 0 0 auto;
+  margin: 0 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .it-wallet-body .header-title-section .container.py-3 {
+    padding-left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+    padding-right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+  }
+
+  .it-wallet-body .header-title-section .it-header-logo-placeholder,
+  .it-wallet-body .header-title-section .it-wallet-navbar-logo {
+    max-height: 28px;
+    height: 28px;
+  }
+
+  .it-wallet-body .header-title-section .navbar-separator {
+    height: 28px;
+    margin: 0 0.5rem;
+  }
+}
+
+.it-wallet-body > main.it-wallet-page {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
+.it-wallet-body > footer {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: auto;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+footer {
+  margin: 0;
+  padding: 1rem 0;
+  background-color: #004C99;
+  color: white;
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+/* Ensure footer links meet minimum touch target size (WCAG 2.2 target-size). */
+footer .d-flex.flex-wrap a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 0;
+}
+
+.header-title-section {
+  background-color: #F2F7FC;
+}
+
+.header-title-section .navbar-separator {
+  display: inline-block;
+  width: 1px;
+  height: 32px;
+  background-color: #BFCAD5;
+  margin: 0 16px;
+}
+
+.it-header-logo-placeholder {
+  display: block;
+  width: auto;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.it-header-logo-placeholder__text {
+  font-family: "Titillium Web", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  fill: #17324d;
+}
