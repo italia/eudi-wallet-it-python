@@ -115,7 +115,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                 if subordinate_statement:
                     check = self.__check_subordinate_statement(subordinate_statement, metadata_ta, issuer)
                     if check:
-                        _jwk = metadata.get("metadata", {}).get("wallet_solution", {}).get("jwks",{}).get("keys",[])
+                        _jwk = self.__get_jwks_keys(metadata)
                         trust_source.add_trust_param(
                             FederationHandler._TRUST_TYPE,
                             TrustEvaluationType(
@@ -128,6 +128,18 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
                         )
                         break
         return trust_source
+
+    def __get_jwks_keys(self, metadata: dict) -> list:
+        md = metadata.get("metadata", {})
+        provider = (
+                md.get("wallet_solution")
+                or md.get("openid_credential_verifier")
+                or md.get("openid_credential_issuer")
+                or {}
+        )
+        if provider:
+            return provider.get("jwks", {}).get("keys", [])
+        return md.get("jwks", {}).get("keys", [])
 
     def __check_subordinate_statement(self, jwt: str, metadata_trust_anchor: dict, sub: str ) -> bool:
         """
@@ -224,7 +236,7 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
         }
         return ec_payload
 
-    def entity_configuration_endpoint(self, context: Context) -> Response:
+    def entity_configuration_endpoint(self, context: Context, *args ) -> Response:
         """
         Entity Configuration endpoint.
 
@@ -251,14 +263,8 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
     def build_metadata_endpoints(
         self, backend_name: str, entity_uri: str
     ) -> list[tuple[str, Callable[[Context, Any], Response]]]:
-
         metadata_path = f'{backend_name.strip("/")}/.well-known/openid-federation'
-        response = self.entity_configuration
-
-        def metadata_response_fn(ctx: Context, *args) -> Response:
-            return JsonResponse(message=response)
-
-        return [(metadata_path, metadata_response_fn)]
+        return [(metadata_path, self.entity_configuration_endpoint)]
 
     def get_handled_trust_material_name(self) -> str:
         return FederationHandler._TRUST_PARAMETER_NAME

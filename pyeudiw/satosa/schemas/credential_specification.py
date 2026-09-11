@@ -10,5 +10,6 @@ class CredentialSpecificationConfig(BaseModel):
 
     template: str
     expiry_days: Optional[int] = None
+    optional_mso_attrs: Optional[dict] = None
     trust_framework: Optional[str] = ""
     assurance_level: Optional[str] = ""

@@ -136,7 +136,7 @@ class PreRequestHandler(VPBaseEndpoint):
         # PAR
         payload = {
             "client_id": client_id_hint if has_client_id_hint else self.client_id,
-            "request_uri": f"{self.absolute_request_url}?id={state}",
+            "request_uri": f"{self.absolute_request_url}&state={state}&request_uri_method=GET",
         }
 
         response_url = build_authorization_request_url(
