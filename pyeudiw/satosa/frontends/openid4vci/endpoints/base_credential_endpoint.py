@@ -75,9 +75,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
     _ENDPOINT_NAME = "credential"
 
-    # @TODO get from Env? Talking with Giuseppe about it, as it is currently used only for testing purposes, to identify the credential in the status list and manage revocation in a simple way
-    _PID_CREDENTIAL_ID = "dc_sd_jwt_pid"
-
     def __init__(
         self,
         config: dict,
@@ -301,7 +298,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
         now = iat_now()
         exp = exp_from_now(self.config_utils.get_jwt().default_exp)  # TODO implement a config section for MobileSecurityObject and the related get_mso()
-        nbf = now + cred_config.nbf_delta
+        nbf = now + credential.nbf_delta
         required_attrs = {"issuing_country": cred_config.issuing_country, "issuing_authority": cred_config.issuing_authority}
         supported_optional_attrs = {
             "sub": str(uuid4()),
@@ -339,16 +336,18 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             iss_cred_supp_conf: CredentialConfiguration, holder_key: dict|None = None) -> str:
         """Reference: https://italia.github.io/eid-wallet-it-docs/releases/1.3.3/en/credential-data-model.html#digital-credential-sd-jwt-metadata-attributes"""
         now = iat_now()
-        exp = exp_from_now(self.config_utils.get_jwt().default_exp)
         cred_type_id = iss_cred_supp_conf.id
         cred_specification: CredentialSpecificationConfig = cred_config.credential_specification[cred_type_id]
+        cred_exp_ts = datetime_from_timestamp(now) + timedelta(cred_specification.expiry_days)
+        exp = round(cred_exp_ts.timestamp()) if cred_specification.force_jwt_exp else exp_from_now(self.config_utils.get_jwt().default_exp)
+
         required_claims = {"iss": self.entity_id, "exp": exp, "issuing_authority": cred_config.issuing_authority, "issuing_country": cred_config.issuing_country,
                            "vct": iss_cred_supp_conf.vct}
         user_id, _ = user_entity
 
-        supported_optional_claims = {"sub": str(uuid4()), "iat": now, "nbf": now + cred_config.nbf_delta,
+        supported_optional_claims = {"sub": str(uuid4()), "iat": now, "nbf": now + cred_specification.nbf_delta,
             "issuance_date": datetime_from_timestamp(now).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
-            "date_of_expiry": (datetime_from_timestamp(now) + timedelta(cred_specification.expiry_days)).strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
+            "date_of_expiry": cred_exp_ts.strftime('%Y-%m-%dT%H:%M:%SZ'), #ISO 8601
             "status": self.revoke_on_credential_reissuance(user_id, auth_session, cred_type_id),
             "trust_framework": cred_specification.trust_framework,
             "assurance_level": cred_specification.assurance_level,
