@@ -43,7 +43,7 @@ setup(
         "cryptojwt>=1.9,<1.12",
         "pydantic>=2.10.6,<3.0.0",
         "pyqrcode>=1.2,<1.3",
-        "cryptography>=48.0.1,<50.0.0",  # GHSA-537c-gmf6-5ccf / CVE-2026-34180
+        "cryptography>=48.0.1,<=50.0.1",  # GHSA-537c-gmf6-5ccf / CVE-2026-34180
         "aiohttp>=3.11.11,<4.0.0",
         "pymdoccbor>=1.4.0",
         "requests>=2.32.3,<3.0.0",

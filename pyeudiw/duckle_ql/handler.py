@@ -121,7 +121,7 @@ class DuckleHandler(BaseVPParser):
                     )
                     claims = parser.parse(token_str)
                     if claims.get("vct") not in (cred.meta.vct_values or []): #todo move to validation
-                        raise InvalidVPToken(f"Invalid sd-jwt vct: got {claims["vct"]} instead {cred.meta.vct_values}")
+                        raise InvalidVPToken(f"Invalid sd-jwt vct: got {claims['vct']} instead {cred.meta.vct_values}")
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
                     claims = parser.parse(token_str)
