@@ -45,7 +45,7 @@ class ParserValidator:
             raise ValidationError(f"Error parsing token at position: {e}")
 
     def _extract_handler(self, handlers: dict):
-        if self.config.get(DUCKLE_PRESENTATION,"").get(DUCKLE_QUERY_KEY):
+        if self.config.get(DUCKLE_QUERY_KEY) or self.config.get(DUCKLE_PRESENTATION, {}).get(DUCKLE_QUERY_KEY):
             for value in handlers.values():
                 if isinstance(value, DuckleHandler):
                     return value
