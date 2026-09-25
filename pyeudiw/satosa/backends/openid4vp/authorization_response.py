@@ -98,8 +98,8 @@ class DirectPostParser(AuthorizationResponseParser):
                 if isinstance(vp_token, str) and vp_token.strip().startswith("{"):
                     vp_token = json.loads(vp_token)
                 d["vp_token"] = vp_token
-            if state := resp_data.get("state", None):
-                d["state"] = state
+            if id := resp_data.get("id", None):
+                d["id"] = id
             return AuthorizeResponsePayload(**d)
         except Exception as e:
             raise AuthRespParsingException(
@@ -135,7 +135,7 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
         _check_http_post_headers(context)
         resp_data_raw: dict = context.request
         try:
-            resp_data = AuthorizeResponseDirectPostJwt(**resp_data_raw)
+            resp_data = AuthorizeResponseDirectPostJwt(resp_data_raw.get("response","") )
         except Exception as e:
             raise AuthRespParsingException(
                 "invalid data in direct_post.jwt request body", e

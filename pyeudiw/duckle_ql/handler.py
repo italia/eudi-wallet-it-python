@@ -119,8 +119,14 @@ class DuckleHandler(BaseVPParser):
                     parser = VpVcSdJwtParserVerifier(
                         self.trust_evaluator, self.sig_alg_supported
                     )
+                    claims = parser.parse(token_str)
+                    if claims.get("vct") not in (cred.meta.vct_values or []): #todo move to validation
+                        raise InvalidVPToken(f"Invalid sd-jwt vct: got {claims['vct']} instead {cred.meta.vct_values}")
                 elif cred.format == MSO_MDOC_FORMAT:
                     parser = VpMDocCbor(self.trust_evaluator)
+                    claims = parser.parse(token_str)
+                    if claims.get("doctype") != cred.meta.doctype_value: #todo move to validation
+                        raise InvalidVPToken(f"Invalid mdoc doctype: got {claims['doctype']} instead {cred.meta.doctype_value}")
                 else:
                     raise InvalidVPToken(f"Unexpected token format {cred.format}")
                 parser.validate(token_str, verifier_id, verifier_nonce)

@@ -184,11 +184,9 @@ PYEUDIW_MONGO_TEST_AUTH_INLINE=satosa:thatpassword@ pytest pyeudiw -x
 
 Your contribution is welcome, no question is useless and no answer is obvious, we need you.
 
-
 ### Contribute as end user
 
 Please open an issue if you've found a bug or if you want to ask some features.
-
 
 ### Contribute as developer
 
@@ -248,7 +246,6 @@ PYEUDIW_MONGO_TEST_AUTH_INLINE="satosa:thatpassword@" pytest pyeudiw -x
 
 ## Acknowledgments
 
-- Manuel Pacella
 - Manuel Ciofo
 - Thomas Chiozzi
 - Pasquale De Rose
