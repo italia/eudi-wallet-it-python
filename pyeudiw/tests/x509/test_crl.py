@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-import pytest
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -111,7 +110,7 @@ def test_crl_helper_invalid_serial_number():
         assert str(e) == "Invalid serial number format: invalid_serial_number"
 
 
-@pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required") # TODO: Check the test and restore it
+# TODO: Check the test
 def test_crl_helper_invalid_crl():
     try:
         CRLHelper.from_crl(

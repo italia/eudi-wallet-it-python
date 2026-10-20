@@ -346,8 +346,7 @@ class TestOpenID4VPBackend:
         assert state_div
         assert state_div["value"]
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_pre_request_endpoint_mobile(self, context):
         InternalData()
         context.http_headers = dict(
@@ -428,8 +427,7 @@ class TestOpenID4VPBackend:
             "invalid DCQL response: vp_format not supported",
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_response_endpoint(self, context):
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -669,8 +667,7 @@ class TestOpenID4VPBackend:
             "invalid DCQL response: vp_format not supported",
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_response_endpoint_no_typ_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -706,8 +703,7 @@ class TestOpenID4VPBackend:
             "invalid DCQL response: unknown error",
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_response_endpoint_already_finalized_session_must_fail(self, context):
         nonce = str(uuid.uuid4())
         state = str(uuid.uuid4())
@@ -746,8 +742,7 @@ class TestOpenID4VPBackend:
             == "invalid authorization response: session already finalized or corrupted"
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_response_endpoint_x5c_chain(self, context):
 
         nonce = str(uuid.uuid4())
@@ -917,8 +912,7 @@ class TestOpenID4VPBackend:
             == "client error: no session associated to the state"
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_request_endpoint_no_id(self, context):
         context.qs_params = {}
         context.request_method = "GET"
@@ -973,8 +967,7 @@ class TestOpenID4VPBackend:
             == "request error: missing or invalid parameter [id]"
         )
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_pre_request_endpoint_flow(self, context):
         InternalData()
         context.http_headers = dict(
@@ -1116,8 +1109,7 @@ class TestOpenID4VPBackend:
         # msg = json.loads(state_endpoint_response.message)
         # assert msg["response"] == "Authentication successful"
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_request_endpoint_post(self, context):
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
@@ -1279,8 +1271,7 @@ class TestOpenID4VPBackend:
         assert req_resp
         assert req_resp.status == "400"
 
-    # TODO: Check the test and restore it
-    @pytest.mark.skip(reason="Test temporarily disabled; verification and analysis required")
+    # TODO: Check the test
     def test_trust_parameters_in_response(self, context):
         context.http_headers = dict(
             HTTP_USER_AGENT="Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.92 Mobile Safari/537.36"
