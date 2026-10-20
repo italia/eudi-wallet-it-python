@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -16,7 +16,9 @@ class Meta(BaseModel):
     Metadata for a credential, including vct values.
     """
 
-    vct_values: List[str]
+    vct_values: Optional[List[str]] = None
+    doctype_value: Optional[str] = None
+    #todo add validations
 
 
 class Credential(BaseModel):
