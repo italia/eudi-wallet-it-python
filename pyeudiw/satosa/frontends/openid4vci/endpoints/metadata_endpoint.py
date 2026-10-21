@@ -36,7 +36,6 @@ class MetadataHandler(VCIBaseEndpoint):
             config.get("trust", {}).get("federation", {}).get("config", {})
         )
         super().__init__(config, internal_attributes, base_url, name)
-        self.metadata_jwks = config.get("metadata_jwks", [])
         self.federation_jwks = self.federation_config.get("federation_jwks", [])
 
     def _ensure_credential_issuer(
@@ -106,15 +105,15 @@ class MetadataHandler(VCIBaseEndpoint):
         """
 
         data = self.entity_configuration_as_dict
-        _jwk = self.metadata_jwks[0]
-        jwshelper = JWSHelper(self.federation_jwks)
+        _jwk = self.federation_jwks[0]
+        jwshelper = JWSHelper(_jwk)
         return jwshelper.sign(
             protected={
                 "alg": self.federation_config.get("default_sig_alg"),
+                "kid": _jwk["kid"],
                 "typ": "entity-statement+jwt",
             },
             plain_dict=data,
-            kid_in_header=True
         )
 
     def endpoint(self, context: Context) -> Response:
