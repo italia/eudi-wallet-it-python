@@ -183,8 +183,12 @@ class StatusListTokenHelper:
             status_token = http_get_sync(
                 [uri],
                 {
-                    "connection": {"ssl": True},
+                    "connection": {"ssl": False},
                     "session": {"timeout": 4},
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Accept": "application/statuslist+jwt",
+                    },
                 },
             )
         except Exception as e:

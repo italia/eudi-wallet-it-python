@@ -1,7 +1,7 @@
 import os
 
 DEFAULT_HTTPC_PARAMS = {
-    "connection": {"ssl": os.getenv("PYEUDIW_HTTPC_SSL", True)},
+    "connection": {"ssl": os.getenv("PYEUDIW_HTTPC_SSL", False)}, # DEV MODE
     "session": {"timeout": os.getenv("PYEUDIW_HTTPC_TIMEOUT", 6)},
 }
 
