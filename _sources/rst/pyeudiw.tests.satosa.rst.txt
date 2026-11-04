@@ -1,0 +1,37 @@
+pyeudiw.tests.satosa package
+============================
+
+Submodules
+----------
+
+pyeudiw.tests.satosa.test\_backend module
+-----------------------------------------
+
+.. automodule:: pyeudiw.tests.satosa.test_backend
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.satosa.test\_backend\_trust module
+------------------------------------------------
+
+.. automodule:: pyeudiw.tests.satosa.test_backend_trust
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.satosa.test\_exceptions module
+--------------------------------------------
+
+.. automodule:: pyeudiw.tests.satosa.test_exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests.satosa
+   :members:
+   :show-inheritance:
+   :undoc-members:

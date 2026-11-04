@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlsafe_b64encode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">satosa.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.jwt.jws_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">JWSHelper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidRequestException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GET_ACCEPTED_METHODS</span><span class="p">,</span>
+    <span class="n">VCIBaseEndpoint</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.frontends.openid4vci.tools.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidScopeException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.utils.validation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">validate_content_type</span><span class="p">,</span>
+    <span class="n">validate_request_method</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.status_list</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">STATUS_LIST_CWT</span><span class="p">,</span>
+    <span class="n">STATUS_LIST_JWT</span><span class="p">,</span>
+    <span class="n">array_to_bitstring</span><span class="p">,</span>
+    <span class="n">encode_cwt_status_list_token</span><span class="p">,</span>
+    <span class="n">array_to_bitstring_v1</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.storage.user_credential_db_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserCredentialEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.content_type</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">APPLICATION_JSON</span><span class="p">,</span>
+    <span class="n">HTTP_CONTENT_TYPE_HEADER</span><span class="p">,</span>
+    <span class="n">HTTP_ACCEPT_HEADER</span><span class="p">,</span>
+    <span class="n">get_value_from_key</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.mso_mdoc</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_jwk_to_mso_mdoc_private_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">iat_now</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AcceptHeaderEnum">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.AcceptHeaderEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AcceptHeaderEnum</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">STATUS_LIST_JWT</span> <span class="o">=</span> <span class="n">STATUS_LIST_JWT</span>
+    <span class="n">STATUS_LIST_CWT</span> <span class="o">=</span> <span class="n">STATUS_LIST_CWT</span></div>
+
+
+
+<span class="n">_STATUS_LIST_BITS</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">_PAYLOAD_CWT_KEYS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"exp"</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">"iat"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">"sub"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"ttl"</span><span class="p">:</span> <span class="mi">65534</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="StatusListHandler">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StatusListHandler</span><span class="p">(</span><span class="n">VCIBaseEndpoint</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">internal_attributes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+        <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Initialize the status list endpoint class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (dict): The configuration dictionary.</span>
+<span class="sd">            internal_attributes (dict): The internal attributes config.</span>
+<span class="sd">            base_url (str): The base URL of the service.</span>
+<span class="sd">            name (str): The name of the SATOSA module to append to the URL.</span>
+<span class="sd">        """</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">internal_attributes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">_user_credential_engine</span> <span class="o">=</span> <span class="n">UserCredentialEngine</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db_credential_engine</span> <span class="o">=</span> <span class="n">_user_credential_engine</span><span class="o">.</span><span class="n">db_credential_storage_engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_jwks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"metadata_jwks"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jws_helper</span> <span class="o">=</span> <span class="n">JWSHelper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata_jwks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mso_mdoc_private_key</span> <span class="o">=</span> <span class="n">from_jwk_to_mso_mdoc_private_key</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_jwks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="StatusListHandler.endpoint">
+<a class="viewcode-back" href="../../../../../../rst/pyeudiw.satosa.frontends.openid4vci.endpoints.html#pyeudiw.satosa.frontends.openid4vci.endpoints.status_list_endpoint.StatusListHandler.endpoint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Entering method: </span><span class="si">{</span><span class="n">inspect</span><span class="o">.</span><span class="n">getframeinfo</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span><span class="o">.</span><span class="n">function</span><span class="si">}</span><span class="s2">. "</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">validate_request_method</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">request_method</span><span class="p">,</span> <span class="n">GET_ACCEPTED_METHODS</span><span class="p">)</span>
+            <span class="n">validate_content_type</span><span class="p">(</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">http_headers</span><span class="p">[</span><span class="n">HTTP_CONTENT_TYPE_HEADER</span><span class="p">],</span> <span class="n">APPLICATION_JSON</span>
+            <span class="p">)</span>
+            <span class="n">requested_id</span> <span class="o">=</span> <span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">path</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">accept_header</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">http_headers</span><span class="p">,</span> <span class="n">HTTP_ACCEPT_HEADER</span><span class="p">)</span>
+            <span class="n">payload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_status_list_payload</span><span class="p">(</span><span class="n">requested_id</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Accept header: </span><span class="si">%s</span><span class="s2">, Payload: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">accept_header</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+            <span class="k">match</span> <span class="n">accept_header</span><span class="p">:</span>
+                <span class="k">case</span> <span class="n">AcceptHeaderEnum</span><span class="o">.</span><span class="n">STATUS_LIST_JWT</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                    <span class="n">jws_headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"typ"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_header</span><span class="p">(</span><span class="n">STATUS_LIST_JWT</span><span class="p">)}</span>
+                    <span class="n">plain_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_status_list_payload</span><span class="p">(</span><span class="n">requested_id</span><span class="p">)</span>
+                    <span class="n">plain_dict</span><span class="p">[</span><span class="s2">"status_list"</span><span class="p">][</span><span class="s2">"lst"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">plain_dict</span><span class="p">[</span><span class="s2">"status_list"</span><span class="p">][</span><span class="s2">"lst"</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"="</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                        <span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">jws_helper</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span>
+                            <span class="n">protected</span><span class="o">=</span><span class="n">jws_headers</span><span class="p">,</span>
+                            <span class="n">plain_dict</span><span class="o">=</span><span class="n">plain_dict</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">content</span><span class="o">=</span><span class="n">APPLICATION_JSON</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">case</span> <span class="n">AcceptHeaderEnum</span><span class="o">.</span><span class="n">STATUS_LIST_CWT</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                    <span class="c1"># encode_cwt_status_list_token compresses internally, so pass</span>
+                    <span class="c1"># the uncompressed bitstring to avoid double compression.</span>
+                    <span class="n">lst_bytes</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">"status_list"</span><span class="p">][</span><span class="s2">"lst"</span><span class="p">])</span>
+                    <span class="k">del</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"status_list"</span><span class="p">]</span>
+                    <span class="n">payload_parts</span> <span class="o">=</span> <span class="p">({},</span> <span class="p">{},</span> <span class="n">payload</span><span class="p">)</span>
+                    <span class="n">token</span> <span class="o">=</span> <span class="n">encode_cwt_status_list_token</span><span class="p">(</span>
+                        <span class="n">payload_parts</span><span class="p">,</span>
+                        <span class="n">_STATUS_LIST_BITS</span><span class="p">,</span>
+                        <span class="n">lst_bytes</span><span class="p">,</span>
+                        <span class="n">_PAYLOAD_CWT_KEYS</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_mso_mdoc_private_key</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                        <span class="n">message</span><span class="o">=</span><span class="n">token</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span>
+                        <span class="n">content</span><span class="o">=</span><span class="n">APPLICATION_JSON</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log_error</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">"unexpected accept header </span><span class="si">{</span><span class="n">accept_header</span><span class="si">}</span><span class="s2"> "</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">InvalidRequestException</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Invalid accept header'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">accept_header</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'Missing accept header'</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">InvalidRequestException</span><span class="p">,</span> <span class="n">InvalidScopeException</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_400</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_error</span><span class="p">(</span>
+                <span class="n">e</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Error during invoke status list endpoint: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_500</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span> <span class="s2">"error during invoke status list endpoint"</span><span class="p">,</span> <span class="n">e</span>
+            <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_header</span><span class="p">(</span><span class="n">accepted_header</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">accepted_header</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"application/"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_status_list_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">status_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Entering method:</span><span class="si">{</span><span class="n">inspect</span><span class="o">.</span><span class="n">getframeinfo</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())</span><span class="o">.</span><span class="n">function</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">status_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_list</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+        <span class="n">iat</span> <span class="o">=</span> <span class="n">iat_now</span><span class="p">()</span>
+        <span class="n">credentials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db_credential_engine</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"get_all_sorted_by_incremental_id"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">bit_bytes</span> <span class="o">=</span> <span class="n">array_to_bitstring_v1</span><span class="p">(</span><span class="n">credentials</span><span class="p">,</span><span class="n">bits</span><span class="o">=</span><span class="n">bits</span><span class="p">)</span>
+        <span class="n">compressed_lst</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">bit_bytes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"exp"</span><span class="p">:</span> <span class="n">iat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_list</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span>
+            <span class="s2">"iat"</span><span class="p">:</span> <span class="n">iat</span><span class="p">,</span>
+            <span class="s2">"status_list"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"bits"</span><span class="p">:</span> <span class="n">bits</span><span class="p">,</span><span class="s2">"lst"</span><span class="p">:</span> <span class="n">compressed_lst</span><span class="p">},</span>
+            <span class="s2">"sub"</span><span class="p">:</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_url</span><span class="si">}</span><span class="s2">/"</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/"</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">status_id</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">),</span>
+            <span class="s2">"ttl"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_list</span><span class="o">.</span><span class="n">ttl</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="c1"># def _build_status_list_payload(self, status_id: str) -&gt; dict:</span>
+    <span class="c1">#     logger.debug(</span>
+    <span class="c1">#         f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "</span>
+    <span class="c1">#     )</span>
+    <span class="c1">#     print(f"Entering method: _build_status_list_payload status: {status_id}. ")</span>
+    <span class="c1">#     bits = 1</span>
+    <span class="c1">#     status_path = self.status_list.path</span>
+    <span class="c1">#     print(f"status_path: {status_path}")</span>
+    <span class="c1">#     status_path = status_path.lstrip("/")</span>
+    <span class="c1">#     print(f"status_path: {status_path}")</span>
+    <span class="c1">#     iat = iat_now()</span>
+    <span class="c1">#     credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")</span>
+    <span class="c1">#     print(f"credentials: {credentials}")</span>
+    <span class="c1">#     if not credentials or len(credentials) == 0:</span>
+    <span class="c1">#         compressed_lst = ""</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         bits = (len(credentials) + 7) // 8</span>
+    <span class="c1">#         print(f"bits: {bits}")</span>
+    <span class="c1">#         bit_bytes = array_to_bitstring(credentials)</span>
+    <span class="c1">#         print(f"bit_bytes: {bit_bytes}")</span>
+    <span class="c1">#         lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))</span>
+    <span class="c1">#         print(f"lst: {lst}")</span>
+    <span class="c1">#         byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')</span>
+    <span class="c1">#         print(f"byte_list: {byte_list}")</span>
+    <span class="c1">#         compressed_lst = zlib.compress(byte_list)</span>
+    <span class="c1">#         print(f"compressed_lst: {compressed_lst}")</span>
+    <span class="c1">#     return {</span>
+    <span class="c1">#         "exp": iat + self.status_list.exp,</span>
+    <span class="c1">#         "iat": iat,</span>
+    <span class="c1">#         "status_list": {"bits": bits, "lst": compressed_lst},</span>
+    <span class="c1">#         "sub": f"{self._backend_url}/{status_path}/{status_id}",</span>
+    <span class="c1">#         "ttl": self.status_list.ttl,</span>
+    <span class="c1">#     }</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cred_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_utils</span><span class="o">.</span><span class="n">get_credential_configurations</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_configs</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">"credential_configurations"</span><span class="p">,</span> <span class="n">cred_config</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">status_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_utils</span><span class="o">.</span><span class="n">get_credential_configurations</span><span class="p">()</span><span class="o">.</span><span class="n">status_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_configs</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">"credential_configurations.status_list"</span><span class="p">,</span> <span class="n">status_list</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_required_configs</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="s2">"credential_configurations.status_list.path"</span><span class="p">,</span> <span class="n">status_list</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"credential_configurations.status_list.exp"</span><span class="p">,</span> <span class="n">status_list</span><span class="o">.</span><span class="n">exp</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"credential_configurations.status_list.ttl"</span><span class="p">,</span> <span class="n">status_list</span><span class="o">.</span><span class="n">ttl</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_list</span> <span class="o">=</span> <span class="n">status_list</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
