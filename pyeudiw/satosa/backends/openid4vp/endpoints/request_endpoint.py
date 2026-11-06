@@ -136,7 +136,7 @@ class RequestHandler(VPBaseEndpoint):
                 )
 
             try:
-                document = self.db_engine.get_by_session_id(session_id)
+                document = self.db_engine.get_latest_by_session_id(session_id)
                 if not document:
                     raise ValueError("session not found")
             except ValueError as e401:
@@ -151,6 +151,11 @@ class RequestHandler(VPBaseEndpoint):
                     "session error: cannot retrieve the session",
                     e500,
                 )
+
+        if document.get("request_object_issued"):
+            return self._handle_400(
+                context, "request error: request object already issued"
+            )
 
         key_params = response_encryption_key_params(self.config)
         encryption_key = JWK(key_type=key_params["kty"], ec_crv=key_params["crv"])
@@ -265,6 +270,9 @@ class RequestHandler(VPBaseEndpoint):
                 data,
                 protected=_protected_jwt_headers,
                 signing_algs=alg_values_supported,
+            )
+            self.db_engine.mark_request_object_issued(
+                document["document_id"], request_object_jwt
             )
             self._log_debug(context, f"created request object {request_object_jwt}")
             return Response(

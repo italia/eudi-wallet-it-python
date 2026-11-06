@@ -338,6 +338,37 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         return self.get("get_by_session_id", session_id=session_id)
 
+    def get_latest_by_session_id(self, session_id: str) -> Union[dict, None]:
+        return self.get("get_latest_by_session_id", session_id=session_id)
+
+    def mark_request_object_issued(self, document_id: str, request_object_jwt: str):
+        for db_name, storage in self.storages:
+            try:
+                return storage.mark_request_object_issued(document_id, request_object_jwt)
+            except ValueError:
+                raise
+            except Exception as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Error marking request object issued on {db_name}: {e}",
+                )
+        raise StorageWriteError(
+            f"Cannot mark request object issued for document {document_id}"
+        )
+
+    def consume_response_code(self, document_id: str, response_code: str) -> bool:
+        for db_name, storage in self.storages:
+            try:
+                return storage.consume_response_code(document_id, response_code)
+            except Exception as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Error consuming response code on {db_name}: {e}",
+                )
+        raise StorageWriteError(
+            f"Cannot consume response code for document {document_id}"
+        )
+
     @property
     def is_connected(self):
         _connected = False

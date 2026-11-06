@@ -417,6 +417,43 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
+    def get_latest_by_session_id(self, session_id: str) -> Union[dict, None]:
+        """
+        Get the newest session for a browser session id.
+
+        :param session_id: the session id.
+        :type session_id: str
+
+        :returns: the session.
+        :rtype: Union[dict, None]
+        """
+        raise NotImplementedError()
+
+    def mark_request_object_issued(self, document_id: str, request_object_jwt: str):
+        """
+        Record that the request object was issued once.
+
+        :param document_id: the document id.
+        :type document_id: str
+        :param request_object_jwt: the signed request object.
+        :type request_object_jwt: str
+        """
+        raise NotImplementedError()
+
+    def consume_response_code(self, document_id: str, response_code: str) -> bool:
+        """
+        Mark a response code as used.
+
+        :param document_id: the document id.
+        :type document_id: str
+        :param response_code: the response code.
+        :type response_code: str
+
+        :returns: True when this call consumes the code.
+        :rtype: bool
+        """
+        raise NotImplementedError()
+
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         """
         Get a session by session id.

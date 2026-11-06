@@ -145,6 +145,12 @@ class ResponseHandler(VPBaseEndpoint):
             raise InvalidInternalStateError(
                 f"unable to find nonce in session associated to state {state}: corrupted data"
             )
+        request_object = request_session.get("request_object") or {}
+        exp = request_object.get("exp")
+        if exp is not None and iat_now() > exp:
+            raise FinalizedSessionError(
+                f"cannot accept response: request object for state {state} is expired"
+            )
         return request_session
 
     def _handle_error_response(

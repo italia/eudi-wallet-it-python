@@ -815,28 +815,27 @@ class TestOpenID4VPBackend:
 
         assert status_endpoint is not None, "Status endpoint not found"
 
-        # No query string parameters
+        # The browser poll identifies the session from the cookie.
         state_endpoint_response = status_endpoint(context)
-        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
-        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error"] == "invalid_client"
         assert (
             request_object_jwt["error_description"]
-            == "request error: missing or invalid parameter [id]"
+            == "client error: no session associated to the state"
         )
 
-        # Invalid state
         context.qs_params = {"id": None}
         state_endpoint_response = status_endpoint(context)
-        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
         assert request_object_jwt["error"]
-        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error"] == "invalid_client"
         assert (
             request_object_jwt["error_description"]
-            == "request error: missing or invalid parameter [id]"
+            == "client error: no session associated to the state"
         )
 
         # Unexistent session
@@ -905,27 +904,26 @@ class TestOpenID4VPBackend:
 
         assert status_endpoint is not None, "Status endpoint not found"
 
-        # No session created
+        # No session created. The poll does not send the state.
         state_endpoint_response = status_endpoint(context)
-        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
-        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error"] == "invalid_client"
         assert (
             request_object_jwt["error_description"]
-            == "request error: missing or invalid parameter [id]"
+            == "client error: no session associated to the state"
         )
 
-        # Invalid state
         context.qs_params = {"id": None}
         state_endpoint_response = status_endpoint(context)
-        assert state_endpoint_response.status == "400"
+        assert state_endpoint_response.status == "401"
         assert state_endpoint_response.message
         request_object_jwt = json.loads(state_endpoint_response.message)
-        assert request_object_jwt["error"] == "invalid_request"
+        assert request_object_jwt["error"] == "invalid_client"
         assert (
             request_object_jwt["error_description"]
-            == "request error: missing or invalid parameter [id]"
+            == "client error: no session associated to the state"
         )
 
         # Unexistent session
@@ -1069,10 +1067,10 @@ class TestOpenID4VPBackend:
         assert state_endpoint_response.status == "201"
         assert state_endpoint_response.message
 
-        # Passing wrong state, hence no match state-session_id
+        # The poll ignores a state query parameter and uses the cookie session.
         context.qs_params = {"id": "WRONG"}
         state_endpoint_response = status_endpoint(context)
-        assert state_endpoint_response.status == "401"
+        assert state_endpoint_response.status == "201"
         assert state_endpoint_response.message
 
         context.request_method = "GET"
