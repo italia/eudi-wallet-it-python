@@ -101,7 +101,10 @@ class BaseStorage(BaseDB):
         raise NotImplementedError()
 
     def update_request_object(
-        self, document_id: str, request_object: dict
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
     ) -> UpdateResult:
         """
         Update the request object of the session.
@@ -110,6 +113,8 @@ class BaseStorage(BaseDB):
         :type document_id: str
         :param request_object: the request object.
         :type request_object: dict
+        :param response_encryption_jwk: private JWK used to decrypt the authorization response.
+        :type response_encryption_jwk: dict | None
 
         :returns: the result of the update operation.
         :rtype: UpdateResult
@@ -355,6 +360,18 @@ class BaseStorage(BaseDB):
 
         :returns: True if the session exists, False otherwise.
         :rtype: bool
+        """
+        raise NotImplementedError()
+
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        """
+        Get a session by the kid of the response encryption key.
+
+        :param kid: the JWK kid.
+        :type kid: str
+
+        :returns: the session.
+        :rtype: Union[dict, None]
         """
         raise NotImplementedError()
 

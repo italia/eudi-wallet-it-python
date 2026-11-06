@@ -57,10 +57,12 @@ class JWEHelper(JWHelperInterface):
                 # unsupported key: go to next one
                 continue
 
+            alg = kwargs.pop("alg", DEFAULT_ENC_ALG_MAP[key.kty])
+            enc = kwargs.pop("enc", DEFAULT_ENC_ENC_MAP[key.kty])
             _keyobj = JWE_CLASS(
                 _payload,
-                alg=DEFAULT_ENC_ALG_MAP[key.kty],
-                enc=DEFAULT_ENC_ENC_MAP[key.kty],
+                alg=alg,
+                enc=enc,
                 kid=key.kid,
                 **kwargs,
             )

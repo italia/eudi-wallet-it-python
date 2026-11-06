@@ -14,7 +14,12 @@ from pyeudiw.duckle_ql.exceptions import MissingHandler
 from pyeudiw.duckle_ql.parser_validator import ParserValidator
 from pyeudiw.exceptions import ValidationError as CredentialValidationError
 from pyeudiw.jwt.jwe_helper import JWEHelper
-from pyeudiw.jwt.jws_helper import JWSHelper
+from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
+from pyeudiw.satosa.backends.openid4vp.authorization_request import (
+    RESPONSE_ENC_VALUES,
+    jwk_thumbprint_sha256,
+    response_encryption_key_params,
+)
 from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     AuthorizeResponsePayload,
     DirectPostJwtJweParser,
@@ -39,7 +44,7 @@ from pyeudiw.satosa.exceptions import (
 from pyeudiw.satosa.utils.respcode import ResponseCodeSource
 from pyeudiw.satosa.utils.response import JsonResponse
 from pyeudiw.sd_jwt.schema import VerifierChallenge
-from pyeudiw.storage.exceptions import StorageWriteError
+from pyeudiw.storage.exceptions import EntryNotFound, StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
@@ -71,7 +76,9 @@ class ResponseHandler(VPBaseEndpoint):
             db_engine,
         )
 
-        self.registered_get_response_endpoint = f"{self.client_id}/get_response"
+        self.registered_get_response_endpoint = self.attested_https_uri(
+            "redirect_uris", "get_response", "/get_response"
+        )
 
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]
@@ -239,7 +246,17 @@ class ResponseHandler(VPBaseEndpoint):
             parser_validator = ParserValidator(
                 authz_payload.vp_token, vp_token_handlers, self.config
             )
-            parser_validator.validate(challenge["aud"], challenge["nonce"])
+            encryption_jwk = request_session.get("response_encryption_jwk") or {}
+            parser_validator.validate(
+                challenge["aud"],
+                challenge["nonce"],
+                response_uri=(request_session.get("request_object") or {}).get(
+                    "response_uri"
+                ),
+                jwk_thumbprint=(
+                    jwk_thumbprint_sha256(encryption_jwk) if encryption_jwk else None
+                ),
+            )
             extracted_attributes = parser_validator.parse()
         except MissingHandler as e400:
             return self._handle_400(
@@ -303,10 +320,9 @@ class ResponseHandler(VPBaseEndpoint):
             )
 
         if flow_type == RemoteFlowType.SAME_DEVICE:
-            auth_endpoint = request_session.get("wallet_metadata", {}).get(
-                "authorization_endpoint"
+            cb_redirect_uri = (
+                f"{self.registered_get_response_endpoint}?response_code={response_code}"
             )
-            cb_redirect_uri = f"{auth_endpoint or self.registered_get_response_endpoint}?response_code={response_code}"
             return JsonResponse({"redirect_uri": cb_redirect_uri}, status="200")
         else:
             return JsonResponse({}, status="200")
@@ -389,16 +405,41 @@ class ResponseHandler(VPBaseEndpoint):
         response_mode = detect_response_mode(context)
         match response_mode:
             case ResponseMode.direct_post:
-                parser = DirectPostParser()
-                return parser.parse_and_validate(context)
+                return DirectPostParser().parse_and_validate(context)
             case ResponseMode.direct_post_jwt:
-                jwe_decrypter = JWEHelper(self.config["metadata_jwks"])
-                jws_verifier = JWSHelper(self.config["metadata_jwks"])
+                token = (context.request or {}).get("response")
+                if not is_jwe_format(token):
+                    raise AuthRespValidationException(
+                        "invalid data in direct_post.jwt: response must be an encrypted JWE"
+                    )
+                header = decode_jwt_header(token)
+                key_params = response_encryption_key_params(self.config)
+                if (
+                    header.get("alg") != key_params["alg"]
+                    or header.get("enc") not in RESPONSE_ENC_VALUES
+                ):
+                    raise AuthRespValidationException(
+                        "invalid data in direct_post.jwt: alg or enc not supported"
+                    )
+                kid = header.get("kid")
+                try:
+                    session = (
+                        self.db_engine.get_by_response_encryption_kid(kid)
+                        if kid
+                        else None
+                    )
+                except EntryNotFound:
+                    session = None
+                encryption_jwk = (session or {}).get("response_encryption_jwk")
+                if not encryption_jwk:
+                    raise AuthRespValidationException(
+                        "invalid data in direct_post.jwt: unknown response encryption key"
+                    )
                 parser = DirectPostJwtJweParser(
-                    jwe_decrypter,
-                    jws_verifier,
-                    self.config["jwt"].get("enc_alg_supported", []),
-                    self.config["jwt"].get("enc_enc_supported", []),
+                    JWEHelper(encryption_jwk),
+                    None,
+                    [key_params["alg"]],
+                    list(RESPONSE_ENC_VALUES),
                 )
                 return parser.parse_and_validate(context)
             case ResponseMode.error:

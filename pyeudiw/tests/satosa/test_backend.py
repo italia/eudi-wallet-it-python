@@ -16,6 +16,7 @@ from satosa.state import State
 
 from pyeudiw.jwk import JWK
 from pyeudiw.jwk.parse import parse_pem
+from pyeudiw.jwk import JWK
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
@@ -253,8 +254,27 @@ class TestOpenID4VPBackend:
         if exp:
             request_object["exp"] = exp
 
+        encryption_key = JWK(key_type="EC", ec_crv="P-256")
+        private_jwk = dict(encryption_key.jwk)
+        private_jwk["use"] = "enc"
+        private_jwk["alg"] = "ECDH-ES"
+        public_jwk = {
+            claim: private_jwk[claim]
+            for claim in ("kty", "crv", "x", "y", "kid")
+            if claim in private_jwk
+        }
+        public_jwk["use"] = "enc"
+        public_jwk["alg"] = "ECDH-ES"
+        self.response_encryption_public_jwk = public_jwk
         self.backend.db_engine.update_request_object(
-            document_id=doc_id, request_object=request_object
+            document_id=doc_id,
+            request_object=request_object,
+            response_encryption_jwk=private_jwk,
+        )
+
+    def _encrypt_response(self, response):
+        return JWEHelper(self.response_encryption_public_jwk).encrypt(
+            response, alg="ECDH-ES", enc="A256GCM"
         )
 
     def test_backend_init(self):
@@ -369,12 +389,15 @@ class TestOpenID4VPBackend:
         )
         parsed = urllib.parse.urlparse(unquoted)
 
-        assert parsed.scheme == CONFIG["authorization"]["url_scheme"]
+        assert parsed.scheme == "haip-vp"
         assert parsed.path == ""
         assert parsed.query
 
         qs = urllib.parse.parse_qs(parsed.query)
-        assert qs["client_id"][0] == CONFIG["metadata"]["client_id"]
+        assert (
+            qs["client_id"][0]
+            == f"openid_federation:{CONFIG['metadata']['client_id']}"
+        )
         assert qs["request_uri"][0].startswith(CONFIG["metadata"]["request_uris"][0])
 
     def test_fail_vp_validation_in_response_endpoint(self, context):
@@ -395,7 +418,7 @@ class TestOpenID4VPBackend:
         # This will trigger a `VPInvalidNonce` error
         self._initialize_session(str(uuid.uuid4()), state, session_id)
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        encrypted_response = self._encrypt_response(response)
 
         context.request = {"response": encrypted_response}
 
@@ -417,7 +440,7 @@ class TestOpenID4VPBackend:
 
         # check that malformed jwt result in 400 response
         response["vp_token"]["personal id data"] = "asd.fgh.jkl"
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        encrypted_response = self._encrypt_response(response)
         context.request = {"response": encrypted_response}
         resp = response_endpoint(context)
         assert resp.status == "400"
@@ -451,7 +474,7 @@ class TestOpenID4VPBackend:
             CONFIG["base_url"]
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             bad_nonce_response
         )
         context.request = {"response": encrypted_response}
@@ -477,7 +500,7 @@ class TestOpenID4VPBackend:
             self.issuer_jwk, self.holder_jwk, nonce, bad_state, self.backend.client_id
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             bad_state_response
         )
         context.request = {"response": encrypted_response}
@@ -499,7 +522,7 @@ class TestOpenID4VPBackend:
             self.issuer_jwk, self.holder_jwk, nonce, state, bad_aud
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             bad_aud_response
         )
         context.request = {"response": encrypted_response}
@@ -520,7 +543,7 @@ class TestOpenID4VPBackend:
         good_response = self._generate_payload(
             self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id
         )
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             good_response
         )
         context.request = {"response": encrypted_response}
@@ -608,7 +631,7 @@ class TestOpenID4VPBackend:
             CONFIG["base_url"]
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        encrypted_response = self._encrypt_response(response)
         context.request = {"response": encrypted_response}
         context.http_headers = {
             "HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"
@@ -648,7 +671,7 @@ class TestOpenID4VPBackend:
             CONFIG["base_url"]
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        encrypted_response = self._encrypt_response(response)
 
         context.request = {"response": encrypted_response}
         context.http_headers = {
@@ -687,7 +710,7 @@ class TestOpenID4VPBackend:
             CONFIG["base_url"]
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(response)
+        encrypted_response = self._encrypt_response(response)
         context.request = {"response": encrypted_response}
         context.http_headers = {
             "HTTP_CONTENT_TYPE": "application/x-www-form-urlencoded"
@@ -719,7 +742,7 @@ class TestOpenID4VPBackend:
             self.issuer_jwk, self.holder_jwk, nonce, state, self.backend.client_id
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             good_response
         )
         context.request = {"response": encrypted_response}
@@ -767,7 +790,7 @@ class TestOpenID4VPBackend:
             x509=True,
         )
 
-        encrypted_response = JWEHelper(CONFIG["metadata_jwks"][1]).encrypt(
+        encrypted_response = self._encrypt_response(
             good_response
         )
         context.request = {"response": encrypted_response}
@@ -1096,7 +1119,13 @@ class TestOpenID4VPBackend:
         assert (
             "dcql_query" in payload
         ), "DCQL flow must include dcql_query in request object"
-        assert payload["client_id"] == CONFIG["metadata"]["client_id"]
+        assert (
+            payload["client_id"]
+            == f"openid_federation:{CONFIG['metadata']['client_id']}"
+        )
+        assert "client_id_scheme" not in payload
+        assert payload["response_mode"] == CONFIG["authorization"]["response_mode"]
+        assert "client_metadata" in payload
         assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
 
         datetime_mock = Mock(wraps=datetime)
@@ -1236,7 +1265,17 @@ class TestOpenID4VPBackend:
         assert (
             "dcql_query" in payload
         ), "DCQL flow must include dcql_query in request object"
-        assert payload["client_id"] == CONFIG["metadata"]["client_id"]
+        assert (
+            payload["client_id"]
+            == f"openid_federation:{CONFIG['metadata']['client_id']}"
+        )
+        assert "client_id_scheme" not in payload
+        assert payload["response_mode"] == CONFIG["authorization"]["response_mode"]
+        assert "client_metadata" in payload
+        assert payload["client_metadata"]["encrypted_response_enc_values_supported"] == [
+            "A128GCM",
+            "A256GCM",
+        ]
         assert payload["response_uri"] == CONFIG["metadata"]["response_uris"][0]
         assert payload["wallet_nonce"] == "qPmxiNFCR3QTm19POc8u"
 
@@ -1250,6 +1289,7 @@ class TestOpenID4VPBackend:
             "response_modes_supported": None,
             "response_types_supported": None,
             "client_id_schemes_supported": None,
+            "client_id_prefixes_supported": None,
             "alg_values_supported": ["ES256"],
             "vp_formats_supported": {
                 "dc+sd-jwt": {
@@ -1333,7 +1373,7 @@ class TestOpenID4VPBackend:
         assert header["trust_chain"]
         assert header["trust_chain"] == trust_chain_wallet
         assert header["x5c"]
-        assert len(header["x5c"]) == 3
+        assert len(header["x5c"]) == 2
 
         # verify that the JWT is signed using the leaf key from the x5c certificate chain
         leaf_key = parse_pem(header["x5c"][0]).as_dict()

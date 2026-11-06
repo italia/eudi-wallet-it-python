@@ -4,11 +4,14 @@ import pytest
 from cryptojwt.jwk.rsa import new_rsa_key
 from satosa.context import Context
 
+from pyeudiw.jwk import JWK
+
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.backends.openid4vp.authorization_response import (
     DirectPostJwtJweParser,
     DirectPostParser,
+    detect_response_mode,
     normalize_jsonstring_to_string,
 )
 from pyeudiw.satosa.backends.openid4vp.exceptions import (
@@ -18,11 +21,17 @@ from pyeudiw.satosa.backends.openid4vp.exceptions import (
 from pyeudiw.tests.settings import CONFIG
 
 
+def _encrypt(helper, data):
+    return helper.encrypt(data, alg="ECDH-ES", enc="A256GCM")
+
+
 @pytest.fixture
 def jwe_helper():
-    private_key = new_rsa_key()
-    jwe_helper = JWEHelper(private_key)
-    return jwe_helper
+    key = JWK(key_type="EC", ec_crv="P-256")
+    private_jwk = dict(key.jwk)
+    private_jwk["use"] = "enc"
+    private_jwk["alg"] = "ECDH-ES"
+    return JWEHelper(private_jwk)
 
 
 @pytest.fixture
@@ -108,7 +117,7 @@ def test_direct_post_jwt_jwe_parser_good_case(jwe_helper, jws_helper):
     state = "123456"
 
     data = {"vp_token": vp_token, "state": state}
-    ctx.request = {"response": jwe_helper.encrypt(data)}
+    ctx.request = {"response": _encrypt(jwe_helper, data)}
 
     resp = parser.parse_and_validate(ctx)
     assert resp.vp_token == vp_token
@@ -129,7 +138,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
     state = "123456"
     ctx.qs_params = {
-        "response": jwe_helper.encrypt({"vp_token": vp_token, "state": state})
+        "response": _encrypt(jwe_helper, {"vp_token": vp_token, "state": state})
     }
 
     try:
@@ -144,7 +153,7 @@ def test_direct_post_jwt_jwe_parser_bad_parse_case(jwe_helper, jws_helper):
     ctx = Context()
     ctx.request_method = "POST"
     ctx.request = {
-        "response": jwe_helper.encrypt({"bad_param_name": "bad parameter value"}),
+        "response": _encrypt(jwe_helper, {"bad_param_name": "bad parameter value"}),
     }
 
     try:
@@ -215,9 +224,14 @@ def test_direct_post_jwt_jws_parser_good_case(jwe_helper, jws_helper):
     data = {"vp_token": vp_token, "state": state}
     ctx.request = {"response": jws_helper.sign(data)}
 
-    resp = parser.parse_and_validate(ctx)
-    assert resp.vp_token == vp_token
-    assert resp.state == state
+    with pytest.raises(AuthRespValidationException):
+        parser.parse_and_validate(ctx)
+
+
+def test_direct_post_is_detected():
+    ctx = Context()
+    ctx.request = {"vp_token": "token", "state": "123456"}
+    assert detect_response_mode(ctx) == "direct_post"
 
 
 def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
@@ -240,11 +254,9 @@ def test_direct_post_jwt_jws_parser_bad_parse_case(jwe_helper, jws_helper):
 
     try:
         parser.parse_and_validate(ctx)
-        assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException:
+        assert False, "accepted a signed JWT"
+    except AuthRespValidationException:
         assert True
-    except Exception as e:
-        assert False, f"obtained unexpected parsing exception: {e}"
 
 
 def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
@@ -264,8 +276,6 @@ def test_direct_post_jwt_jws_parser_bad_validation_case(jwe_helper, jws_helper):
 
     try:
         parser.parse_and_validate(ctx)
-        assert False, "accepted an direct post with wrong encryption"
-    except AuthRespParsingException:
+        assert False, "accepted a signed JWT"
+    except AuthRespValidationException:
         assert True
-    except Exception as e:
-        assert False, f"obtained unexpected parsing exception: {e}"

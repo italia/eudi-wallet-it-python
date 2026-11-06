@@ -47,7 +47,9 @@ class StatusHandler(VPBaseEndpoint):
             db_engine,
         )
 
-        self.registered_get_response_endpoint = f"{self.client_id}/get_response"
+        self.registered_get_response_endpoint = self.attested_https_uri(
+            "redirect_uris", "get_response", "/get_response"
+        )
 
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]

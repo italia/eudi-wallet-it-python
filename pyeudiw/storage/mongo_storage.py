@@ -122,6 +122,10 @@ class MongoStorage(BaseStorage):
 
         return document
 
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        self._connect()
+        return self.sessions.find_one({"response_encryption_kid": kid})
+
     def init_session(
         self, document_id: str, session_id: str, state: str, remote_flow_typ: str
     ) -> str:
@@ -191,18 +195,23 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_request_object(
-        self, document_id: str, request_object: dict
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
     ) -> UpdateResult:
         self.get_by_id(document_id)
+        fields = {
+            "request_object": request_object,
+            "nonce": request_object["nonce"],
+            "state": request_object["state"],
+        }
+        if response_encryption_jwk:
+            fields["response_encryption_jwk"] = response_encryption_jwk
+            fields["response_encryption_kid"] = response_encryption_jwk.get("kid")
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
-            {
-                "$set": {
-                    "request_object": request_object,
-                    "nonce": request_object["nonce"],
-                    "state": request_object["state"],
-                }
-            },
+            {"$set": fields},
         )
         if documentStatus.matched_count != 1 or documentStatus.modified_count != 1:
             raise ValueError(f"Cannot update document {document_id}')")

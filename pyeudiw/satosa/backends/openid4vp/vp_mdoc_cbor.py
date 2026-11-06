@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timezone
 
 import cbor2
@@ -26,11 +27,31 @@ def _get_val(d: dict, keys: tuple) -> object:
     return None
 
 
-def _validate_session_transcript_openid4vp(st: dict) -> None:
-    """Validate SessionTranscript conforms to OpenID4VP profile (ISO 18013-7 Annex B)."""
-    dev_eng = _get_val(st, _ST_KEY_DEVICE_ENGAGEMENT)
-    ereader = _get_val(st, _ST_KEY_EREADER)
-    handover = _get_val(st, _ST_KEY_HANDOVER)
+def openid4vp_handover_info_hash(
+    client_id: str, nonce: str, jwk_thumbprint: bytes, response_uri: str
+) -> bytes:
+    """SHA-256 of the CBOR OpenID4VPHandoverInfo array."""
+    encoded = cbor2.dumps([client_id, nonce, jwk_thumbprint, response_uri])
+    return hashlib.sha256(encoded).digest()
+
+
+def _transcript_parts(st: object) -> tuple:
+    if isinstance(st, (list, tuple)) and len(st) == 3:
+        return st[0], st[1], st[2]
+    if isinstance(st, dict):
+        return (
+            _get_val(st, _ST_KEY_DEVICE_ENGAGEMENT),
+            _get_val(st, _ST_KEY_EREADER),
+            _get_val(st, _ST_KEY_HANDOVER),
+        )
+    raise MdocCborValidationError("invalid SessionTranscript in deviceSigned")
+
+
+def _validate_session_transcript_openid4vp(
+    st: object, expected_hash: bytes | None = None
+) -> None:
+    """Validate SessionTranscript conforms to OpenID4VP 1.0 appendix B.2.6.1."""
+    dev_eng, ereader, handover = _transcript_parts(st)
     if dev_eng is not None:
         raise MdocCborValidationError(
             "SessionTranscript must have deviceEngagementBytes=null for OpenID4VP"
@@ -39,14 +60,24 @@ def _validate_session_transcript_openid4vp(st: dict) -> None:
         raise MdocCborValidationError(
             "SessionTranscript must have eReaderKeyBytes=null for OpenID4VP"
         )
-    if handover is None:
+    if (
+        not isinstance(handover, (list, tuple))
+        or len(handover) != 2
+        or handover[0] != "OpenID4VPHandover"
+        or not isinstance(handover[1], (bytes, bytearray))
+    ):
         raise MdocCborValidationError(
-            "SessionTranscript must include handover for OpenID4VP"
+            "SessionTranscript must include OpenID4VPHandover for OpenID4VP"
         )
+    if expected_hash is not None and bytes(handover[1]) != expected_hash:
+        raise MdocCborValidationError("OpenID4VPHandover does not match the request")
 
 
-def _check_session_transcripts_in_mdoc(mdoc: MdocCbor) -> None:
+def _check_session_transcripts_in_mdoc(
+    mdoc: MdocCbor, expected_hash: bytes | None = None
+) -> None:
     """When deviceSigned contains SessionTranscript, validate OpenID4VP profile."""
+    found = False
     cdict = mdoc.data_as_cbor_dict
     for doc in cdict.get("documents", []):
         inner = doc.value if hasattr(doc, "value") else doc
@@ -72,8 +103,13 @@ def _check_session_transcripts_in_mdoc(mdoc: MdocCbor) -> None:
                 raise MdocCborValidationError(
                     "invalid SessionTranscript in deviceSigned"
                 )
-        if isinstance(st, dict):
-            _validate_session_transcript_openid4vp(st)
+        if isinstance(st, (dict, list, tuple)):
+            _validate_session_transcript_openid4vp(st, expected_hash)
+            found = True
+    if expected_hash is not None and not found:
+        raise MdocCborValidationError(
+            "SessionTranscript must include OpenID4VPHandover for OpenID4VP"
+        )
 
 
 class VpMDocCbor(BaseVPParser):
@@ -88,14 +124,26 @@ class VpMDocCbor(BaseVPParser):
                 return True
         return False
 
-    def validate(self, token: str, verifier_id: str, verifier_nonce: str) -> None:
+    def validate(
+        self,
+        token: str,
+        verifier_id: str,
+        verifier_nonce: str,
+        response_uri: str | None = None,
+        jwk_thumbprint: bytes | None = None,
+    ) -> None:
         mdoc = MdocCbor()
         mdoc.loads(data=token)
 
         if mdoc.verify() is False:
             raise MdocCborValidationError("Signature is invalid")
 
-        _check_session_transcripts_in_mdoc(mdoc)
+        expected_hash = None
+        if response_uri and jwk_thumbprint is not None:
+            expected_hash = openid4vp_handover_info_hash(
+                verifier_id, verifier_nonce, jwk_thumbprint, response_uri
+            )
+        _check_session_transcripts_in_mdoc(mdoc, expected_hash)
 
         try:
             for document in mdoc.documents:
@@ -113,13 +161,16 @@ class VpMDocCbor(BaseVPParser):
         if self._is_expired(mdoc):
             raise MdocCborValidationError("Credential is expired")
 
-        if mdoc.status:
-            status_list = StatusListTokenHelper.from_status(mdoc.status)
-            if (
-                status_list.is_expired()
-                or status_list.get_status(mdoc.status["status_list"]["idx"]) > 0
-            ):
-                raise VPRevoked("Status list indicates that the token is revoked")
+        status = mdoc.status if isinstance(mdoc.status, dict) else None
+        if not status or "status_list" not in status:
+            raise VPRevoked("credential status list is missing")
+
+        status_list = StatusListTokenHelper.from_status(status)
+        if (
+            status_list.is_expired()
+            or status_list.get_status(status["status_list"]["idx"]) > 0
+        ):
+            raise VPRevoked("Status list indicates that the token is revoked")
 
     def parse(self, token: str) -> dict:
         mdoc = MdocCbor()

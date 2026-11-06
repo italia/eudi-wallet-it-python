@@ -22,7 +22,11 @@ from pyeudiw.sd_jwt.exceptions import (
     MissingConfirmationKey,
     UnsupportedSdAlg,
 )
-from pyeudiw.sd_jwt.schema import VerifierChallenge, is_sd_jwt_format
+from pyeudiw.sd_jwt.schema import (
+    KeyBindingJwtHeader,
+    VerifierChallenge,
+    is_sd_jwt_format,
+)
 
 _JsonTypes = dict | list | str | int | float | bool | None
 _JsonTypes_T = TypeVar("_JsonTypes_T", bound=_JsonTypes)
@@ -166,6 +170,7 @@ class SdJwt:
         """
         if not self.has_key_binding():
             return
+        KeyBindingJwtHeader(**self.holder_kb.header)
         _verify_key_binding(
             self.token_without_kb, self.get_sd_alg(), self.holder_kb, challenge
         )

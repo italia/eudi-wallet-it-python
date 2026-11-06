@@ -1,6 +1,9 @@
+import base64
+import io
 from typing import Callable
 from uuid import uuid4
 
+import pyqrcode
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import InternalData
@@ -8,12 +11,20 @@ from satosa.response import Redirect, Response
 
 from pyeudiw.satosa.backends.openid4vp.authorization_request import (
     build_authorization_request_url,
+    require_prefixed_client_id,
 )
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.flow import RemoteFlowType
 from pyeudiw.satosa.backends.openid4vp.utils import detect_flow_typ
 from pyeudiw.satosa.utils.html_template import Jinja2TemplateHandler
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+
+
+def _qr_svg_base64(text: str, color: str) -> str:
+    code = pyqrcode.create(text, error="Q")
+    buffer = io.BytesIO()
+    code.svg(buffer, scale=4, module_color=color, xmldecl=False, omithw=False)
+    return base64.b64encode(buffer.getvalue()).decode("ascii")
 
 
 class PreRequestHandler(VPBaseEndpoint):
@@ -50,8 +61,12 @@ class PreRequestHandler(VPBaseEndpoint):
             db_engine,
         )
 
-        self.absolute_request_url = f"{self.client_id}/request-uri"
-        self.absolute_status_url = f"{self.client_id}/status"
+        self.absolute_request_url = self.attested_https_uri(
+            "request_uris", "request", "/request-uri"
+        )
+        self.absolute_status_url = self.attested_https_uri(
+            "status_uris", "status", "/status"
+        )
 
         self.qrcode_settings: dict[str, str] = self.config.get("qrcode") or {}
         if not self.qrcode_settings:
@@ -133,32 +148,25 @@ class PreRequestHandler(VPBaseEndpoint):
             and self.trust_evaluator.has_client_id(client_id_hint)
         )
 
-        # PAR
-        # # OLD CODE
-        # payload = {
-        #     "client_id": client_id_hint if has_client_id_hint else self.client_id,
-        #     "request_uri": f"{self.absolute_request_url},state={state}&request_uri_method=GET",
-        #     # "request_uri": f"{self.absolute_request_url}",
-        # }
-        #
-        # print(f"old code payload: {payload}")
-        #
-        # response_url = build_authorization_request_url(
-        #     self.config["authorization"]["url_scheme"], payload
-        # )
-        # print(f"old code response_url: {response_url}")
-        # # OLD CODE
+        client_id = client_id_hint if has_client_id_hint else self.client_id
+        try:
+            client_id = require_prefixed_client_id(client_id)
+        except ValueError as e400:
+            return self._handle_400(
+                context,
+                "request error: client_id must use the openid_federation or x509_hash prefix",
+                e400,
+            )
 
-        # NEW CODE
         payload = {
-            "client_id": client_id_hint if has_client_id_hint else self.client_id,
-            "request_uri": f"{self.absolute_request_url}",
+            "client_id": client_id,
+            "request_uri": self.absolute_request_url,
             "state": state,
-            "request_uri_method": "GET",
+            "request_uri_method": "get",
         }
 
         response_url = build_authorization_request_url(
-            self.absolute_request_url, payload
+            self.config["authorization"].get("url_scheme") or "haip-vp", payload
         )
 
         if flow_typ == RemoteFlowType.SAME_DEVICE:
@@ -180,6 +188,9 @@ class PreRequestHandler(VPBaseEndpoint):
             {
                 "qrcode_color": self.qrcode_settings["color"],
                 "qrcode_text": response_url,
+                "qrcode_base64": _qr_svg_base64(
+                    response_url, self.qrcode_settings.get("color") or "#000000"
+                ),
                 "qrcode_size": self.qrcode_settings["size"],
                 "qrcode_logo_path": self.qrcode_settings["logo_path"],
                 "qrcode_expiration_time": self.qrcode_settings["expiration_time"],

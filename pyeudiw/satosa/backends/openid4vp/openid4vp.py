@@ -6,6 +6,7 @@ from satosa.context import Context
 from satosa.internal import InternalData
 from satosa.response import Response
 
+from pyeudiw.satosa.backends.openid4vp.authorization_request import prefixed_client_id
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.tools.endpoints_loader import EndpointsLoader
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
@@ -38,12 +39,7 @@ class OpenID4VPBackend(BackendModule):
         self.base_url = base_url
         self.name = name
 
-        if self.config["authorization"].get("client_id"):
-            self.client_id = self.config["authorization"]["client_id"]
-        elif self.config["metadata"].get("client_id"):
-            self.client_id = self.config["metadata"]["client_id"]
-        else:
-            self.client_id = f"{base_url}/{name}"
+        self.client_id = prefixed_client_id(self.config)
 
         self._backend_url = f"{base_url}/{name}"
 

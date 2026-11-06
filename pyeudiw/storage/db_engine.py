@@ -112,8 +112,21 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def set_finalized(self, document_id: str):
         return self.write("set_finalized", document_id)
 
-    def update_request_object(self, document_id: str, request_object: dict) -> int:
-        return self.write("update_request_object", document_id, request_object)
+    def update_request_object(
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
+    ) -> int:
+        return self.write(
+            "update_request_object",
+            document_id,
+            request_object,
+            response_encryption_jwk,
+        )
+
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        return self.get("get_by_response_encryption_kid", kid)
 
     def update_response_object(
         self, nonce: str, state: str, response_object: dict, isError: bool = False
