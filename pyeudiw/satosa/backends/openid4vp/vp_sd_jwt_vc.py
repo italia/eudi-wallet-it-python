@@ -50,15 +50,13 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
 
         return sdjwt.get_disclosed_claims()
 
-    def _is_revoked(self) -> bool:
-        # TODO: implement revocation check
-        return False
-
     def validate(
         self,
         token: str,
         verifier_id: str,
         verifier_nonce: str,
+        response_uri: str | None = None,
+        jwk_thumbprint: bytes | None = None,
     ) -> None:
         # precomputed values
         if not is_sd_jwt_kb_format(token):
@@ -95,11 +93,13 @@ class VpVcSdJwtParserVerifier(BaseVPParser):
             raise VPExpired("VP is expired")
 
         payload = decode_jwt_payload(token)
+        status = payload.get("status") if isinstance(payload, dict) else None
+        if not isinstance(status, dict) or "status_list" not in status:
+            raise VPRevoked("credential status list is missing")
 
-        if "status" in payload and "status_list" in payload["status"]:
-            status_list = StatusListTokenHelper.from_status(payload["status"])
-            if (
-                status_list.is_expired()
-                or status_list.get_status(payload["status"]["status_list"]["idx"]) > 0
-            ):
-                raise VPRevoked("Status list indicates that the token is revoked")
+        status_list = StatusListTokenHelper.from_status(status)
+        if (
+            status_list.is_expired()
+            or status_list.get_status(status["status_list"]["idx"]) > 0
+        ):
+            raise VPRevoked("Status list indicates that the token is revoked")

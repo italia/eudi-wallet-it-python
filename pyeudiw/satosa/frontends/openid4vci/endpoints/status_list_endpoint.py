@@ -80,9 +80,9 @@ class StatusListHandler(VCIBaseEndpoint):
         logger.debug(f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. ")
         try:
             validate_request_method(context.request_method, GET_ACCEPTED_METHODS)
-            validate_content_type(
-                context.http_headers[HTTP_CONTENT_TYPE_HEADER], APPLICATION_JSON
-            )
+            content_type = get_value_from_key(context.http_headers, HTTP_CONTENT_TYPE_HEADER)
+            if content_type:
+                validate_content_type(content_type, APPLICATION_JSON)
             requested_id = (context.path or "").split('/')[-1]
             accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
             payload = self._build_status_list_payload(requested_id)
@@ -97,7 +97,7 @@ class StatusListHandler(VCIBaseEndpoint):
                             protected=jws_headers,
                             plain_dict=plain_dict,
                         ),
-                        content=APPLICATION_JSON,
+                        content=STATUS_LIST_JWT,
                     )
                 case AcceptHeaderEnum.STATUS_LIST_CWT.value:
                     # encode_cwt_status_list_token compresses internally, so pass

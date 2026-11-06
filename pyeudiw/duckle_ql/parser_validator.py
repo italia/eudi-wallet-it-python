@@ -31,7 +31,13 @@ class ParserValidator:
     def parse(self) -> list[dict]:
         return [self.handler.parse(self.token)]
 
-    def validate(self, verifier_id: str, verifier_nonce: str) -> None:
+    def validate(
+        self,
+        verifier_id: str,
+        verifier_nonce: str,
+        response_uri: str | None = None,
+        jwk_thumbprint: bytes | None = None,
+    ) -> None:
         """
         Validate the DCQL presentation data using the DuckleHandler.
 
@@ -40,7 +46,13 @@ class ParserValidator:
         :raises ParseError: If parsing fails.
         """
         try:
-            self.handler.validate(self.token, verifier_id, verifier_nonce)
+            self.handler.validate(
+                self.token,
+                verifier_id,
+                verifier_nonce,
+                response_uri=response_uri,
+                jwk_thumbprint=jwk_thumbprint,
+            )
         except Exception as e:
             raise ValidationError(f"Error parsing token at position: {e}")
 

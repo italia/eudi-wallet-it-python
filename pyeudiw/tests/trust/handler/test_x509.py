@@ -4,6 +4,7 @@ from unittest.mock import patch
 from cryptography.hazmat.primitives.asymmetric import ec
 from requests import Response
 
+from pyeudiw.jwk.parse import parse_b64der, parse_certificate
 from pyeudiw.tests.settings import DEFAULT_X509_LEAF_JWK, DEFAULT_X509_LEAF_PRIVATE_KEY
 from pyeudiw.tests.x509.test_x509 import gen_chain
 from pyeudiw.tools.utils import iat_now
@@ -70,6 +71,57 @@ def test_extract_trust_material_from_x509_handler():
     assert serialized_object["x509"]["jwks"][0]["kty"] == "EC"
     assert "x" in serialized_object["x509"]["jwks"][0]
     assert "y" in serialized_object["x509"]["jwks"][0]
+
+
+def _handler_for_chain(chain: list[bytes]) -> X509Handler:
+    return X509Handler(
+        client_id="example.com",
+        leaf_certificate_chains_by_ca={"ca.example.com": chain},
+        private_keys=[DEFAULT_X509_LEAF_JWK],
+        certificate_authorities={"ca.example.com": chain[-1]},
+    )
+
+
+def test_issued_x5c_omits_trust_anchor():
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_uri="https://example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    trust_handler = _handler_for_chain(chain)
+    trust_source = TrustSourceData.empty("example.com")
+
+    trust_handler.extract_and_update_trust_materials("example.com", trust_source)
+    serialized_object = trust_source.serialize()
+
+    assert len(serialized_object["x509"]["x5c"]) == 3
+
+    header = trust_handler.extract_jwt_header_trust_parameters(trust_source)
+    assert len(header["x5c"]) == 2
+    issued_last = parse_b64der(header["x5c"][-1]).thumbprint
+    assert issued_last == parse_certificate(chain[-2]).thumbprint
+    assert issued_last != parse_certificate(chain[-1]).thumbprint
+
+
+def test_validate_chain_without_trust_anchor():
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_uri="https://example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    trust_handler = _handler_for_chain(chain)
+    trust_source = TrustSourceData.empty("example.com")
+
+    valid, updated = trust_handler.validate_trust_material(chain[:-1], trust_source)
+
+    assert valid
+    stored = updated.serialize()["x509"]["x5c"]
+    assert len(stored) == 2
+    stored_last = parse_certificate(stored[-1]).thumbprint
+    assert stored_last == parse_certificate(chain[-2]).thumbprint
+    assert stored_last != parse_certificate(chain[-1]).thumbprint
 
 
 def test_fail_if_all_chains_are_invalid():

@@ -101,7 +101,10 @@ class BaseStorage(BaseDB):
         raise NotImplementedError()
 
     def update_request_object(
-        self, document_id: str, request_object: dict
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
     ) -> UpdateResult:
         """
         Update the request object of the session.
@@ -110,6 +113,8 @@ class BaseStorage(BaseDB):
         :type document_id: str
         :param request_object: the request object.
         :type request_object: dict
+        :param response_encryption_jwk: private JWK used to decrypt the authorization response.
+        :type response_encryption_jwk: dict | None
 
         :returns: the result of the update operation.
         :rtype: UpdateResult
@@ -358,6 +363,18 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        """
+        Get a session by the kid of the response encryption key.
+
+        :param kid: the JWK kid.
+        :type kid: str
+
+        :returns: the session.
+        :rtype: Union[dict, None]
+        """
+        raise NotImplementedError()
+
     def get_by_state(self, state: str) -> Union[dict, None]:
         """
         Get a session by state.
@@ -397,6 +414,43 @@ class BaseStorage(BaseDB):
 
         :returns: the session.
         :rtype: Union[dict, None]
+        """
+        raise NotImplementedError()
+
+    def get_latest_by_session_id(self, session_id: str) -> Union[dict, None]:
+        """
+        Get the newest session for a browser session id.
+
+        :param session_id: the session id.
+        :type session_id: str
+
+        :returns: the session.
+        :rtype: Union[dict, None]
+        """
+        raise NotImplementedError()
+
+    def mark_request_object_issued(self, document_id: str, request_object_jwt: str):
+        """
+        Record that the request object was issued once.
+
+        :param document_id: the document id.
+        :type document_id: str
+        :param request_object_jwt: the signed request object.
+        :type request_object_jwt: str
+        """
+        raise NotImplementedError()
+
+    def consume_response_code(self, document_id: str, response_code: str) -> bool:
+        """
+        Mark a response code as used.
+
+        :param document_id: the document id.
+        :type document_id: str
+        :param response_code: the response code.
+        :type response_code: str
+
+        :returns: True when this call consumes the code.
+        :rtype: bool
         """
         raise NotImplementedError()
 

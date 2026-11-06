@@ -47,19 +47,9 @@
       <!-- i18next -->
     </p>
 
-    <script src="{{ static }}js/qrcode/qr-code.js"></script>
     <div id="content-qrcode" class="d-flex justify-content-center mb-4">
       <div id="content-qrcode-payload">
-        <qr-code
-            contents="{{ qrcode_text }}"
-            module-color="{{ qrcode_color }}"
-            position-ring-color="{{ qrcode_color }}"
-            position-center-color="{{ qrcode_color }}"
-            class="qr-code"
-            aria-label="Codice QR per l'autenticazione con IT-Wallet"
-        >
-          <img class="icon-qr-code" src="{{ static }}{{ qrcode_logo_path }}" slot="icon" alt="" />
-        </qr-code>
+        <img src="data:image/svg+xml;base64,{{ qrcode_base64 }}" alt="" class="qr-code" style="width: {{ qrcode_size }}px; height: {{ qrcode_size }}px" />
       </div>
     </div>
 

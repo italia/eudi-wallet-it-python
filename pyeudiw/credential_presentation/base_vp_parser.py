@@ -18,5 +18,12 @@ class BaseVPParser(ABC):
         """Parses a Verifiable Presentation token."""
 
     @abstractmethod
-    def validate(self, token: str, verifier_id: str, verifier_nonce: str) -> bool:
+    def validate(
+        self,
+        token: str,
+        verifier_id: str,
+        verifier_nonce: str,
+        response_uri: str | None = None,
+        jwk_thumbprint: bytes | None = None,
+    ) -> bool:
         """Validates the content of a Verifiable Presentation."""

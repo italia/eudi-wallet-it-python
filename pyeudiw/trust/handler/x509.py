@@ -14,7 +14,6 @@ from pyeudiw.x509.verify import (
     PEM_cert_to_B64DER_cert,
     get_certificate_type,
     get_expiry_date_from_x5c,
-    get_trust_anchor_from_x5c,
     get_x509_info,
     to_DER_cert,
     to_der_list,
@@ -183,48 +182,57 @@ class X509Handler(TrustHandlerInterface):
 
         self.private_keys = private_keys
 
+    def _trust_anchor_thumbprints(self) -> set:
+        return {
+            parse_certificate(to_DER_cert(cert)).thumbprint
+            for cert in self.certificate_authorities.values()
+        }
+
+    def _is_trust_anchor(self, cert: str | bytes) -> bool:
+        if not self.certificate_authorities:
+            return False
+        thumbprint = parse_certificate(to_DER_cert(cert)).thumbprint
+        return thumbprint in self._trust_anchor_thumbprints()
+
     def _verify_chain(self, x5c: list[str], crls: list[CRLHelper]) -> bool:
         """
-        Verify the x5c chain.
+        Verify the x5c chain against the configured trust anchors.
+
+        A chain that already ends with a configured trust anchor is verified as given.
+        A chain that stops at the certificate signed by a configured trust anchor is
+        verified with that anchor as an input. The anchor is not appended to ``x5c``.
+
         :param x5c: The x5c chain to verify.
         :type x5c: list[str]
 
         :return: True if the chain is valid, False otherwise.
         """
+        if not x5c:
+            logger.error("Invalid x509 certificate chain. Empty chain")
+            return False
+
         der_chain = [to_DER_cert(cert) for cert in x5c]
 
-        if len(der_chain) > 1 and not verify_x509_attestation_chain(der_chain, crls):
-            logger.error("Invalid x509 certificate chain. Chain validation failed")
-            return False
+        if self._is_trust_anchor(der_chain[-1]):
+            if len(der_chain) > 1 and not verify_x509_attestation_chain(der_chain, crls):
+                logger.error("Invalid x509 certificate chain. Chain validation failed")
+                return False
+            return True
 
-        issuer = get_trust_anchor_from_x5c(der_chain)
+        for anchor in self.certificate_authorities.values():
+            anchor_der = to_DER_cert(anchor)
+            if verify_x509_attestation_chain(der_chain + [anchor_der], crls):
+                return True
 
-        if not issuer:
-            logger.error("Invalid x509 certificate chain. Issuer not found")
-            return False
+        logger.error(
+            "Invalid x509 certificate chain. Issuer not found in the list of trusted CAs"
+        )
+        return False
 
-        if issuer not in self.certificate_authorities:
-            logger.error(
-                "Invalid x509 certificate chain. Issuer not found in the list of trusted CAs"
-            )
-            return False
-
-        issuer_cert = self.certificate_authorities[issuer]
-
-        try:
-            issuer_jwk = parse_certificate(issuer_cert)
-            chain_jwks = parse_x5c_keys(der_chain)
-        except Exception as err:
-            logger.error(f"Invalid x509 certificate chain. Parsing failed: {err}")
-            return False
-
-        if not issuer_jwk.thumbprint == chain_jwks[-1].thumbprint:
-            logger.error(
-                "Invalid x509 certificate chain. Issuer thumbprint does not match"
-            )
-            return False
-
-        return True
+    def _without_trust_anchor(self, x5c: list[str]) -> list[str]:
+        if x5c and self._is_trust_anchor(x5c[-1]):
+            return x5c[:-1]
+        return list(x5c)
 
     def extract_and_update_trust_materials(
         self, issuer: str, trust_source: TrustSourceData
@@ -291,10 +299,13 @@ class X509Handler(TrustHandlerInterface):
         self, trust_source: TrustSourceData
     ) -> dict:
         tp: dict = trust_source.serialize().get(X509Handler._TRUST_TYPE, {})
-        if x5c_pem := tp.get(X509Handler._TRUST_PARAMETER_NAME, None):
-            x5c = [PEM_cert_to_B64DER_cert(pem) for pem in x5c_pem]
-            return {"x5c": x5c}
-        return {}
+        x5c_pem = tp.get(X509Handler._TRUST_PARAMETER_NAME, None)
+        if not x5c_pem:
+            return {}
+        issued = self._without_trust_anchor(x5c_pem)
+        if not issued:
+            return {}
+        return {"x5c": [PEM_cert_to_B64DER_cert(pem) for pem in issued]}
 
     def get_handled_trust_material_name(self) -> str:
         return X509Handler._TRUST_PARAMETER_NAME

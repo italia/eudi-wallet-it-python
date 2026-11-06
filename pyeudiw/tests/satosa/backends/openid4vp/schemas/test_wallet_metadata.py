@@ -582,3 +582,18 @@ def test_valid_request_obj_sig_alg_values_supported_without_context(value):
         ).request_object_signing_alg_values_supported
         == expected_value
     )
+
+
+def test_client_id_prefixes_supported():
+    request = {
+        "wallet_metadata": {
+            "vp_formats_supported": _example_vp_formats_supported,
+            "client_id_prefixes_supported": ["openid_federation", "x509_hash", "http"],
+        }
+    }
+    metadata = WalletPostRequest(**request).wallet_metadata
+    assert metadata.client_id_prefixes_supported == ["openid_federation", "x509_hash"]
+
+    request["wallet_metadata"]["client_id_prefixes_supported"] = ["http"]
+    with pytest.raises(ValidationError):
+        WalletPostRequest(**request)

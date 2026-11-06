@@ -47,7 +47,9 @@ class StatusHandler(VPBaseEndpoint):
             db_engine,
         )
 
-        self.registered_get_response_endpoint = f"{self.client_id}/get_response"
+        self.registered_get_response_endpoint = self.attested_https_uri(
+            "redirect_uris", "get_response", "/get_response"
+        )
 
         self.response_code_helper = ResponseCodeSource(
             self.config["response_code"]["sym_key"]
@@ -75,27 +77,11 @@ class StatusHandler(VPBaseEndpoint):
         session_id = context.state["SESSION_ID"]
 
         try:
-            if not context.qs_params or "id" not in context.qs_params:
-                raise ValueError("id")
-
-            state = context.qs_params["id"]
-
-            if not state:
-                raise ValueError("id")
-
-        except Exception as e400:
-            return self._handle_400(
-                context, "request error: missing or invalid parameter [id]", e400
-            )
-
-        try:
-            session = self.db_engine.get_by_state_and_session_id(
-                state=state, session_id=session_id
-            )
+            session = self.db_engine.get_latest_by_session_id(session_id)
         except Exception as e401:
             self._log_error(
                 context,
-                f"Error while retrieving session by state {state} and session_id {session_id}: {e401}",
+                f"Error while retrieving session by session_id {session_id}: {e401}",
             )
             return self._handle_401(
                 context, "client error: no session associated to the state", e401
@@ -108,10 +94,11 @@ class StatusHandler(VPBaseEndpoint):
                 Exception("Session is None"),
             )
 
+        state = session.get("state")
         request_object = session.get("request_object", None)
-        if request_object:
-            if iat_now() > request_object["exp"]:
-                return self._status_session_expired_response(context)
+        exp = request_object.get("exp") if request_object else None
+        if exp is not None and iat_now() > exp:
+            return self._status_session_expired_response(context)
 
         if session.get("finalized"):
             if session.get("error_response"):

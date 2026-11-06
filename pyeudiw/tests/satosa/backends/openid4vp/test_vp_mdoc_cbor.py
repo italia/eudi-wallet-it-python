@@ -2,11 +2,20 @@ import os
 from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch
 
+import pytest
+
 from cryptography.hazmat.primitives.asymmetric import ec
 from pymdoccbor.mdoc.issuer import MdocCborIssuer
 from requests import Response
 
-from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import VpMDocCbor
+from pyeudiw.satosa.backends.openid4vp.authorization_request import (
+    jwk_thumbprint_sha256,
+)
+from pyeudiw.satosa.backends.openid4vp.exceptions import VPRevoked
+from pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor import (
+    VpMDocCbor,
+    openid4vp_handover_info_hash,
+)
 from pyeudiw.storage.db_engine import DBEngine
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 from pyeudiw.x509.chain_builder import ChainBuilder
@@ -253,7 +262,30 @@ def test_handler_correct_validation():
 
     vp_token = issue_mdoc_cbor()
 
-    ps.validate(vp_token, "https://example.com/", "1234567890")
+    with pytest.raises(VPRevoked, match="credential status list is missing"):
+        ps.validate(vp_token, "https://example.com/", "1234567890")
+
+
+def test_openid4vp_handover_matches_spec_example():
+    public_jwk = {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "DxiH5Q4Yx3UrukE2lWCErq8N8bqC9CHLLrAwLz5BmE0",
+        "y": "XtLM4-3h5o3HUH0MHVJV0kyq0iBlrBwlh8qEDMZ4-Pc",
+        "use": "enc",
+        "alg": "ECDH-ES",
+        "kid": "1",
+    }
+    digest = openid4vp_handover_info_hash(
+        "x509_san_dns:example.com",
+        "exc7gBkxjx1rdc9udRrveKvSsJIq80avlXeLHhGwqtA",
+        jwk_thumbprint_sha256(public_jwk),
+        "https://example.com/response",
+    )
+    assert (
+        digest.hex()
+        == "048bc053c00442af9b8eed494cefdd9d95240d254b046b11b68013722aad38ac"
+    )
 
 
 def test_handler_correct_validation_with_status_list():

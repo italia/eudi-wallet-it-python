@@ -99,9 +99,16 @@ def is_jwt_format(jwt: str) -> bool:
     return bool(res)
 
 
+_JWE_COMPACT = re.compile(
+    r"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+$"
+)
+
+
 def is_jwe_format(jwt: str):
     """
-    Check if a string is in JWE format.
+    Check if a string is in compact JWE format.
+
+    The encrypted-key segment may be empty when the algorithm is direct, as with ECDH-ES.
 
     :param jwt: a string that represents the jwt.
     :type jwt: str
@@ -110,15 +117,15 @@ def is_jwe_format(jwt: str):
     :rtype: bool
     """
 
-    if not is_jwt_format(jwt):
+    if not isinstance(jwt, str) or not _JWE_COMPACT.match(jwt):
         return False
 
-    header = decode_jwt_header(jwt)
-
-    if header.get("enc", None) is None:
+    try:
+        header = decode_jwt_header(jwt)
+    except Exception:
         return False
 
-    return True
+    return header.get("enc", None) is not None
 
 
 def base64_urlencode(v: bytes) -> str:
