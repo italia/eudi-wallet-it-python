@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 
 from pyeudiw.exceptions import ValidationError
+from pyeudiw.status_list import STATUS_INVALID, STATUS_SUSPENDED, STATUS_VALID
 from pyeudiw.storage.credential_entity import CredentialEntity
 from pyeudiw.storage.mongo_storage import MongoStorage
 from pyeudiw.storage.exceptions import EntryNotFound
@@ -106,21 +107,29 @@ class CredentialStorage(MongoStorage):
         self.credentials.insert_one(credential_entity.__dict__)
         return credential_entity.incremental_id
 
-    def revoke_credential(self, credential_entity: CredentialEntity) -> CredentialEntity:
+    def set_credential_status(self, credential_entity: CredentialEntity, status: int):
+        """Write one Token Status List value for a credential.
+
+        INVALID is the permanent revocation. SUSPENDED leaves the credential
+        as the current one.
+        """
+        if status not in (STATUS_VALID, STATUS_INVALID, STATUS_SUSPENDED):
+            raise ValueError("status must be VALID, INVALID or SUSPENDED")
         self._connect()
+        now = datetime.now(tz=timezone.utc).timestamp()
         query = {"document_id": credential_entity.document_id}
         update = {
             "$set": {
-                "revoked": True,
-                "revocation_date": datetime.now(
-                    tz=timezone.utc
-                ).timestamp(),
-                "update_date": datetime.now(
-                    tz=timezone.utc
-                ).timestamp(),
+                "status": status,
+                "revoked": status == STATUS_INVALID,
+                "revocation_date": now if status == STATUS_INVALID else 0.0,
+                "update_date": now,
             }
         }
         return self.credentials.update_one(query, update)
+
+    def revoke_credential(self, credential_entity: CredentialEntity) -> CredentialEntity:
+        return self.set_credential_status(credential_entity, STATUS_INVALID)
 
     def get_all_sorted_by_incremental_id(
         self, sort_direction=pymongo.ASCENDING

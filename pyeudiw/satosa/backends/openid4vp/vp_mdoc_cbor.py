@@ -161,16 +161,17 @@ class VpMDocCbor(BaseVPParser):
         if self._is_expired(mdoc):
             raise MdocCborValidationError("Credential is expired")
 
-        status = mdoc.status if isinstance(mdoc.status, dict) else None
-        if not status or "status_list" not in status:
-            raise VPRevoked("credential status list is missing")
+        for document in mdoc.documents:
+            status = document.issuersigned.issuer_auth.payload_as_dict.get("status")
+            if not isinstance(status, dict) or "status_list" not in status:
+                raise VPRevoked("credential status list is missing")
 
-        status_list = StatusListTokenHelper.from_status(status)
-        if (
-            status_list.is_expired()
-            or status_list.get_status(status["status_list"]["idx"]) > 0
-        ):
-            raise VPRevoked("Status list indicates that the token is revoked")
+            status_list = StatusListTokenHelper.from_status(status)
+            if (
+                status_list.is_expired()
+                or status_list.get_status(status["status_list"]["idx"]) > 0
+            ):
+                raise VPRevoked("Status list indicates that the token is revoked")
 
     def parse(self, token: str) -> dict:
         mdoc = MdocCbor()

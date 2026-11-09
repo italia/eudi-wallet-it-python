@@ -6,6 +6,9 @@ from pycose.messages import Sign1Message
 
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.status_list import (
+    STATUS_INVALID,
+    STATUS_SUSPENDED,
+    STATUS_VALID,
     array_to_bitstring,
     array_to_bitstring_v1,
     decode_cwt_status_list_token,
@@ -219,6 +222,35 @@ def test_encode_then_read_back_aligns_idx_with_status():
     helper = _helper_for(array_to_bitstring_v1(status_array, bits=1))
     for entry in status_array:
         assert helper.get_status(entry["incremental_id"]) == int(entry["revoked"])
+
+
+def test_encode_registered_status_types_with_two_bits():
+    """VALID, INVALID and SUSPENDED round-trip at the advertised index."""
+    status_array = [
+        {"incremental_id": 1, "status": STATUS_VALID},
+        {"incremental_id": 2, "status": STATUS_INVALID},
+        {"incremental_id": 3, "status": STATUS_SUSPENDED},
+    ]
+    helper = _helper_for(array_to_bitstring_v1(status_array, bits=2), bits=2)
+    for entry in status_array:
+        assert helper.get_status(entry["incremental_id"]) == entry["status"]
+
+
+def test_missing_status_falls_back_to_revoked_flag():
+    status_array = [
+        {"incremental_id": 1, "revoked": False},
+        {"incremental_id": 2, "revoked": True},
+    ]
+    helper = _helper_for(array_to_bitstring_v1(status_array, bits=2), bits=2)
+    assert helper.get_status(1) == STATUS_VALID
+    assert helper.get_status(2) == STATUS_INVALID
+
+
+def test_status_value_wider_than_bits_is_rejected():
+    with pytest.raises(ValueError):
+        array_to_bitstring_v1(
+            [{"incremental_id": 0, "status": STATUS_SUSPENDED}], bits=1
+        )
 
 
 def test_encode_is_gap_safe():

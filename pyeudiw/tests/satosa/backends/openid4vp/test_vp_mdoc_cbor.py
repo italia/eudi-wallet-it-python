@@ -219,7 +219,7 @@ def issue_mdoc_cbor(status_list: bool = False, idx: int = 1):
         doctype="eu.europa.ec.eudiw.pid.1",
         data=PID_DATA,
         validity={"issuance_date": "2024-12-31", "expiry_date": "2050-12-31"},
-        status=status,
+        revocation=status,
     )
 
     return mdoci.dumps().decode()

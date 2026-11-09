@@ -42,7 +42,7 @@ class AcceptHeaderEnum(Enum):
     STATUS_LIST_CWT = STATUS_LIST_CWT
 
 
-_STATUS_LIST_BITS = 1
+_STATUS_LIST_BITS = 2
 
 _PAYLOAD_CWT_KEYS = {"exp": 6, "iat": 4, "sub": 2, "ttl": 65534}
 
@@ -143,7 +143,7 @@ class StatusListHandler(VCIBaseEndpoint):
         status_path = self.status_list.path.lstrip("/")
         iat = iat_now()
         credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id") or []
-        bits = 1
+        bits = _STATUS_LIST_BITS
         bit_bytes = array_to_bitstring_v1(credentials,bits=bits)
         compressed_lst = zlib.compress(bit_bytes)
         return {
