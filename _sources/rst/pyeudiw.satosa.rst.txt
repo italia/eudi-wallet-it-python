@@ -1,0 +1,30 @@
+pyeudiw.satosa package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.satosa.backends
+   pyeudiw.satosa.frontends
+
+Submodules
+----------
+
+pyeudiw.satosa.exceptions module
+--------------------------------
+
+.. automodule:: pyeudiw.satosa.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa
+   :members:
+   :show-inheritance:
+   :undoc-members:
