@@ -4,10 +4,14 @@ from typing import TypeVar
 import cryptojwt.jwe.exception
 from satosa.context import Context
 
-from pyeudiw.jwt.exceptions import JWEDecryptionError, JWSVerificationError
+from pyeudiw.jwt.exceptions import JWEDecryptionError
 from pyeudiw.jwt.jwe_helper import JWEHelper
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header, is_jwe_format
+from pyeudiw.satosa.backends.openid4vp.authorization_request import (
+    DEFAULT_RESPONSE_ENCRYPTION_ALG,
+    RESPONSE_ENC_VALUES,
+)
 from pyeudiw.satosa.backends.openid4vp.exceptions import (
     AuthRespParsingException,
     AuthRespValidationException,
@@ -45,11 +49,12 @@ def detect_response_mode(context: Context) -> ResponseMode:
     Try to make inference on which response mode type this is based on the
     content of an http request body
     """
-    if "response" in context.request:
+    request = context.request or {}
+    if "response" in request:
         return ResponseMode.direct_post_jwt
-    if "vp_token" in context.request:
+    if "vp_token" in request:
         return ResponseMode.direct_post
-    if "error" in context.request:
+    if "error" in request:
         return ResponseMode.error
     raise AuthRespParsingException(
         "HTTP POST request body does not contain a recognized openid4vp response mode"
@@ -145,14 +150,13 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
             # if the response is a JWE, we need to decrypt it
             header = decode_jwt_header(resp_data.response)
 
-            if not header.get("alg") in self.enc_alg_supported:
+            allowed_algs = self.enc_alg_supported or [DEFAULT_RESPONSE_ENCRYPTION_ALG]
+            if (
+                header.get("alg") not in allowed_algs
+                or header.get("enc") not in RESPONSE_ENC_VALUES
+            ):
                 raise AuthRespValidationException(
-                    "invalid data in direct_post.jwt: alg not supported"
-                )
-
-            if not header.get("enc") in self.enc_enc_supported:
-                raise AuthRespValidationException(
-                    "invalid data in direct_post.jwt: enc not supported"
+                    "invalid data in direct_post.jwt: alg or enc not supported"
                 )
 
             try:
@@ -171,18 +175,9 @@ class DirectPostJwtJweParser(AuthorizationResponseParser):
                     "invalid data in direct_post.jwt request body", e
                 )
         else:
-            # if the response is a JWT, we just decode it
-            try:
-                payload = self.jws_verifier.verify(resp_data.response)
-            except JWSVerificationError as e:
-                raise AuthRespParsingException(
-                    "invalid data in direct_post.jwt request body: cannot validate the jws",
-                    e,
-                )
-            except Exception as e:
-                raise AuthRespParsingException(
-                    "invalid data in direct_post.jwt request body: not a jwt", e
-                )
+            raise AuthRespValidationException(
+                "invalid data in direct_post.jwt: response must be an encrypted JWE"
+            )
 
         # iss, exp and aud MUST be OMITTED in the JWT Claims Set of the JWE
         if ("iss" in payload) or ("exp" in payload):

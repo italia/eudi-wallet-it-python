@@ -89,6 +89,8 @@ class DuckleHandler(BaseVPParser):
         token: dict,
         verifier_id: str,
         verifier_nonce: str,
+        response_uri: str | None = None,
+        jwk_thumbprint: bytes | None = None,
     ) -> None:
         """
         Parse the Duckle token, validating the signature and claims.
@@ -129,7 +131,13 @@ class DuckleHandler(BaseVPParser):
                         raise InvalidVPToken(f"Invalid mdoc doctype: got {claims.get('doctype')} instead {cred.meta.doctype_value}")
                 else:
                     raise InvalidVPToken(f"Unexpected token format {cred.format}")
-                parser.validate(token_str, verifier_id, verifier_nonce)
+                parser.validate(
+                    token_str,
+                    verifier_id,
+                    verifier_nonce,
+                    response_uri=response_uri,
+                    jwk_thumbprint=jwk_thumbprint,
+                )
             except Exception as e:
                 logging.exception(f"Error parsing token for credential '{cred.id}'")
                 raise e

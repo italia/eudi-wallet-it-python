@@ -1,10 +1,15 @@
 import uuid
 from unittest.mock import patch
 
+import pytest
+from pydantic import ValidationError
+
 from requests import Response
 
 from pyeudiw.jwt.jws_helper import DEFAULT_SIG_KTY_MAP
+from pyeudiw.satosa.backends.openid4vp.exceptions import VPRevoked
 from pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc import VpVcSdJwtParserVerifier
+from pyeudiw.sd_jwt.schema import KeyBindingJwtHeader
 from pyeudiw.sd_jwt.holder import SDJWTHolder
 from pyeudiw.sd_jwt.issuer import SDJWTIssuer
 from pyeudiw.sd_jwt.utils.yaml_specification import yaml_load_specification
@@ -210,7 +215,14 @@ def test_handler_correct_validation():
 
     vp_token = issue_sd_jwt(aud, nonce)
 
-    ps.validate(vp_token, aud, nonce)
+    with pytest.raises(VPRevoked, match="credential status list is missing"):
+        ps.validate(vp_token, aud, nonce)
+
+
+def test_key_binding_typ_must_be_kb_jwt():
+    KeyBindingJwtHeader(typ="kb+jwt", alg="ES256")
+    with pytest.raises(ValidationError):
+        KeyBindingJwtHeader(typ="jwt", alg="ES256")
 
 
 def test_handler_correct_validation_with_status_list():

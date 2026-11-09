@@ -1,3 +1,4 @@
+import copy
 import json
 
 from satosa.context import Context
@@ -10,6 +11,36 @@ from pyeudiw.satosa.frontends.openid4vci.endpoints.vci_base_endpoint import (
 )
 from pyeudiw.tools.content_type import APPLICATION_JSON, ENTITY_STATEMENT_JWT
 from pyeudiw.tools.utils import exp_from_now, iat_now
+
+# COSE algorithm identifiers (RFC 8152) for mso_mdoc credential signing.
+# The live configuration keeps JOSE names, because CredentialConfiguration
+# validates credential_signing_alg_values_supported as a list of strings.
+# IT Wallet 1.4 entity statements require the numeric identifiers instead.
+_JOSE_TO_COSE_ALG = {
+    "ES256": -7,
+    "ES384": -35,
+    "ES512": -36,
+}
+
+
+def _cose_signing_algs_for_mdoc(metadata: dict) -> None:
+    """Rewrite mso_mdoc signing algorithms to COSE integers on a metadata copy."""
+    issuer = metadata.get("openid_credential_issuer")
+    if not isinstance(issuer, dict):
+        return
+    configs = issuer.get("credential_configurations_supported")
+    if not isinstance(configs, dict):
+        return
+    for cred in configs.values():
+        if not isinstance(cred, dict) or cred.get("format") != "mso_mdoc":
+            continue
+        algs = cred.get("credential_signing_alg_values_supported")
+        if not isinstance(algs, list):
+            continue
+        cred["credential_signing_alg_values_supported"] = [
+            _JOSE_TO_COSE_ALG.get(alg, alg) if isinstance(alg, str) else alg
+            for alg in algs
+        ]
 
 
 class MetadataHandler(VCIBaseEndpoint):
@@ -82,6 +113,8 @@ class MetadataHandler(VCIBaseEndpoint):
     def entity_configuration_as_dict(self) -> dict:
         """Returns the entity configuration as a dictionary."""
 
+        metadata = copy.deepcopy(self.metadata)
+        _cose_signing_algs_for_mdoc(metadata)
         ec_payload = {
             "exp": exp_from_now(
                 minutes=self.federation_config.get("entity_configuration_exp")
@@ -90,7 +123,7 @@ class MetadataHandler(VCIBaseEndpoint):
             "iss": self.entity_id,
             "sub": self.entity_id,
             "jwks": {"keys": self.pub_federation_jwks},
-            "metadata": self.metadata,
+            "metadata": metadata,
             "authority_hints": self.federation_config.get("authority_hints", []),
         }
         return ec_payload

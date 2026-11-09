@@ -108,6 +108,16 @@ class MongoStorage(BaseStorage):
 
         return document
 
+    def get_latest_by_session_id(self, session_id: str) -> Union[dict, None]:
+        self._connect()
+        document = self.sessions.find_one(
+            {"session_id": session_id},
+            sort=[("creation_date", pymongo.DESCENDING)],
+        )
+        if document is None:
+            raise ValueError(f"Document with session id {session_id} not found.")
+        return document
+
     def get_by_state_and_session_id(
         self, state: str, session_id: str = ""
     ) -> Union[dict, None]:
@@ -121,6 +131,10 @@ class MongoStorage(BaseStorage):
             raise ValueError(f"Document with state {state} not found.")
 
         return document
+
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        self._connect()
+        return self.sessions.find_one({"response_encryption_kid": kid})
 
     def init_session(
         self, document_id: str, session_id: str, state: str, remote_flow_typ: str
@@ -191,22 +205,53 @@ class MongoStorage(BaseStorage):
         return update_result
 
     def update_request_object(
-        self, document_id: str, request_object: dict
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
     ) -> UpdateResult:
         self.get_by_id(document_id)
+        fields = {
+            "request_object": request_object,
+            "nonce": request_object["nonce"],
+            "state": request_object["state"],
+        }
+        if response_encryption_jwk:
+            fields["response_encryption_jwk"] = response_encryption_jwk
+            fields["response_encryption_kid"] = response_encryption_jwk.get("kid")
         documentStatus = self.sessions.update_one(
             {"document_id": document_id},
-            {
-                "$set": {
-                    "request_object": request_object,
-                    "nonce": request_object["nonce"],
-                    "state": request_object["state"],
-                }
-            },
+            {"$set": fields},
         )
         if documentStatus.matched_count != 1 or documentStatus.modified_count != 1:
             raise ValueError(f"Cannot update document {document_id}')")
         return documentStatus
+
+    def mark_request_object_issued(self, document_id: str, request_object_jwt: str) -> UpdateResult:
+        self._connect()
+        update_result = self.sessions.update_one(
+            {"document_id": document_id, "request_object_issued": {"$ne": True}},
+            {
+                "$set": {
+                    "request_object_issued": True,
+                    "request_object_jwt": request_object_jwt,
+                }
+            },
+        )
+        if update_result.modified_count != 1:
+            raise ValueError(f"Request object for document {document_id} is already issued.")
+        return update_result
+
+    def consume_response_code(self, document_id: str, response_code: str) -> bool:
+        self._connect()
+        update_result = self.sessions.update_one(
+            {
+                "document_id": document_id,
+                "consumed_response_codes": {"$ne": response_code},
+            },
+            {"$addToSet": {"consumed_response_codes": response_code}},
+        )
+        return update_result.modified_count == 1
 
     def set_finalized(self, document_id: str):
         self.get_by_id(document_id)

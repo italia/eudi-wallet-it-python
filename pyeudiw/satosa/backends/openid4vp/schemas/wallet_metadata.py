@@ -24,13 +24,14 @@ _default_supported_algorithms = [
 ]
 
 _default_response_types_supported = "vp_token"
-_default_client_id_schemes_supported = "http"
+_CLIENT_ID_PREFIXES = ["openid_federation", "x509_hash"]
 
 
 class WalletMetadata(BaseModel):
     vp_formats_supported: Dict[str, Dict[str, List[str]]]
     alg_values_supported: Optional[List[str]] = None
     client_id_schemes_supported: Optional[List[str]] = None
+    client_id_prefixes_supported: Optional[List[str]] = None
     authorization_endpoint: Optional[str] = None
     request_object_signing_alg_values_supported: Optional[List[str]] = None
     response_types_supported: Optional[list[str]] = None
@@ -98,6 +99,16 @@ class WalletMetadata(BaseModel):
             if not filtered_vp_formats:
                 raise ValueError("Invalid value for response_modes_supported")
             return filtered_vp_formats
+
+    @field_validator("client_id_prefixes_supported", mode="before")
+    def validate_client_id_prefixes_supported(cls, v):
+        if v is None:
+            return None
+        values = [v] if isinstance(v, str) else list(v)
+        filtered = [item for item in values if item in _CLIENT_ID_PREFIXES]
+        if not filtered:
+            raise ValueError("Invalid value for client_id_prefixes_supported")
+        return filtered
 
     @field_validator("client_id_schemes_supported", mode="before")
     def validate_client_id_schemes_supported(cls, v, info):

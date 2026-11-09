@@ -174,7 +174,7 @@ def should_return_status_list(
     context: Context,
     accept_header: str,
     status_list: list[dict],
-    expected_bits: int = 1,
+    expected_bits: int = 2,
 ):
     status_list_handler._db_credential_engine.get.return_value = status_list
     ctx = deepcopy(context)

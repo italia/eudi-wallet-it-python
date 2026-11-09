@@ -21,6 +21,22 @@ StatusListFormat = Literal["jwt", "cwt"]
 STATUS_LIST_CWT = "application/statuslist+cwt"
 STATUS_LIST_JWT = "application/statuslist+jwt"
 
+# draft-ietf-oauth-status-list-21 Section 7.1
+STATUS_VALID = 0x00
+STATUS_INVALID = 0x01
+STATUS_SUSPENDED = 0x02
+
+
+def referenced_token_status(entry: dict) -> int:
+    """Return the status value stored for one credential.
+
+    A document that already has ``status`` keeps that integer. A document
+    written before that field existed uses ``revoked``.
+    """
+    if entry.get("status") is not None:
+        return int(entry["status"])
+    return STATUS_INVALID if entry.get("revoked") else STATUS_VALID
+
 
 def decode_jwt_status_list_token(token: str) -> tuple[bool, dict, dict, int, bytes]:
     """
@@ -216,7 +232,7 @@ def array_to_bitstring_v1(status_array: list[dict], bits: int = 1) -> bytes:
     Bits are packed least-significant-bit first within each byte, and bytes are
     in natural ascending order, per draft-ietf-oauth-status-list Section 4.1.
 
-    :param status_array: status entries, each with ``incremental_id`` and ``revoked``.
+    :param status_array: status entries, each with ``incremental_id`` and ``status`` or ``revoked``.
     :type status_array: list[dict]
     :param bits: number of bits per status (one of 1, 2, 4, 8).
     :type bits: int
@@ -242,7 +258,9 @@ def array_to_bitstring_v1(status_array: list[dict], bits: int = 1) -> bytes:
 
     for status in entries:
         index = status["incremental_id"]
-        value = (1 if status["revoked"] else 0) & mask
+        value = referenced_token_status(status)
+        if value < 0 or value > mask:
+            raise ValueError("status value does not fit in the configured bits")
         bit_position = index * bits
         buffer[bit_position // 8] |= value << (bit_position % 8)
 

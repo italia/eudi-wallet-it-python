@@ -308,13 +308,10 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         }
 
         holder_key = cbor2.loads(CoseKey.from_pem_public_key(JWK(key=holder_key).export_public_pem()).encode())
-        status_list = None
-        if credential.optional_mso_attrs:
-            if credential.optional_mso_attrs.get("status"):
-                status_list = self.revoke_on_credential_reissuance(user_id, auth_session, config.id)
+        status_list = self.revoke_on_credential_reissuance(user_id, auth_session, config.id)
 
         mdoci.new(
-            status=status_list, devicekeyinfo=holder_key, x509_chain=x5c_chain,
+            revocation=status_list, devicekeyinfo=holder_key, x509_chain=x5c_chain,
             doctype=config.doctype,
             data=self._loader(
                 user_entity,

@@ -19,7 +19,12 @@ import pymongo
 import pytest
 from pymongo.errors import DuplicateKeyError
 
-from pyeudiw.status_list import array_to_bitstring_v1
+from pyeudiw.status_list import (
+    STATUS_INVALID,
+    STATUS_SUSPENDED,
+    STATUS_VALID,
+    array_to_bitstring_v1,
+)
 from pyeudiw.status_list.helper import StatusListTokenHelper
 
 # Optional inline credentials (``username:password@``) for a local authenticated
@@ -103,6 +108,7 @@ class _Entity:
         self.document_id = document_id
         self.user_id = "user"
         self.revoked = revoked
+        self.status = STATUS_VALID
         self.incremental_id = 0
 
 
@@ -166,6 +172,37 @@ def test_issuance_to_status_list_roundtrip():
     for credential in credentials:
         expected = 1 if credential["revoked"] else 0
         assert helper.get_status(credential["incremental_id"]) == expected
+
+
+def test_revoke_and_suspend_publish_registered_status_values():
+    store = _make_store()
+    valid_credential = _Entity("valid")
+    revoked_credential = _Entity("revoked")
+    suspended_credential = _Entity("suspended")
+    for entity in (valid_credential, revoked_credential, suspended_credential):
+        store.add_credential_for_user(entity)
+
+    store.revoke_credential(revoked_credential)
+    store.set_credential_status(suspended_credential, STATUS_SUSPENDED)
+
+    credentials = {
+        credential["document_id"]: credential
+        for credential in store.get_all_sorted_by_incremental_id()
+    }
+    assert credentials["valid"]["status"] == STATUS_VALID
+    assert credentials["valid"]["revoked"] is False
+    assert credentials["revoked"]["status"] == STATUS_INVALID
+    assert credentials["revoked"]["revoked"] is True
+    assert credentials["suspended"]["status"] == STATUS_SUSPENDED
+    assert credentials["suspended"]["revoked"] is False
+
+    lst_bytes = array_to_bitstring_v1(list(credentials.values()), bits=2)
+    helper = StatusListTokenHelper(
+        header={}, payload={}, bits=2, status_list=lst_bytes
+    )
+    assert helper.get_status(credentials["valid"]["incremental_id"]) == STATUS_VALID
+    assert helper.get_status(credentials["revoked"]["incremental_id"]) == STATUS_INVALID
+    assert helper.get_status(credentials["suspended"]["incremental_id"]) == STATUS_SUSPENDED
 
 
 def test_duplicate_index_is_rejected_by_unique_constraint():

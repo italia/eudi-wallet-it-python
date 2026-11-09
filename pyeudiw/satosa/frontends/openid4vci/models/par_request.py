@@ -91,7 +91,8 @@ class ParRequest(OpenId4VciBaseModel):
     def validate_state(self, endpoint: str):
         self.state = self.strip(self.state)
         self.check_missing_parameter(self.state, "state", endpoint)
-        if len(self.state) < 32 or not self.state.isalnum():
+        alphanumeric_state = self.state.replace("-", "")
+        if len(alphanumeric_state) < 32 or not alphanumeric_state.isalnum():
             logger.error(f"invalid state {self.state} in `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `state` parameter")
 
@@ -260,7 +261,8 @@ class SignedParRequest(OpenId4VciBaseModel):
     def validate_state(self, endpoint: str):
         self.state = self.strip(self.state)
         self.check_missing_parameter(self.state, "state", endpoint)
-        if len(self.state) < 32 or not self.state.isalnum():
+        alphanumeric_state = self.state.replace("-", "")
+        if len(alphanumeric_state) < 32 or not alphanumeric_state.isalnum():
             logger.error(f"invalid state {self.state} in `{endpoint}` endpoint")
             raise InvalidRequestException("invalid `state` parameter")
 

@@ -261,3 +261,32 @@ def test_metadata_credential_issuer_jwks_contain_no_private_keys_when_config_has
     payload = _get_entity_configuration_payload(metadata_handler, context, as_json=True)
     for jwk_dict in _collect_all_jwk_dicts_from_entity_config(payload):
         _assert_no_private_key_material(jwk_dict)
+
+
+def test_mso_mdoc_signing_algs_are_cose_integers_only_in_entity_statement(context):
+    """JOSE names stay in the live config; the published statement uses COSE integers."""
+    config = deepcopy(MOCK_PYEUDIW_FRONTEND_CONFIG)
+    jose_algs = ["ES256", "ES384", "ES512"]
+    config["metadata"]["openid_credential_issuer"]["credential_configurations_supported"][
+        "mso_mdoc_mDL"
+    ]["credential_signing_alg_values_supported"] = list(jose_algs)
+    config["metadata"]["openid_credential_issuer"]["credential_configurations_supported"][
+        "dc_sd_jwt_mDL"
+    ]["credential_signing_alg_values_supported"] = list(jose_algs)
+    metadata_handler = MetadataHandler(
+        config, MOCK_INTERNAL_ATTRIBUTES, MOCK_BASE_URL, MOCK_NAME
+    )
+    payload = _get_entity_configuration_payload(metadata_handler, context, as_json=True)
+    published = payload["metadata"]["openid_credential_issuer"][
+        "credential_configurations_supported"
+    ]
+    assert published["mso_mdoc_mDL"]["credential_signing_alg_values_supported"] == [
+        -7,
+        -35,
+        -36,
+    ]
+    assert published["dc_sd_jwt_mDL"]["credential_signing_alg_values_supported"] == jose_algs
+    live = metadata_handler.config["metadata"]["openid_credential_issuer"][
+        "credential_configurations_supported"
+    ]
+    assert live["mso_mdoc_mDL"]["credential_signing_alg_values_supported"] == jose_algs

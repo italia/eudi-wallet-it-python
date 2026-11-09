@@ -8,10 +8,14 @@ from satosa.internal import InternalData
 from satosa.response import Response
 
 from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
+from pyeudiw.jwk import JWK
 from pyeudiw.jwt.exceptions import JWSSigningError
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.satosa.backends.openid4vp.authorization_request import (
     build_authorization_request_claims,
+    configured_response_mode,
+    response_encryption_client_metadata,
+    response_encryption_key_params,
 )
 from pyeudiw.satosa.backends.openid4vp.endpoints.vp_base_endpoint import VPBaseEndpoint
 from pyeudiw.satosa.backends.openid4vp.schemas.wallet_metadata import (
@@ -62,7 +66,9 @@ class RequestHandler(VPBaseEndpoint):
             db_engine,
         )
 
-        self.absolute_response_url = f"{self.client_id}/response-uri"
+        self.absolute_response_url = self.attested_https_uri(
+            "response_uris", "response", "/response-uri"
+        )
 
         self.metadata_jwks_by_kids = {i["kid"]: i for i in self.config["metadata_jwks"]}
         self.trust_evaluator = trust_evaluator
@@ -130,7 +136,7 @@ class RequestHandler(VPBaseEndpoint):
                 )
 
             try:
-                document = self.db_engine.get_by_session_id(session_id)
+                document = self.db_engine.get_latest_by_session_id(session_id)
                 if not document:
                     raise ValueError("session not found")
             except ValueError as e401:
@@ -146,10 +152,26 @@ class RequestHandler(VPBaseEndpoint):
                     e500,
                 )
 
-        try:
-            client_metadata = self.trust_evaluator.get_metadata(self.client_id)
-        except Exception:
-            client_metadata = None
+        if document.get("request_object_issued"):
+            return self._handle_400(
+                context, "request error: request object already issued"
+            )
+
+        key_params = response_encryption_key_params(self.config)
+        encryption_key = JWK(key_type=key_params["kty"], ec_crv=key_params["crv"])
+        private_jwk = dict(encryption_key.jwk)
+        private_jwk["use"] = key_params["use"]
+        private_jwk["alg"] = key_params["alg"]
+        public_jwk = {
+            claim: private_jwk[claim]
+            for claim in ("kty", "crv", "x", "y", "kid")
+            if claim in private_jwk
+        }
+        metadata = self.config.get("metadata") or {}
+        vp_formats = metadata.get("vp_formats_supported") or metadata.get("vp_formats")
+        client_metadata = response_encryption_client_metadata(
+            public_jwk, vp_formats, use=key_params["use"], alg=key_params["alg"]
+        )
 
         request = context.request or {}
 
@@ -158,8 +180,8 @@ class RequestHandler(VPBaseEndpoint):
                 wallet_post_request = WalletPostRequest.model_validate(
                     request,
                     context={
-                        RESPONSE_MODES_SUPPORTED_CTX: self.config["authorization"].get(
-                            "response_mode", "direct_post_jwt"
+                        RESPONSE_MODES_SUPPORTED_CTX: configured_response_mode(
+                            self.config.get("authorization")
                         ),
                         VP_FORMATS_SUPPORTED_CTX: self._credential_supported_formats,
                         CLIENT_ID_SCHEMES_SUPPORTED_CTX: self._client_id_schemes_supported,
@@ -204,7 +226,9 @@ class RequestHandler(VPBaseEndpoint):
                     wallet_post_request.wallet_metadata.model_dump()
                 )
 
-            self.db_engine.update_request_object(document_id, data_copy)
+            self.db_engine.update_request_object(
+                document_id, data_copy, private_jwk
+            )
 
         except ValueError as e401:
             return self._handle_401(
@@ -247,6 +271,9 @@ class RequestHandler(VPBaseEndpoint):
                 protected=_protected_jwt_headers,
                 signing_algs=alg_values_supported,
             )
+            self.db_engine.mark_request_object_issued(
+                document["document_id"], request_object_jwt
+            )
             self._log_debug(context, f"created request object {request_object_jwt}")
             return Response(
                 message=request_object_jwt,
@@ -277,8 +304,10 @@ class RequestHandler(VPBaseEndpoint):
         return self.config["metadata_jwks"][0]
 
     def _build_submission_data(self) -> dict[str, Any] | None:
-        dcql_query = self.config.get(DUCKLE_PRESENTATION,{}).get(DUCKLE_QUERY_KEY)
-        dict_dcql_query = json.loads(dcql_query)
-        if dcql_query:
-            return {DUCKLE_QUERY_KEY: dict_dcql_query, "typo": DUCKLE_PRESENTATION}
-        return None
+        raw = (self.config.get(DUCKLE_PRESENTATION) or {}).get(DUCKLE_QUERY_KEY)
+        if raw is None:
+            raw = self.config.get(DUCKLE_QUERY_KEY)
+        if not raw:
+            return None
+        query = json.loads(raw) if isinstance(raw, str) else raw
+        return {DUCKLE_QUERY_KEY: query, "typo": DUCKLE_PRESENTATION}

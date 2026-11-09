@@ -112,8 +112,21 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def set_finalized(self, document_id: str):
         return self.write("set_finalized", document_id)
 
-    def update_request_object(self, document_id: str, request_object: dict) -> int:
-        return self.write("update_request_object", document_id, request_object)
+    def update_request_object(
+        self,
+        document_id: str,
+        request_object: dict,
+        response_encryption_jwk: dict | None = None,
+    ) -> int:
+        return self.write(
+            "update_request_object",
+            document_id,
+            request_object,
+            response_encryption_jwk,
+        )
+
+    def get_by_response_encryption_kid(self, kid: str) -> Union[dict, None]:
+        return self.get("get_by_response_encryption_kid", kid)
 
     def update_response_object(
         self, nonce: str, state: str, response_object: dict, isError: bool = False
@@ -324,6 +337,37 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
 
     def get_by_session_id(self, session_id: str) -> Union[dict, None]:
         return self.get("get_by_session_id", session_id=session_id)
+
+    def get_latest_by_session_id(self, session_id: str) -> Union[dict, None]:
+        return self.get("get_latest_by_session_id", session_id=session_id)
+
+    def mark_request_object_issued(self, document_id: str, request_object_jwt: str):
+        for db_name, storage in self.storages:
+            try:
+                return storage.mark_request_object_issued(document_id, request_object_jwt)
+            except ValueError:
+                raise
+            except Exception as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Error marking request object issued on {db_name}: {e}",
+                )
+        raise StorageWriteError(
+            f"Cannot mark request object issued for document {document_id}"
+        )
+
+    def consume_response_code(self, document_id: str, response_code: str) -> bool:
+        for db_name, storage in self.storages:
+            try:
+                return storage.consume_response_code(document_id, response_code)
+            except Exception as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Error consuming response code on {db_name}: {e}",
+                )
+        raise StorageWriteError(
+            f"Cannot consume response code for document {document_id}"
+        )
 
     @property
     def is_connected(self):

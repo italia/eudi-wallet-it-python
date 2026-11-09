@@ -116,6 +116,13 @@ class GetResponseHandler(BaseEndpoint):
                 "request error: request expired",
             )
 
+        if not self.db_engine.consume_response_code(
+            finalized_session["document_id"], resp_code
+        ):
+            return self._handle_400(
+                context, "request error: response code already used"
+            )
+
         if finalized_session.get("error_response"):
             return self._get_response_authorization_error_page(
                 finalized_session["error_response"]

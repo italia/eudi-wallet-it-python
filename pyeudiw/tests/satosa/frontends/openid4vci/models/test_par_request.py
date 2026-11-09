@@ -85,6 +85,7 @@ def test_empty_or_missing_state(value):
     [
         "short123",  # too short
         "a" * 31 + "#",  # not alnum
+        "a" * 31 + "-",  # hyphen does not count toward the alphanumeric length
     ],
 )
 def test_invalid_state(value):
@@ -92,6 +93,32 @@ def test_invalid_state(value):
 
     with pytest.raises(InvalidRequestException, match="invalid `state` parameter"):
         SignedParRequest.model_validate(payload, context=get_valid_context())
+
+
+@pytest.mark.parametrize("value", ["A" * 32, "4cc06a1a-6f6d-45c0-8a8b-1541dcbff767"])
+def test_state_allows_hyphens_when_alphanumeric_length_is_enough(value):
+    authorization_details = {
+        "type": OPEN_ID_CREDENTIAL_TYPE,
+        "credential_configuration_id": "dc_sd_jwt_EuropeanDisabilityCard",
+    }
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    payload = {
+        "iss": "client-123",
+        "aud": "entity-123",
+        "state": value,
+        "client_id": "client-123",
+        "iat": now,
+        "exp": now + 30,
+        "response_type": "code",
+        "code_challenge": "code_challenge_test",
+        "code_challenge_method": "S256",
+        "scope": "scope1",
+        "authorization_details": [authorization_details],
+        "redirect_uri": "https://client.example.org/cb",
+        "jti": str(uuid4()),
+    }
+
+    SignedParRequest.model_validate(payload, context=get_valid_context())
 
 
 @pytest.mark.parametrize("value", ["", "  ", None])
