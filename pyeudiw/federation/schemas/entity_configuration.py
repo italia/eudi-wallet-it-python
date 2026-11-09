@@ -47,3 +47,4 @@ class EntityStatementPayload(BaseModel, extra="forbid"):
     metadata_policy: Optional[dict] = None
     metadata: Optional[dict] = None
     trust_marks: Optional[list] = None
+    constraints: Optional[dict] = None

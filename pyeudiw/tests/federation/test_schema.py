@@ -90,6 +90,12 @@ def test_is_es():
     is_es(ta_es)
 
 
+def test_is_es_accepts_constraints():
+    statement = dict(ta_es)
+    statement["constraints"] = {"max_path_length": 1}
+    is_es(statement)
+
+
 def test_is_es_false():
     try:
         is_es(ta_ec)
