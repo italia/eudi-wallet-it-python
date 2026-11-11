@@ -212,7 +212,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             raise InvalidRequestException("Invalid nonce")
 
         now = round(time.time() * 1000)
-        if found_nonce["created_at"] + found_nonce["expires_in"] <= now:
+        if (found_nonce["created_at"] + found_nonce["expires_in"]) <= now:
             raise InvalidRequestException("Expired nonce")
 
         if self.db_engine.write("consume_nonce", nonce, now) < 1:
