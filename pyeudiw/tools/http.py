@@ -8,7 +8,7 @@ from pyeudiw.tools.exceptions import HttpError
 from pyeudiw.jwt.utils import decode_jwt_payload, is_jwt_format
 
 DEFAULT_HTTPC_PARAMS = {
-    "connection": {"ssl": False}, # @TODO FALSE ONLY DEV ENVIROnMENT
+    "connection": {"ssl": False}, # FALSE FOR DEV ENVIRONMENT ONLY
     "session": {"timeout": 4},
 }
 
@@ -34,7 +34,7 @@ def http_get(
         "timeout": httpc_params["session"]["timeout"],
     }
     if not _conf["verify"]:
-        logging.warning("SSL certificate verification is disabled for an HTTP request")
+        logging.warning(f"SSL certificate verification is disabled for HTTP request to: {url}")
     try:
         # nosec B113: timeout is set via _conf["timeout"], which Bandit cannot detect through **_conf unpacking
         response = requests.get(url, **_conf)  # nosec B113
@@ -80,9 +80,11 @@ def http_get_sync(
         for url in urls:
             if not _conf["verify"]:
                 logging.warning(
-                    "SSL certificate verification is disabled for an HTTP request"
+                    f"SSL certificate verification is disabled for HTTP request to: {url}"
                 )
-            res.append(requests.get(url, **_conf))  # nosec - B113
+            logging.debug(f"Performing HTTP GET request to: {url}")
+            response : requests.Response = requests.get(url, **_conf)  # nosec B113
+            res.append(response)  # nosec - B113
     except requests.exceptions.ConnectionError as e:
         raise HttpError(f"Connection error: {e}")
     for r in res:
@@ -138,8 +140,7 @@ async def fetch(
 
     connection_params = httpc_params.get("connection", {})
     if connection_params.get("ssl") is False:
-        logging.warning("SSL certificate verification is disabled for an HTTP request")
-
+        logging.warning(f"SSL certificate verification is disabled for HTTP request to: {url}")
     async with session.get(url, **connection_params) as response:
         if response.status != 200:  # pragma: no cover
             response.raise_for_status()
