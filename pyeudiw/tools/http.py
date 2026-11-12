@@ -1,6 +1,7 @@
 import asyncio
 
 import aiohttp
+import logging
 import requests
 
 from pyeudiw.tools.exceptions import HttpError
@@ -32,6 +33,8 @@ def http_get(
         "verify": httpc_params["connection"]["ssl"],
         "timeout": httpc_params["session"]["timeout"],
     }
+    if not _conf["verify"]:
+        logging.warning("SSL certificate verification is disabled for an HTTP request")
     try:
         # nosec B113: timeout is set via _conf["timeout"], which Bandit cannot detect through **_conf unpacking
         response = requests.get(url, **_conf)  # nosec B113
@@ -72,10 +75,14 @@ def http_get_sync(
     if "headers" in httpc_params:
         _conf["headers"] = httpc_params["headers"]
 
-    print(f"_config = {_conf}")
-
     try:
-        res = [requests.get(url, **_conf) for url in urls]  # nosec - B113
+        res = []
+        for url in urls:
+            if not _conf["verify"]:
+                logging.warning(
+                    "SSL certificate verification is disabled for an HTTP request"
+                )
+            res.append(requests.get(url, **_conf))  # nosec - B113
     except requests.exceptions.ConnectionError as e:
         raise HttpError(f"Connection error: {e}")
     for r in res:
@@ -129,7 +136,11 @@ async def fetch(
     :rtype: aiohttp.ClientResponse
     """
 
-    async with session.get(url, **httpc_params.get("connection", {})) as response:
+    connection_params = httpc_params.get("connection", {})
+    if connection_params.get("ssl") is False:
+        logging.warning("SSL certificate verification is disabled for an HTTP request")
+
+    async with session.get(url, **connection_params) as response:
         if response.status != 200:  # pragma: no cover
             response.raise_for_status()
         return response

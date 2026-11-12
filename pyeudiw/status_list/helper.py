@@ -13,7 +13,6 @@ from pyeudiw.status_list.exceptions import (
 from pyeudiw.tools.http import http_get_sync
 from pyeudiw.tools.utils import iat_now
 
-
 class StatusListTokenHelper:
     def __init__(
         self,
@@ -159,7 +158,7 @@ class StatusListTokenHelper:
 
     @staticmethod
     def from_status(
-        status: dict, httpc_params: Optional[dict] = None
+        status: dict, httpc_params: Optional[dict] = DEFAULT_HTTPC_PARAMS
     ) -> "StatusListTokenHelper":
         """
         Create a StatusListTokenHelper instance from a status dictionary.
@@ -180,17 +179,7 @@ class StatusListTokenHelper:
             raise MissingStatusListUriError("Status list URI is missing")
 
         try:
-            status_token = http_get_sync(
-                [uri],
-                {
-                    "connection": {"ssl": False},
-                    "session": {"timeout": 4},
-                    "headers": {
-                        "Content-Type": "application/json",
-                        "Accept": "application/statuslist+jwt",
-                    },
-                },
-            )
+            status_token = http_get_sync([uri], httpc_params)
         except Exception as e:
             raise StatusListRetrievalError(f"Failed to retrieve status list token: {e}")
 
