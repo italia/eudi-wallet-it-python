@@ -10,7 +10,7 @@ from pyeudiw.status_list.exceptions import (
     PositionOutOfRangeError,
     StatusListRetrievalError,
 )
-from pyeudiw.tools.http import http_get_sync
+from pyeudiw.tools.http import http_get_sync, DEFAULT_HTTPC_PARAMS
 from pyeudiw.tools.utils import iat_now
 
 class StatusListTokenHelper:
