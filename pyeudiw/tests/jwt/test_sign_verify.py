@@ -3,6 +3,9 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptojwt.jwk.ec import ECKey
 
 import pyeudiw.tests.x509.test_x509 as test_x509
+from pyeudiw.jwk.exceptions import KidNotFoundError
+from pyeudiw.jwk.parse import parse_certificate
+from pyeudiw.jwt.exceptions import JWSVerificationError
 from pyeudiw.jwt.jws_helper import DEFAULT_TOKEN_TIME_TOLERANCE, JWSHelper
 from pyeudiw.jwt.utils import decode_jwt_header
 from pyeudiw.tools.utils import iat_now
@@ -186,6 +189,52 @@ class TestJWSHelperSignVerify:
         observed_claims = helper.verify(token)
         # check that library did not include any extra claim when not required
         assert claims == observed_claims, "verified claims do not match signed claims"
+
+    @pytest.fixture
+    def x5c_token_and_key(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        chain = test_x509.gen_chain(leaf_private_key=private_key)
+        key = ECKey()
+        key.load_key(private_key)
+        key.kid = "issuer-defined-kid"
+        token = JWSHelper(key.serialize(private=True)).sign(
+            {"sub": "credential"},
+            protected={"x5c": [DER_cert_to_B64DER_cert(cert) for cert in chain[:-1]]},
+        )
+        return token, parse_certificate(chain[0]).as_public_dict()
+
+    def test_verify_x5c_with_issuer_defined_kid(self, x5c_token_and_key):
+        token, trusted_key = x5c_token_and_key
+        assert trusted_key["kid"] != decode_jwt_header(token)["kid"]
+        unrelated_key = parse_certificate(test_x509.gen_chain()[0]).as_public_dict()
+        verifier = JWSHelper([unrelated_key, trusted_key])
+        assert verifier.verify(token) == {"sub": "credential"}
+        assert verifier.jwks[1].kid == trusted_key["kid"]
+
+    def test_verify_x5c_rejects_untrusted_key(self, x5c_token_and_key):
+        token, _ = x5c_token_and_key
+        unrelated_key = parse_certificate(test_x509.gen_chain()[0]).as_public_dict()
+        with pytest.raises(KidNotFoundError):
+            JWSHelper(unrelated_key).verify(token)
+
+    def test_verify_x5c_rejects_mismatched_explicit_trusted_kid(self, x5c_token_and_key):
+        token, trusted_key = x5c_token_and_key
+        trusted_key["kid"] = "different-explicit-kid"
+        with pytest.raises(KidNotFoundError):
+            JWSHelper(trusted_key).verify(token)
+
+    def test_verify_unknown_kid_without_x5c_is_rejected(self, signing_key):
+        token = JWSHelper(signing_key).sign({"sub": "credential"})
+        trusted_key = {**signing_key, "kid": "different-kid"}
+        with pytest.raises(KidNotFoundError):
+            JWSHelper(trusted_key).verify(token)
+
+    def test_verify_x5c_rejects_invalid_signature(self, x5c_token_and_key):
+        token, trusted_key = x5c_token_and_key
+        header, _, signature = token.split(".")
+        modified_token = f"{header}.eyJzdWIiOiJtb2RpZmllZCJ9.{signature}"
+        with pytest.raises(JWSVerificationError):
+            JWSHelper(trusted_key).verify(modified_token)
 
     def test_JWSHelper_sign_then_verify_clock_skewed(self, signing_key):
         helper = JWSHelper(signing_key)
