@@ -95,6 +95,8 @@ payload = jwe_helper.decrypt(jwe)
 
 When the JWT header contains `x5c`, the verifier can use the certificate chain to obtain the verification key:
 
+The caller must validate the chain and establish trust in the certificate before using its key. If a trusted key derived from the certificate has a thumbprint-derived `kid`, the JWT may use a different issuer-defined `kid`.
+
 ```python
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.jwk.parse import parse_x5c_keys

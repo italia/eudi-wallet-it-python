@@ -43,6 +43,8 @@ To install the OpenID4VCI SATOSA frontend you just need to:
 | config.endpoints.metadata                | The endpoint that provides configuration metadata about the issuer, including supported credential formats, proof, methods and endpoints. |
 | config.endpoints.status_list             | The endpoint that serves status list that allow Wallets or Verifiers to check the current status of issued credentials.                   |
 
+The status list endpoint returns a JWT by default when the `Accept` header is absent or does not exactly match `application/statuslist+cwt`.
+
 Each endpoint value is structured according to the format described above, for example:
 
 ```

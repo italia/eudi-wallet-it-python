@@ -5,6 +5,7 @@ from dataclasses import asdict
 from datetime import date, datetime, timezone
 from typing import Any, Callable, Union
 
+from idpyoidc.server.user_authn.authn_context import UNSPECIFIED
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
@@ -352,13 +353,7 @@ class ResponseHandler(VPBaseEndpoint):
         timestamp_dt = datetime.fromtimestamp(timestamp_epoch, timezone.utc)
         timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
 
-        # default_acr_value is not part of OpenID4VP; VP responses typically lack acr/amr.
-        # It is used as a fallback when building SATOSA InternalData for the upstream IdP.
-        auth_class_ref = (
-            response.get("acr")
-            or response.get("amr")
-            or self.config["authorization"]["default_acr_value"]
-        )
+        auth_class_ref = response.get("acr") or response.get("amr") or UNSPECIFIED
         auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
 
         # TODO - ACR values
