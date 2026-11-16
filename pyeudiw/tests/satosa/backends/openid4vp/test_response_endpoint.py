@@ -1,6 +1,5 @@
 import unittest
 
-from idpyoidc.server.user_authn.authn_context import UNSPECIFIED
 from satosa.context import Context
 
 from pyeudiw.satosa.backends.openid4vp.endpoints.response_endpoint import ResponseHandler
@@ -10,7 +9,7 @@ from pyeudiw.satosa.schemas.autorization import AuthorizationConfig
 class TestResponseAuthenticationContext(unittest.TestCase):
     def test_authentication_context_fallback(self):
         cases = [
-            ({}, UNSPECIFIED),
+            ({}, "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified"),
             ({"amr": "method"}, "method"),
             ({"acr": "context", "amr": "method"}, "context"),
         ]

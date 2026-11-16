@@ -5,7 +5,6 @@ from dataclasses import asdict
 from datetime import date, datetime, timezone
 from typing import Any, Callable, Union
 
-from idpyoidc.server.user_authn.authn_context import UNSPECIFIED
 from satosa.attribute_mapping import AttributeMapper
 from satosa.context import Context
 from satosa.internal import AuthenticationInformation, InternalData
@@ -48,6 +47,9 @@ from pyeudiw.sd_jwt.schema import VerifierChallenge
 from pyeudiw.storage.exceptions import EntryNotFound, StorageWriteError
 from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
+
+
+UNSPECIFIED = "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified"
 
 
 class ResponseHandler(VPBaseEndpoint):
