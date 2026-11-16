@@ -49,6 +49,9 @@ from pyeudiw.tools.utils import iat_now
 from pyeudiw.trust.dynamic import CombinedTrustEvaluator
 
 
+UNSPECIFIED = "urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified"
+
+
 class ResponseHandler(VPBaseEndpoint):
     _SUPPORTED_RESPONSE_METHOD = "post"
     _SUPPORTED_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded"
@@ -352,13 +355,7 @@ class ResponseHandler(VPBaseEndpoint):
         timestamp_dt = datetime.fromtimestamp(timestamp_epoch, timezone.utc)
         timestamp_iso = timestamp_dt.isoformat().replace("+00:00", "Z")
 
-        # default_acr_value is not part of OpenID4VP; VP responses typically lack acr/amr.
-        # It is used as a fallback when building SATOSA InternalData for the upstream IdP.
-        auth_class_ref = (
-            response.get("acr")
-            or response.get("amr")
-            or self.config["authorization"]["default_acr_value"]
-        )
+        auth_class_ref = response.get("acr") or response.get("amr") or UNSPECIFIED
         auth_info = AuthenticationInformation(auth_class_ref, timestamp_iso, issuer)
 
         # TODO - ACR values

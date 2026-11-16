@@ -46,7 +46,10 @@ class NonceHandler(VCIBaseEndpoint):
         super().__init__(config, internal_attributes, base_url, name)
         self.jws_helper = JWSHelper(self.config["metadata_jwks"])
         self.db_engine = OpenId4VciDBEngineHandler(config).db_engine
-        self.expired_sec = self.config.get("nonce_duration") or self._DEFAULT_DURATION
+        self.expired_sec = (
+            self.config["endpoints"]["nonce"].get("config", {}).get("nonce_duration") or 
+            self._DEFAULT_DURATION
+        ) 
 
     def endpoint(self, context: Context) -> Response:
         """

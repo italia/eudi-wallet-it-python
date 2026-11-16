@@ -241,7 +241,7 @@ class CombinedTrustEvaluator(BaseLogger):
 
         if not keys:
             raise NoCriptographicMaterial(
-                f"no trust evaluator can provide cyptographic material "
+                f"no trust evaluator can provide cryptographic material "
                 f"for {issuer}: searched among: {self.handlers_names}"
             )
         return keys

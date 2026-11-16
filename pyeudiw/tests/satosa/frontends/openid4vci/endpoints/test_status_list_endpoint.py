@@ -17,7 +17,6 @@ from pyeudiw.status_list import (
 )
 from pyeudiw.status_list.helper import StatusListTokenHelper
 from pyeudiw.tests.satosa.frontends.openid4vci.endpoints.endpoints_test import (
-    assert_invalid_request_application_json,
     do_test_invalid_content_type,
     do_test_invalid_request_method,
     do_test_missing_configurations_raises,
@@ -35,7 +34,11 @@ from pyeudiw.tests.satosa.frontends.openid4vci.mock_openid4vci import (
     get_mocked_satosa_context,
     mock_deserialized_overridable,
 )
-from pyeudiw.tools.content_type import HTTP_ACCEPT_HEADER, APPLICATION_JSON
+from pyeudiw.tools.content_type import (
+    HTTP_ACCEPT_HEADER,
+    APPLICATION_JSON,
+    get_content_type_header,
+)
 
 _STATUS_LIST_BASE_PATH = f"{BASE_PACKAGE}.endpoints.status_list_endpoint"
 
@@ -118,24 +121,6 @@ def test_missing_configurations_raises(config, missing_fields):
     do_test_missing_configurations_raises(StatusListHandler, config, missing_fields)
 
 
-@pytest.mark.parametrize(
-    "accept_header, error_desc",
-    [
-        (None, "Missing accept header"),
-        ("", "Missing accept header"),
-        (" ", "Invalid accept header"),
-        ("accept-random-value", "Invalid accept header"),
-    ],
-)
-def test_invalid_accept_header(status_list_handler, context, accept_header, error_desc):
-    ctx = deepcopy(context)
-    if accept_header:
-        ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
-    assert_invalid_request_application_json(
-        status_list_handler.endpoint(ctx), error_desc
-    )
-
-
 status_array = [
     {"incremental_id": 1, "revoked": False},
     {"incremental_id": 2, "revoked": True},
@@ -157,6 +142,20 @@ def test_should_return_status_list_jwt_without_credentials(
     should_return_status_list(status_list_handler, context, STATUS_LIST_JWT, [])
 
 
+def test_should_return_status_list_jwt_without_accept_header(
+    status_list_handler, context
+):
+    should_return_status_list(status_list_handler, context, None, status_array)
+
+
+@pytest.mark.parametrize("accept_header", ["*/*", "", " ", "application/json"])
+@pytest.mark.parametrize("credentials", [status_array, []])
+def test_should_return_status_list_jwt_for_other_accept_headers(
+    status_list_handler, context, accept_header, credentials
+):
+    should_return_status_list(status_list_handler, context, accept_header, credentials)
+
+
 def test_should_return_status_list_cwt_credentials(status_list_handler, context):
     should_return_status_list(
         status_list_handler, context, STATUS_LIST_CWT, status_array
@@ -172,17 +171,19 @@ def test_should_return_status_list_cwt_without_credentials(
 def should_return_status_list(
     status_list_handler,
     context: Context,
-    accept_header: str,
+    accept_header: str | None,
     status_list: list[dict],
     expected_bits: int = 2,
 ):
     status_list_handler._db_credential_engine.get.return_value = status_list
     ctx = deepcopy(context)
     ctx.path = f"{MOCK_NAME}/status/1"
-    ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
+    if accept_header is not None:
+        ctx.http_headers[HTTP_ACCEPT_HEADER] = accept_header
     result = status_list_handler.endpoint(ctx)
     assert result.status == "200 OK"
-    if accept_header == STATUS_LIST_JWT:
+    if accept_header != STATUS_LIST_CWT:
+        assert get_content_type_header(result.headers) == STATUS_LIST_JWT
         credential = JWSHelper(MOCK_PYEUDIW_FRONTEND_CONFIG["metadata_jwks"]).verify(
             result.message
         )
@@ -201,8 +202,6 @@ def should_return_status_list(
             "iat": cwt[2][4],
             "status_list": {"bits": bits},
         }
-    else:
-        pytest.fail(f"Unexpected accept header value: {accept_header}")
     assert credential is not None
     assert isinstance(credential, dict)
     assert (

@@ -1,6 +1,7 @@
 import datetime
 from unittest.mock import patch
 
+import pytest
 from cryptography.hazmat.primitives.asymmetric import ec
 from requests import Response
 
@@ -40,7 +41,7 @@ def test_wrong_configuration_must_fail():
         )
         assert False, "Should have raised InvalidTrustHandlerConfiguration"
     except InvalidTrustHandlerConfiguration as e:
-        assert "Invalid x509 certificate: expected" in str(e)
+        assert "No certificate authority configured" in str(e)
 
 
 def test_extract_trust_material_from_x509_handler():
@@ -102,6 +103,97 @@ def test_issued_x5c_omits_trust_anchor():
     issued_last = parse_b64der(header["x5c"][-1]).thumbprint
     assert issued_last == parse_certificate(chain[-2]).thumbprint
     assert issued_last != parse_certificate(chain[-1]).thumbprint
+
+
+def test_configured_chain_without_trust_anchor():
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_uri="https://example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    configured_chain = chain[:-1]
+    trust_handler = X509Handler(
+        client_id="example.com",
+        leaf_certificate_chains_by_ca={"ca.example.com": configured_chain},
+        private_keys=[DEFAULT_X509_LEAF_JWK],
+        certificate_authorities={"ca.example.com": chain[-1]},
+    )
+    assert configured_chain == chain[:-1]
+    assert trust_handler.leaf_certificate_chains_by_ca["ca.example.com"] == chain
+
+    trust_source = TrustSourceData.empty("example.com")
+    with patch.object(trust_handler, "_extract_crls", return_value=[]):
+        trust_handler.extract_and_update_trust_materials("example.com", trust_source)
+    header = trust_handler.extract_jwt_header_trust_parameters(trust_source)
+    assert len(header["x5c"]) == 2
+    assert parse_b64der(header["x5c"][-1]).thumbprint == parse_certificate(
+        chain[-2]
+    ).thumbprint
+
+
+def test_configured_chain_without_trust_anchor_rejects_wrong_ca():
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    unrelated_chain = gen_chain()
+    with pytest.raises(InvalidTrustHandlerConfiguration):
+        X509Handler(
+            client_id="example.com",
+            leaf_certificate_chains_by_ca={"ca.example.com": chain[:-1]},
+            private_keys=[DEFAULT_X509_LEAF_JWK],
+            certificate_authorities={"ca.example.com": unrelated_chain[-1]},
+        )
+
+
+def test_configured_leaf_directly_signed_by_ca():
+    builder = ChainBuilder()
+    builder.gen_certificate(
+        cn="ca.example.com",
+        organization_name="Example CA",
+        country_name="IT",
+        email_address="info@ca.example.com",
+        dns="ca.example.com",
+        uri="https://ca.example.com",
+        ca=True,
+        path_length=0,
+    )
+    builder.gen_certificate(
+        cn="example.com",
+        organization_name="Example Leaf",
+        country_name="IT",
+        email_address="info@example.com",
+        dns="example.com",
+        uri="https://example.com",
+        ca=False,
+        path_length=None,
+        private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    chain = builder.get_chain("DER")
+    handler = X509Handler(
+        client_id="example.com",
+        leaf_certificate_chains_by_ca={"ca.example.com": chain[:-1]},
+        private_keys=[DEFAULT_X509_LEAF_JWK],
+        certificate_authorities={"ca.example.com": chain[-1]},
+    )
+    assert handler.leaf_certificate_chains_by_ca["ca.example.com"] == chain
+
+
+def test_configured_chain_without_matching_ca_is_rejected():
+    chain = gen_chain(
+        leaf_cn="example.com",
+        leaf_dns="example.com",
+        leaf_private_key=DEFAULT_X509_LEAF_PRIVATE_KEY,
+    )
+    with pytest.raises(InvalidTrustHandlerConfiguration):
+        X509Handler(
+            client_id="example.com",
+            leaf_certificate_chains_by_ca={"ca.example.com": chain[:-1]},
+            private_keys=[DEFAULT_X509_LEAF_JWK],
+            certificate_authorities={},
+        )
 
 
 def test_validate_chain_without_trust_anchor():

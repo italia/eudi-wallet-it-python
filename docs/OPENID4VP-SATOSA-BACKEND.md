@@ -88,9 +88,10 @@ To install the OpenID4VP SATOSA backend you just need to:
 |----------------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
 | config.authorization.client_id               | client_id to be set only in the request object; if not set default to entity id value               | IT-PYEUDIRP (as requested by Potential LSP)         |
 | config.authorization.url_scheme              | Either a custom URL scheme for the authorization, or a universal link                               | haip, https://wallet.example                        |
-| config.authorization.default_acr_value       | ACR fallback for the upstream IdP. **Not part of OpenID4VP.** VP responses rarely include `acr`/`amr`; when building `AuthenticationInformation` for the IdP (SAML/OIDC), this value is used. Must match your IdP's expected authentication context. | https://www.spid.gov.it/SpidL2                      |
 | config.authorization.aud                     | Optional audience of the Request Object JWT, statically configured in the form of a string or array | https://self-issued.me/v2                           |
 | config.authorization.response_mode           | Optional response mode in the request object; if not set it is equal to direct_post.jwt             | direct_post.jwt, direct_post                        |
+
+When the VP response has no `acr` or `amr`, the backend uses SATOSA's unspecified authentication context.
 
 ##### DCQL query (dcql_query)
 

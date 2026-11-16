@@ -71,12 +71,30 @@ class X509Handler(TrustHandlerInterface):
         failure_reasons: list[str] = []
 
         for ca_key, pem_chain in leaf_certificate_chains_by_ca.items():
+            if not pem_chain:
+                raise InvalidTrustHandlerConfiguration(
+                    f"No certificates provided for CA {ca_key!r}."
+                )
             pem_chain = [_strip_pem(cert_pem) for cert_pem in pem_chain]
+            last_thumbprint = parse_certificate(pem_chain[-1]).thumbprint
+            ca_cert = certificate_authorities.get(ca_key)
+            if ca_cert is not None:
+                ca_cert = _strip_pem(ca_cert)
+                has_trusted_root = (
+                    last_thumbprint in certificate_authorities_thumbprint
+                    and get_x509_info(pem_chain[-1]) in ca_key
+                )
+                if not has_trusted_root:
+                    pem_chain.append(ca_cert)
+            elif last_thumbprint not in certificate_authorities_thumbprint:
+                raise InvalidTrustHandlerConfiguration(
+                    f"No certificate authority configured for CA {ca_key!r}."
+                )
             root_dns_name = get_x509_info(pem_chain[-1])
             if root_dns_name not in ca_key:
                 raise InvalidTrustHandlerConfiguration(
                     f"Invalid x509 certificate: expected root DNS name to match key {ca_key!r} but got {root_dns_name!r}. "
-                    f"Ensure the last certificate in the chain is the root CA and its SAN/CN matches the key."
+                    "Ensure the root CA SAN/CN matches the key."
                 )
 
             root_cert_thumbprint = parse_certificate(pem_chain[-1]).thumbprint
@@ -170,7 +188,7 @@ class X509Handler(TrustHandlerInterface):
             guidance = (
                 "How to resolve: (1) client_id must be x509_san_dns:<dns> matching leaf SAN. "
                 "(2) Leaf cert must be issued for the same key as metadata_jwks[0]; regenerate chain with that key. "
-                "(3) Chain order [leaf, intermediate, root]; root must match certificate_authorities. "
+                "(3) Chain order [leaf, intermediate, optional root]; root must match certificate_authorities. "
                 "(4) All certs valid and signed by next in chain."
             )
             raise InvalidTrustHandlerConfiguration(

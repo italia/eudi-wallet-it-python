@@ -111,7 +111,7 @@ MOCK_ENDPOINTS_CONFIG = {
         "class": "TokenHandler",
         "path": "/token",
     },
-    "nonce_endpoint": {
+    "nonce": {
         "module": f"{BASE_PACKAGE}.endpoints.nonce_endpoint",
         "class": "NonceHandler",
         "path": "/nonce-endpoint",

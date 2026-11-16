@@ -87,43 +87,33 @@ class StatusListHandler(VCIBaseEndpoint):
             accept_header = get_value_from_key(context.http_headers, HTTP_ACCEPT_HEADER)
             payload = self._build_status_list_payload(requested_id)
             logger.debug("Accept header: %s, Payload: %s", accept_header, payload)
-            match accept_header:
-                case AcceptHeaderEnum.STATUS_LIST_JWT.value:
-                    jws_headers = {"typ": self._handle_header(STATUS_LIST_JWT)}
-                    plain_dict = self._build_status_list_payload(requested_id)
-                    plain_dict["status_list"]["lst"] = (urlsafe_b64encode(plain_dict["status_list"]["lst"]).decode("ascii").rstrip("="))
-                    return Response(
-                        message=self.jws_helper.sign(
-                            protected=jws_headers,
-                            plain_dict=plain_dict,
-                        ),
-                        content=STATUS_LIST_JWT,
-                    )
-                case AcceptHeaderEnum.STATUS_LIST_CWT.value:
-                    # encode_cwt_status_list_token compresses internally, so pass
-                    # the uncompressed bitstring to avoid double compression.
-                    lst_bytes = zlib.decompress(payload["status_list"]["lst"])
-                    del payload["status_list"]
-                    payload_parts = ({}, {}, payload)
-                    token = encode_cwt_status_list_token(
-                        payload_parts,
-                        _STATUS_LIST_BITS,
-                        lst_bytes,
-                        _PAYLOAD_CWT_KEYS,
-                        self._mso_mdoc_private_key,
-                    )
-                    return Response(
-                        message=token.decode(),
-                        content=APPLICATION_JSON,
-                    )
-                case _:
-                    self._log_error(
-                        self.__class__.__name__,
-                        f"unexpected accept header {accept_header} ",
-                    )
-                    raise InvalidRequestException(
-                        f"{'Invalid accept header' if accept_header is not None else 'Missing accept header'}"
-                    )
+            if accept_header == AcceptHeaderEnum.STATUS_LIST_CWT.value:
+                # encode_cwt_status_list_token compresses internally, so pass
+                # the uncompressed bitstring to avoid double compression.
+                lst_bytes = zlib.decompress(payload["status_list"]["lst"])
+                del payload["status_list"]
+                payload_parts = ({}, {}, payload)
+                token = encode_cwt_status_list_token(
+                    payload_parts,
+                    _STATUS_LIST_BITS,
+                    lst_bytes,
+                    _PAYLOAD_CWT_KEYS,
+                    self._mso_mdoc_private_key,
+                )
+                return Response(
+                    message=token.decode(),
+                    content=APPLICATION_JSON,
+                )
+            jws_headers = {"typ": self._handle_header(STATUS_LIST_JWT)}
+            plain_dict = self._build_status_list_payload(requested_id)
+            plain_dict["status_list"]["lst"] = (urlsafe_b64encode(plain_dict["status_list"]["lst"]).decode("ascii").rstrip("="))
+            return Response(
+                message=self.jws_helper.sign(
+                    protected=jws_headers,
+                    plain_dict=plain_dict,
+                ),
+                content=STATUS_LIST_JWT,
+            )
         except (InvalidRequestException, InvalidScopeException) as e:
             return self._handle_400(context, e.message, e)
         except Exception as e:
@@ -154,40 +144,6 @@ class StatusListHandler(VCIBaseEndpoint):
             ),
             "ttl": self.status_list.ttl,
         }
-
-    # def _build_status_list_payload(self, status_id: str) -> dict:
-    #     logger.debug(
-    #         f"Entering method: {inspect.getframeinfo(inspect.currentframe()).function}. "
-    #     )
-    #     print(f"Entering method: _build_status_list_payload status: {status_id}. ")
-    #     bits = 1
-    #     status_path = self.status_list.path
-    #     print(f"status_path: {status_path}")
-    #     status_path = status_path.lstrip("/")
-    #     print(f"status_path: {status_path}")
-    #     iat = iat_now()
-    #     credentials = self._db_credential_engine.get("get_all_sorted_by_incremental_id")
-    #     print(f"credentials: {credentials}")
-    #     if not credentials or len(credentials) == 0:
-    #         compressed_lst = ""
-    #     else:
-    #         bits = (len(credentials) + 7) // 8
-    #         print(f"bits: {bits}")
-    #         bit_bytes = array_to_bitstring(credentials)
-    #         print(f"bit_bytes: {bit_bytes}")
-    #         lst = bin(int.from_bytes(bit_bytes, "big"))[2:].zfill(len(credentials))
-    #         print(f"lst: {lst}")
-    #         byte_list = int(lst.ljust(8, '0'), 2).to_bytes((len(bit_bytes) + 7) // 8, byteorder='big')
-    #         print(f"byte_list: {byte_list}")
-    #         compressed_lst = zlib.compress(byte_list)
-    #         print(f"compressed_lst: {compressed_lst}")
-    #     return {
-    #         "exp": iat + self.status_list.exp,
-    #         "iat": iat,
-    #         "status_list": {"bits": bits, "lst": compressed_lst},
-    #         "sub": f"{self._backend_url}/{status_path}/{status_id}",
-    #         "ttl": self.status_list.ttl,
-    #     }
 
     def _validate_configs(self):
         cred_config = self.config_utils.get_credential_configurations()

@@ -8,7 +8,7 @@ from cryptojwt import JWS
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.jwk import JWK
-from pyeudiw.jwk.exceptions import KidError
+from pyeudiw.jwk.exceptions import KidError, KidNotFoundError
 from pyeudiw.jwk.jwks import find_jwk_by_kid, find_jwk_by_thumbprint
 from pyeudiw.jwk.parse import parse_b64der
 from pyeudiw.jwt.exceptions import (
@@ -344,8 +344,22 @@ class JWSHelper(JWHelperInterface):
 
         # case 1: can be found by header
         if "kid" in header:
-            if verifying_key := find_jwk_by_kid(available_keys, header["kid"]):
-                return verifying_key
+            try:
+                return find_jwk_by_kid(available_keys, header["kid"])
+            except KidNotFoundError:
+                x5c = header.get("x5c")
+                if x5c:
+                    candidate_key = parse_b64der(x5c[0])
+                    verifying_key = find_jwk_by_thumbprint(
+                        available_keys, candidate_key.thumbprint
+                    )
+                    if verifying_key and verifying_key.get("kid") in (
+                        None,
+                        "",
+                        candidate_key.thumbprint.decode(),
+                    ):
+                        return {**verifying_key, "kid": header["kid"]}
+                raise
 
         # case 2: the token is self contained, and the verification key matches one of the key in the whitelist
         if self_contained_claims_key_pair := find_self_contained_key(header):
