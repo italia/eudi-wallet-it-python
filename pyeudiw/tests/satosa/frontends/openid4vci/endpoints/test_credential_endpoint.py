@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import time
@@ -120,10 +119,12 @@ def _dpop_bound_headers() -> dict:
     """
     dpop_key = new_ec_key("P-256")
     dpop_pub = dpop_key.serialize(private=False)
+    # JWK.thumbprint is already the base64url SHA-256 thumbprint as ASCII bytes.
+    thumbprint = JWK(key=dpop_pub).thumbprint
     jkt = (
-        base64.urlsafe_b64encode(JWK(key=dpop_pub).thumbprint)
-        .decode("utf-8")
-        .rstrip("=")
+        thumbprint.decode("utf-8")
+        if isinstance(thumbprint, (bytes, bytearray))
+        else thumbprint
     )
     access_token = JWSHelper(dpop_key).sign(
         {"jti": _ACCESS_TOKEN_JTI, "cnf": {"jkt": jkt}},

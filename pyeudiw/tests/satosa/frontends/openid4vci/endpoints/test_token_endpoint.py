@@ -640,7 +640,7 @@ def _assert_test_valid_request_with_grant_type_refresh_token(
 def _assert_valid_request(
     result: Response, entity: dict, exp_access_token: str, exp_refresh_token: str
 ):
-    assert result.status == "201 Created"
+    assert result.status == "200 OK"
     response = json.loads(result.message)
     assert response["access_token"] == exp_access_token
     assert response["refresh_token"] == exp_refresh_token
