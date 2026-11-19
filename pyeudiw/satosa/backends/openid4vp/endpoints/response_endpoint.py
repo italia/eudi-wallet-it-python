@@ -275,6 +275,15 @@ class ResponseHandler(VPBaseEndpoint):
             return self._handle_400(
                 context, "invalid DCQL response: validation error", e400
             )
+        except ValueError as e400:
+            missing = str(e400)
+            if missing.startswith("Missing claims:"):
+                return self._handle_400(
+                    context, f"invalid DCQL response: {missing}", e400
+                )
+            return self._handle_500(
+                context, "invalid DCQL response: unknown error", e400
+            )
         except Exception as e500:
             return self._handle_500(
                 context, "invalid DCQL response: unknown error", e500

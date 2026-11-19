@@ -9,6 +9,7 @@ class Claim(BaseModel):
     """
 
     path: List[str]
+    id: Optional[str] = None
 
 
 class Meta(BaseModel):
@@ -30,6 +31,7 @@ class Credential(BaseModel):
     format: str
     meta: Meta
     claims: List[Claim]
+    claim_sets: Optional[List[List[str]]] = None
 
 
 class CredentialsRequest(BaseModel):

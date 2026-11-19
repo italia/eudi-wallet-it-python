@@ -1,4 +1,85 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Sequence
+
+
+def _claim_id(claim: Any, index: int) -> str:
+    claim_id = getattr(claim, "id", None)
+    if isinstance(claim_id, str) and claim_id:
+        return claim_id
+    if isinstance(claim, dict):
+        claim_id = claim.get("id")
+        if isinstance(claim_id, str) and claim_id:
+            return claim_id
+        path = claim.get("path") or []
+    else:
+        path = getattr(claim, "path", None) or []
+    if isinstance(path, list) and path:
+        return ".".join(str(part) for part in path)
+    return str(index)
+
+
+def _claim_path(claim: Any) -> List[str]:
+    if isinstance(claim, dict):
+        path = claim.get("path") or []
+    else:
+        path = getattr(claim, "path", None) or []
+    return list(path) if isinstance(path, list) else []
+
+
+def _missing_paths(data: Dict[str, Any], paths: List[Dict[str, List[str]]]) -> List[str]:
+    missing = []
+    for path_obj in paths:
+        path = path_obj.get("path")
+        if not path:
+            continue
+        current = data
+        try:
+            for key in path:
+                current = current[key]
+        except (KeyError, TypeError, IndexError):
+            missing.append(".".join(path) if isinstance(path, list) else str(path))
+    return missing
+
+
+def paths_for_claim_sets(
+    claims: Sequence[Any],
+    claim_sets: Optional[Sequence[Sequence[str]]],
+    data: Dict[str, Any],
+) -> List[Dict[str, List[str]]]:
+    """
+    Resolve the claim paths to extract for a credential query.
+
+    Without claim_sets, every claim path is required. With claim_sets, the first
+    fully satisfied set (RP preference order) is selected.
+    """
+    by_id = {}
+    for index, claim in enumerate(claims or []):
+        path = _claim_path(claim)
+        if not path:
+            continue
+        by_id[_claim_id(claim, index)] = {"path": path}
+
+    if not claim_sets:
+        return list(by_id.values())
+
+    first_missing: Optional[List[str]] = None
+    for claim_set in claim_sets:
+        if not isinstance(claim_set, (list, tuple)):
+            continue
+        paths = []
+        unresolved = []
+        for claim_id in claim_set:
+            path_obj = by_id.get(claim_id)
+            if not path_obj:
+                unresolved.append(str(claim_id))
+                continue
+            paths.append(path_obj)
+        missing = unresolved + _missing_paths(data, paths)
+        if not missing:
+            return paths
+        if first_missing is None:
+            first_missing = missing
+
+    raise ValueError(f"Missing claims: {', '.join(first_missing or [])}")
 
 
 def extract_claims(
@@ -21,7 +102,7 @@ def extract_claims(
         d[path[-1]] = value
 
     result = {}
-    missing = []
+    missing = _missing_paths(data, paths)
 
     for path_obj in paths:
         path = path_obj.get("path")
@@ -35,14 +116,14 @@ def extract_claims(
                     current = current[key]
                 set_nested(result, path, current)
             except (KeyError, TypeError):
-                missing.append(".".join(path))
+                continue
         else:
             # fallback for flat single-key paths (e.g. path=["given_name"])
             try:
                 value = data[path[0]]
                 result[path[0]] = value
             except (KeyError, TypeError, IndexError):
-                missing.append(path[0])
+                continue
 
     if missing:
         raise ValueError(f"Missing claims: {', '.join(missing)}")
