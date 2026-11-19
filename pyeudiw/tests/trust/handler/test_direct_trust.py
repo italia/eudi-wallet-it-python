@@ -54,13 +54,18 @@ def test_direct_trust_build_issuer_metadata_endpoint():
     test_cases: list[TestCase] = [
         TestCase(
             "https://entity-id.example/path",
-            "https://entity-id.example/path/.well-known/openid-credential-issuer",
+            "https://entity-id.example/.well-known/openid-credential-issuer/path",
             explanation="the entity id does NOT have a trailing path separator",
         ),
         TestCase(
             "https://entity-id.example/path/",
-            "https://entity-id.example/path/.well-known/openid-credential-issuer",
+            "https://entity-id.example/.well-known/openid-credential-issuer/path/",
             explanation="the entity id DOES have a trailing path separator",
+        ),
+        TestCase(
+            "https://entity-id.example",
+            "https://entity-id.example/.well-known/openid-credential-issuer",
+            explanation="the entity id has no path component",
         ),
     ]
 
