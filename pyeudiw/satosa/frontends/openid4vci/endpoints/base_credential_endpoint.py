@@ -22,6 +22,30 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from satosa.context import Context
 from satosa.response import Response
 
+
+def extract_credential_proof_jwt(body: dict) -> str:
+    """Return the first credential proof JWT from proofs or legacy proof."""
+    proofs = body.get("proofs")
+    if isinstance(proofs, dict):
+        jwt_list = proofs.get("jwt")
+        if isinstance(jwt_list, list) and jwt_list:
+            return (jwt_list[0] or "").strip()
+    proof = body.get("proof")
+    if isinstance(proof, dict):
+        return (proof.get("jwt") or "").strip()
+    return ""
+
+
+def normalize_credential_request_body(body: dict) -> dict:
+    """Map OpenID4VCI ``proofs.jwt`` into legacy ``proof`` for model validation."""
+    normalized = dict(body)
+    if normalized.get("proof"):
+        return normalized
+    proof_jwt = extract_credential_proof_jwt(normalized)
+    if proof_jwt:
+        normalized["proof"] = {"proof_type": "jwt", "jwt": proof_jwt}
+    return normalized
+
 from pyeudiw.jwt.jws_helper import JWSHelper
 from pyeudiw.oauth2.dpop.verifier import DPoPVerifier
 from pyeudiw.satosa.exceptions import InvalidRequestException
@@ -152,11 +176,11 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
                 CONFIG_CTX: self.config
             })
 
-            data = self._get_body(context) or {}
+            data = normalize_credential_request_body(self._get_body(context) or {})
             credential_identifier = data.get("credential_identifier") or ""
             # TODO: check/validate scope
             if data.get("credential_configuration_id"):
-                credential_configuration_id = data
+                credential_configuration_id = data.get("credential_configuration_id")
             else:  # validate credential_identifier with authorization_details of token
                 for auth_details in auth_session.authorization_details or []:
                     if credential_identifier in (auth_details.credential_identifiers or []):
@@ -167,10 +191,11 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
 
             self.validate_request(context, entity)
 
-            proof_jwt = data.get("proof", {}).get("jwt") or ""
+            proof_jwt = extract_credential_proof_jwt(data)
+            if not proof_jwt:
+                raise MissingProofJWTException("missing proof JWT")
             request_header = decode_jwt_header(proof_jwt)
             request_payload = decode_jwt_payload(proof_jwt)
-            client_id = request_payload.get("iss")
 
             #validate nonce
             self._consume_nonce(request_payload.get("nonce"))
@@ -179,14 +204,36 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             if not (key_attestation := request_header.get("key_attestation")):
                 return self._handle_400(context, "invalid key_attestation", InvalidRequestException("invalid_proof"))
 
+            proof_jwk = request_header.get("jwk")
+            if not proof_jwk:
+                return self._handle_400(
+                    context, "proof missing jwk", InvalidRequestException("invalid_proof")
+                )
+
+            proof_thumb = key_from_jwk_dict(proof_jwk).thumbprint("SHA-256").decode()
             k_payload = decode_jwt_payload(key_attestation)
+            holder_key = None
+            # OpenID4VCI key attestation may list device keys in attested_keys
+            # or bind a single key via cnf.jwk. Match the proof JWK, not iss
+            # (iss is the Wallet Instance client_id).
             for _k in k_payload.get("attested_keys") or []:
-                t_print = key_from_jwk_dict(_k).thumbprint("SHA-256").decode()
-                if t_print == client_id:
+                if key_from_jwk_dict(_k).thumbprint("SHA-256").decode() == proof_thumb:
                     holder_key = _k
                     break
-            else:
-                return self._handle_400(context, "client_id mismatch", InvalidRequestException("invalid_proof"))
+            if holder_key is None:
+                cnf_jwk = (k_payload.get("cnf") or {}).get("jwk")
+                if (
+                    cnf_jwk
+                    and key_from_jwk_dict(cnf_jwk).thumbprint("SHA-256").decode()
+                    == proof_thumb
+                ):
+                    holder_key = cnf_jwk
+            if holder_key is None:
+                return self._handle_400(
+                    context,
+                    "proof jwk not attested",
+                    InvalidRequestException("invalid_proof"),
+                )
 
             return self.to_response(context, auth_session, credential_configuration_id, holder_key=holder_key)
 

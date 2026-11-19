@@ -12,6 +12,8 @@ from pyeudiw.jwt.utils import decode_jwt_header, decode_jwt_payload
 from pyeudiw.satosa.exceptions import InvalidRequestException
 from pyeudiw.satosa.frontends.openid4vci.endpoints.base_credential_endpoint import (
     BaseCredentialEndpoint,
+    extract_credential_proof_jwt,
+    normalize_credential_request_body,
 )
 from pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request import (
     CredentialEndpointRequest,
@@ -140,11 +142,8 @@ class CredentialHandler(BaseCredentialEndpoint):
                 body_dict = json.loads(body) if isinstance(body, str) else {}
             except (json.JSONDecodeError, TypeError):
                 body_dict = {}
-        proof = body_dict.get("proof")
-        proof_jwt = None
-        if isinstance(proof, dict):
-            proof_jwt = proof.get("jwt") or ""
-        proof_jwt = (proof_jwt or "").strip() if proof_jwt else None
+        body_dict = normalize_credential_request_body(body_dict)
+        proof_jwt = extract_credential_proof_jwt(body_dict) or None
 
         if self.proof_jwt_required and not proof_jwt:
             raise MissingProofJWTException("missing proof JWT")

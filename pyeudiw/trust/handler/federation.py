@@ -234,6 +234,8 @@ class FederationHandler(TrustHandlerInterface, BaseLogger):
             },
             "authority_hints": self.authority_hints,
         }
+        if self.trust_marks:
+            ec_payload["trust_marks"] = self.trust_marks
         return ec_payload
 
     def entity_configuration_endpoint(self, context: Context, *args ) -> Response:

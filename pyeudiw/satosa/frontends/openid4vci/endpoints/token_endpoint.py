@@ -1,4 +1,3 @@
-import base64
 import secrets
 from enum import Enum
 
@@ -205,8 +204,14 @@ class TokenHandler(VCIBaseEndpoint):
     def _build_dpop_cnf(self, dpop_verifier: DPoPVerifier) -> dict:
         """Build cnf with jkt (RFC 9449) to bind token to DPoP key."""
         jwk = key_from_jwk_dict(dpop_verifier.public_jwk)
+        # cryptojwt thumbprint() already returns the base64url SHA-256 thumbprint
+        # (as str or ASCII bytes). Do not base64-encode it again.
         thumbprint = jwk.thumbprint("SHA-256")
-        jkt = base64.urlsafe_b64encode(thumbprint).rstrip(b"=").decode()
+        jkt = (
+            thumbprint.decode("ascii")
+            if isinstance(thumbprint, (bytes, bytearray))
+            else thumbprint
+        )
         return {"jkt": jkt}
 
     def _to_token(

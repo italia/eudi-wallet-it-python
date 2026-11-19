@@ -126,6 +126,9 @@ class MetadataHandler(VCIBaseEndpoint):
             "metadata": metadata,
             "authority_hints": self.federation_config.get("authority_hints", []),
         }
+        trust_marks = self.federation_config.get("trust_marks") or []
+        if trust_marks:
+            ec_payload["trust_marks"] = trust_marks
         return ec_payload
 
     @property

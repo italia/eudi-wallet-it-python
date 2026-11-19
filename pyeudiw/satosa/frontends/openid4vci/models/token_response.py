@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic import BaseModel
-from satosa.response import Created
+from satosa.response import Response
 
 from pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail import (
     AuthorizationDetail,
@@ -31,12 +31,11 @@ class TokenResponse(BaseModel):
         refresh_token: str,
         expires_in: int,
         authorization_details: List[AuthorizationDetail],
-    ) -> Created:
+    ) -> Response:
         """
-        Converts the token response to a `Created` HTTP response object.
+        Converts the token response to an HTTP 200 OK response object.
 
-        Returns:
-            Created: An HTTP 201 Created response containing the JSON-serialized token response.
+        RFC 6749 and the IT-Wallet token response examples use 200 OK.
         """
 
         data = TokenResponse(
@@ -50,7 +49,8 @@ class TokenResponse(BaseModel):
                 else authorization_details
             ),
         )
-        return Created(
+        return Response(
             message=data.model_dump_json(),
             content=APPLICATION_JSON,
+            status="200 OK",
         )
