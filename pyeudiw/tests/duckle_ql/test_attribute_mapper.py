@@ -1,6 +1,11 @@
 import pytest
 
-from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
+from pyeudiw.duckle_ql.attribute_mapper import (
+    extract_claims,
+    flatten_namespace,
+    paths_for_claim_sets,
+)
+from pyeudiw.duckle_ql.credential import Claim
 
 DATA_TOKEN_DC_SD_JWT = data = {
     "iss": "https://credential_issuer.example.org",
@@ -78,3 +83,53 @@ def test_flatten_namespace_for_token_mso_mdoc():
         "wallet_name": "Mario’s eID Wallet",
         "wallet_documents": {"typo": "CIE"},
     }
+
+
+CLAIMS_WITH_OPTIONAL = [
+    Claim(id="given_name", path=["given_name"]),
+    Claim(id="family_name", path=["family_name"]),
+    Claim(id="tax_id_code", path=["tax_id_code"]),
+]
+
+CLAIM_SETS_OPTIONAL_TAX_ID = [
+    ["given_name", "family_name"],
+    ["given_name", "family_name", "tax_id_code"],
+]
+
+
+def test_paths_for_claim_sets_without_claim_sets_requires_all():
+    data = {"given_name": "Mario", "family_name": "Rossi", "tax_id_code": "TINIT-X"}
+    paths = paths_for_claim_sets(CLAIMS_WITH_OPTIONAL, None, data)
+    assert paths == [
+        {"path": ["given_name"]},
+        {"path": ["family_name"]},
+        {"path": ["tax_id_code"]},
+    ]
+    assert extract_claims(data, paths)["tax_id_code"] == "TINIT-X"
+
+
+def test_paths_for_claim_sets_accepts_minimal_set_without_optional():
+    data = {"given_name": "Mario", "family_name": "Rossi"}
+    paths = paths_for_claim_sets(CLAIMS_WITH_OPTIONAL, CLAIM_SETS_OPTIONAL_TAX_ID, data)
+    assert paths == [{"path": ["given_name"]}, {"path": ["family_name"]}]
+    assert extract_claims(data, paths) == {
+        "given_name": "Mario",
+        "family_name": "Rossi",
+    }
+
+
+def test_paths_for_claim_sets_prefers_first_satisfied_set():
+    data = {
+        "given_name": "Mario",
+        "family_name": "Rossi",
+        "tax_id_code": "TINIT-X",
+    }
+    paths = paths_for_claim_sets(CLAIMS_WITH_OPTIONAL, CLAIM_SETS_OPTIONAL_TAX_ID, data)
+    assert paths == [{"path": ["given_name"]}, {"path": ["family_name"]}]
+
+
+def test_paths_for_claim_sets_missing_required_raises():
+    data = {"given_name": "Mario"}
+    with pytest.raises(ValueError) as excinfo:
+        paths_for_claim_sets(CLAIMS_WITH_OPTIONAL, CLAIM_SETS_OPTIONAL_TAX_ID, data)
+    assert "Missing claims: family_name" in str(excinfo.value)

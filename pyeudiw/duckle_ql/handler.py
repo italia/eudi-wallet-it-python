@@ -2,7 +2,11 @@ import logging
 from typing import Any, Dict
 
 from pyeudiw.credential_presentation.base_vp_parser import BaseVPParser
-from pyeudiw.duckle_ql.attribute_mapper import extract_claims, flatten_namespace
+from pyeudiw.duckle_ql.attribute_mapper import (
+    extract_claims,
+    flatten_namespace,
+    paths_for_claim_sets,
+)
 from pyeudiw.duckle_ql.credential import CredentialsRequest
 from pyeudiw.duckle_ql.utils import DUCKLE_PRESENTATION, DUCKLE_QUERY_KEY
 from pyeudiw.satosa.backends.openid4vp.exceptions import InvalidVPToken
@@ -65,7 +69,6 @@ class DuckleHandler(BaseVPParser):
         for cred in credentials:
             token_str = token[cred.id]
             try:
-                paths = [{"path": claim.path} for claim in cred.claims]
                 if cred.format == VC_SD_JWT_FORMAT or cred.format == DC_SD_JWT_FORMAT:
                     parser = VpVcSdJwtParserVerifier(
                         self.trust_evaluator, self.sig_alg_supported
@@ -77,6 +80,7 @@ class DuckleHandler(BaseVPParser):
                 else:
                     raise InvalidVPToken(f"Unexpected token format {cred.format}")
 
+                paths = paths_for_claim_sets(cred.claims, cred.claim_sets, data)
                 all_claims.update(extract_claims(data, paths))
 
             except Exception as e:
