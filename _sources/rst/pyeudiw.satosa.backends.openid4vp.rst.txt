@@ -1,0 +1,94 @@
+pyeudiw.satosa.backends.openid4vp package
+=========================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.satosa.backends.openid4vp.endpoints
+   pyeudiw.satosa.backends.openid4vp.schemas
+
+Submodules
+----------
+
+pyeudiw.satosa.backends.openid4vp.authorization\_request module
+---------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.authorization_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.authorization\_response module
+----------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.authorization_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.exceptions module
+---------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.interface module
+--------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.interface
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.openid4vp module
+--------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.openid4vp
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.utils module
+----------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.vp module
+-------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.vp
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.vp\_mdoc\_cbor module
+-------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.vp_mdoc_cbor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.backends.openid4vp.vp\_sd\_jwt\_vc module
+--------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp.vp_sd_jwt_vc
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.backends.openid4vp
+   :members:
+   :show-inheritance:
+   :undoc-members:

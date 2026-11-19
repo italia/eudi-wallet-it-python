@@ -1,0 +1,32 @@
+pyeudiw.satosa.frontends.openid4vci package
+===========================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.satosa.frontends.openid4vci.endpoints
+   pyeudiw.satosa.frontends.openid4vci.models
+   pyeudiw.satosa.frontends.openid4vci.storage
+   pyeudiw.satosa.frontends.openid4vci.tools
+
+Submodules
+----------
+
+pyeudiw.satosa.frontends.openid4vci.openid4vci module
+-----------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.openid4vci
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci
+   :members:
+   :show-inheritance:
+   :undoc-members:

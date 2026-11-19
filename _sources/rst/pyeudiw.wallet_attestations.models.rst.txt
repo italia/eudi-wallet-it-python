@@ -1,0 +1,37 @@
+pyeudiw.wallet\_attestations.models package
+===========================================
+
+Submodules
+----------
+
+pyeudiw.wallet\_attestations.models.attestations module
+-------------------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.models.attestations
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.wallet\_attestations.models.attestations\_request module
+----------------------------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.models.attestations_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.wallet\_attestations.models.cnf module
+----------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.models.cnf
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.wallet_attestations.models
+   :members:
+   :show-inheritance:
+   :undoc-members:

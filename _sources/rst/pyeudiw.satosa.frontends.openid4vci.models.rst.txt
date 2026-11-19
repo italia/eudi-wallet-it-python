@@ -1,0 +1,149 @@
+pyeudiw.satosa.frontends.openid4vci.models package
+==================================================
+
+Submodules
+----------
+
+pyeudiw.satosa.frontends.openid4vci.models.auhtorization\_detail module
+-----------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.auhtorization_detail
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.authorization\_request module
+------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.authorization_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.authorization\_response module
+-------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.authorization_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.config module
+--------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.config
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.credential\_endpoint\_request module
+-------------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.credential\_endpoint\_response module
+--------------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.credential_endpoint_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.credential\_offer\_request module
+----------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.credential_offer_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.deferred\_credential\_endpoint\_request module
+-----------------------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.deferred\_credential\_endpoint\_response module
+------------------------------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.deferred_credential_endpoint_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.nonce\_response module
+-----------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.nonce_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.notification\_request module
+-----------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.notification_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.openid4vci\_basemodel module
+-----------------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.openid4vci_basemodel
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.par\_request module
+--------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.par_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.par\_response module
+---------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.par_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.token module
+-------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.token
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.token\_request module
+----------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.token_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.satosa.frontends.openid4vci.models.token\_response module
+-----------------------------------------------------------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models.token_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.satosa.frontends.openid4vci.models
+   :members:
+   :show-inheritance:
+   :undoc-members:

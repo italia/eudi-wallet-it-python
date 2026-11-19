@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyeudiw.satosa.backends.openid4vp.authorization_request &mdash; Pyeudiw  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Pyeudiw
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/modules.html">pyeudiw</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Pyeudiw</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyeudiw.satosa.backends.openid4vp.authorization_request</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyeudiw.satosa.backends.openid4vp.authorization_request</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">quote_plus</span><span class="p">,</span> <span class="n">urlencode</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.duckle_ql.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DUCKLE_PRESENTATION</span><span class="p">,</span> <span class="n">DUCKLE_QUERY_KEY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.satosa.backends.openid4vp.schemas.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyeudiw.tools.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">exp_from_now</span><span class="p">,</span> <span class="n">iat_now</span>
+
+<span class="n">CLIENT_ID_PREFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"openid_federation:"</span><span class="p">,</span> <span class="s2">"x509_hash:"</span><span class="p">)</span>
+<span class="n">_WALLET_SCHEMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"haip"</span><span class="p">:</span> <span class="s2">"haip-vp"</span><span class="p">,</span>
+    <span class="s2">"haip-vp"</span><span class="p">:</span> <span class="s2">"haip-vp"</span><span class="p">,</span>
+    <span class="s2">"openid4vp"</span><span class="p">:</span> <span class="s2">"openid4vp"</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">RESPONSE_ENC_VALUES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"A128GCM"</span><span class="p">,</span> <span class="s2">"A256GCM"</span><span class="p">]</span>
+<span class="n">DEFAULT_RESPONSE_ENCRYPTION_KTY</span> <span class="o">=</span> <span class="s2">"EC"</span>
+<span class="n">DEFAULT_RESPONSE_ENCRYPTION_CRV</span> <span class="o">=</span> <span class="s2">"P-256"</span>
+<span class="n">DEFAULT_RESPONSE_ENCRYPTION_USE</span> <span class="o">=</span> <span class="s2">"enc"</span>
+<span class="n">DEFAULT_RESPONSE_ENCRYPTION_ALG</span> <span class="o">=</span> <span class="s2">"ECDH-ES"</span>
+
+
+<div class="viewcode-block" id="configured_response_mode">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.configured_response_mode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">configured_response_mode</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="p">(</span><span class="n">authorization</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"response_mode"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ResponseMode</span><span class="o">.</span><span class="n">direct_post_jwt</span>
+    <span class="k">return</span> <span class="n">mode</span></div>
+
+
+
+<div class="viewcode-block" id="response_encryption_key_params">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.response_encryption_key_params">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">response_encryption_key_params</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">jwt_conf</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"jwt"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"kty"</span><span class="p">:</span> <span class="n">jwt_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"response_encryption_kty"</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_KTY</span><span class="p">,</span>
+        <span class="s2">"crv"</span><span class="p">:</span> <span class="n">jwt_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"response_encryption_crv"</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_CRV</span><span class="p">,</span>
+        <span class="s2">"use"</span><span class="p">:</span> <span class="n">jwt_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"response_encryption_use"</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_USE</span><span class="p">,</span>
+        <span class="s2">"alg"</span><span class="p">:</span> <span class="n">jwt_conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default_enc_alg"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_ALG</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="require_prefixed_client_id">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.require_prefixed_client_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">require_prefixed_client_id</span><span class="p">(</span><span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">client_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">CLIENT_ID_PREFIXES</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"client_id must use the openid_federation or x509_hash prefix"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">client_id</span></div>
+
+
+
+<div class="viewcode-block" id="prefixed_client_id">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.prefixed_client_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prefixed_client_id</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">candidates</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">authorization</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"authorization"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">authorization</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"client_id"</span><span class="p">):</span>
+        <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">authorization</span><span class="p">[</span><span class="s2">"client_id"</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"client_id"</span><span class="p">):</span>
+        <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"client_id"</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">trust</span> <span class="ow">in</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"trust"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trust</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">client_id</span> <span class="o">=</span> <span class="p">(</span><span class="n">trust</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"config"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"client_id"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">client_id</span><span class="p">:</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">client_id</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">CLIENT_ID_PREFIXES</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">client_id</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"client_id must use the openid_federation or x509_hash prefix"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="jwk_thumbprint_sha256">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.jwk_thumbprint_sha256">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">jwk_thumbprint_sha256</span><span class="p">(</span><span class="n">public_jwk</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""RFC 7638 SHA-256 thumbprint of an EC public JWK, as raw digest bytes."""</span>
+    <span class="n">required</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"crv"</span><span class="p">:</span> <span class="n">public_jwk</span><span class="p">[</span><span class="s2">"crv"</span><span class="p">],</span>
+        <span class="s2">"kty"</span><span class="p">:</span> <span class="n">public_jwk</span><span class="p">[</span><span class="s2">"kty"</span><span class="p">],</span>
+        <span class="s2">"x"</span><span class="p">:</span> <span class="n">public_jwk</span><span class="p">[</span><span class="s2">"x"</span><span class="p">],</span>
+        <span class="s2">"y"</span><span class="p">:</span> <span class="n">public_jwk</span><span class="p">[</span><span class="s2">"y"</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">canonical</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">required</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">),</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">canonical</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="response_encryption_client_metadata">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.response_encryption_client_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">response_encryption_client_metadata</span><span class="p">(</span>
+    <span class="n">public_jwk</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">vp_formats_supported</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_USE</span><span class="p">,</span>
+    <span class="n">alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_RESPONSE_ENCRYPTION_ALG</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">public</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">claim</span><span class="p">:</span> <span class="n">public_jwk</span><span class="p">[</span><span class="n">claim</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">claim</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"kty"</span><span class="p">,</span> <span class="s2">"crv"</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"kid"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">claim</span> <span class="ow">in</span> <span class="n">public_jwk</span>
+    <span class="p">}</span>
+    <span class="n">public</span><span class="p">[</span><span class="s2">"use"</span><span class="p">]</span> <span class="o">=</span> <span class="n">use</span>
+    <span class="n">public</span><span class="p">[</span><span class="s2">"alg"</span><span class="p">]</span> <span class="o">=</span> <span class="n">alg</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"jwks"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"keys"</span><span class="p">:</span> <span class="p">[</span><span class="n">public</span><span class="p">]},</span>
+        <span class="s2">"encrypted_response_enc_values_supported"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">RESPONSE_ENC_VALUES</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">vp_formats_supported</span><span class="p">:</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">"vp_formats_supported"</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp_formats_supported</span>
+    <span class="k">return</span> <span class="n">metadata</span></div>
+
+
+
+<div class="viewcode-block" id="build_authorization_request_url">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_authorization_request_url</span><span class="p">(</span><span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the wallet invocation URL. The scheme is haip-vp or openid4vp.</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="s2">"://"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scheme</span><span class="p">:</span>
+        <span class="n">scheme</span> <span class="o">=</span> <span class="n">_WALLET_SCHEMES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="n">scheme</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"://"</span>
+    <span class="n">query_params</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">quote_via</span><span class="o">=</span><span class="n">quote_plus</span><span class="p">)</span>
+    <span class="n">_sep</span> <span class="o">=</span> <span class="s2">""</span> <span class="k">if</span> <span class="s2">"?"</span> <span class="ow">in</span> <span class="n">scheme</span> <span class="k">else</span> <span class="s2">"?"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">scheme</span><span class="si">}{</span><span class="n">_sep</span><span class="si">}{</span><span class="n">query_params</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+
+<div class="viewcode-block" id="build_authorization_request_claims">
+<a class="viewcode-back" href="../../../../../rst/pyeudiw.satosa.backends.openid4vp.html#pyeudiw.satosa.backends.openid4vp.authorization_request.build_authorization_request_claims">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_authorization_request_claims</span><span class="p">(</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">response_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">default_claims</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">nonce</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="n">client_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">submission_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wallet_nonce</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Primitive function to build the payload claims of the (JAR) authorization request.</span>
+
+<span class="sd">    :param client_id: the client identifier (who issues the JAR token)</span>
+<span class="sd">    :type client_id: str</span>
+<span class="sd">    :param state: request session identifier</span>
+<span class="sd">    :type state: str</span>
+<span class="sd">    :param response_uri: endpoint accepting authorization responses</span>
+<span class="sd">    :type response_uri: str</span>
+<span class="sd">    :param default_claims: a dictionary with the default claims to be used in the request object.</span>
+<span class="sd">        It must contain the following mandatory keys:</span>
+<span class="sd">        - "expiration_time": the expiration time in minutes of the request object</span>
+<span class="sd">        - "response_mode": the response mode to be used in the request object</span>
+<span class="sd">        - "auth_iss_id": the issuer identifier of the authorization server</span>
+<span class="sd">        - "aud": the audience of the request object</span>
+<span class="sd">    :type default_claims: dict</span>
+<span class="sd">    :param nonce: optional nonce to be inserted in the request object; if not</span>
+<span class="sd">        set, a new cryptographically safe uuid v4 nonce is generated.</span>
+<span class="sd">    :type nonce: str</span>
+<span class="sd">    :param client_metadata: optional client_metadata to be included in the request object</span>
+<span class="sd">    :type client_metadata: dict</span>
+<span class="sd">    :param submission_data: optional submission data, such as the duckle query,</span>
+<span class="sd">        to be included in the request object.</span>
+<span class="sd">        If this parameter is set, the duckle data is used to build the request object.</span>
+<span class="sd">    :type submission_data: dict</span>
+<span class="sd">    :param wallet_nonce: optional nonce to be used by the wallet.</span>
+<span class="sd">    :type wallet_nonce: str</span>
+<span class="sd">    :raises KeyError: if authorization_config misses mandatory configuration options</span>
+<span class="sd">    :returns: a dictionary with the *complete* set of JAR JWT payload claims</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    """</span>
+
+    <span class="n">client_id</span> <span class="o">=</span> <span class="n">require_prefixed_client_id</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">nonce</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">default_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"auth_iss_id"</span><span class="p">):</span>
+        <span class="n">_iss</span> <span class="o">=</span> <span class="n">default_claims</span><span class="p">[</span><span class="s2">"auth_iss_id"</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_iss</span> <span class="o">=</span> <span class="n">client_id</span>
+
+    <span class="n">claims</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"client_id"</span><span class="p">:</span> <span class="n">client_id</span><span class="p">,</span>
+        <span class="s2">"response_mode"</span><span class="p">:</span> <span class="n">configured_response_mode</span><span class="p">(</span><span class="n">default_claims</span><span class="p">),</span>
+        <span class="s2">"response_type"</span><span class="p">:</span> <span class="s2">"vp_token"</span><span class="p">,</span>
+        <span class="s2">"response_uri"</span><span class="p">:</span> <span class="n">response_uri</span><span class="p">,</span>
+        <span class="s2">"nonce"</span><span class="p">:</span> <span class="n">nonce</span><span class="p">,</span>
+        <span class="s2">"state"</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+        <span class="s2">"iss"</span><span class="p">:</span> <span class="n">_iss</span><span class="p">,</span>
+        <span class="s2">"iat"</span><span class="p">:</span> <span class="n">iat_now</span><span class="p">(),</span>
+        <span class="s2">"exp"</span><span class="p">:</span> <span class="n">exp_from_now</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">default_claims</span><span class="p">[</span><span class="s2">"expiration_time"</span><span class="p">]),</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">_aud</span> <span class="o">:=</span> <span class="n">default_claims</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"aud"</span><span class="p">,</span> <span class="s2">"https://self-issued.me/v2"</span><span class="p">):</span>
+        <span class="n">claims</span><span class="p">[</span><span class="s2">"aud"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_aud</span>
+
+    <span class="k">if</span> <span class="n">submission_data</span> <span class="ow">and</span> <span class="n">submission_data</span><span class="p">[</span><span class="s2">"typo"</span><span class="p">]</span> <span class="o">==</span> <span class="n">DUCKLE_PRESENTATION</span><span class="p">:</span>
+        <span class="n">claims</span><span class="p">[</span><span class="n">DUCKLE_QUERY_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">submission_data</span><span class="p">[</span><span class="n">DUCKLE_QUERY_KEY</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">client_metadata</span><span class="p">:</span>
+        <span class="n">claims</span><span class="p">[</span><span class="s2">"client_metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_metadata</span>
+
+    <span class="k">if</span> <span class="n">wallet_nonce</span><span class="p">:</span>
+        <span class="n">claims</span><span class="p">[</span><span class="s2">"wallet_nonce"</span><span class="p">]</span> <span class="o">=</span> <span class="n">wallet_nonce</span>
+
+    <span class="k">return</span> <span class="n">claims</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Developers Italia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
