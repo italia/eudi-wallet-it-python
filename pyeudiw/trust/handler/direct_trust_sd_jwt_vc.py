@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from cryptojwt.jwk.jwk import key_from_jwk_dict
 
 from pyeudiw.tools.utils import cacheable_get_http_url, get_http_url
@@ -70,4 +72,18 @@ class DirectTrustSdJwtVc(_DirectTrustJwkHandler):
 
 
 def build_metadata_issuer_endpoint(issuer_id: str, endpoint_component: str) -> str:
-    return f"{issuer_id.rstrip('/')}/{endpoint_component.lstrip('/')}"
+    """Build the Credential Issuer metadata URL per OpenID4VCI §12.2.2.
+
+    Insert ``endpoint_component`` between the host and the path of ``issuer_id``.
+    """
+    if not endpoint_component:
+        return issuer_id
+
+    issuer_id = (
+        f"https://{issuer_id.strip('/')}"
+        if not issuer_id.startswith("http")
+        else issuer_id
+    )
+    baseurl = urlparse(issuer_id)
+    full_endpoint_path = f"/{endpoint_component.strip('/')}{baseurl.path}"
+    return baseurl._replace(path=full_endpoint_path).geturl()

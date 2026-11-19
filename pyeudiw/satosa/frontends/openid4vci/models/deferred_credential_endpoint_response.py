@@ -50,6 +50,6 @@ class DeferredCredentialEndpointResponse(BaseModel):
         """
         data = DeferredCredentialEndpointResponse(credentials=credentials)
         return Response(
-            message=data.model_dump_json(),
+            message=data.model_dump_json(exclude_none=True),
             content=APPLICATION_JSON,
         )

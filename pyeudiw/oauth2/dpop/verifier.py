@@ -111,8 +111,14 @@ class DPoPVerifier:
                 return False
 
             token_payload = decode_jwt_payload(self.dpop_authz_token)   #dpop/token binding
-            b64_thumbprint = base64.urlsafe_b64encode(JWK(key=self.public_jwk).thumbprint).decode("utf-8").rstrip("=")
-            if b64_thumbprint != token_payload.get("cnf", {}).get("jkt"):
+            # JWK.thumbprint is already the base64url SHA-256 thumbprint as ASCII bytes.
+            thumbprint = JWK(key=self.public_jwk).thumbprint
+            jkt = (
+                thumbprint.decode("utf-8")
+                if isinstance(thumbprint, (bytes, bytearray))
+                else thumbprint
+            )
+            if jkt != token_payload.get("cnf", {}).get("jkt"):
                 logger.warning("dpop/token binding failed")
                 return False
         return True

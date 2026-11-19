@@ -50,13 +50,13 @@ def jwshelper(private_jwk):
 
 @pytest.fixture
 def wia_jws(jwshelper):
-    # The token must be bound to the DPoP key via cnf.jkt (the base64url-encoded
-    # JWK thumbprint), matching the binding check in DPoPVerifier.validate. The
-    # DPoP proof in the test is issued with PRIVATE_JWK_EC, so bind to it.
+    # The token must be bound to the DPoP key via cnf.jkt (RFC 9449 JWK
+    # thumbprint). JWK.thumbprint is already that base64url value as bytes.
+    thumbprint = JWK(key=PUBLIC_JWK).thumbprint
     jkt = (
-        base64.urlsafe_b64encode(JWK(key=PUBLIC_JWK).thumbprint)
-        .decode("utf-8")
-        .rstrip("=")
+        thumbprint.decode("utf-8")
+        if isinstance(thumbprint, (bytes, bytearray))
+        else thumbprint
     )
     wia = deepcopy(WALLET_INSTANCE_ATTESTATION)
     wia["cnf"] = {"jwk": PUBLIC_JWK, "jkt": jkt}

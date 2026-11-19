@@ -63,9 +63,11 @@ class NonceHandler(VCIBaseEndpoint):
 
         try:
             validate_request_method(context.request_method, POST_ACCEPTED_METHODS)
-            validate_content_type(
-                context.http_headers[HTTP_CONTENT_TYPE_HEADER], FORM_URLENCODED
-            )
+            # OpenID4VCI nonce request is POST with an empty body and no
+            # Content-Type (Content-Length: 0). Validate only when present.
+            content_type = context.http_headers.get(HTTP_CONTENT_TYPE_HEADER)
+            if content_type:
+                validate_content_type(content_type, FORM_URLENCODED)
             if self._get_body(context):
                 return self._handle_400(
                     context, "Request body must be empty for nonce endpoint"

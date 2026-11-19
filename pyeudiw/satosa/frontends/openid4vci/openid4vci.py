@@ -66,6 +66,9 @@ class OpenID4VCIFrontend(FrontendModule):
         url_map = []
         for path, inst in el.endpoint_instances.items():
             url_map.append((f"{self.name}/{path}", inst))
+            # OpenID4VCI / RFC 8414 path insertion: /.well-known/{resource}/{name}
+            if path.startswith(".well-known/"):
+                url_map.append((f"{path}/{self.name}", inst))
 
         logger.debug(f"Loaded OpenID4VCI endpoints: {url_map}")
         return url_map
