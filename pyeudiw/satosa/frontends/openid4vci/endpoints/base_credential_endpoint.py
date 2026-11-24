@@ -344,7 +344,6 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
         credential: CredentialSpecificationConfig = cred_config.credential_specification[config.id]
 
         now = iat_now()
-        exp = exp_from_now(self.config_utils.get_jwt().default_exp)  # TODO implement a config section for MobileSecurityObject and the related get_mso()
         nbf = now + credential.nbf_delta
         required_attrs = {"issuing_country": cred_config.issuing_country, "issuing_authority": cred_config.issuing_authority}
         supported_optional_attrs = {
@@ -368,7 +367,7 @@ class BaseCredentialEndpoint(ABC, VCIBaseEndpoint):
             ),
             validity={
                 "issuance_date": datetime_from_timestamp(nbf).strftime("%Y-%m-%d"),
-                "expiry_date": datetime_from_timestamp(exp).strftime("%Y-%m-%d") #pymdoccbor==1.3.0 needs iso format "%Y-%m-%d"
+                "expiry_date": (datetime_from_timestamp(now) + timedelta(credential.expiry_days)).strftime("%Y-%m-%d"),
             },
         )
         issuer_signed_data = mdoci.signed["documents"][0]['issuerSigned']

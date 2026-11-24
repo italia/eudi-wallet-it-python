@@ -71,7 +71,7 @@ def datetime_from_timestamp(timestamp: int | float) -> datetime.datetime:
     :rtype: datetime.datetime
     """
 
-    return make_timezone_aware(datetime.datetime.fromtimestamp(timestamp))
+    return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
 def timestamp_from_datetime(dt: datetime.datetime) -> int:
