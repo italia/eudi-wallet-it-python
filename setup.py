@@ -57,7 +57,7 @@ setup(
         ],
         "satosa": [
             "Pillow>12.0.0",
-            "device_detector>=5.0,<6.0",
+            "device_detector>=6.0,<7.0",
             "satosa>=8.4,<8.6",
             "jinja2>=3.1.5,<4.0.0",
             "pymongo>=4.10.1,<5.0.0",

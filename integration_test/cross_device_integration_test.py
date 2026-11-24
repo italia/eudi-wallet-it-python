@@ -89,6 +89,7 @@ def run(playwright: Playwright):
             request_object_claims["client_id"]
         ),
         request_object_claims["state"],
+        request_object_claims["client_metadata"]["jwks"]["keys"][0],
     )
 
     authz_response = wallet_user_agent.post(

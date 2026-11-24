@@ -209,26 +209,16 @@ def create_holder_test_data(issued_jwt: dict[Literal["jws"] | Literal["issuance"
     return vp_token
 
 
-def create_authorize_response(vp_token: str, state: str, response_uri: str) -> str:
-    # Extract public key from RP's entity configuration
-    client = requests.Session()
-    rp_ec_jwt = client.get(
-        f"{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation",
-        verify=False
-    ).content.decode()
-    rp_ec = decode_jwt_payload(rp_ec_jwt)
-
-    #  assert response_uri == rp_ec["metadata"]["openid_credential_verifier"]["response_uris"][0]
-    encryption_key = rp_ec["metadata"]["openid_credential_verifier"]["jwks"]["keys"][1]
-
+def create_authorize_response(
+    vp_token: str, state: str, encryption_key: dict
+) -> str:
     response = {
         "state": state,
         "vp_token": vp_token
     }
     encrypted_response = JWEHelper(
-        # RSA (EC is not fully supported to date)
         JWK(encryption_key).as_dict()
-    ).encrypt(response)
+    ).encrypt(response, alg="ECDH-ES", enc="A256GCM")
     return encrypted_response
 
 def extract_saml_attributes(saml_response: str) -> list[Any]:

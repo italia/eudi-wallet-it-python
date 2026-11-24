@@ -223,11 +223,10 @@ MOCK_OAUTH_AUTHORIZATION_SERVER_CONFIG = {
 
 MOCK_JWT_CONFIG = {
     "default_sig_alg": "ES256",
-    "default_enc_alg": "RSA-OAEP",
-    "default_enc_enc": "A256CBC-HS512",
+    "default_enc_alg": "RSA-OAEP-256",
+    "default_enc_enc": "A256GCM",
     "default_exp": 6,
     "enc_alg_supported": [
-        "RSA-OAEP",
         "RSA-OAEP-256",
         "ECDH-ES",
         "ECDH-ES+A128KW",
@@ -235,9 +234,6 @@ MOCK_JWT_CONFIG = {
         "ECDH-ES+A256KW",
     ],
     "enc_enc_supported": [
-        "A128CBC-HS256",
-        "A192CBC-HS384",
-        "A256CBC-HS512",
         "A128GCM",
         "A192GCM",
         "A256GCM",

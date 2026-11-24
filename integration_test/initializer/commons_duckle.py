@@ -60,25 +60,16 @@ def create_wallet_attestation_data() -> dict[Literal["jws"] | Literal["issuance"
     user_claims = yaml_load_specification(StringIO(settings["sd_specification"]))
     return create_issuer_test_data_with_user_claims(user_claims)
 
-def create_authorize_response(vp_token: dict, state: str) -> str:
-    # Extract public key from RP's entity configuration
-    client = requests.Session()
-    rp_ec_jwt = client.get(
-        f"{IDP_BASEURL}/OpenID4VP/.well-known/openid-federation",
-        verify=False
-    ).content.decode()
-    rp_ec = decode_jwt_payload(rp_ec_jwt)
-
-    encryption_key = rp_ec["metadata"]["openid_credential_verifier"]["jwks"]["keys"][1]
-
+def create_authorize_response(
+    vp_token: dict, state: str, encryption_key: dict
+) -> str:
     response = {
         "state": state,
         "vp_token": vp_token
     }
     encrypted_response = JWEHelper(
-        # RSA (EC is not fully supported to date)
         JWK(encryption_key).as_dict()
-    ).encrypt(response)
+    ).encrypt(response, alg="ECDH-ES", enc="A256GCM")
     return encrypted_response
 
 
