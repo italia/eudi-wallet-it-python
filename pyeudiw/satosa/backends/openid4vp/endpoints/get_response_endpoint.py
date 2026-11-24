@@ -124,12 +124,13 @@ class GetResponseHandler(BaseEndpoint):
             )
 
         if finalized_session.get("error_response"):
+            self.db_engine.abandon_linked_openid4vci(finalized_session)
             return self._get_response_authorization_error_page(
                 finalized_session["error_response"]
             )
         if finalized_session.get("internal_response"):
             return self._get_response_auth_callback(
-                context, finalized_session["internal_response"]
+                context, finalized_session
             )
 
         return self._handle_500(
@@ -152,11 +153,17 @@ class GetResponseHandler(BaseEndpoint):
         )
         return Response(result, content="text/html; charset=utf8", status="401")
 
-    def _get_response_auth_callback(self, context, internal_resp_data: dict):
+    def _get_response_auth_callback(self, context, finalized_session: dict):
+        internal_resp_data = finalized_session.get("internal_response") or {}
         internal_response = InternalData()
         resp = internal_response.from_dict(internal_resp_data)
         if not hasattr(self, "_auth_callback") or self._auth_callback is None:
             raise AttributeError(
                 "The '_auth_callback' method is not defined or is None."
             )
+        if context.state is None:
+            context.state = {}
+        vci_document_id = finalized_session.get("vci_document_id")
+        if vci_document_id:
+            context.state["openid4vci_document_id"] = vci_document_id
         return self._auth_callback(context, resp)

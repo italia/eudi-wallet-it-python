@@ -147,9 +147,8 @@ def test_invalid_authorization_request_in_GET(
 
 
 def test_valid_authorization_request_in_GET(authorization_handler, context):
-    authorization_handler.db_engine.search_session_by_field.return_value = (
-        get_mocked_openid4vpi_entity()
-    )
+    entity = get_mocked_openid4vpi_entity()
+    authorization_handler.db_engine.search_session_by_field.return_value = entity
     _get_context(context)
     context.qs_params = {
         "client_id": "client123",
@@ -165,6 +164,11 @@ def test_valid_authorization_request_in_GET(authorization_handler, context):
     _assert_response(
         authorization_handler.endpoint(context), "example.com/openid4vcimock"
     )
+    authorization_handler.db_engine.abandon_openid4vci_sessions.assert_called_once_with(
+        "sessionid", except_document_id=entity["document_id"]
+    )
+    authorization_handler.db_engine.upsert_session_by_document_id.assert_called_once()
+    authorization_handler.db_engine.upsert_session.assert_not_called()
 
 
 def test_valid_authorization_request_in_GET_with_credential_issuer(context):

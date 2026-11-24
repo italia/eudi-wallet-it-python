@@ -480,6 +480,38 @@ class BaseStorage(BaseDB):
         """
         raise NotImplementedError()
 
+    def upsert_session_by_document_id(self, document_id: str, data: dict) -> bool:
+        """
+        Upsert a session document keyed by document_id.
+        """
+        raise NotImplementedError()
+
+    def get_pending_openid4vci_by_session_id(self, session_id: str) -> Union[dict, None]:
+        """
+        Return the latest non-abandoned OpenID4VCI AuthorizationSession for a browser session.
+        """
+        raise NotImplementedError()
+
+    def abandon_openid4vci_sessions(
+        self, session_id: str, except_document_id: str | None = None
+    ) -> int:
+        """
+        Mark pending OpenID4VCI sessions for a browser session as abandoned.
+        """
+        raise NotImplementedError()
+
+    def abandon_openid4vci_by_document_id(self, document_id: str) -> bool:
+        """
+        Mark a single OpenID4VCI session as abandoned by document_id.
+        """
+        raise NotImplementedError()
+
+    def set_session_fields(self, document_id: str, fields: dict) -> bool:
+        """
+        Set arbitrary fields on a session document identified by document_id.
+        """
+        raise NotImplementedError()
+
     def search_session_by_field(self, field: str, value: str) -> dict:
         """
         Search for a session by a specific field and value.

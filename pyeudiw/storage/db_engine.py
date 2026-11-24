@@ -106,6 +106,61 @@ class DBEngine(BaseStorage, BaseCache, BaseLogger):
     def upsert_session(self, session_id: str, data: dict) -> int:
         return self.write("upsert_session", session_id, data)
 
+    def upsert_session_by_document_id(self, document_id: str, data: dict) -> int:
+        return self.write("upsert_session_by_document_id", document_id, data)
+
+    def get_by_id(self, document_id: str) -> Union[dict, None]:
+        return self.get("get_by_id", document_id)
+
+    def get_pending_openid4vci_by_session_id(self, session_id: str) -> Union[dict, None]:
+        for db_name, storage in self.storages:
+            try:
+                return storage.get_pending_openid4vci_by_session_id(session_id)
+            except Exception as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Error while getting pending OpenID4VCI session on {db_name}: {e}",
+                )
+        return None
+
+    def abandon_openid4vci_sessions(
+        self, session_id: str, except_document_id: str | None = None
+    ) -> int:
+        return self.write(
+            "abandon_openid4vci_sessions", session_id, except_document_id
+        )
+
+    def abandon_openid4vci_by_document_id(self, document_id: str) -> int:
+        return self.write("abandon_openid4vci_by_document_id", document_id)
+
+    def set_session_fields(self, document_id: str, fields: dict) -> int:
+        return self.write("set_session_fields", document_id, fields)
+
+    def abandon_linked_openid4vci(self, vp_session: dict | None) -> None:
+        """Abandon the OpenID4VCI session linked to a verifier presentation session."""
+        if not isinstance(vp_session, dict):
+            return
+        vci_document_id = vp_session.get("vci_document_id")
+        if vci_document_id:
+            try:
+                self.abandon_openid4vci_by_document_id(vci_document_id)
+            except StorageWriteError as e:
+                self._log_critical(
+                    e.__class__.__name__,
+                    f"Cannot abandon OpenID4VCI document {vci_document_id}: {e}",
+                )
+            return
+        session_id = vp_session.get("session_id")
+        if not session_id:
+            return
+        try:
+            self.abandon_openid4vci_sessions(session_id)
+        except StorageWriteError as e:
+            self._log_critical(
+                e.__class__.__name__,
+                f"Cannot abandon OpenID4VCI sessions for {session_id}: {e}",
+            )
+
     def search_session_by_field(self, field: str, value: str) -> dict | None:
         return self.get("search_session_by_field", field, value)
 

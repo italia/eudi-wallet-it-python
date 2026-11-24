@@ -32,6 +32,7 @@ class AuthorizationSession(BaseModel):
     authorization_details: Optional[List[AuthorizationDetail]] = None
     scope: Optional[str] = None
     finalized: bool = False
+    abandoned: bool = False
     attributes: Optional[dict] = None
     access_token_jti: Optional[str] = None
     refresh_token_jti: Optional[str] = None # todo: manage refresh tokens
