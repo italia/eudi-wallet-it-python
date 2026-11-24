@@ -126,48 +126,53 @@ Compliance checklist against the [Italian Wallet implementation profile](https:/
 
 🟢 Supported · 🟠 Partial · 🔴 Not supported
 
-| Feature | Status |
-|---------|--------|
-| Pushed Authorization Requests (PAR) | 🟢 |
-| PAR: reject `request_uri` in request body (RFC 9126) | 🟢 |
-| OAuth 2.0 Attestation-Based Client Authentication | 🟢 |
-| PKCE | 🟢 |
-| Authorization Code Flow | 🟢 |
-| DPoP at Token endpoint | 🟢 |
-| Immediate Issuance | 🟢 |
-| JWT Proof of Possession (`openid4vci-proof+jwt`) | 🟢 |
-| Nonce endpoint (`c_nonce`) | 🟢 |
-| Credential Offer (by value and QR code) | 🟢 |
-| Notification endpoint | 🟢 |
-| SD-JWT VC credential format | 🟢 |
-| mso_mdoc credential format | 🟢 |
-| Refresh Token (DPoP-bound) | 🟢 |
-| Batch Credential Issuance | 🔴 |
-| Deferred Issuance Flow | 🔴 |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Pushed Authorization Requests (PAR) | 🟢 | |
+| PAR: reject `request_uri` in request body (RFC 9126) | 🟢 | |
+| OAuth 2.0 Attestation-Based Client Authentication | 🟢 | |
+| PKCE | 🟢 | |
+| Authorization Code Flow | 🟢 | |
+| DPoP at Token endpoint | 🟢 | |
+| DPoP at Credential endpoint | 🟢 | |
+| Immediate Issuance | 🟢 | |
+| JWT Proof of Possession (`openid4vci-proof+jwt`) | 🟢 | |
+| Nonce endpoint (`c_nonce`) | 🟢 | |
+| Credential Offer (by value and QR code) | 🟢 | |
+| SD-JWT VC credential format | 🟢 | |
+| mso_mdoc credential format | 🟢 | |
+| Refresh Token (DPoP-bound) | 🟢 | |
+| Notification endpoint | 🟠 | Handler exists. The endpoint is commented out in the default sample configuration, while metadata may still advertise it. |
+| Deferred Issuance Flow | 🟠 | Handler and models exist. The endpoint is commented out in the default sample configuration, and deferred credential handling is still incomplete. |
+| Batch Credential Issuance | 🔴 | |
+| Revocation endpoint (`/revoke`) | 🔴 | |
+| Automatic re-issuance (status list UPDATE / ATTRIBUTE_UPDATE) | 🔴 | |
 
 #### OpenID4VP (Relying Party Backend)
 
 🟢 Supported · 🟠 Partial · 🔴 Not supported
 
-| Feature | Status |
-|---------|--------|
-| DCQL (Duckle) query language | 🟢 |
-| Same Device flow | 🟢 |
-| Cross Device flow (QR code) | 🟢 |
-| Request Object by reference (`request_uri`) | 🟢 |
-| Request URI method GET | 🟢 |
-| Request URI method POST (wallet metadata) | 🟢 |
-| `wallet_metadata` and `wallet_nonce` | 🟢 |
-| Response mode `direct_post.jwt` (encrypted) | 🟢 |
-| Response mode `direct_post` | 🟢 |
-| `vp_token` keyed by credential id | 🟢 |
-| `dc+sd-jwt` format | 🟢 |
-| `mso_mdoc` format | 🟢 |
-| Status endpoint (session polling) | 🟢 |
-| Trust evaluation (X.509 PKI, OpenID Federation) | 🟢 |
-| Credential revocation (status list) | 🟢 |
-| Custom URL schemes (`haip`, configurable) | 🟢 |
-| `transaction_data` / `transaction_data_hashes` | 🔴 |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| DCQL (Duckle) query language | 🟢 | |
+| Same Device flow | 🟢 | |
+| Cross Device flow (QR code) | 🟢 | |
+| Request Object by reference (`request_uri`) | 🟢 | |
+| Request URI method GET | 🟢 | |
+| Request URI method POST (wallet metadata) | 🟢 | |
+| `wallet_metadata` and `wallet_nonce` | 🟢 | |
+| Response mode `direct_post.jwt` (encrypted) | 🟢 | |
+| Response mode `direct_post` | 🟢 | |
+| `vp_token` keyed by credential id | 🟢 | |
+| `dc+sd-jwt` format | 🟢 | |
+| `mso_mdoc` format | 🟢 | |
+| Status endpoint (session polling) | 🟢 | |
+| Trust evaluation (X.509 PKI, OpenID Federation) | 🟢 | |
+| Credential revocation via Status List (`dc+sd-jwt`) | 🟢 | |
+| Credential revocation via Status List (`mso_mdoc`) | 🟢 | |
+| Custom URL schemes (`haip`, configurable) | 🟢 | |
+| `request_uri` / `response_uri` mix-up vs attested metadata | 🟠 | The RP builds `request_uri` and `response_uri` from local metadata. Full mix-up checks against trust-attested `request_uris` / `response_uris` are not complete. |
+| `transaction_data` / `transaction_data_hashes` | 🔴 | |
 
 ## Executing Tests Using Preexisting MongoDb Instances
 
