@@ -1,0 +1,29 @@
+pyeudiw.tests.wallet\_attestations package
+==========================================
+
+Submodules
+----------
+
+pyeudiw.tests.wallet\_attestations.test\_attestation module
+-----------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.wallet_attestations.test_attestation
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.wallet\_attestations.test\_attestation\_request module
+--------------------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.wallet_attestations.test_attestation_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests.wallet_attestations
+   :members:
+   :show-inheritance:
+   :undoc-members:

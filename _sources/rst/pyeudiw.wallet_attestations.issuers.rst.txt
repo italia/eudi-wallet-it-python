@@ -1,0 +1,45 @@
+pyeudiw.wallet\_attestations.issuers package
+============================================
+
+Submodules
+----------
+
+pyeudiw.wallet\_attestations.issuers.base module
+------------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.issuers.base
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.wallet\_attestations.issuers.wa\_request module
+-------------------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.issuers.wa_request
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.wallet\_attestations.issuers.wia module
+-----------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.issuers.wia
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.wallet\_attestations.issuers.wua module
+-----------------------------------------------
+
+.. automodule:: pyeudiw.wallet_attestations.issuers.wua
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.wallet_attestations.issuers
+   :members:
+   :show-inheritance:
+   :undoc-members:

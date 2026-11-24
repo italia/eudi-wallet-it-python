@@ -1,0 +1,77 @@
+pyeudiw.tests.federation package
+================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.tests.federation.schemas
+
+Submodules
+----------
+
+pyeudiw.tests.federation.base module
+------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.base
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.mocked\_response module
+------------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.mocked_response
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.test\_metadata module
+----------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.test_metadata
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.test\_policy module
+--------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.test_policy
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.test\_schema module
+--------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.test_schema
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.test\_static\_trust\_chain\_validator module
+---------------------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.test_static_trust_chain_validator
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.federation.test\_trust\_chain\_builder module
+-----------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.federation.test_trust_chain_builder
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests.federation
+   :members:
+   :show-inheritance:
+   :undoc-members:

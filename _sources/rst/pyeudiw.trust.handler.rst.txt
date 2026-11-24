@@ -1,0 +1,69 @@
+pyeudiw.trust.handler package
+=============================
+
+Submodules
+----------
+
+pyeudiw.trust.handler.commons module
+------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.commons
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.direct\_trust\_jar module
+-----------------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.direct_trust_jar
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.direct\_trust\_sd\_jwt\_vc module
+-------------------------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.direct_trust_sd_jwt_vc
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.exceptions module
+---------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.exceptions
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.federation module
+---------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.federation
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.interface module
+--------------------------------------
+
+.. automodule:: pyeudiw.trust.handler.interface
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.trust.handler.x509 module
+---------------------------------
+
+.. automodule:: pyeudiw.trust.handler.x509
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.trust.handler
+   :members:
+   :show-inheritance:
+   :undoc-members:

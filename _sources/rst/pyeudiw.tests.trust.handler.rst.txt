@@ -1,0 +1,45 @@
+pyeudiw.tests.trust.handler package
+===================================
+
+Submodules
+----------
+
+pyeudiw.tests.trust.handler.test\_direct\_trust module
+------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.trust.handler.test_direct_trust
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.trust.handler.test\_direct\_trust\_jar module
+-----------------------------------------------------------
+
+.. automodule:: pyeudiw.tests.trust.handler.test_direct_trust_jar
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.trust.handler.test\_federation module
+---------------------------------------------------
+
+.. automodule:: pyeudiw.tests.trust.handler.test_federation
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+pyeudiw.tests.trust.handler.test\_x509 module
+---------------------------------------------
+
+.. automodule:: pyeudiw.tests.trust.handler.test_x509
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.tests.trust.handler
+   :members:
+   :show-inheritance:
+   :undoc-members:

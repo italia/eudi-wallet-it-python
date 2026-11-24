@@ -1,0 +1,21 @@
+pyeudiw.compat package
+======================
+
+Submodules
+----------
+
+pyeudiw.compat.pycose\_cbor2 module
+-----------------------------------
+
+.. automodule:: pyeudiw.compat.pycose_cbor2
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.compat
+   :members:
+   :show-inheritance:
+   :undoc-members:

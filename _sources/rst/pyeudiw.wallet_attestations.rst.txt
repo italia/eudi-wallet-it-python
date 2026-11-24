@@ -1,0 +1,19 @@
+pyeudiw.wallet\_attestations package
+====================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyeudiw.wallet_attestations.issuers
+   pyeudiw.wallet_attestations.models
+
+Module contents
+---------------
+
+.. automodule:: pyeudiw.wallet_attestations
+   :members:
+   :show-inheritance:
+   :undoc-members:
