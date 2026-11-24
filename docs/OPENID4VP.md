@@ -47,5 +47,6 @@ handlers = load_credential_presentation_handlers(
 ## Related Documentation
 
 - [OPENID4VP-SATOSA-BACKEND.md](OPENID4VP-SATOSA-BACKEND.md) — Full SATOSA backend setup
+- [CREDENTIAL-FORMAT.md](CREDENTIAL-FORMAT.md) — Add a credential type or a new presentation format
 - [TRUST.md](TRUST.md) — Trust evaluation configuration
 - [SD-JWT.md](SD-JWT.md) — SD-JWT VC format

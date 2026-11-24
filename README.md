@@ -75,6 +75,7 @@ In the [docs/](docs) folder you will find:
   - [tools.qrcode](docs/TOOLS-QRCODE.md)
   - [OpenID4VP](docs/OPENID4VP.md)
   - [OpenID4VCI](docs/OPENID4VCI.md)
+  - [Credential formats](docs/CREDENTIAL-FORMAT.md) — add a credential type or a new wire format
 - **SATOSA setup**:
   - [OpenID4VP Backend](docs/OPENID4VP-SATOSA-BACKEND.md)
   - [OpenID4VCI Frontend](docs/OPENID4VCI-SATOSA-FRONTEND.md)

@@ -30,6 +30,7 @@ The main integration is through the **SATOSA OpenID4VCI frontend**. See [OPENID4
 ## Related Documentation
 
 - [OPENID4VCI-SATOSA-FRONTEND.md](OPENID4VCI-SATOSA-FRONTEND.md) — Full SATOSA frontend setup
+- [CREDENTIAL-FORMAT.md](CREDENTIAL-FORMAT.md) — Add a credential type or a new issuance format
 - [SD-JWT.md](SD-JWT.md) — SD-JWT VC issuance and verification
 - [TRUST.md](TRUST.md) — Trust evaluation configuration
 - [TOOLS-QRCODE.md](TOOLS-QRCODE.md) — QR code configuration for credential offers
