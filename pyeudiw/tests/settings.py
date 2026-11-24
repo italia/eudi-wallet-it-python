@@ -53,11 +53,8 @@ httpc_params = {
 
 _METADATA = {
     "application_type": "web",
-    "authorization_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
+    "authorization_encrypted_response_alg": ["ECDH-ES", "RSA-OAEP-256"],
     "authorization_encrypted_response_enc": [
-        "A128CBC-HS256",
-        "A192CBC-HS384",
-        "A256CBC-HS512",
         "A128GCM",
         "A192GCM",
         "A256GCM",
@@ -71,11 +68,8 @@ _METADATA = {
         "https://www.spid.gov.it/SpidL3",
     ],
     "default_max_age": 1111,
-    "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
+    "id_token_encrypted_response_alg": ["ECDH-ES", "RSA-OAEP-256"],
     "id_token_encrypted_response_enc": [
-        "A128CBC-HS256",
-        "A192CBC-HS384",
-        "A256CBC-HS512",
         "A128GCM",
         "A192GCM",
         "A256GCM",
@@ -168,8 +162,9 @@ CONFIG = {
     "jwt": {
         "default_sig_alg": "ES256",
         "default_exp": 6,
+        "default_enc_alg": "ECDH-ES",
+        "default_enc_enc": "A256GCM",
         "enc_alg_supported": [
-            "RSA-OAEP",
             "RSA-OAEP-256",
             "ECDH-ES",
             "ECDH-ES+A128KW",
@@ -177,9 +172,6 @@ CONFIG = {
             "ECDH-ES+A256KW",
         ],
         "enc_enc_supported": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
             "A128GCM",
             "A192GCM",
             "A256GCM",
@@ -546,11 +538,8 @@ CONFIG_DIRECT_TRUST = {
     },
     "metadata": {
         "application_type": "web",
-        "authorization_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
+        "authorization_encrypted_response_alg": ["ECDH-ES", "RSA-OAEP-256"],
         "authorization_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
             "A128GCM",
             "A192GCM",
             "A256GCM",
@@ -564,11 +553,8 @@ CONFIG_DIRECT_TRUST = {
             "https://www.spid.gov.it/SpidL3",
         ],
         "default_max_age": 1111,
-        "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
+        "id_token_encrypted_response_alg": ["ECDH-ES", "RSA-OAEP-256"],
         "id_token_encrypted_response_enc": [
-            "A128CBC-HS256",
-            "A192CBC-HS384",
-            "A256CBC-HS512",
             "A128GCM",
             "A192GCM",
             "A256GCM",

@@ -75,11 +75,11 @@ To install the OpenID4VP SATOSA backend you just need to:
 | Parameter                    | Description                                             | Example value                                                                     |
 |------------------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------|
 | config.jwt.default_sig_alg   | The default signature algorithm for the JWT             | ES256                                                                             |
-| config.jwt.default_enc_alg   | The default encryption algorithm for the JWT            | RSA-OAEP                                                                          |
-| config.jwt.default_enc_enc   | The default encryption encoding for the JWT             | A256CBC-HS512                                                                     |
+| config.jwt.default_enc_alg   | The default encryption algorithm for the JWT            | ECDH-ES                                                                           |
+| config.jwt.default_enc_enc   | The default encryption encoding for the JWT             | A256GCM                                                                           |
 | config.jwt.default_exp       | The default expiration time for the JWT in minutes      | 6                                                                                 |
-| config.jwt.enc_alg_supported | The list of supported encryption algorithms for the JWT | [RSA-OAEP, RSA-OAEP-256, ECDH-ES, ECDH-ES+A128KW, ECDH-ES+A192KW, ECDH-ES+A256KW] |
-| config.jwt.enc_enc_supported | The list of supported encryption encodings for the JWT  | [A128CBC-HS256, A192CBC-HS384, A256CBC-HS512, A128GCM, A192GCM, A256GCM]          |
+| config.jwt.enc_alg_supported | The list of supported encryption algorithms for the JWT | [ECDH-ES]                                                                         |
+| config.jwt.enc_enc_supported | The list of supported encryption encodings for the JWT  | [A128GCM, A256GCM]                                                                |
 | config.jwt.sig_alg_supported | The list of supported signature algorithms for the JWT  | [RS256, RS384, RS512, ES256, ES384, ES512]                                        |
 
 ##### Authorization

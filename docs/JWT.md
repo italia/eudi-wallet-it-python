@@ -79,7 +79,7 @@ from pyeudiw.jwt.jwe_helper import JWEHelper
 
 # Encrypt with recipient's public key
 jwe_helper = JWEHelper(public_jwk)
-jwe = jwe_helper.encrypt(payload, protected={"alg": "RSA-OAEP", "enc": "A256GCM"})
+jwe = jwe_helper.encrypt(payload, alg="RSA-OAEP-256", enc="A256GCM")
 ```
 
 ## Decrypting a JWE

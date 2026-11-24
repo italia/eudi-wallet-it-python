@@ -14,7 +14,6 @@ class AcrValuesSupported(str, Enum):
 
 
 class EncryptionAlgValuesSupported(str, Enum):
-    rsa_oaep = "RSA-OAEP"
     ras_oaep_256 = "RSA-OAEP-256"
     ecdh_es = "ECDH-ES"
     ecdh_es_a128kw = "ECDH-ES+A128KW"

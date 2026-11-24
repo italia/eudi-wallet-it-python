@@ -198,6 +198,30 @@ def test_direct_post_jwt_jwe_parser_bad_validation_case(jwe_helper, jws_helper):
         assert True
 
 
+def test_direct_post_jwt_rejects_rsa_oaep(jwe_helper, jws_helper):
+    sample_algs = CONFIG["jwt"].get("enc_alg_supported", [])
+    assert "RSA-OAEP" not in sample_algs
+
+    parser = DirectPostJwtJweParser(
+        jwe_helper,
+        jws_helper,
+        sample_algs,
+        CONFIG["jwt"].get("enc_enc_supported", []),
+    )
+
+    rsa_key = new_rsa_key()
+    rsa_helper = JWEHelper(rsa_key)
+    ctx = Context()
+    ctx.request_method = "POST"
+    data = {"vp_token": {"claim": "value"}, "state": "123456"}
+    ctx.request = {
+        "response": rsa_helper.encrypt(data, alg="RSA-OAEP", enc="A256GCM")
+    }
+
+    with pytest.raises(AuthRespValidationException):
+        parser.parse_and_validate(ctx)
+
+
 def test_normalize_json_string():
     s = "asd"
     assert s == normalize_jsonstring_to_string(s)

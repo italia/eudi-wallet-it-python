@@ -84,14 +84,10 @@ def test_entity_config_payload():
                 "default_max_age": 1111,
                 "authorization_signed_response_alg": ["RS256", "ES256"],
                 "authorization_encrypted_response_alg": [
-                    "RSA-OAEP",
                     "RSA-OAEP-256",
                     "ECDH-ES",
                 ],
                 "authorization_encrypted_response_enc": [
-                    "A128CBC-HS256",
-                    "A192CBC-HS384",
-                    "A256CBC-HS512",
                     "A128GCM",
                     "A192GCM",
                     "A256GCM",
@@ -99,11 +95,8 @@ def test_entity_config_payload():
                 "subject_type": "pairwise",
                 "require_auth_time": True,
                 "id_token_signed_response_alg": ["RS256", "ES256"],
-                "id_token_encrypted_response_alg": ["RSA-OAEP", "RSA-OAEP-256"],
+                "id_token_encrypted_response_alg": ["RSA-OAEP-256", "ECDH-ES"],
                 "id_token_encrypted_response_enc": [
-                    "A128CBC-HS256",
-                    "A192CBC-HS384",
-                    "A256CBC-HS512",
                     "A128GCM",
                     "A192GCM",
                     "A256GCM",

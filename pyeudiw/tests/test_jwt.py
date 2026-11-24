@@ -20,6 +20,17 @@ JWKs_RSA = [
 
 JWKs = JWKs_EC + JWKs_RSA
 
+MUST_NOT_ENC_ALGS = {"RSA1_5", "RSA-OAEP"}
+
+
+def test_default_enc_alg_excludes_must_not():
+    assert DEFAULT_ENC_ALG_MAP["RSA"] not in MUST_NOT_ENC_ALGS
+    assert DEFAULT_ENC_ALG_MAP["EC"] not in MUST_NOT_ENC_ALGS
+    assert DEFAULT_ENC_ALG_MAP["RSA"] == "RSA-OAEP-256"
+    assert DEFAULT_ENC_ALG_MAP["EC"] == "ECDH-ES"
+    assert DEFAULT_ENC_ENC_MAP["RSA"] == "A256GCM"
+    assert DEFAULT_ENC_ENC_MAP["EC"] == "A256GCM"
+
 
 @pytest.mark.parametrize("jwk, payload", JWKs)
 def test_decode_jwt_header(jwk, payload):
