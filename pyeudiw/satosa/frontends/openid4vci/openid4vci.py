@@ -86,7 +86,18 @@ class OpenID4VCIFrontend(FrontendModule):
 
         try:
             session_id = get_session_id(context)
-            entity = self.db_engine.search_session_by_field("session_id", session_id)
+            vci_document_id = None
+            if context.state:
+                vci_document_id = context.state.get("openid4vci_document_id")
+
+            entity = None
+            if vci_document_id:
+                try:
+                    entity = self.db_engine.get_by_id(vci_document_id)
+                except Exception:
+                    entity = None
+            if not entity:
+                entity = self.db_engine.get_pending_openid4vci_by_session_id(session_id)
 
             if not entity:
                 logger.error(f"Session with ID {session_id} not found in storage")
@@ -98,6 +109,13 @@ class OpenID4VCIFrontend(FrontendModule):
                                                                             ENDPOINT_CTX: self._CTX,
                                                                             CONFIG_CTX: self.config
                                                                         })
+            if auth_session.abandoned or (
+                auth_session.finalized and auth_session.auth_code
+            ):
+                raise InvalidRequestException(
+                    f"Session with document_id {auth_session.document_id} is abandoned or already finalized"
+                )
+
             auth_session.attributes = internal_resp.attributes
             response = AuthorizationResponse(
                 state=auth_session.state,
@@ -108,7 +126,10 @@ class OpenID4VCIFrontend(FrontendModule):
 
             auth_session.auth_code = response.code
             auth_session.finalized = True
-            self.db_engine.upsert_session(auth_session.session_id, auth_session.model_dump())
+            auth_session.abandoned = False
+            self.db_engine.upsert_session_by_document_id(
+                auth_session.document_id, auth_session.model_dump()
+            )
             return response.to_redirect_response(auth_session.redirect_uri)
 
         except InvalidRequestException as e:

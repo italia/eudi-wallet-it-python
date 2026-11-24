@@ -127,9 +127,15 @@ class PreRequestHandler(VPBaseEndpoint):
 
         # Init session
         try:
-            self.db_engine.init_session(
+            vp_document_id = self.db_engine.init_session(
                 state=state, session_id=session_id, remote_flow_typ=flow_typ.value
             )
+            pending_vci = self.db_engine.get_pending_openid4vci_by_session_id(session_id)
+            if pending_vci and pending_vci.get("document_id"):
+                self.db_engine.set_session_fields(
+                    vp_document_id,
+                    {"vci_document_id": pending_vci["document_id"]},
+                )
         except Exception as e500:
             self._log_error(
                 context,

@@ -181,6 +181,7 @@ class ResponseHandler(VPBaseEndpoint):
             )
 
             self.db_engine.set_finalized(request_session["document_id"])
+            self.db_engine.abandon_linked_openid4vci(request_session)
         except Exception as e500:
             return self._handle_500(context, "internal server error", e500)
 
@@ -268,14 +269,17 @@ class ResponseHandler(VPBaseEndpoint):
             )
             extracted_attributes = parser_validator.parse()
         except MissingHandler as e400:
+            self.db_engine.abandon_linked_openid4vci(request_session)
             return self._handle_400(
                 context, "invalid DCQL response: vp_format not supported", e400
             )
         except CredentialValidationError as e400:
+            self.db_engine.abandon_linked_openid4vci(request_session)
             return self._handle_400(
                 context, "invalid DCQL response: validation error", e400
             )
         except ValueError as e400:
+            self.db_engine.abandon_linked_openid4vci(request_session)
             missing = str(e400)
             if missing.startswith("Missing claims:"):
                 return self._handle_400(
@@ -285,6 +289,7 @@ class ResponseHandler(VPBaseEndpoint):
                 context, "invalid DCQL response: unknown error", e400
             )
         except Exception as e500:
+            self.db_engine.abandon_linked_openid4vci(request_session)
             return self._handle_500(
                 context, "invalid DCQL response: unknown error", e500
             )

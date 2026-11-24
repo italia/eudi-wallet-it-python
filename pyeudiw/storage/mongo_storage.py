@@ -420,6 +420,70 @@ class MongoStorage(BaseStorage):
         except Exception as e:
             raise StorageEntryUpdateFailed("Database operation failed: an error occurring while upsert session") from e
 
+    def upsert_session_by_document_id(self, document_id: str, data: dict) -> bool:
+        self._connect()
+        try:
+            result = self.sessions.update_one(
+                {"document_id": document_id}, {"$set": data}, upsert=True
+            )
+            return bool(result.acknowledged)
+        except Exception as e:
+            raise StorageEntryUpdateFailed(
+                "Database operation failed: an error occurring while upsert session by document_id"
+            ) from e
+
+    def _pending_openid4vci_query(
+        self, session_id: str, except_document_id: str | None = None
+    ) -> dict:
+        query = {
+            "session_id": session_id,
+            "request_uri_part": {"$exists": True, "$nin": [None, ""]},
+            "finalized": {"$ne": True},
+            "abandoned": {"$ne": True},
+        }
+        if except_document_id:
+            query["document_id"] = {"$ne": except_document_id}
+        return query
+
+    def get_pending_openid4vci_by_session_id(self, session_id: str) -> Union[dict, None]:
+        self._connect()
+        return self.sessions.find_one(
+            self._pending_openid4vci_query(session_id),
+            sort=[("creation_date", pymongo.DESCENDING)],
+        )
+
+    def abandon_openid4vci_sessions(
+        self, session_id: str, except_document_id: str | None = None
+    ) -> int:
+        self._connect()
+        result = self.sessions.update_many(
+            self._pending_openid4vci_query(session_id, except_document_id),
+            {"$set": {"finalized": True, "abandoned": True}},
+        )
+        return int(result.modified_count)
+
+    def abandon_openid4vci_by_document_id(self, document_id: str) -> bool:
+        self._connect()
+        result = self.sessions.update_one(
+            {
+                "document_id": document_id,
+                "request_uri_part": {"$exists": True, "$nin": [None, ""]},
+                "abandoned": {"$ne": True},
+            },
+            {"$set": {"finalized": True, "abandoned": True}},
+        )
+        return result.matched_count == 1
+
+    def set_session_fields(self, document_id: str, fields: dict) -> bool:
+        self._connect()
+        if not fields:
+            return False
+        result = self.sessions.update_one(
+            {"document_id": document_id},
+            {"$set": fields},
+        )
+        return result.matched_count == 1
+
     def search_session_by_field(self, field: str, value: str) -> dict:
         self._connect()
 

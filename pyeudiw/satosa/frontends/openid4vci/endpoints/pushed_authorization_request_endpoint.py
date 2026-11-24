@@ -258,7 +258,12 @@ class ParHandler(VCIBaseEndpoint):
             self.force_same_device_flow_referer_criteria,
         )
         try:
-            self.db_engine.upsert_session(entity.session_id, entity.model_dump())
+            self.db_engine.abandon_openid4vci_sessions(
+                entity.session_id, except_document_id=entity.document_id
+            )
+            self.db_engine.upsert_session_by_document_id(
+                entity.document_id, entity.model_dump()
+            )
         except Exception as e500:
             self._log_critical(
                 e500.__class__.__name__,

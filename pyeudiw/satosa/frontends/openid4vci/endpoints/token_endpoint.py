@@ -176,7 +176,9 @@ class TokenHandler(VCIBaseEndpoint):
             vci_entity.refresh_token_jti = refresh_token.jti
             vci_entity.dpop_jkt = cnf.get("jkt")
 
-            self.db_engine.upsert_session(vci_entity.session_id, vci_entity.model_dump())
+            self.db_engine.upsert_session_by_document_id(
+                vci_entity.document_id, vci_entity.model_dump()
+            )
 
 
             return TokenResponse.to_created_response(

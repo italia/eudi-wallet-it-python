@@ -116,10 +116,13 @@ class AuthorizationHandler(VCIBaseEndpoint):
                                                              ENDPOINT_CTX: AUTHORIZATION_ENDPOINT,
                                                              CONFIG_CTX: self.config_utils.config
                                                          })
-            old_session_id = vci_entity.session_id
-
             vci_entity.session_id = get_session_id(context)
-            self.db_engine.upsert_session(old_session_id, vci_entity.model_dump())
+            self.db_engine.abandon_openid4vci_sessions(
+                vci_entity.session_id, except_document_id=vci_entity.document_id
+            )
+            self.db_engine.upsert_session_by_document_id(
+                vci_entity.document_id, vci_entity.model_dump()
+            )
 
             AuthorizationRequest.model_validate(
                 auth_req,
