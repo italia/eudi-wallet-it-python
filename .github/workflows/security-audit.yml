@@ -11,6 +11,9 @@ on:
 
 jobs:
   pre_job:
+    permissions:
+      actions: write
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
@@ -22,6 +25,8 @@ jobs:
           same_content_newer: "true"
 
   audit:
+    permissions:
+      contents: read
     needs: pre_job
     if: needs.pre_job.outputs.should_skip != 'true'
     name: pip-audit
