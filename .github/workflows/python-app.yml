@@ -12,6 +12,10 @@ on:
 jobs:
   pre_job:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
     steps:
@@ -26,6 +30,8 @@ jobs:
     if: needs.pre_job.outputs.should_skip != 'true'
 
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
 
     strategy:
       fail-fast: false
