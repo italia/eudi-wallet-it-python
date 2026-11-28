@@ -72,9 +72,13 @@ def _check_http_post_headers(context: Context) -> None:
         err_msg = f"HTTP method [{http_method}] not supported"
         raise AuthRespParsingException(err_msg, err_msg)
 
-    # missing header is ok; but if it's there, it must be correct
-    if context.http_headers:
-        content_type = context.http_headers["HTTP_CONTENT_TYPE"]
+    # missing header is ok; but if it's there, it must be correct.
+    # SATOSA builds http_headers from the HTTP_* environ keys only: the WSGI
+    # CONTENT_TYPE variable is exposed as HTTP_CONTENT_TYPE by some servers
+    # (e.g. nginx uwsgi_pass) but not by others (uWSGI --http-socket behind a
+    # plain HTTP proxy, gunicorn), so its absence must not raise KeyError.
+    content_type = (context.http_headers or {}).get("HTTP_CONTENT_TYPE")
+    if content_type is not None:
         if "application/x-www-form-urlencoded" not in content_type:
             err_msg = f"HTTP content type [{content_type}] not supported"
             raise AuthRespParsingException(err_msg, err_msg)
