@@ -65,6 +65,34 @@ def test_direct_post_parser_good_case():
     assert resp.state == state
 
 
+def test_direct_post_parser_without_content_type_header():
+    """http_headers present but without HTTP_CONTENT_TYPE (e.g. uWSGI
+    --http-socket behind a plain HTTP proxy): must not raise KeyError."""
+    parser = DirectPostParser()
+
+    ctx = Context()
+    ctx.request_method = "POST"
+    ctx.http_headers = {"HTTP_HOST": "verifier.example.org", "REMOTE_ADDR": "127.0.0.1"}
+    vp_token = {"personal id data": "qwe.rty.uio~asd.fgh.jkl"}
+    ctx.request = {"vp_token": json.dumps(vp_token), "state": "123456"}
+
+    resp = parser.parse_and_validate(ctx)
+    assert resp.vp_token == vp_token
+    assert resp.state == "123456"
+
+
+def test_direct_post_parser_rejects_wrong_content_type():
+    parser = DirectPostParser()
+
+    ctx = Context()
+    ctx.request_method = "POST"
+    ctx.http_headers = {"HTTP_CONTENT_TYPE": "application/json"}
+    ctx.request = {"vp_token": "x", "state": "123456"}
+
+    with pytest.raises(AuthRespParsingException):
+        parser.parse_and_validate(ctx)
+
+
 def test_direct_post_response_bad_parse_case():
     # case 0: bad method
     parser = DirectPostParser()
